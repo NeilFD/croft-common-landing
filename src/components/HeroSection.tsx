@@ -29,17 +29,6 @@ const HeroSection = () => {
             where food, drink, and people collide.
           </p>
         </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-12">
-          {['CAFE', 'COCKTAILS', 'BEER', 'KITCHENS', 'HALL'].map((item) => (
-            <button
-              key={item}
-              className="border border-background/30 bg-void/20 backdrop-blur-sm px-6 py-4 text-background font-industrial text-sm tracking-wide hover:bg-accent-pink/20 hover:border-accent-pink transition-all duration-300"
-            >
-              {item}
-            </button>
-          ))}
-        </div>
       </div>
       
       {/* Scroll indicator */}
