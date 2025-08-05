@@ -53,7 +53,23 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
             setTimeout(onTransitionComplete, 200);
           }
         }}
-      />
+      >
+        {/* Watermark during transition */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <img 
+            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
+            alt="Croft Common" 
+            className={`w-[50rem] h-[50rem] object-contain transition-all duration-700 ${
+              isTransitioning 
+                ? 'opacity-100 scale-110' 
+                : 'opacity-0 scale-90'
+            }`}
+            style={{ 
+              filter: 'brightness(0) invert(1) contrast(200) drop-shadow(0 0 20px rgba(255,255,255,0.8))'
+            }}
+          />
+        </div>
+      </div>
     </TransitionContext.Provider>
   );
 };
