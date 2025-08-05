@@ -147,7 +147,7 @@ export const kitchensMenu: MenuSection[] = [
     title: "WOOD-FIRED MAINS",
     items: [
       { name: "Whole Cauliflower, Harissa & Tahini", price: "12" },
-      { name: "Porchetta Roll", price: "14" },
+      { name: "Porchetta Roll, Sage Apricots", price: "14" },
       { name: "Wood-roasted Chicken Thighs, Herbs", price: "13" },
       { name: "Smoked Salmon Fillet, Dill Cream", price: "15" },
       { name: "Maple Pork Belly, Apple Slaw", price: "14" },
