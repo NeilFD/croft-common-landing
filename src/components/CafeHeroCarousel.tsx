@@ -17,27 +17,32 @@ const CafeHeroCarousel = () => {
     {
       src: '/lovable-uploads/3f7371f7-30d1-4118-b421-5a4937be9a2d.png',
       type: 'dark',
-      overlay: 'bg-void/30'
+      overlay: 'bg-void/30',
+      backgroundPosition: '60% center'
     },
     {
       src: '/lovable-uploads/e6f7674f-71d0-4ec4-8782-a283ed5ba5b5.png',
       type: 'dark',
-      overlay: 'bg-void/25'
+      overlay: 'bg-void/25',
+      backgroundPosition: '55% center'
     },
     {
       src: '/lovable-uploads/0726808b-f108-44ac-bc6c-12c7eead462a.png',
       type: 'dark',
-      overlay: 'bg-void/30'
+      overlay: 'bg-void/30',
+      backgroundPosition: 'center 60%'
     },
     {
       src: '/lovable-uploads/e5c78d77-a685-4c5c-ab4a-2968bde2a0de.png',
       type: 'warm',
-      overlay: 'bg-void/20'
+      overlay: 'bg-void/20',
+      backgroundPosition: '65% center'
     },
     {
       src: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png',
       type: 'dark',
-      overlay: 'bg-void/35'
+      overlay: 'bg-void/35',
+      backgroundPosition: '50% 45%'
     }
   ];
 
@@ -62,9 +67,10 @@ const CafeHeroCarousel = () => {
           >
             {/* Background Image with type-specific styling */}
             <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+              className="absolute inset-0 bg-cover bg-no-repeat transition-all duration-1000"
               style={{
-                backgroundImage: `url('${image.src}')`
+                backgroundImage: `url('${image.src}')`,
+                backgroundPosition: image.backgroundPosition
               }}
             >
               {/* Subtle overlay for text readability */}
