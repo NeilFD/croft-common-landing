@@ -36,23 +36,31 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
     <>
       <button
         onClick={() => setIsMenuOpen(true)}
-        className="fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full border-2 border-background/30 
-          backdrop-blur-sm transition-all duration-300 hover:scale-105 
-          bg-background/10 hover:border-background
-          flex items-center justify-center group"
+        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 
+          flex items-center justify-center group ${
+            pageType === 'community' 
+              ? 'bg-background/90 border-2 border-background/50 backdrop-blur-sm hover:border-background' 
+              : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
+          }`}
         style={{
           '--hover-bg': accentColor,
         } as any}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = accentColor;
-          e.currentTarget.style.borderColor = accentColor;
+          if (pageType !== 'community') {
+            e.currentTarget.style.backgroundColor = accentColor;
+            e.currentTarget.style.borderColor = accentColor;
+          }
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
-          e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
+          if (pageType !== 'community') {
+            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
+            e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
+          }
         }}
       >
-        <div className="text-background transition-colors duration-300 scale-50">
+        <div className={`transition-colors duration-300 scale-50 ${
+          pageType === 'community' ? 'text-foreground' : 'text-background'
+        }`}>
           <CroftLogo />
         </div>
       </button>
