@@ -13,12 +13,11 @@ const HeroSection = () => {
       </div>
       
       {/* Content */}
-      <div className="relative z-10 text-center px-6 max-w-4xl">
-        <div className="mb-8">
-          <h1 className="font-brutalist text-6xl md:text-8xl text-background tracking-tight mb-6">
-            CROFT
-            <br />
-            COMMON
+      <div className="relative z-10 w-full px-6">
+        <div className="absolute top-16 right-6 md:right-12">
+          <h1 className="font-brutalist text-6xl md:text-8xl text-background tracking-tight mb-6 text-right">
+            <span className="block border-t-4 border-b-4 border-background py-4">CROFT</span>
+            <span className="block border-t-4 border-b-4 border-background py-4 mt-2">COMMON</span>
           </h1>
         </div>
       </div>
