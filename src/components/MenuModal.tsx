@@ -6,7 +6,7 @@ import { MenuSection } from '@/data/menuData';
 interface MenuModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens';
+  pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall';
   menuData: MenuSection[];
 }
 
@@ -35,6 +35,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         return 'CROFT COMMON BEER';
       case 'kitchens':
         return 'CROFT COMMON KITCHENS';
+      case 'hall':
+        return 'CROFT COMMON HALL';
       default:
         return 'CROFT COMMON';
     }
@@ -50,6 +52,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         return 'accent-orange';
       case 'kitchens':
         return 'accent-blood-red';
+      case 'hall':
+        return 'accent-vivid-purple';
       default:
         return 'accent-pink';
     }
