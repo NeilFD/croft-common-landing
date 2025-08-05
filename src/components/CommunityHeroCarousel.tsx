@@ -15,18 +15,17 @@ const CommunityHeroCarousel = () => {
     [Autoplay({ delay: 5000, stopOnInteraction: false })]
   );
 
-  // Placeholder images - user will provide actual images soon
   const heroImages = [
     {
-      src: '/lovable-uploads/00e4abb5-7048-4240-9a07-44d31b238a96.png',
+      src: '/lovable-uploads/c22f6cce-8b72-4eb5-96e8-a2fc8adfe7b9.png',
       overlay: 'bg-surface/20'
     },
     {
-      src: '/lovable-uploads/0726808b-f108-44ac-bc6c-12c7eead462a.png', 
+      src: '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png', 
       overlay: 'bg-surface/20'
     },
     {
-      src: '/lovable-uploads/07cf4977-efa8-49a9-afac-7a2f8f371569.png',
+      src: '/lovable-uploads/a20baf5a-8e8f-41ea-82f5-1801dbd32dd7.png',
       overlay: 'bg-surface/20'
     }
   ];
