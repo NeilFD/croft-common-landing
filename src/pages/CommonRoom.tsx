@@ -5,8 +5,8 @@ const CommonRoom = () => {
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
-      <main className="flex-1 min-h-[calc(100vh-140px)] relative">
-        {/* Watermark in center */}
+      {/* Hero area with watermark */}
+      <main className="min-h-[60vh] bg-white relative flex items-center justify-center">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <img 
             src="/lovable-uploads/75f518f0-7918-463a-9e00-c016e4271205.png" 
