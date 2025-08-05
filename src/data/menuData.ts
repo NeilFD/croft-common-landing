@@ -13,12 +13,12 @@ export const cafeMenu: MenuSection[] = [
   {
     title: "COFFEE",
     items: [
-      { name: "Flat White", price: "2.8" },
-      { name: "Long Black", price: "2.6" },
-      { name: "Iced Filter", price: "3.0" },
-      { name: "Cortado", price: "2.8" },
-      { name: "Batch Brew", price: "2.4" },
-      { name: "Cold Brew", price: "3.2" },
+      { name: "Flat White", price: "3.8" },
+      { name: "Long Black", price: "3.6" },
+      { name: "Iced Filter", price: "4.0" },
+      { name: "Cortado", price: "3.8" },
+      { name: "Batch Brew", price: "3.4" },
+      { name: "Cold Brew", price: "4.2" },
       { name: "Oat, soy, almond", description: "add 0.5" },
       { name: "Extra shot", description: "0.5" },
     ]
@@ -26,37 +26,37 @@ export const cafeMenu: MenuSection[] = [
   {
     title: "PASTRIES",
     items: [
-      { name: "Butter Croissant", price: "2.6" },
-      { name: "Almond Thing", price: "3.0" },
-      { name: "Dirty Chocolate Cookie", price: "2.8" },
-      { name: "Banana Bread, Warm", price: "3.2" },
+      { name: "Butter Croissant", price: "3.6" },
+      { name: "Almond Thing", price: "4.0" },
+      { name: "Dirty Chocolate Cookie", price: "3.8" },
+      { name: "Banana Bread, Warm", price: "4.2" },
     ]
   },
   {
     title: "QUICHE",
     items: [
-      { name: "Spinach & Feta Quiche", price: "6.0" },
-      { name: "Leek & Gruyère Quiche", price: "6.5" },
-      { name: "Ham, Egg, Mustard Quiche", price: "6.5" },
+      { name: "Spinach & Feta Quiche", price: "7.5" },
+      { name: "Leek & Gruyère Quiche", price: "8.0" },
+      { name: "Ham, Egg, Mustard Quiche", price: "8.0" },
       { name: "Served cold. Eat warm.", description: "" },
     ]
   },
   {
     title: "SALADS",
     items: [
-      { name: "Roast Beet, Whipped Feta, Hazelnut", price: "8.0" },
-      { name: "Cauli, Curry Mayo, Coriander, Seeds", price: "8.5" },
-      { name: "Grains, Greens, Citrus", price: "7.5" },
-      { name: "Add Chicken", description: "3.5" },
-      { name: "Add Hot Egg", description: "1.5" },
+      { name: "Roast Beet, Whipped Feta, Hazelnut", price: "10.0" },
+      { name: "Cauli, Curry Mayo, Coriander, Seeds", price: "10.5" },
+      { name: "Grains, Greens, Citrus", price: "9.5" },
+      { name: "Add Chicken", description: "4.0" },
+      { name: "Add Hot Egg", description: "2.0" },
     ]
   },
   {
     title: "SANDWICHES",
     items: [
-      { name: "Toastie: Cheese, Onion, Mustard", price: "7.5" },
-      { name: "Ciabatta: Mortadella, Pickles", price: "8.0" },
-      { name: "Focaccia: Tomatoes, Pesto, Mozz", price: "7.0" },
+      { name: "Toastie: Cheese, Onion, Mustard", price: "9.0" },
+      { name: "Ciabatta: Mortadella, Pickles", price: "9.5" },
+      { name: "Focaccia: Tomatoes, Pesto, Mozz", price: "8.5" },
     ]
   }
 ];
