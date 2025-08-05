@@ -59,6 +59,9 @@ export default {
 				'accent-pink': 'hsl(var(--accent-pink))',
 				'accent-pink-subtle': 'hsl(var(--accent-pink-subtle))',
 				'accent-pink-dark': 'hsl(var(--accent-pink-dark))',
+				'accent-orange': 'hsl(var(--accent-orange))',
+				'accent-orange-subtle': 'hsl(var(--accent-orange-subtle))',
+				'accent-orange-dark': 'hsl(var(--accent-orange-dark))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

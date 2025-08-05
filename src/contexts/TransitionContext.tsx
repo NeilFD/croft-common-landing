@@ -32,6 +32,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
   const getTransitionColor = () => {
     if (targetPath === '/cocktails') return 'bg-[hsl(var(--accent-lime))]';
+    if (targetPath === '/beer') return 'bg-accent-orange';
     return 'bg-accent-pink';
   };
 

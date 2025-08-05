@@ -28,6 +28,11 @@
     --accent-lime-subtle: 85 30% 85%;
     --accent-lime-dark: 85 90% 35%;
 
+    /* Bright orange accent for beer */
+    --accent-orange: 22 100% 55%;
+    --accent-orange-subtle: 22 40% 85%;
+    --accent-orange-dark: 22 100% 40%;
+
     /* Design tokens */
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
@@ -62,6 +67,9 @@
     --accent-lime: 85 80% 55%;
     --accent-lime-subtle: 85 30% 85%;
     --accent-lime-dark: 85 90% 35%;
+    --accent-orange: 22 100% 55%;
+    --accent-orange-subtle: 22 40% 85%;
+    --accent-orange-dark: 22 100% 40%;
 
     --sidebar-background: 0 0% 98%;
 

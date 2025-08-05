@@ -37,6 +37,8 @@ const Navigation = () => {
               className={`font-industrial text-sm tracking-wide text-foreground transition-all duration-200 hover:scale-105 active:scale-110 ${
                 item.name === 'COCKTAILS' 
                   ? 'hover:text-[hsl(var(--accent-lime))]' 
+                  : item.name === 'BEER'
+                  ? 'hover:text-accent-orange'
                   : 'hover:text-accent-pink'
               }`}
             >
