@@ -83,20 +83,26 @@ const CafeHeroCarousel = () => {
       </div>
 
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none mt-16 z-10">
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
         <img 
           src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
           alt="Croft Common Watermark" 
-          className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-1000"
+          className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 hover:opacity-80 cursor-pointer"
           style={{ 
             filter: 'brightness(0) invert(1) contrast(100)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.filter = 'hue-rotate(320deg) saturate(2) brightness(1.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.filter = 'brightness(0) invert(1) contrast(100)';
           }}
         />
       </div>
 
       {/* Page Title Overlay */}
-      <div className="absolute top-24 left-[106px] pointer-events-none z-20">
-        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase">
+      <div className="absolute top-24 left-[106px] z-20">
+        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-pink))] cursor-pointer">
           CAFE
         </h1>
       </div>
