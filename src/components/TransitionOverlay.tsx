@@ -25,13 +25,14 @@ const TransitionOverlay = ({ isActive, onComplete }: TransitionOverlayProps) => 
 
   return (
     <div 
-      className={`fixed inset-0 z-[9999] bg-accent-pink transition-all duration-600 ease-out ${
+      className={`fixed inset-0 z-[99999] bg-accent-pink transition-all duration-700 ease-in-out ${
         stage === 'expanding' 
-          ? 'scale-150 opacity-100' 
-          : 'scale-100 opacity-0'
+          ? 'opacity-100 scale-100' 
+          : 'opacity-0 scale-150'
       }`}
       style={{
         transformOrigin: 'center center',
+        pointerEvents: 'all',
       }}
     />
   );
