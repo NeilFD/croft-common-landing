@@ -65,6 +65,9 @@ export default {
 				'accent-blood-red': 'hsl(var(--accent-blood-red))',
 				'accent-blood-red-subtle': 'hsl(var(--accent-blood-red-subtle))',
 				'accent-blood-red-dark': 'hsl(var(--accent-blood-red-dark))',
+				'accent-vivid-purple': 'hsl(var(--accent-vivid-purple))',
+				'accent-vivid-purple-subtle': 'hsl(var(--accent-vivid-purple-subtle))',
+				'accent-vivid-purple-dark': 'hsl(var(--accent-vivid-purple-dark))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

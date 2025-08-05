@@ -41,6 +41,8 @@ const Navigation = () => {
                   ? 'hover:text-accent-orange'
                   : item.name === 'KITCHENS'
                   ? 'hover:text-accent-blood-red'
+                  : item.name === 'HALL'
+                  ? 'hover:text-accent-vivid-purple'
                   : 'hover:text-accent-pink'
               }`}
             >
