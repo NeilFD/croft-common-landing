@@ -32,13 +32,12 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
     <>
       <button
         onClick={() => setIsMenuOpen(true)}
-        className={`fixed bottom-8 right-8 z-30 w-16 h-16 rounded-full border-2 border-background/30 
-          backdrop-blur-sm transition-all duration-300 hover:scale-110 
-          bg-${accentColor}/20 hover:bg-${accentColor}/30 
-          animate-pulse hover:animate-none
+        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full border-2 border-background/30 
+          backdrop-blur-sm transition-all duration-300 hover:scale-105 
+          bg-background/10 hover:bg-${accentColor} hover:border-${accentColor}
           flex items-center justify-center group`}
       >
-        <div className={`text-background transition-colors duration-300 group-hover:text-${accentColor}`}>
+        <div className={`text-background transition-colors duration-300 group-hover:text-background scale-75`}>
           <CroftLogo />
         </div>
       </button>
