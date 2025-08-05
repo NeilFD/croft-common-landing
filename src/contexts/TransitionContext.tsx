@@ -36,6 +36,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     if (targetPath === '/kitchens') return 'bg-accent-blood-red';
     if (targetPath === '/hall') return 'bg-accent-vivid-purple';
     if (targetPath === '/community') return 'bg-[hsl(var(--accent-electric-blue))]';
+    if (targetPath === '/common-room') return 'bg-green-600';
     return 'bg-accent-pink';
   };
 
