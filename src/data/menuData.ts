@@ -257,7 +257,7 @@ export const kitchensMenu: MenuSection[] = [
   }
 ];
 
-export const homeMenu: MenuSection[] = [
+const homeMenu: MenuSection[] = [
   {
     title: "CROFT COMMON",
     items: [
@@ -289,7 +289,7 @@ export const homeMenu: MenuSection[] = [
   }
 ];
 
-export const hallMenu: MenuSection[] = [
+const hallMenu: MenuSection[] = [
   {
     title: "HALLS",
     items: [
@@ -329,3 +329,18 @@ export const hallMenu: MenuSection[] = [
     ]
   }
 ];
+
+// Community Menu Data
+const communityMenuData: MenuSection[] = [
+  {
+    title: "COMMUNITY",
+    items: [
+      { 
+        name: "Welcome to our community space - coming soon!", 
+        description: ""
+      }
+    ]
+  }
+];
+
+export { cafeMenu as cafeMenuData, cocktailMenu as cocktailsMenuData, beerMenu as beerMenuData, kitchensMenu as kitchensMenuData, hallMenu as hallMenuData, homeMenu, communityMenuData };

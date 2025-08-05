@@ -4,7 +4,7 @@ import MenuModal from './MenuModal';
 import { MenuSection } from '@/data/menuData';
 
 interface MenuButtonProps {
-  pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall';
+  pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community';
   menuData: MenuSection[];
 }
 
@@ -23,6 +23,8 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
         return 'hsl(var(--accent-blood-red))';
       case 'hall':
         return 'hsl(var(--accent-vivid-purple))';
+      case 'community':
+        return 'hsl(var(--accent-electric-blue))';
       default:
         return 'hsl(var(--accent-pink))';
     }
