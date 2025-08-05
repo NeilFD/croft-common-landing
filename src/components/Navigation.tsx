@@ -39,6 +39,8 @@ const Navigation = () => {
                   ? 'hover:text-[hsl(var(--accent-lime))]' 
                   : item.name === 'BEER'
                   ? 'hover:text-accent-orange'
+                  : item.name === 'KITCHENS'
+                  ? 'hover:text-accent-blood-red'
                   : 'hover:text-accent-pink'
               }`}
             >

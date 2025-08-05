@@ -33,6 +33,11 @@
     --accent-orange-subtle: 22 40% 85%;
     --accent-orange-dark: 22 100% 40%;
 
+    /* Blood red accent for kitchens */
+    --accent-blood-red: 0 100% 35%;
+    --accent-blood-red-subtle: 0 40% 85%;
+    --accent-blood-red-dark: 0 100% 25%;
+
     /* Design tokens */
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
@@ -70,6 +75,9 @@
     --accent-orange: 22 100% 55%;
     --accent-orange-subtle: 22 40% 85%;
     --accent-orange-dark: 22 100% 40%;
+    --accent-blood-red: 0 100% 35%;
+    --accent-blood-red-subtle: 0 40% 85%;
+    --accent-blood-red-dark: 0 100% 25%;
 
     --sidebar-background: 0 0% 98%;
 
