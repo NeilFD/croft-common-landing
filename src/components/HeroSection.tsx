@@ -20,8 +20,6 @@ const HeroSection = () => {
             <br />
             COMMON
           </h1>
-          
-          <div className="w-24 h-1 bg-accent-pink mx-auto mb-8"></div>
         </div>
       </div>
       
