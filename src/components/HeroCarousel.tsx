@@ -81,9 +81,9 @@ const HeroCarousel = () => {
         <img 
           src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
           alt="Croft Common Watermark" 
-          className="w-[40rem] h-[40rem] opacity-40 object-contain transition-all duration-1000"
+          className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-1000"
           style={{ 
-            filter: 'brightness(0) saturate(100%) invert(1)'
+            filter: 'brightness(0) invert(1) contrast(100)'
           }}
         />
       </div>
