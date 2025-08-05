@@ -26,6 +26,11 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   if (!isOpen) return null;
 
   const getPageTitle = () => {
+    // Check if this is the home menu by looking at the first section title
+    if (menuData.length > 0 && menuData[0].title === 'CROFT COMMON') {
+      return 'CROFT COMMON';
+    }
+    
     switch (pageType) {
       case 'cafe':
         return 'CROFT COMMON CAFÉ';
@@ -67,7 +72,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       onClick={onClose}
     >
       <div 
-        className="bg-background border border-steel/30 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-2xl"
+        className="bg-background border border-steel/30 rounded-lg w-full max-w-5xl max-h-[95vh] overflow-hidden shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -91,7 +96,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         </div>
 
         {/* Scrollable Menu Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-120px)] p-6">
+        <div className="overflow-y-auto max-h-[calc(95vh-120px)] p-6">
           <div className="space-y-10">
             {menuData.map((section, sectionIndex) => {
               const isMajorSection = ['PIZZA - WOOD-FIRED', 'GRILL', 'MEXICAN', 'ASIAN STREET FOOD'].includes(section.title);
