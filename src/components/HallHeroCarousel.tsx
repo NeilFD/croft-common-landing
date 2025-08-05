@@ -15,11 +15,6 @@ const HallHeroCarousel = () => {
 
   const heroImages = [
     {
-      src: '/lovable-uploads/d87f8231-a118-40d9-b899-730927e0fe52.png',
-      type: 'neutral',
-      overlay: 'bg-void/20'
-    },
-    {
       src: '/lovable-uploads/8e6a7ddc-9c1d-4779-bd58-8c4ef5fd6646.png',
       type: 'dark',
       overlay: 'bg-void/30'
