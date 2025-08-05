@@ -12,7 +12,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) =>
   const handleGestureSuccess = useCallback(() => {
     toast({
       title: "Access Granted",
-      description: "Welcome to The Common Room",
+      description: "Welcome to The Common Room, for Common People",
       duration: 2000,
     });
     onGestureComplete();
