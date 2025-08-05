@@ -13,7 +13,9 @@ const Cafe = () => {
             CAFÉ
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            Open early. Concrete counters. Black coffee. Warm light. A place to meet, work, linger. Music & movement.
+            Open early. Concrete counters. Black coffee. Warm light. A lace to meet, A place to work, A pace to linger.
+            <br /><br />
+            Music & movement.
           </p>
         </div>
       </section>
