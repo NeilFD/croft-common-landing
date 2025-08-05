@@ -13,7 +13,9 @@ const Hall = () => {
             HALL
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            An empty room. Blank canvas. Full sound. Weddings. Gigs. Raves. Strip it back. Fill it up.
+            An empty room. Blank canvas. Full sound. Lights cut. Walls shake. Life's big moments. 
+            <br /><br />
+            Strip it back. Fill it up.
           </p>
         </div>
       </section>
