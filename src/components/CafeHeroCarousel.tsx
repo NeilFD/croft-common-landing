@@ -24,7 +24,7 @@ const CafeHeroCarousel = () => {
       src: '/lovable-uploads/e6f7674f-71d0-4ec4-8782-a283ed5ba5b5.png',
       type: 'dark',
       overlay: 'bg-void/25',
-      backgroundPosition: 'bg-[center_-200px]' // Move image up to center coffee cup behind watermark
+      backgroundPosition: 'bg-[calc(50%-32px)_-200px]' // Move image up and left 32px to center coffee cup behind watermark
     },
     {
       src: '/lovable-uploads/0726808b-f108-44ac-bc6c-12c7eead462a.png',
