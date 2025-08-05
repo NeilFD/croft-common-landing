@@ -12,14 +12,6 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-void/40"></div>
       </div>
       
-      {/* Large watermark icon in center */}
-      <div className="absolute inset-0 flex items-center justify-center z-5">
-        <img 
-          src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
-          alt="Croft Common Watermark" 
-          className="w-[60rem] h-[60rem] opacity-10 object-contain filter invert"
-        />
-      </div>
       
       {/* Title positioned at top of viewport */}
       <div className="fixed top-28 right-2 md:right-4 z-20">
