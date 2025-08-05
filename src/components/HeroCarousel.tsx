@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
+import OptimizedImage from './OptimizedImage';
+import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { homeMenu } from '@/data/menuData';
 
 const HeroCarousel = () => {
@@ -38,6 +40,9 @@ const HeroCarousel = () => {
     }
   ];
 
+  const imageUrls = heroImages.map(img => img.src);
+  const { loading: imagesLoading } = useImagePreloader(imageUrls, { enabled: true, priority: true });
+
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
     setCurrentSlide(emblaApi.selectedScrollSnap());
@@ -59,16 +64,16 @@ const HeroCarousel = () => {
             key={index}
             className="flex-[0_0_100%] relative min-h-screen"
           >
-            {/* Background Image with type-specific styling */}
-            <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
-              style={{
-                backgroundImage: `url('${image.src}')`
-              }}
-            >
-              {/* Subtle overlay for text readability */}
-              <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
-            </div>
+            {/* Optimized Background Image */}
+            <OptimizedImage
+              src={image.src}
+              alt={`Hero image ${index + 1}`}
+              className="min-h-screen"
+              priority={index === 0}
+              loading={index === 0 ? 'eager' : 'lazy'}
+            />
+            {/* Subtle overlay for text readability */}
+            <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
           </div>
         ))}
       </div>

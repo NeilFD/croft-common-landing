@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTransition } from '@/contexts/TransitionContext';
+import { preloadImages } from '@/hooks/useImagePreloader';
 import { Menu, X } from 'lucide-react';
 
 const Navigation = () => {
@@ -14,6 +15,47 @@ const Navigation = () => {
     { name: 'HALL', path: '/hall' },
     { name: 'COMMUNITY', path: '/community' }
   ];
+
+  // Preload images for better performance
+  const pageImages = {
+    '/cafe': [
+      '/lovable-uploads/886e7962-c1ff-41e4-957d-143eb9c28760.png',
+      '/lovable-uploads/a6fcbd2e-334d-49e3-9b5d-d7dd0e87d852.png',
+      '/lovable-uploads/2fa67cb3-bc38-4512-9fbe-2fcfb70815ab.png'
+    ],
+    '/hall': [
+      '/lovable-uploads/75f518f0-7918-463a-9e00-c016e4271205.png',
+      '/lovable-uploads/8e6a7ddc-9c1d-4779-bd58-8c4ef5fd6646.png',
+      '/lovable-uploads/662eb2b5-85e4-444a-a911-30028613c638.png'
+    ],
+    '/cocktails': [
+      '/lovable-uploads/e6f7674f-71d0-4ec4-8782-a283ed5ba5b5.png',
+      '/lovable-uploads/13ac21e8-600e-49ed-9565-c01a222ada20.png',
+      '/lovable-uploads/5d770f71-d0ac-45ef-b72f-b853c4020425.png'
+    ],
+    '/beer': [
+      '/lovable-uploads/9bc2ce00-844e-4246-8ed9-16ca984f0af9.png',
+      '/lovable-uploads/8ea5b295-7d10-4aeb-a64c-b646f4046ee2.png',
+      '/lovable-uploads/b64216a3-dd09-4428-a328-02343a5f2a23.png'
+    ],
+    '/kitchens': [
+      '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png',
+      '/lovable-uploads/1b15e13f-fb17-4f03-a1d9-9a7c2a2611b3.png',
+      '/lovable-uploads/3f7371f7-30d1-4118-b421-5a4937be9a2d.png'
+    ],
+    '/community': [
+      '/lovable-uploads/96977a94-65ef-4620-ae91-5440d335123f.png',
+      '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png',
+      '/lovable-uploads/ada4b655-67e6-4bbe-8e52-ea2d407da312.png'
+    ]
+  };
+
+  const handleNavHover = (path: string) => {
+    const images = pageImages[path as keyof typeof pageImages];
+    if (images) {
+      preloadImages(images);
+    }
+  };
 
   const handleNavClick = (path: string) => {
     setIsMobileMenuOpen(false); // Close mobile menu
@@ -56,6 +98,7 @@ const Navigation = () => {
             <button
               key={item.name}
               onClick={() => handleNavClick(item.path)}
+              onMouseEnter={() => handleNavHover(item.path)}
               className={`font-industrial text-sm tracking-wide text-foreground transition-all duration-200 hover:scale-105 active:scale-110 ${getNavItemColor(item.name)}`}
             >
               {item.name}
