@@ -4,8 +4,15 @@ const Navigation = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-charcoal">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <div className="font-brutalist text-2xl text-foreground tracking-tight">
-          CROFT COMMON
+        <div className="flex items-center space-x-4">
+          <img 
+            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
+            alt="Croft Common" 
+            className="w-8 h-8"
+          />
+          <div className="font-brutalist text-2xl text-foreground tracking-tight">
+            CROFT COMMON
+          </div>
         </div>
         
         <div className="hidden md:flex space-x-8">
