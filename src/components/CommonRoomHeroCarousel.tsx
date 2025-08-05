@@ -27,10 +27,10 @@ const CommonRoomHeroCarousel = () => {
       {/* Page Title Card Overlay */}
       <div className="absolute top-24 left-[106px] z-20">
         <div className="bg-background/90 rounded-lg px-6 py-4 shadow-lg backdrop-blur-sm">
-          <h1 className="text-2xl font-light text-foreground tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer">
+          <h1 className="text-2xl font-light text-foreground tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] cursor-pointer">
             THE COMMON ROOM
           </h1>
-          <h2 className="text-lg font-light text-foreground tracking-[0.1em] uppercase mt-1 transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer">
+          <h2 className="text-lg font-light text-foreground tracking-[0.1em] uppercase mt-1 transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] cursor-pointer">
             PURE HOSPITALITY
           </h2>
         </div>
