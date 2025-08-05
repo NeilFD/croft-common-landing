@@ -12,14 +12,12 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-void/40"></div>
       </div>
       
-      {/* Content */}
-      <div className="relative z-10 w-full px-6">
-        <div className="absolute top-20 right-6 md:right-12">
-          <h1 className="font-brutalist text-6xl md:text-8xl text-background tracking-tight mb-6 text-right leading-none">
-            <span className="block border-t-4 border-b-4 border-background leading-none">CROFT</span>
-            <span className="block border-t-4 border-b-4 border-background leading-none">COMMON</span>
-          </h1>
-        </div>
+      {/* Title positioned at top of viewport */}
+      <div className="fixed top-20 right-6 md:right-12 z-20">
+        <h1 className="font-brutalist text-6xl md:text-8xl text-background tracking-tight mb-6 text-right leading-none">
+          <span className="block border-t-4 border-b-4 border-background leading-none">CROFT</span>
+          <span className="block border-t-4 border-b-4 border-background leading-none">COMMON</span>
+        </h1>
       </div>
       
       {/* Scroll indicator */}
