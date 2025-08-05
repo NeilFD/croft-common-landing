@@ -77,17 +77,17 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     >
       <div 
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
-          pageType === 'community' ? 'max-w-6xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
+          pageType === 'community' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="bg-background border-b border-steel/20 p-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="text-foreground">
+        <div className="bg-background border-b border-steel/20 p-4 md:p-6 flex items-center justify-between">
+          <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
+            <div className="text-foreground flex-shrink-0">
               <CroftLogo />
             </div>
-            <h1 className="font-brutalist text-xl text-foreground tracking-wider">
+            <h1 className="font-brutalist text-lg md:text-xl text-foreground tracking-wider truncate">
               {getPageTitle()}
             </h1>
           </div>
@@ -95,7 +95,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
             onClick={onClose}
             className={`w-10 h-10 rounded-full border border-background/30 
               hover:border-${accentColor} hover:bg-${accentColor}/10 
-              transition-all duration-300 flex items-center justify-center`}
+              transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
           >
             <X className="w-5 h-5 text-foreground" />
           </button>
