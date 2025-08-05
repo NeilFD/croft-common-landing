@@ -46,13 +46,19 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
           '--hover-bg': accentColor,
         } as any}
         onMouseEnter={(e) => {
-          if (pageType !== 'community') {
+          if (pageType === 'community') {
+            e.currentTarget.style.backgroundColor = accentColor;
+            e.currentTarget.style.borderColor = accentColor;
+          } else {
             e.currentTarget.style.backgroundColor = accentColor;
             e.currentTarget.style.borderColor = accentColor;
           }
         }}
         onMouseLeave={(e) => {
-          if (pageType !== 'community') {
+          if (pageType === 'community') {
+            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.7)';
+            e.currentTarget.style.borderColor = 'hsla(0, 0%, 0%, 0.8)';
+          } else {
             e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
             e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
           }
