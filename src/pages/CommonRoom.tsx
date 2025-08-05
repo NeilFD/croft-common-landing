@@ -14,19 +14,19 @@ const CommonRoom = () => {
           </h1>
         </div>
         
-        {/* Watermark image moved up */}
-        <div className="flex items-center justify-center mb-8">
+        {/* Sign in text above watermark */}
+        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase mb-8">
+          Sign in here
+        </h2>
+        
+        {/* Watermark image */}
+        <div className="flex items-center justify-center">
           <img 
             src="/lovable-uploads/90a63358-50bd-4ab2-adeb-cf9350f4f4b2.png" 
             alt="Common Room Layout" 
             className="w-[40rem] h-[40rem] opacity-20 object-contain"
           />
         </div>
-        
-        {/* Sign in text moved down */}
-        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase">
-          Sign in here
-        </h2>
       </main>
       <Footer />
     </div>
