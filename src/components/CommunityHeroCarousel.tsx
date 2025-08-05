@@ -17,16 +17,13 @@ const CommunityHeroCarousel = () => {
 
   const heroImages = [
     {
-      src: '/lovable-uploads/c22f6cce-8b72-4eb5-96e8-a2fc8adfe7b9.png',
-      overlay: 'bg-surface/20'
+      src: '/lovable-uploads/c22f6cce-8b72-4eb5-96e8-a2fc8adfe7b9.png'
     },
     {
-      src: '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png', 
-      overlay: 'bg-surface/20'
+      src: '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png'
     },
     {
-      src: '/lovable-uploads/a20baf5a-8e8f-41ea-82f5-1801dbd32dd7.png',
-      overlay: 'bg-surface/20'
+      src: '/lovable-uploads/a20baf5a-8e8f-41ea-82f5-1801dbd32dd7.png'
     }
   ];
 
@@ -55,10 +52,7 @@ const CommunityHeroCarousel = () => {
               style={{
                 backgroundImage: `url('${image.src}')`
               }}
-            >
-              {/* Subtle overlay for text readability */}
-              <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
-            </div>
+            />
           </div>
         ))}
       </div>
