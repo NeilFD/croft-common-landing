@@ -147,3 +147,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Accent color utility classes for highlighting */
+@layer utilities {
+  .accent-pink {
+    color: hsl(var(--accent-pink));
+  }
+  
+  .accent-lime {
+    color: hsl(var(--accent-lime));
+  }
+  
+  .accent-orange {
+    color: hsl(var(--accent-orange));
+  }
+  
+  .accent-blood-red {
+    color: hsl(var(--accent-blood-red));
+  }
+  
+  .accent-vivid-purple {
+    color: hsl(var(--accent-vivid-purple));
+  }
+}
