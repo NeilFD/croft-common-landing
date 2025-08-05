@@ -17,32 +17,27 @@ const CafeHeroCarousel = () => {
     {
       src: '/lovable-uploads/3f7371f7-30d1-4118-b421-5a4937be9a2d.png',
       type: 'dark',
-      overlay: 'bg-void/30',
-      backgroundPosition: 'bg-center'
+      overlay: 'bg-void/30'
     },
     {
       src: '/lovable-uploads/e6f7674f-71d0-4ec4-8782-a283ed5ba5b5.png',
       type: 'dark',
-      overlay: 'bg-void/25',
-      backgroundPosition: 'bg-[calc(50%-32px)_-200px]' // Move image up and left 32px to center coffee cup behind watermark
+      overlay: 'bg-void/25'
     },
     {
       src: '/lovable-uploads/0726808b-f108-44ac-bc6c-12c7eead462a.png',
       type: 'dark',
-      overlay: 'bg-void/30',
-      backgroundPosition: 'bg-center'
+      overlay: 'bg-void/30'
     },
     {
       src: '/lovable-uploads/e5c78d77-a685-4c5c-ab4a-2968bde2a0de.png',
       type: 'warm',
-      overlay: 'bg-void/20',
-      backgroundPosition: 'bg-center'
+      overlay: 'bg-void/20'
     },
     {
       src: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png',
       type: 'dark',
-      overlay: 'bg-void/35',
-      backgroundPosition: 'bg-center'
+      overlay: 'bg-void/35'
     }
   ];
 
@@ -59,12 +54,6 @@ const CafeHeroCarousel = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
-      {/* CAFÉ title positioned under header */}
-      <div className="absolute top-32 left-[6.75rem] z-20">
-        <h1 className="font-brutalist text-6xl text-background tracking-wider">
-          CAFÉ
-        </h1>
-      </div>
       <div className="flex">
         {cafeImages.map((image, index) => (
           <div 
@@ -73,7 +62,7 @@ const CafeHeroCarousel = () => {
           >
             {/* Background Image with type-specific styling */}
             <div 
-              className={`absolute inset-0 bg-cover ${image.backgroundPosition} bg-no-repeat transition-all duration-1000`}
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
               style={{
                 backgroundImage: `url('${image.src}')`
               }}

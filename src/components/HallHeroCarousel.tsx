@@ -49,12 +49,6 @@ const HallHeroCarousel = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
-      {/* HALL title positioned under header */}
-      <div className="absolute top-32 left-[6.75rem] z-20">
-        <h1 className="font-brutalist text-6xl text-background tracking-wider">
-          HALL
-        </h1>
-      </div>
       <div className="flex">
         {heroImages.map((image, index) => (
           <div 
