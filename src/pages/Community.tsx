@@ -1,11 +1,14 @@
-import PageLayout from "@/components/PageLayout";
+import Navigation from '@/components/Navigation';
+import Footer from '@/components/Footer';
 import CommunityHeroCarousel from "@/components/CommunityHeroCarousel";
 
 const Community = () => {
   return (
-    <PageLayout>
+    <div className="min-h-screen">
+      <Navigation />
       <CommunityHeroCarousel />
-    </PageLayout>
+      <Footer />
+    </div>
   );
 };
 
