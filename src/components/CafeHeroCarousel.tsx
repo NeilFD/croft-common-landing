@@ -89,7 +89,14 @@ const CafeHeroCarousel = () => {
           alt="Croft Common Watermark" 
           className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 hover:opacity-80 cursor-pointer"
           style={{ 
-            filter: 'invert(1)'
+            filter: 'brightness(0) invert(1)',
+            transition: 'filter 0.3s ease-in-out'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.filter = 'brightness(0) invert(1) sepia(100%) saturate(1000%) hue-rotate(315deg) brightness(1.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.filter = 'brightness(0) invert(1)';
           }}
         />
       </div>
