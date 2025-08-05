@@ -24,7 +24,7 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
       case 'hall':
         return 'hsl(var(--accent-vivid-purple))';
       case 'community':
-        return 'hsl(var(--accent-electric-blue))';
+        return 'hsl(var(--accent-sage-green))';
       default:
         return 'hsl(var(--accent-pink))';
     }

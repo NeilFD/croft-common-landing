@@ -86,6 +86,11 @@
     --accent-vivid-purple: 261 80% 57%;
     --accent-vivid-purple-subtle: 261 30% 85%;
     --accent-vivid-purple-dark: 261 90% 40%;
+    
+    /* Sage green accent for common room */
+    --accent-sage-green: 120 25% 55%;
+    --accent-sage-green-subtle: 120 15% 85%;
+    --accent-sage-green-dark: 120 35% 40%;
 
     --sidebar-background: 0 0% 98%;
 
