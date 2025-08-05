@@ -70,11 +70,16 @@ const CommunityHeroCarousel = () => {
         />
       </div>
 
-      {/* Page Title Overlay */}
+      {/* Page Title Card Overlay */}
       <div className="absolute top-24 left-[106px] z-20">
-        <h1 className="text-3xl font-light text-foreground tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer">
-          COMMUNITY
-        </h1>
+        <div className="bg-background rounded-lg px-6 py-4 shadow-lg">
+          <h1 className="text-2xl font-light text-foreground tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer">
+            CROFT COMMON COMMUNITY
+          </h1>
+          <h2 className="text-lg font-light text-foreground tracking-[0.1em] uppercase mt-1 transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer">
+            COMMON GROUND
+          </h2>
+        </div>
       </div>
 
       {/* Scroll indicator */}
