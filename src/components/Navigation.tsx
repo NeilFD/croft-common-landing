@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { useTransition } from '@/contexts/TransitionContext';
+import { Menu, X } from 'lucide-react';
 
 const Navigation = () => {
   const { triggerTransition } = useTransition();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const navItems = [
     { name: 'CAFE', path: '/cafe' },
@@ -12,7 +15,20 @@ const Navigation = () => {
   ];
 
   const handleNavClick = (path: string) => {
+    setIsMobileMenuOpen(false); // Close mobile menu
     triggerTransition(path);
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const getNavItemColor = (itemName: string) => {
+    if (itemName === 'COCKTAILS') return 'hover:text-[hsl(var(--accent-lime))]';
+    if (itemName === 'BEER') return 'hover:text-accent-orange';
+    if (itemName === 'KITCHENS') return 'hover:text-accent-blood-red';
+    if (itemName === 'HALL') return 'hover:text-accent-vivid-purple';
+    return 'hover:text-accent-pink';
   };
 
   return (
@@ -32,22 +48,13 @@ const Navigation = () => {
           </div>
         </button>
         
+        {/* Desktop Navigation */}
         <div className="hidden md:flex space-x-8">
           {navItems.map((item) => (
             <button
               key={item.name}
               onClick={() => handleNavClick(item.path)}
-              className={`font-industrial text-sm tracking-wide text-foreground transition-all duration-200 hover:scale-105 active:scale-110 ${
-                item.name === 'COCKTAILS' 
-                  ? 'hover:text-[hsl(var(--accent-lime))]' 
-                  : item.name === 'BEER'
-                  ? 'hover:text-accent-orange'
-                  : item.name === 'KITCHENS'
-                  ? 'hover:text-accent-blood-red'
-                  : item.name === 'HALL'
-                  ? 'hover:text-accent-vivid-purple'
-                  : 'hover:text-accent-pink'
-              }`}
+              className={`font-industrial text-sm tracking-wide text-foreground transition-all duration-200 hover:scale-105 active:scale-110 ${getNavItemColor(item.name)}`}
             >
               {item.name}
             </button>
@@ -55,11 +62,33 @@ const Navigation = () => {
         </div>
         
         {/* Mobile menu button */}
-        <button className="md:hidden font-industrial text-sm text-foreground">
-          MENU
+        <button 
+          onClick={toggleMobileMenu}
+          className="md:hidden font-industrial text-sm text-foreground p-2 hover:scale-105 transition-transform duration-200"
+          aria-label="Toggle mobile menu"
+        >
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
       
+      {/* Mobile Navigation Menu */}
+      <div className={`md:hidden bg-background/95 backdrop-blur-sm border-b border-charcoal transition-all duration-300 ease-in-out ${
+        isMobileMenuOpen 
+          ? 'max-h-96 opacity-100' 
+          : 'max-h-0 opacity-0 overflow-hidden'
+      }`}>
+        <div className="container mx-auto px-6 py-4 space-y-4">
+          {navItems.map((item) => (
+            <button
+              key={item.name}
+              onClick={() => handleNavClick(item.path)}
+              className={`block w-full text-left font-industrial text-lg tracking-wide text-foreground transition-all duration-200 hover:scale-105 py-2 ${getNavItemColor(item.name)}`}
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+      </div>
     </nav>
   );
 };
