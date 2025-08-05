@@ -13,7 +13,9 @@ const Cocktails = () => {
             COCKTAILS
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            Lights down. Bottles up. Zinc Top. Sharp drinks. Soft shadows. Built for late. Vibes.
+            Lights down. Bottles up. Zinc Top. Sharp drinks. Soft shadows. Built for late.
+            <br /><br />
+            Vibe
           </p>
         </div>
       </section>
