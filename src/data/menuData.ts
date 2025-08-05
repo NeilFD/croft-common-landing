@@ -278,7 +278,7 @@ const homeMenu: MenuSection[] = [
         description: ""
       },
       { 
-        name: "Halls sits behind it all. Empty, on purpose. Concrete, clean, ready for anything. Weddings. Raves. Film shoots. Dinners for thirty. Parties for three hundred. You imagine it - we make it. <strong>POA</strong>", 
+        name: "Wedding, rave, launch, together.", 
         description: ""
       },
       { 
