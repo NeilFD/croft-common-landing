@@ -8,19 +8,11 @@ const CommonRoom = () => {
       {/* Hero area with watermark */}
       <main className="min-h-screen bg-white relative flex items-center justify-center">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="flex flex-col items-center">
-            <img 
-              src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
-              alt="Croft Common Watermark" 
-              className="w-[40rem] h-[40rem] opacity-20 object-contain transition-all duration-500 hover:opacity-30 cursor-pointer"
-              style={{ 
-                filter: 'invert(1)'
-              }}
-            />
-            <p className="text-black text-xl font-light tracking-[0.1em] uppercase mt-4 opacity-60">
-              Sign in here
-            </p>
-          </div>
+          <img 
+            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
+            alt="Croft Common Watermark" 
+            className="w-[40rem] h-[40rem] opacity-20 object-contain transition-all duration-500 hover:opacity-30 cursor-pointer"
+          />
         </div>
 
         {/* Page Title Overlay */}
