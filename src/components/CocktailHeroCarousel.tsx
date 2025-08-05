@@ -15,22 +15,22 @@ const CocktailHeroCarousel = () => {
 
   const heroImages = [
     {
-      src: '/lovable-uploads/6a93a4d4-26fc-4ea1-a90d-4a5f36021327.png',
+      src: '/lovable-uploads/afb10854-3a0d-45c1-acb6-7f3861ba8e44.png',
       type: 'image',
       overlay: 'CRAFT COCKTAILS'
     },
     {
-      src: '/lovable-uploads/c63f8c40-30bd-4ea7-a10d-81715938bf09.png',
+      src: '/lovable-uploads/60514e1b-a34b-4e52-9a94-e05b34e57cd6.png',
       type: 'image',
       overlay: 'CLASSIC ELEGANCE'
     },
     {
-      src: '/lovable-uploads/4dbcb4ae-172d-4a3d-bcfd-0f26ca31748f.png',
+      src: '/lovable-uploads/bdfbc015-0bea-46a0-9567-fc7b8e155884.png',
       type: 'image',
       overlay: 'ARTISANAL SPIRITS'
     },
     {
-      src: '/lovable-uploads/6008da37-6fb4-48f7-abf2-99e967442df5.png',
+      src: '/lovable-uploads/ccf05281-c605-448e-ab8a-fbcd7cbaae4f.png',
       type: 'image',
       overlay: 'EVENING ATMOSPHERE'
     }
