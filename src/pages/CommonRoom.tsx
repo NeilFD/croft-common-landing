@@ -11,7 +11,8 @@ const CommonRoom = () => {
           <img 
             src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
             alt="Croft Common Watermark" 
-            className="w-[40rem] h-[40rem] opacity-20 object-contain transition-all duration-500 hover:opacity-30 cursor-pointer brightness-0"
+            className="w-[40rem] h-[40rem] opacity-20 object-contain transition-all duration-500 hover:opacity-30 cursor-pointer"
+            style={{ filter: 'brightness(0)' }}
           />
         </div>
 
