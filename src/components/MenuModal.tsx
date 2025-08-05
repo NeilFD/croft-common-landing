@@ -106,12 +106,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                         {item.isEmail ? (
                           <a 
                             href={`mailto:${item.name}`}
-                            className={`font-industrial text-base text-${accentColor} font-medium hover:underline transition-all duration-300`}
+                            className={`font-industrial text-lg text-${accentColor} hover:underline transition-all duration-300`}
                           >
                             {item.name}
                           </a>
                         ) : (
-                          <h3 className="font-industrial text-base text-foreground font-medium">
+                          <h3 className="font-industrial text-lg text-foreground">
                             {item.name}
                           </h3>
                         )}
