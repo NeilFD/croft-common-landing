@@ -6,7 +6,7 @@ const CommonRoom = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       {/* Hero area with watermark */}
-      <main className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-48 pb-20">
+      <main className="h-[80vh] bg-white relative flex flex-col items-center justify-start pt-32 pb-20">
         {/* Page Title back in original position */}
         <div className="absolute top-24 left-[106px] z-20">
           <h1 className="text-3xl font-light text-black tracking-[0.2em] uppercase transition-all duration-300 hover:text-green-600 cursor-pointer">
