@@ -143,7 +143,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                   <p className="font-industrial text-lg text-steel leading-relaxed">
                     We back local. We back talent. We back people doing it right. Members get first dibs on workshops, collabs, and pop-ups from the makers, growers, shakers and pourers we rate. Come learn. Come try. Come talk.{' '}
                     <a href="#" className={`text-[hsl(var(--${accentColor}))] hover:underline font-semibold transition-all duration-300`}>
-                      Meet
+                      Come Meet
                     </a>
                   </p>
                 </div>
