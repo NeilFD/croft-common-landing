@@ -119,11 +119,15 @@ export const beerMenu: MenuSection[] = [
   {
     title: "BEER FOOD",
     items: [
-      { name: "Dirty Nachos", description: "Cheese, Jalapeño, Salsa", price: "7.5" },
-      { name: "Wings", description: "Hot, Sticky, Scattered Seeds", price: "8.5" },
-      { name: "Giant Pretzel", description: "Beer Cheese Dip", price: "6.0" },
-      { name: "Loaded Fries", description: "Bacon, Onion, Ranch", price: "7.5" },
-      { name: "Pickled Eggs", description: "Punchy little bastards", price: "2.0" },
+      { name: "Dirty Nachos", description: "Cheese, Jalapeño, Salsa", price: "9.5" },
+      { name: "Wings", description: "Hot, Sticky, Scattered Seeds", price: "11.0" },
+      { name: "Giant Pretzel", description: "Beer Cheese Dip", price: "8.0" },
+      { name: "Loaded Fries", description: "Bacon, Onion, Ranch", price: "9.5" },
+      { name: "Pickled Eggs", description: "Punchy little bastards", price: "4.0" },
+      { name: "Beer Battered Fish & Chips", description: "Mushy peas, tartar sauce", price: "14.0" },
+      { name: "Scotch Egg", description: "Crispy coating, runny yolk", price: "7.5" },
+      { name: "Pork Scratchings", description: "Salty, crunchy, proper", price: "5.0" },
+      { name: "Chilli Cheese Dogs", description: "Smoky beans, melted cheese", price: "8.5" },
     ]
   }
 ];
