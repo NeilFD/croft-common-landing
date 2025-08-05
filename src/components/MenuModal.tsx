@@ -62,44 +62,42 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const accentColor = getAccentColor();
 
   return (
-    <div className="fixed inset-0 z-50 bg-void/95 backdrop-blur-sm animate-fade-in">
-      <div className="min-h-screen overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4">
+      <div className="bg-void border border-steel/30 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-void/90 backdrop-blur-md border-b border-steel/20">
-          <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="text-background">
-                <CroftLogo />
-              </div>
-              <h1 className="font-brutalist text-xl text-background tracking-wider">
-                {getPageTitle()}
-              </h1>
+        <div className="bg-void/90 border-b border-steel/20 p-6 flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="text-background">
+              <CroftLogo />
             </div>
-            <button
-              onClick={onClose}
-              className={`w-10 h-10 rounded-full border border-background/30 
-                hover:border-${accentColor} hover:bg-${accentColor}/10 
-                transition-all duration-300 flex items-center justify-center`}
-            >
-              <X className="w-5 h-5 text-background" />
-            </button>
+            <h1 className="font-brutalist text-xl text-background tracking-wider">
+              {getPageTitle()}
+            </h1>
           </div>
-        </header>
+          <button
+            onClick={onClose}
+            className={`w-10 h-10 rounded-full border border-background/30 
+              hover:border-${accentColor} hover:bg-${accentColor}/10 
+              transition-all duration-300 flex items-center justify-center`}
+          >
+            <X className="w-5 h-5 text-background" />
+          </button>
+        </div>
 
-        {/* Menu Content */}
-        <div className="container mx-auto px-6 py-12">
-          <div className="max-w-4xl mx-auto">
+        {/* Scrollable Menu Content */}
+        <div className="overflow-y-auto max-h-[calc(80vh-120px)] p-6">
+          <div className="space-y-8">
             {menuData.map((section, sectionIndex) => (
-              <div key={sectionIndex} className="mb-12">
-                <h2 className={`font-brutalist text-2xl md:text-3xl text-${accentColor} 
-                  mb-6 tracking-wider border-b border-steel/20 pb-2`}>
+              <div key={sectionIndex} className="space-y-4">
+                <h2 className={`font-brutalist text-xl md:text-2xl text-${accentColor} 
+                  tracking-wider border-b border-steel/20 pb-2`}>
                   {section.title}
                 </h2>
                 <div className="space-y-3">
                   {section.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-industrial text-lg text-background font-medium">
+                      <div className="flex-1 pr-4">
+                        <h3 className="font-industrial text-base text-background font-medium">
                           {item.name}
                         </h3>
                         {item.description && (
@@ -109,7 +107,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                         )}
                       </div>
                       {item.price && (
-                        <div className={`font-industrial text-lg font-bold text-${accentColor} ml-4`}>
+                        <div className={`font-industrial text-base font-bold text-${accentColor} 
+                          flex-shrink-0 text-right`}>
                           {item.price}
                         </div>
                       )}
