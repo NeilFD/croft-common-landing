@@ -23,7 +23,7 @@ const HeroSection = () => {
       
       {/* Title positioned at top of viewport */}
       <div className="fixed top-20 right-6 md:right-12 z-20">
-        <h1 className="font-brutalist text-6xl md:text-8xl text-background tracking-tight mb-6 text-right leading-none">
+        <h1 className="font-brutalist text-2xl md:text-3xl text-background tracking-tight mb-6 text-right leading-none">
           <span className="block border-t-4 border-b-4 border-background leading-none">CROFT</span>
           <span className="block border-t-4 border-b-4 border-background leading-none">COMMON</span>
         </h1>
