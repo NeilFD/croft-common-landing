@@ -13,6 +13,7 @@ const CocktailHeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // Using the latest cocktail images uploaded by user
   const heroImages = [
     {
       src: '/lovable-uploads/afb10854-3a0d-45c1-acb6-7f3861ba8e44.png',
@@ -48,11 +49,11 @@ const CocktailHeroCarousel = () => {
   }, [emblaApi, onSelect]);
 
   return (
-    <section className="relative h-screen overflow-hidden">
+    <section key="cocktail-hero-v2" className="relative h-screen overflow-hidden">
       <div className="embla h-full" ref={emblaRef}>
         <div className="embla__container h-full">
           {heroImages.map((image, index) => (
-            <div key={index} className="embla__slide relative h-full flex-[0_0_100%]">
+            <div key={`cocktail-${index}`} className="embla__slide relative h-full flex-[0_0_100%]">
               <div 
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat"
                 style={{ backgroundImage: `url(${image.src})` }}
