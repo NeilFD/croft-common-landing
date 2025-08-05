@@ -11,8 +11,8 @@ const Index = () => {
         <img 
           src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
           alt="Croft Common Watermark" 
-          className="w-[60rem] h-[60rem] opacity-30 object-contain brightness-0"
-          style={{ mixBlendMode: 'exclusion', filter: 'invert(1)' }}
+          className="w-[60rem] h-[60rem] opacity-25 object-contain filter brightness-0"
+          style={{ mixBlendMode: 'difference' }}
         />
       </div>
       
