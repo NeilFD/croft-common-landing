@@ -28,47 +28,50 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     }
   }, []);
 
-  const isValidSShape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 25) return false; // Require more points for complete S
+  const isValid7Shape = useCallback((gesturePoints: Point[]): boolean => {
+    if (gesturePoints.length < 30) return false; // Require substantial gesture
 
     const firstPoint = gesturePoints[0];
     const lastPoint = gesturePoints[gesturePoints.length - 1];
     
-    // Check if gesture moves generally from top to bottom with significant distance
-    const verticalMovement = lastPoint.y - firstPoint.y;
-    if (verticalMovement < 150) return false; // Require larger vertical movement
+    // Must start in upper third of screen and end in lower portion
+    const screenHeight = window.innerHeight;
+    if (firstPoint.y > screenHeight * 0.4) return false; // Start in upper 40%
+    if (lastPoint.y < screenHeight * 0.6) return false; // End in lower 40%
     
-    // Check horizontal span - S should move left and right significantly
-    const allXs = gesturePoints.map(p => p.x);
-    const minX = Math.min(...allXs);
-    const maxX = Math.max(...allXs);
-    const horizontalSpan = maxX - minX;
-    if (horizontalSpan < 80) return false; // Require significant horizontal movement
+    // Must move significantly right then down
+    const totalHorizontalMovement = lastPoint.x - firstPoint.x;
+    const totalVerticalMovement = lastPoint.y - firstPoint.y;
+    if (totalVerticalMovement < 200) return false; // Significant downward movement
     
-    // Divide the gesture into three vertical sections to check S pattern
-    const section1End = Math.floor(gesturePoints.length * 0.33);
-    const section2End = Math.floor(gesturePoints.length * 0.66);
+    // Divide gesture into two parts to check for 7 pattern
+    const midPoint = Math.floor(gesturePoints.length * 0.4); // First 40% should be horizontal
+    const horizontalSection = gesturePoints.slice(0, midPoint);
+    const diagonalSection = gesturePoints.slice(midPoint);
     
-    const section1Points = gesturePoints.slice(0, section1End);
-    const section2Points = gesturePoints.slice(section1End, section2End);
-    const section3Points = gesturePoints.slice(section2End);
+    if (horizontalSection.length < 10 || diagonalSection.length < 15) return false;
     
-    // Check each section has movement in expected direction
-    const section1Movement = section1Points[section1Points.length - 1].x - section1Points[0].x;
-    const section2Movement = section2Points[section2Points.length - 1].x - section2Points[0].x;
-    const section3Movement = section3Points[section3Points.length - 1].x - section3Points[0].x;
+    // Check horizontal section (top of 7) - should move primarily right
+    const horizontalStart = horizontalSection[0];
+    const horizontalEnd = horizontalSection[horizontalSection.length - 1];
+    const horizontalX = horizontalEnd.x - horizontalStart.x;
+    const horizontalY = Math.abs(horizontalEnd.y - horizontalStart.y);
     
-    // S pattern: first section curves one way, middle curves back, final curves original way
-    // Allow for some tolerance but require clear direction changes
-    const hasProperSCurves = (
-      Math.abs(section1Movement) > 20 && 
-      Math.abs(section2Movement) > 20 && 
-      Math.abs(section3Movement) > 20 &&
-      ((section1Movement > 0 && section2Movement < 0 && section3Movement > 0) ||
-       (section1Movement < 0 && section2Movement > 0 && section3Movement < 0))
-    );
+    if (horizontalX < 100) return false; // Must move significantly right
+    if (horizontalY > horizontalX * 0.3) return false; // Should be mostly horizontal (allow 30% vertical tolerance)
     
-    return hasProperSCurves;
+    // Check diagonal section (stroke of 7) - should move down and optionally left
+    const diagonalStart = diagonalSection[0];
+    const diagonalEnd = diagonalSection[diagonalSection.length - 1];
+    const diagonalY = diagonalEnd.y - diagonalStart.y;
+    const diagonalX = diagonalEnd.x - diagonalStart.x;
+    
+    if (diagonalY < 150) return false; // Must move significantly down
+    
+    // Diagonal should be steeper than 30 degrees (vertical movement > horizontal movement / 2)
+    if (diagonalY < Math.abs(diagonalX) * 1.5) return false;
+    
+    return true;
   }, []);
 
   const addPoint = useCallback((x: number, y: number) => {
@@ -76,8 +79,8 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     setPoints(prev => {
       const updated = [...prev, newPoint];
       
-      // Check if gesture is complete - only validate on longer gestures
-      if (updated.length > 25 && isValidSShape(updated)) {
+      // Check if gesture is complete - only validate on substantial gestures
+      if (updated.length > 30 && isValid7Shape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
@@ -90,7 +93,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
       
       return updated;
     });
-  }, [isValidSShape, onGestureComplete, clearGesture]);
+  }, [isValid7Shape, onGestureComplete, clearGesture]);
 
   const startGesture = useCallback((x: number, y: number) => {
     clearGesture();
