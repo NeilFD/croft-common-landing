@@ -2,41 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* CROFT COMMON DESIGN SYSTEM - Industrial, Brutalist, Monochrome + Pink Accent */
 
 @layer base {
   :root {
+    /* Core monochrome palette */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 0 0% 0%;
+    --surface: 0 0% 98%;
+    --surface-dark: 0 0% 8%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Industrial greys */
+    --concrete: 0 0% 85%;
+    --steel: 0 0% 40%;
+    --charcoal: 0 0% 15%;
+    --void: 0 0% 5%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Pink accent - inspired by gradient reference */
+    --accent-pink: 350 80% 65%;
+    --accent-pink-subtle: 350 30% 90%;
+    --accent-pink-dark: 350 90% 40%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Design tokens */
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 350 80% 65%;
+    --accent-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Interface elements */
+    --border: 0 0% 20%;
+    --input: 0 0% 95%;
+    --ring: 350 80% 65%;
+    --muted: 0 0% 95%;
+    --muted-foreground: 0 0% 40%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Destructive kept minimal */
+    --destructive: 0 80% 50%;
+    --destructive-foreground: 0 0% 100%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --radius: 0;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
+    /* Custom industrial tokens */
+    --surface: 0 0% 98%;
+    --surface-dark: 0 0% 8%;
+    --concrete: 0 0% 85%;
+    --steel: 0 0% 40%;
+    --charcoal: 0 0% 15%;
+    --void: 0 0% 5%;
+    --accent-pink: 350 80% 65%;
+    --accent-pink-subtle: 350 30% 90%;
+    --accent-pink-dark: 350 90% 40%;
 
     --sidebar-background: 0 0% 98%;
 

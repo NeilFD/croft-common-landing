@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				'brutalist': ['Arial Black', 'Helvetica', 'sans-serif'],
+				'industrial': ['Arial', 'Helvetica', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -44,14 +48,17 @@ export default {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
 				},
-				popover: {
-					DEFAULT: 'hsl(var(--popover))',
-					foreground: 'hsl(var(--popover-foreground))'
-				},
-				card: {
-					DEFAULT: 'hsl(var(--card))',
-					foreground: 'hsl(var(--card-foreground))'
-				},
+				
+				/* Industrial palette */
+				surface: 'hsl(var(--surface))',
+				'surface-dark': 'hsl(var(--surface-dark))',
+				concrete: 'hsl(var(--concrete))',
+				steel: 'hsl(var(--steel))',
+				charcoal: 'hsl(var(--charcoal))',
+				void: 'hsl(var(--void))',
+				'accent-pink': 'hsl(var(--accent-pink))',
+				'accent-pink-subtle': 'hsl(var(--accent-pink-subtle))',
+				'accent-pink-dark': 'hsl(var(--accent-pink-dark))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
