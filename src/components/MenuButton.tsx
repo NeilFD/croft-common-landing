@@ -39,7 +39,7 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
         className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 
           flex items-center justify-center group ${
             pageType === 'community' 
-              ? 'bg-background/70 border-[3px] border-foreground/80 backdrop-blur-sm hover:border-foreground' 
+              ? 'bg-background/70 backdrop-blur-sm' 
               : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
           }`}
         style={{
