@@ -1,11 +1,7 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import TransitionOverlay from './TransitionOverlay';
+import { useTransition } from '@/contexts/TransitionContext';
 
 const Navigation = () => {
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [targetPath, setTargetPath] = useState('');
-  const navigate = useNavigate();
+  const { triggerTransition } = useTransition();
   
   const navItems = [
     { name: 'CAFE', path: '/cafe' },
@@ -16,14 +12,7 @@ const Navigation = () => {
   ];
 
   const handleNavClick = (path: string) => {
-    setTargetPath(path);
-    setIsTransitioning(true);
-  };
-
-  const onTransitionComplete = () => {
-    navigate(targetPath);
-    setIsTransitioning(false);
-    setTargetPath('');
+    triggerTransition(path);
   };
 
   return (
@@ -58,10 +47,6 @@ const Navigation = () => {
         </button>
       </div>
       
-      <TransitionOverlay 
-        isActive={isTransitioning} 
-        onComplete={onTransitionComplete} 
-      />
     </nav>
   );
 };
