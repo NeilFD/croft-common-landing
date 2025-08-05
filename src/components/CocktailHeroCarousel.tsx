@@ -8,7 +8,7 @@ const CocktailHeroCarousel = () => {
       loop: true,
       duration: 30 // Smooth transitions
     },
-    [Autoplay({ delay: 4000, stopOnInteraction: false })]
+    [Autoplay({ delay: 4000, stopOnInteraction: false, playOnInit: true })]
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
