@@ -16,8 +16,8 @@ const HeroSection = () => {
       <div className="relative z-10 w-full px-6">
         <div className="absolute top-16 right-6 md:right-12">
           <h1 className="font-brutalist text-6xl md:text-8xl text-background tracking-tight mb-6 text-right">
-            <span className="block border-t-4 border-b-4 border-background py-4">CROFT</span>
-            <span className="block border-t-4 border-b-4 border-background py-4 mt-2">COMMON</span>
+            <span className="block border-t-4 border-b-4 border-background">CROFT</span>
+            <span className="block border-t-4 border-b-4 border-background mt-2">COMMON</span>
           </h1>
         </div>
       </div>
