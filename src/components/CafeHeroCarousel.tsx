@@ -86,6 +86,13 @@ const CafeHeroCarousel = () => {
         />
       </div>
 
+      {/* Page Title Overlay */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+        <h1 className="text-9xl font-light text-background tracking-[0.2em] uppercase">
+          CAFE
+        </h1>
+      </div>
+
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <div className="w-px h-16 bg-background/50"></div>
