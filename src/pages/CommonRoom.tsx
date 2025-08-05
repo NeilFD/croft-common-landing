@@ -7,11 +7,11 @@ const CommonRoom = () => {
       <Navigation />
       {/* Hero area with watermark */}
       <main className="min-h-screen bg-white relative flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase mb-8 z-20">
+        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase mb-12 z-20">
           Sign in here
         </h2>
         
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="flex items-center justify-center">
           <img 
             src="/lovable-uploads/90a63358-50bd-4ab2-adeb-cf9350f4f4b2.png" 
             alt="Common Room Layout" 
