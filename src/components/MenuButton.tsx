@@ -39,7 +39,7 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
         className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 
           flex items-center justify-center group ${
             pageType === 'community' 
-              ? 'bg-background/70 backdrop-blur-sm' 
+              ? 'bg-background/85 backdrop-blur-sm' 
               : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
           }`}
         style={{
@@ -56,8 +56,8 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
         }}
         onMouseLeave={(e) => {
           if (pageType === 'community') {
-            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.7)';
-            e.currentTarget.style.borderColor = 'hsla(0, 0%, 0%, 0.8)';
+            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.85)';
+            e.currentTarget.style.borderColor = '';
           } else {
             e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
             e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
