@@ -53,19 +53,8 @@ const CafeHeroCarousel = () => {
 
   useEffect(() => {
     if (!emblaApi) return;
-    
-    console.log('CafeHeroCarousel: Embla API initialized');
     onSelect();
     emblaApi.on('select', onSelect);
-    
-    // Debug autoplay
-    const autoplay = emblaApi.plugins()?.autoplay;
-    if (autoplay) {
-      console.log('CafeHeroCarousel: Autoplay plugin found, playing:', autoplay.isPlaying());
-      autoplay.play(); // Ensure autoplay is started
-    } else {
-      console.log('CafeHeroCarousel: No autoplay plugin found');
-    }
   }, [emblaApi, onSelect]);
 
   return (
