@@ -29,37 +29,46 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValidSShape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 10) return false;
+    if (gesturePoints.length < 25) return false; // Require more points for complete S
 
     const firstPoint = gesturePoints[0];
     const lastPoint = gesturePoints[gesturePoints.length - 1];
     
-    // Check if gesture moves generally from top to bottom
+    // Check if gesture moves generally from top to bottom with significant distance
     const verticalMovement = lastPoint.y - firstPoint.y;
-    if (verticalMovement < 50) return false; // Minimum vertical distance
+    if (verticalMovement < 150) return false; // Require larger vertical movement
     
-    // Check for S-like curves by analyzing direction changes
-    let directionChanges = 0;
-    let lastDirection = '';
+    // Check horizontal span - S should move left and right significantly
+    const allXs = gesturePoints.map(p => p.x);
+    const minX = Math.min(...allXs);
+    const maxX = Math.max(...allXs);
+    const horizontalSpan = maxX - minX;
+    if (horizontalSpan < 80) return false; // Require significant horizontal movement
     
-    for (let i = 1; i < gesturePoints.length - 1; i++) {
-      const prev = gesturePoints[i - 1];
-      const curr = gesturePoints[i];
-      const next = gesturePoints[i + 1];
-      
-      const deltaX1 = curr.x - prev.x;
-      const deltaX2 = next.x - curr.x;
-      
-      const currentDirection = deltaX2 > deltaX1 ? 'right' : 'left';
-      
-      if (lastDirection && lastDirection !== currentDirection) {
-        directionChanges++;
-      }
-      lastDirection = currentDirection;
-    }
+    // Divide the gesture into three vertical sections to check S pattern
+    const section1End = Math.floor(gesturePoints.length * 0.33);
+    const section2End = Math.floor(gesturePoints.length * 0.66);
     
-    // S shape should have 2-3 direction changes
-    return directionChanges >= 2 && directionChanges <= 4;
+    const section1Points = gesturePoints.slice(0, section1End);
+    const section2Points = gesturePoints.slice(section1End, section2End);
+    const section3Points = gesturePoints.slice(section2End);
+    
+    // Check each section has movement in expected direction
+    const section1Movement = section1Points[section1Points.length - 1].x - section1Points[0].x;
+    const section2Movement = section2Points[section2Points.length - 1].x - section2Points[0].x;
+    const section3Movement = section3Points[section3Points.length - 1].x - section3Points[0].x;
+    
+    // S pattern: first section curves one way, middle curves back, final curves original way
+    // Allow for some tolerance but require clear direction changes
+    const hasProperSCurves = (
+      Math.abs(section1Movement) > 20 && 
+      Math.abs(section2Movement) > 20 && 
+      Math.abs(section3Movement) > 20 &&
+      ((section1Movement > 0 && section2Movement < 0 && section3Movement > 0) ||
+       (section1Movement < 0 && section2Movement > 0 && section3Movement < 0))
+    );
+    
+    return hasProperSCurves;
   }, []);
 
   const addPoint = useCallback((x: number, y: number) => {
@@ -67,8 +76,8 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     setPoints(prev => {
       const updated = [...prev, newPoint];
       
-      // Check if gesture is complete
-      if (updated.length > 10 && isValidSShape(updated)) {
+      // Check if gesture is complete - only validate on longer gestures
+      if (updated.length > 25 && isValidSShape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
