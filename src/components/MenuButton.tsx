@@ -65,7 +65,7 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
         }}
       >
         <div className={`transition-colors duration-300 scale-50 ${
-          pageType === 'community' ? 'text-background [&_svg]:stroke-[3]' : 'text-background'
+          pageType === 'community' ? 'text-foreground [&_svg]:stroke-[3]' : 'text-background'
         }`}>
           <CroftLogo />
         </div>
