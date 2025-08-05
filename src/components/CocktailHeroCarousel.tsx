@@ -84,8 +84,8 @@ const CocktailHeroCarousel = () => {
       </div>
 
       {/* Page Title Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-        <h1 className="text-9xl font-light text-background tracking-[0.2em] uppercase">
+      <div className="absolute top-24 left-6 pointer-events-none z-20">
+        <h1 className="text-2xl font-light text-background tracking-[0.2em] uppercase">
           COCKTAILS
         </h1>
       </div>
