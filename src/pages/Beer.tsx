@@ -13,7 +13,7 @@ const Beer = () => {
             BEER
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            Steel lines. Long tables. Cold pints. No pretence, we're all friends., big sound.
+            Steel lines. Long tables. Cold pints. No pretence, we're all friends, warm sounds, big heart.
           </p>
         </div>
       </section>
