@@ -8,7 +8,7 @@ const Navigation = () => {
           <img 
             src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
             alt="Croft Common" 
-            className="w-8 h-8"
+            className="w-12 h-12"
           />
           <div className="font-brutalist text-2xl text-foreground tracking-tight">
             CROFT COMMON
