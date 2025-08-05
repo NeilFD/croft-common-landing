@@ -30,6 +30,11 @@ const CafeHeroCarousel = () => {
       overlay: 'bg-void/30'
     },
     {
+      src: '/lovable-uploads/e5c78d77-a685-4c5c-ab4a-2968bde2a0de.png',
+      type: 'warm',
+      overlay: 'bg-void/20'
+    },
+    {
       src: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png',
       type: 'dark',
       overlay: 'bg-void/35'
