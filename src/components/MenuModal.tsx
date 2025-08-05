@@ -62,8 +62,14 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const accentColor = getAccentColor();
 
   return (
-    <div className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4">
-      <div className="bg-background border border-steel/30 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl">
+    <div 
+      className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-background border border-steel/30 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="bg-background border-b border-steel/20 p-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
