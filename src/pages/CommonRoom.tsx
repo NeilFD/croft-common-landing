@@ -29,7 +29,7 @@ const CommonRoom = () => {
         </h2>
         
         {/* Watermark image - same size as other pages */}
-        <div className="flex items-center justify-center flex-1">
+        <div className="flex items-center justify-center flex-1 pb-32">
           <img 
             src="/lovable-uploads/90a63358-50bd-4ab2-adeb-cf9350f4f4b2.png" 
             alt="Common Room Layout" 
