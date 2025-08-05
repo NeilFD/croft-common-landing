@@ -1,8 +1,12 @@
-import PageLayout from '@/components/PageLayout';
+import Navigation from '@/components/Navigation';
+import CafeHeroCarousel from '@/components/CafeHeroCarousel';
+import Footer from '@/components/Footer';
 
 const Cafe = () => {
   return (
-    <PageLayout>
+    <div className="min-h-screen">
+      <Navigation />
+      <CafeHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
           <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">
@@ -14,7 +18,8 @@ const Cafe = () => {
           </p>
         </div>
       </section>
-    </PageLayout>
+      <Footer />
+    </div>
   );
 };
 
