@@ -25,11 +25,6 @@ const HeroCarousel = () => {
       overlay: 'bg-void/20'
     },
     {
-      src: '/lovable-uploads/2fa67cb3-bc38-4512-9fbe-2fcfb70815ab.png',
-      type: 'bright',
-      overlay: 'bg-void/25'
-    },
-    {
       src: '/lovable-uploads/64b7fab3-00a9-4045-9318-590eb75f1336.png',
       type: 'warm',
       overlay: 'bg-void/30'
