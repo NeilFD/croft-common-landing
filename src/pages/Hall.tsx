@@ -1,6 +1,8 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import HallHeroCarousel from '@/components/HallHeroCarousel';
+import MenuButton from '@/components/MenuButton';
+import { hallMenu } from '@/data/menuData';
 
 const Hall = () => {
   return (
@@ -20,6 +22,7 @@ const Hall = () => {
         </div>
       </section>
       <Footer />
+      <MenuButton pageType="hall" menuData={hallMenu} />
     </div>
   );
 };

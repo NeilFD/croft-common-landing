@@ -255,3 +255,31 @@ export const kitchensMenu: MenuSection[] = [
     ]
   }
 ];
+
+export const hallMenu: MenuSection[] = [
+  {
+    title: "HALLS",
+    items: [
+      { 
+        name: "Blank walls. High ceilings. Concrete, light, power.", 
+        description: "Build it up. Strip it back. Wedding, rave, launch, wake."
+      },
+      { 
+        name: "No presets. No packages. Just space, sound, and possibility.", 
+        description: ""
+      },
+      { 
+        name: "Formal or feral. Intimate or industrial.", 
+        description: "We shape to fit. You lead, we follow."
+      },
+      { 
+        name: "Whatever the vision, we'll make it work.", 
+        description: ""
+      },
+      { 
+        name: "£: POA", 
+        description: ""
+      }
+    ]
+  }
+];
