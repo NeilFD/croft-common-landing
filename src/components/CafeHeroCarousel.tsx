@@ -83,27 +83,15 @@ const CafeHeroCarousel = () => {
       </div>
 
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10 group">
-        <div className="relative">
-          <img 
-            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
-            alt="Croft Common Watermark" 
-            className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 group-hover:opacity-80 cursor-pointer"
-            style={{ 
-              filter: 'brightness(0) invert(1)',
-              transition: 'opacity 0.3s ease-in-out'
-            }}
-          />
-          <img 
-            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
-            alt="Croft Common Watermark" 
-            className="absolute inset-0 w-[40rem] h-[40rem] opacity-0 group-hover:opacity-80 object-contain transition-all duration-500 cursor-pointer"
-            style={{ 
-              filter: 'brightness(0) saturate(100%) sepia(100%) hue-rotate(315deg)',
-              color: 'hsl(var(--accent-pink))'
-            }}
-          />
-        </div>
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
+        <img 
+          src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
+          alt="Croft Common Watermark" 
+          className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 hover:opacity-80 cursor-pointer"
+          style={{ 
+            filter: 'invert(1)'
+          }}
+        />
       </div>
 
       {/* Page Title Overlay */}
