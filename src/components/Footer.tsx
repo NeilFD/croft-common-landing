@@ -8,7 +8,7 @@ const Footer = () => {
             <p className="font-industrial text-sm text-background/70 leading-relaxed">
               Stokes Croft, Bristol
               <br />
-              Hospitality without the fuss
+              Pure Hospitality
             </p>
           </div>
           
