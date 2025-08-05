@@ -1,11 +1,14 @@
-import PageLayout from '@/components/PageLayout';
+import Navigation from '@/components/Navigation';
 import CocktailHeroCarousel from '@/components/CocktailHeroCarousel';
+import Footer from '@/components/Footer';
 
 const Cocktails = () => {
   return (
-    <PageLayout>
+    <div className="min-h-screen">
+      <Navigation />
       <CocktailHeroCarousel />
-    </PageLayout>
+      <Footer />
+    </div>
   );
 };
 
