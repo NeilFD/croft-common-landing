@@ -25,11 +25,6 @@ const BeerHeroCarousel = () => {
       overlay: 'bg-void/20'
     },
     {
-      src: '/lovable-uploads/65b744ff-b733-4f5c-857f-18b677e58735.png',
-      type: 'industrial',
-      overlay: 'bg-void/25'
-    },
-    {
       src: '/lovable-uploads/13ac21e8-600e-49ed-9565-c01a222ada20.png',
       type: 'warm',
       overlay: 'bg-void/30'
