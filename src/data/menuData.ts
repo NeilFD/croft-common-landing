@@ -336,8 +336,9 @@ const communityMenuData: MenuSection[] = [
     title: "COMMUNITY",
     items: [
       { 
-        name: "We're here because of this place. This street. This city. So we give back, not just lip service.<br><br>We stock local. We hire local. We pay fair. We build shifts that work for real lives. We open our doors to good causes and community groups - sometimes for hire, often for free.<br><br>We believe space should be shared as well as sold. That hospitality can have roots, not just margins.<br><br>Croft Common is for everyone. Common Ground for all. It's built to add, never subtract.<br><br>Questions/Queries/Requests/Ideas we're ready for you.<br><br>community@croftcommon.com", 
-        description: ""
+        name: "We're here because of this place. This building. This street. This city. So we give back, not just lip service.<br><br>We stock local. We hire local. We pay fair. We build shifts that work for real lives. We open our doors to good causes and community groups - sometimes for hire, often for free.<br><br>We believe space should be shared as well as sold. That hospitality can have roots, not just margins.<br><br>Croft Common is for everyone. Common Ground for all. It's built to add, never subtract.<br><br>Questions/Queries/Requests/Ideas we're ready for you.<br><br>community@croftcommon.com", 
+        description: "",
+        isEmail: true
       }
     ]
   }
