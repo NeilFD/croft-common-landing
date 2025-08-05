@@ -1,20 +1,24 @@
-import PageLayout from '@/components/PageLayout';
+import Navigation from '@/components/Navigation';
+import BeerHeroCarousel from '@/components/BeerHeroCarousel';
+import Footer from '@/components/Footer';
 
 const Beer = () => {
   return (
-    <PageLayout>
+    <div className="min-h-screen">
+      <Navigation />
+      <BeerHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
           <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">
             BEER
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            Carefully curated selection of local brews and international favorites. From crisp lagers to bold IPAs, 
-            discover your perfect pint in our relaxed, community-focused atmosphere.
+            Steel lines. Long tables. Cold pints. No pretence, we're all friends., big sound.
           </p>
         </div>
       </section>
-    </PageLayout>
+      <Footer />
+    </div>
   );
 };
 
