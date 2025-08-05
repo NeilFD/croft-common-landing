@@ -28,7 +28,7 @@ export const cafeMenu: MenuSection[] = [
     title: "PASTRIES",
     items: [
       { name: "Butter Croissant", price: "3.6" },
-      { name: "Almond Thing", price: "4.0" },
+      { name: "Almond", price: "4.0" },
       { name: "Dirty Chocolate Cookie", price: "3.8" },
       { name: "Banana Bread, Warm", price: "4.2" },
     ]
