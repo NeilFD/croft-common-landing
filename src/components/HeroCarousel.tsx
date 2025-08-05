@@ -16,28 +16,28 @@ const HeroCarousel = () => {
   const heroImages = [
     {
       src: '/lovable-uploads/554a5ea5-4c34-4b71-971b-a896a47f8927.png',
-      type: 'bw',
+      type: 'dark',
       overlay: 'bg-void/30'
     },
     {
       src: '/lovable-uploads/2cf25417-28ae-479d-b6b8-19e126392333.png',
-      type: 'color',
-      overlay: 'bg-accent-pink/20'
+      type: 'warm',
+      overlay: 'bg-void/20'
     },
     {
       src: '/lovable-uploads/2fa67cb3-bc38-4512-9fbe-2fcfb70815ab.png',
-      type: 'bw',
-      overlay: 'bg-void/40'
+      type: 'bright',
+      overlay: 'bg-void/25'
     },
     {
       src: '/lovable-uploads/64b7fab3-00a9-4045-9318-590eb75f1336.png',
       type: 'warm',
-      overlay: 'bg-orange-900/25'
+      overlay: 'bg-void/30'
     },
     {
       src: '/lovable-uploads/5d1d2f5e-37ba-44a7-a95f-ec6970e2eaaf.png',
-      type: 'bw',
-      overlay: 'bg-void/35'
+      type: 'mixed',
+      overlay: 'bg-void/25'
     }
   ];
 
@@ -66,15 +66,10 @@ const HeroCarousel = () => {
             <div 
               className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
               style={{
-                backgroundImage: `url('${image.src}')`,
-                filter: image.type === 'bw' 
-                  ? 'grayscale(1) contrast(1.1)' 
-                  : image.type === 'warm'
-                  ? 'sepia(0.3) saturate(1.2) brightness(0.9)'
-                  : 'saturate(0.8) brightness(0.95)'
+                backgroundImage: `url('${image.src}')`
               }}
             >
-              {/* Dynamic overlay based on image type */}
+              {/* Subtle overlay for text readability */}
               <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
             </div>
           </div>
@@ -88,11 +83,7 @@ const HeroCarousel = () => {
           alt="Croft Common Watermark" 
           className="w-[40rem] h-[40rem] opacity-40 object-contain transition-all duration-1000"
           style={{ 
-            filter: currentImage?.type === 'bw' 
-              ? 'brightness(0) saturate(100%) invert(1)' 
-              : currentImage?.type === 'warm'
-              ? 'brightness(0) saturate(100%) invert(1) sepia(1) hue-rotate(15deg)'
-              : 'brightness(0) saturate(100%) invert(0.9) sepia(0.2)'
+            filter: 'brightness(0) saturate(100%) invert(1)'
           }}
         />
       </div>
