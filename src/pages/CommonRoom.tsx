@@ -6,16 +6,16 @@ const CommonRoom = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       {/* Hero area with watermark */}
-      <main className="h-[80vh] md:h-[80vh] bg-white relative flex flex-col items-center justify-start pt-16 md:pt-32 pb-8 md:pb-20 px-4">
+      <main className="h-[80vh] md:h-[80vh] bg-white relative flex flex-col items-center justify-start pt-24 md:pt-32 pb-8 md:pb-20 px-4">
         {/* Page Title - responsive positioning */}
-        <div className="absolute top-4 left-4 md:top-24 md:left-[106px] z-20">
-          <h1 className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-green-600 cursor-pointer">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 md:top-24 md:left-[106px] md:transform-none z-20">
+          <h1 className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-green-600 cursor-pointer text-center md:text-left">
             THE COMMON ROOM
           </h1>
         </div>
         
         {/* Sign in text - responsive spacing and sizing */}
-        <h2 className="text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-4 md:mb-8 mt-12 md:mt-8">
+        <h2 className="text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-6 md:mb-8 mt-16 md:mt-8">
           Sign in here
         </h2>
         
