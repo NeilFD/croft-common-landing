@@ -66,7 +66,7 @@ export const cocktailMenu: MenuSection[] = [
   {
     title: "HOME CLASSICS",
     items: [
-      { name: "Negroni", description: "No garnish, no chat", price: "9" },
+      { name: "Negroni", description: "Simple garnish, no chat", price: "9" },
       { name: "Martini", description: "Wet, Dirty, You Choose", price: "11" },
       { name: "Margarita", description: "Short, Sharp, Salty", price: "9" },
       { name: "Old Fashioned", description: "Built slow, stirred hard", price: "10" },
@@ -75,7 +75,7 @@ export const cocktailMenu: MenuSection[] = [
   {
     title: "HOUSE TWISTS",
     items: [
-      { name: "Bitter Lemon Spritz", description: "Campari, Lemon, Bubble", price: "9" },
+      { name: "Bitter Lemon Spritz", description: "Campari, Lemon, Bubbles", price: "9" },
       { name: "Gin Basil Slap", description: "Green, Clean, Cold", price: "10" },
       { name: "Smoked Paloma", description: "Mezcal, Grapefruit, Fire", price: "11" },
       { name: "Croft Club", description: "Vodka, Raspberry, Foam", price: "10" },
@@ -85,7 +85,7 @@ export const cocktailMenu: MenuSection[] = [
     title: "PLAYING AWAY",
     items: [
       { name: "Yuzu Daiquiri", description: "Sour, Bright, Sharp", price: "10" },
-      { name: "Tamarind Mule", description: "Dark, Spiced, Tangy", price: "9" },
+      { name: "Tamarind Mule", description: "Dark, Spiced, Deep", price: "9" },
       { name: "Thai Negroni", description: "Lemongrass, Red, Slow", price: "11" },
       { name: "Black Sesame Sour", description: "Creamy, Nutty, Boozy", price: "10" },
     ]
