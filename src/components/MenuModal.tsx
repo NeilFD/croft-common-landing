@@ -63,14 +63,14 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4">
-      <div className="bg-charcoal border border-steel/30 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl">
+      <div className="bg-background border border-steel/30 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-hidden shadow-2xl">
         {/* Header */}
-        <div className="bg-charcoal/90 border-b border-steel/20 p-6 flex items-center justify-between">
+        <div className="bg-background border-b border-steel/20 p-6 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className="text-background">
+            <div className="text-foreground">
               <CroftLogo />
             </div>
-            <h1 className="font-brutalist text-xl text-background tracking-wider">
+            <h1 className="font-brutalist text-xl text-foreground tracking-wider">
               {getPageTitle()}
             </h1>
           </div>
@@ -80,7 +80,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
               hover:border-${accentColor} hover:bg-${accentColor}/10 
               transition-all duration-300 flex items-center justify-center`}
           >
-            <X className="w-5 h-5 text-background" />
+            <X className="w-5 h-5 text-foreground" />
           </button>
         </div>
 
@@ -97,7 +97,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                   {section.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex justify-between items-start">
                       <div className="flex-1 pr-4">
-                        <h3 className="font-industrial text-base text-background font-medium">
+                        <h3 className="font-industrial text-base text-foreground font-medium">
                           {item.name}
                         </h3>
                         {item.description && (
