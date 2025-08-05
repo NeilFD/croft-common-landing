@@ -1,18 +1,14 @@
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 
 const CocktailHeroCarousel = () => {
-  const autoplayRef = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: false })
-  );
-
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
       loop: true,
       duration: 30 // Smooth transitions
     },
-    [autoplayRef.current]
+    [Autoplay({ delay: 4000, stopOnInteraction: false })]
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
