@@ -18,7 +18,7 @@ const CommonRoom = () => {
       <main className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-40 md:pt-32 px-4">
         {/* Page Title - responsive positioning */}
         <div className="absolute top-32 left-1/2 transform -translate-x-1/2 md:top-24 md:left-[106px] md:transform-none z-20">
-          <h1 className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-green-600 cursor-pointer text-center md:text-left">
+          <h1 className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] cursor-pointer text-center md:text-left">
             THE COMMON ROOM
           </h1>
         </div>
