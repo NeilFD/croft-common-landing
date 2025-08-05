@@ -129,7 +129,7 @@ const Navigation = () => {
             <button
               key={item.name}
               onClick={() => handleNavClick(item.path)}
-              className={`block w-full text-left font-industrial text-lg tracking-wide text-foreground transition-all duration-200 hover:scale-105 py-2 px-2 ${getNavItemColor(item.name)}`}
+              className={`block w-full text-left font-industrial text-sm tracking-tight text-foreground transition-all duration-200 hover:scale-105 py-2 px-2 break-words ${getNavItemColor(item.name)}`}
             >
               {item.name}
             </button>
