@@ -6,23 +6,22 @@ const CommonRoom = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       {/* Hero area with watermark */}
-      <main className="min-h-[60vh] bg-white relative flex items-center justify-center">
+      <main className="min-h-screen bg-white relative flex items-center justify-center">
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <img 
             src="/lovable-uploads/75f518f0-7918-463a-9e00-c016e4271205.png" 
             alt="Croft watermark" 
-            className="w-32 h-32 opacity-20 filter brightness-0"
+            className="w-[40rem] h-[40rem] opacity-20 filter brightness-0 object-contain"
           />
         </div>
-      </main>
-      
-      <section className="py-24 bg-white">
-        <div className="container mx-auto px-6 text-center">
-          <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-black hover:text-green-600 transition-colors duration-200">
+
+        {/* Page Title Overlay */}
+        <div className="absolute top-24 left-[106px] z-20">
+          <h1 className="text-3xl font-light text-black tracking-[0.2em] uppercase transition-all duration-300 hover:text-green-600 cursor-pointer">
             THE COMMON ROOM
-          </h2>
+          </h1>
         </div>
-      </section>
+      </main>
       <Footer />
     </div>
   );
