@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import MenuButton from './MenuButton';
+import { cafeMenu } from '@/data/menuData';
 
 const CafeHeroCarousel = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -115,6 +117,9 @@ const CafeHeroCarousel = () => {
           />
         ))}
       </div>
+
+      {/* Menu Button */}
+      <MenuButton pageType="cafe" menuData={cafeMenu} />
     </div>
   );
 };
