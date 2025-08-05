@@ -1,62 +1,16 @@
-import { useState, useEffect } from 'react';
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import { commonRoomMenuData } from '@/data/menuData';
 
 const CommonRoomHeroCarousel = () => {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  const [emblaRef, emblaApi] = useEmblaCarousel(
-    { 
-      loop: true,
-      duration: 30
-    },
-    [Autoplay({ delay: 5000, stopOnInteraction: false })]
-  );
-
-  const heroImages = [
-    {
-      src: '/lovable-uploads/c22f6cce-8b72-4eb5-96e8-a2fc8adfe7b9.png'
-    },
-    {
-      src: '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png'
-    },
-    {
-      src: '/lovable-uploads/a20baf5a-8e8f-41ea-82f5-1801dbd32dd7.png'
-    }
-  ];
-
-  const onSelect = () => {
-    if (!emblaApi) return;
-    setCurrentSlide(emblaApi.selectedScrollSnap());
-  };
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on('select', onSelect);
-    emblaApi.on('reInit', onSelect);
-  }, [emblaApi]);
-
   return (
-    <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
-      <div className="flex">
-        {heroImages.map((image, index) => (
-          <div 
-            key={index}
-            className="flex-[0_0_100%] relative min-h-screen"
-          >
-            {/* Background Image */}
-            <div 
-              className="absolute inset-0 bg-cover bg-no-repeat transition-all duration-1000"
-              style={{
-                backgroundImage: `url('${image.src}')`,
-                backgroundPosition: '50% 80%'
-              }}
-            />
-          </div>
-        ))}
-      </div>
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Single Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url('/lovable-uploads/322fb5be-0402-4d55-8a72-b5e9c3253eef.png')`
+        }}
+      />
 
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
@@ -85,18 +39,6 @@ const CommonRoomHeroCarousel = () => {
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <div className="w-px h-16 bg-background/50"></div>
-      </div>
-
-      {/* Slide indicators */}
-      <div className="absolute bottom-8 right-8 flex space-x-2 z-20">
-        {heroImages.map((_, index) => (
-          <div
-            key={index}
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentSlide ? 'bg-background' : 'bg-background/30'
-            }`}
-          />
-        ))}
       </div>
 
       {/* Menu Button */}
