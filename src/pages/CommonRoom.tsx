@@ -15,7 +15,7 @@ const CommonRoom = () => {
         </div>
         
         {/* Sign in text - responsive spacing and sizing */}
-        <h2 className="text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-8 md:mb-8 mt-4 md:mt-8">
+        <h2 className="text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-8 md:mb-8 mt-20 md:mt-8">
           Sign in here
         </h2>
         
