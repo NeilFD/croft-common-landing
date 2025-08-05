@@ -80,13 +80,13 @@ const CocktailHeroCarousel = () => {
           alt="Croft Common Watermark" 
           className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 hover:opacity-80 cursor-pointer"
           style={{ 
-            filter: 'brightness(0) invert(1) contrast(100)'
+            filter: 'invert(1)'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.filter = 'hue-rotate(80deg) saturate(2) brightness(1.2)';
+            e.currentTarget.style.filter = 'invert(1) hue-rotate(80deg) saturate(2) brightness(1.2)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.filter = 'brightness(0) invert(1) contrast(100)';
+            e.currentTarget.style.filter = 'invert(1)';
           }}
         />
       </div>
