@@ -262,27 +262,27 @@ export const homeMenu: MenuSection[] = [
     title: "CROFT COMMON",
     items: [
       { 
-        name: "A <span class='accent-pink'>café</span> that opens early and never hurries you out. Black coffee. Warm light. Pastries warm. Quiet tables. Open laptops. The street starts to stir. Outside, the pavement terrace catches the sun. It's <span class='accent-pink'>slow</span>, it's <span class='accent-pink'>simple</span>, and it's yours for as long as you want it.", 
+        name: "A café that opens early and never hurries you out. Black coffee. Warm light. Pastries warm. Quiet tables. Open laptops. The street starts to stir. Outside, the pavement terrace catches the sun. It's slow, it's simple, and it's yours for as long as you want it.", 
         description: ""
       },
       { 
-        name: "At five, the bar takes its turn. Lights dip. Bottles line up. The terrace opens up, Bristol smiles. Glass in hand, sky above. Inside, low-lit and close. House <span class='accent-lime'>twists</span>, sharp <span class='accent-lime'>pours</span>, clean <span class='accent-lime'>finishes</span>. Not loud. Never quiet.", 
+        name: "At five, the bar takes its turn. Lights dip. Bottles line up. The terrace opens up, Bristol smiles. Glass in hand, sky above. Inside, low-lit and close. House twists, sharp pours, clean finishes. Not loud. Never quiet.", 
         description: ""
       },
       { 
-        name: "Across the floor, the <span class='accent-orange'>beer</span> hall kicks in. Long tables. Cold pints. Twelve taps, all <span class='accent-orange'>Bristol</span>. Cans in the fridge. Friends at full <span class='accent-orange'>volume</span>. The rooftop terrace <span class='accent-orange'>rises</span> - open air, opened up, open late.", 
+        name: "Across the floor, the beer hall kicks in. Long tables. Cold pints. Twelve taps, all Bristol. Cans in the fridge. Friends at full volume. The rooftop terrace rises - open air, opened up, open late.", 
         description: ""
       },
       { 
-        name: "Four <span class='accent-blood-red'>kitchens</span>. One pass. Wood-fired, <span class='accent-blood-red'>grilled</span>, tossed, <span class='accent-blood-red'>charred</span>. Pizza w/ blistered crusts. Flat iron steaks. Pork belly tacos. Chilli noodle bowls. Something new, something messy, something always worth <span class='accent-blood-red'>sharing</span>.", 
+        name: "Four kitchens. One pass. Wood-fired, grilled, tossed, charred. Pizza w/ blistered crusts. Flat iron steaks. Pork belly tacos. Chilli noodle bowls. Something new, something messy, something always worth sharing.", 
         description: ""
       },
       { 
-        name: "<span class='accent-vivid-purple'>Halls</span> sits behind it all. Empty, on purpose. <span class='accent-vivid-purple'>Concrete</span>, clean, ready for anything. Weddings. Raves. Film shoots. Dinners for thirty. Parties for three hundred. You <span class='accent-vivid-purple'>imagine</span> it - we <span class='accent-vivid-purple'>make</span> it.", 
-        price: "POA"
+        name: "Halls sits behind it all. Empty, on purpose. Concrete, clean, ready for anything. Weddings. Raves. Film shoots. Dinners for thirty. Parties for three hundred. You imagine it - <strong>WE MAKE IT</strong> POA.", 
+        description: ""
       },
       { 
-        name: "This is <span class='accent-pink'>Croft Common</span>. Shared space. Common ground. One roof. Built on <span class='accent-pink'>community</span>, Come find your <span class='accent-pink'>corner</span>.", 
+        name: "This is Croft Common. Shared space. Common ground. One roof. Built on community, Come find your corner.", 
         description: ""
       }
     ]
