@@ -12,13 +12,16 @@ const HeroSection = () => {
         <div className="absolute inset-0 bg-void/40"></div>
       </div>
       
-      
-      {/* Title positioned at top of viewport */}
-      <div className="fixed top-28 right-2 md:right-4 z-20">
-        <h1 className="font-brutalist text-5xl md:text-6xl text-background tracking-tight mb-6 text-right leading-none">
-          <span className="block border-t-4 border-b-4 border-background leading-none">CROFT</span>
-          <span className="block border-t-4 border-b-4 border-background leading-none">COMMON</span>
-        </h1>
+      {/* Fixed watermark on hero only */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <img 
+          src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
+          alt="Croft Common Watermark" 
+          className="w-[40rem] h-[40rem] opacity-40 object-contain"
+          style={{ 
+            filter: 'brightness(0) saturate(100%) invert(1)'
+          }}
+        />
       </div>
       
       {/* Scroll indicator */}
