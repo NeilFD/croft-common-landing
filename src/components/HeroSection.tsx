@@ -17,7 +17,7 @@ const HeroSection = () => {
         <img 
           src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
           alt="Croft Common Watermark" 
-          className="w-96 h-96 opacity-10 object-contain"
+          className="w-[60rem] h-[60rem] opacity-10 object-contain filter invert"
         />
       </div>
       
