@@ -13,7 +13,8 @@ const Navigation = () => {
     { name: 'BEER', path: '/beer' },
     { name: 'KITCHENS', path: '/kitchens' },
     { name: 'HALL', path: '/hall' },
-    { name: 'COMMUNITY', path: '/community' }
+    { name: 'COMMUNITY', path: '/community' },
+    { name: 'THE COMMON ROOM', path: '/common-room' }
   ];
 
   // Preload images for better performance
@@ -72,6 +73,7 @@ const Navigation = () => {
     if (itemName === 'KITCHENS') return 'hover:text-accent-blood-red';
     if (itemName === 'HALL') return 'hover:text-accent-vivid-purple';
     if (itemName === 'COMMUNITY') return 'hover:text-[hsl(var(--accent-electric-blue))]';
+    if (itemName === 'THE COMMON ROOM') return 'hover:text-green-600';
     return 'hover:text-accent-pink';
   };
 
