@@ -180,22 +180,32 @@ export const kitchensMenu: MenuSection[] = [
   {
     title: "MEXICAN",
     items: [
-      { name: "Tacos (2 per order):", description: "" },
+      { name: "TACOS (2 per order)", description: "" },
       { name: "Beef Barbacoa", price: "9" },
       { name: "Chicken Mole", price: "9" },
       { name: "Carnitas, Salsa Roja", price: "9" },
       { name: "Sweet Potato, Salsa Verde", price: "8" },
       { name: "Fish Tempura, Chipotle Mayo", price: "10" },
       { name: "Jackfruit, Lime Crema", price: "8" },
+    ]
+  },
+  {
+    title: "QUESADILLAS & MAINS",
+    items: [
       { name: "Quesadilla, Cheese Pull", price: "7" },
       { name: "Chorizo Quesadilla", price: "8" },
+      { name: "Mexican Rice Bowl, Pickles", price: "9" },
+      { name: "Tostadas - Crab, Avocado", price: "10" },
+    ]
+  },
+  {
+    title: "MEXICAN SIDES",
+    items: [
       { name: "Elote, Lime Mayo", price: "4" },
       { name: "Tortilla Chips & Guac", price: "5" },
       { name: "Refried Beans, Cotija", price: "4" },
       { name: "Crispy Pork Skin w/ Hot Sauce", price: "5" },
-      { name: "Mexican Rice Bowl, Pickles", price: "9" },
       { name: "Charred Corn Salad", price: "6" },
-      { name: "Tostadas - Crab, Avocado", price: "10" },
     ]
   },
   {
@@ -206,19 +216,31 @@ export const kitchensMenu: MenuSection[] = [
       { name: "Fried Tofu, Sweet Soy", price: "7" },
       { name: "Korean Chicken, Gochujang", price: "8" },
       { name: "Shiitake, Black Garlic Mayo", price: "7" },
-      { name: "NOODLES", description: "" },
+    ]
+  },
+  {
+    title: "NOODLES",
+    items: [
       { name: "Chilli Garlic Ramen, Soft Egg", price: "10" },
       { name: "Beef Brisket Pho", price: "11" },
       { name: "Miso Udon, Crispy Tofu", price: "9" },
       { name: "Dan Dan Noodles, Pork & Peanut", price: "10" },
-      { name: "RICE & MAINS", description: "" },
+    ]
+  },
+  {
+    title: "RICE & MAINS",
+    items: [
       { name: "Karaage Chicken Bowl", price: "9" },
       { name: "Tofu & Aubergine Mapo", price: "9" },
       { name: "Sticky Pork Belly, Greens", price: "10" },
       { name: "Beef Bulgogi, Kimchi", price: "11" },
       { name: "Thai Green Curry, Jasmine Rice", price: "10" },
       { name: "Soy Braised Mushrooms", price: "9" },
-      { name: "SMALL PLATES", description: "" },
+    ]
+  },
+  {
+    title: "ASIAN SMALL PLATES",
+    items: [
       { name: "Gyoza, Ponzu Dip", price: "6" },
       { name: "Prawn Toast, Sweet Chilli", price: "6" },
       { name: "Edamame, Chilli Salt", price: "4" },

@@ -86,13 +86,19 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
         {/* Scrollable Menu Content */}
         <div className="overflow-y-auto max-h-[calc(80vh-120px)] p-6">
-          <div className="space-y-8">
-            {menuData.map((section, sectionIndex) => (
-              <div key={sectionIndex} className="space-y-4">
-                <h2 className={`font-brutalist text-xl md:text-2xl text-${accentColor} 
-                  tracking-wider border-b border-steel/20 pb-2`}>
-                  {section.title}
-                </h2>
+          <div className="space-y-10">
+            {menuData.map((section, sectionIndex) => {
+              const isMajorSection = ['PIZZA - WOOD-FIRED', 'GRILL', 'MEXICAN', 'ASIAN STREET FOOD'].includes(section.title);
+              
+              return (
+                <div key={sectionIndex} className="space-y-4">
+                  <h2 className={`font-brutalist tracking-wider border-b border-steel/20 pb-3 ${
+                    isMajorSection 
+                      ? `text-2xl md:text-3xl text-${accentColor} mb-6` 
+                      : `text-lg md:text-xl text-${accentColor} mb-4`
+                  }`}>
+                    {section.title}
+                  </h2>
                 <div className="space-y-3">
                   {section.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex justify-between items-start">
@@ -114,9 +120,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                       )}
                     </div>
                   ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
