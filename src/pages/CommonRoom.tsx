@@ -19,12 +19,12 @@ const CommonRoom = () => {
           Sign in here
         </h2>
         
-        {/* Watermark image - responsive sizing */}
-        <div className="flex items-center justify-center flex-1 max-h-48 md:max-h-80">
+        {/* Watermark image - same size as other pages */}
+        <div className="flex items-center justify-center flex-1 max-h-80">
           <img 
             src="/lovable-uploads/90a63358-50bd-4ab2-adeb-cf9350f4f4b2.png" 
             alt="Common Room Layout" 
-            className="w-48 h-48 md:w-80 md:h-80 opacity-20 object-contain"
+            className="w-[40rem] h-[40rem] opacity-20 object-contain"
           />
         </div>
       </main>
