@@ -8,7 +8,7 @@ const HallHeroCarousel = () => {
       loop: true,
       duration: 30
     },
-    [Autoplay({ delay: 4000, stopOnInteraction: false, playOnInit: true })]
+    [Autoplay({ delay: 4000, stopOnInteraction: false })]
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
