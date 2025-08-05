@@ -29,7 +29,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValid7Shape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 30) return false; // Require substantial gesture
+    if (gesturePoints.length < 25) return false; // Require substantial gesture (reduced from 30)
 
     const firstPoint = gesturePoints[0];
     const lastPoint = gesturePoints[gesturePoints.length - 1];
@@ -57,8 +57,8 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     const horizontalX = horizontalEnd.x - horizontalStart.x;
     const horizontalY = Math.abs(horizontalEnd.y - horizontalStart.y);
     
-    if (horizontalX < 100) return false; // Must move significantly right
-    if (horizontalY > horizontalX * 0.3) return false; // Should be mostly horizontal (allow 30% vertical tolerance)
+    if (horizontalX < 80) return false; // Must move significantly right (reduced from 100)
+    if (horizontalY > horizontalX * 0.4) return false; // Should be mostly horizontal (increased tolerance from 30% to 40%)
     
     // Check diagonal section (stroke of 7) - should move down and optionally left
     const diagonalStart = diagonalSection[0];
@@ -80,7 +80,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
       const updated = [...prev, newPoint];
       
       // Check if gesture is complete - only validate on substantial gestures
-      if (updated.length > 30 && isValid7Shape(updated)) {
+      if (updated.length > 25 && isValid7Shape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
