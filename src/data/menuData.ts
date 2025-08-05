@@ -282,7 +282,7 @@ export const homeMenu: MenuSection[] = [
         description: ""
       },
       { 
-        name: "This is Croft Common. Shared space. Common ground. One roof. Built on community, Come find your corner.", 
+        name: "This is Croft Common. Shared space. Common ground. One roof. Built on community.", 
         description: ""
       }
     ]
