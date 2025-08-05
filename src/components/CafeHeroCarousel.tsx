@@ -60,7 +60,7 @@ const CafeHeroCarousel = () => {
   return (
     <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
       {/* CAFÉ title positioned under header */}
-      <div className="absolute top-20 left-6 z-20">
+      <div className="absolute top-32 left-24 z-20">
         <h1 className="font-brutalist text-6xl text-background tracking-wider">
           CAFÉ
         </h1>
