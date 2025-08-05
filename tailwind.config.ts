@@ -19,8 +19,8 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'brutalist': ['Arial Black', 'Helvetica', 'sans-serif'],
-				'industrial': ['Arial', 'Helvetica', 'sans-serif'],
+				'brutalist': ['Oswald', 'Arial Black', 'Helvetica', 'sans-serif'],
+				'industrial': ['Work Sans', 'Arial', 'Helvetica', 'sans-serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
