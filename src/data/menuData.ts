@@ -343,4 +343,30 @@ const communityMenuData: MenuSection[] = [
   }
 ];
 
-export { cafeMenu as cafeMenuData, cocktailMenu as cocktailsMenuData, beerMenu as beerMenuData, kitchensMenu as kitchensMenuData, hallMenu as hallMenuData, homeMenu, communityMenuData };
+// Common Room Menu Data
+const commonRoomMenuData: MenuSection[] = [
+  {
+    title: "THE COMMON ROOM",
+    items: [
+      { 
+        name: "Welcome to The Common Room. A private space for those who know how to find it.", 
+        description: ""
+      },
+      { 
+        name: "Exclusive access through our secret entrance.", 
+        description: ""
+      },
+      { 
+        name: "For inquiries about membership and private events:", 
+        description: ""
+      },
+      { 
+        name: "members@croftcommon.com", 
+        description: "",
+        isEmail: true
+      }
+    ]
+  }
+];
+
+export { cafeMenu as cafeMenuData, cocktailMenu as cocktailsMenuData, beerMenu as beerMenuData, kitchensMenu as kitchensMenuData, hallMenu as hallMenuData, homeMenu, communityMenuData, commonRoomMenuData };

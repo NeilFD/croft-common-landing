@@ -12,6 +12,7 @@ import Kitchens from "./pages/Kitchens";
 import Hall from "./pages/Hall";
 import Community from "./pages/Community";
 import CommonRoom from "./pages/CommonRoom";
+import CommonRoomMain from "./pages/CommonRoomMain";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/hall" element={<Hall />} />
             <Route path="/community" element={<Community />} />
             <Route path="/common-room" element={<CommonRoom />} />
+            <Route path="/common-room/main" element={<CommonRoomMain />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

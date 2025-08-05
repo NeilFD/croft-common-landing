@@ -1,7 +1,15 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import GestureOverlay from '@/components/GestureOverlay';
+import { useNavigate } from 'react-router-dom';
 
 const CommonRoom = () => {
+  const navigate = useNavigate();
+
+  const handleGestureComplete = () => {
+    navigate('/common-room/main');
+  };
+
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -29,6 +37,7 @@ const CommonRoom = () => {
         </div>
       </main>
       <Footer />
+      <GestureOverlay onGestureComplete={handleGestureComplete} />
     </div>
   );
 };
