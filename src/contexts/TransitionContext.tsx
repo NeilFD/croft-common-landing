@@ -30,6 +30,11 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setIsTransitioning(true);
   };
 
+  const getTransitionColor = () => {
+    if (targetPath === '/cocktails') return 'bg-[hsl(var(--accent-lime))]';
+    return 'bg-accent-pink';
+  };
+
   const onTransitionComplete = () => {
     navigate(targetPath);
     setIsTransitioning(false);
@@ -40,7 +45,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     <TransitionContext.Provider value={{ isTransitioning, triggerTransition }}>
       {children}
       <div 
-        className={`fixed inset-0 z-[99999] bg-accent-pink transition-all duration-700 ease-in-out ${
+        className={`fixed inset-0 z-[99999] ${getTransitionColor()} transition-all duration-700 ease-in-out ${
           isTransitioning 
             ? 'opacity-100 scale-100' 
             : 'opacity-0 scale-150 pointer-events-none'

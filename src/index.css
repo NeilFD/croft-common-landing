@@ -23,6 +23,11 @@
     --accent-pink-subtle: 350 30% 90%;
     --accent-pink-dark: 350 90% 40%;
 
+    /* Lime green accent for cocktails */
+    --accent-lime: 85 80% 55%;
+    --accent-lime-subtle: 85 30% 85%;
+    --accent-lime-dark: 85 90% 35%;
+
     /* Design tokens */
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
@@ -54,6 +59,9 @@
     --accent-pink: 350 80% 65%;
     --accent-pink-subtle: 350 30% 90%;
     --accent-pink-dark: 350 90% 40%;
+    --accent-lime: 85 80% 55%;
+    --accent-lime-subtle: 85 30% 85%;
+    --accent-lime-dark: 85 90% 35%;
 
     --sidebar-background: 0 0% 98%;
 

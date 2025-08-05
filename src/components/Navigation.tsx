@@ -34,7 +34,11 @@ const Navigation = () => {
             <button
               key={item.name}
               onClick={() => handleNavClick(item.path)}
-              className="font-industrial text-sm tracking-wide text-foreground hover:text-accent-pink transition-all duration-200 hover:scale-105 active:scale-110"
+              className={`font-industrial text-sm tracking-wide text-foreground transition-all duration-200 hover:scale-105 active:scale-110 ${
+                item.name === 'COCKTAILS' 
+                  ? 'hover:text-[hsl(var(--accent-lime))]' 
+                  : 'hover:text-accent-pink'
+              }`}
             >
               {item.name}
             </button>
