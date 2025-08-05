@@ -2,6 +2,7 @@ export interface MenuItem {
   name: string;
   price?: string;
   description?: string;
+  isEmail?: boolean;
 }
 
 export interface MenuSection {
@@ -262,7 +263,11 @@ export const hallMenu: MenuSection[] = [
     items: [
       { 
         name: "Blank walls. High ceilings. Concrete, light, power.", 
-        description: "Build it up. Strip it back. Wedding, rave, launch, wake."
+        description: ""
+      },
+      { 
+        name: "Build it up. Strip it back. Wedding, rave, launch, wake.", 
+        description: ""
       },
       { 
         name: "No presets. No packages. Just space, sound, and possibility.", 
@@ -270,7 +275,11 @@ export const hallMenu: MenuSection[] = [
       },
       { 
         name: "Formal or feral. Intimate or industrial.", 
-        description: "We shape to fit. You lead, we follow."
+        description: ""
+      },
+      { 
+        name: "We shape to fit. You lead, we follow.", 
+        description: ""
       },
       { 
         name: "Whatever the vision, we'll make it work.", 
@@ -279,6 +288,11 @@ export const hallMenu: MenuSection[] = [
       { 
         name: "£: POA", 
         description: ""
+      },
+      { 
+        name: "hey@croftcommon.com", 
+        description: "",
+        isEmail: true
       }
     ]
   }

@@ -103,9 +103,18 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                   {section.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="flex justify-between items-start">
                       <div className="flex-1 pr-4">
-                        <h3 className="font-industrial text-base text-foreground font-medium">
-                          {item.name}
-                        </h3>
+                        {item.isEmail ? (
+                          <a 
+                            href={`mailto:${item.name}`}
+                            className={`font-industrial text-base text-${accentColor} font-medium hover:underline transition-all duration-300`}
+                          >
+                            {item.name}
+                          </a>
+                        ) : (
+                          <h3 className="font-industrial text-base text-foreground font-medium">
+                            {item.name}
+                          </h3>
+                        )}
                         {item.description && (
                           <p className="font-industrial text-steel text-sm mt-1">
                             {item.description}
