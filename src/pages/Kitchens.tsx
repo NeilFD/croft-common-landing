@@ -13,8 +13,9 @@ const Kitchens = () => {
             KITCHENS
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            Four vendors. One pass. Food when ready. Simple plates.<br />
-            Just noise, heat, and shared tables.
+            Four vendors. Four flavours. Food when ready. Simple.
+            <br /><br />
+            Noise, heat, and shared tables.
           </p>
         </div>
       </section>
