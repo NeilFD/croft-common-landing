@@ -118,7 +118,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                     Gigs, talks, tastings, all sorts.
                   </p>
                   <p className="font-industrial text-lg text-steel leading-relaxed">
-                    The calendar never sits still. From low-key launches to big, messy nights — this is where it lands first. Some tickets sell out in hours. Some don't go public at all. You're already on the list.
+                    The calendar never sits still. From low-key launches to big, messy nights — this is where it lands first. Some tickets sell out in hours. Some don't go public at all. You're already on the list.{' '}
+                    <a href="#" className={`text-[hsl(var(--${accentColor}))] hover:underline font-semibold transition-all duration-300`}>
+                      Let yourself in
+                    </a>
                   </p>
                 </div>
               </div>
@@ -138,7 +141,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                     The crew behind the counter. And the ones who keep coming back.
                   </p>
                   <p className="font-industrial text-lg text-steel leading-relaxed">
-                    We back local. We back talent. We back people doing it right. Members get first dibs on workshops, collabs, and pop-ups from the makers, growers, shakers and pourers we rate. Come learn. Come try. Come talk.
+                    We back local. We back talent. We back people doing it right. Members get first dibs on workshops, collabs, and pop-ups from the makers, growers, shakers and pourers we rate. Come learn. Come try. Come talk.{' '}
+                    <a href="#" className={`text-[hsl(var(--${accentColor}))] hover:underline font-semibold transition-all duration-300`}>
+                      Meet
+                    </a>
                   </p>
                 </div>
               </div>
@@ -158,7 +164,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                     We give space. You give time. That's the deal.
                   </p>
                   <p className="font-industrial text-lg text-steel leading-relaxed">
-                    We hand the Hall to causes that matter. If you're part of one — or want to help one — this is where you step in. No hashtags. No speeches. Just action. Real things, done quietly, with people who care.
+                    We hand the Hall to causes that matter. If you're part of one — or want to help one — this is where you step in. No hashtags. No speeches. Just action. Real things, done quietly, with people who care.{' '}
+                    <a href="#" className={`text-[hsl(var(--${accentColor}))] hover:underline font-semibold transition-all duration-300`}>
+                      Help out
+                    </a>
                   </p>
                 </div>
               </div>
@@ -178,7 +187,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                     First in. Best table. Quiet heads-up.
                   </p>
                   <p className="font-industrial text-lg text-steel leading-relaxed">
-                    We don't do loyalty cards. But we notice who sticks around. Stay close and you'll hear about things before they land. Early access to events. Priority tables on busy nights. The odd off-menu thing when it feels right. No noise. No spam. Just the good stuff, first.
+                    We don't do loyalty cards. But we notice who sticks around. Stay close and you'll hear about things before they land. Early access to events. Priority tables on busy nights. The odd off-menu thing when it feels right. No noise. No spam. Just the good stuff, first.{' '}
+                    <a href="#" className={`text-[hsl(var(--${accentColor}))] hover:underline font-semibold transition-all duration-300`}>
+                      If you know, you know
+                    </a>
                   </p>
                 </div>
               </div>
