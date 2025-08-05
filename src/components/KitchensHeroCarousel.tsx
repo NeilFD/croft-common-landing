@@ -87,7 +87,7 @@ const KitchensHeroCarousel = () => {
       </div>
 
       {/* Page Title Overlay */}
-      <div className="absolute top-24 left-[84px] pointer-events-none z-20">
+      <div className="absolute top-24 left-[96px] pointer-events-none z-20">
         <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase">
           KITCHENS
         </h1>
