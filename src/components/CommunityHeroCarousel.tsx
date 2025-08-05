@@ -48,9 +48,10 @@ const CommunityHeroCarousel = () => {
           >
             {/* Background Image */}
             <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+              className="absolute inset-0 bg-cover bg-no-repeat transition-all duration-1000"
               style={{
-                backgroundImage: `url('${image.src}')`
+                backgroundImage: `url('${image.src}')`,
+                backgroundPosition: '50% 80%'
               }}
             />
           </div>
