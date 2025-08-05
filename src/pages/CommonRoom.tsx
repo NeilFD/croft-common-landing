@@ -15,7 +15,7 @@ const CommonRoom = () => {
         </div>
         
         {/* Sign in text above watermark */}
-        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase mb-8">
+        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase mb-8 mt-4">
           Sign in here
         </h2>
         
