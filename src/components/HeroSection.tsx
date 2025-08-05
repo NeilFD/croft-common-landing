@@ -22,12 +22,6 @@ const HeroSection = () => {
           </h1>
           
           <div className="w-24 h-1 bg-accent-pink mx-auto mb-8"></div>
-          
-          <p className="font-industrial text-xl md:text-2xl text-background/90 max-w-2xl mx-auto leading-relaxed">
-            Moody, modular hospitality in the heart of Stokes Croft—
-            <br />
-            where food, drink, and people collide.
-          </p>
         </div>
       </div>
       
