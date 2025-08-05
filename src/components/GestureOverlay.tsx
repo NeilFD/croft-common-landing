@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from 'react';
 import useGestureDetection from '@/hooks/useGestureDetection';
-import GestureTrail from './GestureTrail';
+import { toast } from '@/hooks/use-toast';
 
 interface GestureOverlayProps {
   onGestureComplete: () => void;
@@ -9,6 +9,15 @@ interface GestureOverlayProps {
 const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   
+  const handleGestureSuccess = useCallback(() => {
+    toast({
+      title: "Access Granted",
+      description: "Welcome to The Common Room",
+      duration: 2000,
+    });
+    onGestureComplete();
+  }, [onGestureComplete]);
+  
   const {
     isDrawing,
     points,
@@ -16,7 +25,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) =>
     startGesture,
     addPoint,
     endGesture
-  } = useGestureDetection(onGestureComplete);
+  } = useGestureDetection(handleGestureSuccess);
 
   const getEventPosition = useCallback((event: React.TouchEvent | React.MouseEvent | TouchEvent | MouseEvent) => {
     const rect = overlayRef.current?.getBoundingClientRect();
@@ -75,24 +84,17 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) =>
   }, [endGesture]);
 
   return (
-    <>
-      <div
-        ref={overlayRef}
-        className="fixed inset-0 z-40 bg-transparent cursor-crosshair"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        style={{ touchAction: 'none' }}
-      />
-      <GestureTrail 
-        points={points} 
-        isComplete={isComplete} 
-        isDrawing={isDrawing} 
-      />
-    </>
+    <div
+      ref={overlayRef}
+      className="fixed inset-0 z-40 bg-transparent"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      style={{ touchAction: 'none' }}
+    />
   );
 };
 

@@ -1,6 +1,7 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
+import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
 
 const CommonRoom = () => {
@@ -38,6 +39,7 @@ const CommonRoom = () => {
       </main>
       <Footer />
       <GestureOverlay onGestureComplete={handleGestureComplete} />
+      <Toaster />
     </div>
   );
 };
