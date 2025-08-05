@@ -6,8 +6,14 @@ const CommonRoom = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       {/* Hero area with watermark */}
-      <main className="min-h-screen bg-white relative flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase mb-12 z-20">
+      <main className="min-h-screen bg-white relative flex flex-col items-center justify-center pt-32">
+        {/* Page Title */}
+        <h1 className="text-3xl font-light text-black tracking-[0.2em] uppercase mb-8">
+          THE COMMON ROOM
+        </h1>
+        
+        {/* Sign in text */}
+        <h2 className="text-2xl font-light text-black tracking-[0.2em] uppercase mb-12">
           Sign in here
         </h2>
         
@@ -17,13 +23,6 @@ const CommonRoom = () => {
             alt="Common Room Layout" 
             className="w-[40rem] h-[40rem] opacity-20 object-contain"
           />
-        </div>
-
-        {/* Page Title Overlay */}
-        <div className="absolute top-24 left-[106px] z-20">
-          <h1 className="text-3xl font-light text-black tracking-[0.2em] uppercase transition-all duration-300 hover:text-green-600 cursor-pointer">
-            THE COMMON ROOM
-          </h1>
         </div>
       </main>
       <Footer />
