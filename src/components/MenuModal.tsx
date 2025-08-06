@@ -31,6 +31,11 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       return 'CROFT COMMON';
     }
     
+    // Check if this is the common room by looking at the first section title
+    if (menuData.length > 0 && menuData[0].title === 'THE COMMON ROOM') {
+      return 'THE COMMON ROOM';
+    }
+    
     switch (pageType) {
       case 'cafe':
         return 'CROFT COMMON CAFÉ';
