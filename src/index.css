@@ -57,6 +57,10 @@
     --ring: 350 80% 65%;
     --muted: 0 0% 95%;
     --muted-foreground: 0 0% 40%;
+    
+    /* Popover elements */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
 
     /* Destructive kept minimal */
     --destructive: 0 80% 50%;
