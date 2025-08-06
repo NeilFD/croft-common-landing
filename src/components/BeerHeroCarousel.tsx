@@ -47,7 +47,7 @@ const BeerHeroCarousel = () => {
       backgroundSize: 'bg-cover'
     },
     {
-      src: '/lovable-uploads/2aeca521-88fd-4a9c-a05a-6fa91979b122.png',
+      src: '/lovable-uploads/3a121d1e-b464-4972-af7a-eba1bcbb8ac7.png',
       type: 'warm',
       overlay: '',
       backgroundSize: 'bg-contain'
