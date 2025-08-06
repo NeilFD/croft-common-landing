@@ -20,9 +20,9 @@ const HallHeroCarousel = () => {
       overlay: ''
     },
     {
-      src: '/lovable-uploads/8e6a7ddc-9c1d-4779-bd58-8c4ef5fd6646.png',
+      src: '/lovable-uploads/834974e6-ab56-4571-946b-b3b09c2ee678.png',
       type: 'dark',
-      overlay: 'bg-void/30'
+      overlay: ''
     },
     {
       src: '/lovable-uploads/b64216a3-dd09-4428-a328-02343a5f2a23.png',
