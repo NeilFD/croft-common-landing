@@ -42,7 +42,7 @@ const BeerHeroCarousel = () => {
       overlay: 'bg-void/25'
     },
     {
-      src: '/lovable-uploads/32f386dd-5bb3-46c7-9247-8d392c1b4191.png',
+      src: '/lovable-uploads/2aeca521-88fd-4a9c-a05a-6fa91979b122.png',
       type: 'warm',
       overlay: ''
     }
