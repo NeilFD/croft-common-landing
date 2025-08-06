@@ -112,7 +112,7 @@ const Calendar = () => {
         days.push(
           <div
             key={day.toString()}
-            className={`min-h-[80px] md:min-h-[120px] border border-border p-1 md:p-2 ${
+            className={`min-h-[80px] md:min-h-[120px] border border-border/30 p-1 md:p-2 ${
               !isSameMonth(day, monthStart) ? 'text-muted-foreground bg-muted/20' : 'bg-background'
             }`}
           >
@@ -164,13 +164,13 @@ const Calendar = () => {
     }
 
     return (
-      <div className="bg-background border border-border rounded-lg overflow-hidden">
+      <div className="bg-background border border-border/30 rounded-lg overflow-hidden">
         {/* Days header */}
         <div className="grid grid-cols-7 bg-muted/30">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
             const fullDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             return (
-              <div key={`${day}-${index}`} className="p-2 md:p-3 text-center font-medium text-muted-foreground border border-border">
+              <div key={`${day}-${index}`} className="p-2 md:p-3 text-center font-medium text-muted-foreground border border-border/30">
                 <span className="md:hidden">{day}</span>
                 <span className="hidden md:inline">{fullDays[index]}</span>
               </div>
@@ -197,8 +197,8 @@ const Calendar = () => {
       );
 
       weekDays.push(
-        <div key={day.toString()} className="flex-1 border-r border-border last:border-r-0 min-w-[120px]">
-          <div className="p-2 md:p-3 border-b border-border bg-muted/30">
+        <div key={day.toString()} className="flex-1 border-r border-border/30 last:border-r-0 min-w-[120px]">
+          <div className="p-2 md:p-3 border-b border-border/30 bg-muted/30">
             <div className="text-center">
               <div className="text-xs md:text-sm text-muted-foreground font-medium">
                 {dayNames[i]}
@@ -247,7 +247,7 @@ const Calendar = () => {
     }
 
     return (
-      <div className="bg-background border border-border rounded-lg overflow-hidden relative">
+      <div className="bg-background border border-border/30 rounded-lg overflow-hidden relative">
         {/* Scroll arrows for mobile */}
         <div className="md:hidden absolute left-2 top-1/2 transform -translate-y-1/2 z-10">
           <Button
