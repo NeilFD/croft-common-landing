@@ -151,7 +151,7 @@ const Calendar = () => {
     }
 
     return (
-      <div className="bg-background border border-border/30 rounded-lg overflow-hidden">
+      <div className="bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
         {/* Days header */}
         <div className="grid grid-cols-7 bg-muted/30">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
@@ -238,7 +238,7 @@ const Calendar = () => {
     }
 
     return (
-      <div className="bg-background border border-border/30 rounded-lg overflow-hidden relative">
+      <div className="bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden relative">
         {/* Scroll arrows for mobile */}
         <div className="md:hidden absolute left-2 top-1/2 transform -translate-y-1/2 z-10">
           <Button
@@ -410,12 +410,14 @@ const Calendar = () => {
               <ChevronLeft className="h-4 w-4" />
             </Button>
             
-            <h2 className="font-industrial text-lg md:text-xl font-medium text-center px-4">
-              {viewType === 'month' 
-                ? format(currentDate, 'MMMM yyyy')
-                : `Week of ${format(startOfWeek(currentDate), 'MMM d, yyyy')}`
-              }
-            </h2>
+            <div className="bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg px-4 py-2 mx-4">
+              <h2 className="font-industrial text-lg md:text-xl font-medium text-center">
+                {viewType === 'month' 
+                  ? format(currentDate, 'MMMM yyyy')
+                  : `Week of ${format(startOfWeek(currentDate), 'MMM d, yyyy')}`
+                }
+              </h2>
+            </div>
             
             <Button
               variant="outline"
