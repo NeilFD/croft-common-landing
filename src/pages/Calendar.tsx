@@ -110,7 +110,7 @@ const Calendar = () => {
                 return (
                   <button
                     key={event.id}
-                    className={`aspect-square rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center p-0.5 ${
+                    className={`aspect-square rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center p-1 ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -122,7 +122,7 @@ const Calendar = () => {
                     }}
                     title={event.title}
                   >
-                    <span className="text-[5px] xs:text-[6px] sm:text-[7px] md:text-[8px] font-bold text-white capitalize leading-none text-center whitespace-nowrap overflow-hidden">
+                    <span className="text-[4px] xs:text-[5px] sm:text-[6px] md:text-[7px] font-bold text-white capitalize leading-none text-center whitespace-nowrap overflow-hidden">
                       {event.category}
                     </span>
                   </button>
@@ -216,7 +216,7 @@ const Calendar = () => {
                     }}
                     title={event.title}
                   >
-                    <span className="text-[9px] md:text-[10px] font-bold text-white capitalize leading-none text-center whitespace-nowrap overflow-hidden">
+                    <span className="text-[8px] md:text-[9px] font-bold text-white capitalize leading-none text-center whitespace-nowrap overflow-hidden">
                       {event.category}
                     </span>
                   </button>
