@@ -24,7 +24,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
 
   // Detect when user becomes authenticated and automatically proceed
   useEffect(() => {
@@ -33,6 +33,28 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       onSuccess();
     }
   }, [user, isOpen, emailSent, onSuccess]);
+
+  // Add window focus detection and polling for cross-window authentication
+  useEffect(() => {
+    if (!emailSent || !isOpen) return;
+
+    const handleWindowFocus = async () => {
+      await refreshSession();
+    };
+
+    // Add window focus listener
+    window.addEventListener('focus', handleWindowFocus);
+
+    // Poll for authentication every 2 seconds while email is sent
+    const pollInterval = setInterval(async () => {
+      await refreshSession();
+    }, 2000);
+
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+      clearInterval(pollInterval);
+    };
+  }, [emailSent, isOpen, refreshSession]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,9 +111,11 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     onClose();
   };
 
-  const handleGotIt = () => {
-    // Check if user is now authenticated after magic link
-    if (user) {
+  const handleGotIt = async () => {
+    // Refresh session to get latest auth state before checking
+    const session = await refreshSession();
+    
+    if (session?.user) {
       onSuccess();
     } else {
       handleClose();
