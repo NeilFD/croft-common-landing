@@ -13,9 +13,11 @@ const Community = () => {
             COMMON GROUND
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            We didn't land here by accident. Croft Common was built in the middle of it - the murals, the music, the noise, the roots.
+            We didn't land here by accident.
             <br /><br />
-            Stokes Croft isn't a backdrop, it's part of the fabric. So we listen. We show up. We give time, space and care.
+            Croft Common was built in the middle of it - the murals, the music, the noise, the roots.
+            <br /><br />
+            Stokes Croft isn't a backdrop, it's part of the fabric. So we listen. We show up. We give time, space, care. We pay it forward.
             <br /><br />
             Always add, never subtract.
           </p>
