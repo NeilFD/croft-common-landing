@@ -281,7 +281,7 @@ const Calendar = () => {
             onMouseUp={handleMouseUp}
             style={{ touchAction: 'none' }}
           >
-            <CardContent className="p-8 space-y-4 text-foreground/70">
+            <CardContent className="p-8 space-y-4 text-foreground/70 text-left">
               <p className="font-industrial text-lg leading-relaxed">
                 The good stuff lands here first.
               </p>
@@ -292,7 +292,10 @@ const Calendar = () => {
                 Some you'll see on the posters. Some you'll only find here.
               </p>
               <p className="font-industrial text-lg leading-relaxed">
-                Quiet heads-up. Limited numbers. No fanfare. Just first access, if you're paying attention.
+                Quiet heads-up. Limited numbers. No fanfare. Just first access,
+              </p>
+              <p className="font-industrial text-lg leading-relaxed">
+                if you're paying attention.
               </p>
             </CardContent>
           </Card>
