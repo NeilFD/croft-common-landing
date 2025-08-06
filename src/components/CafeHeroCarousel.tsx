@@ -23,6 +23,12 @@ const CafeHeroCarousel = () => {
       backgroundPosition: '60% center'
     },
     {
+      src: '/lovable-uploads/9110aec8-9e43-43ad-b701-6d4948d1f48b.png',
+      type: 'warm',
+      overlay: '',
+      backgroundPosition: 'center center'
+    },
+    {
       src: '/lovable-uploads/e6f7674f-71d0-4ec4-8782-a283ed5ba5b5.png',
       type: 'dark',
       overlay: 'bg-void/25',
