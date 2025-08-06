@@ -4,6 +4,8 @@ import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
 import CreateEventModal from '@/components/CreateEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
+import { AuthModal } from '@/components/AuthModal';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import useCardGestureDetection from '@/hooks/useCardGestureDetection';
@@ -21,18 +23,34 @@ const Calendar = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   
   const { events, loading, addEvent } = useEventManager();
+  const { user, loading: authLoading } = useAuth();
   const gestureCardRef = useRef<HTMLDivElement>(null);
   
   const handleGestureSuccess = useCallback(() => {
+    if (!user) {
+      setShowAuthModal(true);
+    } else {
+      toast({
+        title: "Access Granted",
+        description: "Welcome to The Common Room, for Common People",
+        duration: 2000,
+      });
+      setShowCreateModal(true);
+    }
+  }, [user]);
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
     toast({
       title: "Access Granted",
       description: "Welcome to The Common Room, for Common People",
       duration: 2000,
     });
     setShowCreateModal(true);
-  }, []);
+  };
   
   const {
     isDrawing,
@@ -373,6 +391,12 @@ const Calendar = () => {
       <Footer />
       
       {/* Modals */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
+      
       <CreateEventModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}

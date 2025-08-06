@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useTransition } from '@/contexts/TransitionContext';
 import { preloadImages } from '@/hooks/useImagePreloader';
+import { UserMenu } from './UserMenu';
 import { Menu, X } from 'lucide-react';
 
 const Navigation = () => {
@@ -95,7 +96,7 @@ const Navigation = () => {
         </button>
         
         {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8">
+        <div className="hidden md:flex items-center space-x-8">
           {navItems.map((item) => (
             <button
               key={item.name}
@@ -106,6 +107,7 @@ const Navigation = () => {
               {item.name}
             </button>
           ))}
+          <UserMenu />
         </div>
         
         {/* Mobile menu button */}
