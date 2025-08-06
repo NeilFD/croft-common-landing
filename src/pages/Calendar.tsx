@@ -122,7 +122,7 @@ const Calendar = () => {
                     }}
                     title={event.title}
                   >
-                    <span className="text-[4px] xs:text-[5px] sm:text-[6px] md:text-[7px] font-bold text-white capitalize leading-none text-center whitespace-nowrap overflow-hidden">
+                    <span className="text-[4px] xs:text-[5px] sm:text-[6px] md:text-[7px] font-bold text-white capitalize leading-none text-center whitespace-nowrap">
                       {event.category}
                     </span>
                   </button>
@@ -216,7 +216,7 @@ const Calendar = () => {
                     }}
                     title={event.title}
                   >
-                    <span className="text-[8px] md:text-[9px] font-bold text-white capitalize leading-none text-center whitespace-nowrap overflow-hidden">
+                    <span className="text-[8px] md:text-[9px] font-bold text-white capitalize leading-none text-center whitespace-nowrap">
                       {event.category}
                     </span>
                   </button>
