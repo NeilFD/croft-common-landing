@@ -8,6 +8,8 @@ import { AuthModal } from '@/components/AuthModal';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
 import useCardGestureDetection from '@/hooks/useCardGestureDetection';
 import { toast } from '@/hooks/use-toast';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Grid3X3 } from 'lucide-react';
@@ -120,20 +122,22 @@ const Calendar = () => {
               {dayEvents.map(event => {
                 const categoryColors = eventCategoryColors[event.category];
                 return (
-                  <div
-                    key={event.id}
-                    className={cn(
-                      "text-xs p-1 rounded border border-border bg-background cursor-pointer hover:opacity-80 transition-opacity",
-                      `border-l-2 border-l-${eventCategoryColors[event.category].accent}`
-                    )}
-                    style={{
-                      borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
-                    }}
-                    onClick={() => {
-                      setSelectedEvent(event);
-                      setShowEventDetail(true);
-                    }}
-                  >
+                  <TooltipProvider key={event.id}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={cn(
+                            "text-xs p-2 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm",
+                            `border-l-4`
+                          )}
+                          style={{
+                            borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
+                          }}
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setShowEventDetail(true);
+                          }}
+                        >
                     {event.imageUrl && (
                       <img 
                         src={event.imageUrl} 
@@ -141,9 +145,32 @@ const Calendar = () => {
                         className="w-full h-8 object-cover rounded mb-1"
                       />
                     )}
-                    <div className="font-medium truncate text-foreground">{event.title}</div>
-                    <div className="opacity-75 text-xs text-muted-foreground">{event.time}</div>
-                  </div>
+                          <div className="font-medium truncate text-foreground">{event.title}</div>
+                          <div className="opacity-75 text-xs text-muted-foreground">{event.time}</div>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="max-w-sm p-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className={`border-2`} style={{
+                              borderColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
+                            }}>
+                              {event.category}
+                            </Badge>
+                          </div>
+                          <h4 className="font-bold text-foreground">{event.title}</h4>
+                          <div className="text-sm text-muted-foreground space-y-1">
+                            <p><strong>Time:</strong> {event.time}</p>
+                            <p><strong>Date:</strong> {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}</p>
+                            <p><strong>Location:</strong> {event.location}</p>
+                            <p><strong>Organizer:</strong> {event.organizer}</p>
+                            {event.price && <p><strong>Price:</strong> £{event.price}</p>}
+                          </div>
+                          <p className="text-sm text-foreground">{event.description}</p>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 );
               })}
             </div>
@@ -203,20 +230,22 @@ const Calendar = () => {
             {dayEvents.map(event => {
               const categoryColors = eventCategoryColors[event.category];
               return (
-                <div
-                  key={event.id}
-                  className={cn(
-                    "p-3 rounded border border-border bg-background cursor-pointer hover:opacity-80 transition-opacity",
-                    `border-l-4 border-l-${eventCategoryColors[event.category].accent}`
-                  )}
-                  style={{
-                    borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
-                  }}
-                  onClick={() => {
-                    setSelectedEvent(event);
-                    setShowEventDetail(true);
-                  }}
-                >
+                <TooltipProvider key={event.id}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={cn(
+                          "p-3 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm",
+                          `border-l-4`
+                        )}
+                        style={{
+                          borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
+                        }}
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setShowEventDetail(true);
+                        }}
+                      >
                   {event.imageUrl && (
                     <img 
                       src={event.imageUrl} 
@@ -224,10 +253,33 @@ const Calendar = () => {
                       className="w-full h-16 object-cover rounded mb-2"
                     />
                   )}
-                  <div className="font-medium text-sm text-muted-foreground">{event.time}</div>
-                  <div className="font-bold text-foreground">{event.title}</div>
-                  <div className="text-xs opacity-75 mt-1 text-muted-foreground">{event.description}</div>
-                </div>
+                        <div className="font-medium text-sm text-muted-foreground">{event.time}</div>
+                        <div className="font-bold text-foreground">{event.title}</div>
+                        <div className="text-xs opacity-75 mt-1 text-muted-foreground">{event.description}</div>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-sm p-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className={`border-2`} style={{
+                            borderColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
+                          }}>
+                            {event.category}
+                          </Badge>
+                        </div>
+                        <h4 className="font-bold text-foreground">{event.title}</h4>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          <p><strong>Time:</strong> {event.time}</p>
+                          <p><strong>Date:</strong> {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}</p>
+                          <p><strong>Location:</strong> {event.location}</p>
+                          <p><strong>Organizer:</strong> {event.organizer}</p>
+                          {event.price && <p><strong>Price:</strong> £{event.price}</p>}
+                        </div>
+                        <p className="text-sm text-foreground">{event.description}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               );
             })}
           </div>
