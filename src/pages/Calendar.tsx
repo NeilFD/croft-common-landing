@@ -5,6 +5,7 @@ import GestureOverlay from '@/components/GestureOverlay';
 import CreateEventModal from '@/components/CreateEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
 import { EventDotModal } from '@/components/EventDotModal';
+import { EventColorLegend } from '@/components/EventColorLegend';
 import { AuthModal } from '@/components/AuthModal';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -120,13 +121,13 @@ const Calendar = () => {
             }`}>
               {format(cloneDay, dateFormat)}
             </span>
-            <div className="mt-1 flex flex-wrap gap-1">
-              {dayEvents.slice(0, 6).map((event, index) => {
+            <div className="mt-1 flex flex-wrap gap-1.5">
+              {dayEvents.slice(0, 8).map((event, index) => {
                 const categoryColors = eventCategoryColors[event.category];
                 return (
                   <button
                     key={event.id}
-                    className={`w-2 h-2 md:w-3 md:h-3 rounded-full cursor-pointer hover:scale-125 transition-transform ${
+                    className={`w-3 h-3 md:w-4 md:h-4 rounded-full cursor-pointer hover:scale-125 transition-transform shadow-sm ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -140,9 +141,9 @@ const Calendar = () => {
                   />
                 );
               })}
-              {dayEvents.length > 6 && (
+              {dayEvents.length > 8 && (
                 <span className="text-[10px] text-muted-foreground font-medium">
-                  +{dayEvents.length - 6}
+                  +{dayEvents.length - 8}
                 </span>
               )}
             </div>
@@ -183,6 +184,7 @@ const Calendar = () => {
   const renderWeekView = () => {
     const weekStart = startOfWeek(currentDate);
     const weekDays = [];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     
     for (let i = 0; i < 7; i++) {
       const day = addDays(weekStart, i);
@@ -192,26 +194,26 @@ const Calendar = () => {
 
       weekDays.push(
         <div key={day.toString()} className="flex-1 border-r border-border last:border-r-0 min-w-[80px]">
-          <div className="p-2 md:p-4 border-b border-border bg-muted/30">
+          <div className="p-2 md:p-3 border-b border-border bg-muted/30">
             <div className="text-center">
-              <div className="text-xs md:text-sm text-muted-foreground">
-                {format(day, 'EEE')}
+              <div className="text-xs md:text-sm text-muted-foreground font-medium">
+                {dayNames[i]}
               </div>
-              <div className={`text-sm md:text-lg font-medium ${
-                isSameDay(day, new Date()) ? 'text-primary font-bold' : ''
+              <div className={`text-sm md:text-lg font-bold ${
+                isSameDay(day, new Date()) ? 'text-primary' : 'text-foreground'
               }`}>
                 {format(day, 'd')}
               </div>
             </div>
           </div>
-          <div className="min-h-[300px] md:min-h-[400px] p-2 space-y-2">
-            <div className="flex flex-wrap gap-1">
-              {dayEvents.slice(0, 8).map((event, index) => {
+          <div className="h-[200px] md:h-[250px] p-2 space-y-2 overflow-y-auto">
+            <div className="flex flex-wrap gap-1.5">
+              {dayEvents.slice(0, 12).map((event, index) => {
                 const categoryColors = eventCategoryColors[event.category];
                 return (
                   <button
                     key={event.id}
-                    className={`w-3 h-3 md:w-4 md:h-4 rounded-full cursor-pointer hover:scale-125 transition-transform ${
+                    className={`w-4 h-4 md:w-5 md:h-5 rounded-full cursor-pointer hover:scale-125 transition-transform shadow-sm ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -226,9 +228,9 @@ const Calendar = () => {
                 );
               })}
             </div>
-            {dayEvents.length > 8 && (
-              <div className="text-xs text-muted-foreground font-medium">
-                +{dayEvents.length - 8} more events
+            {dayEvents.length > 12 && (
+              <div className="text-xs text-muted-foreground font-medium mt-2">
+                +{dayEvents.length - 12} more
               </div>
             )}
           </div>
@@ -238,7 +240,7 @@ const Calendar = () => {
 
     return (
       <div className="bg-background border border-border rounded-lg overflow-hidden">
-        <div className="flex overflow-x-auto md:overflow-x-visible">
+        <div className="flex">
           {weekDays}
         </div>
       </div>
@@ -406,6 +408,9 @@ const Calendar = () => {
             </Button>
           </div>
         </div>
+
+        {/* Color Legend for Mobile */}
+        <EventColorLegend />
 
         {/* Calendar */}
         <div className="mb-8 md:mb-16">
