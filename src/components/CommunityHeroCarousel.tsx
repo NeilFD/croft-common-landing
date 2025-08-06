@@ -27,6 +27,9 @@ const CommunityHeroCarousel = () => {
     },
     {
       src: '/lovable-uploads/a20baf5a-8e8f-41ea-82f5-1801dbd32dd7.png'
+    },
+    {
+      src: '/lovable-uploads/2c2e175f-be6b-4df7-a725-47d558a35cd8.png'
     }
   ];
 
