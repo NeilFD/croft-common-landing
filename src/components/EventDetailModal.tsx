@@ -2,7 +2,7 @@ import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, MapPin, User, Mail, DollarSign } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, Mail } from 'lucide-react';
 import { Event, eventCategoryColors } from '@/types/event';
 import { format, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -97,7 +97,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isOpen, onCl
             
             {event.price && (
               <div className="flex items-center gap-3">
-                <DollarSign className="h-5 w-5 text-muted-foreground" />
+                <span className="h-5 w-5 flex items-center justify-center font-bold text-muted-foreground">£</span>
                 <div>
                   <div className="text-sm text-muted-foreground">Price</div>
                   <div className="font-medium">£{event.price.toFixed(2)}</div>

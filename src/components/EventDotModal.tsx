@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Event, eventCategoryColors } from '@/types/event';
 import { format } from 'date-fns';
-import { Clock, MapPin, User, DollarSign, Mail } from 'lucide-react';
+import { Clock, MapPin, User, Mail } from 'lucide-react';
 
 interface EventDotModalProps {
   event: Event | null;
@@ -57,7 +57,7 @@ export const EventDotModal = ({ event, isOpen, onClose }: EventDotModalProps) =>
         </div>
         {event.price && (
           <div className="flex items-center gap-2 text-muted-foreground">
-            <DollarSign className="h-4 w-4" />
+            <span className="h-4 w-4 flex items-center justify-center font-bold text-sm">£</span>
             <span>£{event.price}</span>
           </div>
         )}
@@ -157,7 +157,7 @@ export const EventDotModal = ({ event, isOpen, onClose }: EventDotModalProps) =>
         </div>
         {event.price && (
           <div className="flex items-center gap-3">
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <span className="h-4 w-4 flex items-center justify-center font-bold text-sm text-muted-foreground">£</span>
             <div>
               <span className="font-medium">Price:</span> £{event.price}
             </div>
