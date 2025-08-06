@@ -358,9 +358,6 @@ const Calendar = () => {
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-8 md:py-12 lg:py-24">
         {/* Header */}
         <div className="text-center mb-8 md:mb-12">
-          <h1 className="font-brutalist text-2xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-foreground leading-tight">
-            What's Next?
-          </h1>
           <Card 
             ref={gestureCardRef}
             className="max-w-3xl mx-auto bg-background hover:border-primary/20 transition-colors cursor-crosshair select-none"
@@ -379,9 +376,9 @@ const Calendar = () => {
             }}
           >
             <CardContent className="p-4 md:p-8 space-y-2 text-foreground/70 text-left">
-              <h3 className="font-industrial text-xl md:text-2xl font-semibold text-foreground mb-4">
-                What's Next
-              </h3>
+              <h1 className="font-brutalist text-2xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-foreground leading-tight">
+                What's Next?
+              </h1>
               <p className="font-industrial text-sm md:text-lg leading-relaxed">
                 The good stuff lands here first.
               </p>
