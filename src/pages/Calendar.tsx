@@ -357,10 +357,10 @@ const Calendar = () => {
       
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-8 md:py-12 lg:py-24">
         {/* Header */}
-        <div className="text-center mb-8 md:mb-12">
+        <div className="text-center mb-8 md:mb-12 mt-8 md:mt-16">
           <Card 
             ref={gestureCardRef}
-            className="max-w-3xl mx-auto bg-background hover:border-primary/20 transition-colors cursor-crosshair select-none"
+            className="max-w-3xl mx-auto bg-background/80 backdrop-blur-sm hover:border-primary/20 transition-colors cursor-crosshair select-none"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
