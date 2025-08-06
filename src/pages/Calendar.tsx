@@ -123,11 +123,12 @@ const Calendar = () => {
                   <div
                     key={event.id}
                     className={cn(
-                      "text-xs p-1 rounded border-l-2 cursor-pointer hover:opacity-80 transition-opacity",
-                      categoryColors.bg,
-                      categoryColors.border,
-                      categoryColors.text
+                      "text-xs p-1 rounded border border-border bg-background cursor-pointer hover:opacity-80 transition-opacity",
+                      `border-l-2 border-l-${eventCategoryColors[event.category].accent}`
                     )}
+                    style={{
+                      borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
+                    }}
                     onClick={() => {
                       setSelectedEvent(event);
                       setShowEventDetail(true);
@@ -140,8 +141,8 @@ const Calendar = () => {
                         className="w-full h-8 object-cover rounded mb-1"
                       />
                     )}
-                    <div className="font-medium truncate">{event.title}</div>
-                    <div className="opacity-75 text-xs">{event.time}</div>
+                    <div className="font-medium truncate text-foreground">{event.title}</div>
+                    <div className="opacity-75 text-xs text-muted-foreground">{event.time}</div>
                   </div>
                 );
               })}
@@ -205,11 +206,12 @@ const Calendar = () => {
                 <div
                   key={event.id}
                   className={cn(
-                    "p-3 rounded border-l-4 cursor-pointer hover:opacity-80 transition-opacity",
-                    categoryColors.bg,
-                    categoryColors.border,
-                    categoryColors.text
+                    "p-3 rounded border border-border bg-background cursor-pointer hover:opacity-80 transition-opacity",
+                    `border-l-4 border-l-${eventCategoryColors[event.category].accent}`
                   )}
+                  style={{
+                    borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
+                  }}
                   onClick={() => {
                     setSelectedEvent(event);
                     setShowEventDetail(true);
@@ -222,9 +224,9 @@ const Calendar = () => {
                       className="w-full h-16 object-cover rounded mb-2"
                     />
                   )}
-                  <div className="font-medium text-sm">{event.time}</div>
-                  <div className="font-bold">{event.title}</div>
-                  <div className="text-xs opacity-75 mt-1">{event.description}</div>
+                  <div className="font-medium text-sm text-muted-foreground">{event.time}</div>
+                  <div className="font-bold text-foreground">{event.title}</div>
+                  <div className="text-xs opacity-75 mt-1 text-muted-foreground">{event.description}</div>
                 </div>
               );
             })}
