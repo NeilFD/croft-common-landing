@@ -79,7 +79,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
     setLoading(true);
 
-    const redirectUrl = `${window.location.origin}/`;
+    const redirectUrl = `${window.location.origin}/calendar`;
     
     const { error } = await supabase.auth.signInWithOtp({
       email,

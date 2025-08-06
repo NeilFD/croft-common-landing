@@ -31,7 +31,7 @@ const Calendar = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   const { events, loading, addEvent } = useEventManager();
-  const { user, loading: authLoading, refreshSession } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const gestureCardRef = useRef<HTMLDivElement>(null);
   
   const handleGestureSuccess = useCallback(() => {
@@ -50,7 +50,8 @@ const Calendar = () => {
   const handleAuthSuccess = async () => {
     console.log('handleAuthSuccess called');
     
-    // Use the existing refreshSession from the hook
+    // Force refresh the auth state to ensure we have the latest user data
+    const { refreshSession } = useAuth();
     const session = await refreshSession();
     
     console.log('Session after refresh in handleAuthSuccess:', session?.user?.email);
