@@ -27,9 +27,9 @@ const BeerHeroCarousel = () => {
       overlay: ''
     },
     {
-      src: '/lovable-uploads/13ac21e8-600e-49ed-9565-c01a222ada20.png',
-      type: 'warm',
-      overlay: 'bg-void/30'
+      src: '/lovable-uploads/9ef0b073-9f25-420b-8d75-fb90540706d3.png',
+      type: 'dark',
+      overlay: ''
     },
     {
       src: '/lovable-uploads/1b15e13f-fb17-4f03-a1d9-9a7c2a2611b3.png',
