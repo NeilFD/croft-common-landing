@@ -27,9 +27,9 @@ const CocktailHeroCarousel = () => {
       overlay: ''
     },
     {
-      src: '/lovable-uploads/644b4e2a-eb1b-4d76-a734-f012e7d69379.png',
-      type: 'dark',
-      overlay: ''
+      src: '/lovable-uploads/ada4b655-67e6-4bbe-8e52-ea2d407da312.png',
+      type: 'warm',
+      overlay: 'bg-void/25'
     },
     {
       src: '/lovable-uploads/0c4a9d3f-d5a3-4a01-85fb-ed3f272a821f.png',
@@ -37,9 +37,9 @@ const CocktailHeroCarousel = () => {
       overlay: ''
     },
     {
-      src: '/lovable-uploads/ada4b655-67e6-4bbe-8e52-ea2d407da312.png',
-      type: 'warm',
-      overlay: 'bg-void/25'
+      src: '/lovable-uploads/644b4e2a-eb1b-4d76-a734-f012e7d69379.png',
+      type: 'dark',
+      overlay: ''
     }
   ];
 
