@@ -22,6 +22,11 @@ const CocktailHeroCarousel = () => {
       overlay: 'bg-void/30'
     },
     {
+      src: '/lovable-uploads/19074a8e-e1ee-4793-8c75-c60bd7818a99.png',
+      type: 'dark',
+      overlay: ''
+    },
+    {
       src: '/lovable-uploads/96977a94-65ef-4620-ae91-5440d335123f.png',
       type: 'dark',
       overlay: 'bg-void/20'
