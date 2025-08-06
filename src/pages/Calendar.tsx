@@ -1,49 +1,30 @@
 import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import GestureOverlay from '@/components/GestureOverlay';
+import GestureTrail from '@/components/GestureTrail';
+import CreateEventModal from '@/components/CreateEventModal';
+import EventDetailModal from '@/components/EventDetailModal';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Grid3X3 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, addWeeks, isSameMonth, isSameDay, parseISO } from 'date-fns';
-
-// Sample events data - in a real app this would come from a database
-const sampleEvents = [
-  {
-    id: 1,
-    title: "Wine Tasting: Natural Wines",
-    date: "2025-01-15",
-    time: "19:00",
-    description: "Limited to 12 people",
-    category: "tasting"
-  },
-  {
-    id: 2,
-    title: "Live Jazz: The Quartet",
-    date: "2025-01-18",
-    time: "20:30",
-    description: "Intimate session",
-    category: "gig"
-  },
-  {
-    id: 3,
-    title: "Chef's Table",
-    date: "2025-01-22",
-    time: "18:00",
-    description: "Secret menu preview",
-    category: "food"
-  },
-  {
-    id: 4,
-    title: "Coffee Cupping",
-    date: "2025-01-25",
-    time: "10:00",
-    description: "Single origin exploration",
-    category: "tasting"
-  }
-];
+import { useEventManager } from '@/hooks/useEventManager';
+import { Event, eventCategoryColors } from '@/types/event';
+import { cn } from '@/lib/utils';
+import useGestureDetection from '@/hooks/useGestureDetection';
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewType, setViewType] = useState<'month' | 'week'>('month');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventDetail, setShowEventDetail] = useState(false);
+  
+  const { events, addEvent } = useEventManager();
+  
+  const gestureDetection = useGestureDetection(() => {
+    setShowCreateModal(true);
+  });
 
   const navigateDate = (direction: 'prev' | 'next') => {
     if (viewType === 'month') {
@@ -67,7 +48,7 @@ const Calendar = () => {
     while (day <= endDate) {
       for (let i = 0; i < 7; i++) {
         const cloneDay = day;
-        const dayEvents = sampleEvents.filter(event => 
+        const dayEvents = events.filter(event => 
           isSameDay(parseISO(event.date), cloneDay)
         );
 
@@ -84,15 +65,34 @@ const Calendar = () => {
               {format(cloneDay, dateFormat)}
             </span>
             <div className="mt-1 space-y-1">
-              {dayEvents.map(event => (
-                <div
-                  key={event.id}
-                  className="text-xs bg-primary/10 text-primary p-1 rounded border-l-2 border-primary"
-                >
-                  <div className="font-medium">{event.title}</div>
-                  <div className="text-muted-foreground">{event.time}</div>
-                </div>
-              ))}
+              {dayEvents.map(event => {
+                const categoryColors = eventCategoryColors[event.category];
+                return (
+                  <div
+                    key={event.id}
+                    className={cn(
+                      "text-xs p-1 rounded border-l-2 cursor-pointer hover:opacity-80 transition-opacity",
+                      categoryColors.bg,
+                      categoryColors.border,
+                      categoryColors.text
+                    )}
+                    onClick={() => {
+                      setSelectedEvent(event);
+                      setShowEventDetail(true);
+                    }}
+                  >
+                    {event.imageUrl && (
+                      <img 
+                        src={event.imageUrl} 
+                        alt={event.title}
+                        className="w-full h-8 object-cover rounded mb-1"
+                      />
+                    )}
+                    <div className="font-medium truncate">{event.title}</div>
+                    <div className="opacity-75 text-xs">{event.time}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         );
@@ -130,7 +130,7 @@ const Calendar = () => {
     
     for (let i = 0; i < 7; i++) {
       const day = addDays(weekStart, i);
-      const dayEvents = sampleEvents.filter(event => 
+      const dayEvents = events.filter(event => 
         isSameDay(parseISO(event.date), day)
       );
 
@@ -147,16 +147,35 @@ const Calendar = () => {
             </div>
           </div>
           <div className="min-h-[400px] p-2 space-y-2">
-            {dayEvents.map(event => (
-              <div
-                key={event.id}
-                className="bg-primary/10 text-primary p-3 rounded border-l-4 border-primary"
-              >
-                <div className="font-medium text-sm">{event.time}</div>
-                <div className="font-bold">{event.title}</div>
-                <div className="text-xs text-muted-foreground mt-1">{event.description}</div>
-              </div>
-            ))}
+            {dayEvents.map(event => {
+              const categoryColors = eventCategoryColors[event.category];
+              return (
+                <div
+                  key={event.id}
+                  className={cn(
+                    "p-3 rounded border-l-4 cursor-pointer hover:opacity-80 transition-opacity",
+                    categoryColors.bg,
+                    categoryColors.border,
+                    categoryColors.text
+                  )}
+                  onClick={() => {
+                    setSelectedEvent(event);
+                    setShowEventDetail(true);
+                  }}
+                >
+                  {event.imageUrl && (
+                    <img 
+                      src={event.imageUrl} 
+                      alt={event.title}
+                      className="w-full h-16 object-cover rounded mb-2"
+                    />
+                  )}
+                  <div className="font-medium text-sm">{event.time}</div>
+                  <div className="font-bold">{event.title}</div>
+                  <div className="text-xs opacity-75 mt-1">{event.description}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       );
@@ -171,9 +190,21 @@ const Calendar = () => {
     );
   };
 
+  const handleEventSave = (eventData: Omit<Event, 'id'>) => {
+    addEvent(eventData);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
+      
+      {/* Gesture Overlay for Admin Access */}
+      <GestureOverlay onGestureComplete={() => setShowCreateModal(true)} />
+      <GestureTrail 
+        points={gestureDetection.points}
+        isComplete={gestureDetection.isComplete}
+        isDrawing={gestureDetection.isDrawing}
+      />
       
       <div className="container mx-auto px-6 py-24">
         {/* Header */}
@@ -251,6 +282,22 @@ const Calendar = () => {
       </div>
 
       <Footer />
+      
+      {/* Modals */}
+      <CreateEventModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSave={handleEventSave}
+      />
+      
+      <EventDetailModal
+        event={selectedEvent}
+        isOpen={showEventDetail}
+        onClose={() => {
+          setShowEventDetail(false);
+          setSelectedEvent(null);
+        }}
+      />
     </div>
   );
 };

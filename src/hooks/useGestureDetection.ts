@@ -28,48 +28,59 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     }
   }, []);
 
-  const isValid7Shape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 25) return false; // Require substantial gesture (reduced from 30)
+  const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
+    if (gesturePoints.length < 30) return false; // Require substantial gesture for "A"
 
     const firstPoint = gesturePoints[0];
     const lastPoint = gesturePoints[gesturePoints.length - 1];
     
-    // Must start in upper third of screen and end in lower portion
+    // Must start in upper portion and end in lower portion
     const screenHeight = window.innerHeight;
-    if (firstPoint.y > screenHeight * 0.4) return false; // Start in upper 40%
+    if (firstPoint.y > screenHeight * 0.3) return false; // Start in upper 30%
     if (lastPoint.y < screenHeight * 0.6) return false; // End in lower 40%
     
-    // Must move significantly right then down
-    const totalHorizontalMovement = lastPoint.x - firstPoint.x;
-    const totalVerticalMovement = lastPoint.y - firstPoint.y;
-    if (totalVerticalMovement < 200) return false; // Significant downward movement
+    // Split gesture into three parts for "A" shape analysis
+    const firstThird = Math.floor(gesturePoints.length * 0.33);
+    const secondThird = Math.floor(gesturePoints.length * 0.66);
     
-    // Divide gesture into two parts to check for 7 pattern
-    const midPoint = Math.floor(gesturePoints.length * 0.4); // First 40% should be horizontal
-    const horizontalSection = gesturePoints.slice(0, midPoint);
-    const diagonalSection = gesturePoints.slice(midPoint);
+    const leftStroke = gesturePoints.slice(0, firstThird);
+    const crossBar = gesturePoints.slice(firstThird, secondThird);
+    const rightStroke = gesturePoints.slice(secondThird);
     
-    if (horizontalSection.length < 10 || diagonalSection.length < 15) return false;
+    if (leftStroke.length < 8 || crossBar.length < 6 || rightStroke.length < 8) return false;
     
-    // Check horizontal section (top of 7) - should move primarily right
-    const horizontalStart = horizontalSection[0];
-    const horizontalEnd = horizontalSection[horizontalSection.length - 1];
-    const horizontalX = horizontalEnd.x - horizontalStart.x;
-    const horizontalY = Math.abs(horizontalEnd.y - horizontalStart.y);
+    // Check left stroke - should go up and right (first part of A)
+    const leftStart = leftStroke[0];
+    const leftEnd = leftStroke[leftStroke.length - 1];
+    const leftDeltaX = leftEnd.x - leftStart.x;
+    const leftDeltaY = leftEnd.y - leftStart.y;
     
-    if (horizontalX < 80) return false; // Must move significantly right (reduced from 100)
-    if (horizontalY > horizontalX * 0.4) return false; // Should be mostly horizontal (increased tolerance from 30% to 40%)
+    // Left stroke should move up and right
+    if (leftDeltaY > 0) return false; // Should move up (negative Y)
+    if (leftDeltaX < 50) return false; // Should move right significantly
     
-    // Check diagonal section (stroke of 7) - should move down and optionally left
-    const diagonalStart = diagonalSection[0];
-    const diagonalEnd = diagonalSection[diagonalSection.length - 1];
-    const diagonalY = diagonalEnd.y - diagonalStart.y;
-    const diagonalX = diagonalEnd.x - diagonalStart.x;
+    // Check crossbar - should be roughly horizontal
+    const crossStart = crossBar[0];
+    const crossEnd = crossBar[crossBar.length - 1];
+    const crossDeltaX = crossEnd.x - crossStart.x;
+    const crossDeltaY = Math.abs(crossEnd.y - crossStart.y);
     
-    if (diagonalY < 150) return false; // Must move significantly down
+    if (crossDeltaX < 30) return false; // Must move horizontally
+    if (crossDeltaY > crossDeltaX * 0.5) return false; // Should be mostly horizontal
     
-    // Diagonal should be steeper than 30 degrees (vertical movement > horizontal movement / 2)
-    if (diagonalY < Math.abs(diagonalX) * 1.5) return false;
+    // Check right stroke - should go down and right (completing the A)
+    const rightStart = rightStroke[0];
+    const rightEnd = rightStroke[rightStroke.length - 1];
+    const rightDeltaX = rightEnd.x - rightStart.x;
+    const rightDeltaY = rightEnd.y - rightStart.y;
+    
+    // Right stroke should move down and right
+    if (rightDeltaY < 50) return false; // Should move down significantly
+    if (rightDeltaX < 20) return false; // Should move right
+    
+    // Validate overall A shape - peak should be higher than endpoints
+    const peakY = Math.min(...gesturePoints.slice(0, firstThird * 2).map(p => p.y));
+    if (peakY > firstPoint.y - 50) return false; // Peak should be significantly higher
     
     return true;
   }, []);
@@ -80,7 +91,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
       const updated = [...prev, newPoint];
       
       // Check if gesture is complete - only validate on substantial gestures
-      if (updated.length > 25 && isValid7Shape(updated)) {
+      if (updated.length > 30 && isValidAShape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
@@ -93,7 +104,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
       
       return updated;
     });
-  }, [isValid7Shape, onGestureComplete, clearGesture]);
+  }, [isValidAShape, onGestureComplete, clearGesture]);
 
   const startGesture = useCallback((x: number, y: number) => {
     clearGesture();
