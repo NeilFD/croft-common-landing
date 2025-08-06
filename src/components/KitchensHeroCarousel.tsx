@@ -22,6 +22,11 @@ const KitchensHeroCarousel = () => {
       overlay: 'bg-void/30'
     },
     {
+      src: '/lovable-uploads/5101ed7f-1323-4112-82b4-a09d6d501a36.png',
+      type: 'industrial',
+      overlay: ''
+    },
+    {
       src: '/lovable-uploads/75f518f0-7918-463a-9e00-c016e4271205.png',
       type: 'mixed',
       overlay: 'bg-void/25'
