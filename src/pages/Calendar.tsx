@@ -153,7 +153,7 @@ const Calendar = () => {
     return (
       <div className="bg-background/80 backdrop-blur-sm border border-border/50 rounded-lg overflow-hidden">
         {/* Days header */}
-        <div className="grid grid-cols-7 bg-muted/30">
+        <div className="grid grid-cols-7 bg-muted">
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
             const fullDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             return (
@@ -185,7 +185,7 @@ const Calendar = () => {
 
       weekDays.push(
         <div key={day.toString()} className="flex-1 border-r border-border/30 last:border-r-0 min-w-[120px]">
-          <div className="p-2 md:p-3 border-b border-border/30 bg-muted/30">
+          <div className="p-2 md:p-3 border-b border-border/30 bg-muted">
             <div className="text-center">
               <div className="text-xs md:text-sm text-muted-foreground font-medium">
                 {dayNames[i]}
