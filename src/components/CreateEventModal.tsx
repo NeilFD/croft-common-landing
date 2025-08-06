@@ -270,7 +270,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
                   <SelectItem value="talks">Talks</SelectItem>
                   <SelectItem value="takeovers">Takeovers</SelectItem>
                   <SelectItem value="food">Food</SelectItem>
-                  <SelectItem value="special">Special</SelectItem>
+                  <SelectItem value="house">House</SelectItem>
                 </SelectContent>
               </Select>
             </div>

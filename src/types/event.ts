@@ -15,7 +15,7 @@ export interface Event {
   managementEmail?: string;
 }
 
-export type EventCategory = 'gigs' | 'tastings' | 'talks' | 'takeovers' | 'food' | 'special';
+export type EventCategory = 'gigs' | 'tastings' | 'talks' | 'takeovers' | 'food' | 'house';
 
 export const eventCategoryColors: Record<EventCategory, {
   bg: string;
@@ -53,7 +53,7 @@ export const eventCategoryColors: Record<EventCategory, {
     text: 'text-accent-blood-red-dark',
     accent: 'accent-blood-red'
   },
-  special: {
+  house: {
     bg: 'bg-accent-vivid-purple-subtle',
     border: 'border-accent-vivid-purple',
     text: 'text-accent-vivid-purple-dark',

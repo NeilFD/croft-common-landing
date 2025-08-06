@@ -139,7 +139,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isOpen, onCl
               {event.category === 'talks' && 'Conversations and presentations'}
               {event.category === 'takeovers' && 'Special collaborations'}
               {event.category === 'food' && 'Culinary experiences'}
-              {event.category === 'special' && 'Unique experiences'}
+              {event.category === 'house' && 'House experiences'}
             </div>
           </div>
 

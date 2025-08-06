@@ -215,7 +215,7 @@ export default function ManageEvent() {
     );
   }
 
-  const categoryConfig = eventCategoryColors[formData.category as EventCategory] || eventCategoryColors.special;
+  const categoryConfig = eventCategoryColors[formData.category as EventCategory] || eventCategoryColors.house;
 
   return (
     <PageLayout>
@@ -343,7 +343,7 @@ export default function ManageEvent() {
                     <SelectItem value="talks">Talks</SelectItem>
                     <SelectItem value="takeovers">Takeovers</SelectItem>
                     <SelectItem value="food">Food</SelectItem>
-                    <SelectItem value="special">Special</SelectItem>
+                    <SelectItem value="house">House</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
