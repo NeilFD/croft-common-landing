@@ -94,6 +94,8 @@ export const useEventManager = () => {
       setLoading(true);
       const { data: session } = await supabase.auth.getSession();
       
+      console.log('loadEvents - session:', session.session?.user?.email);
+      
       if (!session.session) {
         // If no user session, show demo events
         console.log('No session, showing demo events');
@@ -119,7 +121,10 @@ export const useEventManager = () => {
         setEvents(initialEvents);
       } else {
         const transformedEvents = data.map(transformDbEvent);
-        console.log('Loaded events from database:', transformedEvents);
+        console.log('Loaded events from database:', transformedEvents.length, 'events');
+        transformedEvents.forEach(event => {
+          console.log('Event:', event.title, 'Date:', event.date);
+        });
         setEvents(transformedEvents);
       }
     } catch (error) {
@@ -130,8 +135,20 @@ export const useEventManager = () => {
     }
   }, []);
 
+  // Listen for auth state changes and reload events
   useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        console.log('Auth state changed in useEventManager:', event, session?.user?.email);
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          loadEvents();
+        }
+      }
+    );
+
     loadEvents();
+
+    return () => subscription.unsubscribe();
   }, [loadEvents]);
 
   const addEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
