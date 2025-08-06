@@ -26,35 +26,28 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [emailSent, setEmailSent] = useState(false);
   const { user, refreshSession } = useAuth();
 
-  // Detect when user becomes authenticated and automatically proceed
-  useEffect(() => {
-    if (user && isOpen && emailSent) {
-      // User has successfully authenticated after magic link
-      onSuccess();
-    }
-  }, [user, isOpen, emailSent, onSuccess]);
-
-  // Add window focus detection and polling for cross-window authentication
+  // Add window focus detection for cross-window authentication
   useEffect(() => {
     if (!emailSent || !isOpen) return;
 
     const handleWindowFocus = async () => {
-      await refreshSession();
+      console.log('Window focused, checking auth...');
+      const session = await refreshSession();
+      console.log('Session after focus:', session?.user?.email);
+      
+      if (session?.user) {
+        console.log('User authenticated on focus, calling onSuccess');
+        onSuccess();
+      }
     };
 
     // Add window focus listener
     window.addEventListener('focus', handleWindowFocus);
 
-    // Poll for authentication every 2 seconds while email is sent
-    const pollInterval = setInterval(async () => {
-      await refreshSession();
-    }, 2000);
-
     return () => {
       window.removeEventListener('focus', handleWindowFocus);
-      clearInterval(pollInterval);
     };
-  }, [emailSent, isOpen, refreshSession]);
+  }, [emailSent, isOpen, refreshSession, onSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,12 +105,28 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   };
 
   const handleGotIt = async () => {
-    // Refresh session to get latest auth state before checking
+    console.log('Got it clicked, checking authentication...');
+    
+    // Try direct Supabase check first
+    const { data: { user: directUser } } = await supabase.auth.getUser();
+    console.log('Direct user check:', directUser?.email);
+    
+    if (directUser) {
+      console.log('User found via direct check, calling onSuccess');
+      onSuccess();
+      return;
+    }
+    
+    // Fallback to refreshSession
+    console.log('No user found directly, trying refreshSession...');
     const session = await refreshSession();
+    console.log('Session after refresh:', session?.user?.email);
     
     if (session?.user) {
+      console.log('User found via refresh, calling onSuccess');
       onSuccess();
     } else {
+      console.log('No user found, closing modal');
       handleClose();
     }
   };
