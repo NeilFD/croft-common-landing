@@ -27,9 +27,9 @@ const CocktailHeroCarousel = () => {
       overlay: ''
     },
     {
-      src: '/lovable-uploads/96977a94-65ef-4620-ae91-5440d335123f.png',
+      src: '/lovable-uploads/644b4e2a-eb1b-4d76-a734-f012e7d69379.png',
       type: 'dark',
-      overlay: 'bg-void/20'
+      overlay: ''
     },
     {
       src: '/lovable-uploads/886e7962-c1ff-41e4-957d-143eb9c28760.png',
