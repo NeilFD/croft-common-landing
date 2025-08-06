@@ -27,14 +27,14 @@ const KitchensHeroCarousel = () => {
       overlay: ''
     },
     {
-      src: '/lovable-uploads/75f518f0-7918-463a-9e00-c016e4271205.png',
-      type: 'mixed',
-      overlay: 'bg-void/25'
-    },
-    {
       src: '/lovable-uploads/8ea5b295-7d10-4aeb-a64c-b646f4046ee2.png',
       type: 'warm',
       overlay: 'bg-void/20'
+    },
+    {
+      src: '/lovable-uploads/75f518f0-7918-463a-9e00-c016e4271205.png',
+      type: 'mixed',
+      overlay: 'bg-void/25'
     },
     {
       src: '/lovable-uploads/d267ef73-2a5d-4bdd-9f73-63f8c364077f.png',
