@@ -3,6 +3,7 @@ export interface MenuItem {
   price?: string;
   description?: string;
   isEmail?: boolean;
+  isLink?: boolean;
 }
 
 export interface MenuSection {
@@ -354,7 +355,8 @@ const commonRoomMenuData: MenuSection[] = [
       },
       { 
         name: "<strong>Take a look</strong>", 
-        description: ""
+        description: "",
+        isLink: true
       }
     ]
   },
@@ -367,7 +369,8 @@ const commonRoomMenuData: MenuSection[] = [
       },
       { 
         name: "<strong>Meet</strong>", 
-        description: ""
+        description: "",
+        isLink: true
       }
     ]
   },
@@ -380,7 +383,8 @@ const commonRoomMenuData: MenuSection[] = [
       },
       { 
         name: "<strong>Help out</strong>", 
-        description: ""
+        description: "",
+        isLink: true
       }
     ]
   },
@@ -393,7 +397,8 @@ const commonRoomMenuData: MenuSection[] = [
       },
       { 
         name: "<strong>If you know, you know</strong>", 
-        description: ""
+        description: "",
+        isLink: true
       }
     ]
   }

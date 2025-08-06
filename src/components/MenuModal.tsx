@@ -139,6 +139,15 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                             >
                               {item.name}
                             </a>
+                          ) : item.isLink ? (
+                            <button 
+                              className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300 cursor-pointer text-left`}
+                              onClick={() => {
+                                // TODO: Add navigation logic for each link
+                                console.log('Navigate to:', item.name);
+                              }}
+                              dangerouslySetInnerHTML={{ __html: item.name }}
+                            />
                           ) : (
                             <h3 
                               className="font-industrial text-lg text-foreground"
