@@ -110,7 +110,7 @@ const Calendar = () => {
                 return (
                   <button
                     key={event.id}
-                    className={`aspect-square rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 ${
+                    className={`aspect-square rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -121,7 +121,11 @@ const Calendar = () => {
                       setShowDotModal(true);
                     }}
                     title={event.title}
-                  />
+                  >
+                    <span className="text-[8px] md:text-[10px] font-bold text-white capitalize leading-none text-center">
+                      {event.category}
+                    </span>
+                  </button>
                 );
               })}
               {/* Fill remaining slots with empty divs to maintain grid */}
@@ -200,7 +204,7 @@ const Calendar = () => {
                 return (
                   <button
                     key={event.id}
-                    className={`rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 ${
+                    className={`rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -211,7 +215,11 @@ const Calendar = () => {
                       setShowDotModal(true);
                     }}
                     title={event.title}
-                  />
+                  >
+                    <span className="text-xs font-bold text-white capitalize leading-none text-center">
+                      {event.category}
+                    </span>
+                  </button>
                 );
               })}
               {/* Fill remaining slots with empty divs to maintain grid */}
