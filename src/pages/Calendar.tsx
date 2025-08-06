@@ -110,7 +110,7 @@ const Calendar = () => {
                 return (
                   <button
                     key={event.id}
-                    className={`aspect-square rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center ${
+                    className={`aspect-square rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center p-0.5 ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -122,7 +122,7 @@ const Calendar = () => {
                     }}
                     title={event.title}
                   >
-                    <span className="text-[8px] md:text-[10px] font-bold text-white capitalize leading-none text-center">
+                    <span className="text-[6px] xs:text-[7px] sm:text-[8px] md:text-[9px] font-bold text-white capitalize leading-none text-center break-words overflow-hidden">
                       {event.category}
                     </span>
                   </button>
@@ -204,7 +204,7 @@ const Calendar = () => {
                 return (
                   <button
                     key={event.id}
-                    className={`rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center ${
+                    className={`rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 flex items-center justify-center p-1 ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -216,7 +216,7 @@ const Calendar = () => {
                     }}
                     title={event.title}
                   >
-                    <span className="text-xs font-bold text-white capitalize leading-none text-center">
+                    <span className="text-[10px] md:text-xs font-bold text-white capitalize leading-none text-center break-words overflow-hidden">
                       {event.category}
                     </span>
                   </button>
