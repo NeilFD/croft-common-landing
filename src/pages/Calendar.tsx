@@ -281,7 +281,7 @@ const Calendar = () => {
             onMouseUp={handleMouseUp}
             style={{ touchAction: 'none' }}
           >
-            <CardContent className="p-8 space-y-4 text-foreground/70 text-left">
+            <CardContent className="p-8 space-y-2 text-foreground/70 text-left">
               <p className="font-industrial text-lg leading-relaxed">
                 The good stuff lands here first.
               </p>
