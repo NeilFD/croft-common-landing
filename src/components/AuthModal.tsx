@@ -63,8 +63,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
     if (!validateEmailDomain(email)) {
       toast({
-        title: "Domain not allowed",
-        description: "Only @cityandsanctuary.com and @croftcommon.com email addresses are allowed.",
+        title: "Access denied",
+        description: "This email address is not authorized.",
         variant: "destructive"
       });
       return;
@@ -142,9 +142,12 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Check your email</DialogTitle>
-            <DialogDescription>
-              We've sent a magic link to {email}. Click the link in your email to sign in and create your event.
+            <DialogTitle className="text-black font-bold">IMPORTANT PLEASE READ INSTRUCTIONS</DialogTitle>
+            <DialogDescription className="space-y-4 text-left">
+              <p>We've sent you a magic link to {email}.</p>
+              <p>Click it and you will be taken to a new browser window.</p>
+              <p>In this new window, complete the secret gesture again and the event creation form will open for you.</p>
+              <p>Complete the form and save.</p>
             </DialogDescription>
           </DialogHeader>
           <Button onClick={handleGotIt} className="mt-4">
@@ -162,7 +165,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           <DialogTitle>Sign in to create events</DialogTitle>
           <DialogDescription>
             Enter your email address and we'll send you a magic link to sign in.
-            Only @cityandsanctuary.com and @croftcommon.com emails are allowed.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -171,7 +173,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
             <Input
               id="email"
               type="email"
-              placeholder="your.name@cityandsanctuary.com"
+              placeholder="your.name@company.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
