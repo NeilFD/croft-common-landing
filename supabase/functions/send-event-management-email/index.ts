@@ -26,6 +26,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("Function called with request body");
+    
     const { 
       eventTitle, 
       organizerEmail, 
@@ -35,6 +37,8 @@ const handler = async (req: Request): Promise<Response> => {
       eventLocation,
       isNewEvent = true 
     }: EventManagementEmailRequest = await req.json();
+
+    console.log("Parsed request data:", { eventTitle, organizerEmail, managementToken, eventDate, eventTime, eventLocation, isNewEvent });
 
     const managementUrl = `${Deno.env.get("SUPABASE_URL")?.replace('//', '//').replace('.supabase.co', '.lovableproject.com')}/manage-event/${managementToken}`;
     
@@ -95,7 +99,23 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Management email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
+    // Log the response details
+    if (emailResponse.error) {
+      console.error("Resend API error:", emailResponse.error);
+      return new Response(
+        JSON.stringify({ error: "Email sending failed", details: emailResponse.error }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      emailId: emailResponse.data?.id,
+      message: "Management email sent successfully" 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -105,7 +125,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-event-management-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message, stack: error.stack }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
