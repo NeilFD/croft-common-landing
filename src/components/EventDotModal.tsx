@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Event, eventCategoryColors } from '@/types/event';
 import { format } from 'date-fns';
-import { Clock, MapPin, User, Mail } from 'lucide-react';
+import { Clock, MapPin, User, Mail, Calendar } from 'lucide-react';
 
 interface EventDotModalProps {
   event: Event | null;
@@ -31,8 +31,17 @@ export const EventDotModal = ({ event, isOpen, onClose }: EventDotModalProps) =>
           <h3 className="font-bold text-lg text-foreground leading-tight pr-2">
             {event.title}
           </h3>
+          <Badge 
+            variant="outline" 
+            className="mt-2 text-xs border-2"
+            style={{
+              borderColor: `hsl(var(--accent-${categoryColors.accent.replace('accent-', '')}))`
+            }}
+          >
+            {event.category}
+          </Badge>
           {event.isSoldOut && (
-            <Badge variant="destructive" className="mt-2">
+            <Badge variant="destructive" className="mt-2 ml-2">
               SOLD OUT
             </Badge>
           )}
@@ -48,12 +57,20 @@ export const EventDotModal = ({ event, isOpen, onClose }: EventDotModalProps) =>
       
       <div className="space-y-2 text-sm">
         <div className="flex items-center gap-2 text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>{format(new Date(event.date), 'EEEE, MMMM d')}</span>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Clock className="h-4 w-4" />
           <span>{event.time}</span>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground">
           <MapPin className="h-4 w-4" />
           <span>{event.location}</span>
+        </div>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <User className="h-4 w-4" />
+          <span>{event.organizer}</span>
         </div>
         {event.price && (
           <div className="flex items-center gap-2 text-muted-foreground">
