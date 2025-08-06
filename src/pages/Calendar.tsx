@@ -199,7 +199,7 @@ const Calendar = () => {
         {/* Days header */}
         <div className="grid grid-cols-7 bg-muted/30">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="p-3 text-center font-medium text-muted-foreground border-r border-border last:border-r-0">
+            <div key={day} className="p-3 text-center font-medium text-muted-foreground border border-border">
               {day}
             </div>
           ))}
