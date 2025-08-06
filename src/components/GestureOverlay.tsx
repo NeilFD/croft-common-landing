@@ -4,9 +4,10 @@ import { toast } from '@/hooks/use-toast';
 
 interface GestureOverlayProps {
   onGestureComplete: () => void;
+  containerRef?: React.RefObject<HTMLElement>;
 }
 
-const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) => {
+const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, containerRef }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   
   const handleGestureSuccess = useCallback(() => {
@@ -28,7 +29,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) =>
   } = useGestureDetection(handleGestureSuccess);
 
   const getEventPosition = useCallback((event: React.TouchEvent | React.MouseEvent | TouchEvent | MouseEvent) => {
-    const rect = overlayRef.current?.getBoundingClientRect();
+    const container = containerRef?.current || overlayRef.current;
+    const rect = container?.getBoundingClientRect();
     if (!rect) return { x: 0, y: 0 };
 
     if ('touches' in event && event.touches.length > 0) {
@@ -45,7 +47,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) =>
       };
     }
     return { x: 0, y: 0 };
-  }, []);
+  }, [containerRef]);
 
   // Touch events (mobile)
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
@@ -82,6 +84,11 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete }) =>
   const handleMouseUp = useCallback((event: React.MouseEvent) => {
     endGesture();
   }, [endGesture]);
+
+  // If containerRef is provided, don't render overlay - gesture detection happens on the container
+  if (containerRef) {
+    return null;
+  }
 
   return (
     <div

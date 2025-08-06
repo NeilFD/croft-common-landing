@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
 import CreateEventModal from '@/components/CreateEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import useGestureDetection from '@/hooks/useGestureDetection';
+import { toast } from '@/hooks/use-toast';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Grid3X3 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, addWeeks, isSameMonth, isSameDay, parseISO } from 'date-fns';
 import { useEventManager } from '@/hooks/useEventManager';
@@ -20,6 +23,23 @@ const Calendar = () => {
   const [showEventDetail, setShowEventDetail] = useState(false);
   
   const { events, addEvent } = useEventManager();
+  const gestureCardRef = useRef<HTMLDivElement>(null);
+  
+  const handleGestureSuccess = useCallback(() => {
+    toast({
+      title: "Access Granted",
+      description: "Welcome to The Common Room, for Common People",
+      duration: 2000,
+    });
+    setShowCreateModal(true);
+  }, []);
+  
+  const {
+    isDrawing,
+    startGesture,
+    addPoint,
+    endGesture
+  } = useGestureDetection(handleGestureSuccess);
   
 
   const navigateDate = (direction: 'prev' | 'next') => {
@@ -190,12 +210,59 @@ const Calendar = () => {
     addEvent(eventData);
   };
 
+  const getEventPosition = useCallback((event: React.TouchEvent | React.MouseEvent) => {
+    const rect = gestureCardRef.current?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+
+    if ('touches' in event && event.touches.length > 0) {
+      return {
+        x: event.touches[0].clientX - rect.left,
+        y: event.touches[0].clientY - rect.top
+      };
+    } else if ('clientX' in event) {
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+      };
+    }
+    return { x: 0, y: 0 };
+  }, []);
+
+  // Touch events for gesture card
+  const handleTouchStart = useCallback((event: React.TouchEvent) => {
+    const { x, y } = getEventPosition(event);
+    startGesture(x, y);
+  }, [getEventPosition, startGesture]);
+
+  const handleTouchMove = useCallback((event: React.TouchEvent) => {
+    if (!isDrawing) return;
+    const { x, y } = getEventPosition(event);
+    addPoint(x, y);
+  }, [getEventPosition, addPoint, isDrawing]);
+
+  const handleTouchEnd = useCallback((event: React.TouchEvent) => {
+    endGesture();
+  }, [endGesture]);
+
+  // Mouse events for gesture card
+  const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    const { x, y } = getEventPosition(event);
+    startGesture(x, y);
+  }, [getEventPosition, startGesture]);
+
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    if (!isDrawing) return;
+    const { x, y } = getEventPosition(event);
+    addPoint(x, y);
+  }, [getEventPosition, addPoint, isDrawing]);
+
+  const handleMouseUp = useCallback((event: React.MouseEvent) => {
+    endGesture();
+  }, [endGesture]);
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
-      {/* Gesture Overlay for Admin Access */}
-      <GestureOverlay onGestureComplete={() => setShowCreateModal(true)} />
       
       <div className="container mx-auto px-6 py-24">
         {/* Header */}
@@ -203,20 +270,32 @@ const Calendar = () => {
           <h1 className="font-brutalist text-4xl md:text-6xl mb-6 text-foreground">
             What's Next?
           </h1>
-          <div className="max-w-3xl mx-auto space-y-4 text-foreground/70">
-            <p className="font-industrial text-lg leading-relaxed">
-              The good stuff lands here first.
-            </p>
-            <p className="font-industrial text-lg leading-relaxed">
-              Gigs. Tastings. Talks. Takeovers. Secret menus.
-            </p>
-            <p className="font-industrial text-lg leading-relaxed">
-              Some you'll see on the posters. Some you'll only find here.
-            </p>
-            <p className="font-industrial text-lg leading-relaxed">
-              Quiet heads-up. Limited numbers. No fanfare. Just first access, if you're paying attention.
-            </p>
-          </div>
+          <Card 
+            ref={gestureCardRef}
+            className="max-w-3xl mx-auto bg-card/50 border-border/50 hover:bg-card/70 transition-colors cursor-pointer"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            style={{ touchAction: 'none' }}
+          >
+            <CardContent className="p-8 space-y-4 text-foreground/70">
+              <p className="font-industrial text-lg leading-relaxed">
+                The good stuff lands here first.
+              </p>
+              <p className="font-industrial text-lg leading-relaxed">
+                Gigs. Tastings. Talks. Takeovers. Secret menus.
+              </p>
+              <p className="font-industrial text-lg leading-relaxed">
+                Some you'll see on the posters. Some you'll only find here.
+              </p>
+              <p className="font-industrial text-lg leading-relaxed">
+                Quiet heads-up. Limited numbers. No fanfare. Just first access, if you're paying attention.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Calendar Controls */}
