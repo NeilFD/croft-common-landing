@@ -282,7 +282,7 @@ const Calendar = () => {
           </h1>
           <Card 
             ref={gestureCardRef}
-            className="max-w-3xl mx-auto bg-background border-l-4 border-l-primary hover:border-l-primary/80 transition-colors cursor-crosshair select-none"
+            className="max-w-3xl mx-auto bg-background hover:border-primary/20 transition-colors cursor-crosshair select-none"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
