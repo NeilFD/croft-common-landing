@@ -109,17 +109,17 @@ const Calendar = () => {
         days.push(
           <div
             key={day.toString()}
-            className={`min-h-[120px] border border-border p-2 ${
+            className={`min-h-[80px] md:min-h-[120px] border border-border p-1 md:p-2 ${
               !isSameMonth(day, monthStart) ? 'text-muted-foreground bg-muted/20' : 'bg-background'
             }`}
           >
-            <span className={`text-sm font-medium ${
+            <span className={`text-xs md:text-sm font-medium ${
               isSameDay(day, new Date()) ? 'text-primary font-bold' : ''
             }`}>
               {format(cloneDay, dateFormat)}
             </span>
             <div className="mt-1 space-y-1">
-              {dayEvents.map(event => {
+              {dayEvents.slice(0, 3).map((event, index) => {
                 const categoryColors = eventCategoryColors[event.category];
                 return (
                   <TooltipProvider key={event.id}>
@@ -127,8 +127,7 @@ const Calendar = () => {
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            "text-xs p-2 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative",
-                            `border-l-4`,
+                            "text-[10px] md:text-xs p-1 md:p-2 rounded border-l-2 md:border-l-4 bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative truncate",
                             event.isSoldOut ? "opacity-60 grayscale" : ""
                           )}
                           style={{
@@ -140,14 +139,15 @@ const Calendar = () => {
                           }}
                          >
                            {event.isSoldOut && (
-                             <div className="absolute top-1 right-1 bg-destructive text-destructive-foreground px-1 py-0.5 rounded text-[10px] font-medium">
+                             <div className="hidden md:block absolute top-1 right-1 bg-destructive text-destructive-foreground px-1 py-0.5 rounded text-[10px] font-medium">
                                SOLD OUT
                              </div>
                            )}
-                           <div className="font-bold text-foreground text-sm leading-tight">{event.title}</div>
-                          <div className="text-xs text-muted-foreground mt-1">{event.time}</div>
-                          <div className="text-xs text-muted-foreground">{event.location}</div>
-                          <div className="text-xs text-muted-foreground opacity-75">{event.organizer}</div>
+                           <div className="font-bold text-foreground leading-tight truncate">
+                             {event.title}
+                             {event.isSoldOut && <span className="md:hidden text-destructive"> (SOLD OUT)</span>}
+                           </div>
+                          <div className="hidden md:block text-xs text-muted-foreground mt-1">{event.time}</div>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="max-w-sm p-4 bg-background border border-border shadow-lg z-50">
@@ -181,6 +181,11 @@ const Calendar = () => {
                   </TooltipProvider>
                 );
               })}
+              {dayEvents.length > 3 && (
+                <div className="text-[10px] md:text-xs text-muted-foreground font-medium p-1">
+                  +{dayEvents.length - 3} more
+                </div>
+              )}
             </div>
           </div>
         );
@@ -198,11 +203,15 @@ const Calendar = () => {
       <div className="bg-background border border-border rounded-lg overflow-hidden">
         {/* Days header */}
         <div className="grid grid-cols-7 bg-muted/30">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="p-3 text-center font-medium text-muted-foreground border border-border">
-              {day}
-            </div>
-          ))}
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
+            const fullDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            return (
+              <div key={day} className="p-2 md:p-3 text-center font-medium text-muted-foreground border border-border">
+                <span className="md:hidden">{day}</span>
+                <span className="hidden md:inline">{fullDays[index]}</span>
+              </div>
+            );
+          })}
         </div>
         {/* Calendar grid */}
         <div>
@@ -224,17 +233,17 @@ const Calendar = () => {
 
       weekDays.push(
         <div key={day.toString()} className="flex-1 border-r border-border last:border-r-0">
-          <div className="p-4 border-b border-border bg-muted/30">
+          <div className="p-2 md:p-4 border-b border-border bg-muted/30">
             <div className="text-center">
-              <div className="text-sm text-muted-foreground">{format(day, 'EEE')}</div>
-              <div className={`text-lg font-medium ${
+              <div className="text-xs md:text-sm text-muted-foreground">{format(day, 'EEE')}</div>
+              <div className={`text-sm md:text-lg font-medium ${
                 isSameDay(day, new Date()) ? 'text-primary font-bold' : ''
               }`}>
                 {format(day, 'd')}
               </div>
             </div>
           </div>
-          <div className="min-h-[400px] p-2 space-y-2">
+          <div className="min-h-[300px] md:min-h-[400px] p-1 md:p-2 space-y-1 md:space-y-2">
             {dayEvents.map(event => {
               const categoryColors = eventCategoryColors[event.category];
               return (
@@ -243,8 +252,7 @@ const Calendar = () => {
                     <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            "p-3 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative",
-                            `border-l-4`,
+                            "p-2 md:p-3 rounded border-l-2 md:border-l-4 bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative",
                             event.isSoldOut ? "opacity-60 grayscale" : ""
                           )}
                           style={{
@@ -256,14 +264,14 @@ const Calendar = () => {
                           }}
                          >
                            {event.isSoldOut && (
-                             <div className="absolute top-2 right-2 bg-destructive text-destructive-foreground px-2 py-1 rounded text-xs font-medium">
+                             <div className="absolute top-1 right-1 md:top-2 md:right-2 bg-destructive text-destructive-foreground px-1 md:px-2 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-medium">
                                SOLD OUT
                              </div>
                            )}
-                           <div className="text-xs text-muted-foreground mb-2">{event.time}</div>
-                          <div className="font-bold text-foreground text-lg leading-tight mb-2">{event.title}</div>
-                          <div className="text-sm text-muted-foreground mb-1">{event.location}</div>
-                          <div className="text-sm text-muted-foreground opacity-75">{event.organizer}</div>
+                           <div className="text-[10px] md:text-xs text-muted-foreground mb-1 md:mb-2">{event.time}</div>
+                          <div className="font-bold text-foreground text-sm md:text-lg leading-tight mb-1 md:mb-2">{event.title}</div>
+                          <div className="text-xs md:text-sm text-muted-foreground mb-1 truncate">{event.location}</div>
+                          <div className="hidden md:block text-sm text-muted-foreground opacity-75">{event.organizer}</div>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-sm p-4 bg-background border border-border shadow-lg z-50">
@@ -304,7 +312,7 @@ const Calendar = () => {
 
     return (
       <div className="bg-background border border-border rounded-lg overflow-hidden">
-        <div className="flex">
+        <div className="flex overflow-x-auto md:overflow-x-visible">
           {weekDays}
         </div>
       </div>
@@ -379,10 +387,10 @@ const Calendar = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="container mx-auto px-6 py-24">
+      <div className="container mx-auto px-4 md:px-6 py-12 md:py-24">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="font-brutalist text-4xl md:text-6xl mb-6 text-foreground">
+        <div className="text-center mb-8 md:mb-12">
+          <h1 className="font-brutalist text-3xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-foreground">
             What's Next?
           </h1>
           <Card 
@@ -402,20 +410,20 @@ const Calendar = () => {
               msUserSelect: 'none'
             }}
           >
-            <CardContent className="p-8 space-y-2 text-foreground/70 text-left">
-              <p className="font-industrial text-lg leading-relaxed">
+            <CardContent className="p-4 md:p-8 space-y-2 text-foreground/70 text-left">
+              <p className="font-industrial text-sm md:text-lg leading-relaxed">
                 The good stuff lands here first.
               </p>
-              <p className="font-industrial text-lg leading-relaxed">
+              <p className="font-industrial text-sm md:text-lg leading-relaxed">
                 Gigs. Tastings. Talks. Takeovers. Secret menus.
               </p>
-              <p className="font-industrial text-lg leading-relaxed">
+              <p className="font-industrial text-sm md:text-lg leading-relaxed">
                 Some you'll see on the posters. Some you'll only find here.
               </p>
-              <p className="font-industrial text-lg leading-relaxed">
+              <p className="font-industrial text-sm md:text-lg leading-relaxed">
                 Quiet heads-up. Limited numbers. No fanfare. Just first access,
               </p>
-              <p className="font-industrial text-lg leading-relaxed">
+              <p className="font-industrial text-sm md:text-lg leading-relaxed">
                 if you're paying attention.
               </p>
             </CardContent>
@@ -423,17 +431,18 @@ const Calendar = () => {
         </div>
 
         {/* Calendar Controls */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col gap-4 mb-6 md:mb-8">
+          <div className="flex items-center justify-between">
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
               onClick={() => navigateDate('prev')}
+              className="flex-shrink-0"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             
-            <h2 className="font-industrial text-xl font-medium min-w-[200px] text-center">
+            <h2 className="font-industrial text-lg md:text-xl font-medium text-center px-4">
               {viewType === 'month' 
                 ? format(currentDate, 'MMMM yyyy')
                 : `Week of ${format(startOfWeek(currentDate), 'MMM d, yyyy')}`
@@ -442,35 +451,38 @@ const Calendar = () => {
             
             <Button
               variant="outline"
-              size="icon"
+              size="sm"
               onClick={() => navigateDate('next')}
+              className="flex-shrink-0"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2">
             <Button
               variant={viewType === 'month' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewType('month')}
+              className="text-xs md:text-sm"
             >
-              <Grid3X3 className="h-4 w-4 mr-2" />
+              <Grid3X3 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
               Month
             </Button>
             <Button
               variant={viewType === 'week' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewType('week')}
+              className="text-xs md:text-sm"
             >
-              <CalendarIcon className="h-4 w-4 mr-2" />
+              <CalendarIcon className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
               Week
             </Button>
           </div>
         </div>
 
         {/* Calendar */}
-        <div className="mb-16">
+        <div className="mb-8 md:mb-16">
           {viewType === 'month' ? renderMonthView() : renderWeekView()}
         </div>
       </div>
