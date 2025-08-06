@@ -193,20 +193,27 @@ export const useEventManager = () => {
       console.log('Event created in database:', data);
       const newEvent = transformDbEvent(data);
       
-      // Send management email
+      // Send management email to the authenticated user (event creator)
       try {
-        await supabase.functions.invoke('send-event-management-email', {
-          body: {
-            eventTitle: newEvent.title,
-            organizerEmail: newEvent.contactEmail,
-            managementToken,
-            eventDate: newEvent.date,
-            eventTime: newEvent.time,
-            eventLocation: newEvent.location,
-            isNewEvent: true
-          }
-        });
-        console.log('Management email sent successfully');
+        const { data: { user } } = await supabase.auth.getUser();
+        const creatorEmail = user?.email;
+        
+        if (creatorEmail) {
+          await supabase.functions.invoke('send-event-management-email', {
+            body: {
+              eventTitle: newEvent.title,
+              organizerEmail: creatorEmail, // Send to event creator, not contact email
+              managementToken,
+              eventDate: newEvent.date,
+              eventTime: newEvent.time,
+              eventLocation: newEvent.location,
+              isNewEvent: true
+            }
+          });
+          console.log('Management email sent to event creator:', creatorEmail);
+        } else {
+          console.error('No authenticated user found to send management email');
+        }
       } catch (emailError) {
         console.error('Error sending management email:', emailError);
         // Don't fail the event creation if email fails
