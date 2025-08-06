@@ -28,94 +28,49 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     }
   }, []);
 
-  const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 25) return false; // Increased minimum points for stricter detection
+  const isValid7Shape = useCallback((gesturePoints: Point[]): boolean => {
+    if (gesturePoints.length < 10) return false;
     
-    console.log(`Analyzing gesture with ${gesturePoints.length} points`);
-    
-    // Find the highest point (peak of the "A")
-    let peakIndex = 0;
-    let peakY = gesturePoints[0].y;
-    
-    for (let i = 1; i < gesturePoints.length; i++) {
-      if (gesturePoints[i].y < peakY) {
-        peakY = gesturePoints[i].y;
-        peakIndex = i;
-      }
-    }
-    
-    // Need a clear peak (not at the very start or end)
-    if (peakIndex < 5 || peakIndex > gesturePoints.length - 6) {
-      console.log('No clear peak found');
-      return false;
-    }
+    console.log(`Analyzing 7 gesture with ${gesturePoints.length} points`);
     
     const firstPoint = gesturePoints[0];
     const lastPoint = gesturePoints[gesturePoints.length - 1];
-    const peakPoint = gesturePoints[peakIndex];
     
-    // Check for basic "A" shape: goes up to peak, then down
-    const leftHeight = firstPoint.y - peakPoint.y;
-    const rightHeight = lastPoint.y - peakPoint.y;
+    // Check if we have a generally downward motion (7 shape)
+    const totalVerticalMovement = lastPoint.y - firstPoint.y;
+    const totalHorizontalMovement = Math.abs(lastPoint.x - firstPoint.x);
     
-    // Both sides should have significant height
-    if (leftHeight < 50 || rightHeight < 50) {
-      console.log('Insufficient height on sides');
+    // Should move more vertically than horizontally for a "7"
+    if (totalVerticalMovement < 30 || totalHorizontalMovement > totalVerticalMovement) {
+      console.log('Not a valid 7 shape - insufficient vertical movement');
       return false;
     }
     
-    // Check horizontal spread
-    const totalWidth = Math.abs(lastPoint.x - firstPoint.x);
-    if (totalWidth < 80) {
-      console.log('Gesture too narrow');
-      return false;
-    }
+    // Look for a horizontal segment at the beginning (top of the 7)
+    const firstQuarter = Math.floor(gesturePoints.length * 0.25);
+    let hasHorizontalStart = false;
     
-    // CROSSBAR DETECTION - This is the key addition
-    // Look for a horizontal movement in the middle portion of the gesture
-    const middleStart = Math.floor(gesturePoints.length * 0.3);
-    const middleEnd = Math.floor(gesturePoints.length * 0.8);
-    let foundCrossbar = false;
-    
-    for (let i = middleStart; i < middleEnd - 10; i++) {
-      const segment = gesturePoints.slice(i, i + 10);
+    if (firstQuarter > 3) {
+      const startSegment = gesturePoints.slice(0, firstQuarter);
+      const horizontalMovement = Math.abs(startSegment[startSegment.length - 1].x - startSegment[0].x);
+      const verticalMovement = Math.abs(startSegment[startSegment.length - 1].y - startSegment[0].y);
       
-      // Check if this segment is roughly horizontal
-      const startPoint = segment[0];
-      const endPoint = segment[segment.length - 1];
-      const horizontalDistance = Math.abs(endPoint.x - startPoint.x);
-      const verticalDistance = Math.abs(endPoint.y - startPoint.y);
-      
-      // Crossbar should be more horizontal than vertical and have minimum length
-      if (horizontalDistance > 20 && horizontalDistance > verticalDistance * 2) {
-        // Check if this segment is roughly in the middle height of the A
-        const segmentAvgY = segment.reduce((sum, p) => sum + p.y, 0) / segment.length;
-        const expectedCrossbarY = peakPoint.y + (firstPoint.y - peakPoint.y) * 0.4; // 40% down from peak
-        
-        if (Math.abs(segmentAvgY - expectedCrossbarY) < 30) {
-          foundCrossbar = true;
-          console.log('Crossbar detected');
-          break;
-        }
+      if (horizontalMovement > 20 && horizontalMovement > verticalMovement * 0.8) {
+        hasHorizontalStart = true;
       }
     }
     
-    if (!foundCrossbar) {
-      console.log('No crossbar detected');
-      return false;
+    // Check for downward diagonal movement in the latter part
+    const lastHalf = gesturePoints.slice(Math.floor(gesturePoints.length * 0.3));
+    if (lastHalf.length > 5) {
+      const diagonalVertical = lastHalf[lastHalf.length - 1].y - lastHalf[0].y;
+      if (diagonalVertical < 25) {
+        console.log('Not enough downward diagonal movement');
+        return false;
+      }
     }
     
-    // Simple directional check: should go generally up then down
-    const leftSlope = (peakPoint.y - firstPoint.y) / (peakPoint.x - firstPoint.x);
-    const rightSlope = (lastPoint.y - peakPoint.y) / (lastPoint.x - peakPoint.x);
-    
-    // Left side should go up (negative slope), right side should go down (positive slope)
-    if (leftSlope > -0.4 || rightSlope < 0.4) {
-      console.log('Invalid slopes');
-      return false;
-    }
-    
-    console.log('Valid "A" shape with crossbar detected!');
+    console.log('Valid "7" shape detected!');
     return true;
   }, []);
 
@@ -124,8 +79,8 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     setPoints(prev => {
       const updated = [...prev, newPoint];
       
-      // Check if gesture is complete - validate less frequently for stricter detection
-      if (updated.length > 25 && isValidAShape(updated)) {
+      // Check if gesture is complete - validate for 7 shape
+      if (updated.length > 10 && isValid7Shape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
@@ -138,7 +93,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
       
       return updated;
     });
-  }, [isValidAShape, onGestureComplete, clearGesture]);
+  }, [isValid7Shape, onGestureComplete, clearGesture]);
 
   const startGesture = useCallback((x: number, y: number) => {
     clearGesture();

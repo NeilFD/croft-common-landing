@@ -6,7 +6,7 @@ import CreateEventModal from '@/components/CreateEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import useGestureDetection from '@/hooks/useGestureDetection';
+import useCardGestureDetection from '@/hooks/useCardGestureDetection';
 import { toast } from '@/hooks/use-toast';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Grid3X3 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addMonths, addWeeks, isSameMonth, isSameDay, parseISO } from 'date-fns';
@@ -39,7 +39,7 @@ const Calendar = () => {
     startGesture,
     addPoint,
     endGesture
-  } = useGestureDetection(handleGestureSuccess);
+  } = useCardGestureDetection(handleGestureSuccess);
   
 
   const navigateDate = (direction: 'prev' | 'next') => {
