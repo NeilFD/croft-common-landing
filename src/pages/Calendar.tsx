@@ -22,7 +22,7 @@ const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
   
-  const { events, addEvent } = useEventManager();
+  const { events, loading, addEvent } = useEventManager();
   const gestureCardRef = useRef<HTMLDivElement>(null);
   
   const handleGestureSuccess = useCallback(() => {

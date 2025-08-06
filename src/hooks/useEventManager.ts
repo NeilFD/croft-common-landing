@@ -1,7 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Event } from '@/types/event';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
-// Sample events data
+// Sample events data for demo purposes (will be replaced by Supabase data)
 const initialEvents: Event[] = [
   {
     id: '1',
@@ -53,26 +55,227 @@ const initialEvents: Event[] = [
   }
 ];
 
+// Transform database event to frontend Event type
+const transformDbEvent = (dbEvent: any): Event => ({
+  id: dbEvent.id,
+  title: dbEvent.title,
+  description: dbEvent.description,
+  date: dbEvent.date,
+  time: dbEvent.time,
+  organizer: dbEvent.organizer,
+  location: dbEvent.location,
+  price: dbEvent.price,
+  category: dbEvent.category,
+  imageUrl: dbEvent.image_url,
+  contactEmail: dbEvent.contact_email
+});
+
+// Transform frontend Event to database format
+const transformEventForDb = (event: Omit<Event, 'id'>) => ({
+  title: event.title,
+  description: event.description,
+  date: event.date,
+  time: event.time,
+  organizer: event.organizer,
+  location: event.location,
+  price: event.price,
+  category: event.category,
+  image_url: event.imageUrl || null,
+  contact_email: event.contactEmail
+});
+
 export const useEventManager = () => {
-  const [events, setEvents] = useState<Event[]>(initialEvents);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addEvent = useCallback((eventData: Omit<Event, 'id'>) => {
-    const newEvent: Event = {
-      ...eventData,
-      id: Date.now().toString()
+  // Load events from Supabase on mount
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session.session) {
+          // If no user session, show demo events
+          setEvents(initialEvents);
+          setLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('events')
+          .select('*')
+          .order('date', { ascending: true });
+
+        if (error) {
+          console.error('Error loading events:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load events",
+            variant: "destructive"
+          });
+          // Fallback to demo events
+          setEvents(initialEvents);
+        } else {
+          const transformedEvents = data.map(transformDbEvent);
+          setEvents(transformedEvents);
+        }
+      } catch (error) {
+        console.error('Error in loadEvents:', error);
+        setEvents(initialEvents);
+      } finally {
+        setLoading(false);
+      }
     };
-    setEvents(prev => [...prev, newEvent]);
-    return newEvent;
+
+    loadEvents();
   }, []);
 
-  const updateEvent = useCallback((id: string, eventData: Partial<Event>) => {
-    setEvents(prev => prev.map(event => 
-      event.id === id ? { ...event, ...eventData } : event
-    ));
+  const addEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to create events",
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      const dbEvent = {
+        ...transformEventForDb(eventData),
+        user_id: session.session.user.id
+      };
+
+      const { data, error } = await supabase
+        .from('events')
+        .insert([dbEvent])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating event:', error);
+        toast({
+          title: "Error",
+          description: "Failed to create event",
+          variant: "destructive"
+        });
+        return null;
+      }
+
+      const newEvent = transformDbEvent(data);
+      setEvents(prev => [...prev, newEvent]);
+      
+      toast({
+        title: "Success",
+        description: "Event created successfully"
+      });
+      
+      return newEvent;
+    } catch (error) {
+      console.error('Error in addEvent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create event",
+        variant: "destructive"
+      });
+      return null;
+    }
   }, []);
 
-  const deleteEvent = useCallback((id: string) => {
-    setEvents(prev => prev.filter(event => event.id !== id));
+  const updateEvent = useCallback(async (id: string, eventData: Partial<Event>) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to update events",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const dbEventData = transformEventForDb(eventData as Omit<Event, 'id'>);
+
+      const { error } = await supabase
+        .from('events')
+        .update(dbEventData)
+        .eq('id', id)
+        .eq('user_id', session.session.user.id);
+
+      if (error) {
+        console.error('Error updating event:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update event",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setEvents(prev => prev.map(event => 
+        event.id === id ? { ...event, ...eventData } : event
+      ));
+      
+      toast({
+        title: "Success",
+        description: "Event updated successfully"
+      });
+    } catch (error) {
+      console.error('Error in updateEvent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update event",
+        variant: "destructive"
+      });
+    }
+  }, []);
+
+  const deleteEvent = useCallback(async (id: string) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to delete events",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.session.user.id);
+
+      if (error) {
+        console.error('Error deleting event:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete event",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setEvents(prev => prev.filter(event => event.id !== id));
+      
+      toast({
+        title: "Success",
+        description: "Event deleted successfully"
+      });
+    } catch (error) {
+      console.error('Error in deleteEvent:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event",
+        variant: "destructive"
+      });
+    }
   }, []);
 
   const getEventsByDate = useCallback((date: Date) => {
@@ -82,6 +285,7 @@ export const useEventManager = () => {
 
   return {
     events,
+    loading,
     addEvent,
     updateEvent,
     deleteEvent,
