@@ -32,9 +32,9 @@ const CocktailHeroCarousel = () => {
       overlay: ''
     },
     {
-      src: '/lovable-uploads/886e7962-c1ff-41e4-957d-143eb9c28760.png',
+      src: '/lovable-uploads/0c4a9d3f-d5a3-4a01-85fb-ed3f272a821f.png',
       type: 'dark',
-      overlay: 'bg-void/30'
+      overlay: ''
     },
     {
       src: '/lovable-uploads/ada4b655-67e6-4bbe-8e52-ea2d407da312.png',
