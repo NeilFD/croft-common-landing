@@ -339,8 +339,21 @@ const Calendar = () => {
   }, [endGesture]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen relative">
+      {/* Fixed background image */}
+      <div 
+        className="fixed inset-0 z-0"
+        style={{
+          backgroundImage: `url('/lovable-uploads/dcd0df0e-3dec-4116-ba04-034e865da6dc.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+      
+      {/* Scrollable content */}
+      <div className="relative z-10">
+        <Navigation />
       
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-8 md:py-12 lg:py-24">
         {/* Header */}
@@ -452,7 +465,8 @@ const Calendar = () => {
         </div>
       </div>
 
-      <Footer />
+        <Footer />
+      </div>
       
       {/* Modals */}
       <AuthModal
