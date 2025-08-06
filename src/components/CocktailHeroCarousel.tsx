@@ -40,6 +40,11 @@ const CocktailHeroCarousel = () => {
       src: '/lovable-uploads/644b4e2a-eb1b-4d76-a734-f012e7d69379.png',
       type: 'dark',
       overlay: ''
+    },
+    {
+      src: '/lovable-uploads/4a785c1a-4ea4-4874-b47e-24c5c2611368.png',
+      type: 'dark',
+      overlay: ''
     }
   ];
 
