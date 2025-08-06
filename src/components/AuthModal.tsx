@@ -13,11 +13,17 @@ interface AuthModalProps {
   onSuccess: () => void;
 }
 
-const ALLOWED_DOMAINS = ['cityandsanctuary.com', 'croftcommon.com'];
-
-const validateEmailDomain = (email: string): boolean => {
-  const domain = email.split('@')[1];
-  return ALLOWED_DOMAINS.includes(domain);
+const validateEmailDomain = async (email: string): Promise<boolean> => {
+  const { data, error } = await supabase.rpc('is_email_domain_allowed', {
+    email: email
+  });
+  
+  if (error) {
+    console.error('Error validating email domain:', error);
+    return false;
+  }
+  
+  return data;
 };
 
 export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
@@ -61,7 +67,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       return;
     }
 
-    if (!validateEmailDomain(email)) {
+    const isValidDomain = await validateEmailDomain(email);
+    if (!isValidDomain) {
       toast({
         title: "Access denied",
         description: "This email address is not authorized.",
