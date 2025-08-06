@@ -195,17 +195,17 @@ const Calendar = () => {
     }
 
     return (
-      <div className="bg-background rounded-lg overflow-hidden">
+      <div className="bg-background border border-border rounded-lg overflow-hidden">
         {/* Days header */}
         <div className="grid grid-cols-7 bg-muted/30">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="p-3 text-center font-medium text-muted-foreground border border-border">
+            <div key={day} className="p-3 text-center font-medium text-muted-foreground border-r border-border last:border-r-0">
               {day}
             </div>
           ))}
         </div>
         {/* Calendar grid */}
-        <div className="grid grid-cols-7">
+        <div>
           {rows}
         </div>
       </div>
