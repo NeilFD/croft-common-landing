@@ -89,49 +89,54 @@ export const useEventManager = () => {
   const [loading, setLoading] = useState(true);
 
   // Load events from Supabase on mount
-  useEffect(() => {
-    const loadEvents = async () => {
-      try {
-        const { data: session } = await supabase.auth.getSession();
-        
-        if (!session.session) {
-          // If no user session, show demo events
-          setEvents(initialEvents);
-          setLoading(false);
-          return;
-        }
-
-        const { data, error } = await supabase
-          .from('events')
-          .select('*')
-          .order('date', { ascending: true });
-
-        if (error) {
-          console.error('Error loading events:', error);
-          toast({
-            title: "Error",
-            description: "Failed to load events",
-            variant: "destructive"
-          });
-          // Fallback to demo events
-          setEvents(initialEvents);
-        } else {
-          const transformedEvents = data.map(transformDbEvent);
-          setEvents(transformedEvents);
-        }
-      } catch (error) {
-        console.error('Error in loadEvents:', error);
+  const loadEvents = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        // If no user session, show demo events
+        console.log('No session, showing demo events');
         setEvents(initialEvents);
-      } finally {
         setLoading(false);
+        return;
       }
-    };
 
-    loadEvents();
+      console.log('Loading events from database...');
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('date', { ascending: true });
+
+      if (error) {
+        console.error('Error loading events:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load events",
+          variant: "destructive"
+        });
+        // Fallback to demo events
+        setEvents(initialEvents);
+      } else {
+        const transformedEvents = data.map(transformDbEvent);
+        console.log('Loaded events from database:', transformedEvents);
+        setEvents(transformedEvents);
+      }
+    } catch (error) {
+      console.error('Error in loadEvents:', error);
+      setEvents(initialEvents);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadEvents();
+  }, [loadEvents]);
 
   const addEvent = useCallback(async (eventData: Omit<Event, 'id'>) => {
     try {
+      console.log('Creating event:', eventData);
       const { data: session } = await supabase.auth.getSession();
       
       if (!session.session) {
@@ -148,6 +153,7 @@ export const useEventManager = () => {
         user_id: session.session.user.id
       };
 
+      console.log('Inserting event to database:', dbEvent);
       const { data, error } = await supabase
         .from('events')
         .insert([dbEvent])
@@ -164,8 +170,12 @@ export const useEventManager = () => {
         return null;
       }
 
+      console.log('Event created in database:', data);
       const newEvent = transformDbEvent(data);
-      setEvents(prev => [...prev, newEvent]);
+      
+      // Force refresh all events from database to ensure UI sync
+      console.log('Refreshing all events after creation...');
+      await loadEvents();
       
       toast({
         title: "Success",
@@ -182,7 +192,7 @@ export const useEventManager = () => {
       });
       return null;
     }
-  }, []);
+  }, [loadEvents]);
 
   const updateEvent = useCallback(async (id: string, eventData: Partial<Event>) => {
     try {
@@ -289,6 +299,7 @@ export const useEventManager = () => {
     addEvent,
     updateEvent,
     deleteEvent,
-    getEventsByDate
+    getEventsByDate,
+    refreshEvents: loadEvents
   };
 };
