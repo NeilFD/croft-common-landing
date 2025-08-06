@@ -41,7 +41,10 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          is_sold_out: boolean
           location: string
+          management_email: string
+          management_token: string
           organizer: string
           price: number | null
           time: string
@@ -57,7 +60,10 @@ export type Database = {
           description: string
           id?: string
           image_url?: string | null
+          is_sold_out?: boolean
           location: string
+          management_email: string
+          management_token: string
           organizer: string
           price?: number | null
           time: string
@@ -73,7 +79,10 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          is_sold_out?: boolean
           location?: string
+          management_email?: string
+          management_token?: string
           organizer?: string
           price?: number | null
           time?: string
@@ -94,6 +103,10 @@ export type Database = {
       }
       is_email_domain_allowed: {
         Args: { email: string }
+        Returns: boolean
+      }
+      verify_event_management_token: {
+        Args: { token_input: string; event_id_input: string }
         Returns: boolean
       }
     }

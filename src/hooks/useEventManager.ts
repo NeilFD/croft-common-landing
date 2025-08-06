@@ -67,11 +67,14 @@ const transformDbEvent = (dbEvent: any): Event => ({
   price: dbEvent.price,
   category: dbEvent.category,
   imageUrl: dbEvent.image_url,
-  contactEmail: dbEvent.contact_email
+  contactEmail: dbEvent.contact_email,
+  isSoldOut: dbEvent.is_sold_out,
+  managementToken: dbEvent.management_token,
+  managementEmail: dbEvent.management_email
 });
 
 // Transform frontend Event to database format
-const transformEventForDb = (event: Omit<Event, 'id'>) => ({
+const transformEventForDb = (event: Omit<Event, 'id'> & { managementToken?: string; managementEmail?: string }) => ({
   title: event.title,
   description: event.description,
   date: event.date,
@@ -81,7 +84,10 @@ const transformEventForDb = (event: Omit<Event, 'id'>) => ({
   price: event.price,
   category: event.category,
   image_url: event.imageUrl || null,
-  contact_email: event.contactEmail
+  contact_email: event.contactEmail,
+  is_sold_out: event.isSoldOut || false,
+  management_token: event.managementToken || crypto.randomUUID(),
+  management_email: event.managementEmail || event.contactEmail
 });
 
 export const useEventManager = () => {
@@ -154,8 +160,16 @@ export const useEventManager = () => {
         return null;
       }
 
+      // Generate management token and prepare event data
+      const managementToken = crypto.randomUUID();
+      const eventWithToken = {
+        ...eventData,
+        managementToken,
+        managementEmail: eventData.contactEmail
+      };
+
       const dbEvent = {
-        ...transformEventForDb(eventData),
+        ...transformEventForDb(eventWithToken),
         user_id: session.session.user.id
       };
 
@@ -179,13 +193,32 @@ export const useEventManager = () => {
       console.log('Event created in database:', data);
       const newEvent = transformDbEvent(data);
       
+      // Send management email
+      try {
+        await supabase.functions.invoke('send-event-management-email', {
+          body: {
+            eventTitle: newEvent.title,
+            organizerEmail: newEvent.contactEmail,
+            managementToken,
+            eventDate: newEvent.date,
+            eventTime: newEvent.time,
+            eventLocation: newEvent.location,
+            isNewEvent: true
+          }
+        });
+        console.log('Management email sent successfully');
+      } catch (emailError) {
+        console.error('Error sending management email:', emailError);
+        // Don't fail the event creation if email fails
+      }
+      
       // Force refresh all events from database to ensure UI sync
       console.log('Refreshing all events after creation...');
       await loadEvents();
       
       toast({
         title: "Success",
-        description: "Event created successfully"
+        description: "Event created successfully! Check your email for the management link."
       });
       
       return newEvent;

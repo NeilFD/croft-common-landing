@@ -10,6 +10,9 @@ export interface Event {
   category: EventCategory;
   imageUrl?: string;
   contactEmail: string;
+  isSoldOut?: boolean;
+  managementToken?: string;
+  managementEmail?: string;
 }
 
 export type EventCategory = 'gigs' | 'tastings' | 'talks' | 'takeovers' | 'food' | 'special';

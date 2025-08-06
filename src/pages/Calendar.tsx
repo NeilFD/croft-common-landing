@@ -127,8 +127,9 @@ const Calendar = () => {
                       <TooltipTrigger asChild>
                         <div
                           className={cn(
-                            "text-xs p-2 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm",
-                            `border-l-4`
+                            "text-xs p-2 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative",
+                            `border-l-4`,
+                            event.isSoldOut ? "opacity-60 grayscale" : ""
                           )}
                           style={{
                             borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
@@ -138,6 +139,11 @@ const Calendar = () => {
                             setShowEventDetail(true);
                           }}
                          >
+                           {event.isSoldOut && (
+                             <div className="absolute top-1 right-1 bg-destructive text-destructive-foreground px-1 py-0.5 rounded text-[10px] font-medium">
+                               SOLD OUT
+                             </div>
+                           )}
                            <div className="font-bold text-foreground text-sm leading-tight">{event.title}</div>
                           <div className="text-xs text-muted-foreground mt-1">{event.time}</div>
                           <div className="text-xs text-muted-foreground">{event.location}</div>
@@ -235,24 +241,30 @@ const Calendar = () => {
                 <TooltipProvider key={event.id}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div
-                        className={cn(
-                          "p-3 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm",
-                          `border-l-4`
-                        )}
-                        style={{
-                          borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
-                        }}
-                        onClick={() => {
-                          setSelectedEvent(event);
-                          setShowEventDetail(true);
-                        }}
-                       >
-                         <div className="text-xs text-muted-foreground mb-2">{event.time}</div>
-                        <div className="font-bold text-foreground text-lg leading-tight mb-2">{event.title}</div>
-                        <div className="text-sm text-muted-foreground mb-1">{event.location}</div>
-                        <div className="text-sm text-muted-foreground opacity-75">{event.organizer}</div>
-                      </div>
+                        <div
+                          className={cn(
+                            "p-3 rounded-lg border-2 border-black bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative",
+                            `border-l-4`,
+                            event.isSoldOut ? "opacity-60 grayscale" : ""
+                          )}
+                          style={{
+                            borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
+                          }}
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setShowEventDetail(true);
+                          }}
+                         >
+                           {event.isSoldOut && (
+                             <div className="absolute top-2 right-2 bg-destructive text-destructive-foreground px-2 py-1 rounded text-xs font-medium">
+                               SOLD OUT
+                             </div>
+                           )}
+                           <div className="text-xs text-muted-foreground mb-2">{event.time}</div>
+                          <div className="font-bold text-foreground text-lg leading-tight mb-2">{event.title}</div>
+                          <div className="text-sm text-muted-foreground mb-1">{event.location}</div>
+                          <div className="text-sm text-muted-foreground opacity-75">{event.organizer}</div>
+                        </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-sm p-4 bg-background border border-border shadow-lg z-50">
                       <div className="space-y-3">

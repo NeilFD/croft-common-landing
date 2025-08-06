@@ -32,16 +32,21 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isOpen, onCl
               <DialogTitle className="font-brutalist text-2xl pr-4">
                 {event.title}
               </DialogTitle>
-              <Badge 
-                variant="outline"
-                className={cn(
-                  "text-xs font-medium",
-                  categoryColors.text,
-                  categoryColors.border
+              <div className="flex items-center gap-2">
+                <Badge 
+                  variant="outline"
+                  className={cn(
+                    "text-xs font-medium",
+                    categoryColors.text,
+                    categoryColors.border
+                  )}
+                >
+                  {event.category}
+                </Badge>
+                {event.isSoldOut && (
+                  <Badge variant="destructive">SOLD OUT</Badge>
                 )}
-              >
-                {event.category}
-              </Badge>
+              </div>
             </div>
           </div>
         </DialogHeader>
@@ -139,17 +144,35 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isOpen, onCl
           </div>
 
           {/* Booking CTA */}
-          <div className="bg-muted/50 p-6 rounded-lg space-y-4">
-            <div className="text-center">
-              <h3 className="font-medium text-lg mb-2">Ready to join us?</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Get in touch to book your spot or ask any questions
-              </p>
-              <Button onClick={handleContact} className="w-full md:w-auto">
-                Book or Enquire
-              </Button>
+          {event.isSoldOut ? (
+            <div className="bg-muted/50 p-6 rounded-lg space-y-4">
+              <div className="text-center">
+                <h3 className="font-medium text-lg mb-2 text-muted-foreground">This event is sold out</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Contact the organizer for any questions or to join a waiting list
+                </p>
+                <Button 
+                  variant="outline" 
+                  onClick={handleContact} 
+                  className="w-full md:w-auto"
+                >
+                  Contact Organizer
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-muted/50 p-6 rounded-lg space-y-4">
+              <div className="text-center">
+                <h3 className="font-medium text-lg mb-2">Ready to join us?</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Get in touch to book your spot or ask any questions
+                </p>
+                <Button onClick={handleContact} className="w-full md:w-auto">
+                  Book or Enquire
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
