@@ -38,6 +38,11 @@ const HallHeroCarousel = () => {
       src: '/lovable-uploads/5d770f71-d0ac-45ef-b72f-b853c4020425.png',
       type: 'mixed',
       overlay: 'bg-void/25'
+    },
+    {
+      src: '/lovable-uploads/90bb8b43-c5a1-41ba-ac44-1ea3c8109e07.png',
+      type: 'mixed',
+      overlay: ''
     }
   ];
 
