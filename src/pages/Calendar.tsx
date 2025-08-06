@@ -121,13 +121,13 @@ const Calendar = () => {
             }`}>
               {format(cloneDay, dateFormat)}
             </span>
-            <div className="mt-1 flex flex-wrap gap-1.5">
-              {dayEvents.slice(0, 8).map((event, index) => {
+            <div className="mt-1 grid grid-cols-2 gap-1">
+              {dayEvents.slice(0, 4).map((event, index) => {
                 const categoryColors = eventCategoryColors[event.category];
                 return (
                   <button
                     key={event.id}
-                    className={`w-3 h-3 md:w-4 md:h-4 rounded-full cursor-pointer hover:scale-125 transition-transform shadow-sm ${
+                    className={`aspect-square rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -141,12 +141,16 @@ const Calendar = () => {
                   />
                 );
               })}
-              {dayEvents.length > 8 && (
-                <span className="text-[10px] text-muted-foreground font-medium">
-                  +{dayEvents.length - 8}
-                </span>
-              )}
+              {/* Fill remaining slots with empty divs to maintain grid */}
+              {Array.from({ length: Math.max(0, 4 - dayEvents.length) }).map((_, index) => (
+                <div key={`empty-${index}`} className="aspect-square rounded border border-dashed border-border/20" />
+              ))}
             </div>
+            {dayEvents.length > 4 && (
+              <div className="text-[10px] text-muted-foreground font-medium mt-1 text-center">
+                +{dayEvents.length - 4}
+              </div>
+            )}
           </div>
         );
         day = addDays(day, 1);
@@ -193,7 +197,7 @@ const Calendar = () => {
       );
 
       weekDays.push(
-        <div key={day.toString()} className="flex-1 border-r border-border last:border-r-0 min-w-[80px]">
+        <div key={day.toString()} className="flex-1 border-r border-border last:border-r-0 min-w-[120px]">
           <div className="p-2 md:p-3 border-b border-border bg-muted/30">
             <div className="text-center">
               <div className="text-xs md:text-sm text-muted-foreground font-medium">
@@ -206,14 +210,14 @@ const Calendar = () => {
               </div>
             </div>
           </div>
-          <div className="h-[200px] md:h-[250px] p-2 space-y-2 overflow-y-auto">
-            <div className="flex flex-wrap gap-1.5">
-              {dayEvents.slice(0, 12).map((event, index) => {
+          <div className="h-[200px] md:h-[250px] p-2">
+            <div className="grid grid-cols-2 gap-1 h-full">
+              {dayEvents.slice(0, 4).map((event, index) => {
                 const categoryColors = eventCategoryColors[event.category];
                 return (
                   <button
                     key={event.id}
-                    className={`w-4 h-4 md:w-5 md:h-5 rounded-full cursor-pointer hover:scale-125 transition-transform shadow-sm ${
+                    className={`rounded cursor-pointer hover:scale-105 transition-transform shadow-sm border border-border/20 ${
                       event.isSoldOut ? 'opacity-60' : ''
                     }`}
                     style={{
@@ -227,10 +231,14 @@ const Calendar = () => {
                   />
                 );
               })}
+              {/* Fill remaining slots with empty divs to maintain grid */}
+              {Array.from({ length: Math.max(0, 4 - dayEvents.length) }).map((_, index) => (
+                <div key={`empty-${index}`} className="rounded border border-dashed border-border/20" />
+              ))}
             </div>
-            {dayEvents.length > 12 && (
-              <div className="text-xs text-muted-foreground font-medium mt-2">
-                +{dayEvents.length - 12} more
+            {dayEvents.length > 4 && (
+              <div className="text-xs text-muted-foreground font-medium mt-2 text-center">
+                +{dayEvents.length - 4} more
               </div>
             )}
           </div>
@@ -239,8 +247,36 @@ const Calendar = () => {
     }
 
     return (
-      <div className="bg-background border border-border rounded-lg overflow-hidden">
-        <div className="flex">
+      <div className="bg-background border border-border rounded-lg overflow-hidden relative">
+        {/* Scroll arrows for mobile */}
+        <div className="md:hidden absolute left-2 top-1/2 transform -translate-y-1/2 z-10">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const container = document.getElementById('week-container');
+              if (container) container.scrollBy({ left: -100, behavior: 'smooth' });
+            }}
+            className="bg-background/80 backdrop-blur-sm h-8 w-8 p-0"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="md:hidden absolute right-2 top-1/2 transform -translate-y-1/2 z-10">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const container = document.getElementById('week-container');
+              if (container) container.scrollBy({ left: 100, behavior: 'smooth' });
+            }}
+            className="bg-background/80 backdrop-blur-sm h-8 w-8 p-0"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div id="week-container" className="flex overflow-x-auto md:overflow-x-visible scrollbar-hide">
           {weekDays}
         </div>
       </div>
