@@ -17,14 +17,14 @@ const BeerHeroCarousel = () => {
 
   const heroImages = [
     {
-      src: '/lovable-uploads/662eb2b5-85e4-444a-a911-30028613c638.png',
-      type: 'warm',
-      overlay: 'bg-void/30'
-    },
-    {
       src: '/lovable-uploads/a6fcbd2e-334d-49e3-9b5d-d7dd0e87d852.png',
       type: 'dark',
       overlay: 'bg-void/20'
+    },
+    {
+      src: '/lovable-uploads/662eb2b5-85e4-444a-a911-30028613c638.png',
+      type: 'warm',
+      overlay: 'bg-void/30'
     },
     {
       src: '/lovable-uploads/13ac21e8-600e-49ed-9565-c01a222ada20.png',
