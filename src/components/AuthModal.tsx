@@ -32,6 +32,33 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [emailSent, setEmailSent] = useState(false);
   const { user, refreshSession } = useAuth();
 
+  // Check for auth URL parameter on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasAuthParam = urlParams.has('auth');
+    
+    if (hasAuthParam && isOpen) {
+      console.log('🔍 Auth parameter detected in URL, checking session...');
+      
+      // Give a moment for the auth state to settle after redirect
+      setTimeout(async () => {
+        try {
+          const session = await refreshSession();
+          if (session?.user) {
+            console.log('✅ User authenticated via URL parameter');
+            // Clean up the URL
+            urlParams.delete('auth');
+            const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
+            window.history.replaceState({}, '', newUrl);
+            onSuccess();
+          }
+        } catch (error) {
+          console.error('🚨 Error checking auth from URL parameter:', error);
+        }
+      }, 1000);
+    }
+  }, [isOpen, refreshSession, onSuccess]);
+
   // Add window focus detection for cross-window authentication
   useEffect(() => {
     if (!emailSent || !isOpen) return;
@@ -107,14 +134,22 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
     setLoading(true);
 
-    const redirectUrl = `${window.location.origin}/`;
+    // Use the current URL with proper path to avoid platform redirects
+    const currentUrl = window.location.href;
+    const redirectUrl = currentUrl.includes('?') 
+      ? `${currentUrl}&auth=true` 
+      : `${currentUrl}?auth=true`;
+    
     console.log('🔐 Sending magic link with redirect URL:', redirectUrl);
+    console.log('🔐 Current page URL:', currentUrl);
     
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          // Add shouldCreateUser to handle new signups
+          shouldCreateUser: true
         }
       });
 
