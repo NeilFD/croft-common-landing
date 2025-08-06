@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
-import GestureTrail from '@/components/GestureTrail';
 import CreateEventModal from '@/components/CreateEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, addDays, addM
 import { useEventManager } from '@/hooks/useEventManager';
 import { Event, eventCategoryColors } from '@/types/event';
 import { cn } from '@/lib/utils';
-import useGestureDetection from '@/hooks/useGestureDetection';
+
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -22,9 +21,6 @@ const Calendar = () => {
   
   const { events, addEvent } = useEventManager();
   
-  const gestureDetection = useGestureDetection(() => {
-    setShowCreateModal(true);
-  });
 
   const navigateDate = (direction: 'prev' | 'next') => {
     if (viewType === 'month') {
@@ -200,11 +196,6 @@ const Calendar = () => {
       
       {/* Gesture Overlay for Admin Access */}
       <GestureOverlay onGestureComplete={() => setShowCreateModal(true)} />
-      <GestureTrail 
-        points={gestureDetection.points}
-        isComplete={gestureDetection.isComplete}
-        isDrawing={gestureDetection.isDrawing}
-      />
       
       <div className="container mx-auto px-6 py-24">
         {/* Header */}

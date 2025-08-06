@@ -29,59 +29,59 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 30) return false; // Require substantial gesture for "A"
-
+    if (gesturePoints.length < 15) return false; // Reduced minimum points
+    
+    console.log(`Analyzing gesture with ${gesturePoints.length} points`);
+    
+    // Find the highest point (peak of the "A")
+    let peakIndex = 0;
+    let peakY = gesturePoints[0].y;
+    
+    for (let i = 1; i < gesturePoints.length; i++) {
+      if (gesturePoints[i].y < peakY) {
+        peakY = gesturePoints[i].y;
+        peakIndex = i;
+      }
+    }
+    
+    // Need a clear peak (not at the very start or end)
+    if (peakIndex < 3 || peakIndex > gesturePoints.length - 4) {
+      console.log('No clear peak found');
+      return false;
+    }
+    
     const firstPoint = gesturePoints[0];
     const lastPoint = gesturePoints[gesturePoints.length - 1];
+    const peakPoint = gesturePoints[peakIndex];
     
-    // Must start in upper portion and end in lower portion
-    const screenHeight = window.innerHeight;
-    if (firstPoint.y > screenHeight * 0.3) return false; // Start in upper 30%
-    if (lastPoint.y < screenHeight * 0.6) return false; // End in lower 40%
+    // Check for basic "A" shape: goes up to peak, then down
+    const leftHeight = firstPoint.y - peakPoint.y;
+    const rightHeight = lastPoint.y - peakPoint.y;
     
-    // Split gesture into three parts for "A" shape analysis
-    const firstThird = Math.floor(gesturePoints.length * 0.33);
-    const secondThird = Math.floor(gesturePoints.length * 0.66);
+    // Both sides should have some height
+    if (leftHeight < 30 || rightHeight < 30) {
+      console.log('Insufficient height on sides');
+      return false;
+    }
     
-    const leftStroke = gesturePoints.slice(0, firstThird);
-    const crossBar = gesturePoints.slice(firstThird, secondThird);
-    const rightStroke = gesturePoints.slice(secondThird);
+    // Check horizontal spread
+    const totalWidth = Math.abs(lastPoint.x - firstPoint.x);
+    if (totalWidth < 50) {
+      console.log('Gesture too narrow');
+      return false;
+    }
     
-    if (leftStroke.length < 8 || crossBar.length < 6 || rightStroke.length < 8) return false;
+    // Simple directional check: should go generally up then down
+    const leftSlope = (peakPoint.y - firstPoint.y) / (peakPoint.x - firstPoint.x);
+    const rightSlope = (lastPoint.y - peakPoint.y) / (lastPoint.x - peakPoint.x);
     
-    // Check left stroke - should go up and right (first part of A)
-    const leftStart = leftStroke[0];
-    const leftEnd = leftStroke[leftStroke.length - 1];
-    const leftDeltaX = leftEnd.x - leftStart.x;
-    const leftDeltaY = leftEnd.y - leftStart.y;
+    // Left side should go up (negative slope), right side should go down (positive slope)
+    if (leftSlope > -0.3 || rightSlope < 0.3) {
+      console.log('Invalid slopes');
+      return false;
+    }
     
-    // Left stroke should move up and right
-    if (leftDeltaY > 0) return false; // Should move up (negative Y)
-    if (leftDeltaX < 50) return false; // Should move right significantly
-    
-    // Check crossbar - should be roughly horizontal
-    const crossStart = crossBar[0];
-    const crossEnd = crossBar[crossBar.length - 1];
-    const crossDeltaX = crossEnd.x - crossStart.x;
-    const crossDeltaY = Math.abs(crossEnd.y - crossStart.y);
-    
-    if (crossDeltaX < 30) return false; // Must move horizontally
-    if (crossDeltaY > crossDeltaX * 0.5) return false; // Should be mostly horizontal
-    
-    // Check right stroke - should go down and right (completing the A)
-    const rightStart = rightStroke[0];
-    const rightEnd = rightStroke[rightStroke.length - 1];
-    const rightDeltaX = rightEnd.x - rightStart.x;
-    const rightDeltaY = rightEnd.y - rightStart.y;
-    
-    // Right stroke should move down and right
-    if (rightDeltaY < 50) return false; // Should move down significantly
-    if (rightDeltaX < 20) return false; // Should move right
-    
-    // Validate overall A shape - peak should be higher than endpoints
-    const peakY = Math.min(...gesturePoints.slice(0, firstThird * 2).map(p => p.y));
-    if (peakY > firstPoint.y - 50) return false; // Peak should be significantly higher
-    
+    console.log('Valid "A" shape detected!');
     return true;
   }, []);
 
@@ -90,8 +90,8 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     setPoints(prev => {
       const updated = [...prev, newPoint];
       
-      // Check if gesture is complete - only validate on substantial gestures
-      if (updated.length > 30 && isValidAShape(updated)) {
+      // Check if gesture is complete - validate more frequently
+      if (updated.length > 15 && isValidAShape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
@@ -114,7 +114,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     // Set timeout to clear gesture if not completed
     gestureTimeoutRef.current = setTimeout(() => {
       clearGesture();
-    }, 5000);
+    }, 8000);
   }, [addPoint, clearGesture]);
 
   const endGesture = useCallback(() => {
