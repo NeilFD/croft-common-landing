@@ -96,7 +96,7 @@ const Calendar = () => {
           <div
             key={day.toString()}
             className={`min-h-[80px] md:min-h-[120px] border border-border/30 p-1 md:p-2 ${
-              !isSameMonth(day, monthStart) ? 'text-muted-foreground bg-muted/20' : 'bg-background'
+              !isSameMonth(day, monthStart) ? 'text-muted-foreground bg-muted/20' : 'bg-background/80'
             }`}
           >
             <span className={`text-xs md:text-sm font-medium ${
