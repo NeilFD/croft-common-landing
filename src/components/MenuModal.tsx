@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import CroftLogo from './CroftLogo';
 import { MenuSection } from '@/data/menuData';
 
@@ -11,6 +12,8 @@ interface MenuModalProps {
 }
 
 const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
+  const navigate = useNavigate();
+  
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -144,7 +147,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                               className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300 cursor-pointer text-left`}
                               onClick={() => {
                                 if (item.name.includes('Take a look')) {
-                                  window.location.href = '/calendar';
+                                  onClose();
+                                  navigate('/calendar');
                                 } else {
                                   console.log('Navigate to:', item.name);
                                 }
