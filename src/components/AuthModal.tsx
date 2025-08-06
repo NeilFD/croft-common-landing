@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
 
 interface AuthModalProps {
@@ -23,6 +24,15 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const { user } = useAuth();
+
+  // Detect when user becomes authenticated and automatically proceed
+  useEffect(() => {
+    if (user && isOpen && emailSent) {
+      // User has successfully authenticated after magic link
+      onSuccess();
+    }
+  }, [user, isOpen, emailSent, onSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +88,12 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setEmailSent(false);
     onClose();
   };
+
+  // If user is already authenticated, don't show the modal
+  if (user && isOpen) {
+    onSuccess();
+    return null;
+  }
 
   if (emailSent) {
     return (
