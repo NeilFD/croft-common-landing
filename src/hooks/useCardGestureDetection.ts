@@ -29,31 +29,33 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
-    // Further reduced for mobile devices - detection based on device
     const isMobile = 'ontouchstart' in window;
-    const minPoints = isMobile ? 12 : 15;
+    const minPoints = isMobile ? 8 : 10; // Much more lenient
     
-    if (gesturePoints.length < minPoints) return false;
+    if (gesturePoints.length < minPoints) {
+      console.log(`Not enough points: ${gesturePoints.length}/${minPoints}`);
+      return false;
+    }
     
-    console.log(`Analyzing A gesture with ${gesturePoints.length} points (mobile: ${isMobile})`);
+    console.log(`🔍 Analyzing A gesture with ${gesturePoints.length} points (mobile: ${isMobile})`);
+    console.log('First point:', gesturePoints[0]);
+    console.log('Last point:', gesturePoints[gesturePoints.length - 1]);
     
-    // Find the highest point (peak of the "A")
+    // Find the highest point (peak of the "A") - allow peak anywhere in middle 70%
     let peakIndex = 0;
     let peakY = gesturePoints[0].y;
     
-    for (let i = 1; i < gesturePoints.length; i++) {
+    const searchStart = Math.floor(gesturePoints.length * 0.15);
+    const searchEnd = Math.floor(gesturePoints.length * 0.85);
+    
+    for (let i = searchStart; i < searchEnd; i++) {
       if (gesturePoints[i].y < peakY) {
         peakY = gesturePoints[i].y;
         peakIndex = i;
       }
     }
     
-    // Even more flexible peak positioning for mobile
-    const peakBuffer = isMobile ? 2 : 3;
-    if (peakIndex < peakBuffer || peakIndex > gesturePoints.length - (peakBuffer + 1)) {
-      console.log('No clear peak found');
-      return false;
-    }
+    console.log(`📍 Peak found at index ${peakIndex}, Y: ${peakY}`);
     
     const firstPoint = gesturePoints[0];
     const lastPoint = gesturePoints[gesturePoints.length - 1];
@@ -63,74 +65,96 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
     const leftHeight = firstPoint.y - peakPoint.y;
     const rightHeight = lastPoint.y - peakPoint.y;
     
-    // Device-specific requirements
-    const minHeight = isMobile ? 20 : 25;
-    const minWidth = isMobile ? 30 : 40;
+    // Much more lenient height requirements
+    const minHeight = isMobile ? 15 : 20;
+    const minWidth = isMobile ? 20 : 30;
+    
+    console.log(`📏 Heights - Left: ${leftHeight}, Right: ${rightHeight} (min: ${minHeight})`);
     
     if (leftHeight < minHeight || rightHeight < minHeight) {
-      console.log('Insufficient height on sides');
+      console.log('❌ Insufficient height on sides');
       return false;
     }
     
-    // Check horizontal spread - further reduced for mobile touch
+    // Check horizontal spread
     const totalWidth = Math.abs(lastPoint.x - firstPoint.x);
+    console.log(`📏 Total width: ${totalWidth} (min: ${minWidth})`);
+    
     if (totalWidth < minWidth) {
-      console.log('Gesture too narrow');
+      console.log('❌ Gesture too narrow');
       return false;
     }
     
-    // IMPROVED CROSSBAR DETECTION
-    // Look for any horizontal movement in the middle 60% of the gesture
-    const middleStart = Math.floor(gesturePoints.length * 0.2);
-    const middleEnd = Math.floor(gesturePoints.length * 0.8);
+    // DRAMATICALLY SIMPLIFIED CROSSBAR DETECTION
+    // Look for ANY horizontal movement in the middle portion
     let foundCrossbar = false;
+    let bestHorizontalSegment = 0;
     
-    for (let i = middleStart; i < middleEnd - 5; i++) {
-      const segment = gesturePoints.slice(i, i + 6); // Smaller segments for flexibility
-      
-      if (segment.length < 3) continue;
-      
-      // Check if this segment is roughly horizontal
-      const startPoint = segment[0];
-      const endPoint = segment[segment.length - 1];
-      const horizontalDistance = Math.abs(endPoint.x - startPoint.x);
-      const verticalDistance = Math.abs(endPoint.y - startPoint.y);
-      
-      // Even more forgiving crossbar detection for mobile
-      const minHorizontal = isMobile ? 10 : 12;
-      const crossbarRatio = isMobile ? 1.2 : 1.4;
-      
-      if (horizontalDistance > minHorizontal && horizontalDistance > verticalDistance * crossbarRatio) {
-        // Check if this segment is in the general middle area of the A
-        const segmentAvgY = segment.reduce((sum, p) => sum + p.y, 0) / segment.length;
-        const expectedCrossbarY = peakPoint.y + (firstPoint.y - peakPoint.y) * 0.5; // Middle of the A
+    const middleStart = Math.floor(gesturePoints.length * 0.25);
+    const middleEnd = Math.floor(gesturePoints.length * 0.75);
+    
+    console.log(`🔍 Looking for crossbar between indices ${middleStart}-${middleEnd}`);
+    
+    for (let i = middleStart; i < middleEnd - 3; i++) {
+      for (let segmentSize = 3; segmentSize <= 8 && i + segmentSize < middleEnd; segmentSize++) {
+        const segment = gesturePoints.slice(i, i + segmentSize);
+        const startPoint = segment[0];
+        const endPoint = segment[segment.length - 1];
         
-        // Very forgiving positioning for mobile touch
-        const tolerance = isMobile ? 60 : 45;
-        if (Math.abs(segmentAvgY - expectedCrossbarY) < tolerance) {
-          foundCrossbar = true;
-          console.log('Crossbar detected');
-          break;
+        const horizontalDistance = Math.abs(endPoint.x - startPoint.x);
+        const verticalDistance = Math.abs(endPoint.y - startPoint.y);
+        
+        // Super lenient crossbar detection - just needs some horizontal movement
+        const minHorizontal = isMobile ? 8 : 10;
+        
+        if (horizontalDistance > minHorizontal && horizontalDistance > verticalDistance * 0.8) {
+          bestHorizontalSegment = Math.max(bestHorizontalSegment, horizontalDistance);
+          
+          // Check if roughly in the middle height of the A
+          const segmentAvgY = segment.reduce((sum, p) => sum + p.y, 0) / segment.length;
+          const expectedCrossbarY = peakPoint.y + (Math.max(firstPoint.y, lastPoint.y) - peakPoint.y) * 0.6;
+          
+          // Very generous positioning tolerance
+          const tolerance = isMobile ? 80 : 60;
+          
+          console.log(`📊 Segment at ${i}: horizontal=${horizontalDistance}, vertical=${verticalDistance}, avgY=${segmentAvgY}, expectedY=${expectedCrossbarY}`);
+          
+          if (Math.abs(segmentAvgY - expectedCrossbarY) < tolerance) {
+            foundCrossbar = true;
+            console.log('✅ Crossbar detected!');
+            break;
+          }
         }
       }
+      if (foundCrossbar) break;
+    }
+    
+    console.log(`📊 Best horizontal segment: ${bestHorizontalSegment}`);
+    
+    // Fallback: if we have decent horizontal movement anywhere, accept it
+    if (!foundCrossbar && bestHorizontalSegment > (isMobile ? 15 : 20)) {
+      console.log('✅ Fallback crossbar accepted based on horizontal movement');
+      foundCrossbar = true;
     }
     
     if (!foundCrossbar) {
-      console.log('No crossbar detected');
+      console.log('❌ No crossbar detected');
       return false;
     }
     
-    // More forgiving directional check
+    // Very lenient slope check - just ensure general A shape
     const leftSlope = (peakPoint.y - firstPoint.y) / Math.max(Math.abs(peakPoint.x - firstPoint.x), 1);
     const rightSlope = (lastPoint.y - peakPoint.y) / Math.max(Math.abs(lastPoint.x - peakPoint.x), 1);
     
-    // More lenient slope requirements
-    if (leftSlope > -0.2 || rightSlope < 0.2) {
-      console.log('Invalid slopes');
+    console.log(`📈 Slopes - Left: ${leftSlope}, Right: ${rightSlope}`);
+    
+    // Much more lenient slope requirements
+    if (leftSlope > 0.1 || rightSlope < -0.1) {
+      console.log('❌ Invalid slopes - not A-like shape');
       return false;
     }
     
-    console.log('Valid "A" shape with crossbar detected!');
+    console.log('🎉 Valid "A" shape detected!');
     return true;
   }, []);
 
