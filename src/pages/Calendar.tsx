@@ -170,7 +170,7 @@ const Calendar = () => {
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
             const fullDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             return (
-              <div key={day} className="p-2 md:p-3 text-center font-medium text-muted-foreground border border-border">
+              <div key={`${day}-${index}`} className="p-2 md:p-3 text-center font-medium text-muted-foreground border border-border">
                 <span className="md:hidden">{day}</span>
                 <span className="hidden md:inline">{fullDays[index]}</span>
               </div>
@@ -445,12 +445,19 @@ const Calendar = () => {
           </div>
         </div>
 
-        {/* Color Legend for Mobile */}
-        <EventColorLegend />
+        {/* Color Legend */}
+        <EventColorLegend className="md:hidden" />
 
         {/* Calendar */}
         <div className="mb-8 md:mb-16">
-          {viewType === 'month' ? renderMonthView() : renderWeekView()}
+          {viewType === 'month' ? (
+            <>
+              <EventColorLegend className="hidden md:block" />
+              {renderMonthView()}
+            </>
+          ) : (
+            renderWeekView()
+          )}
         </div>
       </div>
 

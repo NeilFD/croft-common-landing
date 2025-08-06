@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Event, eventCategoryColors } from '@/types/event';
 import { format } from 'date-fns';
-import { Clock, MapPin, User, DollarSign } from 'lucide-react';
+import { Clock, MapPin, User, DollarSign, Mail } from 'lucide-react';
 
 interface EventDotModalProps {
   event: Event | null;
@@ -141,6 +141,18 @@ export const EventDotModal = ({ event, isOpen, onClose }: EventDotModalProps) =>
           <User className="h-4 w-4 text-muted-foreground" />
           <div>
             <span className="font-medium">Organizer:</span> {event.organizer}
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <Mail className="h-4 w-4 text-muted-foreground" />
+          <div>
+            <span className="font-medium">Contact:</span>{' '}
+            <a 
+              href={`mailto:${event.contactEmail}`}
+              className="text-primary hover:underline"
+            >
+              {event.contactEmail}
+            </a>
           </div>
         </div>
         {event.price && (
