@@ -144,7 +144,7 @@ const Calendar = () => {
                           <div className="text-xs text-muted-foreground opacity-75">{event.organizer}</div>
                         </div>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="max-w-sm p-4">
+                      <TooltipContent side="right" className="max-w-sm p-4 bg-background border border-border shadow-lg z-50">
                         <div className="space-y-3">
                           {event.imageUrl && (
                             <img 
@@ -254,7 +254,7 @@ const Calendar = () => {
                         <div className="text-sm text-muted-foreground opacity-75">{event.organizer}</div>
                       </div>
                     </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-sm p-4">
+                    <TooltipContent side="top" className="max-w-sm p-4 bg-background border border-border shadow-lg z-50">
                       <div className="space-y-3">
                         {event.imageUrl && (
                           <img 
