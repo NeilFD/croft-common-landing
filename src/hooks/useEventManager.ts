@@ -96,14 +96,7 @@ export const useEventManager = () => {
       
       console.log('loadEvents - session:', session.session?.user?.email);
       
-      if (!session.session) {
-        // If no user session, show demo events
-        console.log('No session, showing demo events');
-        setEvents(initialEvents);
-        setLoading(false);
-        return;
-      }
-
+      // Always try to load events from database first
       console.log('Loading events from database...');
       const { data, error } = await supabase
         .from('events')
@@ -112,12 +105,8 @@ export const useEventManager = () => {
 
       if (error) {
         console.error('Error loading events:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load events",
-          variant: "destructive"
-        });
-        // Fallback to demo events
+        // Only show demo events if there's an error loading from database
+        console.log('Falling back to demo events due to error');
         setEvents(initialEvents);
       } else {
         const transformedEvents = data.map(transformDbEvent);
