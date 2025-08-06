@@ -19,32 +19,38 @@ const BeerHeroCarousel = () => {
     {
       src: '/lovable-uploads/a6fcbd2e-334d-49e3-9b5d-d7dd0e87d852.png',
       type: 'dark',
-      overlay: 'bg-void/20'
+      overlay: 'bg-void/20',
+      backgroundSize: 'bg-cover'
     },
     {
       src: '/lovable-uploads/3a5090a3-760f-4496-8672-bd8724569325.png',
       type: 'dark',
-      overlay: ''
+      overlay: '',
+      backgroundSize: 'bg-cover'
     },
     {
       src: '/lovable-uploads/9ef0b073-9f25-420b-8d75-fb90540706d3.png',
       type: 'dark',
-      overlay: ''
+      overlay: '',
+      backgroundSize: 'bg-cover'
     },
     {
       src: '/lovable-uploads/25105870-85fb-442c-9d85-ee7e218df672.png',
       type: 'warm',
-      overlay: ''
+      overlay: '',
+      backgroundSize: 'bg-cover'
     },
     {
       src: '/lovable-uploads/1b15e13f-fb17-4f03-a1d9-9a7c2a2611b3.png',
       type: 'dark',
-      overlay: 'bg-void/25'
+      overlay: 'bg-void/25',
+      backgroundSize: 'bg-cover'
     },
     {
       src: '/lovable-uploads/2aeca521-88fd-4a9c-a05a-6fa91979b122.png',
       type: 'warm',
-      overlay: ''
+      overlay: '',
+      backgroundSize: 'bg-contain'
     }
   ];
 
@@ -71,7 +77,7 @@ const BeerHeroCarousel = () => {
           >
             {/* Background Image with type-specific styling */}
             <div 
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
+              className={`absolute inset-0 ${image.backgroundSize} bg-center bg-no-repeat transition-all duration-1000`}
               style={{
                 backgroundImage: `url('${image.src}')`
               }}
