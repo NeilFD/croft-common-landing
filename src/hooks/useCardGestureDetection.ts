@@ -30,7 +30,7 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
 
   const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
     const isMobile = 'ontouchstart' in window;
-    const minPoints = isMobile ? 8 : 10; // Much more lenient
+    const minPoints = isMobile ? 12 : 15;
     
     if (gesturePoints.length < minPoints) {
       console.log(`Not enough points: ${gesturePoints.length}/${minPoints}`);
@@ -38,15 +38,15 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
     }
     
     console.log(`🔍 Analyzing A gesture with ${gesturePoints.length} points (mobile: ${isMobile})`);
-    console.log('First point:', gesturePoints[0]);
-    console.log('Last point:', gesturePoints[gesturePoints.length - 1]);
     
-    // Find the highest point (peak of the "A") - allow peak anywhere in middle 70%
+    // STEP 1: Validate basic A shape structure first
+    
+    // Find the highest point (peak of the "A") in middle portion
     let peakIndex = 0;
     let peakY = gesturePoints[0].y;
     
     const searchStart = Math.floor(gesturePoints.length * 0.15);
-    const searchEnd = Math.floor(gesturePoints.length * 0.85);
+    const searchEnd = Math.floor(gesturePoints.length * 0.6); // Look earlier for peak
     
     for (let i = searchStart; i < searchEnd; i++) {
       if (gesturePoints[i].y < peakY) {
@@ -65,14 +65,13 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
     const leftHeight = firstPoint.y - peakPoint.y;
     const rightHeight = lastPoint.y - peakPoint.y;
     
-    // Much more lenient height requirements
-    const minHeight = isMobile ? 15 : 20;
-    const minWidth = isMobile ? 20 : 30;
+    const minHeight = isMobile ? 20 : 25;
+    const minWidth = isMobile ? 25 : 35;
     
     console.log(`📏 Heights - Left: ${leftHeight}, Right: ${rightHeight} (min: ${minHeight})`);
     
     if (leftHeight < minHeight || rightHeight < minHeight) {
-      console.log('❌ Insufficient height on sides');
+      console.log('❌ Insufficient height - not an A shape');
       return false;
     }
     
@@ -85,18 +84,29 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
       return false;
     }
     
-    // DRAMATICALLY SIMPLIFIED CROSSBAR DETECTION
-    // Look for ANY horizontal movement in the middle portion
+    // Check slopes to ensure A-like shape
+    const leftSlope = (peakPoint.y - firstPoint.y) / Math.max(Math.abs(peakPoint.x - firstPoint.x), 1);
+    const rightSlope = (lastPoint.y - peakPoint.y) / Math.max(Math.abs(lastPoint.x - peakPoint.x), 1);
+    
+    console.log(`📈 Slopes - Left: ${leftSlope}, Right: ${rightSlope}`);
+    
+    if (leftSlope > 0.1 || rightSlope < -0.1) {
+      console.log('❌ Invalid slopes - not A-like shape');
+      return false;
+    }
+    
+    console.log('✅ Basic A shape validated');
+    
+    // STEP 2: Now look for ANY horizontal movement after the A shape is established
+    // Look from after the peak to the end for any horizontal crossbar
+    const crossbarSearchStart = peakIndex + 3;
     let foundCrossbar = false;
-    let bestHorizontalSegment = 0;
     
-    const middleStart = Math.floor(gesturePoints.length * 0.25);
-    const middleEnd = Math.floor(gesturePoints.length * 0.75);
+    console.log(`🔍 Looking for crossbar from index ${crossbarSearchStart} onwards`);
     
-    console.log(`🔍 Looking for crossbar between indices ${middleStart}-${middleEnd}`);
-    
-    for (let i = middleStart; i < middleEnd - 3; i++) {
-      for (let segmentSize = 3; segmentSize <= 8 && i + segmentSize < middleEnd; segmentSize++) {
+    for (let i = crossbarSearchStart; i < gesturePoints.length - 3; i++) {
+      // Check small segments for horizontal movement
+      for (let segmentSize = 3; segmentSize <= 6 && i + segmentSize < gesturePoints.length; segmentSize++) {
         const segment = gesturePoints.slice(i, i + segmentSize);
         const startPoint = segment[0];
         const endPoint = segment[segment.length - 1];
@@ -104,57 +114,24 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
         const horizontalDistance = Math.abs(endPoint.x - startPoint.x);
         const verticalDistance = Math.abs(endPoint.y - startPoint.y);
         
-        // Super lenient crossbar detection - just needs some horizontal movement
-        const minHorizontal = isMobile ? 8 : 10;
+        // ANY decent horizontal movement counts
+        const minHorizontal = isMobile ? 10 : 12;
         
-        if (horizontalDistance > minHorizontal && horizontalDistance > verticalDistance * 0.8) {
-          bestHorizontalSegment = Math.max(bestHorizontalSegment, horizontalDistance);
-          
-          // Check if roughly in the middle height of the A
-          const segmentAvgY = segment.reduce((sum, p) => sum + p.y, 0) / segment.length;
-          const expectedCrossbarY = peakPoint.y + (Math.max(firstPoint.y, lastPoint.y) - peakPoint.y) * 0.6;
-          
-          // Very generous positioning tolerance
-          const tolerance = isMobile ? 80 : 60;
-          
-          console.log(`📊 Segment at ${i}: horizontal=${horizontalDistance}, vertical=${verticalDistance}, avgY=${segmentAvgY}, expectedY=${expectedCrossbarY}`);
-          
-          if (Math.abs(segmentAvgY - expectedCrossbarY) < tolerance) {
-            foundCrossbar = true;
-            console.log('✅ Crossbar detected!');
-            break;
-          }
+        if (horizontalDistance > minHorizontal && horizontalDistance > verticalDistance) {
+          console.log(`✅ Crossbar detected at segment ${i}-${i + segmentSize}: horizontal=${horizontalDistance}, vertical=${verticalDistance}`);
+          foundCrossbar = true;
+          break;
         }
       }
       if (foundCrossbar) break;
     }
     
-    console.log(`📊 Best horizontal segment: ${bestHorizontalSegment}`);
-    
-    // Fallback: if we have decent horizontal movement anywhere, accept it
-    if (!foundCrossbar && bestHorizontalSegment > (isMobile ? 15 : 20)) {
-      console.log('✅ Fallback crossbar accepted based on horizontal movement');
-      foundCrossbar = true;
-    }
-    
     if (!foundCrossbar) {
-      console.log('❌ No crossbar detected');
+      console.log('❌ No crossbar detected - A shape incomplete');
       return false;
     }
     
-    // Very lenient slope check - just ensure general A shape
-    const leftSlope = (peakPoint.y - firstPoint.y) / Math.max(Math.abs(peakPoint.x - firstPoint.x), 1);
-    const rightSlope = (lastPoint.y - peakPoint.y) / Math.max(Math.abs(lastPoint.x - peakPoint.x), 1);
-    
-    console.log(`📈 Slopes - Left: ${leftSlope}, Right: ${rightSlope}`);
-    
-    // Much more lenient slope requirements
-    if (leftSlope > 0.1 || rightSlope < -0.1) {
-      console.log('❌ Invalid slopes - not A-like shape');
-      return false;
-    }
-    
-    console.log('🎉 Valid "A" shape detected!');
+    console.log('🎉 Complete "A" shape with crossbar detected!');
     return true;
   }, []);
 
