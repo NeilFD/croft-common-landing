@@ -29,7 +29,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 15) return false; // Reduced minimum points
+    if (gesturePoints.length < 25) return false; // Increased minimum points for stricter detection
     
     console.log(`Analyzing gesture with ${gesturePoints.length} points`);
     
@@ -45,7 +45,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     }
     
     // Need a clear peak (not at the very start or end)
-    if (peakIndex < 3 || peakIndex > gesturePoints.length - 4) {
+    if (peakIndex < 5 || peakIndex > gesturePoints.length - 6) {
       console.log('No clear peak found');
       return false;
     }
@@ -58,16 +58,50 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     const leftHeight = firstPoint.y - peakPoint.y;
     const rightHeight = lastPoint.y - peakPoint.y;
     
-    // Both sides should have some height
-    if (leftHeight < 30 || rightHeight < 30) {
+    // Both sides should have significant height
+    if (leftHeight < 50 || rightHeight < 50) {
       console.log('Insufficient height on sides');
       return false;
     }
     
     // Check horizontal spread
     const totalWidth = Math.abs(lastPoint.x - firstPoint.x);
-    if (totalWidth < 50) {
+    if (totalWidth < 80) {
       console.log('Gesture too narrow');
+      return false;
+    }
+    
+    // CROSSBAR DETECTION - This is the key addition
+    // Look for a horizontal movement in the middle portion of the gesture
+    const middleStart = Math.floor(gesturePoints.length * 0.3);
+    const middleEnd = Math.floor(gesturePoints.length * 0.8);
+    let foundCrossbar = false;
+    
+    for (let i = middleStart; i < middleEnd - 10; i++) {
+      const segment = gesturePoints.slice(i, i + 10);
+      
+      // Check if this segment is roughly horizontal
+      const startPoint = segment[0];
+      const endPoint = segment[segment.length - 1];
+      const horizontalDistance = Math.abs(endPoint.x - startPoint.x);
+      const verticalDistance = Math.abs(endPoint.y - startPoint.y);
+      
+      // Crossbar should be more horizontal than vertical and have minimum length
+      if (horizontalDistance > 20 && horizontalDistance > verticalDistance * 2) {
+        // Check if this segment is roughly in the middle height of the A
+        const segmentAvgY = segment.reduce((sum, p) => sum + p.y, 0) / segment.length;
+        const expectedCrossbarY = peakPoint.y + (firstPoint.y - peakPoint.y) * 0.4; // 40% down from peak
+        
+        if (Math.abs(segmentAvgY - expectedCrossbarY) < 30) {
+          foundCrossbar = true;
+          console.log('Crossbar detected');
+          break;
+        }
+      }
+    }
+    
+    if (!foundCrossbar) {
+      console.log('No crossbar detected');
       return false;
     }
     
@@ -76,12 +110,12 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     const rightSlope = (lastPoint.y - peakPoint.y) / (lastPoint.x - peakPoint.x);
     
     // Left side should go up (negative slope), right side should go down (positive slope)
-    if (leftSlope > -0.3 || rightSlope < 0.3) {
+    if (leftSlope > -0.4 || rightSlope < 0.4) {
       console.log('Invalid slopes');
       return false;
     }
     
-    console.log('Valid "A" shape detected!');
+    console.log('Valid "A" shape with crossbar detected!');
     return true;
   }, []);
 
@@ -90,8 +124,8 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     setPoints(prev => {
       const updated = [...prev, newPoint];
       
-      // Check if gesture is complete - validate more frequently
-      if (updated.length > 15 && isValidAShape(updated)) {
+      // Check if gesture is complete - validate less frequently for stricter detection
+      if (updated.length > 25 && isValidAShape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
