@@ -17,6 +17,12 @@ const CafeHeroCarousel = () => {
 
   const cafeImages = [
     {
+      src: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png',
+      type: 'dark',
+      overlay: 'bg-void/35',
+      backgroundPosition: '50% 45%'
+    },
+    {
       src: '/lovable-uploads/3f7371f7-30d1-4118-b421-5a4937be9a2d.png',
       type: 'dark',
       overlay: 'bg-void/30',
@@ -45,12 +51,6 @@ const CafeHeroCarousel = () => {
       type: 'warm',
       overlay: 'bg-void/20',
       backgroundPosition: '65% center'
-    },
-    {
-      src: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png',
-      type: 'dark',
-      overlay: 'bg-void/35',
-      backgroundPosition: '50% 45%'
     }
   ];
 
