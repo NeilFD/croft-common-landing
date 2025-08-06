@@ -4,6 +4,7 @@ import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
 import CreateEventModal from '@/components/CreateEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
+import { EventDotModal } from '@/components/EventDotModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ const Calendar = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
+  const [showDotModal, setShowDotModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   const { events, loading, addEvent } = useEventManager();
@@ -118,73 +120,30 @@ const Calendar = () => {
             }`}>
               {format(cloneDay, dateFormat)}
             </span>
-            <div className="mt-1 space-y-1">
-              {dayEvents.slice(0, 3).map((event, index) => {
+            <div className="mt-1 flex flex-wrap gap-1">
+              {dayEvents.slice(0, 6).map((event, index) => {
                 const categoryColors = eventCategoryColors[event.category];
                 return (
-                  <TooltipProvider key={event.id}>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div
-                          className={cn(
-                            "text-[10px] md:text-xs p-1 md:p-2 rounded border-l-2 md:border-l-4 bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative truncate",
-                            event.isSoldOut ? "opacity-60 grayscale" : ""
-                          )}
-                          style={{
-                            borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
-                          }}
-                          onClick={() => {
-                            setSelectedEvent(event);
-                            setShowEventDetail(true);
-                          }}
-                         >
-                           {event.isSoldOut && (
-                             <div className="hidden md:block absolute top-1 right-1 bg-destructive text-destructive-foreground px-1 py-0.5 rounded text-[10px] font-medium">
-                               SOLD OUT
-                             </div>
-                           )}
-                           <div className="font-bold text-foreground leading-tight truncate">
-                             {event.title}
-                             {event.isSoldOut && <span className="md:hidden text-destructive"> (SOLD OUT)</span>}
-                           </div>
-                          <div className="hidden md:block text-xs text-muted-foreground mt-1">{event.time}</div>
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="max-w-sm p-4 bg-background border border-border shadow-lg z-50">
-                        <div className="space-y-3">
-                          {event.imageUrl && (
-                            <img 
-                              src={event.imageUrl} 
-                              alt={event.title}
-                              className="w-full h-32 object-cover rounded-md"
-                            />
-                          )}
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`border-2`} style={{
-                              borderColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
-                            }}>
-                              {event.category}
-                            </Badge>
-                          </div>
-                          <h4 className="font-bold text-foreground">{event.title}</h4>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            <p><strong>Time:</strong> {event.time}</p>
-                            <p><strong>Date:</strong> {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}</p>
-                            <p><strong>Location:</strong> {event.location}</p>
-                            <p><strong>Organizer:</strong> {event.organizer}</p>
-                            {event.price && <p><strong>Price:</strong> £{event.price}</p>}
-                          </div>
-                          <p className="text-sm text-foreground">{event.description}</p>
-                        </div>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  <button
+                    key={event.id}
+                    className={`w-2 h-2 md:w-3 md:h-3 rounded-full cursor-pointer hover:scale-125 transition-transform ${
+                      event.isSoldOut ? 'opacity-60' : ''
+                    }`}
+                    style={{
+                      backgroundColor: `hsl(var(--accent-${categoryColors.accent.replace('accent-', '')}))`
+                    }}
+                    onClick={() => {
+                      setSelectedEvent(event);
+                      setShowDotModal(true);
+                    }}
+                    title={event.title}
+                  />
                 );
               })}
-              {dayEvents.length > 3 && (
-                <div className="text-[10px] md:text-xs text-muted-foreground font-medium p-1">
-                  +{dayEvents.length - 3} more
-                </div>
+              {dayEvents.length > 6 && (
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  +{dayEvents.length - 6}
+                </span>
               )}
             </div>
           </div>
@@ -232,10 +191,12 @@ const Calendar = () => {
       );
 
       weekDays.push(
-        <div key={day.toString()} className="flex-1 border-r border-border last:border-r-0">
+        <div key={day.toString()} className="flex-1 border-r border-border last:border-r-0 min-w-[80px]">
           <div className="p-2 md:p-4 border-b border-border bg-muted/30">
             <div className="text-center">
-              <div className="text-xs md:text-sm text-muted-foreground">{format(day, 'EEE')}</div>
+              <div className="text-xs md:text-sm text-muted-foreground">
+                {format(day, 'EEE')}
+              </div>
               <div className={`text-sm md:text-lg font-medium ${
                 isSameDay(day, new Date()) ? 'text-primary font-bold' : ''
               }`}>
@@ -243,68 +204,33 @@ const Calendar = () => {
               </div>
             </div>
           </div>
-          <div className="min-h-[300px] md:min-h-[400px] p-1 md:p-2 space-y-1 md:space-y-2">
-            {dayEvents.map(event => {
-              const categoryColors = eventCategoryColors[event.category];
-              return (
-                <TooltipProvider key={event.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div
-                          className={cn(
-                            "p-2 md:p-3 rounded border-l-2 md:border-l-4 bg-background cursor-pointer hover:opacity-80 transition-opacity shadow-sm relative",
-                            event.isSoldOut ? "opacity-60 grayscale" : ""
-                          )}
-                          style={{
-                            borderLeftColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
-                          }}
-                          onClick={() => {
-                            setSelectedEvent(event);
-                            setShowEventDetail(true);
-                          }}
-                         >
-                           {event.isSoldOut && (
-                             <div className="absolute top-1 right-1 md:top-2 md:right-2 bg-destructive text-destructive-foreground px-1 md:px-2 py-0.5 md:py-1 rounded text-[10px] md:text-xs font-medium">
-                               SOLD OUT
-                             </div>
-                           )}
-                           <div className="text-[10px] md:text-xs text-muted-foreground mb-1 md:mb-2">{event.time}</div>
-                          <div className="font-bold text-foreground text-sm md:text-lg leading-tight mb-1 md:mb-2">{event.title}</div>
-                          <div className="text-xs md:text-sm text-muted-foreground mb-1 truncate">{event.location}</div>
-                          <div className="hidden md:block text-sm text-muted-foreground opacity-75">{event.organizer}</div>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="top" className="max-w-sm p-4 bg-background border border-border shadow-lg z-50">
-                      <div className="space-y-3">
-                        {event.imageUrl && (
-                          <img 
-                            src={event.imageUrl} 
-                            alt={event.title}
-                            className="w-full h-32 object-cover rounded-md"
-                          />
-                        )}
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className={`border-2`} style={{
-                            borderColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
-                          }}>
-                            {event.category}
-                          </Badge>
-                        </div>
-                        <h4 className="font-bold text-foreground">{event.title}</h4>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <p><strong>Time:</strong> {event.time}</p>
-                          <p><strong>Date:</strong> {format(new Date(event.date), 'EEEE, MMMM d, yyyy')}</p>
-                          <p><strong>Location:</strong> {event.location}</p>
-                          <p><strong>Organizer:</strong> {event.organizer}</p>
-                          {event.price && <p><strong>Price:</strong> £{event.price}</p>}
-                        </div>
-                        <p className="text-sm text-foreground">{event.description}</p>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              );
-            })}
+          <div className="min-h-[300px] md:min-h-[400px] p-2 space-y-2">
+            <div className="flex flex-wrap gap-1">
+              {dayEvents.slice(0, 8).map((event, index) => {
+                const categoryColors = eventCategoryColors[event.category];
+                return (
+                  <button
+                    key={event.id}
+                    className={`w-3 h-3 md:w-4 md:h-4 rounded-full cursor-pointer hover:scale-125 transition-transform ${
+                      event.isSoldOut ? 'opacity-60' : ''
+                    }`}
+                    style={{
+                      backgroundColor: `hsl(var(--accent-${categoryColors.accent.replace('accent-', '')}))`
+                    }}
+                    onClick={() => {
+                      setSelectedEvent(event);
+                      setShowDotModal(true);
+                    }}
+                    title={event.title}
+                  />
+                );
+              })}
+            </div>
+            {dayEvents.length > 8 && (
+              <div className="text-xs text-muted-foreground font-medium">
+                +{dayEvents.length - 8} more events
+              </div>
+            )}
           </div>
         </div>
       );
@@ -500,6 +426,15 @@ const Calendar = () => {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSave={handleEventSave}
+      />
+      
+      <EventDotModal
+        event={selectedEvent}
+        isOpen={showDotModal}
+        onClose={() => {
+          setShowDotModal(false);
+          setSelectedEvent(null);
+        }}
       />
       
       <EventDetailModal
