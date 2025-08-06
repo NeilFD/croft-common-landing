@@ -29,9 +29,13 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 18) return false; // Reduced minimum points for easier detection
+    // Further reduced for mobile devices - detection based on device
+    const isMobile = 'ontouchstart' in window;
+    const minPoints = isMobile ? 12 : 15;
     
-    console.log(`Analyzing A gesture with ${gesturePoints.length} points`);
+    if (gesturePoints.length < minPoints) return false;
+    
+    console.log(`Analyzing A gesture with ${gesturePoints.length} points (mobile: ${isMobile})`);
     
     // Find the highest point (peak of the "A")
     let peakIndex = 0;
@@ -44,8 +48,9 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
       }
     }
     
-    // More flexible peak positioning
-    if (peakIndex < 3 || peakIndex > gesturePoints.length - 4) {
+    // Even more flexible peak positioning for mobile
+    const peakBuffer = isMobile ? 2 : 3;
+    if (peakIndex < peakBuffer || peakIndex > gesturePoints.length - (peakBuffer + 1)) {
       console.log('No clear peak found');
       return false;
     }
@@ -58,15 +63,18 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
     const leftHeight = firstPoint.y - peakPoint.y;
     const rightHeight = lastPoint.y - peakPoint.y;
     
-    // Reduced height requirements for smaller card area
-    if (leftHeight < 30 || rightHeight < 30) {
+    // Device-specific requirements
+    const minHeight = isMobile ? 20 : 25;
+    const minWidth = isMobile ? 30 : 40;
+    
+    if (leftHeight < minHeight || rightHeight < minHeight) {
       console.log('Insufficient height on sides');
       return false;
     }
     
-    // Check horizontal spread - reduced for card area
+    // Check horizontal spread - further reduced for mobile touch
     const totalWidth = Math.abs(lastPoint.x - firstPoint.x);
-    if (totalWidth < 50) {
+    if (totalWidth < minWidth) {
       console.log('Gesture too narrow');
       return false;
     }
@@ -88,14 +96,18 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
       const horizontalDistance = Math.abs(endPoint.x - startPoint.x);
       const verticalDistance = Math.abs(endPoint.y - startPoint.y);
       
-      // More forgiving crossbar detection - just needs to be more horizontal than vertical
-      if (horizontalDistance > 15 && horizontalDistance > verticalDistance * 1.5) {
+      // Even more forgiving crossbar detection for mobile
+      const minHorizontal = isMobile ? 10 : 12;
+      const crossbarRatio = isMobile ? 1.2 : 1.4;
+      
+      if (horizontalDistance > minHorizontal && horizontalDistance > verticalDistance * crossbarRatio) {
         // Check if this segment is in the general middle area of the A
         const segmentAvgY = segment.reduce((sum, p) => sum + p.y, 0) / segment.length;
         const expectedCrossbarY = peakPoint.y + (firstPoint.y - peakPoint.y) * 0.5; // Middle of the A
         
-        // More forgiving positioning - anywhere in the middle half
-        if (Math.abs(segmentAvgY - expectedCrossbarY) < 50) {
+        // Very forgiving positioning for mobile touch
+        const tolerance = isMobile ? 60 : 45;
+        if (Math.abs(segmentAvgY - expectedCrossbarY) < tolerance) {
           foundCrossbar = true;
           console.log('Crossbar detected');
           break;
@@ -127,8 +139,11 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
     setPoints(prev => {
       const updated = [...prev, newPoint];
       
-      // Check if gesture is complete - progressive validation for quicker recognition
-      if (updated.length > 18 && isValidAShape(updated)) {
+      // Progressive validation with device-specific thresholds
+      const isMobile = 'ontouchstart' in window;
+      const validationThreshold = isMobile ? 12 : 15;
+      
+      if (updated.length > validationThreshold && isValidAShape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();

@@ -230,33 +230,43 @@ const Calendar = () => {
 
   // Touch events for gesture card
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent) => {
     if (!isDrawing) return;
+    event.preventDefault();
+    event.stopPropagation();
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
   }, [getEventPosition, addPoint, isDrawing]);
 
   const handleTouchEnd = useCallback((event: React.TouchEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     endGesture();
   }, [endGesture]);
 
   // Mouse events for gesture card
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     if (!isDrawing) return;
+    event.preventDefault();
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
   }, [getEventPosition, addPoint, isDrawing]);
 
   const handleMouseUp = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
     endGesture();
   }, [endGesture]);
 
@@ -272,14 +282,20 @@ const Calendar = () => {
           </h1>
           <Card 
             ref={gestureCardRef}
-            className="max-w-3xl mx-auto bg-card/50 border-border/50 hover:bg-card/70 transition-colors cursor-pointer"
+            className="max-w-3xl mx-auto bg-card/50 border-border/50 hover:bg-card/70 transition-colors cursor-crosshair select-none"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            style={{ touchAction: 'none' }}
+            style={{ 
+              touchAction: 'none',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              MozUserSelect: 'none',
+              msUserSelect: 'none'
+            }}
           >
             <CardContent className="p-8 space-y-2 text-foreground/70 text-left">
               <p className="font-industrial text-lg leading-relaxed">
