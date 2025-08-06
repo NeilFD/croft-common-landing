@@ -43,7 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
       : `Updated Management Link: ${eventTitle}`;
 
     const emailResponse = await resend.emails.send({
-      from: "Events <events@resend.dev>",
+      from: "Events <events@thehive-hospitality.com>", // Using your verified domain
       to: [organizerEmail],
       subject: subject,
       html: `
