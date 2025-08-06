@@ -17,7 +17,7 @@ const CommunityHeroCarousel = () => {
 
   const heroImages = [
     {
-      src: '/lovable-uploads/c22f6cce-8b72-4eb5-96e8-a2fc8adfe7b9.png'
+      src: '/lovable-uploads/2a013145-1125-485a-bc81-556ddb550540.png'
     },
     {
       src: '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png'
