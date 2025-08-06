@@ -346,24 +346,54 @@ const communityMenuData: MenuSection[] = [
 // Common Room Menu Data
 const commonRoomMenuData: MenuSection[] = [
   {
-    title: "THE COMMON ROOM",
+    title: "What's Next?",
     items: [
       { 
-        name: "Welcome to The Common Room. A private space for those who know how to find it.", 
-        description: ""
+        name: "Gigs, talks, tastings, all sorts.", 
+        description: "The calendar never sits still. From low-key launches to big, messy nights — this is where it lands first. Some tickets sell out in hours. Some don't go public at all. You're already on the list."
       },
       { 
-        name: "Exclusive access through our secret entrance.", 
+        name: "<strong>Take a look</strong>", 
         description: ""
+      }
+    ]
+  },
+  {
+    title: "Common People",
+    items: [
+      { 
+        name: "The crew behind the counter. And the ones who keep coming back.", 
+        description: "We back local. We back talent. We back people doing it right. Members get first dibs on workshops, collabs, and pop-ups from the makers, growers, shakers and pourers we rate. Come learn. Come try. Come talk."
       },
       { 
-        name: "For inquiries about membership and private events:", 
+        name: "<strong>Meet</strong>", 
         description: ""
+      }
+    ]
+  },
+  {
+    title: "Common Good",
+    items: [
+      { 
+        name: "We give space. You give time. That's the deal.", 
+        description: "We hand the Hall to causes that matter. If you're part of one — or want to help one — this is where you step in. No hashtags. No speeches. Just action. Real things, done quietly, with people who care."
       },
       { 
-        name: "members@croftcommon.com", 
-        description: "",
-        isEmail: true
+        name: "<strong>Help out</strong>", 
+        description: ""
+      }
+    ]
+  },
+  {
+    title: "Stay Close",
+    items: [
+      { 
+        name: "First in. Best table. Quiet heads-up.", 
+        description: "We don't do loyalty cards. But we notice who sticks around. Stay close and you'll hear about things before they land. Early access to events. Priority tables on busy nights. The odd off-menu thing when it feels right. No noise. No spam. Just the good stuff, first."
+      },
+      { 
+        name: "<strong>If you know, you know</strong>", 
+        description: ""
       }
     ]
   }
