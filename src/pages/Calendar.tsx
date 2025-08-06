@@ -379,6 +379,9 @@ const Calendar = () => {
             }}
           >
             <CardContent className="p-4 md:p-8 space-y-2 text-foreground/70 text-left">
+              <h3 className="font-industrial text-xl md:text-2xl font-semibold text-foreground mb-4">
+                What's Next
+              </h3>
               <p className="font-industrial text-sm md:text-lg leading-relaxed">
                 The good stuff lands here first.
               </p>
