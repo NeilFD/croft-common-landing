@@ -157,7 +157,7 @@ const Calendar = () => {
           {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => {
             const fullDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             return (
-              <div key={`${day}-${index}`} className="p-2 md:p-3 text-center font-medium text-muted-foreground border border-border/30">
+              <div key={`${day}-${index}`} className="p-2 md:p-3 text-center font-medium text-muted-foreground border border-border/30 bg-background">
                 <span className="md:hidden">{day}</span>
                 <span className="hidden md:inline">{fullDays[index]}</span>
               </div>
