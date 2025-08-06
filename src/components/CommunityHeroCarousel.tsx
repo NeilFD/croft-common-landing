@@ -30,6 +30,9 @@ const CommunityHeroCarousel = () => {
     },
     {
       src: '/lovable-uploads/2c2e175f-be6b-4df7-a725-47d558a35cd8.png'
+    },
+    {
+      src: '/lovable-uploads/4bafb73c-74e5-4bf4-ba9e-34097a0137cf.png'
     }
   ];
 
