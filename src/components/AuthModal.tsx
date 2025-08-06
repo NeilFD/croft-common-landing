@@ -37,21 +37,35 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     if (!emailSent || !isOpen) return;
 
     const handleWindowFocus = async () => {
-      console.log('Window focused, checking auth...');
-      const session = await refreshSession();
-      console.log('Session after focus:', session?.user?.email);
+      console.log('🔍 Window focused, checking auth state...');
+      console.log('🔍 Current URL on focus:', window.location.href);
       
-      if (session?.user) {
-        console.log('User authenticated on focus, calling onSuccess');
-        onSuccess();
+      try {
+        const session = await refreshSession();
+        console.log('🔍 Session after focus check:', {
+          user: session?.user?.email,
+          hasSession: !!session,
+          timestamp: new Date().toISOString()
+        });
+        
+        if (session?.user) {
+          console.log('✅ User authenticated on focus, calling onSuccess');
+          onSuccess();
+        } else {
+          console.log('❌ No user found on window focus');
+        }
+      } catch (error) {
+        console.error('🚨 Error checking auth on window focus:', error);
       }
     };
 
     // Add window focus listener
     window.addEventListener('focus', handleWindowFocus);
+    console.log('👀 Added window focus listener for auth detection');
 
     return () => {
       window.removeEventListener('focus', handleWindowFocus);
+      console.log('🧹 Removed window focus listener');
     };
   }, [emailSent, isOpen, refreshSession, onSuccess]);
 
@@ -67,11 +81,25 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       return;
     }
 
-    const isValidDomain = await validateEmailDomain(email);
-    if (!isValidDomain) {
+    console.log('🔐 Starting auth flow for:', email);
+    console.log('🔐 Current URL:', window.location.href);
+
+    try {
+      const isValidDomain = await validateEmailDomain(email);
+      if (!isValidDomain) {
+        console.log('🚨 Email domain not authorized:', email);
+        toast({
+          title: "Access denied",
+          description: "This email address is not authorized.",
+          variant: "destructive"
+        });
+        return;
+      }
+    } catch (error) {
+      console.error('🚨 Email validation error:', error);
       toast({
-        title: "Access denied",
-        description: "This email address is not authorized.",
+        title: "Validation error",
+        description: "Unable to validate email domain. Please try again.",
         variant: "destructive"
       });
       return;
@@ -80,25 +108,43 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setLoading(true);
 
     const redirectUrl = `${window.location.origin}/`;
+    console.log('🔐 Sending magic link with redirect URL:', redirectUrl);
     
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: redirectUrl
-      }
-    });
-
-    if (error) {
-      toast({
-        title: "Authentication failed",
-        description: error.message,
-        variant: "destructive"
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
       });
-    } else {
-      setEmailSent(true);
+
+      if (error) {
+        console.error('🚨 Magic link error:', {
+          message: error.message,
+          status: error.status,
+          name: error.name,
+          details: error
+        });
+        
+        toast({
+          title: "Authentication failed",
+          description: `${error.message} (Check console for details)`,
+          variant: "destructive"
+        });
+      } else {
+        console.log('✅ Magic link sent successfully to:', email);
+        setEmailSent(true);
+        toast({
+          title: "Magic link sent!",
+          description: "Check your email and click the link to sign in.",
+        });
+      }
+    } catch (error) {
+      console.error('🚨 Exception during magic link send:', error);
       toast({
-        title: "Magic link sent!",
-        description: "Check your email and click the link to sign in.",
+        title: "Unexpected error",
+        description: "An unexpected error occurred. Please check the console.",
+        variant: "destructive"
       });
     }
 
