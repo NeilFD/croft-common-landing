@@ -29,7 +29,7 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValidAShape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 25) return false; // Increased minimum points for stricter detection
+    if (gesturePoints.length < 18) return false; // Reduced minimum points for easier detection
     
     console.log(`Analyzing A gesture with ${gesturePoints.length} points`);
     
@@ -44,8 +44,8 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
       }
     }
     
-    // Need a clear peak (not at the very start or end)
-    if (peakIndex < 5 || peakIndex > gesturePoints.length - 6) {
+    // More flexible peak positioning
+    if (peakIndex < 3 || peakIndex > gesturePoints.length - 4) {
       console.log('No clear peak found');
       return false;
     }
@@ -58,27 +58,29 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
     const leftHeight = firstPoint.y - peakPoint.y;
     const rightHeight = lastPoint.y - peakPoint.y;
     
-    // Both sides should have significant height
-    if (leftHeight < 50 || rightHeight < 50) {
+    // Reduced height requirements for smaller card area
+    if (leftHeight < 30 || rightHeight < 30) {
       console.log('Insufficient height on sides');
       return false;
     }
     
-    // Check horizontal spread
+    // Check horizontal spread - reduced for card area
     const totalWidth = Math.abs(lastPoint.x - firstPoint.x);
-    if (totalWidth < 80) {
+    if (totalWidth < 50) {
       console.log('Gesture too narrow');
       return false;
     }
     
-    // CROSSBAR DETECTION - This is the key addition
-    // Look for a horizontal movement in the middle portion of the gesture
-    const middleStart = Math.floor(gesturePoints.length * 0.3);
+    // IMPROVED CROSSBAR DETECTION
+    // Look for any horizontal movement in the middle 60% of the gesture
+    const middleStart = Math.floor(gesturePoints.length * 0.2);
     const middleEnd = Math.floor(gesturePoints.length * 0.8);
     let foundCrossbar = false;
     
-    for (let i = middleStart; i < middleEnd - 10; i++) {
-      const segment = gesturePoints.slice(i, i + 10);
+    for (let i = middleStart; i < middleEnd - 5; i++) {
+      const segment = gesturePoints.slice(i, i + 6); // Smaller segments for flexibility
+      
+      if (segment.length < 3) continue;
       
       // Check if this segment is roughly horizontal
       const startPoint = segment[0];
@@ -86,13 +88,14 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
       const horizontalDistance = Math.abs(endPoint.x - startPoint.x);
       const verticalDistance = Math.abs(endPoint.y - startPoint.y);
       
-      // Crossbar should be more horizontal than vertical and have minimum length
-      if (horizontalDistance > 20 && horizontalDistance > verticalDistance * 2) {
-        // Check if this segment is roughly in the middle height of the A
+      // More forgiving crossbar detection - just needs to be more horizontal than vertical
+      if (horizontalDistance > 15 && horizontalDistance > verticalDistance * 1.5) {
+        // Check if this segment is in the general middle area of the A
         const segmentAvgY = segment.reduce((sum, p) => sum + p.y, 0) / segment.length;
-        const expectedCrossbarY = peakPoint.y + (firstPoint.y - peakPoint.y) * 0.4; // 40% down from peak
+        const expectedCrossbarY = peakPoint.y + (firstPoint.y - peakPoint.y) * 0.5; // Middle of the A
         
-        if (Math.abs(segmentAvgY - expectedCrossbarY) < 30) {
+        // More forgiving positioning - anywhere in the middle half
+        if (Math.abs(segmentAvgY - expectedCrossbarY) < 50) {
           foundCrossbar = true;
           console.log('Crossbar detected');
           break;
@@ -105,12 +108,12 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
       return false;
     }
     
-    // Simple directional check: should go generally up then down
-    const leftSlope = (peakPoint.y - firstPoint.y) / (peakPoint.x - firstPoint.x);
-    const rightSlope = (lastPoint.y - peakPoint.y) / (lastPoint.x - peakPoint.x);
+    // More forgiving directional check
+    const leftSlope = (peakPoint.y - firstPoint.y) / Math.max(Math.abs(peakPoint.x - firstPoint.x), 1);
+    const rightSlope = (lastPoint.y - peakPoint.y) / Math.max(Math.abs(lastPoint.x - peakPoint.x), 1);
     
-    // Left side should go up (negative slope), right side should go down (positive slope)
-    if (leftSlope > -0.4 || rightSlope < 0.4) {
+    // More lenient slope requirements
+    if (leftSlope > -0.2 || rightSlope < 0.2) {
       console.log('Invalid slopes');
       return false;
     }
@@ -124,8 +127,8 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
     setPoints(prev => {
       const updated = [...prev, newPoint];
       
-      // Check if gesture is complete - validate less frequently for stricter detection
-      if (updated.length > 25 && isValidAShape(updated)) {
+      // Check if gesture is complete - progressive validation for quicker recognition
+      if (updated.length > 18 && isValidAShape(updated)) {
         setIsComplete(true);
         setIsDrawing(false);
         onGestureComplete();
