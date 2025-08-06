@@ -40,7 +40,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Parsed request data:", { eventTitle, organizerEmail, managementToken, eventDate, eventTime, eventLocation, isNewEvent });
 
-    const managementUrl = `${Deno.env.get("SUPABASE_URL")?.replace('//', '//').replace('.supabase.co', '.lovableproject.com')}/manage-event/${managementToken}`;
+    const managementUrl = `https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/manage-event/${managementToken}`;
     
     const subject = isNewEvent 
       ? `Event Management Link: ${eventTitle}` 
