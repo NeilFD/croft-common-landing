@@ -34,6 +34,7 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
     contactEmail: 'whatsnext@croftcommon.com'
   });
   const [dragActive, setDragActive] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -45,6 +46,18 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
       setFormData(prev => ({ ...prev, imageUrl: e.target?.result as string }));
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      handleImageUpload(e.target.files[0]);
+    }
+  };
+
+  const handleDropZoneClick = () => {
+    if (!formData.imageUrl) {
+      fileInputRef.current?.click();
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -268,15 +281,23 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
             <Label className="text-sm font-medium">Event Image</Label>
             <div
               className={cn(
-                "border-2 border-dashed rounded-lg p-6 text-center transition-colors",
+                "border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer hover:bg-muted/50",
                 dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25",
-                formData.imageUrl && "border-primary"
+                formData.imageUrl && "border-primary cursor-default"
               )}
               onDrop={handleDrop}
               onDragOver={handleDrag}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
+              onClick={handleDropZoneClick}
             >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
               {formData.imageUrl ? (
                 <div className="space-y-4">
                   <img 
@@ -288,7 +309,10 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => setFormData(prev => ({ ...prev, imageUrl: '' }))}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFormData(prev => ({ ...prev, imageUrl: '' }));
+                    }}
                   >
                     <X className="h-4 w-4 mr-2" />
                     Remove Image
@@ -299,20 +323,11 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
                   <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      Drag and drop an image here, or{' '}
-                      <label className="text-primary cursor-pointer hover:underline">
-                        browse files
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
-                            if (e.target.files?.[0]) {
-                              handleImageUpload(e.target.files[0]);
-                            }
-                          }}
-                        />
-                      </label>
+                      <span className="block mb-2 font-medium">Tap to select an image</span>
+                      or drag and drop here
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Supports JPG, PNG, GIF up to 10MB
                     </p>
                   </div>
                 </div>
