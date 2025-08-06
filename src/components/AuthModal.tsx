@@ -89,6 +89,15 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     onClose();
   };
 
+  const handleGotIt = () => {
+    // Check if user is now authenticated after magic link
+    if (user) {
+      onSuccess();
+    } else {
+      handleClose();
+    }
+  };
+
   // If user is already authenticated, don't show the modal
   if (user && isOpen) {
     onSuccess();
@@ -105,7 +114,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
               We've sent a magic link to {email}. Click the link in your email to sign in and create your event.
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={handleClose} className="mt-4">
+          <Button onClick={handleGotIt} className="mt-4">
             Got it
           </Button>
         </DialogContent>
