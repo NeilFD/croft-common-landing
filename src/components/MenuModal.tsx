@@ -143,8 +143,11 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                             <button 
                               className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300 cursor-pointer text-left`}
                               onClick={() => {
-                                // TODO: Add navigation logic for each link
-                                console.log('Navigate to:', item.name);
+                                if (item.name.includes('Take a look')) {
+                                  window.location.href = '/calendar';
+                                } else {
+                                  console.log('Navigate to:', item.name);
+                                }
                               }}
                               dangerouslySetInnerHTML={{ __html: item.name }}
                             />
