@@ -42,14 +42,32 @@ const Calendar = () => {
     }
   }, [user]);
 
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
-    toast({
-      title: "Access Granted",
-      description: "Welcome to The Common Room, for Common People",
-      duration: 2000,
-    });
-    setShowCreateModal(true);
+  const handleAuthSuccess = async () => {
+    console.log('handleAuthSuccess called');
+    
+    // Force refresh the auth state to ensure we have the latest user data
+    const { refreshSession } = useAuth();
+    const session = await refreshSession();
+    
+    console.log('Session after refresh in handleAuthSuccess:', session?.user?.email);
+    
+    if (session?.user) {
+      console.log('User confirmed, proceeding with success flow');
+      setShowAuthModal(false);
+      toast({
+        title: "Access Granted",
+        description: "Welcome to The Common Room, for Common People",
+        duration: 2000,
+      });
+      setShowCreateModal(true);
+    } else {
+      console.log('No user found after auth success, keeping auth modal open');
+      toast({
+        title: "Authentication incomplete",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
   };
   
   const {
