@@ -67,12 +67,17 @@ const CafeHeroCarousel = () => {
             key={index}
             className="flex-[0_0_100%] relative min-h-screen"
           >
-            {/* Background Image with type-specific styling */}
+            {/* Background Image with type-specific styling and error handling */}
             <div 
               className="absolute inset-0 bg-cover bg-no-repeat transition-all duration-1000"
               style={{
                 backgroundImage: `url('${image.src}')`,
                 backgroundPosition: image.backgroundPosition
+              }}
+              onError={(e) => {
+                console.error(`Failed to load image: ${image.src}`);
+                // Fallback to a solid color if image fails
+                (e.target as HTMLDivElement).style.backgroundColor = 'hsl(var(--steel))';
               }}
             >
               {/* Subtle overlay for text readability */}
