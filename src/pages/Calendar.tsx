@@ -137,20 +137,22 @@ const Calendar = () => {
                             setSelectedEvent(event);
                             setShowEventDetail(true);
                           }}
-                        >
-                    {event.imageUrl && (
-                      <img 
-                        src={event.imageUrl} 
-                        alt={event.title}
-                        className="w-full h-8 object-cover rounded mb-1"
-                      />
-                    )}
-                          <div className="font-medium truncate text-foreground">{event.title}</div>
-                          <div className="opacity-75 text-xs text-muted-foreground">{event.time}</div>
+                         >
+                           <div className="font-bold text-foreground text-sm leading-tight">{event.title}</div>
+                          <div className="text-xs text-muted-foreground mt-1">{event.time}</div>
+                          <div className="text-xs text-muted-foreground">{event.location}</div>
+                          <div className="text-xs text-muted-foreground opacity-75">{event.organizer}</div>
                         </div>
                       </TooltipTrigger>
                       <TooltipContent side="right" className="max-w-sm p-4">
-                        <div className="space-y-2">
+                        <div className="space-y-3">
+                          {event.imageUrl && (
+                            <img 
+                              src={event.imageUrl} 
+                              alt={event.title}
+                              className="w-full h-32 object-cover rounded-md"
+                            />
+                          )}
                           <div className="flex items-center gap-2">
                             <Badge variant="outline" className={`border-2`} style={{
                               borderColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
@@ -245,21 +247,22 @@ const Calendar = () => {
                           setSelectedEvent(event);
                           setShowEventDetail(true);
                         }}
-                      >
-                  {event.imageUrl && (
-                    <img 
-                      src={event.imageUrl} 
-                      alt={event.title}
-                      className="w-full h-16 object-cover rounded mb-2"
-                    />
-                  )}
-                        <div className="font-medium text-sm text-muted-foreground">{event.time}</div>
-                        <div className="font-bold text-foreground">{event.title}</div>
-                        <div className="text-xs opacity-75 mt-1 text-muted-foreground">{event.description}</div>
+                       >
+                         <div className="text-xs text-muted-foreground mb-2">{event.time}</div>
+                        <div className="font-bold text-foreground text-lg leading-tight mb-2">{event.title}</div>
+                        <div className="text-sm text-muted-foreground mb-1">{event.location}</div>
+                        <div className="text-sm text-muted-foreground opacity-75">{event.organizer}</div>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-sm p-4">
-                      <div className="space-y-2">
+                      <div className="space-y-3">
+                        {event.imageUrl && (
+                          <img 
+                            src={event.imageUrl} 
+                            alt={event.title}
+                            className="w-full h-32 object-cover rounded-md"
+                          />
+                        )}
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className={`border-2`} style={{
                             borderColor: `hsl(var(--accent-${eventCategoryColors[event.category].accent.replace('accent-', '')}))`
