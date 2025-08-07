@@ -86,9 +86,9 @@ const Navigation = () => {
           className="flex items-center space-x-4 hover:scale-105 transition-transform duration-200"
         >
           <img 
-            src="/src/assets/croft-logo.png" 
+            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
             alt="Croft Common" 
-            className="w-16 h-16 object-contain"
+            className="w-16 h-16"
           />
           <div className="font-brutalist text-2xl text-foreground tracking-tight">
             CROFT COMMON
