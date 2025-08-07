@@ -115,9 +115,10 @@ export default {
 				},
 				'accent-pulse-text': {
 					'0%': { color: 'hsl(var(--background))' },
-					'25%': { color: 'hsl(var(--background))' },
-					'50%': { color: 'var(--accent-color)' },
-					'75%': { color: 'var(--accent-color)' },
+					'10%': { color: 'hsl(var(--background))' },
+					'30%': { color: 'var(--accent-color)' },
+					'70%': { color: 'var(--accent-color)' },
+					'90%': { color: 'hsl(var(--background))' },
 					'100%': { color: 'hsl(var(--background))' }
 				},
 				'accent-pulse-button': {
@@ -125,17 +126,21 @@ export default {
 						borderColor: 'hsla(255, 255, 255, 0.3)',
 						backgroundColor: 'hsla(255, 255, 255, 0.1)'
 					},
-					'25%': { 
-						borderColor: 'hsla(255, 255, 255, 0.4)',
-						backgroundColor: 'hsla(255, 255, 255, 0.15)'
+					'10%': { 
+						borderColor: 'hsla(255, 255, 255, 0.3)',
+						backgroundColor: 'hsla(255, 255, 255, 0.1)'
 					},
-					'50%': { 
+					'30%': { 
 						borderColor: 'var(--accent-color)',
 						backgroundColor: 'var(--accent-color)'
 					},
-					'75%': { 
+					'70%': { 
 						borderColor: 'var(--accent-color)',
 						backgroundColor: 'var(--accent-color)'
+					},
+					'90%': { 
+						borderColor: 'hsla(255, 255, 255, 0.3)',
+						backgroundColor: 'hsla(255, 255, 255, 0.1)'
 					},
 					'100%': { 
 						borderColor: 'hsla(255, 255, 255, 0.3)',
@@ -148,8 +153,8 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pink-flash': 'pink-flash 0.6s ease-out',
 				'fade-out': 'fade-out 0.2s ease-out',
-				'accent-pulse-text': 'accent-pulse-text 5s ease-in-out infinite',
-				'accent-pulse-button': 'accent-pulse-button 5s ease-in-out infinite'
+				'accent-pulse-text': 'accent-pulse-text 8s ease-in-out infinite',
+				'accent-pulse-button': 'accent-pulse-button 8s ease-in-out infinite'
 			}
 		}
 	},
