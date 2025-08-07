@@ -76,12 +76,12 @@ const handler = async (req: Request): Promise<Response> => {
               <!-- Call to Action Box -->
               <div style="background: #ffffff; padding: 35px; margin: 35px 0; border: 2px solid #ff1b6b;">
                 <h3 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; margin: 0 0 20px 0; text-transform: uppercase; text-align: center;">To unlock The Common Room:</h3>
-                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">croftcommontest.co.uk/common-room</a></p>
-                <div style="background: #f8f8f8; border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: center;">
-                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">Draw a 7.</p>
-                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">Boldly. A single line.</p>
-                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">One gesture.</p>
-                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0; letter-spacing: 0.05em;">You're in</p>
+                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="https://croftcommontest.com/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">croftcommontest.com/common-room</a></p>
+                <div style="background: #f8f8f8; border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: left;">
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Draw a 7.</p>
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Boldly. A single line.</p>
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">One gesture.</p>
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0; letter-spacing: 0.05em;">You're in</p>
                 </div>
               </div>
               
