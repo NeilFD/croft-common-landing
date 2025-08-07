@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import geometricLogo from "@/assets/geometric-croft-logo.png";
+
 
 interface TransitionContextType {
   isTransitioning: boolean;
@@ -68,8 +68,8 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         {/* Watermark during transition */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <img 
-            src={geometricLogo} 
-            alt="Croft Common" 
+            src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
+            alt="Croft Common"
             className={`w-[50rem] h-[50rem] object-contain transition-all duration-700 ${
               isTransitioning 
                 ? 'opacity-100 scale-110' 

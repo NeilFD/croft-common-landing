@@ -1,6 +1,6 @@
 import MenuButton from './MenuButton';
 import { commonRoomMenuData } from '@/data/menuData';
-import geometricLogo from "@/assets/geometric-croft-logo.png";
+
 
 const CommonRoomHeroCarousel = () => {
   return (
@@ -16,8 +16,8 @@ const CommonRoomHeroCarousel = () => {
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
         <img 
-          src={geometricLogo} 
-          alt="Common Room Watermark" 
+          src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
+          alt="Common Room Watermark"
           className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 hover:opacity-80 cursor-pointer"
           style={{ 
             filter: 'invert(1)'

@@ -3,7 +3,7 @@ import { useTransition } from '@/contexts/TransitionContext';
 import { preloadImages } from '@/hooks/useImagePreloader';
 import { UserMenu } from './UserMenu';
 import { Menu, X } from 'lucide-react';
-import geometricLogo from "@/assets/geometric-croft-logo.png";
+
 
 const Navigation = () => {
   const { triggerTransition } = useTransition();
@@ -87,8 +87,8 @@ const Navigation = () => {
           className="flex items-center space-x-4 hover:scale-105 transition-transform duration-200"
         >
           <img 
-            src={geometricLogo} 
-            alt="Croft Common" 
+            src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
+            alt="Croft Common"
             className="w-16 h-16"
           />
           <div className="font-brutalist text-2xl text-foreground tracking-tight">
