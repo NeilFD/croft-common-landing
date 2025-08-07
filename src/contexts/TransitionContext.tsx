@@ -31,45 +31,14 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setIsTransitioning(true);
   };
 
-  const getTransitionStyle = () => {
-    let colorTint = 'rgba(255, 255, 255, 0.08)';
-    let slideDirection = 'translateX(100%)';
-    
-    if (targetPath === '/cocktails') {
-      colorTint = 'rgba(163, 230, 53, 0.12)'; // lime tint
-      slideDirection = 'translateX(-100%)'; // slide from left
-    }
-    if (targetPath === '/beer') {
-      colorTint = 'rgba(249, 115, 22, 0.12)'; // orange tint  
-      slideDirection = 'translateY(-100%)'; // slide from top
-    }
-    if (targetPath === '/kitchens') {
-      colorTint = 'rgba(220, 38, 127, 0.12)'; // blood red tint
-      slideDirection = 'translateX(100%)'; // slide from right
-    }
-    if (targetPath === '/hall') {
-      colorTint = 'rgba(147, 51, 234, 0.12)'; // purple tint
-      slideDirection = 'translateY(100%)'; // slide from bottom
-    }
-    if (targetPath === '/community') {
-      colorTint = 'rgba(59, 130, 246, 0.12)'; // blue tint
-      slideDirection = 'translateX(-100%)'; // slide from left
-    }
-    if (targetPath === '/common-room') {
-      colorTint = 'rgba(34, 197, 94, 0.12)'; // green tint
-      slideDirection = 'translateY(-100%)'; // slide from top
-    }
-    
-    return {
-      backgroundImage: `
-        linear-gradient(${colorTint}, ${colorTint}),
-        url('/lovable-uploads/249fc249-8fca-4547-b0ad-b0d1b96be72e.png')
-      `,
-      backgroundSize: 'cover, cover',
-      backgroundPosition: 'center, center',
-      backgroundRepeat: 'no-repeat, repeat',
-      '--slide-direction': slideDirection
-    };
+  const getTransitionColor = () => {
+    if (targetPath === '/cocktails') return 'bg-[hsl(var(--accent-lime))]';
+    if (targetPath === '/beer') return 'bg-accent-orange';
+    if (targetPath === '/kitchens') return 'bg-accent-blood-red';
+    if (targetPath === '/hall') return 'bg-accent-vivid-purple';
+    if (targetPath === '/community') return 'bg-[hsl(var(--accent-electric-blue))]';
+    if (targetPath === '/common-room') return 'bg-green-600';
+    return 'bg-accent-pink';
   };
 
   const onTransitionComplete = () => {
@@ -81,69 +50,37 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   return (
     <TransitionContext.Provider value={{ isTransitioning, triggerTransition }}>
       {children}
-      {/* Rapid texture slide-in with your gritty texture */}
       <div 
-        className={`fixed inset-0 z-[99999] transition-all duration-1000 ease-out ${
+        className={`fixed inset-0 z-[99999] ${getTransitionColor()} transition-all duration-700 ease-in-out ${
           isTransitioning 
-            ? 'opacity-100 scale-100 translate-x-0 translate-y-0' 
-            : 'opacity-0 scale-110 pointer-events-none'
+            ? 'opacity-100 scale-100' 
+            : 'opacity-0 scale-150 pointer-events-none'
         }`}
         style={{
           transformOrigin: 'center center',
-          transform: isTransitioning ? 'translate(0, 0)' : 'var(--slide-direction)',
-          ...getTransitionStyle(),
         }}
         onTransitionEnd={() => {
           if (isTransitioning) {
-            setTimeout(onTransitionComplete, 300);
+            setTimeout(onTransitionComplete, 200);
           }
         }}
       >
-        {/* Multi-phase logo animation with rapid flashes */}
+        {/* Watermark during transition */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="relative">
-            <img 
-              src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
-              alt="Croft Common"
-              className={`w-[50rem] h-[50rem] object-contain transition-all duration-700 ${
-                isTransitioning 
-                  ? 'opacity-100 animate-[flash-scale_700ms_ease-out]' 
-                  : 'opacity-0 scale-95'
-              }`}
-              style={{ 
-                filter: 'brightness(0) invert(1) contrast(200) drop-shadow(0 8px 24px rgba(0,0,0,0.9)) drop-shadow(0 0 40px rgba(255,255,255,0.8))',
-                animation: isTransitioning ? 'flash-scale 700ms ease-out, emboss-carve 1000ms ease-out' : 'none'
-              }}
-            />
-            {/* Rapid flash overlay */}
-            <div 
-              className={`absolute inset-0 bg-white transition-opacity ${
-                isTransitioning ? 'animate-[rapid-flash_400ms_ease-out]' : 'opacity-0'
-              }`}
-              style={{
-                maskImage: 'url(/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png)',
-                maskSize: 'contain',
-                maskPosition: 'center',
-                maskRepeat: 'no-repeat'
-              }}
-            />
-            {/* Embossed carving effect */}
-            <div 
-              className={`absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/40 transition-all duration-1000 ${
-                isTransitioning ? 'opacity-80' : 'opacity-0'
-              }`}
-              style={{
-                maskImage: 'url(/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png)',
-                maskSize: 'contain',
-                maskPosition: 'center',
-                maskRepeat: 'no-repeat',
-                mixBlendMode: 'multiply'
-              }}
-            />
-          </div>
+          <img 
+            src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
+            alt="Croft Common"
+            className={`w-[50rem] h-[50rem] object-contain transition-all duration-700 ${
+              isTransitioning 
+                ? 'opacity-100 scale-110' 
+                : 'opacity-0 scale-90'
+            }`}
+            style={{ 
+              filter: 'brightness(0) invert(1) contrast(200) drop-shadow(0 0 20px rgba(255,255,255,0.8))'
+            }}
+          />
         </div>
       </div>
-      
     </TransitionContext.Provider>
   );
 };
