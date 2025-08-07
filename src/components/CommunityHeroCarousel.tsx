@@ -83,12 +83,10 @@ const CommunityHeroCarousel = () => {
       {/* Page Title Card Overlay */}
       <div className="absolute top-24 left-[106px] z-20">
         <div className="bg-background/90 rounded-lg px-6 py-4 shadow-lg backdrop-blur-sm">
-          <h1 className="text-2xl font-light text-foreground tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer animate-accent-pulse-text"
-              style={{ '--accent-color': 'hsl(var(--accent-electric-blue))' } as any}>
+          <h1 className="text-2xl font-light text-foreground tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer">
             CROFT COMMON COMMUNITY
           </h1>
-          <h2 className="text-lg font-light text-foreground tracking-[0.1em] uppercase mt-1 transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer animate-accent-pulse-text"
-              style={{ '--accent-color': 'hsl(var(--accent-electric-blue))' } as any}>
+          <h2 className="text-lg font-light text-foreground tracking-[0.1em] uppercase mt-1 transition-all duration-300 hover:text-[hsl(var(--accent-electric-blue))] cursor-pointer">
             COMMON GROUND
           </h2>
         </div>

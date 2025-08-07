@@ -112,19 +112,13 @@ export default {
 				'fade-out': {
 					'0%': { opacity: '1' },
 					'100%': { opacity: '0' }
-				},
-				'breathing-pulse': {
-					'0%': { opacity: '0' },
-					'50%': { opacity: '0.4' },
-					'100%': { opacity: '0' }
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pink-flash': 'pink-flash 0.6s ease-out',
-				'fade-out': 'fade-out 0.2s ease-out',
-				'breathing-pulse': 'breathing-pulse 8s ease-in-out infinite'
+				'fade-out': 'fade-out 0.2s ease-out'
 			}
 		}
 	},
