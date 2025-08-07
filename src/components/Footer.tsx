@@ -6,12 +6,6 @@ const Footer = () => {
       <div className="container mx-auto px-6">
         {/* Newsletter subscription section */}
         <div className="mb-16 text-center">
-          <h3 className="font-brutalist text-3xl mb-4 text-background">
-            JOIN THE COMMON
-          </h3>
-          <p className="font-industrial text-lg text-background/70 mb-8 max-w-2xl mx-auto">
-            Subscribe for exclusive access to The Common Room and stay connected with our community.
-          </p>
           <SubscriptionForm variant="footer" className="max-w-md mx-auto" />
         </div>
         
