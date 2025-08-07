@@ -137,23 +137,33 @@ export const kitchensMenu: MenuSection[] = [
   {
     title: "PIZZA - WOOD-FIRED",
     items: [
-      { name: "Margherita", price: "8" },
-      { name: "Hot Honey & Goat Cheese", price: "10" },
-      { name: "Nduja & Ricotta", price: "11" },
-      { name: "Anchovy, Olive, Caper", price: "10" },
-      { name: "Mushroom, Sage, Taleggio", price: "11" },
+      { name: "Margherita", price: "12" },
+      { name: "Hot Honey & Goat Cheese", price: "14" },
+      { name: "Nduja & Ricotta", price: "15" },
+      { name: "Anchovy, Olive, Caper", price: "14" },
+      { name: "Mushroom, Sage, Taleggio", price: "15" },
       { name: "Add Burrata", description: "3" },
     ]
   },
   {
     title: "WOOD-FIRED MAINS",
     items: [
-      { name: "Whole Cauliflower, Harissa & Tahini", price: "12" },
-      { name: "Porchetta Roll, Sage Apricots", price: "14" },
-      { name: "Wood-roasted Chicken Thighs, Herbs", price: "13" },
-      { name: "Smoked Salmon Fillet, Dill Cream", price: "15" },
-      { name: "Maple Pork Belly, Apple Slaw", price: "14" },
-      { name: "Charred Corn, Lime Mayo", price: "6" },
+      { name: "Whole Cauliflower, Harissa & Tahini", price: "15" },
+      { name: "Porchetta Roll, Sage Apricots", price: "18" },
+      { name: "Wood-roasted Chicken Thighs, Herbs", price: "16" },
+      { name: "Smoked Salmon Fillet, Dill Cream", price: "19" },
+      { name: "Maple Pork Belly, Apple Slaw", price: "18" },
+      { name: "Charred Corn, Lime Mayo", price: "9" },
+    ]
+  },
+  {
+    title: "SIDES",
+    items: [
+      { name: "Coal-roast Potatoes, Garlic Butter", price: "5" },
+      { name: "Flatbread, Olive Oil & Salt", price: "4" },
+      { name: "Grilled Tenderstem, Sesame & Chili", price: "5" },
+      { name: "Burnt Leek & Herb Slaw", price: "4" },
+      { name: "Ember-baked Beetroot, Labneh", price: "5" },
     ]
   },
   {
