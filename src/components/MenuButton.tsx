@@ -36,14 +36,14 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
     <>
       <button
         onClick={() => setIsMenuOpen(true)}
-        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 animate-accent-pulse
+        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 animate-accent-pulse-button
           flex items-center justify-center group ${
             pageType === 'community' 
               ? 'bg-background/85 backdrop-blur-sm' 
               : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
           }`}
         style={{
-          '--hover-bg': accentColor,
+          '--accent-color': accentColor,
         } as any}
         onMouseEnter={(e) => {
           if (pageType === 'community') {

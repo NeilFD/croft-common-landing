@@ -98,7 +98,8 @@ const CocktailHeroCarousel = () => {
 
       {/* Page Title Overlay */}
       <div className="absolute top-24 left-[106px] z-20">
-        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-lime))] cursor-pointer animate-accent-pulse">
+        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-lime))] cursor-pointer animate-accent-pulse-text"
+            style={{ '--accent-color': 'hsl(var(--accent-lime))' } as any}>
           COCKTAILS
         </h1>
       </div>
