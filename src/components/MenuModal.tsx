@@ -7,7 +7,7 @@ import { MenuSection } from '@/data/menuData';
 interface MenuModalProps {
   isOpen: boolean;
   onClose: () => void;
-  pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community';
+  pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
   menuData: MenuSection[];
 }
 
@@ -52,6 +52,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         return 'CROFT COMMON HALL';
       case 'community':
         return 'CROFT COMMON COMMUNITY';
+      case 'common-room':
+        return 'THE COMMON ROOM';
       default:
         return 'CROFT COMMON';
     }
@@ -70,6 +72,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       case 'hall':
         return 'accent-vivid-purple';
       case 'community':
+        return 'accent-electric-blue';
+      case 'common-room':
         return 'accent-sage-green';
       default:
         return 'accent-pink';
@@ -85,7 +89,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     >
       <div 
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
-          pageType === 'community' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
+          pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
@@ -111,7 +115,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
         {/* Scrollable Content */}
         <div className={`overflow-y-auto p-6 ${
-          pageType === 'community' ? 'max-h-[calc(90vh-120px)]' : 'max-h-[calc(95vh-120px)]'
+          pageType === 'community' || pageType === 'common-room' ? 'max-h-[calc(90vh-120px)]' : 'max-h-[calc(95vh-120px)]'
         }`}>
           {false ? (
             // Placeholder for future special layouts

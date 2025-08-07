@@ -43,7 +43,7 @@ const CommonRoomHeroCarousel = () => {
       </div>
 
       {/* Menu Button */}
-      <MenuButton pageType="community" menuData={commonRoomMenuData} />
+      <MenuButton pageType="common-room" menuData={commonRoomMenuData} />
     </div>
   );
 };
