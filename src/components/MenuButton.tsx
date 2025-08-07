@@ -41,12 +41,25 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
             pageType === 'community' 
               ? 'bg-background/85 backdrop-blur-sm' 
               : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background hover:bg-background/20'
+          }`}
+        onMouseEnter={(e) => {
+          if (pageType === 'community') {
+            e.currentTarget.style.backgroundColor = accentColor;
+            e.currentTarget.style.borderColor = accentColor;
+          } else {
+            e.currentTarget.style.backgroundColor = accentColor;
+            e.currentTarget.style.borderColor = accentColor;
           }
-          before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing-pulse before:pointer-events-none`}
-        style={{
-          '--tw-gradient-from': accentColor,
-          '--tw-gradient-to': accentColor,
-        } as any}
+        }}
+        onMouseLeave={(e) => {
+          if (pageType === 'community') {
+            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.85)';
+            e.currentTarget.style.borderColor = '';
+          } else {
+            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
+            e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
+          }
+        }}
       >
         {/* Breathing pulse overlay */}
         <div 
