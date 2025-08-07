@@ -34,8 +34,8 @@ const Footer = () => {
               HOURS
             </h4>
             <div className="space-y-2 text-sm font-industrial text-background/70">
-              <div>MON—FRI: 8AM—LATE</div>
-              <div>SAT—SUN: 9AM—LATE</div>
+              <div>SUN—THURS: 7AM—LATE</div>
+              <div>FRI—SAT: 7AM—LATER</div>
             </div>
           </div>
         </div>
