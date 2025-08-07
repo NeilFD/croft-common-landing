@@ -169,15 +169,15 @@ export const kitchensMenu: MenuSection[] = [
   {
     title: "GRILL",
     items: [
-      { name: "Bavette, Rare", price: "14" },
-      { name: "Ribeye, 30-day", price: "18" },
-      { name: "Flat Iron, Chimichurri", price: "15" },
-      { name: "Lamb Rump, Harissa", price: "17" },
-      { name: "Pork Chop, Apple Slaw", price: "16" },
-      { name: "Half Chicken, Charred Lemon", price: "14" },
-      { name: "Grilled Halloumi, Salsa Verde", price: "12" },
-      { name: "Whole Seabream, Chilli Butter", price: "18" },
-      { name: "BBQ Jackfruit Skewer, Mint Yogurt", price: "11" },
+      { name: "Bavette, Rare", price: "20" },
+      { name: "Ribeye, 30-day", price: "26" },
+      { name: "Flat Iron, Chimichurri", price: "21" },
+      { name: "Lamb Rump, Harissa", price: "23" },
+      { name: "Pork Chop, Apple Slaw", price: "22" },
+      { name: "Half Chicken, Charred Lemon", price: "20" },
+      { name: "Grilled Halloumi, Salsa Verde", price: "18" },
+      { name: "Whole Seabream, Chilli Butter", price: "24" },
+      { name: "BBQ Jackfruit Skewer, Mint Yogurt", price: "17" },
     ]
   },
   {
