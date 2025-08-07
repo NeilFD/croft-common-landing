@@ -32,23 +32,43 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   };
 
   const getTransitionStyle = () => {
-    let colorTint = 'rgba(255, 255, 255, 0.1)';
+    let colorTint = 'rgba(255, 255, 255, 0.08)';
+    let slideDirection = 'translateX(100%)';
     
-    if (targetPath === '/cocktails') colorTint = 'rgba(163, 230, 53, 0.15)'; // lime tint
-    if (targetPath === '/beer') colorTint = 'rgba(249, 115, 22, 0.15)'; // orange tint
-    if (targetPath === '/kitchens') colorTint = 'rgba(220, 38, 127, 0.15)'; // blood red tint
-    if (targetPath === '/hall') colorTint = 'rgba(147, 51, 234, 0.15)'; // purple tint
-    if (targetPath === '/community') colorTint = 'rgba(59, 130, 246, 0.15)'; // blue tint
-    if (targetPath === '/common-room') colorTint = 'rgba(34, 197, 94, 0.15)'; // green tint
+    if (targetPath === '/cocktails') {
+      colorTint = 'rgba(163, 230, 53, 0.12)'; // lime tint
+      slideDirection = 'translateX(-100%)'; // slide from left
+    }
+    if (targetPath === '/beer') {
+      colorTint = 'rgba(249, 115, 22, 0.12)'; // orange tint  
+      slideDirection = 'translateY(-100%)'; // slide from top
+    }
+    if (targetPath === '/kitchens') {
+      colorTint = 'rgba(220, 38, 127, 0.12)'; // blood red tint
+      slideDirection = 'translateX(100%)'; // slide from right
+    }
+    if (targetPath === '/hall') {
+      colorTint = 'rgba(147, 51, 234, 0.12)'; // purple tint
+      slideDirection = 'translateY(100%)'; // slide from bottom
+    }
+    if (targetPath === '/community') {
+      colorTint = 'rgba(59, 130, 246, 0.12)'; // blue tint
+      slideDirection = 'translateX(-100%)'; // slide from left
+    }
+    if (targetPath === '/common-room') {
+      colorTint = 'rgba(34, 197, 94, 0.12)'; // green tint
+      slideDirection = 'translateY(-100%)'; // slide from top
+    }
     
     return {
       backgroundImage: `
         linear-gradient(${colorTint}, ${colorTint}),
-        url('/src/assets/concrete-texture.jpg')
+        url('/lovable-uploads/249fc249-8fca-4547-b0ad-b0d1b96be72e.png')
       `,
       backgroundSize: 'cover, cover',
       backgroundPosition: 'center, center',
-      backgroundRepeat: 'no-repeat, repeat'
+      backgroundRepeat: 'no-repeat, repeat',
+      '--slide-direction': slideDirection
     };
   };
 
