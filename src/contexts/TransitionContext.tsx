@@ -67,7 +67,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         {/* Watermark during transition */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <img 
-            src="/lovable-uploads/4fef4ea3-1c24-49ce-b424-ae8af9468bed.png" 
+            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
             alt="Croft Common" 
             className={`w-[50rem] h-[50rem] object-contain transition-all duration-700 ${
               isTransitioning 

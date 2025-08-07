@@ -86,7 +86,7 @@ const Navigation = () => {
           className="flex items-center space-x-4 hover:scale-105 transition-transform duration-200"
         >
           <img 
-            src="/lovable-uploads/4fef4ea3-1c24-49ce-b424-ae8af9468bed.png" 
+            src="/lovable-uploads/a2ee3fd5-4eb3-4a7e-8433-c4bb065295f4.png" 
             alt="Croft Common" 
             className="w-16 h-16"
           />

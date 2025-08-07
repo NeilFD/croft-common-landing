@@ -31,7 +31,7 @@ const CommonRoom = () => {
         {/* Watermark image - positioned absolutely like other carousel pages */}
         <div className="absolute inset-0 flex items-center justify-center mt-16">
           <img 
-            src="/lovable-uploads/4fef4ea3-1c24-49ce-b424-ae8af9468bed.png" 
+            src="/lovable-uploads/90a63358-50bd-4ab2-adeb-cf9350f4f4b2.png" 
             alt="Common Room Layout" 
             className="w-[40rem] h-[40rem] opacity-20 object-contain"
           />
