@@ -159,7 +159,7 @@ export const kitchensMenu: MenuSection[] = [
   {
     title: "SIDES",
     items: [
-      { name: "Coal-roast Potatoes, Garlic Butter", price: "5" },
+      { name: "Wood fired roast Potatoes, Garlic Butter", price: "5" },
       { name: "Flatbread, Olive Oil & Salt", price: "4" },
       { name: "Grilled Tenderstem, Sesame & Chili", price: "5" },
       { name: "Burnt Leek & Herb Slaw", price: "4" },
