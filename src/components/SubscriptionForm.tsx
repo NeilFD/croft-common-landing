@@ -69,7 +69,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
             STEP CLOSER
           </h3>
           <p className="font-industrial text-lg text-foreground/70 max-w-xl mx-auto">
-            Join our community and unlock The Common Room - where the real conversations happen.
+            Join in, cross the threshold, find Common Ground and Common Knowledge in The Common Room
           </p>
         </div>
       )}
