@@ -196,12 +196,12 @@ export const kitchensMenu: MenuSection[] = [
     title: "MEXICAN",
     items: [
       { name: "TACOS (2 per order)", description: "" },
-      { name: "Beef Barbacoa", price: "9" },
-      { name: "Chicken Mole", price: "9" },
-      { name: "Carnitas, Salsa Roja", price: "9" },
-      { name: "Sweet Potato, Salsa Verde", price: "8" },
-      { name: "Fish Tempura, Chipotle Mayo", price: "10" },
-      { name: "Jackfruit, Lime Crema", price: "8" },
+      { name: "Beef Barbacoa", price: "12" },
+      { name: "Chicken Mole", price: "12" },
+      { name: "Carnitas, Salsa Roja", price: "12" },
+      { name: "Sweet Potato, Salsa Verde", price: "11" },
+      { name: "Fish Tempura, Chipotle Mayo", price: "13" },
+      { name: "Jackfruit, Lime Crema", price: "11" },
     ]
   },
   {
