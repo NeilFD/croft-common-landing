@@ -63,16 +63,14 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
 
   return (
     <div className={className}>
-      {isHomepage && (
-        <div className="text-center mb-8">
-          <h3 className="font-brutalist text-2xl md:text-3xl mb-4 text-foreground">
-            STEP CLOSER
-          </h3>
-          <p className="font-industrial text-lg text-foreground/70 max-w-xl mx-auto">
-            Not everything gets broadcast. Cross the line. Stay in the know. The Common Room - membership, not members.
-          </p>
-        </div>
-      )}
+      <div className="text-center mb-8">
+        <h3 className="font-brutalist text-2xl md:text-3xl mb-4 text-foreground">
+          STEP CLOSER
+        </h3>
+        <p className="font-industrial text-lg text-foreground/70 max-w-xl mx-auto">
+          Not everything gets broadcast. Cross the line. Stay in the know. The Common Room - membership, not members.
+        </p>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
         <div className="grid gap-3">
@@ -120,11 +118,9 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
           {isLoading ? 'JOINING...' : 'FOR COMMON PEOPLE'}
         </Button>
         
-        {isHomepage && (
-          <p className="text-xs font-industrial text-foreground/50 text-center">
-            Subscribers receive exclusive access to The Common Room and community updates.
-          </p>
-        )}
+        <p className="text-xs font-industrial text-foreground/50 text-center">
+          Subscribers receive exclusive access to The Common Room and community updates.
+        </p>
       </form>
     </div>
   );
