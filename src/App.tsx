@@ -15,6 +15,8 @@ import CommonRoom from "./pages/CommonRoom";
 import CommonRoomMain from "./pages/CommonRoomMain";
 import Calendar from "./pages/Calendar";
 import ManageEvent from "./pages/ManageEvent";
+import Privacy from "./pages/Privacy";
+import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/common-room/main" element={<CommonRoomMain />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/manage-event/:token" element={<ManageEvent />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
