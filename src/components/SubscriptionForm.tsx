@@ -63,16 +63,14 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
 
   return (
     <div className={className}>
-      {isHomepage && (
-        <div className="text-center mb-8">
-          <h3 className="font-brutalist text-2xl md:text-3xl mb-4 text-foreground">
-            STEP CLOSER
-          </h3>
-          <p className="font-industrial text-lg text-foreground/70 max-w-xl mx-auto">
-            Not everything gets broadcast. Cross the line. Stay in the know. The Common Room - membership, not members.
-          </p>
-        </div>
-      )}
+      <div className="text-center mb-8">
+        <h3 className={`font-brutalist text-2xl md:text-3xl mb-4 ${variant === 'footer' ? 'text-background' : 'text-foreground'}`}>
+          STEP CLOSER
+        </h3>
+        <p className={`font-industrial text-lg max-w-xl mx-auto ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}>
+          Not everything gets broadcast. Cross the line. Stay in the know. The Common Room - membership, not members.
+        </p>
+      </div>
       
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
         <div className="grid gap-3">
@@ -103,10 +101,10 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
           />
           <label 
             htmlFor="consent" 
-            className="text-sm font-industrial text-foreground/70 leading-relaxed"
+            className={`text-sm font-industrial leading-relaxed ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}
           >
             I consent to receiving emails from Croft Common and agree to the{' '}
-            <a href="/privacy" className="underline hover:text-foreground">
+            <a href="/privacy" className={`underline ${variant === 'footer' ? 'hover:text-background' : 'hover:text-foreground'}`}>
               privacy policy
             </a>
           </label>
@@ -115,16 +113,18 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
         <Button 
           type="submit" 
           disabled={isLoading}
-          className="w-full font-industrial uppercase tracking-wide"
+          className={`w-full font-industrial uppercase tracking-wide ${
+            variant === 'footer' 
+              ? 'bg-background text-void hover:bg-background/90' 
+              : ''
+          }`}
         >
           {isLoading ? 'JOINING...' : 'FOR COMMON PEOPLE'}
         </Button>
         
-        {isHomepage && (
-          <p className="text-xs font-industrial text-foreground/50 text-center">
-            Subscribers receive exclusive access to The Common Room and community updates.
-          </p>
-        )}
+        <p className={`text-xs font-industrial text-center ${variant === 'footer' ? 'text-background/50' : 'text-foreground/50'}`}>
+          Subscribers receive exclusive access to The Common Room and community updates.
+        </p>
       </form>
     </div>
   );
