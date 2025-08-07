@@ -70,7 +70,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
           <img 
             src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
             alt="Croft Common"
-            className={`w-[50rem] h-[50rem] object-contain transition-all duration-700 ${
+            className={`w-[30rem] h-[30rem] md:w-[25rem] md:h-[25rem] lg:w-[20rem] lg:h-[20rem] object-contain transition-all duration-700 ${
               isTransitioning 
                 ? 'opacity-100 scale-110' 
                 : 'opacity-0 scale-90'
