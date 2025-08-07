@@ -142,7 +142,7 @@ export const kitchensMenu: MenuSection[] = [
       { name: "Nduja & Ricotta", price: "15" },
       { name: "Anchovy, Olive, Caper", price: "14" },
       { name: "Mushroom, Sage, Taleggio", price: "15" },
-      { name: "Add Burrata", description: "3" },
+      { name: "Add Burrata", description: "4" },
     ]
   },
   {
