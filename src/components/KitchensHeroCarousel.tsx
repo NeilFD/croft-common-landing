@@ -87,7 +87,7 @@ const KitchensHeroCarousel = () => {
         <img 
           src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
           alt="Croft Common Watermark"
-          className="w-[20rem] h-[20rem] sm:w-[22rem] sm:h-[22rem] md:w-[24rem] md:h-[24rem] lg:w-[26rem] lg:h-[26rem] opacity-20 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
+          className="w-[20rem] h-[20rem] sm:w-[22rem] sm:h-[22rem] md:w-[24rem] md:h-[24rem] lg:w-[26rem] lg:h-[26rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
           style={{ 
             filter: 'invert(1)'
           }}
