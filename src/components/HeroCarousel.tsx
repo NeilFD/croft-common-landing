@@ -79,13 +79,13 @@ const HeroCarousel = () => {
       </div>
 
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none mt-16 z-10">
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
         <img 
           src="/src/assets/croft-logo.png" 
           alt="Croft Common Watermark" 
-          className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-1000"
+          className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 hover:opacity-80 cursor-pointer"
           style={{ 
-            filter: 'brightness(0) invert(1) contrast(100)'
+            filter: 'invert(1)'
           }}
         />
       </div>

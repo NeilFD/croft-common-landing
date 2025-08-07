@@ -14,7 +14,7 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
 
   return (
     <img 
-      src="/lovable-uploads/4fef4ea3-1c24-49ce-b424-ae8af9468bed.png"
+      src="/src/assets/croft-logo.png"
       alt="Croft Common Logo"
       className={cn(
         "object-contain",
