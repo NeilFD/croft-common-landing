@@ -94,7 +94,7 @@ const HallHeroCarousel = () => {
 
       {/* Page Title Overlay */}
       <div className="absolute top-24 left-[106px] z-20">
-        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-vivid-purple))] cursor-pointer">
+        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-vivid-purple))] cursor-pointer animate-accent-pulse">
           HALL
         </h1>
       </div>

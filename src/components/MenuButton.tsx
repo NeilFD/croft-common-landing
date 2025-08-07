@@ -36,7 +36,7 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
     <>
       <button
         onClick={() => setIsMenuOpen(true)}
-        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 
+        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 animate-accent-pulse
           flex items-center justify-center group ${
             pageType === 'community' 
               ? 'bg-background/85 backdrop-blur-sm' 
