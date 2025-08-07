@@ -34,7 +34,7 @@ const CommonRoom = () => {
           <img 
             src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
             alt="Common Room Layout"
-            className="w-[40rem] h-[40rem] opacity-20 object-contain"
+            className="w-[20rem] h-[20rem] sm:w-[25rem] sm:h-[25rem] md:w-[30rem] md:h-[30rem] lg:w-[40rem] lg:h-[40rem] opacity-20 object-contain"
           />
         </div>
       </main>

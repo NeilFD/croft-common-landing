@@ -85,7 +85,7 @@ const HallHeroCarousel = () => {
         <img 
           src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
           alt="Croft Common Watermark"
-          className="w-[40rem] h-[40rem] opacity-30 object-contain transition-all duration-500 hover:opacity-50 cursor-pointer"
+          className="w-[20rem] h-[20rem] sm:w-[25rem] sm:h-[25rem] md:w-[30rem] md:h-[30rem] lg:w-[40rem] lg:h-[40rem] opacity-30 object-contain transition-all duration-500 hover:opacity-50 cursor-pointer"
           style={{ 
             filter: 'invert(1)'
           }}
