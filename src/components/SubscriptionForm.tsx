@@ -68,7 +68,9 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
           STEP CLOSER
         </h3>
         <p className={`font-industrial text-lg max-w-xl mx-auto ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}>
-          Not everything gets broadcast. Cross the line. Stay in the know. The Common Room - membership, not members.
+          Not everything gets broadcast. Cross the line. Stay in the know.
+          <br /><br />
+          The Common Room - for membership, not members.
         </p>
       </div>
       
