@@ -227,43 +227,43 @@ export const kitchensMenu: MenuSection[] = [
     title: "ASIAN STREET FOOD",
     items: [
       { name: "BAO BUNS", description: "" },
-      { name: "Pork Belly, Pickles", price: "8" },
-      { name: "Fried Tofu, Sweet Soy", price: "7" },
-      { name: "Korean Chicken, Gochujang", price: "8" },
-      { name: "Shiitake, Black Garlic Mayo", price: "7" },
+      { name: "Pork Belly, Pickles", price: "11" },
+      { name: "Fried Tofu, Sweet Soy", price: "10" },
+      { name: "Korean Chicken, Gochujang", price: "11" },
+      { name: "Shiitake, Black Garlic Mayo", price: "10" },
     ]
   },
   {
     title: "NOODLES",
     items: [
-      { name: "Chilli Garlic Ramen, Soft Egg", price: "10" },
-      { name: "Beef Brisket Pho", price: "11" },
-      { name: "Miso Udon, Crispy Tofu", price: "9" },
-      { name: "Dan Dan Noodles, Pork & Peanut", price: "10" },
+      { name: "Chilli Garlic Ramen, Soft Egg", price: "13" },
+      { name: "Beef Brisket Pho", price: "15" },
+      { name: "Miso Udon, Crispy Tofu", price: "12" },
+      { name: "Dan Dan Noodles, Pork & Peanut", price: "13" },
     ]
   },
   {
     title: "RICE & MAINS",
     items: [
-      { name: "Karaage Chicken Bowl", price: "9" },
-      { name: "Tofu & Aubergine Mapo", price: "9" },
-      { name: "Sticky Pork Belly, Greens", price: "10" },
-      { name: "Beef Bulgogi, Kimchi", price: "11" },
-      { name: "Thai Green Curry, Jasmine Rice", price: "10" },
-      { name: "Soy Braised Mushrooms", price: "9" },
+      { name: "Karaage Chicken Bowl", price: "13" },
+      { name: "Tofu & Aubergine Mapo", price: "13" },
+      { name: "Sticky Pork Belly, Greens", price: "14" },
+      { name: "Beef Bulgogi, Kimchi", price: "15" },
+      { name: "Thai Green Curry, Jasmine Rice", price: "14" },
+      { name: "Soy Braised Mushrooms", price: "13" },
     ]
   },
   {
     title: "ASIAN SMALL PLATES",
     items: [
-      { name: "Gyoza, Ponzu Dip", price: "6" },
-      { name: "Prawn Toast, Sweet Chilli", price: "6" },
-      { name: "Edamame, Chilli Salt", price: "4" },
-      { name: "Chilli Broccoli", price: "7" },
-      { name: "Kimchi", price: "3" },
-      { name: "Prawn Crackers, Dust & Dip", price: "3" },
-      { name: "Satay Chicken Skewers", price: "7" },
-      { name: "Miso Aubergine, Spring Onion", price: "6" },
+      { name: "Gyoza, Ponzu Dip", price: "8" },
+      { name: "Prawn Toast, Sweet Chilli", price: "8" },
+      { name: "Edamame, Chilli Salt", price: "6" },
+      { name: "Chilli Broccoli", price: "9" },
+      { name: "Kimchi", price: "5" },
+      { name: "Prawn Crackers, Dust & Dip", price: "5" },
+      { name: "Satay Chicken Skewers", price: "9" },
+      { name: "Miso Aubergine, Spring Onion", price: "8" },
     ]
   }
 ];
