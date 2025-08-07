@@ -46,17 +46,17 @@ const handler = async (req: Request): Promise<Response> => {
           <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
             
             <!-- Header with Logo -->
-            <div style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); padding: 40px 20px; text-align: center; border-bottom: 4px solid #ff1b6b;">
+            <div style="background: #ffffff; padding: 40px 20px; text-align: center; border-bottom: 4px solid #ff1b6b;">
               <!-- CSS Recreation of Croft Logo -->
-              <div style="width: 60px; height: 60px; border: 3px solid #ffffff; margin: 0 auto 20px; display: inline-block; vertical-align: top;">
-                <div style="width: 100%; height: 50%; border-bottom: 3px solid #ffffff; box-sizing: border-box;"></div>
+              <div style="width: 60px; height: 60px; border: 3px solid #000000; margin: 0 auto 20px; display: inline-block; vertical-align: top;">
+                <div style="width: 100%; height: 50%; border-bottom: 3px solid #000000; box-sizing: border-box;"></div>
                 <div style="width: 100%; height: 50%; display: flex; box-sizing: border-box;">
-                  <div style="width: 33.33%; height: 100%; border-right: 3px solid #ffffff; box-sizing: border-box;"></div>
-                  <div style="width: 33.33%; height: 100%; border-right: 3px solid #ffffff; box-sizing: border-box;"></div>
+                  <div style="width: 33.33%; height: 100%; border-right: 3px solid #000000; box-sizing: border-box;"></div>
+                  <div style="width: 33.33%; height: 100%; border-right: 3px solid #000000; box-sizing: border-box;"></div>
                   <div style="width: 33.33%; height: 100%; box-sizing: border-box;"></div>
                 </div>
               </div>
-              <h1 style="color: #ffffff; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">CROFT COMMON</h1>
+              <h1 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">CROFT COMMON</h1>
               <div style="width: 40px; height: 3px; background: #ff1b6b; margin: 15px auto 0;"></div>
             </div>
             
@@ -74,12 +74,14 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
               
               <!-- Call to Action Box -->
-              <div style="background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%); padding: 35px; margin: 35px 0; border: 2px solid #ff1b6b; position: relative;">
-                <div style="position: absolute; top: -1px; left: -1px; right: -1px; bottom: -1px; background: linear-gradient(45deg, #ff1b6b, #000000, #ff1b6b); z-index: -1; border-radius: inherit;"></div>
-                <h3 style="color: #ffffff; font-family: 'Oswald', Arial Black, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; margin: 0 0 20px 0; text-transform: uppercase; text-align: center;">To unlock The Common Room:</h3>
-                <p style="color: #e5e5e5; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">croftcommontest.co.uk/common-room</a></p>
-                <div style="background: rgba(255, 27, 107, 0.1); border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: center;">
-                  <p style="color: #ffffff; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0; letter-spacing: 0.05em;">Draw a seven. Boldly. A single line. One gesture. That's it. Sign in.</p>
+              <div style="background: #ffffff; padding: 35px; margin: 35px 0; border: 2px solid #ff1b6b;">
+                <h3 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; margin: 0 0 20px 0; text-transform: uppercase; text-align: center;">To unlock The Common Room:</h3>
+                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">croftcommontest.co.uk/common-room</a></p>
+                <div style="background: #f8f8f8; border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: center;">
+                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">Draw a 7.</p>
+                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">Boldly. A single line.</p>
+                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0 0 8px 0; letter-spacing: 0.05em;">One gesture.</p>
+                  <p style="color: #000000; font-family: 'Oswald', Arial, sans-serif; font-size: 18px; font-weight: 700; margin: 0; letter-spacing: 0.05em;">You're in</p>
                 </div>
               </div>
               
@@ -95,19 +97,19 @@ const handler = async (req: Request): Promise<Response> => {
             </div>
             
             <!-- Footer -->
-            <div style="background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%); padding: 30px; text-align: center; border-top: 2px solid #ff1b6b;">
+            <div style="background: #ffffff; padding: 30px; text-align: center; border-top: 2px solid #ff1b6b;">
               <div style="margin-bottom: 20px;">
                 <!-- Small Logo -->
-                <div style="width: 30px; height: 30px; border: 2px solid #666666; margin: 0 auto; display: inline-block;">
-                  <div style="width: 100%; height: 50%; border-bottom: 2px solid #666666; box-sizing: border-box;"></div>
+                <div style="width: 30px; height: 30px; border: 2px solid #000000; margin: 0 auto; display: inline-block;">
+                  <div style="width: 100%; height: 50%; border-bottom: 2px solid #000000; box-sizing: border-box;"></div>
                   <div style="width: 100%; height: 50%; display: flex; box-sizing: border-box;">
-                    <div style="width: 33.33%; height: 100%; border-right: 2px solid #666666; box-sizing: border-box;"></div>
-                    <div style="width: 33.33%; height: 100%; border-right: 2px solid #666666; box-sizing: border-box;"></div>
+                    <div style="width: 33.33%; height: 100%; border-right: 2px solid #000000; box-sizing: border-box;"></div>
+                    <div style="width: 33.33%; height: 100%; border-right: 2px solid #000000; box-sizing: border-box;"></div>
                     <div style="width: 33.33%; height: 100%; box-sizing: border-box;"></div>
                   </div>
                 </div>
               </div>
-              <p style="color: #999999; font-family: 'Work Sans', Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #ff1b6b; text-decoration: none;">Unsubscribe here</a></p>
+              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #ff1b6b; text-decoration: none;">Unsubscribe here</a></p>
               <p style="color: #666666; font-family: 'Work Sans', Arial, sans-serif; font-size: 12px; line-height: 1.4; margin: 0;">Croft Common, Stokes Croft, Bristol</p>
             </div>
             
