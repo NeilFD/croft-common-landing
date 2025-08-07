@@ -20,10 +20,10 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !consent) {
+    if (!email || !name || !consent) {
       toast({
         title: "Required fields missing",
-        description: "Please provide your email and consent to continue.",
+        description: "Please provide your name, email and consent to continue.",
         variant: "destructive",
       });
       return;
@@ -33,7 +33,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
     
     try {
       const { data, error } = await supabase.functions.invoke('subscribe-newsletter', {
-        body: { email, name: name || undefined, consent }
+        body: { email, name, consent }
       });
 
       if (error) throw error;
@@ -78,9 +78,10 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
         <div className="grid gap-3">
           <Input
             type="text"
-            placeholder="Name (optional)"
+            placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
             className="font-industrial"
           />
           <Input
@@ -116,7 +117,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
           disabled={isLoading}
           className="w-full font-industrial uppercase tracking-wide"
         >
-          {isLoading ? 'JOINING...' : 'JOIN THE COMMON'}
+          {isLoading ? 'JOINING...' : 'FOR COMMON PEOPLE'}
         </Button>
         
         {isHomepage && (
