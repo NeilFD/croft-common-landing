@@ -36,35 +36,25 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
     <>
       <button
         onClick={() => setIsMenuOpen(true)}
-        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 animate-accent-pulse-button
-          flex items-center justify-center group ${
+        className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 
+          flex items-center justify-center group relative ${
             pageType === 'community' 
               ? 'bg-background/85 backdrop-blur-sm' 
-              : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
-          }`}
+              : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background hover:bg-background/20'
+          }
+          before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing-pulse before:pointer-events-none`}
         style={{
-          '--accent-color': accentColor,
+          '--tw-gradient-from': accentColor,
+          '--tw-gradient-to': accentColor,
         } as any}
-        onMouseEnter={(e) => {
-          if (pageType === 'community') {
-            e.currentTarget.style.backgroundColor = accentColor;
-            e.currentTarget.style.borderColor = accentColor;
-          } else {
-            e.currentTarget.style.backgroundColor = accentColor;
-            e.currentTarget.style.borderColor = accentColor;
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (pageType === 'community') {
-            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.85)';
-            e.currentTarget.style.borderColor = '';
-          } else {
-            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
-            e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
-          }
-        }}
       >
-        <div className={`transition-colors duration-300 scale-75 ${
+        {/* Breathing pulse overlay */}
+        <div 
+          className="absolute inset-0 rounded-full animate-breathing-pulse pointer-events-none"
+          style={{ backgroundColor: accentColor }}
+        />
+        
+        <div className={`relative z-10 transition-colors duration-300 scale-75 ${
           pageType === 'community' ? 'text-foreground [&_svg]:stroke-[3]' : 'text-background'
         }`}>
           <CroftLogo size="lg" />

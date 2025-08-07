@@ -113,74 +113,10 @@ export default {
 					'0%': { opacity: '1' },
 					'100%': { opacity: '0' }
 				},
-				'accent-pulse-text': {
-					'0%': { color: 'hsl(var(--background))' },
-					'5%': { color: 'hsl(var(--background))' },
-					'15%': { color: 'color-mix(in hsl, hsl(var(--background)) 80%, var(--accent-color) 20%)' },
-					'25%': { color: 'color-mix(in hsl, hsl(var(--background)) 60%, var(--accent-color) 40%)' },
-					'35%': { color: 'color-mix(in hsl, hsl(var(--background)) 40%, var(--accent-color) 60%)' },
-					'45%': { color: 'color-mix(in hsl, hsl(var(--background)) 20%, var(--accent-color) 80%)' },
-					'50%': { color: 'var(--accent-color)' },
-					'55%': { color: 'color-mix(in hsl, hsl(var(--background)) 20%, var(--accent-color) 80%)' },
-					'65%': { color: 'color-mix(in hsl, hsl(var(--background)) 40%, var(--accent-color) 60%)' },
-					'75%': { color: 'color-mix(in hsl, hsl(var(--background)) 60%, var(--accent-color) 40%)' },
-					'85%': { color: 'color-mix(in hsl, hsl(var(--background)) 80%, var(--accent-color) 20%)' },
-					'95%': { color: 'hsl(var(--background))' },
-					'100%': { color: 'hsl(var(--background))' }
-				},
-				'accent-pulse-button': {
-					'0%': { 
-						borderColor: 'hsl(255, 255, 255, 0.3)',
-						backgroundColor: 'hsl(255, 255, 255, 0.1)'
-					},
-					'5%': { 
-						borderColor: 'hsl(255, 255, 255, 0.3)',
-						backgroundColor: 'hsl(255, 255, 255, 0.1)'
-					},
-					'15%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 80%, var(--accent-color) 20%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 80%, var(--accent-color) 20%)'
-					},
-					'25%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 60%, var(--accent-color) 40%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 60%, var(--accent-color) 40%)'
-					},
-					'35%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 40%, var(--accent-color) 60%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 40%, var(--accent-color) 60%)'
-					},
-					'45%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 20%, var(--accent-color) 80%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 20%, var(--accent-color) 80%)'
-					},
-					'50%': { 
-						borderColor: 'var(--accent-color)',
-						backgroundColor: 'var(--accent-color)'
-					},
-					'55%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 20%, var(--accent-color) 80%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 20%, var(--accent-color) 80%)'
-					},
-					'65%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 40%, var(--accent-color) 60%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 40%, var(--accent-color) 60%)'
-					},
-					'75%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 60%, var(--accent-color) 40%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 60%, var(--accent-color) 40%)'
-					},
-					'85%': { 
-						borderColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.3) 80%, var(--accent-color) 20%)',
-						backgroundColor: 'color-mix(in hsl, hsl(255, 255, 255, 0.1) 80%, var(--accent-color) 20%)'
-					},
-					'95%': { 
-						borderColor: 'hsl(255, 255, 255, 0.3)',
-						backgroundColor: 'hsl(255, 255, 255, 0.1)'
-					},
-					'100%': { 
-						borderColor: 'hsl(255, 255, 255, 0.3)',
-						backgroundColor: 'hsl(255, 255, 255, 0.1)'
-					}
+				'breathing-pulse': {
+					'0%': { opacity: '0' },
+					'50%': { opacity: '0.4' },
+					'100%': { opacity: '0' }
 				}
 			},
 			animation: {
@@ -188,8 +124,7 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pink-flash': 'pink-flash 0.6s ease-out',
 				'fade-out': 'fade-out 0.2s ease-out',
-				'accent-pulse-text': 'accent-pulse-text 12s linear infinite',
-				'accent-pulse-button': 'accent-pulse-button 12s linear infinite'
+				'breathing-pulse': 'breathing-pulse 8s ease-in-out infinite'
 			}
 		}
 	},
