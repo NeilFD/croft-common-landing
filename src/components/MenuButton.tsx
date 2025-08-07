@@ -37,13 +37,15 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
       <button
         onClick={() => setIsMenuOpen(true)}
         className={`fixed bottom-20 right-8 z-30 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 
-          flex items-center justify-center group ${
-            pageType === 'community' 
-              ? 'bg-background/85 backdrop-blur-sm' 
-              : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
+          flex items-center justify-center group relative overflow-hidden button-breathing
+          before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0
+          ${pageType === 'community' 
+            ? 'bg-background/85 backdrop-blur-sm' 
+            : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
           }`}
         style={{
           '--hover-bg': accentColor,
+          '--breathing-color': accentColor,
         } as any}
         onMouseEnter={(e) => {
           if (pageType === 'community') {
@@ -64,7 +66,7 @@ const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
           }
         }}
       >
-        <div className={`transition-colors duration-300 scale-75 ${
+        <div className={`relative z-10 transition-colors duration-300 scale-75 ${
           pageType === 'community' ? 'text-foreground [&_svg]:stroke-[3]' : 'text-background'
         }`}>
           <CroftLogo size="lg" />

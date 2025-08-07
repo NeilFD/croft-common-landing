@@ -188,6 +188,11 @@
     color: hsl(var(--accent-electric-blue));
   }
 
+  /* Breathing animation for menu button */
+  .button-breathing::before {
+    background-color: var(--breathing-color);
+  }
+
   /* Hide scrollbars */
   .scrollbar-hide {
     -ms-overflow-style: none;  /* Internet Explorer 10+ */
