@@ -89,7 +89,7 @@ const CocktailHeroCarousel = () => {
         <img 
           src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
           alt="Croft Common Watermark"
-          className="w-[18rem] h-[18rem] sm:w-[20rem] sm:h-[20rem] md:w-[22rem] md:h-[22rem] lg:w-[24rem] lg:h-[24rem] opacity-30 object-contain transition-all duration-500 hover:opacity-50 cursor-pointer"
+          className="w-[20rem] h-[20rem] sm:w-[22rem] sm:h-[22rem] md:w-[24rem] md:h-[24rem] lg:w-[26rem] lg:h-[26rem] opacity-30 object-contain transition-all duration-500 hover:opacity-50 cursor-pointer"
           style={{ 
             filter: 'invert(1)'
           }}

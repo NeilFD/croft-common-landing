@@ -18,7 +18,7 @@ const CommonRoomHeroCarousel = () => {
         <img 
           src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
           alt="Common Room Watermark"
-          className="w-[14rem] h-[14rem] sm:w-[16rem] sm:h-[16rem] md:w-[18rem] md:h-[18rem] lg:w-[20rem] lg:h-[20rem] opacity-30 object-contain transition-all duration-500 hover:opacity-50 cursor-pointer"
+          className="w-[20rem] h-[20rem] sm:w-[22rem] sm:h-[22rem] md:w-[24rem] md:h-[24rem] lg:w-[26rem] lg:h-[26rem] opacity-30 object-contain transition-all duration-500 hover:opacity-50 cursor-pointer"
           style={{ 
             filter: 'invert(1)'
           }}
