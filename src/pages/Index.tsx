@@ -9,13 +9,6 @@ const Index = () => {
       <Navigation />
       <HeroSection />
       
-      {/* Prominent subscription section */}
-      <section className="py-20 bg-background border-t border-foreground/10">
-        <div className="container mx-auto px-6">
-          <SubscriptionForm variant="homepage" />
-        </div>
-      </section>
-      
       <Footer />
     </div>
   );
