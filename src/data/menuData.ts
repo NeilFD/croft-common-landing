@@ -207,10 +207,10 @@ export const kitchensMenu: MenuSection[] = [
   {
     title: "QUESADILLAS & MAINS",
     items: [
-      { name: "Quesadilla, Cheese Pull", price: "7" },
-      { name: "Chorizo Quesadilla", price: "8" },
-      { name: "Mexican Rice Bowl, Pickles", price: "9" },
-      { name: "Tostadas - Crab, Avocado", price: "10" },
+      { name: "Quesadilla, Cheese Pull", price: "12" },
+      { name: "Chorizo Quesadilla", price: "13" },
+      { name: "Mexican Rice Bowl, Pickles", price: "14" },
+      { name: "Tostadas - Crab, Avocado", price: "15" },
     ]
   },
   {
