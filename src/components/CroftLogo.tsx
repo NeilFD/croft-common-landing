@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import geometricLogo from "@/assets/geometric-croft-logo.png";
 
 interface CroftLogoProps {
   className?: string;
@@ -14,7 +15,7 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
 
   return (
     <img 
-      src="/src/assets/croft-logo.png"
+      src={geometricLogo}
       alt="Croft Common Logo"
       className={cn(
         "object-contain",

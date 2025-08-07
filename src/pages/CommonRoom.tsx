@@ -3,6 +3,7 @@ import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
 import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
+import geometricLogo from "@/assets/geometric-croft-logo.png";
 
 const CommonRoom = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ const CommonRoom = () => {
         {/* Watermark image - positioned absolutely like other carousel pages */}
         <div className="absolute inset-0 flex items-center justify-center mt-16">
           <img 
-            src="/src/assets/croft-logo.png" 
+            src={geometricLogo} 
             alt="Common Room Layout" 
             className="w-[40rem] h-[40rem] opacity-20 object-contain"
           />
