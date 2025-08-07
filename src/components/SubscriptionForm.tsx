@@ -97,7 +97,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
             id="consent"
             checked={consent}
             onCheckedChange={(checked) => setConsent(checked as boolean)}
-            className="mt-1"
+            className={`mt-1 ${variant === 'footer' ? 'border-background data-[state=checked]:bg-background data-[state=checked]:text-void' : 'border-foreground data-[state=checked]:bg-background data-[state=checked]:text-foreground'}`}
           />
           <label 
             htmlFor="consent" 
