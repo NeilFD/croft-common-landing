@@ -81,14 +81,16 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   return (
     <TransitionContext.Provider value={{ isTransitioning, triggerTransition }}>
       {children}
+      {/* Rapid texture slide-in with your gritty texture */}
       <div 
-        className={`fixed inset-0 z-[99999] transition-all duration-1000 ease-in-out ${
+        className={`fixed inset-0 z-[99999] transition-all duration-1000 ease-out ${
           isTransitioning 
-            ? 'opacity-100 scale-100' 
+            ? 'opacity-100 scale-100 translate-x-0 translate-y-0' 
             : 'opacity-0 scale-110 pointer-events-none'
         }`}
         style={{
           transformOrigin: 'center center',
+          transform: isTransitioning ? 'translate(0, 0)' : 'var(--slide-direction)',
           ...getTransitionStyle(),
         }}
         onTransitionEnd={() => {
@@ -97,26 +99,26 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
           }
         }}
       >
-        {/* Enhanced logo during transition */}
+        {/* Multi-phase logo animation with rapid flashes */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="relative">
             <img 
               src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
               alt="Croft Common"
-              className={`w-[50rem] h-[50rem] object-contain transition-all duration-1000 ease-out ${
+              className={`w-[50rem] h-[50rem] object-contain transition-all duration-700 ${
                 isTransitioning 
-                  ? 'opacity-90 scale-105' 
+                  ? 'opacity-100 animate-[flash-scale_700ms_ease-out]' 
                   : 'opacity-0 scale-95'
               }`}
               style={{ 
-                filter: 'brightness(0) invert(1) contrast(150) drop-shadow(0 4px 12px rgba(0,0,0,0.8)) drop-shadow(0 0 30px rgba(255,255,255,0.6))',
-                textShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                filter: 'brightness(0) invert(1) contrast(200) drop-shadow(0 8px 24px rgba(0,0,0,0.9)) drop-shadow(0 0 40px rgba(255,255,255,0.8))',
+                animation: isTransitioning ? 'flash-scale 700ms ease-out, emboss-carve 1000ms ease-out' : 'none'
               }}
             />
-            {/* Embossed effect overlay */}
+            {/* Rapid flash overlay */}
             <div 
-              className={`absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/20 transition-opacity duration-1000 ${
-                isTransitioning ? 'opacity-60' : 'opacity-0'
+              className={`absolute inset-0 bg-white transition-opacity ${
+                isTransitioning ? 'animate-[rapid-flash_400ms_ease-out]' : 'opacity-0'
               }`}
               style={{
                 maskImage: 'url(/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png)',
@@ -125,9 +127,23 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
                 maskRepeat: 'no-repeat'
               }}
             />
+            {/* Embossed carving effect */}
+            <div 
+              className={`absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/40 transition-all duration-1000 ${
+                isTransitioning ? 'opacity-80' : 'opacity-0'
+              }`}
+              style={{
+                maskImage: 'url(/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png)',
+                maskSize: 'contain',
+                maskPosition: 'center',
+                maskRepeat: 'no-repeat',
+                mixBlendMode: 'multiply'
+              }}
+            />
           </div>
         </div>
       </div>
+      
     </TransitionContext.Provider>
   );
 };
