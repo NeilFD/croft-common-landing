@@ -92,6 +92,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subscribers: {
+        Row: {
+          consent_given: boolean
+          consent_timestamp: string | null
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string | null
+          preferences: Json | null
+          subscription_date: string
+          unsubscribe_token: string
+          updated_at: string
+        }
+        Insert: {
+          consent_given?: boolean
+          consent_timestamp?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          preferences?: Json | null
+          subscription_date?: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Update: {
+          consent_given?: boolean
+          consent_timestamp?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          preferences?: Json | null
+          subscription_date?: string
+          unsubscribe_token?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

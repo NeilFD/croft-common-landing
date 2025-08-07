@@ -1,7 +1,20 @@
+import SubscriptionForm from './SubscriptionForm';
+
 const Footer = () => {
   return (
     <footer className="bg-void text-background py-16">
       <div className="container mx-auto px-6">
+        {/* Newsletter subscription section */}
+        <div className="mb-16 text-center">
+          <h3 className="font-brutalist text-3xl mb-4 text-background">
+            JOIN THE COMMON
+          </h3>
+          <p className="font-industrial text-lg text-background/70 mb-8 max-w-2xl mx-auto">
+            Subscribe for exclusive access to The Common Room and stay connected with our community.
+          </p>
+          <SubscriptionForm variant="footer" className="max-w-md mx-auto" />
+        </div>
+        
         <div className="grid md:grid-cols-3 gap-12">
           <div>
             <h3 className="font-brutalist text-2xl mb-6">CROFT COMMON</h3>
