@@ -15,7 +15,7 @@ const CommonRoomHeroCarousel = () => {
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
         <img 
-          src="/lovable-uploads/90a63358-50bd-4ab2-adeb-cf9350f4f4b2.png" 
+          src="/lovable-uploads/4fef4ea3-1c24-49ce-b424-ae8af9468bed.png" 
           alt="Common Room Watermark" 
           className="w-[40rem] h-[40rem] opacity-60 object-contain transition-all duration-500 hover:opacity-80 cursor-pointer"
           style={{ 
