@@ -183,13 +183,13 @@ export const kitchensMenu: MenuSection[] = [
   {
     title: "SIDES",
     items: [
-      { name: "Chips", price: "3" },
-      { name: "Parmesan Fries", price: "4" },
-      { name: "Bone Marrow Butter", price: "2" },
-      { name: "Onion Rings", price: "4" },
-      { name: "Grilled Tenderstem", price: "4" },
-      { name: "Side Salad", price: "3" },
-      { name: "Flatbread", price: "2" },
+      { name: "Chips", price: "5" },
+      { name: "Parmesan Fries", price: "6" },
+      { name: "Bone Marrow Butter", price: "4" },
+      { name: "Onion Rings", price: "6" },
+      { name: "Grilled Tenderstem", price: "6" },
+      { name: "Side Salad", price: "5" },
+      { name: "Flatbread", price: "4" },
     ]
   },
   {
