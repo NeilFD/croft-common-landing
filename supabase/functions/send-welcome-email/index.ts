@@ -47,15 +47,10 @@ const handler = async (req: Request): Promise<Response> => {
             
             <!-- Header with Logo -->
             <div style="background: #ffffff; padding: 40px 20px; text-align: center; border-bottom: 4px solid #ff1b6b;">
-              <!-- CSS Recreation of Croft Logo -->
-              <div style="width: 60px; height: 60px; border: 3px solid #000000; margin: 0 auto 20px; display: inline-block; vertical-align: top;">
-                <div style="width: 100%; height: 50%; border-bottom: 3px solid #000000; box-sizing: border-box;"></div>
-                <div style="width: 100%; height: 50%; display: flex; box-sizing: border-box;">
-                  <div style="width: 33.33%; height: 100%; border-right: 3px solid #000000; box-sizing: border-box;"></div>
-                  <div style="width: 33.33%; height: 100%; border-right: 3px solid #000000; box-sizing: border-box;"></div>
-                  <div style="width: 33.33%; height: 100%; box-sizing: border-box;"></div>
-                </div>
-              </div>
+              <!-- New Geometric Logo -->
+              <img src="https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/lovable-uploads/92af214f-9e2c-4472-9859-2d05f1947d9b.png" 
+                   alt="Croft Common Logo" 
+                   style="width: 60px; height: 60px; margin: 0 auto 20px; display: block; object-fit: contain;" />
               <h1 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">CROFT COMMON</h1>
               <div style="width: 40px; height: 3px; background: #ff1b6b; margin: 15px auto 0;"></div>
             </div>
@@ -100,14 +95,9 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: #ffffff; padding: 30px; text-align: center; border-top: 2px solid #ff1b6b;">
               <div style="margin-bottom: 20px;">
                 <!-- Small Logo -->
-                <div style="width: 30px; height: 30px; border: 2px solid #000000; margin: 0 auto; display: inline-block;">
-                  <div style="width: 100%; height: 50%; border-bottom: 2px solid #000000; box-sizing: border-box;"></div>
-                  <div style="width: 100%; height: 50%; display: flex; box-sizing: border-box;">
-                    <div style="width: 33.33%; height: 100%; border-right: 2px solid #000000; box-sizing: border-box;"></div>
-                    <div style="width: 33.33%; height: 100%; border-right: 2px solid #000000; box-sizing: border-box;"></div>
-                    <div style="width: 33.33%; height: 100%; box-sizing: border-box;"></div>
-                  </div>
-                </div>
+                <img src="https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/lovable-uploads/92af214f-9e2c-4472-9859-2d05f1947d9b.png" 
+                     alt="Croft Common Logo" 
+                     style="width: 30px; height: 30px; margin: 0 auto; display: block; object-fit: contain;" />
               </div>
               <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #ff1b6b; text-decoration: none;">Unsubscribe here</a></p>
               <p style="color: #666666; font-family: 'Work Sans', Arial, sans-serif; font-size: 12px; line-height: 1.4; margin: 0;">Croft Common, Stokes Croft, Bristol</p>
