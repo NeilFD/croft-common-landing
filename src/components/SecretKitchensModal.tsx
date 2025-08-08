@@ -96,7 +96,7 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
                 size="icon"
                 onClick={() => setActiveId('cover')}
                 aria-label="Back to cover"
-                className="ring-2 ring-ring ring-offset-2 ring-offset-background"
+                className="border-none bg-transparent hover:bg-transparent focus-visible:ring-0 text-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
