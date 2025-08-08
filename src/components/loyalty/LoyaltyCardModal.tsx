@@ -216,6 +216,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                         filled={filled}
                         disabled={disabled}
                         imageUrl={img}
+                        borderless={!filled && !img}
                         onSelectFile={handleSelect(idx)}
                       />
                       <div className="text-center text-xs text-foreground/70">Free coffee</div>
@@ -263,6 +264,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                           filled={filled}
                           disabled={disabled}
                           imageUrl={img}
+                          borderless={!filled && !img}
                           onSelectFile={handleSelect(idx)}
                           
                         />

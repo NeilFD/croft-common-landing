@@ -10,9 +10,10 @@ interface LoyaltyBoxProps {
   imageUrl?: string;
   onSelectFile: (file: File) => void;
   variant?: 'default' | 'lucky';
+  borderless?: boolean;
 }
 
-const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageUrl, onSelectFile, variant = 'default' }) => {
+const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageUrl, onSelectFile, variant = 'default', borderless }) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
@@ -30,9 +31,9 @@ const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageU
   return (
     <div
       className={cn(
-        "relative aspect-square rounded-md border bg-background/60 flex items-center justify-center overflow-hidden",
+        "relative aspect-square rounded-md bg-background/60 flex items-center justify-center overflow-hidden",
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer transition-colors",
-        variant === 'lucky' ? "border-accent/60 hover:border-accent" : "border-border hover:border-foreground/60"
+        !borderless && (variant === 'lucky' ? "border border-accent/60 hover:border-accent" : "border border-border hover:border-foreground/60")
       )}
       onClick={handleClick}
       >
