@@ -12,7 +12,7 @@ interface SecretBeerModalProps {
 const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secretWord }) => {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="sm:max-w-md border border-border bg-background">
+      <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <CroftLogo size="sm" />
@@ -25,6 +25,9 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
             Keep it quiet. Just say the word:{" "}
             <span className="font-semibold text-foreground">{secretWord}</span>
           </p>
+          <div className="font-industrial text-foreground">
+            <span className="font-semibold">Not-So-Common Keg:</span> £2.5/5
+          </div>
         </div>
       </DialogContent>
     </Dialog>
