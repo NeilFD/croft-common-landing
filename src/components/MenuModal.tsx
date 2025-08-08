@@ -150,7 +150,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       case 'beer':
         return 'accent-orange';
       case 'kitchens':
-        return 'accent-blood-red';
+        return 'accent-pink';
       case 'hall':
         return 'accent-vivid-purple';
       case 'community':

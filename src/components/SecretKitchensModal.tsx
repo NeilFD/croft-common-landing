@@ -92,8 +92,6 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
             <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
           </div>
 
-          {/* Title */}
-          <h2 className="font-brutalist text-foreground text-2xl tracking-wider">Common Cook Book</h2>
 
           {/* Layout */}
           <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
@@ -101,12 +99,10 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
             <article className="space-y-4">
               {activeId === 'cover' && (
                 <div className="flex flex-col items-center text-center py-8 select-none">
-                  <CroftLogo size="lg" />
+                  <CroftLogo size="lg" className="w-20 h-20 md:w-24 md:h-24" />
                   <div className="h-6" aria-hidden="true" />
-                  <h3 className="font-brutalist text-foreground text-3xl tracking-wider">Common Cook Book</h3>
-                  <p className="font-industrial text-foreground/80 mt-2">Wood, fire, dough, and a few good ideas.</p>
-                  <div className="h-6" aria-hidden="true" />
-                  <p className="font-industrial text-foreground/70">Select a recipe from the right to begin.</p>
+                  <h3 className="font-brutalist text-foreground text-4xl md:text-5xl tracking-wider">Common Cook Book</h3>
+                  <p className="font-industrial text-foreground/80 mt-2">Wood. Fire. Dough. Good Taste</p>
                 </div>
               )}
 
@@ -509,7 +505,7 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
               <nav className="space-y-4">
                 <div>
                   <button
-                    className={`w-full text-left font-industrial text-sm ${activeId === 'cover' ? 'text-[hsl(var(--accent-blood-red))]' : 'text-foreground/90 hover:text-[hsl(var(--accent-blood-red))]'} transition-colors`}
+                    className={`w-full text-left font-industrial text-sm ${activeId === 'cover' ? 'text-[hsl(var(--accent-pink))] ring-1 ring-[hsl(var(--accent-pink))] rounded px-2 py-1' : 'text-foreground/90 hover:text-[hsl(var(--accent-pink))]'} transition-colors`}
                     onClick={() => setActiveId('cover')}
                     aria-selected={activeId === 'cover'}
                   >
