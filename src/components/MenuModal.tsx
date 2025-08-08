@@ -5,6 +5,7 @@ import CroftLogo from './CroftLogo';
 import { MenuSection } from '@/data/menuData';
 import useGestureDetection from '@/hooks/useGestureDetection';
 import SecretBeerModal from './SecretBeerModal';
+import SecretKitchensModal from './SecretKitchensModal';
 import useSecretWordOfTheDay from '@/hooks/useSecretWordOfTheDay';
 
 interface MenuModalProps {
@@ -63,41 +64,43 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     }
     return { x: 0, y: 0 };
   }, []);
+  
+  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens';
 
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
-    if (pageType !== 'beer') return;
+    if (!isSecretEnabled) return;
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
-  }, [getEventPosition, startGesture, pageType]);
+  }, [getEventPosition, startGesture, isSecretEnabled]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent) => {
-    if (pageType !== 'beer' || !isDrawing) return;
+    if (!isSecretEnabled || !isDrawing) return;
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
-  }, [getEventPosition, addPoint, isDrawing, pageType]);
+  }, [getEventPosition, addPoint, isDrawing, isSecretEnabled]);
 
   const handleTouchEnd = useCallback((_event: React.TouchEvent) => {
-    if (pageType !== 'beer') return;
+    if (!isSecretEnabled) return;
     endGesture();
-  }, [endGesture, pageType]);
+  }, [endGesture, isSecretEnabled]);
 
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
-    if (pageType !== 'beer') return;
+    if (!isSecretEnabled) return;
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
-  }, [getEventPosition, startGesture, pageType]);
+  }, [getEventPosition, startGesture, isSecretEnabled]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
-    if (pageType !== 'beer' || !isDrawing) return;
+    if (!isSecretEnabled || !isDrawing) return;
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
-  }, [getEventPosition, addPoint, isDrawing, pageType]);
+  }, [getEventPosition, addPoint, isDrawing, isSecretEnabled]);
 
   const handleMouseUp = useCallback((_event: React.MouseEvent) => {
-    if (pageType !== 'beer') return;
+    if (!isSecretEnabled) return;
     endGesture();
-  }, [endGesture, pageType]);
+  }, [endGesture, isSecretEnabled]);
 
   if (!isOpen) return null;
 
@@ -165,7 +168,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         ref={containerRef}
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
           pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
-        }${isBeer && isDrawing ? ' select-none' : ''}`}
+        }${isSecretEnabled && isDrawing ? ' select-none' : ''}`}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -267,12 +270,18 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         </div>
       </div>
 
-      {/* Secret modal overlay (small) */}
+      {/* Secret modal overlays */}
       {pageType === 'beer' && (
         <SecretBeerModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
           secretWord={secretWord}
+        />
+      )}
+      {pageType === 'kitchens' && (
+        <SecretKitchensModal
+          open={showSecret}
+          onClose={() => setShowSecret(false)}
         />
       )}
     </div>
