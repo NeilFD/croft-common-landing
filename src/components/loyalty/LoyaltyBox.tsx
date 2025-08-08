@@ -32,7 +32,7 @@ const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageU
       className={cn(
         "relative aspect-square rounded-md border bg-background/60 flex items-center justify-center overflow-hidden",
         disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer transition-colors",
-        variant === 'lucky' ? "border-accent/60 hover:border-accent" : "border-steel/40 hover:border-foreground/60"
+        variant === 'lucky' ? "border-accent/60 hover:border-accent" : "border-border hover:border-foreground/60"
       )}
       onClick={handleClick}
       >
