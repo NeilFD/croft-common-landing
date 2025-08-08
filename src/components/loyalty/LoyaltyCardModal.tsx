@@ -120,7 +120,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     return '';
   }, [card, isRegular, isLucky7, punchesDone, rewardsDone]);
 
-  const title = isLucky7 ? 'Lucky Number 7²' : 'Croft Common Loyalty';
+  const title = isLucky7 ? 'Lucky Number 7²' : 'Croft Common Coffee';
 
   // When dialog closes, reset any auth modal
   const handleOpenChange = (nextOpen: boolean) => {
@@ -198,7 +198,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                   );
                 })}
               </div>
-              <div className="block w-px bg-foreground/20 self-stretch" aria-hidden />
+              <div className="block w-px bg-foreground/60 self-stretch" aria-hidden />
               <div className="w-28 flex flex-col items-center justify-center">
                 {(() => {
                   const idx = 7;
