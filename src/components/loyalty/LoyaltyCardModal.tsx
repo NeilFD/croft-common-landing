@@ -226,25 +226,51 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
             </div>
           ) : (
             <div className="rounded-xl border-2 border-border bg-background p-4">
-              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-                {Array.from({ length: 7 }, (_, i) => i + 1).map((idx) => {
-                  const filled = !!filledMap[idx];
-                  const img = filledMap[idx]?.url;
+              <div className="flex flex-row gap-4">
+                <div className="grid grid-cols-3 gap-3 flex-1">
+                  {Array.from({ length: 6 }, (_, i) => i + 1).map((idx) => {
+                    const filled = !!filledMap[idx];
+                    const img = filledMap[idx]?.url;
 
-                  const disabled = loading || creatingNext || (!user);
+                    const disabled = loading || creatingNext || (!user);
 
-                  return (
-                    <LoyaltyBox
-                      key={idx}
-                      index={idx}
-                      filled={filled}
-                      disabled={disabled}
-                      imageUrl={img}
-                      onSelectFile={handleSelect(idx)}
-                      variant="lucky"
-                    />
-                  );
-                })}
+                    return (
+                      <LoyaltyBox
+                        key={idx}
+                        index={idx}
+                        filled={filled}
+                        disabled={disabled}
+                        imageUrl={img}
+                        onSelectFile={handleSelect(idx)}
+                      />
+                    );
+                  })}
+                </div>
+                <div className="block w-px bg-foreground/60 self-stretch" aria-hidden />
+                <div className="w-28 flex flex-col items-center justify-center">
+                  {(() => {
+                    const idx = 7;
+                    const filled = !!filledMap[idx];
+                    const img = filledMap[idx]?.url;
+
+                    const disabled = loading || creatingNext || (!user);
+
+                    return (
+                      <div className="flex flex-col items-center gap-1">
+                        <LoyaltyBox
+                          key={idx}
+                          index={idx}
+                          filled={filled}
+                          disabled={disabled}
+                          imageUrl={img}
+                          onSelectFile={handleSelect(idx)}
+                          variant="lucky"
+                        />
+                        <div className="text-center text-xs text-foreground/70">Coffee 7</div>
+                      </div>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           )}
