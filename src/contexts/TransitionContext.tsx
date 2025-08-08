@@ -77,7 +77,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setStrobeOn(true);
     intervalRef.current = window.setInterval(() => {
       setStrobeOn(prev => !prev);
-    }, 350) as unknown as number; // was 70ms
+    }, 250) as unknown as number; // was 70ms
 
     const toLogo = window.setTimeout(() => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
