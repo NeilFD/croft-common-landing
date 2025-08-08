@@ -16,7 +16,7 @@ interface ColorToken {
 const colorTokens: ColorToken[] = [
   { name: "Primary", var: "--primary", foregroundVar: "--primary-foreground" },
   { name: "Secondary", var: "--secondary", foregroundVar: "--secondary-foreground" },
-  { name: "Accent Pink", var: "--accent-pink" },
+  { name: "Ring", var: "--ring" },
   { name: "Blood Red", var: "--accent-blood-red" },
   { name: "Vivid Purple", var: "--accent-vivid-purple" },
   { name: "Sage Green", var: "--accent-sage-green" },
@@ -24,7 +24,6 @@ const colorTokens: ColorToken[] = [
   { name: "Foreground", var: "--foreground" },
   { name: "Border", var: "--border" },
   { name: "Muted", var: "--muted" },
-  { name: "Ring", var: "--ring" },
 ];
 
 const Section = ({ id, title, children }: { id: string; title: string; children: React.ReactNode }) => (
@@ -118,6 +117,27 @@ const Branding = () => {
 
   const computed = useMemo(() => getComputedStyle(document.documentElement), []);
   const getHsl = (cssVar: string) => computed.getPropertyValue(cssVar).trim();
+  const hslToHex = (hsl: string): string => {
+    if (!hsl) return "";
+    const parts = hsl.split(/\s+/);
+    if (parts.length < 3) return "";
+    const h = parseFloat(parts[0]);
+    const s = parseFloat(parts[1].replace('%',''))/100;
+    const l = parseFloat(parts[2].replace('%',''))/100;
+    if (isNaN(h) || isNaN(s) || isNaN(l)) return "";
+    const c = (1 - Math.abs(2*l - 1)) * s;
+    const x = c * (1 - Math.abs(((h/60) % 2) - 1));
+    const m = l - c/2;
+    let r1 = 0, g1 = 0, b1 = 0;
+    if (h >= 0 && h < 60) { r1 = c; g1 = x; b1 = 0; }
+    else if (h >= 60 && h < 120) { r1 = x; g1 = c; b1 = 0; }
+    else if (h >= 120 && h < 180) { r1 = 0; g1 = c; b1 = x; }
+    else if (h >= 180 && h < 240) { r1 = 0; g1 = x; b1 = c; }
+    else if (h >= 240 && h < 300) { r1 = x; g1 = 0; b1 = c; }
+    else { r1 = c; g1 = 0; b1 = x; }
+    const toHex = (n: number) => Math.round((n + m) * 255).toString(16).padStart(2, '0');
+    return ("#" + toHex(r1) + toHex(g1) + toHex(b1)).toUpperCase();
+  };
 
   const toneOfVoiceBlocks = [
     {
@@ -203,6 +223,7 @@ const Branding = () => {
             {colorTokens.map((c) => {
               const hsl = getHsl(c.var);
               const fg = c.foregroundVar ? getHsl(c.foregroundVar) : undefined;
+              const hex = hslToHex(hsl);
               return (
                 <div key={c.name} className="border border-border">
                   <div
@@ -213,13 +234,9 @@ const Branding = () => {
                   </div>
                   <div className="p-4 flex items-center justify-between">
                     <div className="text-sm">
-                      <p className="font-medium">{c.var}</p>
-                      <p className="text-muted-foreground">hsl({hsl || "…"})</p>
+                      <p className="font-medium">{hex || "…"}</p>
                     </div>
-                    <div className="flex gap-2">
-                      <CopyButton value={`${c.var}`} label="Copy var" />
-                      <CopyButton value={`hsl(var(${c.var}))`} label="Copy HSL" />
-                    </div>
+                    <CopyButton value={hex} label="Copy HEX" />
                   </div>
                 </div>
               );
@@ -345,13 +362,13 @@ const Branding = () => {
             </div>
             <div className="border border-border p-6 flex items-center justify-between">
               <div>
-                <p className="font-medium">CSS Variables (Copy)</p>
-                <p className="text-sm text-muted-foreground">Design tokens – HSL values</p>
+                <p className="font-medium">Hex Colors (Copy)</p>
+                <p className="text-sm text-muted-foreground">Design tokens – HEX values</p>
               </div>
               <CopyButton
                 label="Copy tokens"
                 value={JSON.stringify(
-                  Object.fromEntries(colorTokens.map((t) => [t.name, `hsl(${getHsl(t.var)})`])),
+                  Object.fromEntries(colorTokens.map((t) => [t.name, hslToHex(getHsl(t.var))])),
                   null,
                   2
                 )}
