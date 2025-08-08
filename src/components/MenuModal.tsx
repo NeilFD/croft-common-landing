@@ -1,8 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CroftLogo from './CroftLogo';
 import { MenuSection } from '@/data/menuData';
+import useGestureDetection from '@/hooks/useGestureDetection';
+import SecretBeerModal from './SecretBeerModal';
+import useSecretWordOfTheDay from '@/hooks/useSecretWordOfTheDay';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -13,18 +16,88 @@ interface MenuModalProps {
 
 const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const navigate = useNavigate();
-  
+  const [showSecret, setShowSecret] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const secretWord = useSecretWordOfTheDay();
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
+      setShowSecret(false);
     }
 
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+
+  const handleSecretSuccess = useCallback(() => {
+    // Open the small secret modal
+    setShowSecret(true);
+  }, []);
+
+  const {
+    isDrawing,
+    startGesture,
+    addPoint,
+    endGesture
+  } = useGestureDetection(handleSecretSuccess);
+
+  const getEventPosition = useCallback((event: React.TouchEvent | React.MouseEvent | TouchEvent | MouseEvent) => {
+    const container = containerRef.current;
+    const rect = container?.getBoundingClientRect();
+    if (!rect) return { x: 0, y: 0 };
+
+    if ('touches' in event && event.touches && event.touches.length > 0) {
+      return {
+        x: event.touches[0].clientX - rect.left,
+        y: event.touches[0].clientY - rect.top,
+      };
+    } else if ('clientX' in event) {
+      return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top,
+      };
+    }
+    return { x: 0, y: 0 };
+  }, []);
+
+  // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
+  const handleTouchStart = useCallback((event: React.TouchEvent) => {
+    if (pageType !== 'beer') return;
+    const { x, y } = getEventPosition(event);
+    startGesture(x, y);
+  }, [getEventPosition, startGesture, pageType]);
+
+  const handleTouchMove = useCallback((event: React.TouchEvent) => {
+    if (pageType !== 'beer' || !isDrawing) return;
+    const { x, y } = getEventPosition(event);
+    addPoint(x, y);
+  }, [getEventPosition, addPoint, isDrawing, pageType]);
+
+  const handleTouchEnd = useCallback((_event: React.TouchEvent) => {
+    if (pageType !== 'beer') return;
+    endGesture();
+  }, [endGesture, pageType]);
+
+  const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    if (pageType !== 'beer') return;
+    const { x, y } = getEventPosition(event);
+    startGesture(x, y);
+  }, [getEventPosition, startGesture, pageType]);
+
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    if (pageType !== 'beer' || !isDrawing) return;
+    const { x, y } = getEventPosition(event);
+    addPoint(x, y);
+  }, [getEventPosition, addPoint, isDrawing, pageType]);
+
+  const handleMouseUp = useCallback((_event: React.MouseEvent) => {
+    if (pageType !== 'beer') return;
+    endGesture();
+  }, [endGesture, pageType]);
 
   if (!isOpen) return null;
 
@@ -88,10 +161,17 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       onClick={onClose}
     >
       <div 
+        ref={containerRef}
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
           pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
         }`}
         onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       >
         {/* Header */}
         <div className="bg-background border-b border-steel/20 p-4 md:p-6 flex items-center justify-between">
@@ -118,10 +198,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           pageType === 'community' || pageType === 'common-room' ? 'max-h-[calc(90vh-120px)]' : 'max-h-[calc(95vh-120px)]'
         }`}>
           {false ? (
-            // Placeholder for future special layouts
             <div></div>
           ) : (
-            // Standard menu layout for other pages
             <div className="space-y-10">
               {menuData.map((section, sectionIndex) => {
                 const isMajorSection = ['PIZZA - WOOD-FIRED', 'GRILL', 'MEXICAN', 'ASIAN STREET FOOD'].includes(section.title);
@@ -135,50 +213,50 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                     }`}>
                       {section.title}
                     </h2>
-                  <div className="space-y-3">
-                    {section.items.map((item, itemIndex) => (
-                      <div key={itemIndex} className="flex justify-between items-start">
-                        <div className="flex-1 pr-4">
-                          {item.isEmail ? (
-                            <a 
-                              href={`mailto:${item.name}`}
-                              className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300`}
-                            >
-                              {item.name}
-                            </a>
-                          ) : item.isLink ? (
-                            <button 
-                              className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300 cursor-pointer text-left`}
-                              onClick={() => {
-                                if (item.name.includes('Take a look')) {
-                                  onClose();
-                                  navigate('/calendar');
-                                } else {
-                                  console.log('Navigate to:', item.name);
-                                }
-                              }}
-                              dangerouslySetInnerHTML={{ __html: item.name }}
-                            />
-                          ) : (
-                            <h3 
-                              className="font-industrial text-lg text-foreground"
-                              dangerouslySetInnerHTML={{ __html: item.name }}
-                            />
-                          )}
-                          {item.description && (
-                            <p className="font-industrial text-steel text-sm mt-1">
-                              {item.description}
-                            </p>
+                    <div className="space-y-3">
+                      {section.items.map((item, itemIndex) => (
+                        <div key={itemIndex} className="flex justify-between items-start">
+                          <div className="flex-1 pr-4">
+                            {item.isEmail ? (
+                              <a 
+                                href={`mailto:${item.name}`}
+                                className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300`}
+                              >
+                                {item.name}
+                              </a>
+                            ) : item.isLink ? (
+                              <button 
+                                className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300 cursor-pointer text-left`}
+                                onClick={() => {
+                                  if (item.name.includes('Take a look')) {
+                                    onClose();
+                                    navigate('/calendar');
+                                  } else {
+                                    console.log('Navigate to:', item.name);
+                                  }
+                                }}
+                                dangerouslySetInnerHTML={{ __html: item.name }}
+                              />
+                            ) : (
+                              <h3 
+                                className="font-industrial text-lg text-foreground"
+                                dangerouslySetInnerHTML={{ __html: item.name }}
+                              />
+                            )}
+                            {item.description && (
+                              <p className="font-industrial text-steel text-sm mt-1">
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+                          {item.price && (
+                            <div className={`font-industrial text-base font-bold text-[hsl(var(--${accentColor}))] 
+                              flex-shrink-0 text-right`}>
+                              {item.price}
+                            </div>
                           )}
                         </div>
-                        {item.price && (
-                          <div className={`font-industrial text-base font-bold text-[hsl(var(--${accentColor}))] 
-                            flex-shrink-0 text-right`}>
-                            {item.price}
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      ))}
                     </div>
                   </div>
                 );
@@ -187,6 +265,15 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           )}
         </div>
       </div>
+
+      {/* Secret modal overlay (small) */}
+      {pageType === 'beer' && (
+        <SecretBeerModal
+          open={showSecret}
+          onClose={() => setShowSecret(false)}
+          secretWord={secretWord}
+        />
+      )}
     </div>
   );
 };

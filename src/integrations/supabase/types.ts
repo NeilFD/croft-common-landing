@@ -92,6 +92,27 @@ export type Database = {
         }
         Relationships: []
       }
+      secret_words: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          word: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          word: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          word?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           consent_given: boolean
