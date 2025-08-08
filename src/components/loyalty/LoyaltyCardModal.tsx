@@ -178,7 +178,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
           )}
 
           {isRegular ? (
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+            <div className="flex flex-row gap-4">
               <div className="grid grid-cols-3 gap-3 flex-1">
                 {Array.from({ length: 6 }, (_, i) => i + 1).map((idx) => {
                   const filled = !!filledMap[idx];
@@ -198,9 +198,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                   );
                 })}
               </div>
-              <div className="hidden sm:block w-px bg-border" aria-hidden />
-              <div className="sm:w-28">
-                <div className="text-center text-xs text-foreground/70 mb-1">Free coffee</div>
+              <div className="block w-px bg-foreground/20 self-stretch" aria-hidden />
+              <div className="w-28 flex flex-col items-center justify-center">
                 {(() => {
                   const idx = 7;
                   const filled = !!filledMap[idx];
@@ -210,14 +209,17 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                   const disabled = loading || creatingNext || (!user) || disabledRegular;
 
                   return (
-                    <LoyaltyBox
-                      key={idx}
-                      index={idx}
-                      filled={filled}
-                      disabled={disabled}
-                      imageUrl={img}
-                      onSelectFile={handleSelect(idx)}
-                    />
+                    <div className="flex flex-col items-center gap-1">
+                      <LoyaltyBox
+                        key={idx}
+                        index={idx}
+                        filled={filled}
+                        disabled={disabled}
+                        imageUrl={img}
+                        onSelectFile={handleSelect(idx)}
+                      />
+                      <div className="text-center text-xs text-foreground/70">Free coffee</div>
+                    </div>
                   );
                 })()}
               </div>
