@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import CroftLogo from '@/components/CroftLogo';
+import { preloadImages } from '@/hooks/useImagePreloader';
 
 
 interface TransitionContextType {
@@ -31,53 +33,96 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setIsTransitioning(true);
   };
 
-  const getTransitionColor = () => {
-    if (targetPath === '/cocktails') return 'bg-[hsl(var(--accent-lime))]';
-    if (targetPath === '/beer') return 'bg-accent-orange';
-    if (targetPath === '/kitchens') return 'bg-accent-blood-red';
-    if (targetPath === '/hall') return 'bg-accent-vivid-purple';
-    if (targetPath === '/community') return 'bg-[hsl(var(--accent-electric-blue))]';
-    if (targetPath === '/common-room') return 'bg-green-600';
-    return 'bg-accent-pink';
-  };
+  // Strobe + logo transition implementation
+  const [phase, setPhase] = useState<'idle' | 'strobe' | 'logo'>('idle');
+  const [strobeOn, setStrobeOn] = useState(false);
+  const timersRef = useRef<number[]>([]);
+  const intervalRef = useRef<number | null>(null);
 
-  const onTransitionComplete = () => {
-    navigate(targetPath);
-    setIsTransitioning(false);
-    setTargetPath('');
-  };
+  const TEXTURE_URL = '/lovable-uploads/d1fb9178-8f7e-47fb-a8ac-71350264d76f.png';
+
+  useEffect(() => {
+    if (!isTransitioning) return;
+
+    // Preload assets for a seamless effect
+    preloadImages([TEXTURE_URL, '/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png']);
+
+    const prefersReduced = typeof window !== 'undefined' &&
+      !!window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const navigateAndReset = () => {
+      navigate(targetPath);
+      const hide = window.setTimeout(() => {
+        setIsTransitioning(false);
+        setTargetPath('');
+        setPhase('idle');
+      }, 150);
+      timersRef.current.push(hide);
+    };
+
+    // Accessibility: reduced motion skips the strobe
+    if (prefersReduced) {
+      setPhase('logo');
+      const end = window.setTimeout(navigateAndReset, 250);
+      timersRef.current.push(end);
+      return () => {
+        timersRef.current.forEach(clearTimeout);
+        timersRef.current = [];
+      };
+    }
+
+    // Strobe phase
+    setPhase('strobe');
+    setStrobeOn(true);
+    intervalRef.current = window.setInterval(() => {
+      setStrobeOn(prev => !prev);
+    }, 70) as unknown as number;
+
+    const toLogo = window.setTimeout(() => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      setPhase('logo');
+      setStrobeOn(false);
+    }, 600);
+
+    const finish = window.setTimeout(navigateAndReset, 600 + 300);
+
+    timersRef.current.push(toLogo, finish);
+
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      timersRef.current.forEach(clearTimeout);
+      intervalRef.current = null;
+      timersRef.current = [];
+    };
+  }, [isTransitioning, navigate, targetPath]);
 
   return (
     <TransitionContext.Provider value={{ isTransitioning, triggerTransition }}>
       {children}
-      <div 
-        className={`fixed inset-0 z-[99999] ${getTransitionColor()} transition-all duration-700 ease-in-out ${
-          isTransitioning 
-            ? 'opacity-100 scale-100' 
-            : 'opacity-0 scale-150 pointer-events-none'
+      <div
+        className={`fixed inset-0 z-[99999] bg-void transition-opacity duration-100 ${
+          isTransitioning ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{
-          transformOrigin: 'center center',
-        }}
-        onTransitionEnd={() => {
-          if (isTransitioning) {
-            setTimeout(onTransitionComplete, 200);
-          }
-        }}
+        style={{ transformOrigin: 'center center' }}
       >
-        {/* Watermark during transition */}
+        {/* Texture strobe layer */}
+        <img
+          src={TEXTURE_URL}
+          alt="Croft texture"
+          className={`absolute inset-0 w-full h-full object-cover select-none transition-opacity duration-50 ${
+            phase === 'strobe' && strobeOn ? 'opacity-100' : 'opacity-0'
+          }`}
+          draggable={false}
+        />
+
+        {/* Centered logo */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <img 
-            src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
-            alt="Croft Common"
-            className={`w-[30rem] h-[30rem] md:w-[25rem] md:h-[25rem] lg:w-[20rem] lg:h-[20rem] object-contain transition-all duration-700 ${
-              isTransitioning 
-                ? 'opacity-100 scale-110' 
-                : 'opacity-0 scale-90'
+          <CroftLogo
+            className={`w-[30rem] h-[30rem] md:w-[25rem] md:h-[25rem] lg:w-[20rem] lg:h-[20rem] transition-all duration-200 ${
+              phase === 'logo' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
             }`}
-            style={{ 
-              filter: 'brightness(0) invert(1) contrast(200) drop-shadow(0 0 20px rgba(255,255,255,0.8))'
-            }}
           />
         </div>
       </div>
