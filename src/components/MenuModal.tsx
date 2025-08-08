@@ -163,7 +163,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   };
 
   const accentColor = getAccentColor();
-  const isNeutral = pageType === 'beer' || pageType === 'kitchens';
+  const isNeutral = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe';
 
   return (
     <div 
