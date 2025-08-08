@@ -1,13 +1,15 @@
 import SubscriptionForm from './SubscriptionForm';
 
-const Footer = () => {
+const Footer = ({ showSubscription = true }: { showSubscription?: boolean }) => {
   return (
     <footer className="bg-void text-background py-16">
       <div className="container mx-auto px-6">
         {/* Newsletter subscription section */}
-        <div className="mb-16 text-center">
-          <SubscriptionForm variant="footer" className="max-w-md mx-auto" />
-        </div>
+{showSubscription && (
+          <div className="mb-16 text-center">
+            <SubscriptionForm variant="footer" className="max-w-md mx-auto" />
+          </div>
+        )}
         
         <div className="grid md:grid-cols-3 gap-12">
           <div>

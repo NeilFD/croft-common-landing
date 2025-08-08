@@ -467,7 +467,7 @@ const Calendar = () => {
         </div>
       </div>
 
-        <Footer />
+        <Footer showSubscription={false} />
       </div>
       
       {/* Modals */}

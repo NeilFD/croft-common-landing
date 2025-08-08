@@ -31,7 +31,7 @@ const CommonRoomMain = () => {
             </p>
           </div>
         </section>
-        <Footer />
+        <Footer showSubscription={false} />
       </div>
     </div>
   );
