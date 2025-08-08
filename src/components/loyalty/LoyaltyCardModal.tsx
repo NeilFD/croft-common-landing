@@ -223,7 +223,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border-2 border-accent bg-accent/5 p-4">
+            <div className="rounded-xl border-2 border-border bg-background p-4">
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                 {Array.from({ length: 7 }, (_, i) => i + 1).map((idx) => {
                   const filled = !!filledMap[idx];
