@@ -11,6 +11,9 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  requireAllowedDomain?: boolean;
+  title?: string;
+  description?: string;
 }
 
 const validateEmailDomain = async (email: string): Promise<boolean> => {
@@ -26,7 +29,7 @@ const validateEmailDomain = async (email: string): Promise<boolean> => {
   return data;
 };
 
-export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -111,25 +114,27 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     console.log('🔐 Starting auth flow for:', email);
     console.log('🔐 Current URL:', window.location.href);
 
-    try {
-      const isValidDomain = await validateEmailDomain(email);
-      if (!isValidDomain) {
-        console.log('🚨 Email domain not authorized:', email);
+    if (requireAllowedDomain) {
+      try {
+        const isValidDomain = await validateEmailDomain(email);
+        if (!isValidDomain) {
+          console.log('🚨 Email domain not authorized:', email);
+          toast({
+            title: "Access denied",
+            description: "This email address is not authorized.",
+            variant: "destructive"
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('🚨 Email validation error:', error);
         toast({
-          title: "Access denied",
-          description: "This email address is not authorized.",
+          title: "Validation error",
+          description: "Unable to validate email domain. Please try again.",
           variant: "destructive"
         });
         return;
       }
-    } catch (error) {
-      console.error('🚨 Email validation error:', error);
-      toast({
-        title: "Validation error",
-        description: "Unable to validate email domain. Please try again.",
-        variant: "destructive"
-      });
-      return;
     }
 
     setLoading(true);
@@ -230,12 +235,23 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-black font-bold">IMPORTANT PLEASE READ INSTRUCTIONS</DialogTitle>
+            <DialogTitle className="text-black font-bold">
+              {requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Check your email'}
+            </DialogTitle>
             <DialogDescription className="space-y-4 text-left">
               <p>We've sent you a magic link to {email}.</p>
-              <p>Click it and you will be taken to a new browser window.</p>
-              <p>In this new window, complete the secret gesture again and the event creation form will open for you.</p>
-              <p>Complete the form and save.</p>
+              {requireAllowedDomain ? (
+                <>
+                  <p>Click it and you will be taken to a new browser window.</p>
+                  <p>In this new window, complete the secret gesture again and the event creation form will open for you.</p>
+                  <p>Complete the form and save.</p>
+                </>
+              ) : (
+                <>
+                  <p>Click it to sign in and return to this window.</p>
+                  <p>If this window doesn't update automatically, press “Got it”.</p>
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           <Button onClick={handleGotIt} className="mt-4">
@@ -250,9 +266,9 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Sign in to create events</DialogTitle>
+          <DialogTitle>{title ?? 'Sign in to create events'}</DialogTitle>
           <DialogDescription>
-            Enter your email address and we'll send you a magic link to sign in.
+            {description ?? "Enter your email address and we'll send you a magic link to sign in."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

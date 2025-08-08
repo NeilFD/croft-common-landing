@@ -131,7 +131,6 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
         </DialogContent>
       </Dialog>
 
-      {/* Auth modal reused for magic link sign-in */}
       <AuthModal
         isOpen={authOpen}
         onClose={() => setAuthOpen(false)}
@@ -139,6 +138,9 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
           setAuthOpen(false);
           toast({ title: 'Signed in', description: 'Your loyalty card is ready.' });
         }}
+        requireAllowedDomain={false}
+        title="Sign in to start your loyalty card"
+        description="Enter your email and we'll send you a magic link to save your punches."
       />
     </>
   );
