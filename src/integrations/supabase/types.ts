@@ -92,6 +92,80 @@ export type Database = {
         }
         Relationships: []
       }
+      loyalty_cards: {
+        Row: {
+          card_type: Database["public"]["Enums"]["loyalty_card_type"]
+          created_at: string
+          id: string
+          is_complete: boolean
+          punches_count: number
+          punches_required: number
+          rewards_count: number
+          rewards_required: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          card_type?: Database["public"]["Enums"]["loyalty_card_type"]
+          created_at?: string
+          id?: string
+          is_complete?: boolean
+          punches_count?: number
+          punches_required?: number
+          rewards_count?: number
+          rewards_required?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          card_type?: Database["public"]["Enums"]["loyalty_card_type"]
+          created_at?: string
+          id?: string
+          is_complete?: boolean
+          punches_count?: number
+          punches_required?: number
+          rewards_count?: number
+          rewards_required?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      loyalty_entries: {
+        Row: {
+          card_id: string
+          created_at: string
+          id: string
+          image_url: string
+          index: number
+          kind: string
+        }
+        Insert: {
+          card_id: string
+          created_at?: string
+          id?: string
+          image_url: string
+          index: number
+          kind: string
+        }
+        Update: {
+          card_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          index?: number
+          kind?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_entries_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       secret_words: {
         Row: {
           created_at: string
@@ -174,7 +248,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      loyalty_card_type: "regular" | "lucky7"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -301,6 +375,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      loyalty_card_type: ["regular", "lucky7"],
+    },
   },
 } as const

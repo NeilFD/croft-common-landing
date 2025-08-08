@@ -7,6 +7,7 @@ import useGestureDetection from '@/hooks/useGestureDetection';
 import SecretBeerModal from './SecretBeerModal';
 import SecretKitchensModal from './SecretKitchensModal';
 import useSecretWordOfTheDay from '@/hooks/useSecretWordOfTheDay';
+import LoyaltyCardModal from '@/components/loyalty/LoyaltyCardModal';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -35,7 +36,6 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   }, [isOpen]);
 
   const handleSecretSuccess = useCallback(() => {
-    // Clear any existing text selection and open the secret modal
     try { window.getSelection()?.removeAllRanges(); } catch {}
     setShowSecret(true);
   }, []);
@@ -66,12 +66,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     return { x: 0, y: 0 };
   }, []);
   
-  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens';
+  // Enable secret gesture for cafe, beer and kitchens
+  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe';
 
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
-    // Immediately disable text selection to avoid highlight during gesture
     if (containerRef.current) containerRef.current.style.userSelect = 'none';
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
@@ -287,6 +287,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       )}
       {pageType === 'kitchens' && (
         <SecretKitchensModal
+          open={showSecret}
+          onClose={() => setShowSecret(false)}
+        />
+      )}
+      {pageType === 'cafe' && (
+        <LoyaltyCardModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
         />
