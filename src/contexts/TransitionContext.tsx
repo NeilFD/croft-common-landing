@@ -38,11 +38,15 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const [strobeOn, setStrobeOn] = useState(false);
   const timersRef = useRef<number[]>([]);
   const intervalRef = useRef<number | null>(null);
+  const logoShownRef = useRef(false);
 
   const TEXTURE_URL = '/lovable-uploads/d1fb9178-8f7e-47fb-a8ac-71350264d76f.png';
 
   useEffect(() => {
     if (!isTransitioning) return;
+
+    // Reset single-logo guard for this transition
+    logoShownRef.current = false;
 
     // Preload assets for a seamless effect
     preloadImages([TEXTURE_URL, '/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png']);
@@ -63,7 +67,10 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
     // Accessibility: reduced motion skips the strobe
     if (prefersReduced) {
-      setPhase('logo');
+      if (!logoShownRef.current) {
+        setPhase('logo');
+        logoShownRef.current = true;
+      }
       const end = window.setTimeout(navigateAndReset, 250);
       timersRef.current.push(end);
       return () => {
@@ -77,12 +84,15 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setStrobeOn(true);
     intervalRef.current = window.setInterval(() => {
       setStrobeOn(prev => !prev);
-    }, 200) as unknown as number; // 2.5Hz (toggle every 200ms)
+    }, 182) as unknown as number; // ~2.75Hz (toggle ~182ms; full cycle ~364ms)
 
     const toLogo = window.setTimeout(() => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
       intervalRef.current = null;
-      setPhase('logo');
+      if (!logoShownRef.current) {
+        setPhase('logo');
+        logoShownRef.current = true;
+      }
       setStrobeOn(false);
     }, 900); // extend strobe window slightly
 
