@@ -19,9 +19,11 @@ import Privacy from "./pages/Privacy";
 import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 import Branding from "./pages/Branding";
-
+import CommonGood from "./pages/CommonGood";
+import CommonGoodMessage from "./pages/CommonGoodMessage";
+ 
 const queryClient = new QueryClient();
-
+ 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -44,6 +46,8 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/branding" element={<Branding />} />
+            <Route path="/common-good" element={<CommonGood />} />
+            <Route path="/common-good/message" element={<CommonGoodMessage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -52,5 +56,5 @@ const App = () => (
     </TooltipProvider>
   </QueryClientProvider>
 );
-
+ 
 export default App;

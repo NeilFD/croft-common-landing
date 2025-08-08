@@ -68,3 +68,9 @@ port = 54330
 
 [functions.send-event-management-email]
 verify_jwt = false
+
+[functions.create-common-good-payment]
+verify_jwt = false
+
+[functions.post-common-good-message]
+verify_jwt = false

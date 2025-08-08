@@ -1,17 +1,53 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CommunityHeroCarousel from "@/components/CommunityHeroCarousel";
+import GestureOverlay from '@/components/GestureOverlay';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { format } from 'date-fns';
+
+interface CommonGoodRow { message: string; posted_at: string; }
 
 const Community = () => {
+  const navigate = useNavigate();
+  const [messages, setMessages] = useState<CommonGoodRow[]>([]);
+
+  useEffect(() => {
+    document.title = 'Community | Croft Common';
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await (supabase.from('common_good_messages' as any)
+        .select('message, posted_at')
+        .order('posted_at', { ascending: false }) as any);
+      if (!error && data) setMessages(data as CommonGoodRow[]);
+    })();
+  }, []);
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, CommonGoodRow[]>();
+    for (const m of messages) {
+      const d = new Date(m.posted_at);
+      const key = format(d, 'MMMM yyyy');
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(m);
+    }
+    return Array.from(map.entries());
+  }, [messages]);
+
+  const onGesture = () => navigate('/common-good');
+
   return (
     <div className="min-h-screen">
       <Navigation />
       <CommunityHeroCarousel />
+      <GestureOverlay onGestureComplete={onGesture} />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">
-            COMMON GROUND
-          </h2>
+          <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">COMMON GROUND</h1>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
             We didn't land here by accident.
             <br /><br />
@@ -23,6 +59,38 @@ const Community = () => {
           </p>
         </div>
       </section>
+
+      <section className="pb-24 bg-background">
+        <div className="container mx-auto px-6 max-w-3xl">
+          <Accordion type="single" collapsible>
+            <AccordionItem value="common-good-thread">
+              <AccordionTrigger className="font-brutalist text-xl text-foreground">Common Good thread</AccordionTrigger>
+              <AccordionContent>
+                <div className="max-h-[360px] overflow-y-auto pr-2">
+                  {grouped.length === 0 ? (
+                    <p className="font-industrial text-muted-foreground">No messages yet.</p>
+                  ) : (
+                    grouped.map(([month, items]) => (
+                      <div key={month} className="mb-6">
+                        <h3 className="font-industrial text-foreground/80 mb-2">{month}</h3>
+                        <ul className="space-y-3">
+                          {items.map((m, idx) => (
+                            <li key={idx} className="border border-border rounded-md p-3 text-left">
+                              <div className="font-industrial text-xs text-muted-foreground mb-1">{format(new Date(m.posted_at), 'dd MMM yyyy')}</div>
+                              <div className="text-foreground/90 leading-relaxed">{m.message}</div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
       <Footer />
     </div>
   );

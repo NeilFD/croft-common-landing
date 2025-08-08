@@ -32,6 +32,33 @@ export type Database = {
         }
         Relationships: []
       }
+      common_good_messages: {
+        Row: {
+          amount_cents: number
+          currency: string
+          id: string
+          message: string
+          posted_at: string
+          stripe_session_id: string
+        }
+        Insert: {
+          amount_cents: number
+          currency?: string
+          id?: string
+          message: string
+          posted_at?: string
+          stripe_session_id: string
+        }
+        Update: {
+          amount_cents?: number
+          currency?: string
+          id?: string
+          message?: string
+          posted_at?: string
+          stripe_session_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           category: string
