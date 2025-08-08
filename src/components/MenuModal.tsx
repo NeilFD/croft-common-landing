@@ -154,6 +154,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   };
 
   const accentColor = getAccentColor();
+  const isBeer = pageType === 'beer';
 
   return (
     <div 
@@ -208,8 +209,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                   <div key={sectionIndex} className="space-y-4">
                     <h2 className={`font-brutalist tracking-wider border-b border-steel/20 pb-3 ${
                       isMajorSection 
-                        ? `text-2xl md:text-3xl text-[hsl(var(--${accentColor}))] mb-6` 
-                        : `text-lg md:text-xl text-[hsl(var(--${accentColor}))] mb-4`
+                        ? `text-2xl md:text-3xl ${isBeer ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} mb-6` 
+                        : `text-lg md:text-xl ${isBeer ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} mb-4`
                     }`}>
                       {section.title}
                     </h2>
@@ -220,13 +221,13 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                             {item.isEmail ? (
                               <a 
                                 href={`mailto:${item.name}`}
-                                className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300`}
+                                className={`font-industrial text-lg ${isBeer ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} hover:underline transition-all duration-300`}
                               >
                                 {item.name}
                               </a>
                             ) : item.isLink ? (
                               <button 
-                                className={`font-industrial text-lg text-[hsl(var(--${accentColor}))] hover:underline transition-all duration-300 cursor-pointer text-left`}
+                                className={`font-industrial text-lg ${isBeer ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} hover:underline transition-all duration-300 cursor-pointer text-left`}
                                 onClick={() => {
                                   if (item.name.includes('Take a look')) {
                                     onClose();
@@ -250,7 +251,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                             )}
                           </div>
                           {item.price && (
-                            <div className={`font-industrial text-base font-bold text-[hsl(var(--${accentColor}))] 
+                            <div className={`font-industrial text-base font-bold ${isBeer ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} 
                               flex-shrink-0 text-right`}>
                               {item.price}
                             </div>
