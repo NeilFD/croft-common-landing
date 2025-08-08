@@ -3,6 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import { cocktailMenu } from '@/data/menuData';
+import { cocktailHeroImages as heroImages } from '@/data/heroImages';
 
 
 const CocktailHeroCarousel = () => {
@@ -16,38 +17,7 @@ const CocktailHeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const heroImages = [
-    {
-      src: '/lovable-uploads/8dc68acd-38ac-4910-a909-716d78b1d187.png',
-      type: 'warm',
-      overlay: 'bg-void/30'
-    },
-    {
-      src: '/lovable-uploads/19074a8e-e1ee-4793-8c75-c60bd7818a99.png',
-      type: 'dark',
-      overlay: ''
-    },
-    {
-      src: '/lovable-uploads/ada4b655-67e6-4bbe-8e52-ea2d407da312.png',
-      type: 'warm',
-      overlay: 'bg-void/25'
-    },
-    {
-      src: '/lovable-uploads/0c4a9d3f-d5a3-4a01-85fb-ed3f272a821f.png',
-      type: 'dark',
-      overlay: ''
-    },
-    {
-      src: '/lovable-uploads/644b4e2a-eb1b-4d76-a734-f012e7d69379.png',
-      type: 'dark',
-      overlay: ''
-    },
-    {
-      src: '/lovable-uploads/4a785c1a-4ea4-4874-b47e-24c5c2611368.png',
-      type: 'dark',
-      overlay: ''
-    }
-  ];
+  // Images from shared data module
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;

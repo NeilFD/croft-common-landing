@@ -3,6 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import { communityMenuData } from '@/data/menuData';
+import { communityHeroImages as heroImages } from '@/data/heroImages';
 
 
 const CommunityHeroCarousel = () => {
@@ -16,26 +17,7 @@ const CommunityHeroCarousel = () => {
     [Autoplay({ delay: 5000, stopOnInteraction: false })]
   );
 
-  const heroImages = [
-    {
-      src: '/lovable-uploads/2a013145-1125-485a-bc81-556ddb550540.png'
-    },
-    {
-      src: '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png'
-    },
-    {
-      src: '/lovable-uploads/ff58d7a5-7fae-4492-9f4f-02cf1c93e8a1.png'
-    },
-    {
-      src: '/lovable-uploads/a20baf5a-8e8f-41ea-82f5-1801dbd32dd7.png'
-    },
-    {
-      src: '/lovable-uploads/2c2e175f-be6b-4df7-a725-47d558a35cd8.png'
-    },
-    {
-      src: '/lovable-uploads/4bafb73c-74e5-4bf4-ba9e-34097a0137cf.png'
-    }
-  ];
+  // Images from shared data module
 
   const onSelect = () => {
     if (!emblaApi) return;
@@ -97,7 +79,6 @@ const CommunityHeroCarousel = () => {
         <div className="w-px h-16 bg-background/50"></div>
       </div>
 
-      {/* Slide indicators */}
       <div className="absolute bottom-8 right-8 flex space-x-2 z-20">
         {heroImages.map((_, index) => (
           <div

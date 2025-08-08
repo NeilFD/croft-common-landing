@@ -3,6 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import { beerMenu } from '@/data/menuData';
+import { beerHeroImages as heroImages } from '@/data/heroImages';
 
 
 const BeerHeroCarousel = () => {
@@ -16,44 +17,7 @@ const BeerHeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const heroImages = [
-    {
-      src: '/lovable-uploads/a6fcbd2e-334d-49e3-9b5d-d7dd0e87d852.png',
-      type: 'dark',
-      overlay: 'bg-void/20',
-      backgroundSize: 'bg-cover'
-    },
-    {
-      src: '/lovable-uploads/3a5090a3-760f-4496-8672-bd8724569325.png',
-      type: 'dark',
-      overlay: '',
-      backgroundSize: 'bg-cover'
-    },
-    {
-      src: '/lovable-uploads/9ef0b073-9f25-420b-8d75-fb90540706d3.png',
-      type: 'dark',
-      overlay: '',
-      backgroundSize: 'bg-cover'
-    },
-    {
-      src: '/lovable-uploads/25105870-85fb-442c-9d85-ee7e218df672.png',
-      type: 'warm',
-      overlay: '',
-      backgroundSize: 'bg-cover'
-    },
-    {
-      src: '/lovable-uploads/1b15e13f-fb17-4f03-a1d9-9a7c2a2611b3.png',
-      type: 'dark',
-      overlay: 'bg-void/25',
-      backgroundSize: 'bg-cover'
-    },
-    {
-      src: '/lovable-uploads/a7f9a44b-d4bc-48db-bf2c-7440227a4b1e.png',
-      type: 'warm',
-      overlay: '',
-      backgroundSize: 'bg-cover'
-    }
-  ];
+  // Images supplied by shared data module
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;

@@ -3,6 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import { kitchensMenu } from '@/data/menuData';
+import { kitchenHeroImages as kitchenImages } from '@/data/heroImages';
 
 
 const KitchensHeroCarousel = () => {
@@ -16,38 +17,7 @@ const KitchensHeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const kitchenImages = [
-    {
-      src: '/lovable-uploads/7a67832c-682c-437c-80c0-30edc2a10f56.png',
-      type: 'dark',
-      overlay: 'bg-void/30'
-    },
-    {
-      src: '/lovable-uploads/5101ed7f-1323-4112-82b4-a09d6d501a36.png',
-      type: 'industrial',
-      overlay: ''
-    },
-    {
-      src: '/lovable-uploads/8ea5b295-7d10-4aeb-a64c-b646f4046ee2.png',
-      type: 'warm',
-      overlay: 'bg-void/20'
-    },
-    {
-      src: '/lovable-uploads/75f518f0-7918-463a-9e00-c016e4271205.png',
-      type: 'mixed',
-      overlay: 'bg-void/25'
-    },
-    {
-      src: '/lovable-uploads/0d977d16-788f-4f60-9f33-fd2086b66430.png',
-      type: 'industrial',
-      overlay: ''
-    },
-    {
-      src: '/lovable-uploads/d267ef73-2a5d-4bdd-9f73-63f8c364077f.png',
-      type: 'dark',
-      overlay: 'bg-void/30'
-    }
-  ];
+  // Images from shared data module
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;

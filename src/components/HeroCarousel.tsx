@@ -5,6 +5,7 @@ import MenuButton from './MenuButton';
 import OptimizedImage from './OptimizedImage';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { homeMenu } from '@/data/menuData';
+import { homeHeroImages as heroImages } from '@/data/heroImages';
 
 
 const HeroCarousel = () => {
@@ -18,28 +19,7 @@ const HeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const heroImages = [
-    {
-      src: '/lovable-uploads/554a5ea5-4c34-4b71-971b-a896a47f8927.png',
-      type: 'dark',
-      overlay: 'bg-void/30'
-    },
-    {
-      src: '/lovable-uploads/2cf25417-28ae-479d-b6b8-19e126392333.png',
-      type: 'warm',
-      overlay: 'bg-void/20'
-    },
-    {
-      src: '/lovable-uploads/64b7fab3-00a9-4045-9318-590eb75f1336.png',
-      type: 'warm',
-      overlay: 'bg-void/30'
-    },
-    {
-      src: '/lovable-uploads/5d1d2f5e-37ba-44a7-a95f-ec6970e2eaaf.png',
-      type: 'mixed',
-      overlay: 'bg-void/25'
-    }
-  ];
+  // Images provided by shared data module
 
   const imageUrls = heroImages.map(img => img.src);
   const { loading: imagesLoading } = useImagePreloader(imageUrls, { enabled: true, priority: true });

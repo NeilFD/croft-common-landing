@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Copy as CopyIcon, Download as DownloadIcon } from "lucide-react";
+import { getAllHeroImageUrls } from "@/data/heroImages";
 
 const LOGO_URL = "/lovable-uploads/b1cbbce2-0748-4b16-8e27-eb9284992e55.png";
 
@@ -33,6 +34,25 @@ const Section = ({ id, title, children }: { id: string; title: string; children:
     <div className="grid gap-6">{children}</div>
   </section>
 );
+
+const ApprovedImageryGrid = () => {
+  const urls = getAllHeroImageUrls();
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      {urls.map((src, i) => (
+        <figure key={src} className="group relative border border-border overflow-hidden bg-surface">
+          <img src={src} alt={`Approved imagery ${i + 1}`} loading="lazy" className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <figcaption className="absolute inset-0 flex items-end justify-between p-3 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-background/70 to-transparent">
+            <span className="text-xs text-foreground/90">Approved image {i + 1}</span>
+            <a href={src} download>
+              <Button size="sm" variant="secondary"><DownloadIcon className="mr-1 h-4 w-4" />Download</Button>
+            </a>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+};
 
 const CopyButton = ({ label, value, className }: { label?: string; value: string; className?: string }) => {
   const [copied, setCopied] = useState(false);
@@ -113,8 +133,8 @@ const Branding = () => {
   ];
 
   const fonts = [
-    { key: "brutalist", label: "Display – Oswald", className: "font-brutalist", stack: "'Oswald', 'Arial Black', Helvetica, sans-serif", weights: ["400 Regular", "500 Medium", "600 Semibold", "700 Bold"] },
-    { key: "industrial", label: "Body – Work Sans", className: "font-industrial", stack: "'Work Sans', Arial, Helvetica, sans-serif", weights: ["300 Light", "400 Regular", "500 Medium", "600 Semibold"] },
+    { key: "brutalist", name: "Oswald", label: "Display – Oswald", className: "font-brutalist", stack: "'Oswald', 'Arial Black', Helvetica, sans-serif", weights: ["400 Regular", "500 Medium", "600 Semibold", "700 Bold"] },
+    { key: "industrial", name: "Work Sans", label: "Body – Work Sans", className: "font-industrial", stack: "'Work Sans', Arial, Helvetica, sans-serif", weights: ["300 Light", "400 Regular", "500 Medium", "600 Semibold"] },
   ];
 
   return (
@@ -207,7 +227,7 @@ const Branding = () => {
               <div key={f.key} className="border border-border p-6 transition-transform hover:scale-[1.01]">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Font</p>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{f.name}</p>
                     <h3 className={cn(f.className, "text-2xl md:text-4xl leading-tight")}>Croft Common</h3>
                     
                   </div>
@@ -333,6 +353,9 @@ const Branding = () => {
             </div>
           </div>
         </Section>
+
+        <Section id="approved-imagery" title="Approved Imagery">
+          <ApprovedImageryGrid />
       </main>
 
       <footer className="border-t border-border py-8">

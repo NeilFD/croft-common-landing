@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
+import { hallHeroImages as heroImages } from '@/data/heroImages';
 
 
 const HallHeroCarousel = () => {
@@ -14,38 +15,7 @@ const HallHeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  const heroImages = [
-    {
-      src: '/lovable-uploads/4d7c9143-3421-4c65-9601-29c65667740a.png',
-      type: 'dark',
-      overlay: ''
-    },
-    {
-      src: '/lovable-uploads/834974e6-ab56-4571-946b-b3b09c2ee678.png',
-      type: 'dark',
-      overlay: ''
-    },
-    {
-      src: '/lovable-uploads/b64216a3-dd09-4428-a328-02343a5f2a23.png',
-      type: 'dark',
-      overlay: 'bg-void/25'
-    },
-    {
-      src: '/lovable-uploads/fdbc71f5-00d7-4da2-af28-8626b224ec5b.png',
-      type: 'light',
-      overlay: 'bg-void/15'
-    },
-    {
-      src: '/lovable-uploads/5d770f71-d0ac-45ef-b72f-b853c4020425.png',
-      type: 'mixed',
-      overlay: 'bg-void/25'
-    },
-    {
-      src: '/lovable-uploads/90bb8b43-c5a1-41ba-ac44-1ea3c8109e07.png',
-      type: 'mixed',
-      overlay: ''
-    }
-  ];
+  // Images provided by shared data module
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;

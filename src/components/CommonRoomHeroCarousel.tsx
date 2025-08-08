@@ -1,4 +1,5 @@
 import MenuButton from './MenuButton';
+import { commonRoomHeroImages } from '@/data/heroImages';
 import { commonRoomMenuData } from '@/data/menuData';
 
 
@@ -9,7 +10,7 @@ const CommonRoomHeroCarousel = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('/lovable-uploads/322fb5be-0402-4d55-8a72-b5e9c3253eef.png')`
+          backgroundImage: `url('${commonRoomHeroImages[0].src}')`
         }}
       />
 

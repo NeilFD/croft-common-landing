@@ -3,6 +3,8 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import { cafeMenu } from '@/data/menuData';
+import { cafeHeroImages } from '@/data/heroImages';
+import { cafeHeroImages } from '@/data/heroImages';
 
 
 const CafeHeroCarousel = () => {
