@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import useGestureDetection from '@/hooks/useGestureDetection';
 import { toast } from '@/hooks/use-toast';
 
@@ -84,6 +84,61 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   const handleMouseUp = useCallback((event: React.MouseEvent) => {
     endGesture();
   }, [endGesture]);
+
+  // Attach listeners to provided container instead of overlay
+  useEffect(() => {
+    if (!containerRef?.current) return;
+    const el = containerRef.current as HTMLElement;
+    const prevTouchAction = el.style.touchAction;
+    el.style.touchAction = 'none';
+
+    const ts = (e: TouchEvent) => {
+      e.preventDefault();
+      const { x, y } = getEventPosition(e);
+      startGesture(x, y);
+    };
+    const tm = (e: TouchEvent) => {
+      e.preventDefault();
+      if (!isDrawing) return;
+      const { x, y } = getEventPosition(e);
+      addPoint(x, y);
+    };
+    const te = (e: TouchEvent) => {
+      e.preventDefault();
+      endGesture();
+    };
+
+    const md = (e: MouseEvent) => {
+      e.preventDefault();
+      const { x, y } = getEventPosition(e);
+      startGesture(x, y);
+    };
+    const mm = (e: MouseEvent) => {
+      if (!isDrawing) return;
+      const { x, y } = getEventPosition(e);
+      addPoint(x, y);
+    };
+    const mu = (_e: MouseEvent) => {
+      endGesture();
+    };
+
+    el.addEventListener('touchstart', ts, { passive: false });
+    el.addEventListener('touchmove', tm, { passive: false });
+    el.addEventListener('touchend', te, { passive: false });
+    el.addEventListener('mousedown', md);
+    el.addEventListener('mousemove', mm);
+    el.addEventListener('mouseup', mu);
+
+    return () => {
+      el.style.touchAction = prevTouchAction;
+      el.removeEventListener('touchstart', ts);
+      el.removeEventListener('touchmove', tm);
+      el.removeEventListener('touchend', te);
+      el.removeEventListener('mousedown', md);
+      el.removeEventListener('mousemove', mm);
+      el.removeEventListener('mouseup', mu);
+    };
+  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isDrawing]);
 
   // If containerRef is provided, don't render overlay - gesture detection happens on the container
   if (containerRef) {
