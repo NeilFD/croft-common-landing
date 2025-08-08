@@ -101,8 +101,8 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             )}
-            <CroftLogo className="w-8 h-8 md:w-10 md:h-10" />
-            <span className="font-brutalist text-foreground tracking-wider text-lg md:text-xl">CROFT COMMON</span>
+            <CroftLogo className="w-10 h-10" />
+            <span className="font-brutalist text-foreground tracking-wider text-xl md:text-2xl leading-none">CROFT COMMON</span>
           </div>
 
 
