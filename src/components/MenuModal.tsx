@@ -165,7 +165,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         ref={containerRef}
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
           pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
-        }`}
+        }${isBeer && isDrawing ? ' select-none' : ''}`}
         onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
