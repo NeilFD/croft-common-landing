@@ -356,7 +356,8 @@ const Branding = () => {
 
         <Section id="approved-imagery" title="Approved Imagery">
           <ApprovedImageryGrid />
-      </main>
+        </Section>
+       </main>
 
       <footer className="border-t border-border py-8">
         <div className="container mx-auto max-w-6xl px-6 flex items-center justify-between">
