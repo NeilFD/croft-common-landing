@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Camera, Check, Star } from 'lucide-react';
+import { Camera, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LoyaltyBoxProps {
@@ -36,11 +36,6 @@ const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageU
       )}
       onClick={handleClick}
       >
-        {variant === 'lucky' && (
-          <div className="absolute top-1 right-1 text-accent">
-            <Star className="w-4 h-4" />
-          </div>
-        )}
       {imageUrl ? (
         <img src={imageUrl} alt={`Box ${index}`} className="w-full h-full object-cover" />
       ) : filled ? (
