@@ -44,15 +44,15 @@ const CommonGood = () => {
       <Navigation />
       <main>
         <section className="py-24 bg-background">
-          <div className="container mx-auto px-6 max-w-2xl">
-            <h1 className="font-brutalist text-4xl md:text-6xl mb-6 text-foreground">Common Good Fund</h1>
-            <p className="font-industrial text-lg text-foreground/80 leading-relaxed mb-10">
+          <div className="container mx-auto px-6 max-w-4xl">
+            <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">Common Good Fund</h1>
+            <p className="font-industrial text-lg text-foreground/80 leading-relaxed mb-12 max-w-3xl">
               For the Common Good. No names. No noise. Add what you can, when you can. We match it. It goes to local groups keeping Stokes Croft on its feet. No heroes. Just the Common, doing good.
             </p>
-            <div className="grid gap-4 md:grid-cols-[1fr_auto] items-end">
+            <div className="grid gap-4 md:gap-6 md:grid-cols-[2fr_auto] items-end">
               <div>
                 <label className="font-industrial text-sm text-muted-foreground">Amount (GBP)</label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 mt-1">
                   <span className="font-industrial text-foreground/70">£</span>
                   <Input
                     type="number"
@@ -61,10 +61,11 @@ const CommonGood = () => {
                     placeholder="10"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
+                    className="h-12 text-base"
                   />
                 </div>
               </div>
-              <Button onClick={handleCheckout} disabled={loading}>
+              <Button onClick={handleCheckout} disabled={loading} className="w-full md:w-auto h-12">
                 {loading ? 'Preparing checkout…' : 'Add to the Common Good'}
               </Button>
             </div>
