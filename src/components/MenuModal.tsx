@@ -70,6 +70,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
+    // Immediately disable text selection to avoid highlight during gesture
+    if (containerRef.current) containerRef.current.style.userSelect = 'none';
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isSecretEnabled]);
@@ -83,10 +85,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const handleTouchEnd = useCallback((_event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
     endGesture();
+    if (containerRef.current) containerRef.current.style.userSelect = '';
   }, [endGesture, isSecretEnabled]);
 
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
     if (!isSecretEnabled) return;
+    if (containerRef.current) containerRef.current.style.userSelect = 'none';
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isSecretEnabled]);
@@ -100,6 +104,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const handleMouseUp = useCallback((_event: React.MouseEvent) => {
     if (!isSecretEnabled) return;
     endGesture();
+    if (containerRef.current) containerRef.current.style.userSelect = '';
   }, [endGesture, isSecretEnabled]);
 
   if (!isOpen) return null;
@@ -170,6 +175,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
         }${isSecretEnabled && isDrawing ? ' select-none' : ''}`}
         onClick={(e) => e.stopPropagation()}
+        onDragStart={(e) => e.preventDefault()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
