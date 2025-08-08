@@ -74,10 +74,19 @@ export function useLoyalty(user: User | null) {
     }
 
     const withUrls: SignedEntry[] = await Promise.all(
-      (data ?? []).map(async (e) => ({
-        ...e,
-        signedUrl: await getSignedUrl(e.image_url),
-      }))
+      (data ?? []).map(async (e: any) => {
+        const signedUrl = await getSignedUrl(e.image_url as string);
+        const kind = (e.kind as 'punch' | 'reward');
+        return {
+          id: e.id as string,
+          card_id: e.card_id as string,
+          index: e.index as number,
+          kind,
+          image_url: e.image_url as string,
+          created_at: e.created_at as string,
+          signedUrl,
+        } as SignedEntry;
+      })
     );
     setEntries(withUrls);
   }, []);
@@ -111,7 +120,7 @@ export function useLoyalty(user: User | null) {
             card_type: 'regular',
             punches_required: 6,
             rewards_required: 1,
-          } as Partial<LoyaltyCard>)
+          })
           .select('*')
           .single();
 
@@ -187,17 +196,15 @@ export function useLoyalty(user: User | null) {
 
       if (current.card_type === 'regular') {
         // Count completed regular cards for this user
-        const { data: completedRegs, error: countErr } = await supabase
+        const { count: regCompletedCount, error: countErr } = await supabase
           .from('loyalty_cards')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
           .eq('card_type', 'regular')
           .eq('is_complete', true);
 
-        const regCompletedCount = (completedRegs as unknown as { count: number } | null)?.count ?? 0;
-
         // If just finished the 6th regular, next is Lucky #7
-        if ((regCompletedCount % 6) === 0) {
+        if (((regCompletedCount ?? 0) % 6) === 0) {
           nextType = 'lucky7';
         }
       } else if (current.card_type === 'lucky7') {
@@ -212,7 +219,7 @@ export function useLoyalty(user: User | null) {
           card_type: nextType,
           punches_required: nextType === 'regular' ? 6 : 0,
           rewards_required: nextType === 'regular' ? 1 : 7,
-        } as Partial<LoyaltyCard>)
+        })
         .select('*')
         .single();
 
@@ -274,7 +281,7 @@ export function useLoyalty(user: User | null) {
         index,
         kind,
         image_url: path,
-      } as Partial<LoyaltyEntry>);
+      });
 
       if (insertErr) {
         console.error('Insert entry error:', insertErr);
