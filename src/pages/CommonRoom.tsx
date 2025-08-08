@@ -25,12 +25,12 @@ const CommonRoom = () => {
         </div>
         
         {/* Sign in text - responsive spacing and sizing */}
-        <h2 className="relative z-20 text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-20 md:mb-16 mt-32 md:mt-16">
+        <h2 className="relative z-20 text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-24 md:mb-20 mt-32 md:mt-16">
           Sign in here
         </h2>
         
         {/* Watermark image - positioned absolutely like other carousel pages */}
-        <div className="absolute inset-0 z-0 pointer-events-none flex items-start justify-center pt-48 md:pt-32">
+        <div className="absolute inset-0 z-0 pointer-events-none flex items-start justify-center pt-72 md:pt-56">
           <img 
             src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
             alt="Common Room Layout"
