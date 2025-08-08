@@ -35,7 +35,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   }, [isOpen]);
 
   const handleSecretSuccess = useCallback(() => {
-    // Open the small secret modal
+    // Clear any existing text selection and open the secret modal
+    try { window.getSelection()?.removeAllRanges(); } catch {}
     setShowSecret(true);
   }, []);
 
@@ -167,7 +168,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   return (
     <div 
       className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4"
-      onClick={onClose}
+      onClick={(e) => { if (showSecret) { e.stopPropagation(); return; } onClose(); }}
     >
       <div 
         ref={containerRef}

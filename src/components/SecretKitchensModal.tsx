@@ -14,9 +14,24 @@ const Separator = () => (
 );
 
 const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose }) => {
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (open) {
+      // Ensure we start at the top with no lingering text selection
+      try { window.getSelection()?.removeAllRanges(); } catch {}
+      contentRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+    }
+  }, [open]);
+
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="w-[92vw] sm:w-[86vw] md:max-w-2xl lg:max-w-3xl border border-border bg-background">
+      <DialogContent
+        ref={contentRef}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        className="w-[92vw] sm:w-[86vw] md:max-w-2xl lg:max-w-3xl max-h-[85vh] overflow-y-auto border border-border bg-background"
+      >
         <div className="space-y-4">
           {/* Brand */}
           <div className="flex items-center gap-3">
