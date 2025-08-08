@@ -264,9 +264,9 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                           disabled={disabled}
                           imageUrl={img}
                           onSelectFile={handleSelect(idx)}
-                          variant="lucky"
+                          
                         />
-                        <div className="text-center text-xs text-foreground/70">Coffee 7</div>
+                        <div className="text-center text-xs text-foreground/70">Lucky Number 7 is on us</div>
                       </div>
                     );
                   })()}
