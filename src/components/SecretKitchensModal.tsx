@@ -500,6 +500,9 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
               )}
             </article>
 
+            {/* Mobile divider before menu options */}
+            <div className="md:hidden my-6 border-t-2 border-border" aria-hidden="true" />
+
             {/* Sidebar */}
             <aside className="md:border-l md:border-border md:pl-4">
               <nav className="space-y-4">
