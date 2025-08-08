@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import CroftLogo from "@/components/CroftLogo";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import croftLogo from "@/assets/croft-logo.png";
-import geometricLogo from "@/assets/geometric-croft-logo.png";
+
+const LOGO_URL = "/lovable-uploads/b1cbbce2-0748-4b16-8e27-eb9284992e55.png";
 
 interface ColorToken {
   name: string;
@@ -15,9 +14,6 @@ const colorTokens: ColorToken[] = [
   { name: "Primary", var: "--primary", foregroundVar: "--primary-foreground" },
   { name: "Secondary", var: "--secondary", foregroundVar: "--secondary-foreground" },
   { name: "Accent Pink", var: "--accent-pink" },
-  { name: "Lime", var: "--accent-lime" },
-  { name: "Electric Blue", var: "--accent-electric-blue" },
-  { name: "Orange", var: "--accent-orange" },
   { name: "Blood Red", var: "--accent-blood-red" },
   { name: "Vivid Purple", var: "--accent-vivid-purple" },
   { name: "Sage Green", var: "--accent-sage-green" },
@@ -120,18 +116,15 @@ const Branding = () => {
       <header className="border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <CroftLogo size="md" />
+            <img src={LOGO_URL} alt="Croft Common logo" className="w-8 h-8 object-contain" />
             <div>
               <h1 className="text-xl md:text-2xl font-semibold leading-tight">Croft Common Brand Book</h1>
               <p className="text-sm text-muted-foreground">Brand, design, and voice guidelines</p>
             </div>
           </div>
           <div className="hidden md:flex gap-2">
-            <a href={croftLogo} download>
+            <a href={LOGO_URL} download>
               <Button variant="secondary" size="sm">Download Logo</Button>
-            </a>
-            <a href={geometricLogo} download>
-              <Button variant="outline" size="sm">Download Mark</Button>
             </a>
           </div>
         </div>
@@ -139,29 +132,16 @@ const Branding = () => {
 
       <main className="bg-background">
         {/* Logos */}
-        <Section id="logos" title="Logos">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Section id="logos" title="Logo & Watermark">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <figure className="p-6 border border-border bg-card/30">
-              <img src={croftLogo} alt="Croft Common primary logo" className="w-full h-40 object-contain" loading="lazy" />
+              <img src={LOGO_URL} alt="Croft Common logo" className="w-full h-40 object-contain" loading="lazy" />
               <figcaption className="mt-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium">Primary Logo</p>
                   <p className="text-sm text-muted-foreground">PNG, transparent</p>
                 </div>
-                <a href={croftLogo} download>
-                  <Button variant="outline" size="sm">Download</Button>
-                </a>
-              </figcaption>
-            </figure>
-
-            <figure className="p-6 border border-border bg-card/30">
-              <img src={geometricLogo} alt="Croft Common geometric mark" className="w-full h-40 object-contain" loading="lazy" />
-              <figcaption className="mt-4 flex items-center justify-between">
-                <div>
-                  <p className="font-medium">Geometric Mark</p>
-                  <p className="text-sm text-muted-foreground">PNG, transparent</p>
-                </div>
-                <a href={geometricLogo} download>
+                <a href={LOGO_URL} download>
                   <Button variant="outline" size="sm">Download</Button>
                 </a>
               </figcaption>
@@ -170,16 +150,16 @@ const Branding = () => {
             <figure className="p-6 border border-border bg-card/30">
               <div className="relative h-40 overflow-hidden border border-border">
                 <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(var(--background)), hsl(var(--surface)))" }} />
-                <div className="absolute inset-0 flex items-center justify-center opacity-10">
-                  <img src={geometricLogo} alt="Watermark example" className="h-32 w-32 object-contain" />
+                <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-30 hover:opacity-70">
+                  <img src={LOGO_URL} alt="Watermark demonstration" className="h-32 w-32 object-contain" />
                 </div>
               </div>
               <figcaption className="mt-4 flex items-center justify-between">
                 <div>
-                  <p className="font-medium">Watermark Usage</p>
-                  <p className="text-sm text-muted-foreground">Subtle overlay at low opacity</p>
+                  <p className="font-medium">Watermark Demonstration</p>
+                  <p className="text-sm text-muted-foreground">30% opacity steady; 70% on hover</p>
                 </div>
-                <CopyButton value="Use watermark at ~10–15% opacity over neutral surfaces." label="Copy note" />
+                <CopyButton value="Use watermark at 30% opacity; hover to ~70% for emphasis." label="Copy note" />
               </figcaption>
             </figure>
           </div>
@@ -304,7 +284,7 @@ const Branding = () => {
             <div className="border border-border p-6 space-y-3">
               <p className="text-sm text-muted-foreground">Watermark Guidance</p>
               <ul className="list-disc pl-5 space-y-1 text-sm">
-                <li>Use at 10–15% opacity over neutral surfaces.</li>
+                <li>Use at 30% opacity over neutral surfaces; increase to ~70% on hover.</li>
                 <li>Avoid placing over high-detail imagery unless contrast is clear.</li>
                 <li>Prefer white on dark, black on light; test contrast.</li>
               </ul>
@@ -317,19 +297,10 @@ const Branding = () => {
           <div className="grid md:grid-cols-2 gap-6">
             <div className="border border-border p-6 flex items-center justify-between">
               <div>
-                <p className="font-medium">Primary Logo (PNG)</p>
+                <p className="font-medium">Logo (PNG)</p>
                 <p className="text-sm text-muted-foreground">Transparent background</p>
               </div>
-              <a href={croftLogo} download>
-                <Button variant="secondary">Download</Button>
-              </a>
-            </div>
-            <div className="border border-border p-6 flex items-center justify-between">
-              <div>
-                <p className="font-medium">Geometric Mark (PNG)</p>
-                <p className="text-sm text-muted-foreground">Transparent background</p>
-              </div>
-              <a href={geometricLogo} download>
+              <a href={LOGO_URL} download>
                 <Button variant="secondary">Download</Button>
               </a>
             </div>
