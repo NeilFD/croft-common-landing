@@ -178,8 +178,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
           )}
 
           {isRegular ? (
-            <div className="flex flex-row gap-4">
-              <div className="grid grid-cols-3 gap-3 flex-1">
+            <div className="flex flex-row gap-3 sm:gap-4">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 flex-1">
                 {Array.from({ length: 6 }, (_, i) => i + 1).map((idx) => {
                   const filled = !!filledMap[idx];
                   const img = filledMap[idx]?.url;
@@ -198,8 +198,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                   );
                 })}
               </div>
-              <div className="block w-px bg-foreground/60 self-stretch" aria-hidden />
-              <div className="w-28 flex flex-col items-center justify-center">
+              <div className="block w-px bg-foreground/60 self-stretch shrink-0" aria-hidden />
+              <div className="w-24 sm:w-28 flex flex-col items-center justify-center">
                 {(() => {
                   const idx = 7;
                   const filled = !!filledMap[idx];
@@ -227,8 +227,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
             </div>
           ) : (
             <div className="rounded-xl border-2 border-border bg-background p-4">
-              <div className="flex flex-row gap-4">
-                <div className="grid grid-cols-3 gap-3 flex-1">
+              <div className="flex flex-row gap-3 sm:gap-4">
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 flex-1">
                   {Array.from({ length: 6 }, (_, i) => i + 1).map((idx) => {
                     const filled = !!filledMap[idx];
                     const img = filledMap[idx]?.url;
@@ -247,8 +247,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
                     );
                   })}
                 </div>
-                <div className="block w-px bg-foreground/60 self-stretch" aria-hidden />
-                <div className="w-28 flex flex-col items-center justify-center">
+                <div className="block w-px bg-foreground/60 self-stretch shrink-0" aria-hidden />
+                <div className="w-24 sm:w-28 flex flex-col items-center justify-center">
                   {(() => {
                     const idx = 7;
                     const filled = !!filledMap[idx];
