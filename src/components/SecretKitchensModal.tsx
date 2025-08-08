@@ -1,6 +1,8 @@
 import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 interface SecretKitchensModalProps {
   open: boolean;
@@ -86,8 +88,19 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
         className="w-[92vw] sm:w-[86vw] md:max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-[85vh] overflow-y-auto border border-border bg-background"
       >
         <div className="space-y-6">
-          {/* Brand */}
+          {/* Brand + Back */}
           <div className="flex items-center gap-3">
+            {activeId !== 'cover' && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setActiveId('cover')}
+                aria-label="Back to cover"
+                className="ring-2 ring-ring ring-offset-2 ring-offset-background"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
             <CroftLogo size="sm" />
             <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
           </div>
