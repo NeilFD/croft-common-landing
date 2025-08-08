@@ -77,7 +77,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setStrobeOn(true);
     intervalRef.current = window.setInterval(() => {
       setStrobeOn(prev => !prev);
-    }, 250) as unknown as number; // was 70ms
+    }, 200) as unknown as number; // 2.5Hz (toggle every 200ms)
 
     const toLogo = window.setTimeout(() => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
@@ -121,7 +121,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <CroftLogo
             className={`w-[30rem] h-[30rem] md:w-[25rem] md:h-[25rem] lg:w-[20rem] lg:h-[20rem] transition-all duration-200 ${
-              phase === 'logo' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              phase === 'logo' ? 'opacity-100 scale-100 invert brightness-110' : 'opacity-0 scale-95'
             }`}
           />
         </div>
