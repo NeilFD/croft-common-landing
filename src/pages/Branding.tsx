@@ -208,8 +208,8 @@ const Branding = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Font</p>
-                    <h3 className={cn(f.className, "text-2xl md:text-4xl leading-tight")}>{f.label}</h3>
-                    <p className="mt-2 text-sm text-muted-foreground font-mono">font-family: {f.stack}</p>
+                    <h3 className={cn(f.className, "text-2xl md:text-4xl leading-tight")}>Croft Common</h3>
+                    
                   </div>
                   <CopyButton value={`font-family: ${f.stack};`} label="Copy stack" />
                 </div>
