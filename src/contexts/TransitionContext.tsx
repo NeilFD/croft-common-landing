@@ -72,21 +72,21 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       };
     }
 
-    // Strobe phase
+    // Strobe phase (slower to stay under ~3 flashes/sec)
     setPhase('strobe');
     setStrobeOn(true);
     intervalRef.current = window.setInterval(() => {
       setStrobeOn(prev => !prev);
-    }, 70) as unknown as number;
+    }, 350) as unknown as number; // was 70ms
 
     const toLogo = window.setTimeout(() => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
       intervalRef.current = null;
       setPhase('logo');
       setStrobeOn(false);
-    }, 600);
+    }, 900); // extend strobe window slightly
 
-    const finish = window.setTimeout(navigateAndReset, 600 + 300);
+    const finish = window.setTimeout(navigateAndReset, 900 + 300);
 
     timersRef.current.push(toLogo, finish);
 
