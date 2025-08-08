@@ -40,6 +40,11 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const intervalRef = useRef<number | null>(null);
   const logoShownRef = useRef(false);
 
+  // Transition timing constants
+  const STROBE_TOGGLE_MS = 166; // 3Hz max (toggle interval ~166ms; full cycle ~333ms)
+  const STROBE_DURATION_MS = 500; // single short strobe window
+  const LOGO_DISPLAY_MS = 200; // single logo display duration
+
   const TEXTURE_URL = '/lovable-uploads/d1fb9178-8f7e-47fb-a8ac-71350264d76f.png';
 
   useEffect(() => {
@@ -57,12 +62,10 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
     const navigateAndReset = () => {
       navigate(targetPath);
-      const hide = window.setTimeout(() => {
-        setIsTransitioning(false);
-        setTargetPath('');
-        setPhase('idle');
-      }, 150);
-      timersRef.current.push(hide);
+      // Immediately hide overlay to avoid extra black screen
+      setIsTransitioning(false);
+      setTargetPath('');
+      setPhase('idle');
     };
 
     // Accessibility: reduced motion skips the strobe
@@ -71,7 +74,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         setPhase('logo');
         logoShownRef.current = true;
       }
-      const end = window.setTimeout(navigateAndReset, 250);
+      const end = window.setTimeout(navigateAndReset, LOGO_DISPLAY_MS);
       timersRef.current.push(end);
       return () => {
         timersRef.current.forEach(clearTimeout);
@@ -84,7 +87,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setStrobeOn(true);
     intervalRef.current = window.setInterval(() => {
       setStrobeOn(prev => !prev);
-    }, 182) as unknown as number; // ~2.75Hz (toggle ~182ms; full cycle ~364ms)
+    }, STROBE_TOGGLE_MS) as unknown as number; // 3Hz max (toggle ~166ms; full cycle ~333ms)
 
     const toLogo = window.setTimeout(() => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
@@ -94,9 +97,9 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         logoShownRef.current = true;
       }
       setStrobeOn(false);
-    }, 900); // extend strobe window slightly
+    }, STROBE_DURATION_MS); // single short strobe window
 
-    const finish = window.setTimeout(navigateAndReset, 900 + 300);
+    const finish = window.setTimeout(navigateAndReset, STROBE_DURATION_MS + LOGO_DISPLAY_MS);
 
     timersRef.current.push(toLogo, finish);
 
