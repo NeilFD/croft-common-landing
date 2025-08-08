@@ -104,7 +104,7 @@ const BeerHeroCarousel = () => {
 
       {/* Page Title Overlay */}
       <div className="absolute top-24 left-[106px] z-20">
-        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-orange))] cursor-pointer">
+        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-pink))] cursor-pointer">
           BEER
         </h1>
       </div>
@@ -127,7 +127,7 @@ const BeerHeroCarousel = () => {
       </div>
 
       {/* Menu Button */}
-      <MenuButton pageType="beer" menuData={beerMenu} />
+      <MenuButton pageType="beer" menuData={beerMenu} forceCafeAccent />
     </div>
   );
 };

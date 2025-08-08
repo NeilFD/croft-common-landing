@@ -6,12 +6,16 @@ import { MenuSection } from '@/data/menuData';
 interface MenuButtonProps {
   pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
   menuData: MenuSection[];
+  forceCafeAccent?: boolean;
 }
 
-const MenuButton = ({ pageType, menuData }: MenuButtonProps) => {
+const MenuButton = ({ pageType, menuData, forceCafeAccent }: MenuButtonProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const getAccentColor = () => {
+    if (forceCafeAccent) {
+      return 'hsl(var(--accent-pink))';
+    }
     switch (pageType) {
       case 'cafe':
         return 'hsl(var(--accent-pink))';

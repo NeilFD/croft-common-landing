@@ -131,7 +131,7 @@ const CafeHeroCarousel = () => {
       </div>
 
       {/* Menu Button */}
-      <MenuButton pageType="cafe" menuData={cafeMenu} />
+      <MenuButton pageType="cafe" menuData={cafeMenu} forceCafeAccent />
     </div>
   );
 };
