@@ -195,8 +195,8 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
 
               {activeId === 'hot-honey-goat' && (
                 <div className="space-y-3">
-                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">HOT HONEY & GOAT CHEESE</h3>
-                  <p className="font-industrial text-foreground/80">Sweet, sharp, heat.</p>
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider text-center">HOT HONEY & GOAT CHEESE</h3>
+                  <p className="font-industrial text-foreground/80 text-center">Sweet, sharp, heat.</p>
                   <Separator />
                   <div className="space-y-2">
                     <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
