@@ -76,6 +76,18 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     fetchCompleted();
   }, [open, user, card?.id, creatingNext, rewardsDone]);
 
+  // Celebrate when transitioning into Lucky 7² card
+  const [luckyCelebrate, setLuckyCelebrate] = useState(false);
+  const prevIsLucky7Ref = useRef(false);
+  useEffect(() => {
+    if (open && isLucky7 && !prevIsLucky7Ref.current) {
+      setLuckyCelebrate(true);
+      const t = setTimeout(() => setLuckyCelebrate(false), 5000);
+      return () => clearTimeout(t);
+    }
+    prevIsLucky7Ref.current = isLucky7;
+  }, [open, isLucky7]);
+
   const filledMap = useMemo(() => {
     const map: Record<number, { kind: 'punch' | 'reward'; url?: string }> = {};
     entries.forEach((e) => {
@@ -108,7 +120,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     return '';
   }, [card, isRegular, isLucky7, punchesDone, rewardsDone]);
 
-  const title = isLucky7 ? 'Lucky Number 7' : 'Croft Common Loyalty';
+  const title = isLucky7 ? 'Lucky Number 7²' : 'Croft Common Loyalty';
 
   // When dialog closes, reset any auth modal
   const handleOpenChange = (nextOpen: boolean) => {
@@ -126,6 +138,9 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
             <DialogTitle className="font-brutalist tracking-wider flex items-center gap-2">
               <CroftLogo size="sm" />
               <span>{title}</span>
+              {isLucky7 && (
+                <Badge className="ml-2 border border-accent/30 bg-accent/10 text-accent">7×7</Badge>
+              )}
             </DialogTitle>
             <DialogDescription>
               {user ? (
@@ -150,7 +165,12 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
               <AlertDescription>Free coffee unlocked — upload your receipt in box 7.</AlertDescription>
             </Alert>
           )}
-
+          {luckyCelebrate && isLucky7 && (
+            <Alert className="mt-3 border-accent bg-accent/10">
+              <AlertTitle>Lucky Number 7² is here</AlertTitle>
+              <AlertDescription>Seven free coffees — snap each one to claim. Let’s go!</AlertDescription>
+            </Alert>
+          )}
           {!user && (
             <div className="mb-4">
               <Button onClick={() => setAuthOpen(true)}>Sign in to start</Button>
@@ -203,24 +223,27 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-              {Array.from({ length: 7 }, (_, i) => i + 1).map((idx) => {
-                const filled = !!filledMap[idx];
-                const img = filledMap[idx]?.url;
+            <div className="rounded-xl border-2 border-accent bg-accent/5 p-4">
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
+                {Array.from({ length: 7 }, (_, i) => i + 1).map((idx) => {
+                  const filled = !!filledMap[idx];
+                  const img = filledMap[idx]?.url;
 
-                const disabled = loading || creatingNext || (!user);
+                  const disabled = loading || creatingNext || (!user);
 
-                return (
-                  <LoyaltyBox
-                    key={idx}
-                    index={idx}
-                    filled={filled}
-                    disabled={disabled}
-                    imageUrl={img}
-                    onSelectFile={handleSelect(idx)}
-                  />
-                );
-              })}
+                  return (
+                    <LoyaltyBox
+                      key={idx}
+                      index={idx}
+                      filled={filled}
+                      disabled={disabled}
+                      imageUrl={img}
+                      onSelectFile={handleSelect(idx)}
+                      variant="lucky"
+                    />
+                  );
+                })}
+              </div>
             </div>
           )}
 
@@ -229,7 +252,15 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
           )}
 
           <div className="mt-4 text-xs text-foreground/60">
-            • Boxes 1–6: snap your coffee recipe. • Box 7: upload receipt for your free coffee. • Images are stored securely to your account.
+            {isLucky7 ? (
+              <>
+                • This Lucky Number 7² card gives you seven free coffees. • Snap each free coffee to claim. • Images are saved to your account.
+              </>
+            ) : (
+              <>
+                • Boxes 1–6: snap your coffee recipe. • Box 7: upload receipt for your free coffee. • Images are stored securely to your account.
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

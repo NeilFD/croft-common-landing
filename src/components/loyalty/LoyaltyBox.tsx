@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Camera, Check } from 'lucide-react';
+import { Camera, Check, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LoyaltyBoxProps {
@@ -9,9 +9,10 @@ interface LoyaltyBoxProps {
   disabled?: boolean;
   imageUrl?: string;
   onSelectFile: (file: File) => void;
+  variant?: 'default' | 'lucky';
 }
 
-const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageUrl, onSelectFile }) => {
+const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageUrl, onSelectFile, variant = 'default' }) => {
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const handleClick = () => {
@@ -29,11 +30,17 @@ const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageU
   return (
     <div
       className={cn(
-        "relative aspect-square rounded-md border border-steel/40 bg-background/60 flex items-center justify-center overflow-hidden",
-        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:border-foreground/60 transition-colors"
+        "relative aspect-square rounded-md border bg-background/60 flex items-center justify-center overflow-hidden",
+        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer transition-colors",
+        variant === 'lucky' ? "border-accent/60 hover:border-accent" : "border-steel/40 hover:border-foreground/60"
       )}
       onClick={handleClick}
-    >
+      >
+        {variant === 'lucky' && (
+          <div className="absolute top-1 right-1 text-accent">
+            <Star className="w-4 h-4" />
+          </div>
+        )}
       {imageUrl ? (
         <img src={imageUrl} alt={`Box ${index}`} className="w-full h-full object-cover" />
       ) : filled ? (
