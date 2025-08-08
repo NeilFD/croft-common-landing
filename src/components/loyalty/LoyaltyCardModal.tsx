@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import LoyaltyBox from './LoyaltyBox';
@@ -7,7 +7,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { toast } from '@/hooks/use-toast';
 import { AuthModal } from '@/components/AuthModal';
-
+import CroftLogo from '@/components/CroftLogo';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;
@@ -16,6 +19,9 @@ interface LoyaltyCardModalProps {
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
+  const [completedCount, setCompletedCount] = useState<number | null>(null);
+  const [unlocked, setUnlocked] = useState(false);
+  const prevPunchesRef = useRef(0);
 
   const {
     loading,
@@ -28,6 +34,47 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     creatingNext,
     addEntry,
   } = useLoyalty(user);
+
+  // Detect unlock of the 7th box for regular cards
+  useEffect(() => {
+    if (isRegular && punchesDone === 6 && prevPunchesRef.current < 6 && rewardsDone === 0) {
+      setUnlocked(true);
+      toast({
+        title: 'Lucky Number 7 is on us',
+        description: 'Your free coffee is unlocked. Upload the receipt in box 7.',
+      });
+    }
+    prevPunchesRef.current = punchesDone;
+  }, [isRegular, punchesDone, rewardsDone]);
+
+  // Hide unlock banner when closed or reward uploaded
+  useEffect(() => {
+    if (!open || rewardsDone > 0) {
+      setUnlocked(false);
+    }
+  }, [open, rewardsDone]);
+
+  // Fetch total completed cards for prominence
+  useEffect(() => {
+    const fetchCompleted = async () => {
+      if (!user || !open) {
+        setCompletedCount(null);
+        return;
+      }
+      const { count, error } = await supabase
+        .from('loyalty_cards')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_complete', true);
+      if (error) {
+        console.warn('Count completed cards error:', error);
+        setCompletedCount(null);
+        return;
+      }
+      setCompletedCount(count ?? 0);
+    };
+    fetchCompleted();
+  }, [open, user, card?.id, creatingNext, rewardsDone]);
 
   const filledMap = useMemo(() => {
     const map: Record<number, { kind: 'punch' | 'reward'; url?: string }> = {};
@@ -76,16 +123,33 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[620px]">
           <DialogHeader>
-            <DialogTitle className="font-brutalist tracking-wider">{title}</DialogTitle>
+            <DialogTitle className="font-brutalist tracking-wider flex items-center gap-2">
+              <CroftLogo size="sm" />
+              <span>{title}</span>
+            </DialogTitle>
             <DialogDescription>
               {user ? (
                 <span className="text-foreground/70">{user.email}</span>
               ) : (
                 <span className="text-foreground/70">Sign in to save your punches</span>
               )}
-              {card && <div className="mt-2 text-sm text-foreground">{subtitle}</div>}
+              {card && (
+                <div className="mt-2 text-sm sm:text-base text-foreground font-medium">{subtitle}</div>
+              )}
+              {completedCount !== null && (
+                <div className="mt-2">
+                  <Badge variant="secondary">Completed cards: {completedCount}</Badge>
+                </div>
+              )}
             </DialogDescription>
           </DialogHeader>
+
+          {unlocked && (
+            <Alert className="mt-3">
+              <AlertTitle>Lucky Number 7 is on us</AlertTitle>
+              <AlertDescription>Free coffee unlocked — upload your receipt in box 7.</AlertDescription>
+            </Alert>
+          )}
 
           {!user && (
             <div className="mb-4">
@@ -93,33 +157,72 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
             </div>
           )}
 
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-            {/* Boxes 1..7 */}
-            {Array.from({ length: 7 }, (_, i) => i + 1).map((idx) => {
-              const filled = !!filledMap[idx];
-              const img = filledMap[idx]?.url;
+          {isRegular ? (
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <div className="grid grid-cols-3 gap-3 flex-1">
+                {Array.from({ length: 6 }, (_, i) => i + 1).map((idx) => {
+                  const filled = !!filledMap[idx];
+                  const img = filledMap[idx]?.url;
 
-              // Regular: 1..6 are punches, 7 is reward (locked until 6 punches)
-              const disabledRegular =
-                isRegular
-                  ? (idx === 7 ? punchesDone < 6 : false)
-                  : false;
+                  const disabled = loading || creatingNext || (!user);
 
-              // Lucky7: all are rewards, never disabled
-              const disabled = loading || creatingNext || (!user) || disabledRegular;
+                  return (
+                    <LoyaltyBox
+                      key={idx}
+                      index={idx}
+                      filled={filled}
+                      disabled={disabled}
+                      imageUrl={img}
+                      onSelectFile={handleSelect(idx)}
+                    />
+                  );
+                })}
+              </div>
+              <div className="hidden sm:block w-px bg-border" aria-hidden />
+              <div className="sm:w-28">
+                <div className="text-center text-xs text-foreground/70 mb-1">Free coffee</div>
+                {(() => {
+                  const idx = 7;
+                  const filled = !!filledMap[idx];
+                  const img = filledMap[idx]?.url;
 
-              return (
-                <LoyaltyBox
-                  key={idx}
-                  index={idx}
-                  filled={filled}
-                  disabled={disabled}
-                  imageUrl={img}
-                  onSelectFile={handleSelect(idx)}
-                />
-              );
-            })}
-          </div>
+                  const disabledRegular = isRegular ? (idx === 7 ? punchesDone < 6 : false) : false;
+                  const disabled = loading || creatingNext || (!user) || disabledRegular;
+
+                  return (
+                    <LoyaltyBox
+                      key={idx}
+                      index={idx}
+                      filled={filled}
+                      disabled={disabled}
+                      imageUrl={img}
+                      onSelectFile={handleSelect(idx)}
+                    />
+                  );
+                })()}
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+              {Array.from({ length: 7 }, (_, i) => i + 1).map((idx) => {
+                const filled = !!filledMap[idx];
+                const img = filledMap[idx]?.url;
+
+                const disabled = loading || creatingNext || (!user);
+
+                return (
+                  <LoyaltyBox
+                    key={idx}
+                    index={idx}
+                    filled={filled}
+                    disabled={disabled}
+                    imageUrl={img}
+                    onSelectFile={handleSelect(idx)}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           {creatingNext && (
             <div className="text-sm text-foreground/70 mt-3">Creating your next card…</div>
