@@ -16,7 +16,7 @@ export const homeHeroImages: HeroImage[] = [
 export const cafeHeroImages: HeroImage[] = [
   { src: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png', type: 'dark', overlay: 'bg-void/35', backgroundPosition: '50% 45%' },
   { src: '/lovable-uploads/544efa64-6a2b-4db8-ba10-4da2954a97da.png', type: 'warm', overlay: '', backgroundPosition: 'center center' },
-  { src: '/lovable-uploads/e6f7674f-71d0-4ec4-8782-a283ed5ba5b.png', type: 'dark', overlay: 'bg-void/25', backgroundPosition: '55% center' },
+  { src: '/lovable-uploads/e6f7674f-71d0-4ec4-8782-a283ed5ba5b5.png', type: 'dark', overlay: 'bg-void/25', backgroundPosition: '55% center' },
   { src: '/lovable-uploads/9110aec8-9e43-43ad-b701-6d4948d1f48b.png', type: 'warm', overlay: '', backgroundPosition: 'center center' },
   { src: '/lovable-uploads/0726808b-f108-44ac-bc6c-12c7eead462a.png', type: 'dark', overlay: 'bg-void/30', backgroundPosition: 'center 60%' },
   { src: '/lovable-uploads/e5c78d77-a685-4c5c-ab4a-2968bde2a0de.png', type: 'warm', overlay: 'bg-void/20', backgroundPosition: '65% center' },

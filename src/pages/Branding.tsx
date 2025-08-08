@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Copy as CopyIcon, Download as DownloadIcon } from "lucide-react";
 import { getAllHeroImageUrls } from "@/data/heroImages";
+import OptimizedImage from "@/components/OptimizedImage";
 
 const LOGO_URL = "/lovable-uploads/b1cbbce2-0748-4b16-8e27-eb9284992e55.png";
 
@@ -41,7 +42,12 @@ const ApprovedImageryGrid = () => {
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
       {urls.map((src, i) => (
         <figure key={src} className="group relative border border-border overflow-hidden bg-surface">
-          <img src={src} alt={`Approved imagery ${i + 1}`} loading="lazy" className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <OptimizedImage 
+            src={src} 
+            alt={`Approved imagery ${i + 1}`} 
+            loading="lazy" 
+            className="h-48 w-full transition-transform duration-300 group-hover:scale-105" 
+          />
           <figcaption className="absolute inset-0 flex items-end justify-between p-3 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-background/70 to-transparent">
             <span className="text-xs text-foreground/90">Approved image {i + 1}</span>
             <a href={src} download>
