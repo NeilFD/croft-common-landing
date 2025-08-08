@@ -17,7 +17,7 @@ const Community = () => {
             <br /><br />
             Croft Common was built in the middle of it - the murals, the music, the noise, the roots.
             <br /><br />
-            Stokes Croft isn't a backdrop, it's part of the fabric. So we listen. We show up. We give time, space, care. We pay it forward.
+            Stokes Croft isn't a backdrop, it's part of the fabric. We’re here for more than trade. We give back in time, space, and support.
             <br /><br />
             Always add, never subtract.
           </p>
