@@ -26,7 +26,7 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
             <span className="font-semibold text-foreground">{secretWord}</span>
           </p>
           <div className="font-industrial text-foreground">
-            <span className="font-semibold">Not-So-Common Keg:</span> £2.5/5
+            <span className="font-semibold">Not-So-Common Keg:</span> 2.5/5
           </div>
         </div>
       </DialogContent>
