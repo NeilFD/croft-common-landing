@@ -29,48 +29,60 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   }, []);
 
   const isValid7Shape = useCallback((gesturePoints: Point[]): boolean => {
-    if (gesturePoints.length < 10) return false;
-    
-    console.log(`Analyzing 7 gesture with ${gesturePoints.length} points`);
-    
-    const firstPoint = gesturePoints[0];
-    const lastPoint = gesturePoints[gesturePoints.length - 1];
-    
-    // Check if we have a generally downward motion (7 shape)
-    const totalVerticalMovement = lastPoint.y - firstPoint.y;
-    const totalHorizontalMovement = Math.abs(lastPoint.x - firstPoint.x);
-    
-    // Should move more vertically than horizontally for a "7"
-    if (totalVerticalMovement < 30 || totalHorizontalMovement > totalVerticalMovement) {
-      console.log('Not a valid 7 shape - insufficient vertical movement');
+    // Require enough data points to form two segments
+    if (gesturePoints.length < 12) return false;
+
+    // Thresholds for a "decent size" 7 gesture (in px)
+    const H_MIN = 70;   // min horizontal length for the top bar
+    const V_MIN = 80;   // min vertical drop for the diagonal
+    const D_MIN = 30;   // min horizontal change during diagonal
+    const SLOPE_MIN = 0.6; // vertical/horizontal ratio for diagonal (steep enough)
+
+    // 1) Detect a predominantly horizontal start segment
+    let horizontalAccum = 0;
+    let verticalDrift = 0;
+    let splitIndex = 1; // index where horizontal ends and diagonal begins
+
+    for (let i = 1; i < gesturePoints.length; i++) {
+      const prev = gesturePoints[i - 1];
+      const curr = gesturePoints[i];
+      horizontalAccum += Math.abs(curr.x - prev.x);
+      verticalDrift += Math.abs(curr.y - prev.y);
+
+      // once we have enough horizontal travel, mark the split
+      if (horizontalAccum >= H_MIN) {
+        splitIndex = i;
+        break;
+      }
+
+      // avoid scanning forever: cap horizontal scan to first 40% of the path
+      if (i > Math.floor(gesturePoints.length * 0.4)) break;
+    }
+
+    const hasHorizontalStart = horizontalAccum >= H_MIN && verticalDrift <= Math.max(20, horizontalAccum * 0.4);
+    if (!hasHorizontalStart) {
+      // Must start with a clear horizontal line
       return false;
     }
-    
-    // Look for a horizontal segment at the beginning (top of the 7)
-    const firstQuarter = Math.floor(gesturePoints.length * 0.25);
-    let hasHorizontalStart = false;
-    
-    if (firstQuarter > 3) {
-      const startSegment = gesturePoints.slice(0, firstQuarter);
-      const horizontalMovement = Math.abs(startSegment[startSegment.length - 1].x - startSegment[0].x);
-      const verticalMovement = Math.abs(startSegment[startSegment.length - 1].y - startSegment[0].y);
-      
-      if (horizontalMovement > 20 && horizontalMovement > verticalMovement * 0.8) {
-        hasHorizontalStart = true;
-      }
+
+    // 2) Analyze the diagonal downward segment after the split
+    const diagonal = gesturePoints.slice(splitIndex);
+    if (diagonal.length < 5) return false;
+
+    const diagStart = diagonal[0];
+    const diagEnd = diagonal[diagonal.length - 1];
+    const dx = diagEnd.x - diagStart.x;
+    const dy = diagEnd.y - diagStart.y; // down is positive
+
+    const verticalDownEnough = dy >= V_MIN; // must go down a decent amount
+    const horizontalEnough = Math.abs(dx) >= D_MIN; // some horizontal change (either direction)
+    const slopeOk = Math.abs(dy) / Math.max(1, Math.abs(dx)) >= SLOPE_MIN; // diagonal, not flat
+
+    if (!(verticalDownEnough && horizontalEnough && slopeOk)) {
+      return false;
     }
-    
-    // Check for downward diagonal movement in the latter part
-    const lastHalf = gesturePoints.slice(Math.floor(gesturePoints.length * 0.3));
-    if (lastHalf.length > 5) {
-      const diagonalVertical = lastHalf[lastHalf.length - 1].y - lastHalf[0].y;
-      if (diagonalVertical < 25) {
-        console.log('Not enough downward diagonal movement');
-        return false;
-      }
-    }
-    
-    console.log('Valid "7" shape detected!');
+
+    // All checks passed → looks like a "7": top bar then downward diagonal
     return true;
   }, []);
 
