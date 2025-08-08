@@ -357,6 +357,20 @@ const communityMenuData: MenuSection[] = [
 // Common Room Menu Data
 const commonRoomMenuData: MenuSection[] = [
   {
+    title: "Membership, Not Members",
+    items: [
+      {
+        name: "Quiet perks across Café, Kitchens, Beer.",
+        description: "Coffee loyalty, members-only beer, and access to our house cookbook.",
+      },
+      {
+        name: "<strong>Common Membership</strong>",
+        description: "",
+        isLink: true
+      }
+    ]
+  },
+  {
     title: "What's Next?",
     items: [
       { 

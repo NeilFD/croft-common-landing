@@ -8,6 +8,7 @@ import SecretBeerModal from './SecretBeerModal';
 import SecretKitchensModal from './SecretKitchensModal';
 import useSecretWordOfTheDay from '@/hooks/useSecretWordOfTheDay';
 import LoyaltyCardModal from '@/components/loyalty/LoyaltyCardModal';
+import CommonMembershipModal from '@/components/CommonMembershipModal';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface MenuModalProps {
 const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const navigate = useNavigate();
   const [showSecret, setShowSecret] = useState(false);
+  const [showMembership, setShowMembership] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const secretWord = useSecretWordOfTheDay();
 
@@ -28,6 +30,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     } else {
       document.body.style.overflow = 'unset';
       setShowSecret(false);
+      setShowMembership(false);
     }
 
     return () => {
@@ -242,6 +245,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                                   if (item.name.includes('Take a look')) {
                                     onClose();
                                     navigate('/calendar');
+                                  } else if (item.name.toLowerCase().includes('common membership')) {
+                                    setShowMembership(true);
                                   } else {
                                     console.log('Navigate to:', item.name);
                                   }
@@ -295,6 +300,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         <LoyaltyCardModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
+        />
+      )}
+      {pageType === 'common-room' && (
+        <CommonMembershipModal
+          open={showMembership}
+          onClose={() => setShowMembership(false)}
         />
       )}
     </div>
