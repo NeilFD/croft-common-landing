@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Copy as CopyIcon, Download as DownloadIcon } from "lucide-react";
 
 const LOGO_URL = "/lovable-uploads/b1cbbce2-0748-4b16-8e27-eb9284992e55.png";
 
@@ -49,7 +50,7 @@ const CopyButton = ({ label, value, className }: { label?: string; value: string
       }}
       aria-label={label ?? "Copy to clipboard"}
     >
-      {copied ? "Copied" : label ?? "Copy"}
+      <CopyIcon className="mr-1 h-4 w-4" /> {copied ? "Copied" : label ?? "Copy"}
     </Button>
   );
 };
@@ -111,6 +112,11 @@ const Branding = () => {
     },
   ];
 
+  const fonts = [
+    { key: "brutalist", label: "Display – Oswald", className: "font-brutalist", stack: "'Oswald', 'Arial Black', Helvetica, sans-serif", weights: ["400 Regular", "500 Medium", "600 Semibold", "700 Bold"] },
+    { key: "industrial", label: "Body – Work Sans", className: "font-industrial", stack: "'Work Sans', Arial, Helvetica, sans-serif", weights: ["300 Light", "400 Regular", "500 Medium", "600 Semibold"] },
+  ];
+
   return (
     <>
       <header className="border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -124,7 +130,7 @@ const Branding = () => {
           </div>
           <div className="hidden md:flex gap-2">
             <a href={LOGO_URL} download>
-              <Button variant="secondary" size="sm">Download Logo</Button>
+              <Button variant="secondary" size="sm"><DownloadIcon className="mr-1 h-4 w-4" /> Download Logo</Button>
             </a>
           </div>
         </div>
@@ -134,7 +140,7 @@ const Branding = () => {
         {/* Logos */}
         <Section id="logos" title="Logo & Watermark">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <figure className="p-6 border border-border bg-card/30">
+            <figure className="p-6 border border-border bg-card/30 transition-transform hover:scale-[1.01]">
               <img src={LOGO_URL} alt="Croft Common logo" className="w-full h-40 object-contain" loading="lazy" />
               <figcaption className="mt-4 flex items-center justify-between">
                 <div>
@@ -142,12 +148,12 @@ const Branding = () => {
                   <p className="text-sm text-muted-foreground">PNG, transparent</p>
                 </div>
                 <a href={LOGO_URL} download>
-                  <Button variant="outline" size="sm">Download</Button>
+                  <Button variant="outline" size="sm"><DownloadIcon className="mr-1 h-4 w-4" /> Download</Button>
                 </a>
               </figcaption>
             </figure>
 
-            <figure className="p-6 border border-border bg-card/30">
+            <figure className="p-6 border border-border bg-card/30 transition-transform hover:scale-[1.01]">
               <div className="relative h-40 overflow-hidden border border-border">
                 <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, hsl(var(--background)), hsl(var(--surface)))" }} />
                 <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 opacity-30 hover:opacity-70">
@@ -195,21 +201,28 @@ const Branding = () => {
           </div>
         </Section>
 
-        {/* Typography */}
         <Section id="typography" title="Typography">
           <div className="grid gap-6">
-            <div className="border border-border p-6">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Display</p>
-              <h3 className="font-brutalist text-3xl md:text-5xl leading-tight">Croft Common</h3>
-              <p className="mt-3 text-sm text-muted-foreground">Class: font-brutalist</p>
-            </div>
-            <div className="border border-border p-6">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Body</p>
-              <p className="font-industrial text-base md:text-lg leading-relaxed max-w-3xl">
-                We keep it minimal. Clear hierarchy. Strong contrast. Real materials — on the page, and in the room.
-              </p>
-              <p className="mt-3 text-sm text-muted-foreground">Class: font-industrial</p>
-            </div>
+            {fonts.map((f) => (
+              <div key={f.key} className="border border-border p-6 transition-transform hover:scale-[1.01]">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Font</p>
+                    <h3 className={cn(f.className, "text-2xl md:text-4xl leading-tight")}>{f.label}</h3>
+                    <p className="mt-2 text-sm text-muted-foreground font-mono">font-family: {f.stack}</p>
+                  </div>
+                  <CopyButton value={`font-family: ${f.stack};`} label="Copy stack" />
+                </div>
+                <div className={cn(f.className, "mt-5 space-y-2 text-base md:text-lg leading-relaxed") }>
+                  <p>ABCDEFGHIJKLMNOPQRSTUVWXYZ</p>
+                  <p>abcdefghijklmnopqrstuvwxyz</p>
+                  <p>0123456789</p>
+                  <p>.,;:!?—–‘’“”@&()[]{}/*+-=#%</p>
+                  <p className="mt-2 text-sm text-muted-foreground not-italic">The quick brown fox jumps over the lazy dog.</p>
+                </div>
+                <div className="mt-4 text-xs text-muted-foreground">Weights: {f.weights.join(", ")}</div>
+              </div>
+            ))}
           </div>
         </Section>
 
