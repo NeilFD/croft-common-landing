@@ -33,7 +33,7 @@ const CommonMembershipModal: React.FC<CommonMembershipModalProps> = ({ open, onC
           </section>
           <section>
             <h3 className="font-brutalist text-foreground tracking-wider">House cookbook</h3>
-            <p className="font-industrial text-foreground/80">Access recipes from our kitchens — pizza, grill, bowls and sides, updated over time.</p>
+            <p className="font-industrial text-foreground/80">Wood. Fire. Dough. Good Taste</p>
           </section>
         </div>
       </DialogContent>
