@@ -74,7 +74,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         setPhase('logo');
         logoShownRef.current = true;
       }
-      const end = window.setTimeout(navigateAndReset, LOGO_DISPLAY_MS);
+      const end = window.setTimeout(navigateAndReset, LOGO_DISPLAY_MS + 600);
       timersRef.current.push(end);
       return () => {
         timersRef.current.forEach(clearTimeout);
@@ -99,7 +99,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       setStrobeOn(false);
     }, STROBE_DURATION_MS); // single short strobe window
 
-    const finish = window.setTimeout(navigateAndReset, STROBE_DURATION_MS + LOGO_DISPLAY_MS);
+    const finish = window.setTimeout(navigateAndReset, STROBE_DURATION_MS + LOGO_DISPLAY_MS + 600);
 
     timersRef.current.push(toLogo, finish);
 
