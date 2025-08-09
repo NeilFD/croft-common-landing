@@ -37,15 +37,15 @@ const CommonMembershipModal: React.FC<CommonMembershipModalProps> = ({ open, onC
           </section>
           <section>
             <h3 className="font-brutalist text-foreground tracking-wider">Cocktails</h3>
-            <p className="font-industrial text-foreground/80">Seasonal lists, off‑menu classics, and quiet pours for those in the know.</p>
+            <p className="font-industrial text-foreground/80">Roll a seven. Two drinks for free. Lucky 7, Lucky you.</p>
           </section>
           <section>
             <h3 className="font-brutalist text-foreground tracking-wider">Hall</h3>
-            <p className="font-industrial text-foreground/80">Early invites, priority access, and better rates on private hires.</p>
+            <p className="font-industrial text-foreground/80">Secret cinema. Once a month. Fifty tickets only.</p>
           </section>
           <section>
             <h3 className="font-brutalist text-foreground tracking-wider">Community</h3>
-            <p className="font-industrial text-foreground/80">Give‑back nights, local projects, first to hear — keep it close.</p>
+            <p className="font-industrial text-foreground/80">For the Common Good. Give what you can, when you can. Membership without fees, but with responsibility</p>
           </section>
         </div>
       </DialogContent>
