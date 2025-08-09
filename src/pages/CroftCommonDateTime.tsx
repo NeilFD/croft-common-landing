@@ -49,14 +49,18 @@ const CroftCommonDateTime: React.FC = () => {
           <span className="font-brutalist text-xl tracking-wider">CROFT COMMON</span>
         </div>
       </header>
+      <div className="w-full border-t border-border/60" />
 
       <main className="flex-1 px-6 pb-12 flex flex-col items-center justify-center text-center">
         <h1 className="sr-only">Croft Common Live Date and Time</h1>
-        <section aria-label="Current date and time" className="space-y-4">
+        <section aria-label="Current date and time" className="space-y-6 w-full max-w-md">
+          <div className="h-px w-24 bg-border/60 mx-auto" aria-hidden="true" />
           <p className="font-industrial text-lg sm:text-xl md:text-2xl opacity-80">{dateStr}</p>
+          <div className="h-px w-16 bg-border/60 mx-auto" aria-hidden="true" />
           <p className="font-brutalist tracking-widest text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
             {timeStr}
           </p>
+          <div className="h-px w-24 bg-border/60 mx-auto" aria-hidden="true" />
         </section>
       </main>
     </div>
