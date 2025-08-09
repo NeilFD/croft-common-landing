@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
+import BookFloatingButton from './BookFloatingButton';
 import { cafeMenu } from '@/data/menuData';
 import { cafeHeroImages } from '@/data/heroImages';
 
@@ -93,6 +94,9 @@ const CafeHeroCarousel = () => {
           />
         ))}
       </div>
+
+      {/* Book Button */}
+      <BookFloatingButton />
 
       {/* Menu Button */}
       <MenuButton pageType="cafe" menuData={cafeMenu} forceCafeAccent />

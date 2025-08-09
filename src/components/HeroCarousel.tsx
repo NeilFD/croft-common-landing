@@ -6,6 +6,7 @@ import OptimizedImage from './OptimizedImage';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as heroImages } from '@/data/heroImages';
+import BookFloatingButton from './BookFloatingButton';
 
 
 const HeroCarousel = () => {
@@ -87,6 +88,8 @@ const HeroCarousel = () => {
           />
         ))}
       </div>
+      {/* Book Button */}
+      <BookFloatingButton />
 
       {/* Menu Button */}
       <MenuButton pageType="cafe" menuData={homeMenu} forceCafeAccent />

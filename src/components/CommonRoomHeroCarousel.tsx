@@ -1,4 +1,5 @@
 import MenuButton from './MenuButton';
+import BookFloatingButton from './BookFloatingButton';
 import { commonRoomHeroImages } from '@/data/heroImages';
 import { commonRoomMenuData } from '@/data/menuData';
 
@@ -42,6 +43,9 @@ const CommonRoomHeroCarousel = () => {
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
         <div className="w-px h-16 bg-background/50"></div>
       </div>
+
+      {/* Book Button */}
+      <BookFloatingButton />
 
       {/* Menu Button */}
       <MenuButton pageType="common-room" menuData={commonRoomMenuData} forceCafeAccent />
