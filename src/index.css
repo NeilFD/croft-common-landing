@@ -213,3 +213,22 @@ input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
+
+/* Subtle anti-screenshot motion for dice */
+@keyframes micro-tilt {
+  0%, 100% {
+    transform: rotate(-2deg);
+    filter: drop-shadow(2px 2px 0 hsl(var(--foreground) / 0.25));
+  }
+  50% {
+    transform: rotate(2deg);
+    filter: drop-shadow(-2px 2px 0 hsl(var(--foreground) / 0.25));
+  }
+}
+
+@layer utilities {
+  .micro-tilt {
+    animation: micro-tilt 3s ease-in-out infinite;
+    will-change: transform, filter;
+  }
+}
