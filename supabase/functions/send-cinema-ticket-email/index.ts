@@ -43,9 +43,9 @@ const buildHtml = (p: EmailPayload, assetsBase: string) => {
     : logoPath;
 
   const ticketBadge = (num: number) => `
-    <span style="display:inline-flex; align-items:center; gap:6px; border:1px dashed #ddd; padding:6px 10px; border-radius:999px; background:#fafafa;">
-      <img src="${logoUrl}" alt="Croft Common cinema ticket" width="20" height="20" style="display:block; border-radius:4px;" />
-      <span style="font-size:13px; color:#111;">Ticket #${num}</span>
+    <span style="display:inline-flex; align-items:center; gap:8px; border:2px dashed #cfcfd4; padding:8px 12px; border-radius:999px; background:#f2f3f7;">
+      <img src="${logoUrl}" alt="Croft Common cinema ticket" width="28" height="28" style="display:block; border-radius:6px;" />
+      <span style="font-size:14px; font-weight:700; color:#111;">Ticket #${num}</span>
     </span>`;
 
   const badges = (p.ticketNumbers || []).map(ticketBadge).join('');
@@ -99,7 +99,7 @@ serve(async (req) => {
 
     const assetsBase = Deno.env.get('EMAIL_ASSETS_BASE_URL') || req.headers.get('origin') || '';
     const html = buildHtml(payload, assetsBase);
-    const subject = `Your Cinema Ticket${payload.ticketNumbers.length > 1 ? 's' : ''}: #${payload.ticketNumbers.join(', ')}`;
+    const subject = `${payload.title ? 'Your ' + payload.title + ' Ticket' + (payload.ticketNumbers.length > 1 ? 's' : '') : 'Your Cinema Ticket' + (payload.ticketNumbers.length > 1 ? 's' : '')}: #${payload.ticketNumbers.join(', ')}`;
 
     const res = await resend.emails.send({
       from: "Secret Cinema <secretcinema@thehive-hospitality.com>",
