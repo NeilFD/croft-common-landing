@@ -63,18 +63,38 @@ const CommonGood = () => {
         <section className="relative pt-40 md:pt-56 pb-24 bg-background">
           <div className="container mx-auto px-6 max-w-4xl">
             <h1 className="font-brutalist text-4xl md:text-6xl mb-4 md:mb-8 text-foreground">The Common Good</h1>
-            <aside aria-live="polite" className="mt-2 md:mt-0 text-right flex flex-col items-end md:absolute md:right-6 md:top-32 md:z-10">
-              <div>
-                <div className="font-industrial text-xs md:text-sm text-muted-foreground mb-1">Common People Total</div>
-                <div className="font-brutalist text-xl md:text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+            <aside aria-live="polite" className="mt-3 md:mt-0 md:absolute md:right-6 md:top-32 md:z-10">
+              {/* Mobile totals bar */}
+              <div className="md:hidden border border-border/30 rounded-lg px-4 py-3">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="font-industrial text-xs text-muted-foreground">Common People</div>
+                    <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+                  </div>
+                  <div>
+                    <div className="font-industrial text-xs text-muted-foreground">Croft Common</div>
+                    <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
+                  </div>
+                  <div>
+                    <div className="font-industrial text-xs text-muted-foreground">The Common Good</div>
+                    <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+                  </div>
+                </div>
               </div>
-              <div className="mt-3 md:mt-4">
-                <div className="font-industrial text-xs md:text-sm text-muted-foreground mb-1">Croft Common Total</div>
-                <div className="font-brutalist text-xl md:text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
-              </div>
-              <div className="mt-3 md:mt-4">
-                <div className="font-industrial text-xs md:text-sm text-muted-foreground mb-1">The Common Good</div>
-                <div className="font-brutalist text-xl md:text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+              {/* Desktop stacked */}
+              <div className="hidden md:flex md:flex-col md:items-end">
+                <div>
+                  <div className="font-industrial text-sm text-muted-foreground mb-1">Common People Total</div>
+                  <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+                </div>
+                <div className="mt-4">
+                  <div className="font-industrial text-sm text-muted-foreground mb-1">Croft Common Total</div>
+                  <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
+                </div>
+                <div className="mt-4">
+                  <div className="font-industrial text-sm text-muted-foreground mb-1">The Common Good</div>
+                  <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+                </div>
               </div>
             </aside>
             <p className="font-industrial text-base md:text-lg text-foreground/80 leading-relaxed mb-8 md:mb-12 max-w-3xl">
