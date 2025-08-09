@@ -64,7 +64,7 @@ const CommonGood = () => {
           <div className="container mx-auto px-6 max-w-4xl">
             <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">The Common Good</h1>
             <p className="font-industrial text-lg text-foreground/80 leading-relaxed mb-12 max-w-3xl">
-              For the Common Good. No names. No noise. Add what you can, when you can. We match it. It goes to local groups keeping Stokes Croft on its feet. No heroes. Just the Common, doing good.
+              For the Common Good. No names. No noise. Add what you can, when you can. Matched by us. Everything goes to local groups keeping Stokes Croft on its feet. No heroes. Just the Common, doing good.
             </p>
             <div className="grid gap-4 md:gap-6 md:grid-cols-[2fr_auto] items-end">
               <div>
