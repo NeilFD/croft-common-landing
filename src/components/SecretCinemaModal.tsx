@@ -220,7 +220,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           onClose();
         }}
         requireAllowedDomain={false}
-        title="Sign in to reserve tickets"
+        title="Sign in to reserve Secret 7 Cinema Tickets"
         description="We’ll email you a magic link to sign in."
       />
 

@@ -79,6 +79,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   
   // Enable secret gesture for cafe, beer, kitchens, community (to open Common Good Fund), and hall
   const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall';
+  const showGestureIndicator = isSecretEnabled || pageType === 'common-room';
 
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
@@ -205,14 +206,25 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
               {getPageTitle()}
             </h1>
           </div>
-          <button
-            onClick={onClose}
-            className={`w-10 h-10 rounded-full border border-background/30 
-              ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
-              transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
-          >
-            <X className="w-5 h-5 text-foreground" />
-          </button>
+          <div className="flex items-center gap-3">
+            {showGestureIndicator && (
+              <img
+                src="/lovable-uploads/6dd9122c-afc7-40b6-9cb4-48b5c1f0a84d.png"
+                alt="Secret 7 gesture available"
+                loading="lazy"
+                className="w-6 h-6 opacity-80"
+                title="Secret 7 gesture available"
+              />
+            )}
+            <button
+              onClick={onClose}
+              className={`w-10 h-10 rounded-full border border-background/30 
+                ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
+                transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
+            >
+              <X className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
         </div>
 
         {/* Scrollable Content */}

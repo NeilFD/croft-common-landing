@@ -364,6 +364,10 @@ const commonRoomMenuData: MenuSection[] = [
         description: "Coffee loyalty, members-only beer, and access to our house cookbook.",
       },
       {
+        name: "<span class='inline-flex items-center gap-2'><img src='/lovable-uploads/6dd9122c-afc7-40b6-9cb4-48b5c1f0a84d.png' alt='Secret 7 icon' style='width:18px;height:18px;display:inline-block;vertical-align:middle;opacity:0.85' /> Visual cue</span>",
+        description: "Look for the small 7 in the top-right of menus. Draw a ‘7’ to unlock member perks and hidden pages.",
+      },
+      {
         name: "<strong>Common Membership</strong>",
         description: "",
         isLink: true
