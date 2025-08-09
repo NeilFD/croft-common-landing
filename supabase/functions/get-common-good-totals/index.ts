@@ -53,13 +53,13 @@ serve(async (req) => {
     while (hasMore) {
       const page = await stripe.checkout.sessions.list({
         limit: 100,
-        payment_status: "paid",
         expand: ["data.line_items"],
         ...(starting_after ? { starting_after } : {}),
       } as any);
 
       for (const s of page.data) {
         if (s.mode !== "payment") continue;
+        if (s.payment_status !== "paid") continue;
         if (!s.amount_total) continue;
         if (isCommonGoodSession(s, commonGoodProductId)) {
           totalCents += s.amount_total;
