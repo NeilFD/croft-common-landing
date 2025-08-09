@@ -361,7 +361,7 @@ const commonRoomMenuData: MenuSection[] = [
     items: [
       {
         name: "Quiet perks across Cafe, Cocktails, Beer, Kitchens, Hall and Community.",
-        description: "Coffee loyalty, members-only beer, and access to our house cookbook.",
+        description: "Coffee loyalty, members-only beer, access to our house cookbook — plus Lucky 7 cocktails, monthly secret cinema, and For the Common Good community.",
       },
       {
         name: "<span class='inline-flex items-center gap-2'><img src='/lovable-uploads/6dd9122c-afc7-40b6-9cb4-48b5c1f0a84d.png' alt='Secret 7 icon' style='width:28px;height:28px;display:inline-block;vertical-align:middle;opacity:0.95' /> Visual cue</span>",
