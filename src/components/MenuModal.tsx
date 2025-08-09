@@ -11,7 +11,7 @@ import LoyaltyCardModal from '@/components/loyalty/LoyaltyCardModal';
 import CommonMembershipModal from '@/components/CommonMembershipModal';
 import { toast } from '@/hooks/use-toast';
 import SecretCinemaModal from '@/components/SecretCinemaModal';
-
+import SecretLuckySevenModal from './SecretLuckySevenModal';
 interface MenuModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -78,7 +78,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   }, []);
   
   // Enable secret gesture for cafe, beer, kitchens, community (to open Common Good Fund), and hall
-  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall';
+  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails';
   const showGestureIndicator = isSecretEnabled || pageType === 'common-room';
 
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
@@ -208,13 +208,15 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           </div>
           <div className="flex items-center gap-3">
             {showGestureIndicator && (
-              <img
-                src="/lovable-uploads/6dd9122c-afc7-40b6-9cb4-48b5c1f0a84d.png"
-                alt="Secret 7 gesture available"
-                loading="lazy"
-                className="w-6 h-6 opacity-80"
-                title="Secret 7 gesture available"
-              />
+              <div className="relative">
+                <img
+                  src="/lovable-uploads/6dd9122c-afc7-40b6-9cb4-48b5c1f0a84d.png"
+                  alt="Secret 7 gesture available"
+                  loading="lazy"
+                  className="w-6 h-6 opacity-80"
+                  title="Secret 7 gesture available"
+                />
+              </div>
             )}
             <button
               onClick={onClose}
@@ -303,6 +305,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       </div>
 
       {/* Secret modal overlays */}
+      {pageType === 'cocktails' && (
+        <SecretLuckySevenModal
+          open={showSecret}
+          onClose={() => setShowSecret(false)}
+        />
+      )}
       {pageType === 'beer' && (
         <SecretBeerModal
           open={showSecret}
