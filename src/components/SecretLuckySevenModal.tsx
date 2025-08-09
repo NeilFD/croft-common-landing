@@ -83,7 +83,7 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
             {/* Copy */}
             <div className="space-y-3">
               <p className="font-industrial text-foreground/90">
-                Show it to the bartender. Take the dice. Roll a seven. Your drink’s on us.
+                Show this to the bartender. Take the dice. Roll a seven. Your drink’s on us.
               </p>
               <p className="font-industrial text-steel">
                 Two max. Don’t be greedy.
