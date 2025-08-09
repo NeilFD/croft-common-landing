@@ -69,31 +69,31 @@ const CommonGood = () => {
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
                     <div className="font-industrial text-xs text-muted-foreground leading-tight min-h-8 flex items-end justify-center">Common People</div>
-                    <div className="font-brutalist text-2xl text-foreground mt-1">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+                    <div className="font-brutalist text-2xl text-foreground mt-1 tabular-nums">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
                   </div>
                   <div>
                     <div className="font-industrial text-xs text-muted-foreground leading-tight min-h-8 flex items-end justify-center">Croft Common</div>
-                    <div className="font-brutalist text-2xl text-foreground mt-1">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
+                    <div className="font-brutalist text-2xl text-foreground mt-1 tabular-nums">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
                   </div>
                   <div>
                     <div className="font-industrial text-xs text-muted-foreground leading-tight min-h-8 flex items-end justify-center">The Common Good</div>
-                    <div className="font-brutalist text-2xl text-foreground mt-1">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+                    <div className="font-brutalist text-2xl text-foreground mt-1 tabular-nums">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
                   </div>
                 </div>
               </div>
               {/* Desktop stacked */}
-              <div className="hidden md:flex md:flex-col md:items-end">
+              <div className="hidden md:flex md:flex-col md:items-end md:w-48">
                 <div>
-                  <div className="font-industrial text-sm text-muted-foreground mb-1">Common People Total</div>
-                  <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+                  <div className="font-industrial text-sm text-muted-foreground mb-1 leading-tight min-h-5 flex items-end justify-end">Common People Total</div>
+                  <div className="font-brutalist text-2xl text-foreground text-right tabular-nums">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
                 </div>
                 <div className="mt-4">
-                  <div className="font-industrial text-sm text-muted-foreground mb-1">Croft Common Total</div>
-                  <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
+                  <div className="font-industrial text-sm text-muted-foreground mb-1 leading-tight min-h-5 flex items-end justify-end">Croft Common Total</div>
+                  <div className="font-brutalist text-2xl text-foreground text-right tabular-nums">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
                 </div>
                 <div className="mt-4">
-                  <div className="font-industrial text-sm text-muted-foreground mb-1">The Common Good</div>
-                  <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+                  <div className="font-industrial text-sm text-muted-foreground mb-1 leading-tight min-h-5 flex items-end justify-end">The Common Good</div>
+                  <div className="font-brutalist text-2xl text-foreground text-right tabular-nums">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
                 </div>
               </div>
             </aside>
@@ -112,7 +112,7 @@ const CommonGood = () => {
                     placeholder="10"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="h-12 text-base"
+                    className="h-12 text-base appearance-none"
                   />
                 </div>
               </div>
