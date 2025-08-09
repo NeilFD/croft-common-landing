@@ -62,8 +62,22 @@ const CommonGood = () => {
       <main>
         <section className="relative pt-40 md:pt-56 pb-24 bg-background">
           <div className="container mx-auto px-6 max-w-4xl">
-            <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">The Common Good</h1>
-            <p className="font-industrial text-lg text-foreground/80 leading-relaxed mb-12 max-w-3xl">
+            <h1 className="font-brutalist text-4xl md:text-6xl mb-4 md:mb-8 text-foreground">The Common Good</h1>
+            <aside aria-live="polite" className="mt-2 md:mt-0 text-right flex flex-col items-end md:absolute md:right-6 md:top-32 md:z-10">
+              <div>
+                <div className="font-industrial text-xs md:text-sm text-muted-foreground mb-1">Common People Total</div>
+                <div className="font-brutalist text-xl md:text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+              </div>
+              <div className="mt-3 md:mt-4">
+                <div className="font-industrial text-xs md:text-sm text-muted-foreground mb-1">Croft Common Total</div>
+                <div className="font-brutalist text-xl md:text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
+              </div>
+              <div className="mt-3 md:mt-4">
+                <div className="font-industrial text-xs md:text-sm text-muted-foreground mb-1">The Common Good</div>
+                <div className="font-brutalist text-xl md:text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+              </div>
+            </aside>
+            <p className="font-industrial text-base md:text-lg text-foreground/80 leading-relaxed mb-8 md:mb-12 max-w-3xl">
               For the Common Good. No names. No noise. Add what you can, when you can. Matched by us. Everything goes to local groups keeping Stokes Croft on its feet. No heroes. Just the Common, doing good.
             </p>
             <div className="grid gap-4 md:gap-6 md:grid-cols-[2fr_auto] items-end">
@@ -87,20 +101,6 @@ const CommonGood = () => {
               </Button>
             </div>
           </div>
-          <aside aria-live="polite" className="absolute right-6 top-16 md:top-32 z-10 text-right">
-            <div>
-              <div className="font-industrial text-sm text-muted-foreground mb-1">Common People Total</div>
-              <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
-            </div>
-            <div className="mt-4">
-              <div className="font-industrial text-sm text-muted-foreground mb-1">Croft Common Total</div>
-              <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
-            </div>
-            <div className="mt-4">
-              <div className="font-industrial text-sm text-muted-foreground mb-1">The Common Good</div>
-              <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
-            </div>
-          </aside>
         </section>
       </main>
       <Footer />
