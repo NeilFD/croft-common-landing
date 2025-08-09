@@ -74,7 +74,10 @@ const KitchensHeroCarousel = () => {
 
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="w-px h-16 bg-[hsl(var(--accent-pink))]"></div>
+        <div className="flex flex-col items-center">
+          <div className="w-px h-16 bg-[hsl(var(--accent-pink))]"></div>
+          <div className="w-0 h-0 border-x-4 border-x-transparent border-b-4 border-b-[hsl(var(--accent-pink))] mt-1"></div>
+        </div>
       </div>
 
       {/* Slide indicators */}
