@@ -231,4 +231,8 @@ input[type="number"] {
     animation: micro-tilt 3s ease-in-out infinite;
     will-change: transform, filter;
   }
+  .micro-tilt-reverse {
+    animation: micro-tilt 3s ease-in-out infinite reverse;
+    will-change: transform, filter;
+  }
 }
