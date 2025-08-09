@@ -233,6 +233,7 @@ input[type="number"] {
   }
   .micro-tilt-reverse {
     animation: micro-tilt 3s ease-in-out infinite reverse;
+    animation-delay: -1.5s; /* 180° out of phase */
     will-change: transform, filter;
   }
 }
