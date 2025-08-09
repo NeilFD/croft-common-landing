@@ -11,7 +11,7 @@ const CommonGood = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    document.title = 'Common Good Fund | Croft Common';
+    document.title = 'The Common Good | Croft Common';
   }, []);
 
   const handleCheckout = async () => {
@@ -43,9 +43,9 @@ const CommonGood = () => {
     <div className="min-h-screen">
       <Navigation />
       <main>
-        <section className="py-24 bg-background">
+        <section className="pt-40 md:pt-56 pb-24 bg-background">
           <div className="container mx-auto px-6 max-w-4xl">
-            <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">Common Good Fund</h1>
+            <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">The Common Good</h1>
             <p className="font-industrial text-lg text-foreground/80 leading-relaxed mb-12 max-w-3xl">
               For the Common Good. No names. No noise. Add what you can, when you can. We match it. It goes to local groups keeping Stokes Croft on its feet. No heroes. Just the Common, doing good.
             </p>
