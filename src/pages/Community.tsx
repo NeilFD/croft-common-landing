@@ -1,9 +1,7 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CommunityHeroCarousel from "@/components/CommunityHeroCarousel";
-import GestureOverlay from '@/components/GestureOverlay';
-import { useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format } from 'date-fns';
@@ -11,9 +9,7 @@ import { format } from 'date-fns';
 interface CommonGoodRow { message: string; posted_at: string; }
 
 const Community = () => {
-  const navigate = useNavigate();
   const [messages, setMessages] = useState<CommonGoodRow[]>([]);
-  const heroRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.title = 'Community | Croft Common';
@@ -39,15 +35,10 @@ const Community = () => {
     return Array.from(map.entries());
   }, [messages]);
 
-  const onGesture = () => navigate('/common-good');
-
   return (
     <div className="min-h-screen">
       <Navigation />
-      <div className="relative" ref={heroRef}>
-        <CommunityHeroCarousel />
-        <GestureOverlay onGestureComplete={onGesture} containerRef={heroRef} />
-      </div>
+      <CommunityHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
           <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">COMMON GROUND</h1>

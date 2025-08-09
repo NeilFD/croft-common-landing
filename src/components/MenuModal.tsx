@@ -9,6 +9,7 @@ import SecretKitchensModal from './SecretKitchensModal';
 import useSecretWordOfTheDay from '@/hooks/useSecretWordOfTheDay';
 import LoyaltyCardModal from '@/components/loyalty/LoyaltyCardModal';
 import CommonMembershipModal from '@/components/CommonMembershipModal';
+import { toast } from '@/hooks/use-toast';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -40,8 +41,14 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
   const handleSecretSuccess = useCallback(() => {
     try { window.getSelection()?.removeAllRanges(); } catch {}
-    setShowSecret(true);
-  }, []);
+    if (pageType === 'community') {
+      onClose();
+      toast({ title: 'Access granted', description: 'Common Good Fund unlocked', duration: 1800 });
+      navigate('/common-good');
+    } else {
+      setShowSecret(true);
+    }
+  }, [navigate, onClose, pageType]);
 
   const {
     isDrawing,
@@ -69,8 +76,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     return { x: 0, y: 0 };
   }, []);
   
-  // Enable secret gesture for cafe, beer and kitchens
-  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe';
+  // Enable secret gesture for cafe, beer, kitchens, and community (to open Common Good Fund)
+  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community';
 
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
