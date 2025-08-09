@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import CroftLogo from "@/components/CroftLogo";
-import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
 
 const CroftCommonDateTime: React.FC = () => {
   const [now, setNow] = useState(new Date());
+  const [cgTotal, setCgTotal] = useState<number | null>(null);
 
   // Tick every second
   useEffect(() => {
@@ -32,6 +33,25 @@ const CroftCommonDateTime: React.FC = () => {
       document.head.appendChild(canonical);
     }
     canonical.href = window.location.href;
+  }, []);
+
+  // Fetch Common Good running total
+  useEffect(() => {
+    let mounted = true;
+    const fetchTotals = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-common-good-totals', { body: {} });
+        if (!mounted) return;
+        if (error) throw error;
+        const combined = data?.combined_total_cents ?? 0;
+        setCgTotal(combined);
+      } catch (e) {
+        // silent
+      }
+    };
+    fetchTotals();
+    const id = setInterval(fetchTotals, 60_000);
+    return () => { mounted = false; clearInterval(id); };
   }, []);
 
   const dateStr = useMemo(() => now.toLocaleDateString(undefined, {
@@ -65,7 +85,14 @@ const CroftCommonDateTime: React.FC = () => {
         </section>
       </main>
 
-      <Footer showSubscription={false} />
+      <footer className="bg-void text-background py-8">
+        <div className="container mx-auto px-6 text-center">
+          <div className="font-industrial text-xs uppercase tracking-wide mb-1">The Common Good</div>
+          <div className="font-brutalist text-3xl">
+            {cgTotal !== null ? (cgTotal / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
