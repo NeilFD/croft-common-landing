@@ -188,9 +188,13 @@
     color: hsl(var(--accent-electric-blue));
   }
 
-  /* Breathing animation for menu button */
+  /* Breathing animation for floating buttons */
   .button-breathing::before {
     background-color: var(--breathing-color);
+  }
+  .button-breathing-delayed::before {
+    background-color: var(--breathing-color);
+    animation-delay: 1.5s;
   }
 
   /* Hide scrollbars */
