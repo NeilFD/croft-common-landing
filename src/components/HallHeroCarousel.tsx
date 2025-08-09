@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { hallHeroImages as heroImages } from '@/data/heroImages';
-
+import BookFloatingButton from '@/components/BookFloatingButton';
 
 const HallHeroCarousel = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -85,6 +85,9 @@ const HallHeroCarousel = () => {
           />
         ))}
       </div>
+
+      {/* Book button */}
+      <BookFloatingButton />
     </div>
   );
 };

@@ -3,10 +3,12 @@ import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
 import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
+import { useRef } from 'react';
 
 
 const CommonRoom = () => {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLElement>(null);
 
   const handleGestureComplete = () => {
     navigate('/common-room/main');
@@ -16,7 +18,7 @@ const CommonRoom = () => {
     <div className="min-h-screen bg-white">
       <Navigation />
       {/* Hero area with watermark */}
-      <main className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-40 md:pt-32 px-4">
+      <main ref={containerRef} className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-40 md:pt-32 px-4">
         {/* Page Title - responsive positioning */}
         <div className="absolute top-32 left-1/2 transform -translate-x-1/2 md:top-24 md:left-[106px] md:transform-none z-20">
           <h1 className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] cursor-pointer text-center md:text-left">
@@ -39,7 +41,7 @@ const CommonRoom = () => {
         </div>
       </main>
       <Footer />
-      <GestureOverlay onGestureComplete={handleGestureComplete} />
+      <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
       <Toaster />
     </div>
   );
