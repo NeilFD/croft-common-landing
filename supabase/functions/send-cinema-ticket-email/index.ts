@@ -80,7 +80,7 @@ serve(async (req) => {
     const subject = `Your Cinema Ticket${payload.ticketNumbers.length > 1 ? 's' : ''}: #${payload.ticketNumbers.join(', ')}`;
 
     const res = await resend.emails.send({
-      from: "Lovable <onboarding@resend.dev>",
+      from: "Secret Cinema <secretcinema@thehive-hospitality.com>",
       to: [payload.toEmail],
       subject,
       html,
