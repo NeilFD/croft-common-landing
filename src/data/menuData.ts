@@ -309,7 +309,7 @@ const hallMenu: MenuSection[] = [
         description: ""
       },
       { 
-        name: "Build it up. Strip it back. Screenings. Wedding, rave, launch, together.", 
+        name: "Build it up. Strip it back. Screenings. Weddings, rave, launch, together.", 
         description: ""
       },
       { 
