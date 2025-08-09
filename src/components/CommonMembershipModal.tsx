@@ -35,6 +35,18 @@ const CommonMembershipModal: React.FC<CommonMembershipModalProps> = ({ open, onC
             <h3 className="font-brutalist text-foreground tracking-wider">House cookbook</h3>
             <p className="font-industrial text-foreground/80">Wood. Fire. Dough. Good Taste</p>
           </section>
+          <section>
+            <h3 className="font-brutalist text-foreground tracking-wider">Cocktails</h3>
+            <p className="font-industrial text-foreground/80">Seasonal lists, off‑menu classics, and quiet pours for those in the know.</p>
+          </section>
+          <section>
+            <h3 className="font-brutalist text-foreground tracking-wider">Hall</h3>
+            <p className="font-industrial text-foreground/80">Early invites, priority access, and better rates on private hires.</p>
+          </section>
+          <section>
+            <h3 className="font-brutalist text-foreground tracking-wider">Community</h3>
+            <p className="font-industrial text-foreground/80">Give‑back nights, local projects, first to hear — keep it close.</p>
+          </section>
         </div>
       </DialogContent>
     </Dialog>

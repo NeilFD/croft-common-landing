@@ -360,7 +360,7 @@ const commonRoomMenuData: MenuSection[] = [
     title: "Membership, Not Members",
     items: [
       {
-        name: "Quiet perks across Café, Kitchens, Beer.",
+        name: "Quiet perks across Cafe, Cocktails, Beer, Kitchens, Hall and Community.",
         description: "Coffee loyalty, members-only beer, and access to our house cookbook.",
       },
       {
