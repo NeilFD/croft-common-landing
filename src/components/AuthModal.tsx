@@ -14,6 +14,7 @@ interface AuthModalProps {
   requireAllowedDomain?: boolean;
   title?: string;
   description?: string;
+  onMagicLinkSent?: () => void;
 }
 
 const validateEmailDomain = async (email: string): Promise<boolean> => {
@@ -29,7 +30,7 @@ const validateEmailDomain = async (email: string): Promise<boolean> => {
   return data;
 };
 
-export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -166,19 +167,24 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
           details: error
         });
         
-        toast({
-          title: "Authentication failed",
-          description: `${error.message} (Check console for details)`,
-          variant: "destructive"
-        });
-      } else {
-        console.log('✅ Magic link sent successfully to:', email);
-        setEmailSent(true);
-        toast({
-          title: "Magic link sent!",
-          description: "Check your email and click the link to sign in.",
-        });
-      }
+          toast({
+            title: "Authentication failed",
+            description: `${error.message} (Check console for details)`,
+            variant: "destructive"
+          });
+        } else {
+          console.log('✅ Magic link sent successfully to:', email);
+          if (onMagicLinkSent) {
+            // Immediately close and let parent handle UI/navigation
+            try { onMagicLinkSent(); } catch {}
+          } else {
+            setEmailSent(true);
+          }
+          toast({
+            title: "Magic link sent!",
+            description: "Click the magic link and follow the page to reserve tickets.",
+          });
+        }
     } catch (error) {
       console.error('🚨 Exception during magic link send:', error);
       toast({
