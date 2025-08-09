@@ -73,7 +73,7 @@ const Navigation = () => {
     if (itemName === 'COCKTAILS') return 'hover:text-[hsl(var(--accent-lime))]';
     if (itemName === 'BEER') return 'hover:text-accent-orange';
     if (itemName === 'KITCHENS') return 'hover:text-accent-blood-red';
-    if (itemName === 'HALL') return 'hover:text-accent-vivid-purple';
+    if (itemName === 'HALL') return 'hover:text-[hsl(var(--accent-pink))]';
     if (itemName === 'COMMUNITY') return 'hover:text-[hsl(var(--accent-electric-blue))]';
     if (itemName === 'THE COMMON ROOM') return 'hover:text-green-600';
     return 'hover:text-accent-pink';

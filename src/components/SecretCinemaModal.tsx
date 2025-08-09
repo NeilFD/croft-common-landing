@@ -64,14 +64,9 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
     try {
       const { data, error } = await supabase.rpc('get_cinema_status');
       if (error) throw error;
-      if (Array.isArray(data) && data.length > 0) {
-        setStatus(data[0] as CinemaStatus);
-      } else if (data) {
-        // Some setups return a single object
-        setStatus(data as CinemaStatus);
-      } else {
-        setStatus(null);
-      }
+      // RPC returns a setof rows; always handle as an array
+      const rows = (data as unknown as CinemaStatus[]) ?? [];
+      setStatus(rows.length > 0 ? rows[0] : null);
     } catch (e: any) {
       console.error('Failed to load cinema status:', e);
       toast({ title: 'Failed to load', description: e.message ?? 'Try again', variant: 'destructive' });
@@ -220,11 +215,11 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                       Doors {doorsTime} · Screening {screeningTime}
                     </span>
                     {status.is_sold_out ? (
-                      <span className="inline-flex items-center rounded-full bg-[hsl(var(--accent-vivid-purple))]/15 text-[hsl(var(--accent-vivid-purple))] px-2 py-1 text-xs font-bold">
+                      <span className="inline-flex items-center rounded-full bg-[hsl(var(--accent-pink))]/15 text-[hsl(var(--accent-pink))] px-2 py-1 text-xs font-bold">
                         SOLD OUT
                       </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-[hsl(var(--accent-vivid-purple))]/15 text-[hsl(var(--accent-vivid-purple))] px-2 py-1 text-xs font-bold tabular-nums">
+                      <span className="inline-flex items-center rounded-full bg-[hsl(var(--accent-pink))]/15 text-[hsl(var(--accent-pink))] px-2 py-1 text-xs font-bold tabular-nums">
                         {status.tickets_left} left
                       </span>
                     )}
@@ -254,7 +249,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                 </div>
               </div>
               <div className="flex justify-end">
-                <Button onClick={resetAndClose} className="bg-[hsl(var(--accent-vivid-purple))] hover:opacity-90">
+                <Button onClick={resetAndClose} className="bg-[hsl(var(--accent-pink))] hover:opacity-90">
                   Done
                 </Button>
               </div>
@@ -281,7 +276,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                       variant={quantity === 1 ? 'default' : 'outline'}
                       onClick={() => setQuantity(1)}
                       disabled={booking || loading || status?.is_sold_out}
-                      className={quantity === 1 ? 'bg-[hsl(var(--accent-vivid-purple))]' : ''}
+                      className={quantity === 1 ? 'bg-[hsl(var(--accent-pink))]' : ''}
                     >
                       1
                     </Button>
@@ -290,7 +285,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                       variant={quantity === 2 ? 'default' : 'outline'}
                       onClick={() => setQuantity(2)}
                       disabled={booking || loading || status?.is_sold_out || (status ? status.tickets_left < 2 : true)}
-                      className={quantity === 2 ? 'bg-[hsl(var(--accent-vivid-purple))]' : ''}
+                      className={quantity === 2 ? 'bg-[hsl(var(--accent-pink))]' : ''}
                     >
                       2
                     </Button>
@@ -325,7 +320,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                   type="button"
                   onClick={handleBook}
                   disabled={booking || loading || status?.is_sold_out}
-                  className="bg-[hsl(var(--accent-vivid-purple))] hover:opacity-90"
+                  className="bg-[hsl(var(--accent-pink))] hover:opacity-90"
                 >
                   {status?.is_sold_out ? 'Sold out' : booking ? 'Booking…' : 'Reserve tickets'}
                 </Button>
