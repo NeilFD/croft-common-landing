@@ -65,19 +65,19 @@ const CommonGood = () => {
             <h1 className="font-brutalist text-4xl md:text-6xl mb-4 md:mb-8 text-foreground">The Common Good</h1>
             <aside aria-live="polite" className="mt-3 md:mt-0 md:absolute md:right-6 md:top-32 md:z-10">
               {/* Mobile totals bar */}
-              <div className="md:hidden border border-border/30 rounded-lg px-4 py-3">
+              <div className="md:hidden border border-border/30 rounded-lg px-4 py-3 mb-6">
                 <div className="grid grid-cols-3 gap-4 text-center">
                   <div>
-                    <div className="font-industrial text-xs text-muted-foreground">Common People</div>
-                    <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+                    <div className="font-industrial text-xs text-muted-foreground leading-tight min-h-8 flex items-end justify-center">Common People</div>
+                    <div className="font-brutalist text-2xl text-foreground mt-1">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
                   </div>
                   <div>
-                    <div className="font-industrial text-xs text-muted-foreground">Croft Common</div>
-                    <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
+                    <div className="font-industrial text-xs text-muted-foreground leading-tight min-h-8 flex items-end justify-center">Croft Common</div>
+                    <div className="font-brutalist text-2xl text-foreground mt-1">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
                   </div>
                   <div>
-                    <div className="font-industrial text-xs text-muted-foreground">The Common Good</div>
-                    <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+                    <div className="font-industrial text-xs text-muted-foreground leading-tight min-h-8 flex items-end justify-center">The Common Good</div>
+                    <div className="font-brutalist text-2xl text-foreground mt-1">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
                   </div>
                 </div>
               </div>
