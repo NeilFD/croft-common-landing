@@ -38,18 +38,28 @@ const CommonGood = () => {
       toast({ title: 'Amount too small', description: 'Minimum is £1.00', duration: 2500 });
       return;
     }
+    // Open a placeholder tab synchronously to avoid mobile popup blockers
+    let checkoutTab: Window | null = null;
     try {
       setLoading(true);
+      checkoutTab = window.open('', '_blank');
+
       const { data, error } = await supabase.functions.invoke('create-common-good-payment', {
         body: { amount_cents: cents },
       });
       if (error) throw error;
       if (data?.url) {
-        window.open(data.url, '_blank');
+        if (checkoutTab) {
+          checkoutTab.location.href = data.url;
+        } else {
+          // Fallback: open in the same tab if popups are blocked
+          window.location.href = data.url;
+        }
       } else {
         throw new Error('No checkout URL returned');
       }
     } catch (e: any) {
+      if (checkoutTab && !checkoutTab.closed) checkoutTab.close();
       toast({ title: 'Checkout failed', description: e.message || 'Please try again', duration: 3000 });
     } finally {
       setLoading(false);
