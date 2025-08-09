@@ -10,6 +10,7 @@ import useSecretWordOfTheDay from '@/hooks/useSecretWordOfTheDay';
 import LoyaltyCardModal from '@/components/loyalty/LoyaltyCardModal';
 import CommonMembershipModal from '@/components/CommonMembershipModal';
 import { toast } from '@/hooks/use-toast';
+import SecretCinemaModal from '@/components/SecretCinemaModal';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -76,8 +77,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     return { x: 0, y: 0 };
   }, []);
   
-  // Enable secret gesture for cafe, beer, kitchens, and community (to open Common Good Fund)
-  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community';
+  // Enable secret gesture for cafe, beer, kitchens, community (to open Common Good Fund), and hall
+  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall';
 
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
@@ -313,6 +314,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         <CommonMembershipModal
           open={showMembership}
           onClose={() => setShowMembership(false)}
+        />
+      )}
+      {pageType === 'hall' && (
+        <SecretCinemaModal
+          open={showSecret}
+          onClose={() => setShowSecret(false)}
         />
       )}
     </div>

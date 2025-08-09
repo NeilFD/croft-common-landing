@@ -32,6 +32,92 @@ export type Database = {
         }
         Relationships: []
       }
+      cinema_bookings: {
+        Row: {
+          created_at: string
+          email: string
+          guest_name: string | null
+          id: string
+          primary_name: string
+          quantity: number
+          release_id: string
+          ticket_numbers: number[]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          guest_name?: string | null
+          id?: string
+          primary_name: string
+          quantity: number
+          release_id: string
+          ticket_numbers: number[]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          guest_name?: string | null
+          id?: string
+          primary_name?: string
+          quantity?: number
+          release_id?: string
+          ticket_numbers?: number[]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cinema_bookings_release_id_fkey"
+            columns: ["release_id"]
+            isOneToOne: false
+            referencedRelation: "cinema_releases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cinema_releases: {
+        Row: {
+          capacity: number
+          created_at: string
+          description: string | null
+          doors_time: string
+          id: string
+          is_active: boolean
+          month_key: string
+          poster_url: string | null
+          screening_date: string
+          screening_time: string
+          title: string | null
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          description?: string | null
+          doors_time?: string
+          id?: string
+          is_active?: boolean
+          month_key: string
+          poster_url?: string | null
+          screening_date: string
+          screening_time?: string
+          title?: string | null
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          description?: string | null
+          doors_time?: string
+          id?: string
+          is_active?: boolean
+          month_key?: string
+          poster_url?: string | null
+          screening_date?: string
+          screening_time?: string
+          title?: string | null
+        }
+        Relationships: []
+      }
       common_good_messages: {
         Row: {
           amount_cents: number
@@ -261,6 +347,58 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_cinema_booking: {
+        Args: {
+          _user_id: string
+          _email: string
+          _primary_name: string
+          _guest_name: string
+          _quantity: number
+        }
+        Returns: {
+          booking_id: string
+          release_id: string
+          ticket_numbers: number[]
+          tickets_left: number
+        }[]
+      }
+      get_cinema_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          release_id: string
+          month_key: string
+          screening_date: string
+          doors_time: string
+          screening_time: string
+          capacity: number
+          tickets_sold: number
+          tickets_left: number
+          is_sold_out: boolean
+          title: string
+          description: string
+          poster_url: string
+        }[]
+      }
+      get_last_thursday: {
+        Args: { month_start: string }
+        Returns: string
+      }
+      get_or_create_current_release: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          capacity: number
+          created_at: string
+          description: string | null
+          doors_time: string
+          id: string
+          is_active: boolean
+          month_key: string
+          poster_url: string | null
+          screening_date: string
+          screening_time: string
+          title: string | null
+        }
+      }
       get_user_email: {
         Args: Record<PropertyKey, never>
         Returns: string
