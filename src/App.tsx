@@ -20,7 +20,8 @@ import Unsubscribe from "./pages/Unsubscribe";
 import NotFound from "./pages/NotFound";
 import Branding from "./pages/Branding";
 import CommonGood from "./pages/CommonGood";
-import CommonGoodMessage from "./pages/CommonGoodMessage";
+ import CommonGoodMessage from "./pages/CommonGoodMessage";
+ import CroftCommonDateTime from "./pages/CroftCommonDateTime";
  
 const queryClient = new QueryClient();
  
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/branding" element={<Branding />} />
             <Route path="/common-good" element={<CommonGood />} />
             <Route path="/common-good/message" element={<CommonGoodMessage />} />
+            <Route path="/CroftCommonDate&Time" element={<CroftCommonDateTime />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
