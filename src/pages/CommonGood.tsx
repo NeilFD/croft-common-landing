@@ -87,7 +87,7 @@ const CommonGood = () => {
               </Button>
             </div>
           </div>
-          <aside aria-live="polite" className="absolute right-6 top-28 md:top-44 z-10 text-right">
+          <aside aria-live="polite" className="absolute right-6 top-16 md:top-32 z-10 text-right">
             <div>
               <div className="font-industrial text-sm text-muted-foreground mb-1">Common People Total</div>
               <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
