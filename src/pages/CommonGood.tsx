@@ -9,9 +9,26 @@ import { supabase } from '@/integrations/supabase/client';
 const CommonGood = () => {
   const [amount, setAmount] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [totals, setTotals] = useState<{ people: number; croft: number; combined: number } | null>(null);
 
   useEffect(() => {
     document.title = 'The Common Good | Croft Common';
+  }, []);
+
+  useEffect(() => {
+    const fetchTotals = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-common-good-totals', { body: {} });
+        if (error) throw error;
+        const people = data?.common_people_total_cents ?? 0;
+        setTotals({ people, croft: people, combined: people * 2 });
+      } catch (e) {
+        console.error('Failed to load totals', e);
+      }
+    };
+    fetchTotals();
+    const id = setInterval(fetchTotals, 60_000);
+    return () => clearInterval(id);
   }, []);
 
   const handleCheckout = async () => {
@@ -43,7 +60,7 @@ const CommonGood = () => {
     <div className="min-h-screen">
       <Navigation />
       <main>
-        <section className="pt-40 md:pt-56 pb-24 bg-background">
+        <section className="relative pt-40 md:pt-56 pb-24 bg-background">
           <div className="container mx-auto px-6 max-w-4xl">
             <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">The Common Good</h1>
             <p className="font-industrial text-lg text-foreground/80 leading-relaxed mb-12 max-w-3xl">
@@ -70,6 +87,20 @@ const CommonGood = () => {
               </Button>
             </div>
           </div>
+          <aside aria-live="polite" className="absolute top-6 right-6 text-right">
+            <div>
+              <div className="font-industrial text-sm text-muted-foreground mb-1">Common People Total</div>
+              <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.people / 100).toFixed(2) : '—'}</div>
+            </div>
+            <div className="mt-4">
+              <div className="font-industrial text-sm text-muted-foreground mb-1">Croft Common Total</div>
+              <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
+            </div>
+            <div className="mt-4">
+              <div className="font-industrial text-sm text-muted-foreground mb-1">Combined Total</div>
+              <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
+            </div>
+          </aside>
         </section>
       </main>
       <Footer />

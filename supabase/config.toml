@@ -74,3 +74,6 @@ verify_jwt = false
 
 [functions.post-common-good-message]
 verify_jwt = false
+
+[functions.get-common-good-totals]
+verify_jwt = false
