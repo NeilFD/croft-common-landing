@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import CroftLogo from "@/components/CroftLogo";
+import Footer from "@/components/Footer";
 
 const CroftCommonDateTime: React.FC = () => {
   const [now, setNow] = useState(new Date());
@@ -63,6 +64,8 @@ const CroftCommonDateTime: React.FC = () => {
           <div className="h-px w-24 bg-border/60 mx-auto" aria-hidden="true" />
         </section>
       </main>
+
+      <Footer showSubscription={false} />
     </div>
   );
 };
