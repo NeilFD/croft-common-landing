@@ -26,7 +26,7 @@ const MenuButton = ({ pageType, menuData, forceCafeAccent }: MenuButtonProps) =>
       case 'kitchens':
         return 'hsl(var(--accent-blood-red))';
       case 'hall':
-        return 'hsl(var(--foreground))';
+        return 'hsl(var(--accent-pink))';
       case 'community':
         return 'hsl(var(--accent-electric-blue))';
       case 'common-room':
