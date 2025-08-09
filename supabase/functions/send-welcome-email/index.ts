@@ -25,8 +25,14 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, name, subscriberId }: WelcomeEmailRequest = await req.json();
 
     const displayName = name || "Friend";
-    const unsubscribeUrl = `https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/unsubscribe?token=${subscriberId}`;
-
+    const originHeader = req.headers.get('origin') || '';
+    const requestOrigin = originHeader || new URL(req.url).origin;
+    const siteBase = Deno.env.get('SITE_BASE_URL') || requestOrigin;
+    const assetsBase = Deno.env.get('EMAIL_ASSETS_BASE_URL') || siteBase;
+    const logoPath = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png";
+    const logoUrl = `${assetsBase.replace(/\/$/, "")}${logoPath}`;
+    const unsubscribeUrl = `${siteBase.replace(/\/$/, "")}/unsubscribe?token=${subscriberId}`;
+    
     const emailResponse = await resend.emails.send({
       from: "Croft Common <hello@thehive-hospitality.com>",
       to: [email],
@@ -43,12 +49,13 @@ const handler = async (req: Request): Promise<Response> => {
           <title>You're In - Croft Common</title>
         </head>
         <body style="margin: 0; padding: 0; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); font-family: 'Work Sans', Arial, sans-serif;">
+          <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Unlock The Common Room with Lucky No 7 — look for the ⑦ in the top-right, draw it to reveal secret pages.</div>
           <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
             
             <!-- Header with Logo -->
             <div style="background: #ffffff; padding: 40px 20px; text-align: center; border-bottom: 4px solid #ff1b6b;">
               <!-- New Geometric Logo -->
-              <img src="https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/lovable-uploads/92af214f-9e2c-4472-9859-2d05f1947d9b.png" 
+              <img src="${logoUrl}" 
                    alt="Croft Common Logo" 
                    style="width: 60px; height: 60px; margin: 0 auto 20px; display: block; object-fit: contain;" />
               <h1 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">CROFT COMMON</h1>
@@ -71,13 +78,23 @@ const handler = async (req: Request): Promise<Response> => {
               <!-- Call to Action Box -->
               <div style="background: #ffffff; padding: 35px; margin: 35px 0; border: 2px solid #ff1b6b;">
                 <h3 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; margin: 0 0 20px 0; text-transform: uppercase; text-align: center;">To unlock The Common Room:</h3>
-                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="https://croftcommontest.com/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">croftcommontest.com/common-room</a></p>
+                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="${siteBase.replace(/\/$/, '')}/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">${siteBase.replace(/\/$/, '')}/common-room</a></p>
                 <div style="background: #f8f8f8; border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: left;">
                   <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Draw a 7.</p>
                   <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Boldly. A single line.</p>
                   <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">One gesture.</p>
                   <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0; letter-spacing: 0.05em;">You're in</p>
                 </div>
+              </div>
+              <div style="padding: 24px; border: 1px solid #eaeaea; background: #f9fafb; margin: 24px 0;">
+                <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                  <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:999px; background:#111; color:#ffffff; font-weight:700; font-family:'Oswald', Arial, sans-serif;">⑦</span>
+                  <span style="font-family: 'Oswald', Arial Black, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; font-weight:700;">Visual cue</span>
+                </div>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">Look for Lucky No 7.</p>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">Top right around the site.</p>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">Draw it.</p>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0;">Unlock the good stuff.</p>
               </div>
               
               <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">Inside, you'll find what's not shouted. The stuff that doesn't always make it to the flyers, the feed, or the posters.</p>
@@ -95,7 +112,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: #ffffff; padding: 30px; text-align: center; border-top: 2px solid #ff1b6b;">
               <div style="margin-bottom: 20px;">
                 <!-- Small Logo -->
-                <img src="https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com/lovable-uploads/92af214f-9e2c-4472-9859-2d05f1947d9b.png" 
+                <img src="${logoUrl}" 
                      alt="Croft Common Logo" 
                      style="width: 30px; height: 30px; margin: 0 auto; display: block; object-fit: contain;" />
               </div>
