@@ -137,23 +137,25 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id });
       toast({ title: 'Booking confirmed', description: `You’ve got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
 
-      // Send confirmation email (best-effort)
-      try {
-        await supabase.functions.invoke('send-cinema-ticket-email', {
-          body: {
-            toEmail: user.email,
-            primaryName: primaryName.trim(),
-            guestName: quantity === 2 ? guestName.trim() : '',
-            quantity,
-            ticketNumbers: ticket_numbers,
-            screeningDate: status.screening_date,
-            doorsTime,
-            screeningTime,
-            title: status.title ?? 'Secret Cinema Club',
-          },
-        });
-      } catch (mailErr) {
-        console.warn('Email sending failed (non-blocking):', mailErr);
+      // Send confirmation email (best-effort with explicit error handling)
+      const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-cinema-ticket-email', {
+        body: {
+          toEmail: user.email,
+          primaryName: primaryName.trim(),
+          guestName: quantity === 2 ? guestName.trim() : '',
+          quantity,
+          ticketNumbers: ticket_numbers,
+          screeningDate: status.screening_date,
+          doorsTime,
+          screeningTime,
+          title: status.title ?? 'Secret Cinema Club',
+        },
+      });
+      if (emailError) {
+        console.error('Email send error:', emailError);
+        toast({ title: 'Email failed', description: 'We could not send your email automatically. Use Resend button.', variant: 'destructive' });
+      } else {
+        console.log('Email sent result:', emailResult);
       }
 
       // Refresh status to reflect sold count
