@@ -217,12 +217,12 @@ input[type="number"] {
 /* Subtle anti-screenshot motion for dice */
 @keyframes micro-tilt {
   0%, 100% {
-    transform: rotate(-2deg);
-    filter: drop-shadow(2px 2px 0 hsl(var(--foreground) / 0.25));
+    transform: rotate(-4deg);
+    filter: drop-shadow(3px 3px 0 hsl(var(--foreground) / 0.25));
   }
   50% {
-    transform: rotate(2deg);
-    filter: drop-shadow(-2px 2px 0 hsl(var(--foreground) / 0.25));
+    transform: rotate(4deg);
+    filter: drop-shadow(-3px 3px 0 hsl(var(--foreground) / 0.25));
   }
 }
 

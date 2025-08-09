@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
-import { Dice5, Dice2 } from "lucide-react";
+import { Dice6, Dice1 } from "lucide-react";
 
 interface SecretLuckySevenModalProps {
   open: boolean;
@@ -70,14 +70,12 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
 
             {/* Dice visual (Outline Pair 2 + 5, Animation B) */}
             <div className="flex items-center justify-center py-4 select-none">
-              <div className="relative w-40 h-28">
-                {/* Back die */}
-                <div className="absolute left-6 top-2 rotate-[-12deg] opacity-90">
-                  <Dice2 className="w-20 h-20 text-foreground/80" />
+              <div className="flex items-center gap-8">
+                <div className="micro-tilt">
+                  <Dice6 className="w-24 h-24 text-foreground" />
                 </div>
-                {/* Front die with subtle micro-tilt wobble */}
-                <div className="absolute right-6 bottom-0 rotate-[10deg] micro-tilt">
-                  <Dice5 className="w-24 h-24 text-foreground" />
+                <div className="micro-tilt">
+                  <Dice1 className="w-24 h-24 text-foreground" />
                 </div>
               </div>
             </div>
