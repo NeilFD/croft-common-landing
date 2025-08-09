@@ -77,7 +77,7 @@ const CommunityHeroCarousel = () => {
 
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
-        <div className="w-px h-16 bg-background/50"></div>
+        <div className="w-px h-16 bg-[hsl(var(--accent-pink))]"></div>
       </div>
 
       <div className="absolute bottom-8 right-8 flex space-x-2 z-20">
