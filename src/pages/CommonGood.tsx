@@ -97,7 +97,7 @@ const CommonGood = () => {
               <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.croft / 100).toFixed(2) : '—'}</div>
             </div>
             <div className="mt-4">
-              <div className="font-industrial text-sm text-muted-foreground mb-1">Combined Total</div>
+              <div className="font-industrial text-sm text-muted-foreground mb-1">The Common Good</div>
               <div className="font-brutalist text-2xl text-foreground">{totals ? (totals.combined / 100).toFixed(2) : '—'}</div>
             </div>
           </aside>
