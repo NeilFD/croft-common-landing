@@ -175,6 +175,33 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
     onClose();
   };
 
+  const resendEmail = async () => {
+    if (!user || !status || !confirmation) {
+      toast({ title: 'Not ready', description: 'No booking found to email.' });
+      return;
+    }
+    try {
+      console.log('Resending ticket email to:', user.email);
+      await supabase.functions.invoke('send-cinema-ticket-email', {
+        body: {
+          toEmail: user.email,
+          primaryName: primaryName.trim(),
+          guestName: confirmation.ticketNumbers.length > 1 ? guestName.trim() : '',
+          quantity: confirmation.ticketNumbers.length,
+          ticketNumbers: confirmation.ticketNumbers,
+          screeningDate: status.screening_date,
+          doorsTime,
+          screeningTime,
+          title: status.title ?? 'Secret Cinema Club',
+        },
+      });
+      toast({ title: 'Email sent', description: `Sent to ${user.email}` });
+    } catch (mailErr: any) {
+      console.warn('Email resend failed:', mailErr);
+      toast({ title: 'Email failed', description: 'Please check spam or try again later.', variant: 'destructive' });
+    }
+  };
+
   return (
     <>
       {/* Auth modal for verified members via magic link */}
@@ -217,15 +244,15 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                     {formattedScreening}
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center rounded-full border border-steel/30 px-2 py-1 text-xs font-medium text-foreground">
+                    <span className="inline-flex items-center rounded-full border border-foreground/20 px-2 py-1 text-xs font-medium text-foreground">
                       Doors {doorsTime} · Screening {screeningTime}
                     </span>
                     {status.is_sold_out ? (
-                      <span className="inline-flex items-center rounded-full bg-[hsl(var(--accent-pink))]/15 text-[hsl(var(--accent-pink))] px-2 py-1 text-xs font-bold">
+                      <span className="inline-flex items-center rounded-full border border-foreground/20 text-foreground px-2 py-1 text-xs font-bold">
                         SOLD OUT
                       </span>
                     ) : (
-                      <span className="inline-flex items-center rounded-full bg-[hsl(var(--accent-pink))]/15 text-[hsl(var(--accent-pink))] px-2 py-1 text-xs font-bold tabular-nums">
+                      <span className="inline-flex items-center rounded-full border border-foreground/20 text-foreground px-2 py-1 text-xs font-bold tabular-nums">
                         {status.tickets_left} left
                       </span>
                     )}
@@ -254,8 +281,11 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                   We’ve emailed your confirmation. See you at {doorsTime} for doors — screening starts at {screeningTime}.
                 </div>
               </div>
-              <div className="flex justify-end">
-                <Button onClick={resetAndClose} className="bg-[hsl(var(--accent-pink))] hover:opacity-90">
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={resendEmail}>
+                  Resend email
+                </Button>
+                <Button onClick={resetAndClose} className="bg-foreground text-background hover:opacity-90">
                   Done
                 </Button>
               </div>
@@ -282,7 +312,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                       variant={quantity === 1 ? 'default' : 'outline'}
                       onClick={() => setQuantity(1)}
                       disabled={booking || loading || status?.is_sold_out}
-                      className={quantity === 1 ? 'bg-[hsl(var(--accent-pink))]' : ''}
+                      className={quantity === 1 ? 'bg-foreground text-background' : ''}
                     >
                       1
                     </Button>
@@ -291,7 +321,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                       variant={quantity === 2 ? 'default' : 'outline'}
                       onClick={() => setQuantity(2)}
                       disabled={booking || loading || status?.is_sold_out || (status ? status.tickets_left < 2 : true)}
-                      className={quantity === 2 ? 'bg-[hsl(var(--accent-pink))]' : ''}
+                      className={quantity === 2 ? 'bg-foreground text-background' : ''}
                     >
                       2
                     </Button>
@@ -326,7 +356,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                   type="button"
                   onClick={handleBook}
                   disabled={booking || loading || status?.is_sold_out}
-                  className="bg-[hsl(var(--accent-pink))] hover:opacity-90"
+                  className="bg-foreground text-background hover:opacity-90"
                 >
                   {status?.is_sold_out ? 'Sold out' : booking ? 'Booking…' : 'Reserve tickets'}
                 </Button>
