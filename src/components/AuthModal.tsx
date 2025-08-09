@@ -247,9 +247,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
                   <p>Complete the form and save.</p>
                 </>
               ) : (
-                <>
-                  <p>Click it to sign in and return to this window.</p>
-                  <p>If this window doesn't update automatically, press “Got it”.</p>
+                <> 
+                  <p>Click the magic link and follow the page to reserve tickets.</p>
                 </>
               )}
             </DialogDescription>
@@ -266,7 +265,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{title ?? 'Sign in to create events'}</DialogTitle>
+          <DialogTitle>{title ?? 'Sign in'}</DialogTitle>
           <DialogDescription>
             {description ?? "Enter your email address and we'll send you a magic link to sign in."}
           </DialogDescription>

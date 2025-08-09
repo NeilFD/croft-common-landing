@@ -11,7 +11,7 @@ const Hall = () => {
       <HallHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground transition-all duration-300 hover:text-[hsl(var(--accent-pink))] cursor-pointer">
+          <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground transition-all duration-300 hover:opacity-80 cursor-pointer">
             HALL
           </h2>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
@@ -22,7 +22,7 @@ const Hall = () => {
         </div>
       </section>
       <Footer />
-      <MenuButton pageType="hall" menuData={hallMenuData} forceCafeAccent />
+      <MenuButton pageType="hall" menuData={hallMenuData} />
     </div>
   );
 };

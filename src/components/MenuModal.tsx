@@ -174,7 +174,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   };
 
   const accentColor = getAccentColor();
-  const isNeutral = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe';
+  const isNeutral = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'hall';
 
   return (
     <div 
@@ -208,7 +208,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           <button
             onClick={onClose}
             className={`w-10 h-10 rounded-full border border-background/30 
-              hover:border-${accentColor} hover:bg-${accentColor}/10 
+              ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
               transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
           >
             <X className="w-5 h-5 text-foreground" />

@@ -79,8 +79,9 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
     if (open) {
       setConfirmation(null);
       loadStatus();
+      if (!user) setEmailModalOpen(true);
     }
-  }, [open]);
+  }, [open, user]);
 
   // Adjust allowed quantity when tickets are low
   useEffect(() => {

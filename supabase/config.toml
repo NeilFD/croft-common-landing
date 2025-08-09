@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.get-common-good-totals]
 verify_jwt = false
+
+[functions.send-cinema-ticket-email]
+verify_jwt = false
