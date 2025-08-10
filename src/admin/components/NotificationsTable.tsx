@@ -8,19 +8,28 @@ import { Badge } from "@/components/ui/badge";
 type Props = {
   onSelect: (id: string) => void;
   selectedId: string | null;
+  filterMode?: 'all' | 'live' | 'dry';
 };
 
-export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId }) => {
+export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all' }) => {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["notifications"],
+    queryKey: ["notifications", filterMode],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("notifications")
         .select(
           "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at"
         )
         .order("created_at", { ascending: false })
         .limit(50);
+
+      if (filterMode === 'live') {
+        q = q.eq('dry_run', false);
+      } else if (filterMode === 'dry') {
+        q = q.eq('dry_run', true);
+      }
+
+      const { data, error } = await q;
       if (error) throw error;
       return data ?? [];
     },

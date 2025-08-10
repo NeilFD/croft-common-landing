@@ -11,6 +11,7 @@ import { DeliveriesTable } from "./components/DeliveriesTable";
 import { toast } from "@/hooks/use-toast";
 import { AuthModal } from "@/components/AuthModal";
 import CroftLogo from "@/components/CroftLogo";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type NotificationRow = {
   id: string;
@@ -75,6 +76,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
+  const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
 
   const queryClient = useMemo(() => new QueryClient(), []);
 
@@ -163,13 +165,21 @@ export const AdminNotificationsApp: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ComposeNotificationForm onSent={onSent} />
             <Card className="order-first lg:order-none">
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle>History</CardTitle>
+                <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
+                  <TabsList>
+                    <TabsTrigger value="all">All</TabsTrigger>
+                    <TabsTrigger value="live">Live</TabsTrigger>
+                    <TabsTrigger value="dry">Dry runs</TabsTrigger>
+                  </TabsList>
+                </Tabs>
               </CardHeader>
               <CardContent className="space-y-4">
                 <NotificationsTable
                   onSelect={(id) => setSelectedId(id)}
                   selectedId={selectedId}
+                  filterMode={filterMode}
                 />
               </CardContent>
             </Card>
