@@ -29,16 +29,31 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
   const [dryRun, setDryRun] = useState(false);
   const [sending, setSending] = useState(false);
 
+  const normalizeUrlInput = (u: string): string => {
+    const raw = (u ?? '').trim();
+    if (!raw) return '';
+    try {
+      if (raw.startsWith('/')) {
+        return new URL(raw, window.location.origin).href;
+      }
+      return new URL(raw).href;
+    } catch {
+      return new URL(`https://${raw}`).href;
+    }
+  };
+
+  const normalizedUrl = useMemo(() => normalizeUrlInput(url), [url]);
+
   const preview = useMemo(
     () => ({
-      title: title || "Preview title",
-      body: body || "Preview body text appears here.",
+      title: title || 'Preview title',
+      body: body || 'Preview body text appears here.',
       icon: icon || undefined,
       badge: badge || undefined,
-      url: url || undefined,
+      url: normalizedUrl || undefined,
       image: image || undefined,
     }),
-    [title, body, icon, badge, url, image]
+    [title, body, icon, badge, normalizedUrl, image]
   );
 
   const canSend = title.trim().length > 0 && body.trim().length > 0;
@@ -77,7 +92,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
         payload: {
           title: title.trim(),
           body: body.trim(),
-          url: url.trim() || undefined,
+          url: normalizedUrl || undefined,
           icon: icon.trim() || undefined,
           badge: badge.trim() || undefined,
           image: image.trim() || undefined,
@@ -146,10 +161,11 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
               <Label htmlFor="url">URL (optional)</Label>
               <Input
                 id="url"
-                placeholder="https://example.com"
+                placeholder="https://example.com or /book or example.com/book"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">Tip: Enter a full URL, a path like /book, or a domain like croftcommontest.com/book. We’ll normalize it.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="icon">Icon URL (optional)</Label>
