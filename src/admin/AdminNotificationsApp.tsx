@@ -93,9 +93,9 @@ export const AdminNotificationsApp: React.FC = () => {
       }
     });
 
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
-      const email = data.user?.email ?? null;
+      const email = session?.user?.email ?? null;
       setUserEmail(email);
       setReady(true);
       if (!email) setAuthOpen(true);
