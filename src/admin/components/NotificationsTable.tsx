@@ -85,26 +85,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
   };
 
   return (
-    <div
-      className="rounded-md border overflow-x-auto"
-      onClickCapture={(e) => {
-        const target = e.target as HTMLElement;
-        if (target.closest('button')) return; // allow buttons inside
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onAuxClickCapture={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-      }}
-      onMouseDownCapture={(e) => {
-        const me = e as React.MouseEvent;
-        if (me.button === 1 || me.ctrlKey || me.metaKey) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }}
-    >
+    <div className="rounded-md border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
