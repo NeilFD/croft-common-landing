@@ -9,6 +9,7 @@ import { ComposeNotificationForm } from "./components/ComposeNotificationForm";
 import { NotificationsTable } from "./components/NotificationsTable";
 import { DeliveriesTable } from "./components/DeliveriesTable";
 import { toast } from "@/hooks/use-toast";
+import { AuthModal } from "@/components/AuthModal";
 
 type NotificationRow = {
   id: string;
@@ -69,22 +70,35 @@ export const AdminNotificationsApp: React.FC = () => {
   const [ready, setReady] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [authOpen, setAuthOpen] = useState(false);
 
   const queryClient = useMemo(() => new QueryClient(), []);
 
   useEffect(() => {
+    let mounted = true;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return;
+      const email = session?.user?.email ?? null;
+      setUserEmail(email);
+      if (!email) {
+        setAuthOpen(true);
+      } else {
+        setAuthOpen(false);
+      }
+    });
+
     supabase.auth.getUser().then(({ data }) => {
+      if (!mounted) return;
       const email = data.user?.email ?? null;
       setUserEmail(email);
       setReady(true);
-      if (!email) {
-        toast({
-          title: "Sign-in required",
-          description:
-            "Please sign in on the main site first. This page will use your existing session.",
-        });
-      }
+      if (!email) setAuthOpen(true);
     });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const onSent = () => {
@@ -110,23 +124,21 @@ export const AdminNotificationsApp: React.FC = () => {
 
   if (!userEmail) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-6">
-        <Card className="max-w-md w-full">
-          <CardHeader>
-            <CardTitle>Sign in required</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              To use the admin console, sign in on the main site first, then
-              return to this page.
-            </p>
-            <div className="flex gap-2">
-              <a href="/" className="underline text-primary text-sm">
-                Go to main site
-              </a>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen">
+        <AuthModal
+          isOpen={authOpen}
+          onClose={() => setAuthOpen(false)}
+          onSuccess={async () => {
+            const { data } = await supabase.auth.getUser();
+            setUserEmail(data.user?.email ?? null);
+            setAuthOpen(false);
+            toast({ title: "Signed in", description: "You can now use the admin console." });
+          }}
+          requireAllowedDomain
+          title="Admin sign in"
+          description="Enter your authorized email to access the Notifications Admin."
+          onMagicLinkSent={() => setAuthOpen(false)}
+        />
         <Toaster />
       </div>
     );
