@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { enableNotifications } from './notifications';
 import { isStandalone, isIosSafari } from './registerPWA';
+import logo from '@/assets/geometric-croft-logo.png';
 
 // Key to avoid nagging users repeatedly
 const DISMISS_KEY = 'notifications_prompt_dismissed_v1';
@@ -50,7 +51,10 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
     <div className="fixed inset-x-0 bottom-4 z-[10000] px-4">
       <div className="mx-auto max-w-xl rounded-lg border bg-background text-foreground shadow-xl">
         <div className="p-4">
-          <h3 className="text-sm font-medium">Enable notifications</h3>
+          <div className="flex items-center gap-2">
+            <img src={logo} alt="Croft Common logo" className="h-4 w-4 rounded-sm" loading="lazy" />
+            <h3 className="text-sm font-medium">Enable notifications</h3>
+          </div>
           <p className="mt-1 text-sm text-muted-foreground">
             Get updates from Croft Common. You can change this later in your settings.
           </p>
