@@ -86,23 +86,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
 
   return (
     <div className="rounded-md border overflow-x-auto">
-      <Table
-        onClickCapture={(e) => {
-          const t = e.target as HTMLElement;
-          if (t.closest('button, a, [role="button"]')) return;
-          e.preventDefault();
-        }}
-        onMouseDownCapture={(e) => {
-          const t = e.target as HTMLElement;
-          if (t.closest('button, a, [role="button"]')) return;
-          e.preventDefault();
-        }}
-        onAuxClickCapture={(e) => {
-          const t = e.target as HTMLElement;
-          if (t.closest('button, a, [role="button"]')) return;
-          e.preventDefault();
-        }}
-      >
+      <Table>
         <TableHeader>
           <TableRow>
             <TableHead>Created</TableHead>
@@ -125,6 +109,9 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
             return (
               <TableRow
                 key={n.id}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => { e.preventDefault(); onSelect(n.id); }}
                 className={`${selectedId === n.id ? "bg-muted/50" : ""}`}
               >
                 <TableCell className="whitespace-nowrap">
@@ -146,6 +133,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                 <TableCell className="text-right">{ctr}%</TableCell>
                 <TableCell className="text-right space-x-1">
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(n.id); }}
@@ -153,6 +141,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                     View
                   </Button>
                   <Button
+                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleArchive(n.id, !n.archived); }}
