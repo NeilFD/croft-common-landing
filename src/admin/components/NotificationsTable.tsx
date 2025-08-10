@@ -16,8 +16,8 @@ type Props = {
 
 export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all', archivedFilter = 'active', statusFilter = 'all' }) => {
   const { data: notifications, isLoading, error } = useQuery({
-    queryKey: ["notifications", filterMode, archivedFilter],
-  queryFn: async () => {
+    queryKey: ["notifications", filterMode, archivedFilter, statusFilter],
+    queryFn: async () => {
     let q = supabase
       .from("notifications")
       .select(
