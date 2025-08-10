@@ -335,6 +335,7 @@ export type Database = {
       }
       notifications: {
         Row: {
+          archived: boolean
           badge: string | null
           body: string
           created_at: string
@@ -354,6 +355,7 @@ export type Database = {
           url: string | null
         }
         Insert: {
+          archived?: boolean
           badge?: string | null
           body: string
           created_at?: string
@@ -373,6 +375,7 @@ export type Database = {
           url?: string | null
         }
         Update: {
+          archived?: boolean
           badge?: string | null
           body?: string
           created_at?: string

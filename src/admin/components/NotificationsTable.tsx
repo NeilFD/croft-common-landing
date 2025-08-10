@@ -1,24 +1,26 @@
 
 import React from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   onSelect: (id: string) => void;
   selectedId: string | null;
   filterMode?: 'all' | 'live' | 'dry';
+  archivedFilter?: 'all' | 'active' | 'archived';
 };
 
-export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all' }) => {
+export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all', archivedFilter = 'active' }) => {
   const { data: notifications, isLoading, error } = useQuery({
-    queryKey: ["notifications", filterMode],
+    queryKey: ["notifications", filterMode, archivedFilter],
     queryFn: async () => {
       let q = supabase
         .from("notifications")
         .select(
-          "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at"
+          "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at, archived"
         )
         .order("created_at", { ascending: false })
         .limit(50);
@@ -29,6 +31,11 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
         q = q.eq('dry_run', true);
       }
 
+      if (archivedFilter === 'archived') {
+        q = q.eq('archived', true);
+      } else if (archivedFilter === 'active') {
+        q = q.eq('archived', false);
+      }
       const { data, error } = await q;
       if (error) throw error;
       return data ?? [];
@@ -58,9 +65,24 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
     return map;
   }, [clicked]);
 
+  const queryClient = useQueryClient();
+
   if (isLoading || loadingClicks) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (error) return <div className="text-sm text-destructive">Failed to load notifications.</div>;
   if (!notifications || notifications.length === 0) return <div className="text-sm text-muted-foreground">No notifications yet.</div>;
+
+  const toggleArchive = async (id: string, next: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ archived: next } as any)
+        .eq('id', id);
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    } catch (e) {
+      console.error('Failed to toggle archive', e);
+    }
+  };
 
   return (
     <div className="rounded-md border overflow-x-auto">
@@ -76,6 +98,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
             <TableHead className="text-right">Failed</TableHead>
             <TableHead className="text-right">Clicks</TableHead>
             <TableHead className="text-right">CTR</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -88,9 +111,11 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                 key={n.id}
                 role="button"
                 tabIndex={0}
-                onClick={(e) => { e.preventDefault(); onSelect(n.id); }}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(n.id); } }}
-                className={`cursor-pointer ${selectedId === n.id ? "bg-muted/50" : ""}`}
+                draggable={false}
+                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(n.id); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onSelect(n.id); } }}
+                className={`cursor-pointer select-none ${selectedId === n.id ? "bg-muted/50" : ""}`}
               >
                 <TableCell className="whitespace-nowrap">
                   {new Date(n.created_at).toLocaleString()}
@@ -109,6 +134,15 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                 <TableCell className="text-right">{n.failed_count}</TableCell>
                 <TableCell className="text-right">{clicks}</TableCell>
                 <TableCell className="text-right">{ctr}%</TableCell>
+                <TableCell className="text-right">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleArchive(n.id, !n.archived); }}
+                  >
+                    {n.archived ? 'Unarchive' : 'Archive'}
+                  </Button>
+                </TableCell>
               </TableRow>
             );
           })}

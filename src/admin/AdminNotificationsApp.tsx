@@ -78,6 +78,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
+  const [archivedFilter, setArchivedFilter] = useState<'all' | 'active' | 'archived'>('active');
   const [rightTab, setRightTab] = useState<'history' | 'analytics'>('history');
 
   const queryClient = useMemo(() => new QueryClient(), []);
@@ -203,13 +204,22 @@ export const AdminNotificationsApp: React.FC = () => {
                   </Tabs>
                 </div>
                 {rightTab === 'history' && (
-                  <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
-                    <TabsList>
-                      <TabsTrigger value="all">All</TabsTrigger>
-                      <TabsTrigger value="live">Live</TabsTrigger>
-                      <TabsTrigger value="dry">Dry runs</TabsTrigger>
-                    </TabsList>
-                  </Tabs>
+                  <div className="flex items-center gap-2">
+                    <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
+                      <TabsList>
+                        <TabsTrigger value="all">All</TabsTrigger>
+                        <TabsTrigger value="live">Live</TabsTrigger>
+                        <TabsTrigger value="dry">Dry runs</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    <Tabs value={archivedFilter} onValueChange={(v) => setArchivedFilter(v as 'all' | 'active' | 'archived')}>
+                      <TabsList>
+                        <TabsTrigger value="active">Active</TabsTrigger>
+                        <TabsTrigger value="archived">Archived</TabsTrigger>
+                        <TabsTrigger value="all">All</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
                 )}
               </CardHeader>
               <CardContent className="space-y-4">
@@ -218,6 +228,7 @@ export const AdminNotificationsApp: React.FC = () => {
                     onSelect={(id) => setSelectedId(id)}
                     selectedId={selectedId}
                     filterMode={filterMode}
+                    archivedFilter={archivedFilter}
                   />
                 ) : (
                   <OptInAnalytics embedded />
