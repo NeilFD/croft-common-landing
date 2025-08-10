@@ -42,6 +42,7 @@ self.addEventListener('notificationclick', (event) => {
     try {
       if (!u) return new URL('/', self.location.origin).href;
       if (typeof u !== 'string') u = String(u);
+      u = u.trim();
       if (u.startsWith('/')) {
         return new URL(u, self.location.origin).href;
       }
@@ -62,24 +63,34 @@ self.addEventListener('notificationclick', (event) => {
       const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
 
       // Try exact match first
-      let client = allClients.find((c) => c.url === targetUrl);
-      if (client && 'focus' in client) {
-        return client.focus();
+      const exact = allClients.find((c) => c.url === targetUrl);
+      if (exact && 'focus' in exact) {
+        return exact.focus();
       }
 
-      // Try same-origin tab: navigate it to targetUrl then focus
+      // Prefer opening a new window directly to ensure path is respected (iOS-friendly)
+      try {
+        const opened = await self.clients.openWindow(targetUrl);
+        if (opened && 'focus' in opened) return opened.focus();
+        if (opened) return;
+      } catch (_e) {
+        // no-op
+      }
+
+      // Fallback: try navigating an existing same-origin tab
       try {
         const target = new URL(targetUrl);
         const sameOrigin = allClients.find((c) => new URL(c.url).origin === target.origin);
         if (sameOrigin && 'navigate' in sameOrigin) {
           await sameOrigin.navigate(targetUrl);
-          return sameOrigin.focus();
+          if ('focus' in sameOrigin) return sameOrigin.focus();
+          return;
         }
       } catch (_e) {
         // no-op
       }
 
-      // Fallback: open a new window
+      // Last resort
       return self.clients.openWindow(targetUrl);
     })()
   );

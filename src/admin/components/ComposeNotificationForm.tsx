@@ -44,7 +44,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
   }, []);
 
   // Title guidance: keep titles short; iOS shows a single line
-  const TITLE_RECOMMENDED_MAX = 48;
+  const TITLE_RECOMMENDED_MAX = 40;
   const titleChars = title.length;
   const titleOverLimit = titleChars > TITLE_RECOMMENDED_MAX;
 
@@ -169,12 +169,22 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
               id="title"
               placeholder="What should the notification say?"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (next.length <= TITLE_RECOMMENDED_MAX) {
+                  setTitle(next);
+                } else {
+                  const newTitle = next.slice(0, TITLE_RECOMMENDED_MAX).trim();
+                  const overflow = next.slice(TITLE_RECOMMENDED_MAX).trim();
+                  setTitle(newTitle);
+                  if (overflow) setBody((prev) => (prev ? prev + ' ' + overflow : overflow));
+                }
+              }}
               aria-describedby="title-hint"
             />
             <div className="flex flex-wrap items-center justify-between mt-1 gap-2">
               <div id="title-hint" className="text-xs text-muted-foreground">
-                iOS shows the title on a single line. Keep it under ~48 chars; put details in Body.
+                Max 40 characters; extra text automatically moves into Body.
               </div>
               <div className={`text-xs ${titleOverLimit ? 'text-destructive' : 'text-muted-foreground'}`}>
                 {titleChars}/{TITLE_RECOMMENDED_MAX}
