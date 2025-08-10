@@ -1,6 +1,6 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 import { setupInstallPromptListener, isStandalone, isIosSafari, BeforeInstallPromptEvent } from './registerPWA';
 import { enableNotifications } from './notifications';
 import { toast } from '@/hooks/use-toast';
@@ -140,6 +140,6 @@ export function mountInstallOverlay() {
     container.id = id;
     document.body.appendChild(container);
   }
-  const root = ReactDOM.createRoot(container);
+  const root = createRoot(container);
   root.render(<Overlay />);
 }

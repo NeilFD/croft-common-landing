@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { enableNotifications } from './notifications';
+import { enableNotifications, resetNotifications } from './notifications';
 import { isStandalone, isIosSafari } from './registerPWA';
 import logo from '@/assets/geometric-croft-logo.png';
 
@@ -37,13 +37,14 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
       }
 
       if (reg) {
-        await enableNotifications(reg);
+        const ok = await enableNotifications(reg);
+        if (ok) {
+          localStorage.setItem(DISMISS_KEY, '1');
+          onClose();
+        }
       }
     } finally {
       setLoading(false);
-      // Dismiss the banner regardless to avoid sticking around
-      localStorage.setItem(DISMISS_KEY, '1');
-      onClose();
     }
   };
 
@@ -75,7 +76,35 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
             >
               Not now
             </button>
+            <button
+              onClick={async () => {
+                setLoading(true);
+                try {
+                  let reg = swReg || (await navigator.serviceWorker.getRegistration());
+                  if (!reg) {
+                    try {
+                      reg = await navigator.serviceWorker.ready;
+                    } catch {
+                      reg = null as any;
+                    }
+                  }
+                  if (reg) {
+                    await resetNotifications(reg);
+                  }
+                } finally {
+                  setLoading(false);
+                }
+              }}
+              className="text-xs underline underline-offset-4 text-muted-foreground disabled:opacity-60"
+            >
+              Having trouble? Reset
+            </button>
           </div>
+          {isIosSafari() && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              If you just enabled notifications in Settings, force-quit and reopen the app, then tap Enable.
+            </p>
+          )}
         </div>
       </div>
     </div>

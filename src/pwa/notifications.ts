@@ -13,27 +13,48 @@ function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
-export async function enableNotifications(reg: ServiceWorkerRegistration) {
+export async function enableNotifications(reg: ServiceWorkerRegistration): Promise<boolean> {
   if (!('Notification' in window)) {
     toast({ title: 'Notifications unsupported', description: 'This browser does not support notifications.', variant: 'destructive' });
-    return;
-  }
-  const permission = await Notification.requestPermission();
-  if (permission !== 'granted') {
-    let description = 'You can enable notifications in your browser settings.';
-    if (isIosSafari()) {
-      description = !isStandalone
-        ? 'On iPhone, add the app to your Home Screen first (Share → Add to Home Screen). Open it, then enable notifications.'
-        : 'On iPhone, go to Settings → Notifications → Croft Common → Allow Notifications.';
-    }
-    toast({ title: 'Permission denied', description });
-    return;
+    return false;
   }
   try {
-    const sub = await reg.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-    });
+    let permission = Notification.permission;
+    if (import.meta.env.DEV) {
+      console.log('[Notifications] Initial permission:', permission, { isStandalone, isIos: isIosSafari() });
+    }
+
+    if (permission === 'default') {
+      permission = await Notification.requestPermission();
+      if (import.meta.env.DEV) console.log('[Notifications] After requestPermission:', permission);
+    }
+
+    if (permission !== 'granted') {
+      let description = permission === 'denied'
+        ? 'You can enable notifications in your browser settings.'
+        : 'Please try again, or enable notifications in your browser settings.';
+
+      if (isIosSafari()) {
+        description = !isStandalone
+          ? 'On iPhone, add the app to your Home Screen first (Share → Add to Home Screen). Open it, then enable notifications.'
+          : 'On iPhone, go to Settings → Notifications → Croft Common → Allow Notifications. Then force-quit and reopen the app.';
+      }
+
+      toast({ title: 'Permission not granted', description });
+      return false;
+    }
+
+    // Try to reuse existing subscription first
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      if (import.meta.env.DEV) console.log('[Notifications] No existing subscription, subscribing…');
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+    } else {
+      if (import.meta.env.DEV) console.log('[Notifications] Reusing existing subscription');
+    }
 
     const raw = sub.toJSON() as any;
     const endpoint = raw.endpoint;
@@ -60,12 +81,41 @@ export async function enableNotifications(reg: ServiceWorkerRegistration) {
     if (error) {
       console.error('Failed saving subscription:', error);
       toast({ title: 'Could not save subscription', description: 'Please try again later.', variant: 'destructive' });
-      return;
+      return false;
     }
 
     toast({ title: 'Notifications enabled', description: 'You will receive updates from Croft Common.' });
+    return true;
   } catch (e) {
     console.error('Subscription error:', e);
-    toast({ title: 'Subscription failed', description: 'Please try again later.', variant: 'destructive' });
+    let description = 'Please try again later.';
+    if (isIosSafari()) {
+      description = !isStandalone
+        ? 'Install the app to your Home Screen first, then try again.'
+        : 'If you just changed Settings, force-quit and reopen the app, then try again.';
+    }
+    toast({ title: 'Subscription failed', description, variant: 'destructive' });
+    return false;
+  }
+}
+
+export async function resetNotifications(reg: ServiceWorkerRegistration): Promise<boolean> {
+  try {
+    const existing = await reg.pushManager.getSubscription();
+    let endpoint: string | null = null;
+    if (existing) {
+      const raw = existing.toJSON() as any;
+      endpoint = raw.endpoint ?? null;
+      await existing.unsubscribe().catch(() => {});
+    }
+    if (endpoint) {
+      await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    }
+    if (import.meta.env.DEV) console.log('[Notifications] Reset complete, re-enabling…');
+    return await enableNotifications(reg);
+  } catch (e) {
+    console.error('Reset notifications error:', e);
+    toast({ title: 'Reset failed', description: 'Please try again later.', variant: 'destructive' });
+    return false;
   }
 }
