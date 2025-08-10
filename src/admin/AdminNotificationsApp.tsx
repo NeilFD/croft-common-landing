@@ -73,28 +73,23 @@ const Header: React.FC<{
             </Badge>
             <Button
               variant="outline"
-              size="sm" asChild
+              size="sm"
               title="Attempt to link historical subscriptions to users"
+              onClick={async () => {
+                try {
+                  const { data, error } = await supabase.functions.invoke("backfill-push-user-links");
+                  if (error) throw error;
+                  toast({
+                    title: "Backfill complete",
+                    description: `${data?.updated ?? 0} subscriptions linked. Unknown remaining: ${data?.remaining_unknown ?? 0}`,
+                  });
+                } catch (err: any) {
+                  console.error(err);
+                  toast({ title: "Backfill failed", description: err?.message ?? "Please try again later.", variant: "destructive" });
+                }
+              }}
             >
-              <a
-                href="#"
-                onClick={async (e) => {
-                  e.preventDefault();
-                  try {
-                    const { data, error } = await supabase.functions.invoke("backfill-push-user-links");
-                    if (error) throw error;
-                    toast({
-                      title: "Backfill complete",
-                      description: `${data?.updated ?? 0} subscriptions linked. Unknown remaining: ${data?.remaining_unknown ?? 0}`,
-                    });
-                  } catch (err: any) {
-                    console.error(err);
-                    toast({ title: "Backfill failed", description: err?.message ?? "Please try again later.", variant: "destructive" });
-                  }
-                }}
-              >
-                Backfill
-              </a>
+              Backfill
             </Button>
           </div>
         </div>
