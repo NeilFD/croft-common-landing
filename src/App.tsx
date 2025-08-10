@@ -2,7 +2,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
 import Index from "./pages/Index";
 import Cafe from "./pages/Cafe";
@@ -25,6 +26,38 @@ import CommonGood from "./pages/CommonGood";
 import Book from "./pages/Book";
  
 const queryClient = new QueryClient();
+
+const LowercasePathGuard = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const allowedRoots = new Set([
+    "", // homepage
+    "cafe",
+    "cocktails",
+    "beer",
+    "kitchens",
+    "hall",
+    "community",
+    "common-room",
+    "calendar",
+    "manage-event",
+    "privacy",
+    "unsubscribe",
+    "branding",
+    "common-good",
+    "book",
+  ]);
+  useEffect(() => {
+    const path = location.pathname;
+    if (!/[A-Z]/.test(path)) return;
+    const first = path.split("/").filter(Boolean)[0] ?? "";
+    const lowerFirst = first.toLowerCase();
+    if (allowedRoots.has(lowerFirst)) {
+      navigate(path.toLowerCase() + location.search + location.hash, { replace: true });
+    }
+  }, [location.pathname]);
+  return null;
+};
  
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -32,6 +65,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <LowercasePathGuard />
         <TransitionProvider>
           <Routes>
             <Route path="/" element={<Index />} />

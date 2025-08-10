@@ -62,7 +62,9 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
     if (!raw) return '';
     try {
       if (raw.startsWith('/')) {
-        return new URL(raw, window.location.origin).href;
+        const urlObj = new URL(raw, window.location.origin);
+        urlObj.pathname = urlObj.pathname.toLowerCase(); // normalize relative paths to lowercase
+        return urlObj.href;
       }
       return new URL(raw).href;
     } catch {

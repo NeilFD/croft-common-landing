@@ -60,8 +60,20 @@ self.addEventListener('notificationclick', (event) => {
     }
   };
 
-  const targetUrl = normalize(event?.notification?.data?.url);
+  let targetUrl = normalize(event?.notification?.data?.url);
   const clickToken = event?.notification?.data?.click_token || null;
+
+  // Append tracking token and normalize same-origin path casing
+  try {
+    const u = new URL(targetUrl);
+    if (u.origin === self.location.origin) {
+      u.pathname = u.pathname.toLowerCase();
+    }
+    if (clickToken) {
+      u.searchParams.set('ntk', clickToken);
+    }
+    targetUrl = u.toString();
+  } catch (_e) {}
 
   event.waitUntil(
     (async () => {
