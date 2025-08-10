@@ -4,6 +4,8 @@ import { createRoot } from 'react-dom/client';
 import { setupInstallPromptListener, isStandalone, isIosSafari, BeforeInstallPromptEvent } from './registerPWA';
 import { enableNotifications } from './notifications';
 import { toast } from '@/hooks/use-toast';
+import CroftLogo from '@/components/CroftLogo';
+import { X } from 'lucide-react';
 
 function isiOS(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
@@ -92,25 +94,37 @@ const Overlay: React.FC = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4">
       <div className="mx-auto max-w-screen-sm rounded-xl bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border border-border shadow-lg">
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-foreground">Download “Croft Common”</span>
-            <span className="text-xs text-muted-foreground">Add to your Home Screen for a faster app-like experience.</span>
+        <div className="flex items-center justify-between gap-3 px-4 py-3 flex-wrap">
+          <div className="flex items-center gap-3 min-w-0">
+            <CroftLogo size="sm" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium text-foreground">Download “Croft Common”</span>
+              <span className="text-xs text-muted-foreground">Add to your Home Screen for a faster app-like experience.</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ml-auto">
+            <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
+              <button
+                onClick={onEnableNotifications}
+                disabled={isIosSafari()}
+                title={isIosSafari() ? 'Install the app first to enable notifications on iPhone/iPad' : undefined}
+                className="text-xs px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-60 disabled:cursor-not-allowed w-full"
+              >
+                {isIosSafari() ? 'Enable after install' : 'Enable notifications'}
+              </button>
+              <button
+                onClick={onInstallClick}
+                className="text-xs px-3 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 w-full"
+              >
+                {canInstallAndroid ? 'Install app' : 'How to install'}
+              </button>
+            </div>
             <button
-              onClick={onEnableNotifications}
-              disabled={isIosSafari()}
-              title={isIosSafari() ? 'Install the app first to enable notifications on iPhone/iPad' : undefined}
-              className="text-xs px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-60 disabled:cursor-not-allowed"
+              onClick={() => setShow(false)}
+              aria-label="Dismiss"
+              className="h-8 w-8 inline-flex items-center justify-center rounded-md text-muted-foreground hover:bg-muted"
             >
-              {isIosSafari() ? 'Enable after install' : 'Enable notifications'}
-            </button>
-            <button
-              onClick={onInstallClick}
-              className="text-xs px-3 py-2 rounded-md bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              {canInstallAndroid ? 'Install app' : 'How to install'}
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
