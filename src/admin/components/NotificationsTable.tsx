@@ -134,14 +134,6 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                 <TableCell className="text-right space-x-1">
                   <Button
                     type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(n.id); }}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    type="button"
                     variant="ghost"
                     size="sm"
                     onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleArchive(n.id, !n.archived); }}

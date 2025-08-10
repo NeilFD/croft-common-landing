@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,7 +27,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (error) return <div className="text-sm text-destructive">Failed to load deliveries.</div>;
-  if (!data || data.length === 0) return <div className="text-sm text-muted-foreground">No deliveries yet.</div>;
+  if (!data || data.length === 0) return <div className="text-sm text-muted-foreground">No deliveries yet for this notification. Note: dry runs don't create deliveries.</div>;
   const successes = useMemo(() => (data ?? []).filter((d: any) => d.status === 'sent'), [data]);
   const failures = useMemo(() => (data ?? []).filter((d: any) => d.status === 'failed'), [data]);
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -38,6 +38,15 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
     setOpenFailed(next);
   };
 
+  useEffect(() => {
+    if (!data || data.length === 0) {
+      setOpenSuccess(false);
+      setOpenFailed(false);
+      return;
+    }
+    setOpenSuccess(successes.length > 0);
+    setOpenFailed(failures.length > 0);
+  }, [notificationId, data?.length]);
 
   return (
     <div className="space-y-4">
