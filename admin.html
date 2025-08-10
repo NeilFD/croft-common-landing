@@ -10,6 +10,27 @@
     <title>Croft Common — Notifications Admin</title>
   </head>
   <body>
+    <script>
+      (function() {
+        try {
+          var hash = window.location.hash || "";
+          var search = window.location.search || "";
+          var hp = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash);
+          var sp = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+          var at = hp.get('access_token') || sp.get('access_token');
+          var rt = hp.get('refresh_token') || sp.get('refresh_token');
+          if (at && rt) {
+            localStorage.setItem('pending_supabase_tokens', JSON.stringify({ at: at, rt: rt, t: Date.now() }));
+            var url = new URL(window.location.href);
+            url.hash = '';
+            url.searchParams.delete('access_token');
+            url.searchParams.delete('refresh_token');
+            if (url.searchParams.get('auth') === 'true') { url.searchParams.delete('auth'); }
+            window.history.replaceState({}, '', url.toString());
+          }
+        } catch (e) {}
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/admin/main.tsx"></script>
   </body>
