@@ -41,7 +41,7 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-[10000] px-4">
-      <div className="mx-auto max-w-xl rounded-lg border bg-card text-card-foreground shadow-lg">
+      <div className="mx-auto max-w-xl rounded-lg border bg-background text-foreground shadow-xl">
         <div className="p-4">
           <h3 className="text-sm font-medium">Enable notifications</h3>
           <p className="mt-1 text-sm text-muted-foreground">
