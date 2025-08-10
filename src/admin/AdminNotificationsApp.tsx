@@ -285,6 +285,7 @@ export const AdminNotificationsApp: React.FC = () => {
       <main className="container mx-auto p-4 space-y-6">
         <div className="flex flex-col gap-6">
           <ComposeNotificationForm
+            key={selectedId ?? 'new'}
             onSent={onSent}
             editing={selectedId ? editing : null}
             onClearEdit={() => {

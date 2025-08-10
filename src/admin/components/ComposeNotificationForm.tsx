@@ -351,7 +351,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
               ) : null}
             </div>
             {onClearEdit ? (
-              <Button size="sm" variant="ghost" onClick={() => { resetForm(); onClearEdit?.(); }}>Clear</Button>
+              <Button size="sm" type="button" variant="ghost" onClick={() => { onClearEdit?.(); resetForm(); }}>Clear</Button>
             ) : null}
           </div>
         )}
