@@ -345,11 +345,18 @@ export type Database = {
           failed_count: number
           icon: string | null
           id: string
+          occurrences_limit: number | null
+          parent_id: string | null
           recipients_count: number
+          repeat_rule: Json | null
+          repeat_until: string | null
+          schedule_timezone: string | null
+          scheduled_for: string | null
           scope: Database["public"]["Enums"]["notification_scope"]
           sent_at: string | null
           status: Database["public"]["Enums"]["notification_status"]
           success_count: number
+          times_sent: number
           title: string
           updated_at: string
           url: string | null
@@ -365,11 +372,18 @@ export type Database = {
           failed_count?: number
           icon?: string | null
           id?: string
+          occurrences_limit?: number | null
+          parent_id?: string | null
           recipients_count?: number
+          repeat_rule?: Json | null
+          repeat_until?: string | null
+          schedule_timezone?: string | null
+          scheduled_for?: string | null
           scope?: Database["public"]["Enums"]["notification_scope"]
           sent_at?: string | null
           status?: Database["public"]["Enums"]["notification_status"]
           success_count?: number
+          times_sent?: number
           title: string
           updated_at?: string
           url?: string | null
@@ -385,16 +399,31 @@ export type Database = {
           failed_count?: number
           icon?: string | null
           id?: string
+          occurrences_limit?: number | null
+          parent_id?: string | null
           recipients_count?: number
+          repeat_rule?: Json | null
+          repeat_until?: string | null
+          schedule_timezone?: string | null
+          scheduled_for?: string | null
           scope?: Database["public"]["Enums"]["notification_scope"]
           sent_at?: string | null
           status?: Database["public"]["Enums"]["notification_status"]
           success_count?: number
+          times_sent?: number
           title?: string
           updated_at?: string
           url?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "notifications_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_optin_events: {
         Row: {
