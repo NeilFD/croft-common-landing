@@ -609,7 +609,6 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
               disabled={!canSend || sending}
             >
               {editing ? "Update draft" : "Save draft"}
-            </Button
             </Button>
             <Button
               type="button"
@@ -617,7 +616,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
               onClick={handleSchedule}
               disabled={!canSend || !isScheduled || sending}
             >
-              Schedule
+              {editing ? "Update schedule" : "Schedule"}
             </Button>
           </div>
         </div>

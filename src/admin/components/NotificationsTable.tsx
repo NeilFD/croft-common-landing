@@ -17,30 +17,33 @@ type Props = {
 export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all', archivedFilter = 'active', statusFilter = 'all' }) => {
   const { data: notifications, isLoading, error } = useQuery({
     queryKey: ["notifications", filterMode, archivedFilter],
-    queryFn: async () => {
-      let q = supabase
-        .from("notifications")
-        .select(
-          "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at, archived, scheduled_for"
-        )
-        .order("created_at", { ascending: false })
-        .limit(50);
+  queryFn: async () => {
+    let q = supabase
+      .from("notifications")
+      .select(
+        "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at, archived, scheduled_for"
+      )
+      .order("created_at", { ascending: false })
+      .limit(50);
 
-      if (filterMode === 'live') {
-        q = q.eq('dry_run', false);
-      } else if (filterMode === 'dry') {
-        q = q.eq('dry_run', true);
-      }
+    if (filterMode === 'live') {
+      q = q.eq('dry_run', false);
+    } else if (filterMode === 'dry') {
+      q = q.eq('dry_run', true);
+    }
 
-      if (archivedFilter === 'archived') {
-        q = q.eq('archived', true);
-      } else if (archivedFilter === 'active') {
-        q = q.eq('archived', false);
-      }
-      if (statusFilter !== 'all') {
-        q = q.eq('status', statusFilter);
-      }
-    },
+    if (archivedFilter === 'archived') {
+      q = q.eq('archived', true);
+    } else if (archivedFilter === 'active') {
+      q = q.eq('archived', false);
+    }
+    if (statusFilter !== 'all') {
+      q = q.eq('status', statusFilter);
+    }
+    const { data, error } = await q;
+    if (error) throw error;
+    return data ?? [];
+  },
   });
 
   const { data: clicked, isLoading: loadingClicks } = useQuery({
