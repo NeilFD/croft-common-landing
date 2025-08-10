@@ -23,8 +23,8 @@ import Branding from "./pages/Branding";
 import CommonGood from "./pages/CommonGood";
  import CommonGoodMessage from "./pages/CommonGoodMessage";
  import CroftCommonDateTime from "./pages/CroftCommonDateTime";
-import Book from "./pages/Book";
- 
+ import Book from "./pages/Book";
+ import Admin from "./pages/Admin";
 const queryClient = new QueryClient();
 
 const LowercasePathGuard = () => {
@@ -46,6 +46,7 @@ const LowercasePathGuard = () => {
     "branding",
     "common-good",
     "book",
+    "admin",
   ]);
   useEffect(() => {
     const path = location.pathname;
@@ -86,6 +87,7 @@ const App = () => (
             <Route path="/common-good/message" element={<CommonGoodMessage />} />
             <Route path="/CroftCommonDate&Time" element={<CroftCommonDateTime />} />
             <Route path="/book" element={<Book />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -6,6 +6,11 @@ import { supabase } from '@/integrations/supabase/client';
 
 // Boot the PWA layer: register SW and mount overlay UI when appropriate
 (async () => {
+  const path = window.location.pathname;
+  if (path.startsWith('/admin')) {
+    if (import.meta.env.DEV) console.info('[PWA] Skipping SW on /admin');
+    return;
+  }
   const reg = await registerServiceWorker();
   if (!isStandalone) {
     mountInstallOverlay();
