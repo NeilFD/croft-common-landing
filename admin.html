@@ -19,19 +19,39 @@
           var sp = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
           var at = hp.get('access_token') || sp.get('access_token');
           var rt = hp.get('refresh_token') || sp.get('refresh_token');
+          var code = hp.get('code') || sp.get('code');
           if (at && rt) {
             localStorage.setItem('pending_supabase_tokens', JSON.stringify({ at: at, rt: rt, t: Date.now() }));
+          }
+          if (code) {
+            localStorage.setItem('pending_supabase_code', code);
+          }
+          if (at || rt || code) {
             var url = new URL(window.location.href);
             url.hash = '';
             url.searchParams.delete('access_token');
             url.searchParams.delete('refresh_token');
+            url.searchParams.delete('code');
             if (url.searchParams.get('auth') === 'true') { url.searchParams.delete('auth'); }
             window.history.replaceState({}, '', url.toString());
           }
-        } catch (e) {}
+        } catch (e) { console.warn('admin token pre-capture failed', e); }
       })();
     </script>
     <div id="root"></div>
+    <script>
+      (function(){
+        try{
+          var overlay = document.createElement('div');
+          overlay.id='error-overlay';
+          overlay.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:99999;font-family:system-ui,Arial;padding:16px;color:#fff;display:none;background:rgba(0,0,0,0.6)';
+          document.body.appendChild(overlay);
+          function show(msg){ overlay.style.display='block'; overlay.textContent='Admin error: '+msg; }
+          window.addEventListener('error', function(e){ show((e.message||'Unknown error')+' at '+(e.filename||'')+':'+(e.lineno||'')); });
+          window.addEventListener('unhandledrejection', function(e){ show('Unhandled: '+(e.reason && e.reason.message ? e.reason.message : String(e.reason))); });
+        }catch(e){}
+      })();
+    </script>
     <script type="module" src="/src/admin/main.tsx"></script>
   </body>
 </html>

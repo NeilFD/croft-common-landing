@@ -141,9 +141,10 @@ export const AdminNotificationsApp: React.FC = () => {
 
         let access_token = hashParams.get("access_token") || searchParams.get("access_token");
         let refresh_token = hashParams.get("refresh_token") || searchParams.get("refresh_token");
+        let code = hashParams.get("code") || searchParams.get("code");
 
         // If not present in URL, check pending tokens captured by admin.html
-        if (!access_token || !refresh_token) {
+        if ((!access_token || !refresh_token) && !code) {
           const pending = localStorage.getItem('pending_supabase_tokens');
           if (pending) {
             try {
@@ -152,24 +153,34 @@ export const AdminNotificationsApp: React.FC = () => {
               refresh_token = parsed.rt;
             } catch {}
           }
+          const pendingCode = localStorage.getItem('pending_supabase_code');
+          if (pendingCode) code = pendingCode;
         }
 
-        if (access_token && refresh_token) {
-          await supabase.auth.setSession({ access_token, refresh_token });
-
-          // Clean the URL (remove both hash and query tokens)
-          const url = new URL(window.location.href);
-          url.hash = "";
-          url.searchParams.delete("access_token");
-          url.searchParams.delete("refresh_token");
-          if (url.searchParams.get("auth") === "true") {
-            url.searchParams.delete("auth");
+        if (code && (!access_token || !refresh_token)) {
+          try {
+            const { error } = await supabase.auth.exchangeCodeForSession(code);
+            if (!error) {
+              try { localStorage.removeItem('pending_supabase_code'); } catch {}
+            }
+          } catch (e) {
+            console.error('exchangeCodeForSession failed', e);
           }
-          window.history.replaceState({}, "", url.toString());
-
-          // Clear pending tokens if set
+        } else if (access_token && refresh_token) {
+          await supabase.auth.setSession({ access_token, refresh_token });
           try { localStorage.removeItem('pending_supabase_tokens'); } catch {}
         }
+
+        // Clean the URL (remove both hash and query tokens)
+        const url = new URL(window.location.href);
+        url.hash = "";
+        url.searchParams.delete("access_token");
+        url.searchParams.delete("refresh_token");
+        url.searchParams.delete("code");
+        if (url.searchParams.get("auth") === "true") {
+          url.searchParams.delete("auth");
+        }
+        window.history.replaceState({}, "", url.toString());
       } catch (e) {
         console.error("Failed to process auth tokens from URL", e);
       }
