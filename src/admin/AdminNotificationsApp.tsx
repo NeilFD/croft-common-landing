@@ -1,6 +1,6 @@
 
-import React, { useEffect, useMemo, useState } from "react";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
@@ -129,7 +129,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'queued' | 'sent'>('all');
   const [rightTab, setRightTab] = useState<'history' | 'analytics'>('history');
 
-  const queryClient = useMemo(() => new QueryClient(), []);
+  const queryClient = useQueryClient();
 
   // Process magic link tokens on admin page (supports hash, query, or pending localStorage)
   useEffect(() => {
@@ -280,86 +280,84 @@ export const AdminNotificationsApp: React.FC = () => {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background text-foreground">
-        <Header userEmail={userEmail} onSignOut={handleSignOut} />
-        <main className="container mx-auto p-4 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ComposeNotificationForm onSent={onSent} editing={editing} onClearEdit={() => setSelectedId(null)} />
-            <Card className="order-first lg:order-none">
-              <CardHeader className="flex flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <CardTitle>{rightTab === 'history' ? 'History' : 'Analytics'}</CardTitle>
-                  <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics')}>
+    <div className="min-h-screen bg-background text-foreground">
+      <Header userEmail={userEmail} onSignOut={handleSignOut} />
+      <main className="container mx-auto p-4 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ComposeNotificationForm onSent={onSent} editing={editing} onClearEdit={() => setSelectedId(null)} />
+          <Card className="order-first lg:order-none">
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <CardTitle>{rightTab === 'history' ? 'History' : 'Analytics'}</CardTitle>
+                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics')}>
+                  <TabsList>
+                    <TabsTrigger value="history">History</TabsTrigger>
+                    <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
+              {rightTab === 'history' && (
+                <div className="flex items-center gap-2 flex-wrap justify-end">
+                  <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
                     <TabsList>
-                      <TabsTrigger value="history">History</TabsTrigger>
-                      <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="live">Live</TabsTrigger>
+                      <TabsTrigger value="dry">Dry runs</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'draft' | 'queued' | 'sent')}>
+                    <TabsList>
+                      <TabsTrigger value="all">Any status</TabsTrigger>
+                      <TabsTrigger value="draft">Drafts</TabsTrigger>
+                      <TabsTrigger value="queued">Scheduled</TabsTrigger>
+                      <TabsTrigger value="sent">Sent</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                  <Tabs value={archivedFilter} onValueChange={(v) => setArchivedFilter(v as 'all' | 'active' | 'archived')}>
+                    <TabsList>
+                      <TabsTrigger value="active">Active</TabsTrigger>
+                      <TabsTrigger value="archived">Archived</TabsTrigger>
+                      <TabsTrigger value="all">All</TabsTrigger>
                     </TabsList>
                   </Tabs>
                 </div>
-                {rightTab === 'history' && (
-                  <div className="flex items-center gap-2 flex-wrap justify-end">
-                    <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
-                      <TabsList>
-                        <TabsTrigger value="all">All</TabsTrigger>
-                        <TabsTrigger value="live">Live</TabsTrigger>
-                        <TabsTrigger value="dry">Dry runs</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                    <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'draft' | 'queued' | 'sent')}>
-                      <TabsList>
-                        <TabsTrigger value="all">Any status</TabsTrigger>
-                        <TabsTrigger value="draft">Drafts</TabsTrigger>
-                        <TabsTrigger value="queued">Scheduled</TabsTrigger>
-                        <TabsTrigger value="sent">Sent</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                    <Tabs value={archivedFilter} onValueChange={(v) => setArchivedFilter(v as 'all' | 'active' | 'archived')}>
-                      <TabsList>
-                        <TabsTrigger value="active">Active</TabsTrigger>
-                        <TabsTrigger value="archived">Archived</TabsTrigger>
-                        <TabsTrigger value="all">All</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
-                  </div>
-                )}
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {rightTab === 'history' ? (
-                  <NotificationsTable
-                    onSelect={(id) => setSelectedId(id)}
-                    selectedId={selectedId}
-                    filterMode={filterMode}
-                    archivedFilter={archivedFilter}
-                    statusFilter={statusFilter}
-                  />
-                ) : (
-                  <OptInAnalytics embedded />
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <CardTitle>Deliveries</CardTitle>
-              <div className="w-full sm:w-auto">
-                <NotificationPicker value={selectedId} onChange={(id) => setSelectedId(id)} />
-              </div>
+              )}
             </CardHeader>
-            <CardContent>
-              {selectedId ? (
-                <DeliveriesTable notificationId={selectedId} />
+            <CardContent className="space-y-4">
+              {rightTab === 'history' ? (
+                <NotificationsTable
+                  onSelect={(id) => setSelectedId(id)}
+                  selectedId={selectedId}
+                  filterMode={filterMode}
+                  archivedFilter={archivedFilter}
+                  statusFilter={statusFilter}
+                />
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  Select a notification to view deliveries.
-                </p>
+                <OptInAnalytics embedded />
               )}
             </CardContent>
           </Card>
-        </main>
-        <Toaster />
-      </div>
-    </QueryClientProvider>
+        </div>
+
+        <Card>
+          <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle>Deliveries</CardTitle>
+            <div className="w-full sm:w-auto">
+              <NotificationPicker value={selectedId} onChange={(id) => setSelectedId(id)} />
+            </div>
+          </CardHeader>
+          <CardContent>
+            {selectedId ? (
+              <DeliveriesTable notificationId={selectedId} />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Select a notification to view deliveries.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+      <Toaster />
+    </div>
   );
 };
