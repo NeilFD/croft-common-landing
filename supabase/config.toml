@@ -80,3 +80,9 @@ verify_jwt = false
 
 [functions.send-cinema-ticket-email]
 verify_jwt = false
+
+[functions.save-push-subscription]
+verify_jwt = false
+
+[functions.delete-push-subscription]
+verify_jwt = false

@@ -64,19 +64,15 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     const { data: userRes } = await supabase.auth.getUser();
     const userId = userRes.user?.id ?? null;
 
-    const { error } = await supabase.from('push_subscriptions').upsert(
-      {
+    const { error } = await supabase.functions.invoke('save-push-subscription', {
+      body: {
         endpoint,
         p256dh,
         auth,
         user_agent: navigator.userAgent,
         platform: /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'web'),
-        user_id: userId,
-        is_active: true,
-        last_seen: new Date().toISOString(),
       },
-      { onConflict: 'endpoint' }
-    );
+    });
 
     if (error) {
       console.error('Failed saving subscription:', error);
@@ -109,7 +105,7 @@ export async function resetNotifications(reg: ServiceWorkerRegistration): Promis
       await existing.unsubscribe().catch(() => {});
     }
     if (endpoint) {
-      await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint);
+      await supabase.functions.invoke('delete-push-subscription', { body: { endpoint } });
     }
     if (import.meta.env.DEV) console.log('[Notifications] Reset complete, re-enabling…');
     return await enableNotifications(reg);
