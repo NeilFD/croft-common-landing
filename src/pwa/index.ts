@@ -13,6 +13,22 @@ import { supabase } from '@/integrations/supabase/client';
   // Mount notifications prompt overlay (decides visibility internally)
   mountNotificationsOverlay(reg);
 
+  // Opportunistic linking: if user is signed in and a subscription exists, link it to the user
+  try {
+    const [{ data: user }, sub] = await Promise.all([
+      supabase.auth.getUser(),
+      reg.pushManager.getSubscription(),
+    ]);
+    const endpoint = (sub?.toJSON() as any)?.endpoint as string | undefined;
+    const userId = user.user?.id;
+    if (userId && endpoint) {
+      void supabase.functions.invoke("link-push-subscription", { body: { endpoint } });
+    }
+  } catch (e) {
+    // non-fatal
+    if (import.meta.env.DEV) console.warn("[PWA] Opportunistic link failed", e);
+  }
+
   // Track notification opens via URL token and then clean the URL
   try {
     const url = new URL(window.location.href);

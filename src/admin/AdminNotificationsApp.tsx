@@ -39,12 +39,16 @@ const Header: React.FC<{
   userEmail: string | null;
   onSignOut: () => void;
 }> = ({ userEmail, onSignOut }) => {
-  const { data: enabledCount } = useQuery<number>({
+  const { data: enabled } = useQuery<{ count: number; devices: number; unknown_endpoints: number }>({
     queryKey: ["enabled-users-count"],
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("get-enabled-users-count");
       if (error) throw error;
-      return (data?.count ?? 0) as number;
+      return {
+        count: Number(data?.count ?? 0),
+        devices: Number(data?.devices ?? 0),
+        unknown_endpoints: Number(data?.unknown_endpoints ?? 0),
+      };
     },
     refetchInterval: 30000,
   });
@@ -52,35 +56,68 @@ const Header: React.FC<{
   return (
     <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <CroftLogo size="sm" className="shrink-0" />
         <div className="flex items-center gap-3">
-          <CroftLogo size="sm" className="shrink-0" />
-          <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold">Notifications Admin</span>
-            <span className="text-muted-foreground text-sm">Croft Common</span>
+          <span className="text-lg font-semibold">Notifications Admin</span>
+          <span className="text-muted-foreground text-sm">Croft Common</span>
+          <div className="flex items-center gap-2 flex-wrap">
             <Badge variant="secondary" title="Distinct users with notifications enabled">
-              {enabledCount ?? 0}
+              Users: {enabled?.count ?? 0}
             </Badge>
+            <Badge variant="outline" title="Active device endpoints">
+              Devices: {enabled?.devices ?? 0}
+            </Badge>
+            <Badge variant="outline" title="Active endpoints not linked to a user">
+              Unknown: {enabled?.unknown_endpoints ?? 0}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm" asChild
+              title="Attempt to link historical subscriptions to users"
+            >
+              <a
+                href="#"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  try {
+                    const { data, error } = await supabase.functions.invoke("backfill-push-user-links");
+                    if (error) throw error;
+                    toast({
+                      title: "Backfill complete",
+                      description: `${data?.updated ?? 0} subscriptions linked. Unknown remaining: ${data?.remaining_unknown ?? 0}`,
+                    });
+                  } catch (err: any) {
+                    console.error(err);
+                    toast({ title: "Backfill failed", description: err?.message ?? "Please try again later.", variant: "destructive" });
+                  }
+                }}
+              >
+                Backfill
+              </a>
+            </Button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <a
-            href="/"
-            className="text-sm text-primary hover:underline"
-            title="Back to site"
-          >
-            Back to site
-          </a>
-          {userEmail ? (
-            <>
-              <span className="text-sm text-muted-foreground hidden sm:inline">
-                {userEmail}
-              </span>
-              <Button variant="outline" size="sm" onClick={onSignOut}>
-                Sign out
-              </Button>
-            </>
-          ) : null}
-        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <a
+          href="/"
+          className="text-sm text-primary hover:underline"
+          title="Back to site"
+        >
+          Back to site
+        </a>
+        {userEmail ? (
+          <>
+            <span className="text-sm text-muted-foreground hidden sm:inline">
+              {userEmail}
+            </span>
+            <Button variant="outline" size="sm" onClick={onSignOut}>
+              Sign out
+            </Button>
+          </>
+        ) : null}
+      </div>
       </div>
     </div>
   );
