@@ -12,6 +12,7 @@ import { toast } from "@/hooks/use-toast";
 import { AuthModal } from "@/components/AuthModal";
 import CroftLogo from "@/components/CroftLogo";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OptInAnalytics } from "./components/OptInAnalytics";
 
 type NotificationRow = {
   id: string;
@@ -77,6 +78,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [authOpen, setAuthOpen] = useState(false);
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
+  const [rightTab, setRightTab] = useState<'history' | 'analytics'>('history');
 
   const queryClient = useMemo(() => new QueryClient(), []);
 
@@ -190,22 +192,36 @@ export const AdminNotificationsApp: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ComposeNotificationForm onSent={onSent} />
             <Card className="order-first lg:order-none">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>History</CardTitle>
-                <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
-                  <TabsList>
-                    <TabsTrigger value="all">All</TabsTrigger>
-                    <TabsTrigger value="live">Live</TabsTrigger>
-                    <TabsTrigger value="dry">Dry runs</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+              <CardHeader className="flex flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <CardTitle>{rightTab === 'history' ? 'History' : 'Analytics'}</CardTitle>
+                  <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics')}>
+                    <TabsList>
+                      <TabsTrigger value="history">History</TabsTrigger>
+                      <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+                {rightTab === 'history' && (
+                  <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
+                    <TabsList>
+                      <TabsTrigger value="all">All</TabsTrigger>
+                      <TabsTrigger value="live">Live</TabsTrigger>
+                      <TabsTrigger value="dry">Dry runs</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
-                <NotificationsTable
-                  onSelect={(id) => setSelectedId(id)}
-                  selectedId={selectedId}
-                  filterMode={filterMode}
-                />
+                {rightTab === 'history' ? (
+                  <NotificationsTable
+                    onSelect={(id) => setSelectedId(id)}
+                    selectedId={selectedId}
+                    filterMode={filterMode}
+                  />
+                ) : (
+                  <OptInAnalytics embedded />
+                )}
               </CardContent>
             </Card>
           </div>
