@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { setupInstallPromptListener, isStandalone, isIosSafari, BeforeInstallPromptEvent } from './registerPWA';
 import { enableNotifications } from './notifications';
+import { toast } from '@/hooks/use-toast';
 
 function isiOS(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
@@ -69,6 +70,15 @@ const Overlay: React.FC = () => {
   };
 
   const onEnableNotifications = async () => {
+    // On iOS, notifications only work after installing to Home Screen
+    if (isIosSafari() && !isStandalone) {
+      setShowIOSHelp(true);
+      toast({
+        title: 'Install app to enable notifications',
+        description: 'On iPhone/iPad: Tap “How to install”, add to Home Screen, open the app, then enable notifications.',
+      });
+      return;
+    }
     if (!reg) {
       const r = await navigator.serviceWorker.getRegistration();
       if (r) setReg(r);
@@ -77,7 +87,6 @@ const Overlay: React.FC = () => {
       await enableNotifications(reg);
     }
   };
-
   if (!shouldShow) return null;
 
   return (
@@ -91,9 +100,11 @@ const Overlay: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={onEnableNotifications}
-              className="text-xs px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              disabled={isIosSafari()}
+              title={isIosSafari() ? 'Install the app first to enable notifications on iPhone/iPad' : undefined}
+              className="text-xs px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Enable notifications
+              {isIosSafari() ? 'Enable after install' : 'Enable notifications'}
             </button>
             <button
               onClick={onInstallClick}
@@ -111,6 +122,7 @@ const Overlay: React.FC = () => {
                 <li>Tap the Share icon in Safari.</li>
                 <li>Scroll down and tap “Add to Home Screen”.</li>
                 <li>Tap Add.</li>
+                <li>After installing, open the app from your Home Screen, then enable notifications.</li>
               </ol>
             </div>
           </div>

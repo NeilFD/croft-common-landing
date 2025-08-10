@@ -1,9 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { isStandalone, isIosSafari } from './registerPWA';
 
 const VAPID_PUBLIC_KEY = 'BNJzdn55lXCAzsC07XdmDcsJeRb9sN-tLfGkrP5uAFNEt-LyEsEhVoMjD0CtHiBZjsyrTdTh19E2cnRUB5N9Mww';
-
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
@@ -20,7 +20,13 @@ export async function enableNotifications(reg: ServiceWorkerRegistration) {
   }
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') {
-    toast({ title: 'Permission denied', description: 'You can enable notifications in your browser settings.' });
+    let description = 'You can enable notifications in your browser settings.';
+    if (isIosSafari()) {
+      description = !isStandalone
+        ? 'On iPhone, add the app to your Home Screen first (Share → Add to Home Screen). Open it, then enable notifications.'
+        : 'On iPhone, go to Settings → Notifications → Croft Common → Allow Notifications.';
+    }
+    toast({ title: 'Permission denied', description });
     return;
   }
   try {
