@@ -7,8 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 type Props = {
-  onSelect: (id: string) => void;
-  selectedId: string | null;
+  onSelect?: (id: string) => void;
+  selectedId?: string | null;
   filterMode?: 'all' | 'live' | 'dry';
   archivedFilter?: 'all' | 'active' | 'archived';
 };
@@ -109,13 +109,6 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
             return (
               <TableRow
                 key={n.id}
-                role="button"
-                tabIndex={0}
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(n.id); }}
-                onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onMouseDown={(e) => { if (e.button === 1 || e.ctrlKey || e.metaKey) { e.preventDefault(); e.stopPropagation(); } }}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(n.id); } }}
-                className={`cursor-pointer ${selectedId === n.id ? "bg-muted/50" : ""}`}
               >
                 <TableCell className="whitespace-nowrap">
                   {new Date(n.created_at).toLocaleString()}

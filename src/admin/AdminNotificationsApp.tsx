@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComposeNotificationForm } from "./components/ComposeNotificationForm";
 import { NotificationsTable } from "./components/NotificationsTable";
 import { DeliveriesTable } from "./components/DeliveriesTable";
+import { NotificationPicker } from "./components/NotificationPicker";
 import { toast } from "@/hooks/use-toast";
 import { AuthModal } from "@/components/AuthModal";
 import CroftLogo from "@/components/CroftLogo";
@@ -284,8 +285,11 @@ export const AdminNotificationsApp: React.FC = () => {
           </div>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <CardTitle>Deliveries</CardTitle>
+              <div className="w-full sm:w-auto">
+                <NotificationPicker value={selectedId} onChange={(id) => setSelectedId(id)} />
+              </div>
             </CardHeader>
             <CardContent>
               {selectedId ? (
