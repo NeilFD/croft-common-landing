@@ -19,6 +19,7 @@ interface LoyaltyCardModalProps {
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
+  const [showCard, setShowCard] = useState(false);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const prevPunchesRef = useRef(0);
@@ -34,6 +35,21 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     creatingNext,
     addEntry,
   } = useLoyalty(user);
+
+  // Gate modal behind auth on open
+  useEffect(() => {
+    if (!open) {
+      setAuthOpen(false);
+      setShowCard(false);
+      return;
+    }
+    if (!user) {
+      setAuthOpen(true);
+      setShowCard(false);
+    } else {
+      setShowCard(true);
+    }
+  }, [open, user]);
 
   // Detect unlock of the 7th box for regular cards
   useEffect(() => {
@@ -132,7 +148,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
 
   return (
     <>
-      <Dialog open={open} onOpenChange={handleOpenChange}>
+      <Dialog open={open && showCard} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[620px]">
           <DialogHeader>
             <DialogTitle className="font-brutalist tracking-wider flex items-center gap-2">
@@ -300,6 +316,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
         onClose={() => setAuthOpen(false)}
         onSuccess={() => {
           setAuthOpen(false);
+          setShowCard(true);
           toast({ title: 'Signed in', description: 'Your loyalty card is ready.' });
         }}
         requireAllowedDomain={false}

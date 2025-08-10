@@ -3,6 +3,8 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { AuthModal } from "@/components/AuthModal";
+import { useAuth } from "@/hooks/useAuth";
 
 interface SecretKitchensModalProps {
   open: boolean;
@@ -16,7 +18,16 @@ const Separator = () => (
 );
 
 const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose }) => {
+  const { user } = useAuth();
+  const [emailModalOpen, setEmailModalOpen] = React.useState(false);
+  const [showContent, setShowContent] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
+
+  const handleCloseAll = () => {
+    setEmailModalOpen(false);
+    setShowContent(false);
+    onClose();
+  };
 
   React.useEffect(() => {
     if (open) {
@@ -25,6 +36,21 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
       contentRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     }
   }, [open]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setEmailModalOpen(false);
+      setShowContent(false);
+      return;
+    }
+    if (!user) {
+      setEmailModalOpen(true);
+      setShowContent(false);
+    } else {
+      setShowContent(true);
+    }
+  }, [open, user]);
+
 
   type RecipeId =
     | 'cover'
@@ -80,8 +106,17 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
   }, [activeId]);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent
+    <>
+      <AuthModal
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSuccess={() => { setEmailModalOpen(false); setShowContent(true); }}
+        requireAllowedDomain={false}
+        title="Unlock Common Cook Book"
+        description="We’ll email you a magic link to confirm."
+      />
+      <Dialog open={open && showContent} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
+        <DialogContent
         ref={contentRef}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
@@ -582,6 +617,7 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 
