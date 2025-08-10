@@ -130,24 +130,29 @@ export const AdminNotificationsApp: React.FC = () => {
 
   const queryClient = useMemo(() => new QueryClient(), []);
 
-  // Process magic link tokens on admin page
+  // Process magic link tokens on admin page (supports hash or query params)
   useEffect(() => {
-    const processTokens = async () => {
+    const processTokens = () => {
       try {
         const hash = window.location.hash || "";
-        if (hash.includes("access_token") && hash.includes("refresh_token")) {
-          const params = new URLSearchParams(hash.slice(1));
-          const access_token = params.get("access_token");
-          const refresh_token = params.get("refresh_token");
-          if (access_token && refresh_token) {
-            await supabase.auth.setSession({ access_token, refresh_token });
-            const url = new URL(window.location.href);
-            url.hash = "";
-            if (url.searchParams.get("auth") === "true") {
-              url.searchParams.delete("auth");
-            }
-            window.history.replaceState({}, "", url.toString());
+        const search = window.location.search || "";
+        const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash);
+        const searchParams = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search);
+
+        const access_token = hashParams.get("access_token") || searchParams.get("access_token");
+        const refresh_token = hashParams.get("refresh_token") || searchParams.get("refresh_token");
+
+        if (access_token && refresh_token) {
+          supabase.auth.setSession({ access_token, refresh_token });
+
+          const url = new URL(window.location.href);
+          url.hash = "";
+          url.searchParams.delete("access_token");
+          url.searchParams.delete("refresh_token");
+          if (url.searchParams.get("auth") === "true") {
+            url.searchParams.delete("auth");
           }
+          window.history.replaceState({}, "", url.toString());
         }
       } catch (e) {
         console.error("Failed to process auth tokens from URL", e);
