@@ -1,9 +1,10 @@
 
 import React, { useEffect, useMemo, useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ComposeNotificationForm } from "./components/ComposeNotificationForm";
 import { NotificationsTable } from "./components/NotificationsTable";
@@ -38,6 +39,16 @@ const Header: React.FC<{
   userEmail: string | null;
   onSignOut: () => void;
 }> = ({ userEmail, onSignOut }) => {
+  const { data: enabledCount } = useQuery<number>({
+    queryKey: ["enabled-users-count"],
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("get-enabled-users-count");
+      if (error) throw error;
+      return (data?.count ?? 0) as number;
+    },
+    refetchInterval: 30000,
+  });
+
   return (
     <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -46,6 +57,9 @@ const Header: React.FC<{
           <div className="flex items-center gap-3">
             <span className="text-lg font-semibold">Notifications Admin</span>
             <span className="text-muted-foreground text-sm">Croft Common</span>
+            <Badge variant="secondary" title="Distinct users with notifications enabled">
+              {enabledCount ?? 0}
+            </Badge>
           </div>
         </div>
         <div className="flex items-center gap-2">
