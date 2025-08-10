@@ -33,12 +33,8 @@ export const NotificationPicker: React.FC<Props> = ({ value, onChange }) => {
     },
   });
 
-  // Auto-select most recent if none selected
-  useEffect(() => {
-    if (!value && data && data.length > 0) {
-      onChange(data[0].id);
-    }
-  }, [value, data, onChange]);
+  // Removed auto-select on empty value to avoid re-selecting after Clear actions
+  // Users will explicitly pick a notification to inspect deliveries.
 
   return (
     <div className="flex items-center gap-2">
