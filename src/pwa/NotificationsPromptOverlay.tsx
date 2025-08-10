@@ -16,24 +16,31 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
   const [loading, setLoading] = useState(false);
 
   const onEnable = async () => {
-    let reg = swReg;
-    if (!reg) {
-      // Try to get a registration just-in-time
-      reg = await navigator.serviceWorker.getRegistration();
+    setLoading(true);
+    try {
+      // Ensure the system permission prompt appears if still default
+      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+        try {
+          await Notification.requestPermission();
+        } catch {}
+      }
+
+      // Get SW registration, waiting for ready if needed
+      let reg = swReg || (await navigator.serviceWorker.getRegistration());
       if (!reg) {
         try {
           reg = await navigator.serviceWorker.ready;
-        } catch (e) {
+        } catch {
           reg = null as any;
         }
       }
-    }
-    if (!reg) return;
-    setLoading(true);
-    await enableNotifications(reg);
-    setLoading(false);
-    // Hide if permission granted now
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+
+      if (reg) {
+        await enableNotifications(reg);
+      }
+    } finally {
+      setLoading(false);
+      // Dismiss the banner regardless to avoid sticking around
       localStorage.setItem(DISMISS_KEY, '1');
       onClose();
     }
