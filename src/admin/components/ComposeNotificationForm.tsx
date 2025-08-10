@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,6 +28,20 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
   const [scope, setScope] = useState<"all" | "self">("all");
   const [dryRun, setDryRun] = useState(false);
   const [sending, setSending] = useState(false);
+
+  // OS attribution preview (from iOS/Android shows "from {App}")
+  const [appAttribution, setAppAttribution] = useState<string>("Croft Common");
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/manifest.json");
+        const m = await res.json();
+        setAppAttribution(String(m?.short_name || m?.name || "App"));
+      } catch (_e) {
+        // no-op
+      }
+    })();
+  }, []);
 
   // Title guidance: keep titles short; iOS shows a single line
   const TITLE_RECOMMENDED_MAX = 48;
@@ -289,9 +303,10 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
               )}
               <div className="flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="font-medium">{preview.title}</div>
+                  <div className="font-medium truncate">{preview.title}</div>
                   <Badge variant="secondary">{scope}</Badge>
                 </div>
+                <div className="text-xs text-muted-foreground">from {appAttribution}</div>
                 <div className="text-sm text-muted-foreground">{preview.body}</div>
                 {preview.url ? (
                   <div className="text-xs text-primary mt-1 truncate">
