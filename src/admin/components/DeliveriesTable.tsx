@@ -25,11 +25,9 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
     },
   });
 
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
-  if (error) return <div className="text-sm text-destructive">Failed to load deliveries.</div>;
-  if (!data || data.length === 0) return <div className="text-sm text-muted-foreground">No deliveries yet for this notification. Note: dry runs don't create deliveries.</div>;
-  const successes = useMemo(() => (data ?? []).filter((d: any) => d.status === 'sent'), [data]);
-  const failures = useMemo(() => (data ?? []).filter((d: any) => d.status === 'failed'), [data]);
+  const deliveries = data ?? [];
+  const successes = useMemo(() => deliveries.filter((d: any) => d.status === 'sent'), [deliveries]);
+  const failures = useMemo(() => deliveries.filter((d: any) => d.status === 'failed'), [deliveries]);
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openFailed, setOpenFailed] = useState(false);
   const toggleAll = () => {
@@ -39,20 +37,20 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
   };
 
   useEffect(() => {
-    if (!data || data.length === 0) {
+    if (deliveries.length === 0) {
       setOpenSuccess(false);
       setOpenFailed(false);
       return;
     }
     setOpenSuccess(successes.length > 0);
     setOpenFailed(failures.length > 0);
-  }, [notificationId, data?.length]);
+  }, [notificationId, deliveries.length, successes.length, failures.length]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="secondary">Total: {data.length}</Badge>
+          <Badge variant="secondary">Total: {deliveries.length}</Badge>
           <Badge variant="default">Success: {successes.length}</Badge>
           <Badge variant="destructive">Failed: {failures.length}</Badge>
         </div>
@@ -70,7 +68,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((d: any) => (
+            {deliveries.map((d: any) => (
               <TableRow key={d.id}>
                 <TableCell className="whitespace-nowrap">{new Date(d.sent_at).toLocaleString()}</TableCell>
                 <TableCell>
