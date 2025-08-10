@@ -314,7 +314,28 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
       onSent();
     }
   };
-
+  
+  const resetForm = () => {
+    setTitle("");
+    setBody("");
+    setUrl("");
+    setIcon(DEFAULT_ICON);
+    setBadge(DEFAULT_BADGE);
+    setScope("all");
+    setDryRun(false);
+    setIsScheduled(false);
+    setScheduleDate("");
+    setScheduleTime("");
+    setTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+    setRepeatType("none");
+    setRepeatEvery(1);
+    setRepeatWeekdays([1]);
+    setRepeatDayOfMonth(1);
+    setEndMode("never");
+    setEndDate("");
+    setOccurrencesLimit(0);
+  };
+  
   return (
     <Card>
       <CardHeader>
@@ -330,7 +351,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
               ) : null}
             </div>
             {onClearEdit ? (
-              <Button size="sm" variant="ghost" onClick={() => onClearEdit?.()}>Clear</Button>
+              <Button size="sm" variant="ghost" onClick={() => { resetForm(); onClearEdit?.(); }}>Clear</Button>
             ) : null}
           </div>
         )}
