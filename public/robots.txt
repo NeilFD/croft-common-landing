@@ -1,3 +1,9 @@
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
 User-agent: Googlebot
 Allow: /
 
@@ -13,3 +19,5 @@ Allow: /
 User-agent: *
 Allow: /
 Disallow: /branding
+
+Sitemap: https://www.croftcommontest.com/sitemap.xml
