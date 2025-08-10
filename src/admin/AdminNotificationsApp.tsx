@@ -80,6 +80,32 @@ export const AdminNotificationsApp: React.FC = () => {
 
   const queryClient = useMemo(() => new QueryClient(), []);
 
+  // Process magic link tokens on admin page
+  useEffect(() => {
+    const processTokens = async () => {
+      try {
+        const hash = window.location.hash || "";
+        if (hash.includes("access_token") && hash.includes("refresh_token")) {
+          const params = new URLSearchParams(hash.slice(1));
+          const access_token = params.get("access_token");
+          const refresh_token = params.get("refresh_token");
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({ access_token, refresh_token });
+            const url = new URL(window.location.href);
+            url.hash = "";
+            if (url.searchParams.get("auth") === "true") {
+              url.searchParams.delete("auth");
+            }
+            window.history.replaceState({}, "", url.toString());
+          }
+        }
+      } catch (e) {
+        console.error("Failed to process auth tokens from URL", e);
+      }
+    };
+    processTokens();
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {

@@ -142,14 +142,11 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
     setLoading(true);
 
-    // Use the current URL with proper path to avoid platform redirects
-    const currentUrl = window.location.href;
-    const redirectUrl = currentUrl.includes('?') 
-      ? `${currentUrl}&auth=true` 
-      : `${currentUrl}?auth=true`;
+    // Always redirect back to the admin console
+    const redirectUrl = `${window.location.origin}/admin.html?auth=true`;
     
     console.log('🔐 Sending magic link with redirect URL:', redirectUrl);
-    console.log('🔐 Current page URL:', currentUrl);
+
     
     try {
       const { error } = await supabase.auth.signInWithOtp({
