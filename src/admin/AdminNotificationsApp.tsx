@@ -283,9 +283,9 @@ export const AdminNotificationsApp: React.FC = () => {
     <div className="min-h-screen bg-background text-foreground">
       <Header userEmail={userEmail} onSignOut={handleSignOut} />
       <main className="container mx-auto p-4 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
           <ComposeNotificationForm onSent={onSent} editing={editing} onClearEdit={() => setSelectedId(null)} />
-          <Card className="order-first lg:order-none">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <CardTitle>{rightTab === 'history' ? 'History' : 'Analytics'}</CardTitle>
