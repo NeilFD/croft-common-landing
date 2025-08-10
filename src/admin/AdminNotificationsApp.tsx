@@ -137,6 +137,13 @@ export const AdminNotificationsApp: React.FC = () => {
           requireAllowedDomain
           title="Admin sign in"
           description="Enter your authorized email to access the Notifications Admin."
+          emailSentTitle="Check your email"
+          emailSentDescription={
+            <>
+              <p>Click the magic link; you’ll return here signed in to the Notifications Admin.</p>
+              <p>If this tab doesn’t refresh automatically, click Got it.</p>
+            </>
+          }
           onMagicLinkSent={() => setAuthOpen(false)}
         />
         <Toaster />

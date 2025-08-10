@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,6 +15,8 @@ interface AuthModalProps {
   title?: string;
   description?: string;
   onMagicLinkSent?: () => void;
+  emailSentTitle?: string;
+  emailSentDescription?: ReactNode;
 }
 
 const validateEmailDomain = async (email: string): Promise<boolean> => {
@@ -30,7 +32,7 @@ const validateEmailDomain = async (email: string): Promise<boolean> => {
   return data;
 };
 
-export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent, emailSentTitle, emailSentDescription }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -241,23 +243,29 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-black font-bold">
-              {requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Check your email'}
-            </DialogTitle>
-            <DialogDescription className="space-y-4 text-left">
-              <p>We've sent you a magic link to {email}.</p>
-              {requireAllowedDomain ? (
-                <>
-                  <p>Click it and you will be taken to a new browser window.</p>
-                  <p>In this new window, complete the secret gesture again and the event creation form will open for you.</p>
-                  <p>Complete the form and save.</p>
-                </>
-              ) : (
-                <> 
-                  <p>Click the magic link and follow the page to reserve tickets.</p>
-                </>
-              )}
-            </DialogDescription>
+          <DialogTitle className="text-black font-bold">
+            {emailSentTitle ?? (requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Check your email')}
+          </DialogTitle>
+          <DialogDescription className="space-y-4 text-left">
+            <p>We've sent you a magic link to {email}.</p>
+            {emailSentDescription ? (
+              <div className="space-y-2">{emailSentDescription}</div>
+            ) : (
+              <>
+                {requireAllowedDomain ? (
+                  <>
+                    <p>Click it and you will be taken to a new browser window.</p>
+                    <p>In this new window, complete the secret gesture again and the event creation form will open for you.</p>
+                    <p>Complete the form and save.</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Click the magic link and follow the page to reserve tickets.</p>
+                  </>
+                )}
+              </>
+            )}
+          </DialogDescription>
           </DialogHeader>
           <Button onClick={handleGotIt} className="mt-4">
             Got it
