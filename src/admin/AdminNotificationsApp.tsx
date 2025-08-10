@@ -108,14 +108,13 @@ export const AdminNotificationsApp: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       const email = session?.user?.email ?? null;
       setUserEmail(email);
-      if (!email) {
+      // Avoid reopening modal on transient refresh events; only open on explicit sign-out
+      if (event === 'SIGNED_OUT') {
         setAuthOpen(true);
-      } else {
-        setAuthOpen(false);
       }
     });
 
