@@ -86,7 +86,23 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
 
   return (
     <div className="rounded-md border overflow-x-auto">
-      <Table>
+      <Table
+        onClickCapture={(e) => {
+          const t = e.target as HTMLElement;
+          if (t.closest('button, a, [role="button"]')) return;
+          e.preventDefault();
+        }}
+        onMouseDownCapture={(e) => {
+          const t = e.target as HTMLElement;
+          if (t.closest('button, a, [role="button"]')) return;
+          e.preventDefault();
+        }}
+        onAuxClickCapture={(e) => {
+          const t = e.target as HTMLElement;
+          if (t.closest('button, a, [role="button"]')) return;
+          e.preventDefault();
+        }}
+      >
         <TableHeader>
           <TableRow>
             <TableHead>Created</TableHead>
@@ -109,13 +125,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
             return (
               <TableRow
                 key={n.id}
-                role="button"
-                tabIndex={0}
-                draggable={false}
-                onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(n.id); }}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); onSelect(n.id); } }}
-                className={`cursor-pointer select-none ${selectedId === n.id ? "bg-muted/50" : ""}`}
+                className={`${selectedId === n.id ? "bg-muted/50" : ""}`}
               >
                 <TableCell className="whitespace-nowrap">
                   {new Date(n.created_at).toLocaleString()}
@@ -134,7 +144,14 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                 <TableCell className="text-right">{n.failed_count}</TableCell>
                 <TableCell className="text-right">{clicks}</TableCell>
                 <TableCell className="text-right">{ctr}%</TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right space-x-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(n.id); }}
+                  >
+                    View
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
