@@ -17,11 +17,13 @@ const DEFAULT_BADGE = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png
 
 type Props = {
   onSent: () => void;
+  editing?: any | null;
+  onClearEdit?: () => void;
 };
 
 type RepeatType = "none" | "daily" | "weekly" | "monthly";
 
-export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
+export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onClearEdit }) => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
@@ -35,7 +37,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
   const [isScheduled, setIsScheduled] = useState(false);
   const [scheduleDate, setScheduleDate] = useState<string>(""); // yyyy-mm-dd
   const [scheduleTime, setScheduleTime] = useState<string>(""); // HH:mm
-  const [timezone] = useState<string>(() => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
+  const [timezone, setTimezone] = useState<string>(() => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC");
 
   // Repeat controls
   const [repeatType, setRepeatType] = useState<RepeatType>("none");
@@ -59,6 +61,70 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
       }
     })();
   }, []);
+
+  // Load editing notification into form
+  useEffect(() => {
+    if (!editing) return;
+    try {
+      setTitle(editing.title ?? "");
+      setBody(editing.body ?? "");
+      setUrl(editing.url ?? "");
+      setIcon(editing.icon ?? DEFAULT_ICON);
+      setBadge(editing.badge ?? DEFAULT_BADGE);
+      setScope((editing.scope as any) ?? "all");
+      setDryRun(Boolean(editing.dry_run ?? false));
+
+      const sf: string | null = editing.scheduled_for ?? null;
+      const tz: string | null = editing.schedule_timezone ?? null;
+      if (sf) {
+        const d = new Date(sf);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const mm = pad(d.getMonth() + 1);
+        const dd = pad(d.getDate());
+        const hh = pad(d.getHours());
+        const mi = pad(d.getMinutes());
+        setIsScheduled(true);
+        setScheduleDate(`${yyyy}-${mm}-${dd}`);
+        setScheduleTime(`${hh}:${mi}`);
+        if (tz) setTimezone(tz);
+      } else {
+        setIsScheduled(false);
+        setScheduleDate("");
+        setScheduleTime("");
+        if (tz) setTimezone(tz);
+      }
+
+      const rr = editing.repeat_rule ?? null;
+      if (rr?.type) {
+        setRepeatType(rr.type);
+        setRepeatEvery(rr.every ?? 1);
+        if (rr.type === "weekly") setRepeatWeekdays(rr.weekdays ?? []);
+        if (rr.type === "monthly") setRepeatDayOfMonth(rr.dayOfMonth ?? 1);
+      } else {
+        setRepeatType("none");
+        setRepeatEvery(1);
+        setRepeatWeekdays([1]);
+        setRepeatDayOfMonth(1);
+      }
+
+      if (editing.repeat_until) {
+        setEndMode("onDate");
+        const e = new Date(editing.repeat_until);
+        const pad = (n: number) => String(n).padStart(2, '0');
+        setEndDate(`${e.getFullYear()}-${pad(e.getMonth() + 1)}-${pad(e.getDate())}`);
+      } else if (editing.occurrences_limit) {
+        setEndMode("after");
+        setOccurrencesLimit(editing.occurrences_limit);
+      } else {
+        setEndMode("never");
+        setEndDate("");
+        setOccurrencesLimit(0);
+      }
+    } catch (e) {
+      console.warn("Failed to load editing notification", e);
+    }
+  }, [editing]);
 
   // Title guidance: keep titles short; iOS shows a single line
   const TITLE_RECOMMENDED_MAX = 40;
@@ -135,6 +201,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
     try {
       const { data, error } = await supabase.functions.invoke("upsert-notification", {
         body: {
+          id: editing?.id ?? null,
           mode: "draft",
           notification: {
             title: title.trim(),
@@ -149,6 +216,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
       });
       if (error) throw error;
       toast({ title: "Draft saved", description: `Draft #${data?.id ?? ""} saved.` });
+      onSent();
     } catch (err: any) {
       console.error("Save draft error", err);
       toast({ title: "Save failed", description: err?.message ?? "Please try again.", variant: "destructive" });
@@ -176,6 +244,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
     try {
       const { data, error } = await supabase.functions.invoke("upsert-notification", {
         body: {
+          id: editing?.id ?? null,
           mode: "schedule",
           notification: {
             title: title.trim(),
@@ -197,6 +266,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
       });
       if (error) throw error;
       toast({ title: "Scheduled", description: `Notification scheduled for ${new Date(scheduledISO).toLocaleString()}` });
+      onSent();
     } catch (err: any) {
       console.error("Schedule error", err);
       toast({ title: "Schedule failed", description: err?.message ?? "Please try again.", variant: "destructive" });
@@ -251,6 +321,19 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
         <CardTitle>Compose</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {editing && (
+          <div className="rounded-md border bg-muted/40 p-3 text-sm flex items-center justify-between">
+            <div>
+              <span className="font-medium">Editing {editing.status === 'queued' ? 'scheduled notification' : 'draft'}</span>
+              {editing.scheduled_for ? (
+                <span className="ml-2 text-muted-foreground">({new Date(editing.scheduled_for).toLocaleString()})</span>
+              ) : null}
+            </div>
+            {onClearEdit ? (
+              <Button size="sm" variant="ghost" onClick={() => onClearEdit?.()}>Clear</Button>
+            ) : null}
+          </div>
+        )}
         <div className="grid grid-cols-1 gap-4">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
@@ -525,7 +608,8 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
               onClick={handleSaveDraft}
               disabled={!canSend || sending}
             >
-              Save draft
+              {editing ? "Update draft" : "Save draft"}
+            </Button
             </Button>
             <Button
               type="button"

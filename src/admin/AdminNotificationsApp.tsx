@@ -126,6 +126,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [authOpen, setAuthOpen] = useState(false);
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
   const [archivedFilter, setArchivedFilter] = useState<'all' | 'active' | 'archived'>('active');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'queued' | 'sent'>('all');
   const [rightTab, setRightTab] = useState<'history' | 'analytics'>('history');
 
   const queryClient = useMemo(() => new QueryClient(), []);
@@ -218,6 +219,20 @@ export const AdminNotificationsApp: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 
+  const { data: editing } = useQuery({
+    queryKey: ["notification", selectedId],
+    enabled: !!selectedId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("id, title, body, url, icon, badge, scope, dry_run, status, scheduled_for, schedule_timezone, repeat_rule, repeat_until, occurrences_limit")
+        .eq("id", selectedId)
+        .maybeSingle();
+      if (error) throw error;
+      return data as any;
+    },
+  });
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setUserEmail(null);
@@ -270,7 +285,7 @@ export const AdminNotificationsApp: React.FC = () => {
         <Header userEmail={userEmail} onSignOut={handleSignOut} />
         <main className="container mx-auto p-4 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ComposeNotificationForm onSent={onSent} />
+            <ComposeNotificationForm onSent={onSent} editing={editing} onClearEdit={() => setSelectedId(null)} />
             <Card className="order-first lg:order-none">
               <CardHeader className="flex flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -283,12 +298,20 @@ export const AdminNotificationsApp: React.FC = () => {
                   </Tabs>
                 </div>
                 {rightTab === 'history' && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap justify-end">
                     <Tabs value={filterMode} onValueChange={(v) => setFilterMode(v as 'all' | 'live' | 'dry')}>
                       <TabsList>
                         <TabsTrigger value="all">All</TabsTrigger>
                         <TabsTrigger value="live">Live</TabsTrigger>
                         <TabsTrigger value="dry">Dry runs</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                    <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as 'all' | 'draft' | 'queued' | 'sent')}>
+                      <TabsList>
+                        <TabsTrigger value="all">Any status</TabsTrigger>
+                        <TabsTrigger value="draft">Drafts</TabsTrigger>
+                        <TabsTrigger value="queued">Scheduled</TabsTrigger>
+                        <TabsTrigger value="sent">Sent</TabsTrigger>
                       </TabsList>
                     </Tabs>
                     <Tabs value={archivedFilter} onValueChange={(v) => setArchivedFilter(v as 'all' | 'active' | 'archived')}>
@@ -308,6 +331,7 @@ export const AdminNotificationsApp: React.FC = () => {
                     selectedId={selectedId}
                     filterMode={filterMode}
                     archivedFilter={archivedFilter}
+                    statusFilter={statusFilter}
                   />
                 ) : (
                   <OptInAnalytics embedded />

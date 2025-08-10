@@ -11,16 +11,17 @@ type Props = {
   selectedId?: string | null;
   filterMode?: 'all' | 'live' | 'dry';
   archivedFilter?: 'all' | 'active' | 'archived';
+  statusFilter?: 'all' | 'draft' | 'queued' | 'sent';
 };
 
-export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all', archivedFilter = 'active' }) => {
+export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all', archivedFilter = 'active', statusFilter = 'all' }) => {
   const { data: notifications, isLoading, error } = useQuery({
     queryKey: ["notifications", filterMode, archivedFilter],
     queryFn: async () => {
       let q = supabase
         .from("notifications")
         .select(
-          "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at, archived"
+          "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at, archived, scheduled_for"
         )
         .order("created_at", { ascending: false })
         .limit(50);
@@ -36,9 +37,9 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
       } else if (archivedFilter === 'active') {
         q = q.eq('archived', false);
       }
-      const { data, error } = await q;
-      if (error) throw error;
-      return data ?? [];
+      if (statusFilter !== 'all') {
+        q = q.eq('status', statusFilter);
+      }
     },
   });
 
@@ -118,6 +119,9 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                   <Badge variant={n.status === "sent" ? "default" : n.status === "failed" ? "destructive" : "secondary"}>
                     {n.status}
                   </Badge>
+                  {n.status === 'draft' && (
+                    <span className="ml-2 text-xs text-muted-foreground">draft</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <Badge variant="outline">{n.scope}</Badge>
@@ -128,6 +132,16 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                 <TableCell className="text-right">{clicks}</TableCell>
                 <TableCell className="text-right">{ctr}%</TableCell>
                 <TableCell className="text-right space-x-1">
+                  {(n.status === 'draft' || n.status === 'queued') && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect?.(n.id); }}
+                    >
+                      Edit
+                    </Button>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
