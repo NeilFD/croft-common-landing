@@ -18,7 +18,7 @@ import { supabase } from '@/integrations/supabase/client';
     const url = new URL(window.location.href);
     const token = url.searchParams.get('ntk');
     if (token) {
-      void (await import('@@/integrations/supabase/client')).supabase.functions.invoke('track-notification-event', {
+      void supabase.functions.invoke('track-notification-event', {
         body: { type: 'notification_open', token },
       });
       url.searchParams.delete('ntk');
