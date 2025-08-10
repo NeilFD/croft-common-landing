@@ -111,8 +111,11 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
                 key={n.id}
                 role="button"
                 tabIndex={0}
-                onClick={(e) => { e.preventDefault(); onSelect(n.id); }}
-                className={`${selectedId === n.id ? "bg-muted/50" : ""}`}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSelect(n.id); }}
+                onAuxClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+                onMouseDown={(e) => { if (e.button === 1 || e.ctrlKey || e.metaKey) { e.preventDefault(); e.stopPropagation(); } }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(n.id); } }}
+                className={`cursor-pointer ${selectedId === n.id ? "bg-muted/50" : ""}`}
               >
                 <TableCell className="whitespace-nowrap">
                   {new Date(n.created_at).toLocaleString()}

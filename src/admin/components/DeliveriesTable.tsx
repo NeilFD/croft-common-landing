@@ -56,76 +56,36 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
           <Badge variant="default">Success: {successes.length}</Badge>
           <Badge variant="destructive">Failed: {failures.length}</Badge>
         </div>
-        <Button variant="outline" size="sm" onClick={toggleAll}>
-          {openSuccess && openFailed ? "Collapse all" : "Expand all"}
-        </Button>
       </div>
 
-      <Collapsible open={openSuccess} onOpenChange={setOpenSuccess}>
-        <div className="flex items-center justify-between px-2">
-          <div className="font-medium">Successful deliveries</div>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm">
-              {openSuccess ? "Hide" : `Show ${successes.length}`}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-        <CollapsibleContent>
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Sent at</TableHead>
-                  <TableHead>Endpoint</TableHead>
-                  <TableHead>Clicked at</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {successes.map((d: any) => (
-                  <TableRow key={d.id}>
-                    <TableCell className="whitespace-nowrap">{new Date(d.sent_at).toLocaleString()}</TableCell>
-                    <TableCell className="max-w-[600px] truncate">{d.endpoint}</TableCell>
-                    <TableCell className="whitespace-nowrap">{d.clicked_at ? new Date(d.clicked_at).toLocaleString() : '-'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      <Collapsible open={openFailed} onOpenChange={setOpenFailed}>
-        <div className="flex items-center justify-between px-2">
-          <div className="font-medium">Failed deliveries</div>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" size="sm">
-              {openFailed ? "Hide" : `Show ${failures.length}`}
-            </Button>
-          </CollapsibleTrigger>
-        </div>
-        <CollapsibleContent>
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Sent at</TableHead>
-                  <TableHead>Endpoint</TableHead>
-                  <TableHead>Error</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {failures.map((d: any) => (
-                  <TableRow key={d.id}>
-                    <TableCell className="whitespace-nowrap">{new Date(d.sent_at).toLocaleString()}</TableCell>
-                    <TableCell className="max-w-[420px] truncate">{d.endpoint}</TableCell>
-                    <TableCell className="max-w-[420px] truncate text-muted-foreground">{d.error || '-'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+      <div className="rounded-md border overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Sent at</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Endpoint</TableHead>
+              <TableHead>Clicked at</TableHead>
+              <TableHead>Error</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.map((d: any) => (
+              <TableRow key={d.id}>
+                <TableCell className="whitespace-nowrap">{new Date(d.sent_at).toLocaleString()}</TableCell>
+                <TableCell>
+                  <Badge variant={d.status === 'sent' ? 'default' : d.status === 'failed' ? 'destructive' : 'secondary'}>
+                    {d.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="max-w-[600px] truncate">{d.endpoint}</TableCell>
+                <TableCell className="whitespace-nowrap">{d.clicked_at ? new Date(d.clicked_at).toLocaleString() : '-'}</TableCell>
+                <TableCell className="max-w-[420px] truncate text-muted-foreground">{d.error || '-'}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
