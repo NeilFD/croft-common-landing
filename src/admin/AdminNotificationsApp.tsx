@@ -284,7 +284,16 @@ export const AdminNotificationsApp: React.FC = () => {
       <Header userEmail={userEmail} onSignOut={handleSignOut} />
       <main className="container mx-auto p-4 space-y-6">
         <div className="flex flex-col gap-6">
-          <ComposeNotificationForm onSent={onSent} editing={editing} onClearEdit={() => setSelectedId(null)} />
+          <ComposeNotificationForm
+            onSent={onSent}
+            editing={selectedId ? editing : null}
+            onClearEdit={() => {
+              if (selectedId) {
+                queryClient.removeQueries({ queryKey: ["notification", selectedId] });
+              }
+              setSelectedId(null);
+            }}
+          />
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
