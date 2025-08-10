@@ -10,6 +10,7 @@ import { NotificationsTable } from "./components/NotificationsTable";
 import { DeliveriesTable } from "./components/DeliveriesTable";
 import { toast } from "@/hooks/use-toast";
 import { AuthModal } from "@/components/AuthModal";
+import CroftLogo from "@/components/CroftLogo";
 
 type NotificationRow = {
   id: string;
@@ -39,8 +40,11 @@ const Header: React.FC<{
     <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <span className="text-lg font-semibold">Notifications Admin</span>
-          <span className="text-muted-foreground text-sm">Croft Common</span>
+          <CroftLogo size="sm" className="shrink-0" />
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-semibold">Notifications Admin</span>
+            <span className="text-muted-foreground text-sm">Croft Common</span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <a

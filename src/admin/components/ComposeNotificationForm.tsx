@@ -1,5 +1,4 @@
-
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 
+const DEFAULT_ICON = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png";
+const DEFAULT_BADGE = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png";
+
 type Props = {
   onSent: () => void;
 };
@@ -19,8 +21,10 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [url, setUrl] = useState("");
-  const [icon, setIcon] = useState("");
-  const [badge, setBadge] = useState("");
+  const [icon, setIcon] = useState(DEFAULT_ICON);
+  const [badge, setBadge] = useState(DEFAULT_BADGE);
+  const [image, setImage] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [scope, setScope] = useState<"all" | "self">("all");
   const [dryRun, setDryRun] = useState(false);
   const [sending, setSending] = useState(false);
@@ -32,11 +36,39 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
       icon: icon || undefined,
       badge: badge || undefined,
       url: url || undefined,
+      image: image || undefined,
     }),
-    [title, body, icon, badge, url]
+    [title, body, icon, badge, url, image]
   );
 
   const canSend = title.trim().length > 0 && body.trim().length > 0;
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const uploadImage = useCallback(async (file: File) => {
+    try {
+      setUploading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({ title: "Not signed in", description: "Please sign in to upload.", variant: "destructive" });
+        return;
+      }
+      const ext = file.name.split('.').pop();
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('notifications').upload(path, file, {
+        cacheControl: '3600', upsert: true, contentType: file.type
+      });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('notifications').getPublicUrl(path);
+      setImage(pub.publicUrl);
+      toast({ title: 'Image uploaded' });
+    } catch (err: any) {
+      console.error('Upload error', err);
+      toast({ title: 'Upload failed', description: err.message ?? String(err), variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  }, []);
 
   const invokeSend = async (opts: { dry_run: boolean }) => {
     setSending(true);
@@ -48,6 +80,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
           url: url.trim() || undefined,
           icon: icon.trim() || undefined,
           badge: badge.trim() || undefined,
+          image: image.trim() || undefined,
         },
         scope,
         dry_run: opts.dry_run,
@@ -135,6 +168,39 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent }) => {
                 value={badge}
                 onChange={(e) => setBadge(e.target.value)}
               />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Notification image (optional)</Label>
+            <div
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={async (e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files?.[0];
+                if (file) await uploadImage(file);
+              }}
+              className="border border-dashed rounded-md p-4 flex flex-col items-center justify-center gap-2 text-sm text-muted-foreground"
+            >
+              {image ? (
+                <div className="w-full flex items-center gap-3">
+                  <img src={image} alt="notification" className="h-20 w-20 object-cover rounded" />
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={() => setImage("")}>Remove</Button>
+                    <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={uploading}>Replace</Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p>Drag & drop an image here, or use the buttons below.</p>
+                  <div className="flex gap-2">
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+                      Upload photo
+                    </Button>
+                    <Input type="file" accept="image/*" capture="environment" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0])} className="hidden" ref={fileInputRef} />
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

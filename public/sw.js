@@ -27,6 +27,7 @@ self.addEventListener('push', (event) => {
     body: data.body || '',
     icon: data.icon || '/favicon.ico',
     badge: data.badge || '/favicon.ico',
+    image: data.image || undefined,
     data: {
       url: data.url || '/',
     },

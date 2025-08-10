@@ -15,6 +15,7 @@ type PushPayload = {
   url?: string;
   icon?: string;
   badge?: string;
+  image?: string;
 };
 
 type SendScope = "all" | "self";
@@ -29,6 +30,7 @@ type SendPushRequest = {
   url?: string;
   icon?: string;
   badge?: string;
+  image?: string;
 };
 
 serve(async (req) => {
@@ -91,6 +93,7 @@ serve(async (req) => {
         url: maybe.url,
         icon: maybe.icon,
         badge: maybe.badge,
+        image: maybe.image,
       } as PushPayload;
     }
 
