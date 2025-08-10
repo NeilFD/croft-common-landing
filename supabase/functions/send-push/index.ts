@@ -17,6 +17,21 @@ type PushPayload = {
   badge?: string;
 };
 
+type SendScope = "all" | "self";
+
+type SendPushRequest = {
+  // Preferred shape
+  payload?: PushPayload;
+  scope?: SendScope;
+  dry_run?: boolean;
+  // Back-compat: allow top-level payload fields too
+  title?: string;
+  body?: string;
+  url?: string;
+  icon?: string;
+  badge?: string;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -52,20 +67,57 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "VAPID keys not configured" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
-    const payload: PushPayload = await req.json();
+// Support both shapes: { payload, scope, dry_run } and legacy top-level payload
+const rawBody: SendPushRequest = await req.json().catch(() => ({} as any));
+let scope: SendScope = rawBody?.scope ?? "all";
+let dryRun: boolean = Boolean(rawBody?.dry_run);
+let payload: PushPayload | undefined = rawBody?.payload as PushPayload | undefined;
 
-    // Fetch active subscriptions
-    const { data: subs, error: subsErr } = await supabaseAdmin
-      .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth")
-      .eq("is_active", true);
+if (!payload) {
+  // Legacy shape where fields are top-level
+  const maybe: any = rawBody ?? {};
+  payload = {
+    title: maybe.title,
+    body: maybe.body,
+    url: maybe.url,
+    icon: maybe.icon,
+    badge: maybe.badge,
+  } as PushPayload;
+}
 
-    if (subsErr) {
-      console.error("Failed to load subscriptions:", subsErr);
-      return new Response(JSON.stringify({ error: "Failed to load subscriptions" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
-    }
+// Basic validation
+if (!payload?.title || !payload?.body) {
+  return new Response(JSON.stringify({ error: "Missing payload.title or payload.body" }), {
+    status: 400,
+    headers: { "Content-Type": "application/json", ...corsHeaders },
+  });
+}
+
+// Fetch active subscriptions (optionally scoped to current user)
+let query = supabaseAdmin
+  .from("push_subscriptions")
+  .select("id, endpoint, p256dh, auth")
+  .eq("is_active", true);
+
+if (scope === "self") {
+  query = query.eq("user_id", userRes.user.id);
+}
+
+const { data: subs, error: subsErr } = await query;
+
+if (subsErr) {
+  console.error("Failed to load subscriptions:", subsErr);
+  return new Response(JSON.stringify({ error: "Failed to load subscriptions" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+}
+
+if (dryRun) {
+  return new Response(
+    JSON.stringify({ recipients: subs?.length ?? 0, scope, dry_run: true }),
+    { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+  );
+}
 
     let success = 0;
     let failed = 0;
@@ -92,10 +144,10 @@ serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success, failed }), {
-      status: 200,
-      headers: { "Content-Type": "application/json", ...corsHeaders },
-    });
+return new Response(JSON.stringify({ success, failed, recipients: (subs?.length ?? 0), scope }), {
+  status: 200,
+  headers: { "Content-Type": "application/json", ...corsHeaders },
+});
   } catch (e: any) {
     console.error("send-push error:", e);
     return new Response(JSON.stringify({ error: e?.message || "Unknown error" }), {
