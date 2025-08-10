@@ -1,5 +1,7 @@
 
 /* Minimal service worker for PWA + Push */
+const SUPABASE_URL = 'https://xccidvoxhpgcnwinnyin.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU';
 self.addEventListener('install', (event) => {
   // Activate immediately on install
   self.skipWaiting();
@@ -30,6 +32,8 @@ self.addEventListener('push', (event) => {
     image: data.image || undefined,
     data: {
       url: data.url || '/',
+      click_token: data.click_token || null,
+      notification_id: data.notification_id || null,
     },
   };
   event.waitUntil(self.registration.showNotification(title, options));
@@ -57,9 +61,26 @@ self.addEventListener('notificationclick', (event) => {
   };
 
   const targetUrl = normalize(event?.notification?.data?.url);
+  const clickToken = event?.notification?.data?.click_token || null;
 
   event.waitUntil(
     (async () => {
+      // Fire-and-forget tracking of the click
+      if (clickToken) {
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/track-notification-event`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': SUPABASE_ANON_KEY,
+            },
+            body: JSON.stringify({ type: 'notification_click', token: clickToken, url: targetUrl }),
+          });
+        } catch (_e) {
+          // no-op
+        }
+      }
+
       const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
 
       // Try exact match first

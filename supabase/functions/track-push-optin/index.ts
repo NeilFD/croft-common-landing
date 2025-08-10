@@ -1,10 +1,19 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+type Body = {
+  event: "prompt_shown" | "granted" | "denied" | "subscribed" | "unsubscribed";
+  subscription_id?: string;
+  platform?: string;
+  user_agent?: string;
+  endpoint?: string;
+  details?: Record<string, unknown>;
 };
 
 serve(async (req) => {
@@ -17,60 +26,46 @@ serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    const authClient = createClient(supabaseUrl, anonKey, {
+    const auth = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: req.headers.get("Authorization") || "" } },
     });
-    const adminClient = createClient(supabaseUrl, serviceKey);
+    const admin = createClient(supabaseUrl, serviceKey);
 
-    const body = await req.json().catch(() => ({}));
-    const { endpoint, p256dh, auth, user_agent, platform } = body as {
-      endpoint?: string;
-      p256dh?: string;
-      auth?: string;
-      user_agent?: string;
-      platform?: string;
-    };
+    const { data: userRes } = await auth.auth.getUser();
+    const userId = userRes.user?.id ?? null;
 
-    if (!endpoint) {
-      return new Response(JSON.stringify({ error: "Missing endpoint" }), {
+    const body = (await req.json().catch(() => ({}))) as Body;
+    if (!body?.event) {
+      return new Response(JSON.stringify({ error: "Missing event" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: userData } = await authClient.auth.getUser();
-    const userId = userData?.user?.id ?? null;
-
     const row = {
-      endpoint,
-      p256dh: p256dh ?? null,
-      auth: auth ?? null,
-      user_agent: user_agent ?? "",
-      platform: platform ?? "web",
       user_id: userId,
-      is_active: true,
-      last_seen: new Date().toISOString(),
+      subscription_id: body.subscription_id ?? null,
+      event: body.event,
+      platform: body.platform ?? null,
+      user_agent: body.user_agent ?? null,
+      endpoint: body.endpoint ?? null,
+      details: body.details ?? null,
     } as const;
 
-    const { data: upserted, error } = await adminClient
-      .from("push_subscriptions")
-      .upsert(row, { onConflict: "endpoint" })
-      .select("id, endpoint")
-      .single();
-
+    const { error } = await admin.from("push_optin_events").insert(row as any);
     if (error) {
-      console.error("save-push-subscription upsert error", error);
+      console.error("track-push-optin insert error", error);
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    return new Response(JSON.stringify({ ok: true, subscription_id: upserted?.id, endpoint: upserted?.endpoint }), {
+    return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("save-push-subscription unexpected error", err);
+    console.error("track-push-optin error", err);
     return new Response(JSON.stringify({ error: "Unexpected error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },

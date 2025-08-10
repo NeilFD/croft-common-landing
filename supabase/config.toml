@@ -86,3 +86,9 @@ verify_jwt = false
 
 [functions.delete-push-subscription]
 verify_jwt = false
+
+[functions.track-notification-event]
+verify_jwt = false
+
+[functions.track-push-optin]
+verify_jwt = false

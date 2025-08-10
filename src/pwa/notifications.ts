@@ -20,13 +20,23 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
   }
   try {
     let permission = Notification.permission;
+    const platform = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'web');
     if (import.meta.env.DEV) {
       console.log('[Notifications] Initial permission:', permission, { isStandalone, isIos: isIosSafari() });
     }
 
+    // Track prompt shown
+    void supabase.functions.invoke('track-push-optin', {
+      body: { event: 'prompt_shown', platform, user_agent: navigator.userAgent },
+    });
+
     if (permission === 'default') {
       permission = await Notification.requestPermission();
       if (import.meta.env.DEV) console.log('[Notifications] After requestPermission:', permission);
+      // Track grant/deny result
+      void supabase.functions.invoke('track-push-optin', {
+        body: { event: permission === 'granted' ? 'granted' : 'denied', platform, user_agent: navigator.userAgent },
+      });
     }
 
     if (permission !== 'granted') {
@@ -56,32 +66,43 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       if (import.meta.env.DEV) console.log('[Notifications] Reusing existing subscription');
     }
 
-    const raw = sub.toJSON() as any;
-    const endpoint = raw.endpoint;
-    const p256dh = raw.keys?.p256dh;
-    const auth = raw.keys?.auth;
+  const raw = sub.toJSON() as any;
+  const endpoint = raw.endpoint;
+  const p256dh = raw.keys?.p256dh;
+  const auth = raw.keys?.auth;
 
-    const { data: userRes } = await supabase.auth.getUser();
-    const userId = userRes.user?.id ?? null;
+  const { data: userRes } = await supabase.auth.getUser();
+  const userId = userRes.user?.id ?? null;
 
-    const { error } = await supabase.functions.invoke('save-push-subscription', {
-      body: {
-        endpoint,
-        p256dh,
-        auth,
-        user_agent: navigator.userAgent,
-        platform: /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'web'),
-      },
-    });
+  const { data: saveData, error } = await supabase.functions.invoke('save-push-subscription', {
+    body: {
+      endpoint,
+      p256dh,
+      auth,
+      user_agent: navigator.userAgent,
+      platform,
+    },
+  });
 
-    if (error) {
-      console.error('Failed saving subscription:', error);
-      toast({ title: 'Could not save subscription', description: 'Please try again later.', variant: 'destructive' });
-      return false;
-    }
+  if (error) {
+    console.error('Failed saving subscription:', error);
+    toast({ title: 'Could not save subscription', description: 'Please try again later.', variant: 'destructive' });
+    return false;
+  }
 
-    toast({ title: 'Notifications enabled', description: 'You will receive updates from Croft Common.' });
-    return true;
+  // Track successful subscribe
+  void supabase.functions.invoke('track-push-optin', {
+    body: {
+      event: 'subscribed',
+      subscription_id: saveData?.subscription_id,
+      platform,
+      user_agent: navigator.userAgent,
+      endpoint,
+    },
+  });
+
+  toast({ title: 'Notifications enabled', description: 'You will receive updates from Croft Common.' });
+  return true;
   } catch (e) {
     console.error('Subscription error:', e);
     let description = 'Please try again later.';
@@ -104,11 +125,15 @@ export async function resetNotifications(reg: ServiceWorkerRegistration): Promis
       endpoint = raw.endpoint ?? null;
       await existing.unsubscribe().catch(() => {});
     }
-    if (endpoint) {
-      await supabase.functions.invoke('delete-push-subscription', { body: { endpoint } });
-    }
-    if (import.meta.env.DEV) console.log('[Notifications] Reset complete, re-enabling…');
-    return await enableNotifications(reg);
+  if (endpoint) {
+    await supabase.functions.invoke('delete-push-subscription', { body: { endpoint } });
+    // Track unsubscribe
+    void supabase.functions.invoke('track-push-optin', {
+      body: { event: 'unsubscribed', endpoint, platform: /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'web'), user_agent: navigator.userAgent },
+    });
+  }
+  if (import.meta.env.DEV) console.log('[Notifications] Reset complete, re-enabling…');
+  return await enableNotifications(reg);
   } catch (e) {
     console.error('Reset notifications error:', e);
     toast({ title: 'Reset failed', description: 'Please try again later.', variant: 'destructive' });

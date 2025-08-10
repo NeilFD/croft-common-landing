@@ -281,6 +281,8 @@ export type Database = {
       }
       notification_deliveries: {
         Row: {
+          click_token: string | null
+          clicked_at: string | null
           created_at: string
           endpoint: string
           error: string | null
@@ -291,6 +293,8 @@ export type Database = {
           subscription_id: string | null
         }
         Insert: {
+          click_token?: string | null
+          clicked_at?: string | null
           created_at?: string
           endpoint: string
           error?: string | null
@@ -301,6 +305,8 @@ export type Database = {
           subscription_id?: string | null
         }
         Update: {
+          click_token?: string | null
+          clicked_at?: string | null
           created_at?: string
           endpoint?: string
           error?: string | null
@@ -386,6 +392,50 @@ export type Database = {
           url?: string | null
         }
         Relationships: []
+      }
+      push_optin_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          endpoint: string | null
+          event: string
+          id: string
+          platform: string | null
+          subscription_id: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          endpoint?: string | null
+          event: string
+          id?: string
+          platform?: string | null
+          subscription_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          endpoint?: string | null
+          event?: string
+          id?: string
+          platform?: string | null
+          subscription_id?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_optin_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       push_subscriptions: {
         Row: {

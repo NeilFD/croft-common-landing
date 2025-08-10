@@ -17,7 +17,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notification_deliveries")
-        .select("id, sent_at, status, endpoint, error")
+        .select("id, sent_at, status, endpoint, error, clicked_at")
         .eq("notification_id", notificationId)
         .order("sent_at", { ascending: false });
       if (error) throw error;
@@ -68,6 +68,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
                 <TableRow>
                   <TableHead>Sent at</TableHead>
                   <TableHead>Endpoint</TableHead>
+                  <TableHead>Clicked at</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -75,6 +76,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
                   <TableRow key={d.id}>
                     <TableCell className="whitespace-nowrap">{new Date(d.sent_at).toLocaleString()}</TableCell>
                     <TableCell className="max-w-[600px] truncate">{d.endpoint}</TableCell>
+                    <TableCell className="whitespace-nowrap">{d.clicked_at ? new Date(d.clicked_at).toLocaleString() : '-'}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

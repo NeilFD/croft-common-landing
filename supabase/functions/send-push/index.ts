@@ -9,6 +9,12 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+function randomHex(bytes = 16): string {
+  const arr = new Uint8Array(bytes);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 type PushPayload = {
   title: string;
   body: string;
@@ -174,9 +180,11 @@ serve(async (req) => {
         endpoint: s.endpoint,
         keys: { p256dh: s.p256dh, auth: s.auth },
       };
+      const clickToken = randomHex(16);
+      const payloadForSub = { ...(payload as any), click_token: clickToken, notification_id: notificationId };
 
       try {
-        await webpush.sendNotification(subscription as any, JSON.stringify(payload));
+        await webpush.sendNotification(subscription as any, JSON.stringify(payloadForSub));
         success++;
 
         await supabaseAdmin.from("notification_deliveries").insert({
@@ -185,11 +193,12 @@ serve(async (req) => {
           endpoint: s.endpoint,
           status: "sent",
           error: null,
+          click_token: clickToken,
         } as any);
       } catch (err: any) {
         failed++;
-        const status = err?.statusCode ?? err?.status ?? 0;
-        const isGone = status === 404 || status === 410;
+        const statusCode = err?.statusCode ?? err?.status ?? 0;
+        const isGone = statusCode === 404 || statusCode === 410;
 
         // Deactivate dead endpoints
         if (isGone) {
@@ -205,6 +214,7 @@ serve(async (req) => {
           endpoint: s.endpoint,
           status: isGone ? "deactivated" : "failed",
           error: String(err?.message ?? err),
+          click_token: clickToken,
         } as any);
       }
     }

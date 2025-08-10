@@ -12,7 +12,7 @@ type Props = {
 };
 
 export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filterMode = 'all' }) => {
-  const { data, isLoading, error } = useQuery({
+  const { data: notifications, isLoading, error } = useQuery({
     queryKey: ["notifications", filterMode],
     queryFn: async () => {
       let q = supabase
@@ -35,9 +35,32 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
     },
   });
 
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading…</div>;
+  const { data: clicked, isLoading: loadingClicks } = useQuery({
+    queryKey: ['notification-clicks', notifications?.map((n:any)=>n.id) ?? []],
+    enabled: !!notifications && notifications.length > 0,
+    queryFn: async () => {
+      const ids = (notifications ?? []).map((n: any) => n.id);
+      const { data, error } = await supabase
+        .from('notification_deliveries')
+        .select('notification_id, clicked_at')
+        .in('notification_id', ids)
+        .not('clicked_at', 'is', null);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const clicksMap = React.useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const row of clicked ?? []) {
+      map[row.notification_id] = (map[row.notification_id] || 0) + 1;
+    }
+    return map;
+  }, [clicked]);
+
+  if (isLoading || loadingClicks) return <div className="text-sm text-muted-foreground">Loading…</div>;
   if (error) return <div className="text-sm text-destructive">Failed to load notifications.</div>;
-  if (!data || data.length === 0) return <div className="text-sm text-muted-foreground">No notifications yet.</div>;
+  if (!notifications || notifications.length === 0) return <div className="text-sm text-muted-foreground">No notifications yet.</div>;
 
   return (
     <div className="rounded-md border overflow-x-auto">
@@ -51,32 +74,42 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
             <TableHead className="text-right">Recipients</TableHead>
             <TableHead className="text-right">Success</TableHead>
             <TableHead className="text-right">Failed</TableHead>
+            <TableHead className="text-right">Clicks</TableHead>
+            <TableHead className="text-right">CTR</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((n: any) => (
-            <TableRow
-              key={n.id}
-              onClick={() => onSelect(n.id)}
-              className={`cursor-pointer ${selectedId === n.id ? "bg-muted/50" : ""}`}
-            >
-              <TableCell className="whitespace-nowrap">
-                {new Date(n.created_at).toLocaleString()}
-              </TableCell>
-              <TableCell className="max-w-[280px] truncate">{n.title}</TableCell>
-              <TableCell>
-                <Badge variant={n.status === "sent" ? "default" : n.status === "failed" ? "destructive" : "secondary"}>
-                  {n.status}
-                </Badge>
-              </TableCell>
-              <TableCell>
-                <Badge variant="outline">{n.scope}</Badge>
-              </TableCell>
-              <TableCell className="text-right">{n.recipients_count}</TableCell>
-              <TableCell className="text-right">{n.success_count}</TableCell>
-              <TableCell className="text-right">{n.failed_count}</TableCell>
-            </TableRow>
-          ))}
+          {notifications.map((n: any) => {
+            const clicks = clicksMap[n.id] || 0;
+            const sent = n.success_count;
+            const ctr = sent > 0 ? Math.round((clicks / sent) * 100) : 0;
+            return (
+              <TableRow
+                key={n.id}
+                onClick={() => onSelect(n.id)}
+                className={`cursor-pointer ${selectedId === n.id ? "bg-muted/50" : ""}`}
+              >
+                <TableCell className="whitespace-nowrap">
+                  {new Date(n.created_at).toLocaleString()}
+                </TableCell>
+                <TableCell className="max-w-[280px] truncate">{n.title}</TableCell>
+                <TableCell>
+                  <Badge variant={n.status === "sent" ? "default" : n.status === "failed" ? "destructive" : "secondary"}>
+                    {n.status}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{n.scope}</Badge>
+                </TableCell>
+                <TableCell className="text-right">{n.recipients_count}</TableCell>
+                <TableCell className="text-right">{n.success_count}</TableCell>
+                <TableCell className="text-right">{n.failed_count}</TableCell>
+                <TableCell className="text-right">{clicks}</TableCell>
+                <TableCell className="text-right">{ctr}%</TableCell>
+              </TableRow>
+            );
+          })}
+
         </TableBody>
       </Table>
     </div>
