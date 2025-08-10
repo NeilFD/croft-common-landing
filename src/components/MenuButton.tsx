@@ -75,7 +75,7 @@ const MenuButton = ({ pageType, menuData, forceCafeAccent }: MenuButtonProps) =>
         <div className={`relative z-10 transition-colors duration-300 scale-75 ${
           pageType === 'community' || pageType === 'common-room' ? 'text-foreground [&_svg]:stroke-[3]' : 'text-background'
         }`}>
-          <CroftLogo size="lg" />
+          <CroftLogo size="lg" className="invert" />
         </div>
       </button>
 
