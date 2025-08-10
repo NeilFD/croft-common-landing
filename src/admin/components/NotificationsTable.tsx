@@ -86,7 +86,10 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
             return (
               <TableRow
                 key={n.id}
-                onClick={() => onSelect(n.id)}
+                role="button"
+                tabIndex={0}
+                onClick={(e) => { e.preventDefault(); onSelect(n.id); }}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(n.id); } }}
                 className={`cursor-pointer ${selectedId === n.id ? "bg-muted/50" : ""}`}
               >
                 <TableCell className="whitespace-nowrap">
