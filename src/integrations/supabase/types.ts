@@ -279,6 +279,114 @@ export type Database = {
           },
         ]
       }
+      notification_deliveries: {
+        Row: {
+          created_at: string
+          endpoint: string
+          error: string | null
+          id: string
+          notification_id: string
+          sent_at: string
+          status: Database["public"]["Enums"]["delivery_status"]
+          subscription_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          endpoint: string
+          error?: string | null
+          id?: string
+          notification_id: string
+          sent_at?: string
+          status: Database["public"]["Enums"]["delivery_status"]
+          subscription_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          endpoint?: string
+          error?: string | null
+          id?: string
+          notification_id?: string
+          sent_at?: string
+          status?: Database["public"]["Enums"]["delivery_status"]
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_deliveries_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_deliveries_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          badge: string | null
+          body: string
+          created_at: string
+          created_by: string | null
+          created_by_email: string | null
+          dry_run: boolean
+          failed_count: number
+          icon: string | null
+          id: string
+          recipients_count: number
+          scope: Database["public"]["Enums"]["notification_scope"]
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_status"]
+          success_count: number
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          badge?: string | null
+          body: string
+          created_at?: string
+          created_by?: string | null
+          created_by_email?: string | null
+          dry_run?: boolean
+          failed_count?: number
+          icon?: string | null
+          id?: string
+          recipients_count?: number
+          scope?: Database["public"]["Enums"]["notification_scope"]
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          success_count?: number
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          badge?: string | null
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          created_by_email?: string | null
+          dry_run?: boolean
+          failed_count?: number
+          icon?: string | null
+          id?: string
+          recipients_count?: number
+          scope?: Database["public"]["Enums"]["notification_scope"]
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_status"]
+          success_count?: number
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string
@@ -452,7 +560,10 @@ export type Database = {
       }
     }
     Enums: {
+      delivery_status: "sent" | "failed" | "deactivated"
       loyalty_card_type: "regular" | "lucky7"
+      notification_scope: "all" | "self"
+      notification_status: "draft" | "queued" | "sending" | "sent" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -580,7 +691,10 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      delivery_status: ["sent", "failed", "deactivated"],
       loyalty_card_type: ["regular", "lucky7"],
+      notification_scope: ["all", "self"],
+      notification_status: ["draft", "queued", "sending", "sent", "failed"],
     },
   },
 } as const
