@@ -31,23 +31,58 @@ serve(async (req) => {
 
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    const { data, error } = await adminClient
+    const { data: subs, error: subsError } = await adminClient
       .from("push_subscriptions")
-      .select("user_id")
-      .eq("is_active", true)
-      .not("user_id", "is", null);
+      .select("id, endpoint, user_id, is_active")
+      .eq("is_active", true);
 
-    if (error) {
-      console.error("get-enabled-users-count select error", error);
-      return new Response(JSON.stringify({ error: error.message }), {
+    if (subsError) {
+      console.error("get-enabled-users-count subscriptions error", subsError);
+      return new Response(JSON.stringify({ error: subsError.message }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const distinctUsers = new Set((data ?? []).map((r: { user_id: string }) => r.user_id)).size;
+    const { data: events, error: eventsError } = await adminClient
+      .from("push_optin_events")
+      .select("subscription_id, endpoint, user_id")
+      .not("user_id", "is", null);
 
-    return new Response(JSON.stringify({ count: distinctUsers }), {
+    if (eventsError) {
+      console.error("get-enabled-users-count events error", eventsError);
+      return new Response(JSON.stringify({ error: eventsError.message }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const endpointToUser = new Map<string, string>();
+    const subIdToUser = new Map<string, string>();
+    for (const e of events ?? []) {
+      if (e.endpoint && e.user_id && !endpointToUser.has(e.endpoint)) {
+        endpointToUser.set(e.endpoint, e.user_id);
+      }
+      if (e.subscription_id && e.user_id && !subIdToUser.has(e.subscription_id)) {
+        subIdToUser.set(e.subscription_id, e.user_id);
+      }
+    }
+
+    const userSet = new Set<string>();
+    let unknown = 0;
+    for (const s of subs ?? []) {
+      const uid = s.user_id || endpointToUser.get(s.endpoint) || subIdToUser.get(s.id);
+      if (uid) userSet.add(uid);
+      else unknown++;
+    }
+
+    const result = {
+      count: userSet.size, // distinct users
+      devices: (subs ?? []).length, // active endpoints
+      unknown_endpoints: unknown, // active endpoints we can't map to a user
+    };
+
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
