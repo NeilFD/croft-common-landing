@@ -47,17 +47,14 @@ const effectiveRpId = normalizeRpId(hostForRp);
       return new Response(JSON.stringify({ error: 'no_credentials' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Prefer platform authenticator to avoid account chooser sheets
-    const internalCreds = creds.filter((c: any) => Array.isArray(c.transports) && c.transports.includes('internal'));
-    const usingInternalOnly = internalCreds.length > 0;
-    const sourceCreds = usingInternalOnly ? internalCreds : creds;
-    const allowCredentials = sourceCreds.map((c: any) => ({
+    // Force platform authenticator to avoid Safari account chooser
+    const allowCredentials = creds.map((c: any) => ({
       id: c.credential_id, // base64url string required by simplewebauthn v10
       type: 'public-key' as const,
-      transports: (Array.isArray(c.transports) && c.transports.includes('internal')) ? ['internal'] : (c.transports ?? undefined),
+      transports: ['internal'] as any,
     }));
 
-    console.log('webauthn-auth-options', { rpId: effectiveRpId, origin: effectiveOrigin, allowCount: allowCredentials.length, internalPreferred: usingInternalOnly });
+    console.log('webauthn-auth-options', { rpId: effectiveRpId, origin: effectiveOrigin, allowCount: allowCredentials.length, internalForced: true });
     const options = await generateAuthenticationOptions({
       rpID: effectiveRpId,
       allowCredentials,
