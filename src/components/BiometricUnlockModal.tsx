@@ -52,6 +52,8 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
       case 'no_user_handle':
       case 'no_credentials':
         return 'No passkey saved yet. We’ll create one now.';
+      case 'auth_options_failed':
+        return 'Couldn’t fetch passkey. We’ll create one now.';
       case 'platform_unavailable':
         return 'No built-in authenticator found on this device.';
       case 'unsupported':

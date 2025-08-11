@@ -143,10 +143,17 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
     const { data: optRes, error: optErr } = await supabase.functions.invoke('webauthn-auth-options', {
       body: { userHandle: handle, rpId, origin }
     });
-    if (optErr) return { ok: false, errorCode: 'server', error: optErr.message };
-    if ((optRes as any)?.error === 'no_credentials') {
-      return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
-    }
+if (optErr) {
+  const msg = String((optErr as any)?.message ?? '');
+  const lower = msg.toLowerCase();
+  if (lower.includes('missing userhandle')) {
+    return { ok: false, errorCode: 'no_user_handle', error: msg };
+  }
+  return { ok: false, errorCode: 'auth_options_failed', error: msg };
+}
+if ((optRes as any)?.error === 'no_credentials') {
+  return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
+}
 
     const { options } = optRes as any;
 
@@ -176,7 +183,7 @@ export async function ensureBiometricUnlock(displayName?: string): Promise<boole
   try {
     const auth = await authenticatePasskeyDetailed();
     if (auth.ok) return true;
-    if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials') {
+    if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials' || auth.errorCode === 'auth_options_failed') {
       const reg = await registerPasskeyDetailed(displayName);
       return reg.ok;
     }
@@ -198,7 +205,7 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
   const auth = await authenticatePasskeyDetailed();
   if (auth.ok) return { ok: true, stage: 'authenticate' };
 
-  if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials') {
+  if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials' || auth.errorCode === 'auth_options_failed') {
     const reg = await registerPasskeyDetailed(displayName);
     if (reg.ok) return { ok: true, stage: 'register' };
     return { ok: false, stage: 'register', errorCode: reg.errorCode, error: reg.error };
