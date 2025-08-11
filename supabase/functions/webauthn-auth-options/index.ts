@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -33,15 +34,17 @@ serve(async (req) => {
     const { userHandle, rpId, origin, discoverable } = await req.json();
     if (!userHandle) throw new Error('Missing userHandle');
 
-const url = new URL(req.url);
-const effectiveOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
-const hostForRp = rpId ?? new URL(effectiveOrigin).hostname;
-const effectiveRpId = normalizeRpId(hostForRp);
+    const url = new URL(req.url);
+    const effectiveOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
+    const hostForRp = rpId ?? new URL(effectiveOrigin).hostname;
+    const effectiveRpId = normalizeRpId(hostForRp);
 
+    // Only consider credentials saved for this RP ID (domain)
     const { data: creds } = await supabase
       .from('webauthn_credentials')
       .select('credential_id, transports')
-      .eq('user_handle', userHandle);
+      .eq('user_handle', userHandle)
+      .eq('rp_id', effectiveRpId);
 
     if (!creds || creds.length === 0) {
       return new Response(JSON.stringify({ error: 'no_credentials' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -49,11 +52,16 @@ const effectiveRpId = normalizeRpId(hostForRp);
 
     // Build allowCredentials without forcing transports; allow browser to choose best
     const allowCredentials = creds.map((c: any) => ({
-      id: c.credential_id, // base64url string required by simplewebauthn v10
+      id: c.credential_id,
       type: 'public-key' as const,
     }));
 
-    console.log('webauthn-auth-options', { rpId: effectiveRpId, origin: effectiveOrigin, allowCount: allowCredentials.length, discoverable: !!discoverable });
+    console.log('webauthn-auth-options', {
+      rpId: effectiveRpId,
+      origin: effectiveOrigin,
+      allowCount: allowCredentials.length,
+      discoverable: !!discoverable,
+    });
 
     const baseOpts: any = {
       rpID: effectiveRpId,
@@ -71,7 +79,7 @@ const effectiveRpId = normalizeRpId(hostForRp);
       .insert({ user_handle: userHandle, type: 'authentication', challenge: options.challenge })
       .throwOnError();
 
-    return new Response(JSON.stringify({ options, rpId: effectiveRpId, origin: effectiveOrigin }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ options, rpId: effectiveRpId, origin: effectiveOrigin }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error('webauthn-auth-options error', error);
     return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -33,10 +34,10 @@ serve(async (req) => {
     const { userHandle, authResp, rpId, origin } = await req.json();
     if (!userHandle || !authResp) throw new Error('Missing userHandle or authResp');
 
-const url = new URL(req.url);
-const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
-const hostForRp = rpId ?? new URL(expectedOrigin).hostname;
-const expectedRPID = normalizeRpId(hostForRp);
+    const url = new URL(req.url);
+    const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
+    const hostForRp = rpId ?? new URL(expectedOrigin).hostname;
+    const expectedRPID = normalizeRpId(hostForRp);
 
     // Load latest auth challenge
     const { data: challenges, error: chErr } = await supabase
@@ -50,21 +51,19 @@ const expectedRPID = normalizeRpId(hostForRp);
     const challenge = challenges?.[0]?.challenge;
     if (!challenge) return new Response(JSON.stringify({ error: 'no_challenge' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
-    // Get authenticator data
+    // Get authenticator data scoped to this RP ID
     const { data: credRows, error: credErr } = await supabase
       .from('webauthn_credentials')
       .select('*')
-      .eq('user_handle', userHandle);
+      .eq('user_handle', userHandle)
+      .eq('rp_id', expectedRPID);
     if (credErr) throw credErr;
 
     const credMap = new Map<string, any>();
     for (const c of credRows ?? []) credMap.set(c.credential_id, c);
 
-    const dbAuthenticator = credMap.get(authResp.rawId);
-
     // SimpleWebAuthn expects an authenticator object
     const authenticator = (() => {
-      // Try by credentialId in response.id/rawId, else by traversing map
       const rawIdB64u: string = authResp.rawId || authResp.id;
       const row = credMap.get(rawIdB64u);
       if (!row) return null;

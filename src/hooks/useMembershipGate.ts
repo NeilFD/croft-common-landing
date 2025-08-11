@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredUserHandle, ensureBiometricUnlockDetailed } from "@/lib/biometricAuth";
-import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
+import { markBioSuccess } from "@/hooks/useRecentBiometric";
+
 interface UseMembershipGate {
   bioOpen: boolean;
   linkOpen: boolean;
@@ -31,17 +32,13 @@ export function useMembershipGate(): UseMembershipGate {
     setChecking(false);
   }, []);
 
+  // Always attempt a silent biometric first; only show the modal if it fails
   const start = useCallback(() => {
     setAllowed(false);
     setChecking(true);
-    console.debug('[gate] start: auto biometric');
+    console.debug('[gate] start: auto biometric (always)');
     (async () => {
       try {
-        if (isBioRecentlyOk(0)) {
-          console.debug('[gate] recent bio ok -> membership check');
-          await handleBioSuccess();
-          return;
-        }
         console.debug('[gate] prompting biometric');
         const res = await ensureBiometricUnlockDetailed('Member');
         if (res.ok) {

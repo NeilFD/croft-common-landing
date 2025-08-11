@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -29,10 +30,10 @@ serve(async (req) => {
     const { userHandle, attResp, rpId, origin } = await req.json();
     if (!userHandle || !attResp) throw new Error('Missing userHandle or attResp');
 
-const url = new URL(req.url);
-const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
-const hostForRp = rpId ?? new URL(expectedOrigin).hostname;
-const expectedRPID = normalizeRpId(hostForRp);
+    const url = new URL(req.url);
+    const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
+    const hostForRp = rpId ?? new URL(expectedOrigin).hostname;
+    const expectedRPID = normalizeRpId(hostForRp);
 
     // Load latest registration challenge
     const { data: challenges, error: chErr } = await supabase
@@ -61,6 +62,7 @@ const expectedRPID = normalizeRpId(hostForRp);
 
     await supabase.from('webauthn_users').upsert({ user_handle: userHandle }).throwOnError();
 
+    // Store credential including rp_id for domain scoping
     await supabase
       .from('webauthn_credentials')
       .upsert({
@@ -72,6 +74,7 @@ const expectedRPID = normalizeRpId(hostForRp);
         backed_up: credentialBackedUp,
         transports: credentialTransports ?? null,
         last_used_at: new Date().toISOString(),
+        rp_id: expectedRPID,
       }, { onConflict: 'credential_id' })
       .throwOnError();
 

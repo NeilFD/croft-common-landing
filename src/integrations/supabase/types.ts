@@ -665,6 +665,7 @@ export type Database = {
           id: string
           last_used_at: string | null
           public_key: string
+          rp_id: string | null
           transports: string[] | null
           user_handle: string
         }
@@ -677,6 +678,7 @@ export type Database = {
           id?: string
           last_used_at?: string | null
           public_key: string
+          rp_id?: string | null
           transports?: string[] | null
           user_handle: string
         }
@@ -689,6 +691,7 @@ export type Database = {
           id?: string
           last_used_at?: string | null
           public_key?: string
+          rp_id?: string | null
           transports?: string[] | null
           user_handle?: string
         }
