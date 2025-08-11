@@ -157,6 +157,7 @@ if ((optRes as any)?.error === 'no_credentials') {
 }
 
     const { options } = optRes as any;
+    const allowPresent = Array.isArray((options as any)?.allowCredentials) && (options as any).allowCredentials.length > 0;
 
     let authResp: any;
     try {
@@ -165,10 +166,11 @@ if ((optRes as any)?.error === 'no_credentials') {
       const mapped = mapWebAuthnError(err);
       const msgLower = String(mapped.message || '').toLowerCase();
       const couldBeNoMatch = ['no passkey', 'no credential', 'no eligible', 'no matching', 'not found', 'no available'].some(s => msgLower.includes(s));
-      console.debug('[webauthn] auth start error', mapped, { couldBeNoMatch });
+      const shouldRetryDiscoverable = couldBeNoMatch || (allowPresent && mapped.code === 'not_allowed');
+      console.debug('[webauthn] auth start error', { mapped, allowPresent, shouldRetryDiscoverable });
 
       // Fallback: retry with discoverable auth options to let the browser find a compatible passkey
-      if (couldBeNoMatch) {
+      if (shouldRetryDiscoverable) {
         const { data: optRes2, error: optErr2 } = await supabase.functions.invoke('webauthn-auth-options', {
           body: { userHandle: handle, rpId, origin, discoverable: true }
         });
