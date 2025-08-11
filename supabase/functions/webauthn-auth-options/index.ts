@@ -17,6 +17,10 @@ function base64urlToUint8Array(base64url: string): Uint8Array {
   return outputArray;
 }
 
+function normalizeRpId(hostname: string): string {
+  return hostname.replace(/^www\./, '');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -29,9 +33,10 @@ serve(async (req) => {
     const { userHandle, rpId, origin } = await req.json();
     if (!userHandle) throw new Error('Missing userHandle');
 
-    const url = new URL(req.url);
-    const effectiveOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
-    const effectiveRpId = rpId ?? new URL(effectiveOrigin).hostname;
+const url = new URL(req.url);
+const effectiveOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
+const hostForRp = rpId ?? new URL(effectiveOrigin).hostname;
+const effectiveRpId = normalizeRpId(hostForRp);
 
     const { data: creds } = await supabase
       .from('webauthn_credentials')

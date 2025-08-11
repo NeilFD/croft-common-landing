@@ -17,6 +17,10 @@ function base64urlToUint8Array(base64url: string): Uint8Array {
   return outputArray;
 }
 
+function normalizeRpId(hostname: string): string {
+  return hostname.replace(/^www\./, '');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -28,9 +32,10 @@ serve(async (req) => {
   try {
     const { userHandle, displayName, rpId, origin } = await req.json();
 
-    const url = new URL(req.url);
-    const effectiveOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
-    const effectiveRpId = rpId ?? new URL(effectiveOrigin).hostname;
+const url = new URL(req.url);
+const effectiveOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
+const hostForRp = rpId ?? new URL(effectiveOrigin).hostname;
+const effectiveRpId = normalizeRpId(hostForRp);
 
     // Ensure user exists
     let handle = userHandle || crypto.randomUUID();

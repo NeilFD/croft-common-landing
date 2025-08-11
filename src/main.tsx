@@ -3,4 +3,9 @@ import App from './App.tsx'
 import './index.css'
 import './pwa'
 
-createRoot(document.getElementById("root")!).render(<App />);
+if (typeof window !== 'undefined' && window.location.hostname.startsWith('www.')) {
+  const target = `${window.location.protocol}//${window.location.hostname.slice(4)}${window.location.port ? ':' + window.location.port : ''}${window.location.pathname}${window.location.search}${window.location.hash}`;
+  window.location.replace(target);
+} else {
+  createRoot(document.getElementById("root")!).render(<App />);
+}

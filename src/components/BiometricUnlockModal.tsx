@@ -41,8 +41,8 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     switch (code) {
       case 'not_allowed':
         return 'Biometric prompt was closed or timed out. Please try again.';
-      case 'security':
-        return 'Security error. Check you are on croftcommon.co over HTTPS and not in Private Browsing.';
+case 'security':
+        return 'Security error. Make sure you are on this site over HTTPS (avoid Private Browsing).';
       case 'invalid_state':
         return 'This passkey is already registered. Try signing in instead.';
       case 'timeout':
@@ -52,8 +52,8 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
       case 'no_user_handle':
       case 'no_credentials':
         return 'No passkey saved yet. We’ll create one now.';
-      case 'auth_options_failed':
-        return 'Couldn’t fetch passkey. We’ll create one now.';
+case 'auth_options_failed':
+        return 'Couldn’t fetch passkey (possibly www vs non‑www). We’ll create one now.';
       case 'platform_unavailable':
         return 'No built-in authenticator found on this device.';
       case 'unsupported':

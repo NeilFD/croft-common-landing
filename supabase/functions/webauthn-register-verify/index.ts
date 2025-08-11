@@ -13,6 +13,10 @@ function toBase64Url(u8: Uint8Array): string {
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
+function normalizeRpId(hostname: string): string {
+  return hostname.replace(/^www\./, '');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
@@ -25,9 +29,10 @@ serve(async (req) => {
     const { userHandle, attResp, rpId, origin } = await req.json();
     if (!userHandle || !attResp) throw new Error('Missing userHandle or attResp');
 
-    const url = new URL(req.url);
-    const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
-    const expectedRPID = rpId ?? new URL(expectedOrigin).hostname;
+const url = new URL(req.url);
+const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
+const hostForRp = rpId ?? new URL(expectedOrigin).hostname;
+const expectedRPID = normalizeRpId(hostForRp);
 
     // Load latest registration challenge
     const { data: challenges, error: chErr } = await supabase
