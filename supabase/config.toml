@@ -136,3 +136,6 @@ verify_jwt = false
 
 [functions.admin-wipe-webauthn]
 verify_jwt = false
+
+[functions.loyalty-get-active-card]
+verify_jwt = false
