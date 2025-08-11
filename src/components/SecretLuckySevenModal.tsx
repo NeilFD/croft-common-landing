@@ -1,11 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { AuthModal } from "@/components/AuthModal";
-import { useAuth } from "@/hooks/useAuth";
 import { Dice4, Dice3 } from "lucide-react";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
-import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
+import MembershipLinkModal from "@/components/MembershipLinkModal";
+import { useMembershipGate } from "@/hooks/useMembershipGate";
 
 interface SecretLuckySevenModalProps {
   open: boolean;
@@ -13,86 +13,54 @@ interface SecretLuckySevenModalProps {
 }
 
 const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onClose }) => {
-  const { user } = useAuth();
-  const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [bioModalOpen, setBioModalOpen] = useState(false);
-  const [showDice, setShowDice] = useState(false);
+  const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
 
   useEffect(() => {
-    if (!open) {
-      setEmailModalOpen(false);
-      setBioModalOpen(false);
-      setShowDice(false);
-      return;
-    }
-    // Recently unlocked? Skip prompts.
-    if (isBioRecentlyOk()) {
-      setEmailModalOpen(false);
-      setBioModalOpen(false);
-      setShowDice(true);
-      return;
-    }
-    // Prefer biometrics; if signed in already, show content
-    if (!user) {
-      setBioModalOpen(true);
-      setEmailModalOpen(false);
-      setShowDice(false);
-    } else {
-      setShowDice(true);
-    }
-  }, [open, user]);
+    if (!open) { reset(); return; }
+    start();
+  }, [open, start, reset]);
 
-  // If user signs in successfully, reveal the dice screen
-  const handleAuthSuccess = () => {
-    setEmailModalOpen(false);
-    setShowDice(true);
-  };
-
-  const handleBiometricSuccess = () => {
-    markBioSuccess();
-    setBioModalOpen(false);
-    setShowDice(true);
-  };
-
-  const handleBiometricFallback = () => {
-    setBioModalOpen(false);
-    setEmailModalOpen(true);
-  };
-
-  // Close everything
   const handleCloseAll = () => {
-    setEmailModalOpen(false);
-    setBioModalOpen(false);
-    setShowDice(false);
+    reset();
     onClose();
   };
 
   return (
     <>
+      <BiometricUnlockModal
+        isOpen={bioOpen}
+        onClose={() => {}}
+        onSuccess={handleBioSuccess}
+        onFallback={handleBioFallback}
+        title="Unlock Lucky No 7"
+        description="Use Face ID / Passkey to access."
+      />
+      <MembershipLinkModal
+        open={linkOpen}
+        onClose={() => {}}
+        onSuccess={(email) => { handleLinkSuccess(email); }}
+      />
       <AuthModal
-        isOpen={emailModalOpen}
-        onClose={() => setEmailModalOpen(false)}
+        isOpen={authOpen}
+        onClose={() => {}}
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Lucky No 7"
         description="We’ll email you a magic link to confirm."
       />
 
-      <Dialog open={open && showDice} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
+      <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent className="w-[90vw] max-w-lg border border-border bg-background">
           <div className="space-y-6">
-            {/* Brand */}
             <div className="flex items-center gap-3">
               <CroftLogo size="sm" />
               <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
             </div>
 
-            {/* Title */}
             <h2 className="font-brutalist text-foreground text-2xl md:text-3xl tracking-wider">
               Lucky No 7
             </h2>
 
-            {/* Dice visual (Outline Pair 2 + 5, Animation B) */}
             <div className="flex items-center justify-center py-4 select-none">
               <div className="flex items-center gap-6">
                 <div className="micro-tilt">
@@ -104,7 +72,6 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
               </div>
             </div>
 
-            {/* Copy */}
             <div className="space-y-3">
               <p className="font-industrial text-foreground/90">
                 Show this to the bartender. Take the dice. Roll a seven. Your drink’s on us.

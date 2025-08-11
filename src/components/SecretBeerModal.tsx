@@ -1,11 +1,10 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { AuthModal } from "@/components/AuthModal";
-import { useAuth } from "@/hooks/useAuth";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
-import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
+import MembershipLinkModal from "@/components/MembershipLinkModal";
+import { useMembershipGate } from "@/hooks/useMembershipGate";
 
 interface SecretBeerModalProps {
   open: boolean;
@@ -14,77 +13,42 @@ interface SecretBeerModalProps {
 }
 
 const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secretWord }) => {
-  const { user } = useAuth();
-  const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [bioModalOpen, setBioModalOpen] = useState(false);
-  const [showContent, setShowContent] = useState(false);
+  const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
 
   useEffect(() => {
-    if (!open) {
-      setEmailModalOpen(false);
-      setBioModalOpen(false);
-      setShowContent(false);
-      return;
-    }
-    // Recently unlocked? Skip prompts.
-    if (isBioRecentlyOk()) {
-      setEmailModalOpen(false);
-      setBioModalOpen(false);
-      setShowContent(true);
-      return;
-    }
-    // Prefer biometrics; if user already logged in, bypass
-    if (!user) {
-      setBioModalOpen(true);
-      setEmailModalOpen(false);
-      setShowContent(false);
-    } else {
-      setShowContent(true);
-    }
-  }, [open, user]);
-
-  const handleAuthSuccess = () => {
-    setEmailModalOpen(false);
-    setShowContent(true);
-  };
-
-  const handleBiometricSuccess = () => {
-    markBioSuccess();
-    setBioModalOpen(false);
-    setShowContent(true);
-  };
-
-  const handleBiometricFallback = () => {
-    setBioModalOpen(false);
-    setEmailModalOpen(true);
-  };
+    if (!open) { reset(); return; }
+    start();
+  }, [open, start, reset]);
 
   const handleCloseAll = () => {
-    setEmailModalOpen(false);
-    setBioModalOpen(false);
-    setShowContent(false);
+    reset();
     onClose();
   };
 
   return (
     <>
       <BiometricUnlockModal
-        isOpen={bioModalOpen}
-        onClose={() => setBioModalOpen(false)}
-        onSuccess={handleBiometricSuccess}
-        onFallback={handleBiometricFallback}
+        isOpen={bioOpen}
+        onClose={() => {}}
+        onSuccess={handleBioSuccess}
+        onFallback={handleBioFallback}
         title="Unlock Secret Beer"
         description="Use Face ID / Passkey to access."
       />
+      <MembershipLinkModal
+        open={linkOpen}
+        onClose={() => {}}
+        onSuccess={(email) => { handleLinkSuccess(email); }}
+      />
       <AuthModal
-        isOpen={emailModalOpen}
-        onClose={() => setEmailModalOpen(false)}
+        isOpen={authOpen}
+        onClose={() => {}}
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Secret Beer"
         description="We’ll email you a magic link to confirm."
       />
-      <Dialog open={open && showContent} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
+      <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
           <div className="space-y-4">
             <div className="flex items-center gap-3">

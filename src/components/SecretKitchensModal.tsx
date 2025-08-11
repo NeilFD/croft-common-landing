@@ -4,9 +4,9 @@ import CroftLogo from "@/components/CroftLogo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
-import { useAuth } from "@/hooks/useAuth";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
-import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
+import MembershipLinkModal from "@/components/MembershipLinkModal";
+import { useMembershipGate } from "@/hooks/useMembershipGate";
 
 interface SecretKitchensModalProps {
   open: boolean;
@@ -20,16 +20,11 @@ const Separator = () => (
 );
 
 const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose }) => {
-  const { user } = useAuth();
-  const [emailModalOpen, setEmailModalOpen] = React.useState(false);
-  const [bioModalOpen, setBioModalOpen] = React.useState(false);
-  const [showContent, setShowContent] = React.useState(false);
-  const contentRef = React.useRef<HTMLDivElement>(null);
+const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
+const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleCloseAll = () => {
-    setEmailModalOpen(false);
-    setBioModalOpen(false);
-    setShowContent(false);
+    reset();
     onClose();
   };
 
@@ -41,27 +36,13 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
     }
   }, [open]);
 
-  React.useEffect(() => {
-    if (!open) {
-      setEmailModalOpen(false);
-      setBioModalOpen(false);
-      setShowContent(false);
-      return;
-    }
-    // Recently unlocked? Skip prompts.
-    if (isBioRecentlyOk()) {
-      setEmailModalOpen(false);
-      setBioModalOpen(false);
-      setShowContent(true);
-      return;
-    }
-    if (!user) {
-      setBioModalOpen(true);
-      setShowContent(false);
-    } else {
-      setShowContent(true);
-    }
-  }, [open, user]);
+React.useEffect(() => {
+  if (!open) {
+    reset();
+    return;
+  }
+  start();
+}, [open]);
 
 
   type RecipeId =
@@ -119,23 +100,28 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
 
   return (
     <>
-      <BiometricUnlockModal
-        isOpen={bioModalOpen}
-        onClose={() => setBioModalOpen(false)}
-        onSuccess={() => { markBioSuccess(); setBioModalOpen(false); setShowContent(true); }}
-        onFallback={() => { setBioModalOpen(false); setEmailModalOpen(true); }}
+<BiometricUnlockModal
+        isOpen={bioOpen}
+        onClose={() => {}}
+        onSuccess={handleBioSuccess}
+        onFallback={handleBioFallback}
         title="Unlock Common Cook Book"
         description="Use Face ID / Passkey to access."
       />
+      <MembershipLinkModal
+        open={linkOpen}
+        onClose={() => {}}
+        onSuccess={(email) => { handleLinkSuccess(email); }}
+      />
       <AuthModal
-        isOpen={emailModalOpen}
-        onClose={() => setEmailModalOpen(false)}
-        onSuccess={() => { setEmailModalOpen(false); setShowContent(true); }}
+        isOpen={authOpen}
+        onClose={() => {}}
+        onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Common Cook Book"
         description="We’ll email you a magic link to confirm."
       />
-      <Dialog open={open && showContent} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
+      <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent
         ref={contentRef}
         onInteractOutside={(e) => e.preventDefault()}
