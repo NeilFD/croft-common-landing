@@ -32,7 +32,7 @@ const TransitionOverlay = ({ isActive, onComplete }: TransitionOverlayProps) => 
       }`}
       style={{
         transformOrigin: 'center center',
-        pointerEvents: 'all',
+        pointerEvents: 'none',
       }}
     />
   );

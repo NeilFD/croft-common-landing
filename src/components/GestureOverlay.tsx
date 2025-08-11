@@ -77,11 +77,13 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     if (!isDrawing) return;
+    event.preventDefault();
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
   }, [getEventPosition, addPoint, isDrawing]);
 
   const handleMouseUp = useCallback((event: React.MouseEvent) => {
+    event.preventDefault();
     endGesture();
   }, [endGesture]);
 
@@ -90,7 +92,9 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     if (!containerRef?.current) return;
     const el = containerRef.current as HTMLElement;
     const prevTouchAction = el.style.touchAction;
+    const prevUserSelect = el.style.userSelect;
     el.style.touchAction = 'none';
+    el.style.userSelect = 'none';
 
     const ts = (e: TouchEvent) => {
       e.preventDefault();
@@ -115,10 +119,12 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     };
     const mm = (e: MouseEvent) => {
       if (!isDrawing) return;
+      e.preventDefault();
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
     };
-    const mu = (_e: MouseEvent) => {
+    const mu = (e: MouseEvent) => {
+      e.preventDefault();
       endGesture();
     };
 
@@ -131,6 +137,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
 
     return () => {
       el.style.touchAction = prevTouchAction;
+      el.style.userSelect = prevUserSelect;
       el.removeEventListener('touchstart', ts);
       el.removeEventListener('touchmove', tm);
       el.removeEventListener('touchend', te);
@@ -148,7 +155,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-40 bg-transparent"
+      className="fixed inset-0 z-40 bg-transparent select-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

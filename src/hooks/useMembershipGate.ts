@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredUserHandle } from "@/lib/biometricAuth";
-import { markBioSuccess } from "@/hooks/useRecentBiometric";
+import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/useRecentBiometric";
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
 import { toast } from "sonner";
 
@@ -59,6 +59,13 @@ export function useMembershipGate(): UseMembershipGate {
         const userHandle = getStoredUserHandle();
         if (userHandle) {
           console.debug('[gate] silent membership check with stored handle');
+          if (isBioLongExpired()) {
+            console.debug('[gate] device trust expired -> prompt relink');
+            setLinkOpen(true);
+            setBioOpen(false);
+            toast.message('For your security, please relink your membership to this device.', { description: 'Face ID / Passkey access has expired (180 days). Relink to continue.' });
+            return;
+          }
           const { data, error } = await supabase.functions.invoke('check-membership', {
             body: { userHandle }
           });
@@ -129,6 +136,7 @@ export function useMembershipGate(): UseMembershipGate {
         setAllowed(true);
         setBioOpen(false);
         setLinkOpen(false);
+        markBioLongSuccess();
       } else {
         setBioOpen(false);
         setLinkOpen(true);
@@ -152,6 +160,7 @@ export function useMembershipGate(): UseMembershipGate {
     // Link completed successfully — allow access from now on
     setLinkOpen(false);
     setAllowed(true);
+    markBioLongSuccess();
 
     // Proactively ensure a passkey exists after email link so next gesture uses Face ID,
     // but only if we don't already have a stored userHandle to avoid duplicate prompts.
@@ -175,6 +184,7 @@ export function useMembershipGate(): UseMembershipGate {
     console.debug('[gate] auth success');
     setAuthOpen(false);
     setAllowed(true);
+    markBioLongSuccess();
 
     // Also try to create a passkey after generic auth so next time Face ID works,
     // but only if we don't already have a stored userHandle to avoid duplicate prompts.
