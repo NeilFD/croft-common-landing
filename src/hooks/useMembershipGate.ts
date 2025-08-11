@@ -1,7 +1,8 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getStoredUserHandle, ensureBiometricUnlockDetailed } from "@/lib/biometricAuth";
+import { getStoredUserHandle } from "@/lib/biometricAuth";
 import { markBioSuccess } from "@/hooks/useRecentBiometric";
+import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
 
 interface UseMembershipGate {
   bioOpen: boolean;
@@ -23,6 +24,9 @@ export function useMembershipGate(): UseMembershipGate {
   const [authOpen, setAuthOpen] = useState(false);
   const [allowed, setAllowed] = useState(false);
   const [checking, setChecking] = useState(false);
+  const inFlightRef = useRef(false);
+  const lastStartTsRef = useRef(0);
+
 
   const reset = useCallback(() => {
     setBioOpen(false);
@@ -34,13 +38,25 @@ export function useMembershipGate(): UseMembershipGate {
 
   // Always attempt a silent biometric first; only show the modal if it fails
   const start = useCallback(() => {
+    const now = Date.now();
+    if (inFlightRef.current) {
+      console.debug('[gate] start skipped: in-flight');
+      return;
+    }
+    if (now - lastStartTsRef.current < 400) {
+      console.debug('[gate] start skipped: debounced');
+      return;
+    }
+    inFlightRef.current = true;
+    lastStartTsRef.current = now;
+
     setAllowed(false);
     setChecking(true);
     console.debug('[gate] start: auto biometric (always)');
     (async () => {
       try {
         console.debug('[gate] prompting biometric');
-        const res = await ensureBiometricUnlockDetailed('Member');
+        const res = await ensureBiometricUnlockSerialized('Member');
         if (res.ok) {
           markBioSuccess();
           await handleBioSuccess();
@@ -53,6 +69,7 @@ export function useMembershipGate(): UseMembershipGate {
         setBioOpen(true);
       } finally {
         setChecking(false);
+        inFlightRef.current = false;
       }
     })();
   }, []);
@@ -113,7 +130,7 @@ export function useMembershipGate(): UseMembershipGate {
     // Proactively ensure a passkey exists after email link so next gesture uses Face ID
     setTimeout(async () => {
       try {
-        const res = await ensureBiometricUnlockDetailed('Member');
+        const res = await ensureBiometricUnlockSerialized('Member');
         console.debug('[gate] post-link ensureBiometricUnlock', res);
         if (res.ok) markBioSuccess();
       } catch (e) {
@@ -130,7 +147,7 @@ export function useMembershipGate(): UseMembershipGate {
     // Also try to create a passkey after generic auth so next time Face ID works
     setTimeout(async () => {
       try {
-        const res = await ensureBiometricUnlockDetailed('Member');
+        const res = await ensureBiometricUnlockSerialized('Member');
         console.debug('[gate] post-auth ensureBiometricUnlock', res);
         if (res.ok) markBioSuccess();
       } catch (e) {

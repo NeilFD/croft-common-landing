@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import CroftLogo from '@/components/CroftLogo';
-import { ensureBiometricUnlockDetailed, isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '@/lib/biometricAuth';
+import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '@/lib/biometricAuth';
+import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { Button } from '@/components/ui/button';
 import { markBioSuccess } from '@/hooks/useRecentBiometric';
 
@@ -78,7 +79,7 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     setLoading(true);
     setError(null);
     try {
-      const res = await ensureBiometricUnlockDetailed('Member');
+      const res = await ensureBiometricUnlockSerialized('Member');
       if (res.ok) {
         // Mark recent success for smooth cross-feature UX
         markBioSuccess();
@@ -101,25 +102,25 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
   return (
     <Dialog open={isOpen} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <CroftLogo size="sm" />
-            <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
-          </div>
-          <h2 className="font-brutalist text-foreground text-xl tracking-wider">{title}</h2>
-          <p className="font-industrial text-foreground/80">{description}</p>
-          {error && <p className="font-industrial text-destructive text-sm">{error}</p>}
-          <div className="flex gap-3 pt-2">
-            <Button className="flex-1" onClick={handleUnlock} disabled={loading || supported === false}>
-              {loading ? 'Checking…' : 'Use Face ID / Passkey'}
-            </Button>
-            {onFallback && (
-              <Button variant="outline" onClick={onFallback} disabled={loading}>
-                Email instead
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <CroftLogo size="sm" />
+              <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
+            </div>
+            <DialogTitle className="font-brutalist text-foreground text-xl tracking-wider">{title}</DialogTitle>
+            <DialogDescription className="font-industrial text-foreground/80">{description}</DialogDescription>
+            {error && <p className="font-industrial text-destructive text-sm">{error}</p>}
+            <div className="flex gap-3 pt-2">
+              <Button className="flex-1" onClick={handleUnlock} disabled={loading || supported === false}>
+                {loading ? 'Checking…' : 'Use Face ID / Passkey'}
               </Button>
-            )}
+              {onFallback && (
+                <Button variant="outline" onClick={onFallback} disabled={loading}>
+                  Email instead
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
       </DialogContent>
     </Dialog>
   );
