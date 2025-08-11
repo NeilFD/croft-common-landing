@@ -68,7 +68,7 @@ const Footer = ({ showSubscription = true }: { showSubscription?: boolean }) => 
           <div className="font-industrial text-xs text-background/50">
             © 2024 CROFT COMMON
           </div>
-          <div className="w-8 h-1 bg-accent-pink"></div>
+          
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
