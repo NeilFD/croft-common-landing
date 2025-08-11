@@ -1,15 +1,22 @@
 import SubscriptionForm from './SubscriptionForm';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-
-const Footer = ({ showSubscription = true }: { showSubscription?: boolean }) => {
+const Footer = ({
+  showSubscription = true
+}: {
+  showSubscription?: boolean;
+}) => {
   const [cgTotal, setCgTotal] = useState<number | null>(null);
-
   useEffect(() => {
     let mounted = true;
     const fetchTotals = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('get-common-good-totals', { body: {} });
+        const {
+          data,
+          error
+        } = await supabase.functions.invoke('get-common-good-totals', {
+          body: {}
+        });
         if (!mounted) return;
         if (error) throw error;
         const combined = data?.combined_total_cents ?? 0;
@@ -20,18 +27,17 @@ const Footer = ({ showSubscription = true }: { showSubscription?: boolean }) => 
     };
     fetchTotals();
     const id = setInterval(fetchTotals, 60_000);
-    return () => { mounted = false; clearInterval(id); };
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
   }, []);
-
-  return (
-    <footer className="bg-void text-background py-16">
+  return <footer className="bg-void text-background py-16">
       <div className="container mx-auto px-6">
         {/* Newsletter subscription section */}
-{showSubscription && (
-          <div className="mb-16 text-center">
+      {showSubscription && <div className="mb-16 text-center">
             <SubscriptionForm variant="footer" className="max-w-md mx-auto" />
-          </div>
-        )}
+          </div>}
         
         <div className="grid md:grid-cols-3 gap-12">
           <div>
@@ -65,9 +71,7 @@ const Footer = ({ showSubscription = true }: { showSubscription?: boolean }) => 
         </div>
         
         <div className="border-t border-background/20 mt-12 pt-8 flex justify-between items-center">
-          <div className="font-industrial text-xs text-background/50">
-            © 2024 CROFT COMMON
-          </div>
+          <div className="font-industrial text-xs text-background/50">© 2025 CROFT COMMON Ltd</div>
           
         </div>
 
@@ -76,8 +80,6 @@ const Footer = ({ showSubscription = true }: { showSubscription?: boolean }) => 
           <div className="font-brutalist text-4xl md:text-5xl text-background">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : '—'}</div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
