@@ -12,7 +12,7 @@ import CommonMembershipModal from '@/components/CommonMembershipModal';
 import { toast } from '@/hooks/use-toast';
 import SecretCinemaModal from '@/components/SecretCinemaModal';
 import SecretLuckySevenModal from './SecretLuckySevenModal';
-import BiometricUnlockModal from '@/components/BiometricUnlockModal';
+
 interface MenuModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,7 +24,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const navigate = useNavigate();
   const [showSecret, setShowSecret] = useState(false);
   const [showMembership, setShowMembership] = useState(false);
-  const [showBio, setShowBio] = useState(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
   const secretWord = useSecretWordOfTheDay();
 
@@ -35,7 +35,6 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       document.body.style.overflow = 'unset';
       setShowSecret(false);
       setShowMembership(false);
-      setShowBio(false);
     }
 
     return () => {
@@ -49,9 +48,6 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       onClose();
       toast({ title: 'Access granted', description: 'Common Good Fund unlocked', duration: 1800 });
       navigate('/common-good');
-    } else if (pageType === 'common-room') {
-      setShowMembership(false);
-      setShowBio(true);
     } else {
       setShowSecret(true);
     }
@@ -84,7 +80,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   }, []);
   
   // Enable secret gesture for cafe, beer, kitchens, community (to open Common Good Fund), hall, and common-room
-  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails' || pageType === 'common-room';
+  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails';
   const showGestureIndicator = isSecretEnabled;
 
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
@@ -337,19 +333,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         />
       )}
       {pageType === 'common-room' && (
-        <>
-          <BiometricUnlockModal
-            isOpen={showBio}
-            onClose={() => setShowBio(false)}
-            onSuccess={() => { setShowBio(false); setShowMembership(true); }}
-            title="Unlock Common Membership"
-            description="Use Face ID / Passkey to unlock."
-          />
-          <CommonMembershipModal
-            open={showMembership}
-            onClose={() => setShowMembership(false)}
-          />
-        </>
+        <CommonMembershipModal
+          open={showMembership}
+          onClose={() => setShowMembership(false)}
+        />
       )}
       {pageType === 'hall' && (
         <SecretCinemaModal

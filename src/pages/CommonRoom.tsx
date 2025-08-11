@@ -3,15 +3,21 @@ import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
 import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
-
+import { useRef, useState } from 'react';
+import BiometricUnlockModal from '@/components/BiometricUnlockModal';
+import { isBioRecentlyOk, markBioSuccess } from '@/hooks/useRecentBiometric';
 
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
+  const [bioOpen, setBioOpen] = useState(false);
 
   const handleGestureComplete = () => {
-    navigate('/common-room/main');
+    if (isBioRecentlyOk()) {
+      navigate('/common-room/main');
+    } else {
+      setBioOpen(true);
+    }
   };
 
   return (
@@ -42,6 +48,13 @@ const CommonRoom = () => {
       </main>
       <Footer />
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
+      <BiometricUnlockModal
+        isOpen={bioOpen}
+        onClose={() => setBioOpen(false)}
+        onSuccess={() => { markBioSuccess(); setBioOpen(false); navigate('/common-room/main'); }}
+        title="Unlock The Common Room"
+        description="Use Face ID / Passkey to sign in."
+      />
       <Toaster />
     </div>
   );
