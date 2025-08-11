@@ -102,7 +102,7 @@ React.useEffect(() => {
     <>
 <BiometricUnlockModal
         isOpen={bioOpen}
-        onClose={() => {}}
+        onClose={() => { reset(); }}
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock Common Cook Book"
@@ -110,12 +110,12 @@ React.useEffect(() => {
       />
       <MembershipLinkModal
         open={linkOpen}
-        onClose={() => {}}
+        onClose={() => { reset(); }}
         onSuccess={(email) => { handleLinkSuccess(email); }}
       />
       <AuthModal
         isOpen={authOpen}
-        onClose={() => {}}
+        onClose={() => { reset(); }}
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Common Cook Book"

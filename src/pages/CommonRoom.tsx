@@ -55,7 +55,7 @@ const CommonRoom = () => {
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
       <BiometricUnlockModal
         isOpen={bioOpen}
-        onClose={() => {}}
+        onClose={() => { reset(); }}
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock The Common Room"
@@ -63,12 +63,12 @@ const CommonRoom = () => {
       />
       <MembershipLinkModal
         open={linkOpen}
-        onClose={() => {}}
+        onClose={() => { reset(); }}
         onSuccess={(email) => { handleLinkSuccess(email); }}
       />
       <AuthModal
         isOpen={authOpen}
-        onClose={() => {}}
+        onClose={() => { reset(); }}
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock The Common Room"
