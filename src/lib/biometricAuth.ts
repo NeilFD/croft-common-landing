@@ -101,6 +101,17 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
     const { options, userHandle } = optRes as any;
     if (userHandle && !existing) setStoredUserHandle(userHandle);
 
+    // Defensive: ensure required WebAuthn user fields are valid strings
+    if (!options?.user) (options as any).user = {};
+    if (!options.user.name || typeof options.user.name !== 'string') {
+      (options.user as any).name = `member-${userHandle ?? existing ?? crypto.randomUUID()}`;
+    }
+    if (!options.user.displayName || typeof options.user.displayName !== 'string') {
+      (options.user as any).displayName = displayName ?? 'Member';
+    }
+
+    console.debug('[webauthn] register options.user', options.user);
+
     let attResp: any;
     try {
       attResp = await startRegistration(options);

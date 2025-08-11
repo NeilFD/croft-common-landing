@@ -34,7 +34,9 @@ serve(async (req) => {
 
     // Ensure user exists
     let handle = userHandle || crypto.randomUUID();
-    await supabase.from('webauthn_users').upsert({ user_handle: handle, display_name: displayName ?? 'Member' }).throwOnError();
+    const safeDisplay = typeof displayName === 'string' && displayName.trim().length > 0 ? displayName.trim() : 'Member';
+    const userName = `member-${handle}`; // Stable, ASCII-only username as required by WebAuthn
+    await supabase.from('webauthn_users').upsert({ user_handle: handle, display_name: safeDisplay }).throwOnError();
 
     // Get existing credentials to exclude
     const { data: creds } = await supabase
@@ -49,8 +51,8 @@ serve(async (req) => {
       rpID: effectiveRpId,
       user: {
         id: new TextEncoder().encode(handle),
-        name: handle,
-        displayName: displayName ?? 'Member',
+        name: userName,
+        displayName: safeDisplay,
       },
       attestationType: 'none',
       authenticatorSelection: {
