@@ -33,6 +33,7 @@ export function useMembershipGate(): UseMembershipGate {
 
   const start = useCallback(() => {
     setAllowed(false);
+    console.debug('[gate] start -> bioOpen');
     setBioOpen(true);
   }, []);
 
@@ -46,11 +47,13 @@ export function useMembershipGate(): UseMembershipGate {
       return;
     }
     setChecking(true);
+    console.debug('[gate] check-membership start', { userHandle });
     try {
       const { data, error } = await supabase.functions.invoke('check-membership', {
         body: { userHandle }
       });
       if (error) {
+        console.debug('[gate] check-membership error', error);
         // On server error, ask to link
         setBioOpen(false);
         setLinkOpen(true);
@@ -58,6 +61,7 @@ export function useMembershipGate(): UseMembershipGate {
       }
       const d: any = data ?? {};
       const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
+      console.debug('[gate] check-membership result', { isLinked, data: d });
       if (isLinked) {
         setAllowed(true);
         setBioOpen(false);
@@ -75,17 +79,20 @@ export function useMembershipGate(): UseMembershipGate {
   }, []);
 
   const handleBioFallback = useCallback(() => {
+    console.debug('[gate] bio fallback -> authOpen');
     setBioOpen(false);
     setAuthOpen(true);
   }, []);
 
   const handleLinkSuccess = useCallback((email: string) => {
+    console.debug('[gate] link success', { email });
     // Link completed successfully — allow access from now on
     setLinkOpen(false);
     setAllowed(true);
   }, []);
 
   const handleAuthSuccess = useCallback(() => {
+    console.debug('[gate] auth success');
     setAuthOpen(false);
     setAllowed(true);
   }, []);

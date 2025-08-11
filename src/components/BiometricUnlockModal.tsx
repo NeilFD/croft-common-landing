@@ -5,6 +5,9 @@ import { ensureBiometricUnlockDetailed, isPlatformAuthenticatorAvailable, isWebA
 import { Button } from '@/components/ui/button';
 import { markBioSuccess } from '@/hooks/useRecentBiometric';
 
+// Global lock to prevent overlapping OS biometric prompts across modals
+let bioPromptActive = false;
+
 interface BiometricUnlockModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +22,8 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
   const [error, setError] = useState<string | null>(null);
   const [supported, setSupported] = useState<boolean | null>(null);
   const autoStartedRef = useRef(false);
+  const inFlightRef = useRef(false);
+  const autoTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -43,13 +48,21 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
   useEffect(() => {
     if (!isOpen) {
       autoStartedRef.current = false;
+      if (autoTimerRef.current) { clearTimeout(autoTimerRef.current); autoTimerRef.current = null; }
       return;
     }
-    if (!autoStartedRef.current && supported !== false) {
+    if (!autoStartedRef.current && supported !== false && !bioPromptActive) {
       autoStartedRef.current = true;
-      // fire and forget
-      handleUnlock();
+      autoTimerRef.current = window.setTimeout(() => {
+        if (!bioPromptActive) {
+          // slight delay avoids double-prompts during rapid modal transitions
+          handleUnlock();
+        }
+      }, 250);
     }
+    return () => {
+      if (autoTimerRef.current) { clearTimeout(autoTimerRef.current); autoTimerRef.current = null; }
+    };
   }, [isOpen, supported]);
 
   const messageFor = (code?: string, fallback?: string) => {
@@ -81,21 +94,29 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
   };
 
   const handleUnlock = async () => {
+    if (inFlightRef.current || bioPromptActive) return;
+    inFlightRef.current = true;
+    bioPromptActive = true;
     setLoading(true);
     setError(null);
-    const res = await ensureBiometricUnlockDetailed('Member');
-    setLoading(false);
-    if (res.ok) {
-      // Mark recent success for smooth cross-feature UX
-      markBioSuccess();
-      onSuccess();
-      return;
-    }
-    console.debug('[webauthn] ensureBiometricUnlockDetailed result', res);
-    setError(messageFor(res.errorCode, res.error));
-    if (res.stage === 'unsupported' && onFallback) {
-      // Offer fallback path immediately in unsupported environments
-      onFallback();
+    try {
+      const res = await ensureBiometricUnlockDetailed('Member');
+      if (res.ok) {
+        // Mark recent success for smooth cross-feature UX
+        markBioSuccess();
+        onSuccess();
+        return;
+      }
+      console.debug('[webauthn] ensureBiometricUnlockDetailed result', res);
+      setError(messageFor(res.errorCode, res.error));
+      if (res.stage === 'unsupported' && onFallback) {
+        // Offer fallback path immediately in unsupported environments
+        onFallback();
+      }
+    } finally {
+      setLoading(false);
+      inFlightRef.current = false;
+      bioPromptActive = false;
     }
   };
 

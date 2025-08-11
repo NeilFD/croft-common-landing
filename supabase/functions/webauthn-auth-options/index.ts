@@ -57,7 +57,7 @@ const effectiveRpId = normalizeRpId(hostForRp);
     const options = await generateAuthenticationOptions({
       rpID: effectiveRpId,
       allowCredentials,
-      userVerification: 'preferred',
+      userVerification: 'required',
     });
 
     await supabase
