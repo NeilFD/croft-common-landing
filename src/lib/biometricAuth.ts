@@ -209,7 +209,12 @@ export async function ensureBiometricUnlock(displayName?: string): Promise<boole
   try {
     const auth = await authenticatePasskeyDetailed();
     if (auth.ok) return true;
-    if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials' || auth.errorCode === 'auth_options_failed') {
+    if (
+      auth.errorCode === 'no_user_handle' ||
+      auth.errorCode === 'no_credentials' ||
+      auth.errorCode === 'auth_options_failed' ||
+      auth.errorCode === 'not_allowed'
+    ) {
       const reg = await registerPasskeyDetailed(displayName);
       return reg.ok;
     }
@@ -231,7 +236,7 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
   const auth = await authenticatePasskeyDetailed();
   if (auth.ok) return { ok: true, stage: 'authenticate' };
 
-  if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials' || auth.errorCode === 'auth_options_failed') {
+  if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials' || auth.errorCode === 'auth_options_failed' || auth.errorCode === 'not_allowed') {
     const reg = await registerPasskeyDetailed(displayName);
     if (reg.ok) return { ok: true, stage: 'register' };
     return { ok: false, stage: 'register', errorCode: reg.errorCode, error: reg.error };
