@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
 import Index from "./pages/Index";
 import Cafe from "./pages/Cafe";
@@ -47,6 +47,7 @@ const LowercasePathGuard = () => {
     "common-good",
     "book",
     "admin",
+    "croft-common-datetime",
   ]);
   useEffect(() => {
     const path = location.pathname;
@@ -85,7 +86,10 @@ const App = () => (
             <Route path="/branding" element={<Branding />} />
             <Route path="/common-good" element={<CommonGood />} />
             <Route path="/common-good/message" element={<CommonGoodMessage />} />
-            <Route path="/CroftCommonDate&Time" element={<CroftCommonDateTime />} />
+            <Route path="/croft-common-datetime" element={<CroftCommonDateTime />} />
+            <Route path="/CroftCommonDate&Time" element={<Navigate to="/croft-common-datetime" replace />} />
+            <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
+            <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
             <Route path="/book" element={<Book />} />
             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

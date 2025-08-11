@@ -17,7 +17,7 @@ const CroftCommonDateTime: React.FC = () => {
     const title = "Croft Common Date & Time – Live Clock";
     document.title = title;
 
-    const descContent = "Live Croft Common date and HH:MM:SS time on a clean, mobile‑first page.";
+    const descContent = "Live Croft Common date and time page with a 24-hour clock and total.";
     let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (!meta) {
       meta = document.createElement('meta');
@@ -32,7 +32,7 @@ const CroftCommonDateTime: React.FC = () => {
       canonical.rel = 'canonical';
       document.head.appendChild(canonical);
     }
-    canonical.href = window.location.href;
+    canonical.href = new URL('/croft-common-datetime', window.location.origin).toString();
   }, []);
 
   // Fetch Common Good running total
