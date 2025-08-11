@@ -71,7 +71,7 @@ const Footer = ({
         </div>
         
         <div className="border-t border-background/20 mt-12 pt-8 flex justify-between items-center">
-          <div className="font-industrial text-xs text-background/50">© 2025 CROFT COMMON Ltd</div>
+          <div className="font-industrial text-xs text-background/50">© 2025 CROFT COMMON LTD</div>
           
         </div>
 
