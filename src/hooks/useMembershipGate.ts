@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredUserHandle } from "@/lib/biometricAuth";
-import { markBioSuccess } from "@/hooks/useRecentBiometric";
+import { markBioSuccess, isBioRecentlyOk } from "@/hooks/useRecentBiometric";
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
 
 interface UseMembershipGate {
@@ -50,9 +50,18 @@ export function useMembershipGate(): UseMembershipGate {
     inFlightRef.current = true;
     lastStartTsRef.current = now;
 
+    // Fast-path: recently verified biometric -> skip prompts
+    if (isBioRecentlyOk()) {
+      console.debug('[gate] recent biometric OK - allowing without prompt');
+      setAllowed(true);
+      setChecking(false);
+      inFlightRef.current = false;
+      return;
+    }
+
     setAllowed(false);
     setChecking(true);
-    console.debug('[gate] start: auto biometric (always)');
+    console.debug('[gate] start: auto biometric');
     (async () => {
       try {
         console.debug('[gate] prompting biometric');
