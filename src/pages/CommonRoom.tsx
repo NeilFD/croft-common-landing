@@ -3,44 +3,28 @@ import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
 import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
-
 import MembershipLinkModal from '@/components/MembershipLinkModal';
-import { supabase } from '@/integrations/supabase/client';
-import { getStoredUserHandle } from '@/lib/biometricAuth';
+import { AuthModal } from '@/components/AuthModal';
+import { useMembershipGate } from '@/hooks/useMembershipGate';
 
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
-  const [bioOpen, setBioOpen] = useState(false);
-  const [linkOpen, setLinkOpen] = useState(false);
+  const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
 
   const handleGestureComplete = () => {
-    setBioOpen(true);
+    // Silent-first biometric attempt; UI shows only if needed
+    start();
   };
 
-  const handleBioSuccess = async () => {
-    
-    setBioOpen(false);
-    try {
-      const userHandle = getStoredUserHandle();
-      if (!userHandle) {
-        navigate('/common-room/main');
-        return;
-      }
-      const { data, error } = await supabase.functions.invoke('check-membership', {
-        body: { userHandle }
-      });
-      if (!error && (data as any)?.linked) {
-        navigate('/common-room/main');
-      } else {
-        setLinkOpen(true);
-      }
-    } catch {
-      setLinkOpen(true);
+  useEffect(() => {
+    if (allowed) {
+      reset();
+      navigate('/common-room/main');
     }
-  };
+  }, [allowed, navigate, reset]);
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -71,15 +55,24 @@ const CommonRoom = () => {
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
       <BiometricUnlockModal
         isOpen={bioOpen}
-        onClose={() => setBioOpen(false)}
+        onClose={() => {}}
         onSuccess={handleBioSuccess}
+        onFallback={handleBioFallback}
         title="Unlock The Common Room"
         description="Use Face ID / Passkey to sign in."
       />
       <MembershipLinkModal
         open={linkOpen}
-        onClose={() => setLinkOpen(false)}
-        onSuccess={() => { setLinkOpen(false); navigate('/common-room/main'); }}
+        onClose={() => {}}
+        onSuccess={(email) => { handleLinkSuccess(email); }}
+      />
+      <AuthModal
+        isOpen={authOpen}
+        onClose={() => {}}
+        onSuccess={handleAuthSuccess}
+        requireAllowedDomain={false}
+        title="Unlock The Common Room"
+        description="We’ll email you a magic link to confirm."
       />
       <Toaster />
     </div>
