@@ -112,12 +112,34 @@ export function useMembershipGate(): UseMembershipGate {
     // Link completed successfully — allow access from now on
     setLinkOpen(false);
     setAllowed(true);
+
+    // Proactively ensure a passkey exists after email link so next gesture uses Face ID
+    setTimeout(async () => {
+      try {
+        const res = await ensureBiometricUnlockDetailed('Member');
+        console.debug('[gate] post-link ensureBiometricUnlock', res);
+        if (res.ok) markBioSuccess();
+      } catch (e) {
+        console.debug('[gate] post-link ensureBiometricUnlock error', e);
+      }
+    }, 0);
   }, []);
 
   const handleAuthSuccess = useCallback(() => {
     console.debug('[gate] auth success');
     setAuthOpen(false);
     setAllowed(true);
+
+    // Also try to create a passkey after generic auth so next time Face ID works
+    setTimeout(async () => {
+      try {
+        const res = await ensureBiometricUnlockDetailed('Member');
+        console.debug('[gate] post-auth ensureBiometricUnlock', res);
+        if (res.ok) markBioSuccess();
+      } catch (e) {
+        console.debug('[gate] post-auth ensureBiometricUnlock error', e);
+      }
+    }, 0);
   }, []);
 
   return {
