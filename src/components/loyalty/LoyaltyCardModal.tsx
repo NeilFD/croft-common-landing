@@ -11,6 +11,7 @@ import CroftLogo from '@/components/CroftLogo';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;
@@ -19,6 +20,7 @@ interface LoyaltyCardModalProps {
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
+  const [bioOpen, setBioOpen] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
@@ -40,11 +42,12 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   useEffect(() => {
     if (!open) {
       setAuthOpen(false);
+      setBioOpen(false);
       setShowCard(false);
       return;
     }
     if (!user) {
-      setAuthOpen(true);
+      setBioOpen(true);
       setShowCard(false);
     } else {
       setShowCard(true);
@@ -310,6 +313,15 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
           </div>
         </DialogContent>
       </Dialog>
+
+      <BiometricUnlockModal
+        isOpen={bioOpen}
+        onClose={() => setBioOpen(false)}
+        onSuccess={() => { setBioOpen(false); setAuthOpen(true); }}
+        onFallback={() => { setBioOpen(false); setAuthOpen(true); }}
+        title="Sign in faster next time"
+        description="Save a passkey (Face ID / device biometrics) for quick unlock of secret perks."
+      />
 
       <AuthModal
         isOpen={authOpen}
