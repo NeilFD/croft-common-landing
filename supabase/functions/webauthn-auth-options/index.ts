@@ -43,11 +43,12 @@ serve(async (req) => {
     }
 
     const allowCredentials = creds.map((c: any) => ({
-      id: base64urlToUint8Array(c.credential_id),
+      id: c.credential_id, // base64url string required by simplewebauthn v10
       type: 'public-key' as const,
       transports: c.transports ?? undefined,
     }));
 
+    console.log('webauthn-auth-options', { rpId: effectiveRpId, origin: effectiveOrigin, allowCount: allowCredentials.length });
     const options = await generateAuthenticationOptions({
       rpID: effectiveRpId,
       allowCredentials,

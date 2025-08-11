@@ -44,8 +44,9 @@ serve(async (req) => {
       .select('credential_id')
       .eq('user_handle', handle);
 
-    const excludeCredentials = (creds ?? []).map((c: any) => ({ id: base64urlToUint8Array(c.credential_id), type: 'public-key' as const }));
+    const excludeCredentials = (creds ?? []).map((c: any) => ({ id: c.credential_id, type: 'public-key' as const }));
 
+    console.log('webauthn-register-options', { rpId: effectiveRpId, origin: effectiveOrigin, excludeCount: excludeCredentials.length });
     const options = await generateRegistrationOptions({
       rpName: 'Croft Common',
       rpID: effectiveRpId,
