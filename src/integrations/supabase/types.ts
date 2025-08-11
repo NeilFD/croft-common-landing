@@ -571,6 +571,98 @@ export type Database = {
         }
         Relationships: []
       }
+      webauthn_challenges: {
+        Row: {
+          challenge: string
+          created_at: string
+          expires_at: string
+          id: string
+          type: string
+          user_handle: string
+        }
+        Insert: {
+          challenge: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          type: string
+          user_handle: string
+        }
+        Update: {
+          challenge?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          type?: string
+          user_handle?: string
+        }
+        Relationships: []
+      }
+      webauthn_credentials: {
+        Row: {
+          backed_up: boolean | null
+          counter: number
+          created_at: string
+          credential_id: string
+          device_type: string | null
+          id: string
+          last_used_at: string | null
+          public_key: string
+          transports: string[] | null
+          user_handle: string
+        }
+        Insert: {
+          backed_up?: boolean | null
+          counter?: number
+          created_at?: string
+          credential_id: string
+          device_type?: string | null
+          id?: string
+          last_used_at?: string | null
+          public_key: string
+          transports?: string[] | null
+          user_handle: string
+        }
+        Update: {
+          backed_up?: boolean | null
+          counter?: number
+          created_at?: string
+          credential_id?: string
+          device_type?: string | null
+          id?: string
+          last_used_at?: string | null
+          public_key?: string
+          transports?: string[] | null
+          user_handle?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webauthn_credentials_user_handle_fkey"
+            columns: ["user_handle"]
+            isOneToOne: false
+            referencedRelation: "webauthn_users"
+            referencedColumns: ["user_handle"]
+          },
+        ]
+      }
+      webauthn_users: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          user_handle: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          user_handle: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          user_handle?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

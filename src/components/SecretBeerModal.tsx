@@ -4,6 +4,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
+import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 
 interface SecretBeerModalProps {
   open: boolean;
@@ -14,16 +15,20 @@ interface SecretBeerModalProps {
 const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secretWord }) => {
   const { user } = useAuth();
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [bioModalOpen, setBioModalOpen] = useState(false);
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setEmailModalOpen(false);
+      setBioModalOpen(false);
       setShowContent(false);
       return;
     }
+    // Prefer biometrics; if user already logged in, bypass
     if (!user) {
-      setEmailModalOpen(true);
+      setBioModalOpen(true);
+      setEmailModalOpen(false);
       setShowContent(false);
     } else {
       setShowContent(true);
@@ -35,14 +40,33 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
     setShowContent(true);
   };
 
+  const handleBiometricSuccess = () => {
+    setBioModalOpen(false);
+    setShowContent(true);
+  };
+
+  const handleBiometricFallback = () => {
+    setBioModalOpen(false);
+    setEmailModalOpen(true);
+  };
+
   const handleCloseAll = () => {
     setEmailModalOpen(false);
+    setBioModalOpen(false);
     setShowContent(false);
     onClose();
   };
 
   return (
     <>
+      <BiometricUnlockModal
+        isOpen={bioModalOpen}
+        onClose={() => setBioModalOpen(false)}
+        onSuccess={handleBiometricSuccess}
+        onFallback={handleBiometricFallback}
+        title="Unlock Secret Beer"
+        description="Use Face ID / Passkey to access."
+      />
       <AuthModal
         isOpen={emailModalOpen}
         onClose={() => setEmailModalOpen(false)}

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
+import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 
 interface SecretKitchensModalProps {
   open: boolean;
@@ -20,11 +21,13 @@ const Separator = () => (
 const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
   const [emailModalOpen, setEmailModalOpen] = React.useState(false);
+  const [bioModalOpen, setBioModalOpen] = React.useState(false);
   const [showContent, setShowContent] = React.useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleCloseAll = () => {
     setEmailModalOpen(false);
+    setBioModalOpen(false);
     setShowContent(false);
     onClose();
   };
@@ -40,11 +43,12 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
   React.useEffect(() => {
     if (!open) {
       setEmailModalOpen(false);
+      setBioModalOpen(false);
       setShowContent(false);
       return;
     }
     if (!user) {
-      setEmailModalOpen(true);
+      setBioModalOpen(true);
       setShowContent(false);
     } else {
       setShowContent(true);
@@ -107,6 +111,14 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
 
   return (
     <>
+      <BiometricUnlockModal
+        isOpen={bioModalOpen}
+        onClose={() => setBioModalOpen(false)}
+        onSuccess={() => { setBioModalOpen(false); setShowContent(true); }}
+        onFallback={() => { setBioModalOpen(false); setEmailModalOpen(true); }}
+        title="Unlock Common Cook Book"
+        description="Use Face ID / Passkey to access."
+      />
       <AuthModal
         isOpen={emailModalOpen}
         onClose={() => setEmailModalOpen(false)}

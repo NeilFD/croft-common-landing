@@ -4,6 +4,7 @@ import CroftLogo from "@/components/CroftLogo";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import { Dice4, Dice3 } from "lucide-react";
+import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 
 interface SecretLuckySevenModalProps {
   open: boolean;
@@ -13,17 +14,20 @@ interface SecretLuckySevenModalProps {
 const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [bioModalOpen, setBioModalOpen] = useState(false);
   const [showDice, setShowDice] = useState(false);
 
   useEffect(() => {
     if (!open) {
       setEmailModalOpen(false);
+      setBioModalOpen(false);
       setShowDice(false);
       return;
     }
-    // If not signed in, open the auth modal immediately
+    // Prefer biometrics; if signed in already, show content
     if (!user) {
-      setEmailModalOpen(true);
+      setBioModalOpen(true);
+      setEmailModalOpen(false);
       setShowDice(false);
     } else {
       setShowDice(true);
@@ -36,9 +40,20 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
     setShowDice(true);
   };
 
+  const handleBiometricSuccess = () => {
+    setBioModalOpen(false);
+    setShowDice(true);
+  };
+
+  const handleBiometricFallback = () => {
+    setBioModalOpen(false);
+    setEmailModalOpen(true);
+  };
+
   // Close everything
   const handleCloseAll = () => {
     setEmailModalOpen(false);
+    setBioModalOpen(false);
     setShowDice(false);
     onClose();
   };
