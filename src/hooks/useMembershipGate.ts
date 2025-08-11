@@ -82,6 +82,7 @@ export function useMembershipGate(): UseMembershipGate {
             setAllowed(true);
             setLinkOpen(false);
             setBioOpen(false);
+            markBioLongSuccess();
             toast.success('Croft Common Membership access granted via secure Face ID/Passkey');
             return;
           } else {

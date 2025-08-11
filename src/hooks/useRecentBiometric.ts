@@ -36,12 +36,12 @@ export function markBioLongSuccess() {
 export function isBioLongExpired(ttlMs: number = 180 * 24 * 60 * 60 * 1000): boolean {
   try {
     const raw = localStorage.getItem(LONG_BIO_TS_KEY);
-    if (!raw) return true;
+    if (!raw) return false; // No record yet -> not expired
     const ts = parseInt(raw, 10);
-    if (Number.isNaN(ts)) return true;
+    if (Number.isNaN(ts)) return false; // Invalid value -> treat as not expired
     return Date.now() - ts > ttlMs;
   } catch {
-    return true;
+    return false; // Storage unavailable -> do not force relink
   }
 }
 
