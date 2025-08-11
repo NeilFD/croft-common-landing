@@ -124,3 +124,12 @@ verify_jwt = false
 
 [functions.webauthn-auth-verify]
 verify_jwt = false
+
+[functions.start-membership-link]
+verify_jwt = false
+
+[functions.verify-membership-link]
+verify_jwt = false
+
+[functions.check-membership]
+verify_jwt = false

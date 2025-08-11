@@ -279,6 +279,63 @@ export type Database = {
           },
         ]
       }
+      membership_codes: {
+        Row: {
+          code: string
+          consumed: boolean
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          user_handle: string
+        }
+        Insert: {
+          code: string
+          consumed?: boolean
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          user_handle: string
+        }
+        Update: {
+          code?: string
+          consumed?: boolean
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          user_handle?: string
+        }
+        Relationships: []
+      }
+      membership_links: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_verified: boolean
+          user_handle: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_verified?: boolean
+          user_handle: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_verified?: boolean
+          user_handle?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       notification_deliveries: {
         Row: {
           click_token: string | null

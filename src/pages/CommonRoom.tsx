@@ -6,11 +6,15 @@ import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import { isBioRecentlyOk, markBioSuccess } from '@/hooks/useRecentBiometric';
+import MembershipLinkModal from '@/components/MembershipLinkModal';
+import { supabase } from '@/integrations/supabase/client';
+import { getStoredUserHandle } from '@/lib/biometricAuth';
 
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
   const [bioOpen, setBioOpen] = useState(false);
+  const [linkOpen, setLinkOpen] = useState(false);
 
   const handleGestureComplete = () => {
     if (isBioRecentlyOk()) {
@@ -20,6 +24,27 @@ const CommonRoom = () => {
     }
   };
 
+  const handleBioSuccess = async () => {
+    markBioSuccess();
+    setBioOpen(false);
+    try {
+      const userHandle = getStoredUserHandle();
+      if (!userHandle) {
+        navigate('/common-room/main');
+        return;
+      }
+      const { data, error } = await supabase.functions.invoke('check-membership', {
+        body: { userHandle }
+      });
+      if (!error && (data as any)?.linked) {
+        navigate('/common-room/main');
+      } else {
+        setLinkOpen(true);
+      }
+    } catch {
+      setLinkOpen(true);
+    }
+  };
   return (
     <div className="min-h-screen bg-white">
       <Navigation />
@@ -51,9 +76,14 @@ const CommonRoom = () => {
       <BiometricUnlockModal
         isOpen={bioOpen}
         onClose={() => setBioOpen(false)}
-        onSuccess={() => { markBioSuccess(); setBioOpen(false); navigate('/common-room/main'); }}
+        onSuccess={handleBioSuccess}
         title="Unlock The Common Room"
         description="Use Face ID / Passkey to sign in."
+      />
+      <MembershipLinkModal
+        open={linkOpen}
+        onClose={() => setLinkOpen(false)}
+        onSuccess={() => { setLinkOpen(false); navigate('/common-room/main'); }}
       />
       <Toaster />
     </div>
