@@ -30,7 +30,7 @@ serve(async (req) => {
   );
 
   try {
-    const { userHandle, rpId, origin } = await req.json();
+    const { userHandle, rpId, origin, discoverable } = await req.json();
     if (!userHandle) throw new Error('Missing userHandle');
 
 const url = new URL(req.url);
@@ -47,19 +47,24 @@ const effectiveRpId = normalizeRpId(hostForRp);
       return new Response(JSON.stringify({ error: 'no_credentials' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Force platform authenticator to avoid Safari account chooser
+    // Build allowCredentials without forcing transports; allow browser to choose best
     const allowCredentials = creds.map((c: any) => ({
       id: c.credential_id, // base64url string required by simplewebauthn v10
       type: 'public-key' as const,
-      transports: ['internal'] as any,
     }));
 
-    console.log('webauthn-auth-options', { rpId: effectiveRpId, origin: effectiveOrigin, allowCount: allowCredentials.length, internalForced: true });
-    const options = await generateAuthenticationOptions({
+    console.log('webauthn-auth-options', { rpId: effectiveRpId, origin: effectiveOrigin, allowCount: allowCredentials.length, discoverable: !!discoverable });
+
+    const baseOpts: any = {
       rpID: effectiveRpId,
-      allowCredentials,
       userVerification: 'required',
-    });
+    };
+
+    if (!discoverable) {
+      baseOpts.allowCredentials = allowCredentials;
+    }
+
+    const options = await generateAuthenticationOptions(baseOpts);
 
     await supabase
       .from('webauthn_challenges')

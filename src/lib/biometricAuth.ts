@@ -163,8 +163,31 @@ if ((optRes as any)?.error === 'no_credentials') {
       authResp = await startAuthentication(options);
     } catch (err) {
       const mapped = mapWebAuthnError(err);
-      console.debug('[webauthn] auth start error', mapped);
-      return { ok: false, errorCode: mapped.code, error: mapped.message };
+      const msgLower = String(mapped.message || '').toLowerCase();
+      const couldBeNoMatch = ['no passkey', 'no credential', 'no eligible', 'no matching', 'not found', 'no available'].some(s => msgLower.includes(s));
+      console.debug('[webauthn] auth start error', mapped, { couldBeNoMatch });
+
+      // Fallback: retry with discoverable auth options to let the browser find a compatible passkey
+      if (couldBeNoMatch) {
+        const { data: optRes2, error: optErr2 } = await supabase.functions.invoke('webauthn-auth-options', {
+          body: { userHandle: handle, rpId, origin, discoverable: true }
+        });
+        if (optErr2) {
+          return { ok: false, errorCode: 'auth_options_failed', error: String(optErr2.message) };
+        }
+        if ((optRes2 as any)?.error === 'no_credentials') {
+          return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
+        }
+        try {
+          authResp = await startAuthentication((optRes2 as any).options);
+        } catch (err2) {
+          const mapped2 = mapWebAuthnError(err2);
+          console.debug('[webauthn] auth fallback (discoverable) error', mapped2);
+          return { ok: false, errorCode: mapped2.code, error: mapped2.message };
+        }
+      } else {
+        return { ok: false, errorCode: mapped.code, error: mapped.message };
+      }
     }
 
     const { error: verErr } = await supabase.functions.invoke('webauthn-auth-verify', {
