@@ -8,6 +8,30 @@ function getRpParams() {
   return { rpId: host, origin: window.location.origin };
 }
 
+// Recent registration grace period to bias discoverable auth (per-tab)
+const RECENT_REG_TS_KEY = 'recentPasskeyRegisteredAt';
+function markRecentRegistration() {
+  try { sessionStorage.setItem(RECENT_REG_TS_KEY, Date.now().toString()); } catch {}
+}
+function isRecentlyRegistered(ttlMs: number = 10 * 60 * 1000): boolean {
+  try {
+    const raw = sessionStorage.getItem(RECENT_REG_TS_KEY);
+    if (!raw) return false;
+    const ts = parseInt(raw, 10);
+    if (Number.isNaN(ts)) return false;
+    return Date.now() - ts < ttlMs;
+  } catch { return false; }
+}
+
+function isApplePlatform(): boolean {
+  try {
+    const ua = navigator.userAgent || '';
+    const isSafari = /Safari\//.test(ua) && !/Chrome\//.test(ua) && !/Chromium\//.test(ua);
+    const isIOS = /iPhone|iPad|iPod/.test(ua) || /CPU (iPhone )?OS/.test(ua);
+    return isSafari || isIOS;
+  } catch { return false; }
+}
+
 export function getStoredUserHandle(): string | null {
   return localStorage.getItem(USER_HANDLE_KEY);
 }
@@ -127,6 +151,9 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
     });
     if (verErr) return { ok: false, errorCode: 'server', error: verErr.message };
 
+    // Mark very recent registration to bias discoverable auth on next attempts
+    markRecentRegistration();
+
     return { ok: true };
   } catch (err) {
     const mapped = mapWebAuthnError(err);
@@ -141,57 +168,113 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
     if (!handle) return { ok: false, errorCode: 'no_user_handle', error: 'No saved passkey user found' };
 
     const { rpId, origin } = getRpParams();
-    const { data: optRes, error: optErr } = await supabase.functions.invoke('webauthn-auth-options', {
-      body: { userHandle: handle, rpId, origin }
-    });
-if (optErr) {
-  const msg = String((optErr as any)?.message ?? '');
-  const lower = msg.toLowerCase();
-  if (lower.includes('missing userhandle')) {
-    return { ok: false, errorCode: 'no_user_handle', error: msg };
-  }
-  return { ok: false, errorCode: 'auth_options_failed', error: msg };
-}
-if ((optRes as any)?.error === 'no_credentials') {
-  return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
-}
+    const preferDiscoverable = isApplePlatform() || isRecentlyRegistered();
+    const ua = navigator.userAgent;
+    console.debug('[webauthn] auth start', { rpId, preferDiscoverable, ua });
 
-    const { options } = optRes as any;
-    const allowPresent = Array.isArray((options as any)?.allowCredentials) && (options as any).allowCredentials.length > 0;
+    let authResp: any | null = null;
 
-    let authResp: any;
-    try {
-      authResp = await startAuthentication(options);
-    } catch (err) {
-      const mapped = mapWebAuthnError(err);
-      const msgLower = String(mapped.message || '').toLowerCase();
-      const couldBeNoMatch = ['no passkey', 'no credential', 'no eligible', 'no matching', 'not found', 'no available'].some(s => msgLower.includes(s));
-      const shouldRetryDiscoverable = couldBeNoMatch || (allowPresent && mapped.code === 'not_allowed');
-      console.debug('[webauthn] auth start error', { mapped, allowPresent, shouldRetryDiscoverable });
-
-      // Fallback: retry with discoverable auth options to let the browser find a compatible passkey
-      if (shouldRetryDiscoverable) {
-        const { data: optRes2, error: optErr2 } = await supabase.functions.invoke('webauthn-auth-options', {
-          body: { userHandle: handle, rpId, origin, discoverable: true }
-        });
-        if (optErr2) {
-          return { ok: false, errorCode: 'auth_options_failed', error: String(optErr2.message) };
+    if (preferDiscoverable) {
+      // 1) Try discoverable first so Safari/iOS can surface the right passkey
+      const { data: discData, error: discErr } = await supabase.functions.invoke('webauthn-auth-options', {
+        body: { userHandle: handle, rpId, origin, discoverable: true }
+      });
+      if (discErr) {
+        const msg = String((discErr as any)?.message ?? '');
+        console.debug('[webauthn] discoverable options error', msg);
+      } else if ((discData as any)?.error === 'no_credentials') {
+        return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
+      } else {
+        const discOptions = (discData as any).options;
+        try {
+          console.debug('[webauthn] discoverable attempt');
+          authResp = await startAuthentication(discOptions);
+        } catch (err) {
+          const mapped = mapWebAuthnError(err);
+          console.debug('[webauthn] discoverable auth error', mapped);
         }
-        if ((optRes2 as any)?.error === 'no_credentials') {
+      }
+
+      // 2) If discoverable failed, fall back to allowCredentials list
+      if (!authResp) {
+        const { data: optRes, error: optErr } = await supabase.functions.invoke('webauthn-auth-options', {
+          body: { userHandle: handle, rpId, origin }
+        });
+        if (optErr) {
+          const msg = String((optErr as any)?.message ?? '');
+          const lower = msg.toLowerCase();
+          if (lower.includes('missing userhandle')) {
+            return { ok: false, errorCode: 'no_user_handle', error: msg };
+          }
+          return { ok: false, errorCode: 'auth_options_failed', error: msg };
+        }
+        if ((optRes as any)?.error === 'no_credentials') {
           return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
         }
+        const { options } = optRes as any;
+        const allowLen = Array.isArray((options as any)?.allowCredentials) ? (options as any).allowCredentials.length : 0;
+        console.debug('[webauthn] fallback allowCredentials length', allowLen);
         try {
-          authResp = await startAuthentication((optRes2 as any).options);
+          authResp = await startAuthentication(options);
         } catch (err2) {
           const mapped2 = mapWebAuthnError(err2);
-          console.debug('[webauthn] auth fallback (discoverable) error', mapped2);
+          console.debug('[webauthn] fallback (allowCredentials) auth error', mapped2);
           return { ok: false, errorCode: mapped2.code, error: mapped2.message };
         }
-      } else {
-        return { ok: false, errorCode: mapped.code, error: mapped.message };
+      }
+    } else {
+      // Default path: start with allowCredentials, then fallback to discoverable if needed
+      const { data: optRes, error: optErr } = await supabase.functions.invoke('webauthn-auth-options', {
+        body: { userHandle: handle, rpId, origin }
+      });
+      if (optErr) {
+        const msg = String((optErr as any)?.message ?? '');
+        const lower = msg.toLowerCase();
+        if (lower.includes('missing userhandle')) {
+          return { ok: false, errorCode: 'no_user_handle', error: msg };
+        }
+        return { ok: false, errorCode: 'auth_options_failed', error: msg };
+      }
+      if ((optRes as any)?.error === 'no_credentials') {
+        return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
+      }
+
+      const { options } = optRes as any;
+      const allowPresent = Array.isArray((options as any)?.allowCredentials) && (options as any).allowCredentials.length > 0;
+
+      try {
+        authResp = await startAuthentication(options);
+      } catch (err) {
+        const mapped = mapWebAuthnError(err);
+        const msgLower = String(mapped.message || '').toLowerCase();
+        const couldBeNoMatch = ['no passkey', 'no credential', 'no eligible', 'no matching', 'not found', 'no available'].some(s => msgLower.includes(s));
+        const shouldRetryDiscoverable = couldBeNoMatch || (allowPresent && mapped.code === 'not_allowed');
+        console.debug('[webauthn] auth start error', { mapped, allowPresent, shouldRetryDiscoverable });
+
+        if (shouldRetryDiscoverable) {
+          const { data: optRes2, error: optErr2 } = await supabase.functions.invoke('webauthn-auth-options', {
+            body: { userHandle: handle, rpId, origin, discoverable: true }
+          });
+          if (optErr2) {
+            return { ok: false, errorCode: 'auth_options_failed', error: String(optErr2.message) };
+          }
+          if ((optRes2 as any)?.error === 'no_credentials') {
+            return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
+          }
+          try {
+            authResp = await startAuthentication((optRes2 as any).options);
+          } catch (err2) {
+            const mapped2 = mapWebAuthnError(err2);
+            console.debug('[webauthn] auth fallback (discoverable) error', mapped2);
+            return { ok: false, errorCode: mapped2.code, error: mapped2.message };
+          }
+        } else {
+          return { ok: false, errorCode: mapped.code, error: mapped.message };
+        }
       }
     }
 
+    // Verify if we obtained an assertion
     const { error: verErr } = await supabase.functions.invoke('webauthn-auth-verify', {
       body: { userHandle: handle, authResp, rpId, origin }
     });
