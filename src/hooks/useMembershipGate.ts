@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getStoredUserHandle } from "@/lib/biometricAuth";
-
+import { getStoredUserHandle, ensureBiometricUnlockDetailed } from "@/lib/biometricAuth";
+import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
 interface UseMembershipGate {
   bioOpen: boolean;
   linkOpen: boolean;
@@ -33,8 +33,30 @@ export function useMembershipGate(): UseMembershipGate {
 
   const start = useCallback(() => {
     setAllowed(false);
-    console.debug('[gate] start -> bioOpen');
-    setBioOpen(true);
+    setChecking(true);
+    console.debug('[gate] start: auto biometric');
+    (async () => {
+      try {
+        if (isBioRecentlyOk()) {
+          console.debug('[gate] recent bio ok -> membership check');
+          await handleBioSuccess();
+          return;
+        }
+        const res = await ensureBiometricUnlockDetailed('Member');
+        if (res.ok) {
+          markBioSuccess();
+          await handleBioSuccess();
+        } else {
+          console.debug('[gate] auto biometric failed', res);
+          setBioOpen(true);
+        }
+      } catch (e) {
+        console.debug('[gate] auto biometric error', e);
+        setBioOpen(true);
+      } finally {
+        setChecking(false);
+      }
+    })();
   }, []);
 
   const handleBioSuccess = useCallback(async () => {

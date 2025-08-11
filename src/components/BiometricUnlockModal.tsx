@@ -21,9 +21,7 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supported, setSupported] = useState<boolean | null>(null);
-  const autoStartedRef = useRef(false);
   const inFlightRef = useRef(false);
-  const autoTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -44,26 +42,6 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     return () => { mounted = false; };
   }, [isOpen]);
 
-  // Auto-trigger biometric prompt when modal opens (super fast UX)
-  useEffect(() => {
-    if (!isOpen) {
-      autoStartedRef.current = false;
-      if (autoTimerRef.current) { clearTimeout(autoTimerRef.current); autoTimerRef.current = null; }
-      return;
-    }
-    if (!autoStartedRef.current && supported !== false && !bioPromptActive) {
-      autoStartedRef.current = true;
-      autoTimerRef.current = window.setTimeout(() => {
-        if (!bioPromptActive) {
-          // slight delay avoids double-prompts during rapid modal transitions
-          handleUnlock();
-        }
-      }, 250);
-    }
-    return () => {
-      if (autoTimerRef.current) { clearTimeout(autoTimerRef.current); autoTimerRef.current = null; }
-    };
-  }, [isOpen, supported]);
 
   const messageFor = (code?: string, fallback?: string) => {
     switch (code) {
