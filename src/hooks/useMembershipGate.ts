@@ -37,11 +37,12 @@ export function useMembershipGate(): UseMembershipGate {
     console.debug('[gate] start: auto biometric');
     (async () => {
       try {
-        if (isBioRecentlyOk()) {
+        if (isBioRecentlyOk(0)) {
           console.debug('[gate] recent bio ok -> membership check');
           await handleBioSuccess();
           return;
         }
+        console.debug('[gate] prompting biometric');
         const res = await ensureBiometricUnlockDetailed('Member');
         if (res.ok) {
           markBioSuccess();
