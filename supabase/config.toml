@@ -133,3 +133,6 @@ verify_jwt = false
 
 [functions.check-membership]
 verify_jwt = false
+
+[functions.admin-wipe-webauthn]
+verify_jwt = false

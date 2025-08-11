@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
 import { useRef, useState } from 'react';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
-import { isBioRecentlyOk, markBioSuccess } from '@/hooks/useRecentBiometric';
+
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
@@ -17,15 +17,11 @@ const CommonRoom = () => {
   const [linkOpen, setLinkOpen] = useState(false);
 
   const handleGestureComplete = () => {
-    if (isBioRecentlyOk()) {
-      navigate('/common-room/main');
-    } else {
-      setBioOpen(true);
-    }
+    setBioOpen(true);
   };
 
   const handleBioSuccess = async () => {
-    markBioSuccess();
+    
     setBioOpen(false);
     try {
       const userHandle = getStoredUserHandle();

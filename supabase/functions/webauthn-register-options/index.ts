@@ -63,8 +63,9 @@ const effectiveRpId = normalizeRpId(hostForRp);
       attestationType: 'none',
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
-        residentKey: 'preferred',
-        userVerification: 'preferred',
+        residentKey: 'required',
+        requireResidentKey: true,
+        userVerification: 'required',
       },
       excludeCredentials,
     });
