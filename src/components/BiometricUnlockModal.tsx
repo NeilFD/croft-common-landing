@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import CroftLogo from '@/components/CroftLogo';
 import { ensureBiometricUnlockDetailed, isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '@/lib/biometricAuth';
 import { Button } from '@/components/ui/button';
+import { markBioSuccess } from '@/hooks/useRecentBiometric';
 
 interface BiometricUnlockModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supported, setSupported] = useState<boolean | null>(null);
+  const autoStartedRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -37,11 +39,24 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     return () => { mounted = false; };
   }, [isOpen]);
 
+  // Auto-trigger biometric prompt when modal opens (super fast UX)
+  useEffect(() => {
+    if (!isOpen) {
+      autoStartedRef.current = false;
+      return;
+    }
+    if (!autoStartedRef.current && supported !== false) {
+      autoStartedRef.current = true;
+      // fire and forget
+      handleUnlock();
+    }
+  }, [isOpen, supported]);
+
   const messageFor = (code?: string, fallback?: string) => {
     switch (code) {
       case 'not_allowed':
         return 'Biometric prompt was closed or timed out. Please try again.';
-case 'security':
+      case 'security':
         return 'Security error. Make sure you are on this site over HTTPS (avoid Private Browsing).';
       case 'invalid_state':
         return 'This passkey is already registered. Try signing in instead.';
@@ -52,7 +67,7 @@ case 'security':
       case 'no_user_handle':
       case 'no_credentials':
         return 'No passkey saved yet. We’ll create one now.';
-case 'auth_options_failed':
+      case 'auth_options_failed':
         return 'Couldn’t fetch passkey (possibly www vs non‑www). We’ll create one now.';
       case 'platform_unavailable':
         return 'No built-in authenticator found on this device.';
@@ -71,6 +86,8 @@ case 'auth_options_failed':
     const res = await ensureBiometricUnlockDetailed('Member');
     setLoading(false);
     if (res.ok) {
+      // Mark recent success for smooth cross-feature UX
+      markBioSuccess();
       onSuccess();
       return;
     }

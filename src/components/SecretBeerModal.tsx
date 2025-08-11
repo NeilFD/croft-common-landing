@@ -5,6 +5,7 @@ import CroftLogo from "@/components/CroftLogo";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
+import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
 
 interface SecretBeerModalProps {
   open: boolean;
@@ -25,6 +26,13 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
       setShowContent(false);
       return;
     }
+    // Recently unlocked? Skip prompts.
+    if (isBioRecentlyOk()) {
+      setEmailModalOpen(false);
+      setBioModalOpen(false);
+      setShowContent(true);
+      return;
+    }
     // Prefer biometrics; if user already logged in, bypass
     if (!user) {
       setBioModalOpen(true);
@@ -41,6 +49,7 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
   };
 
   const handleBiometricSuccess = () => {
+    markBioSuccess();
     setBioModalOpen(false);
     setShowContent(true);
   };

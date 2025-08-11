@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
+import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
 
 interface SecretKitchensModalProps {
   open: boolean;
@@ -45,6 +46,13 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
       setEmailModalOpen(false);
       setBioModalOpen(false);
       setShowContent(false);
+      return;
+    }
+    // Recently unlocked? Skip prompts.
+    if (isBioRecentlyOk()) {
+      setEmailModalOpen(false);
+      setBioModalOpen(false);
+      setShowContent(true);
       return;
     }
     if (!user) {
@@ -114,7 +122,7 @@ const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose
       <BiometricUnlockModal
         isOpen={bioModalOpen}
         onClose={() => setBioModalOpen(false)}
-        onSuccess={() => { setBioModalOpen(false); setShowContent(true); }}
+        onSuccess={() => { markBioSuccess(); setBioModalOpen(false); setShowContent(true); }}
         onFallback={() => { setBioModalOpen(false); setEmailModalOpen(true); }}
         title="Unlock Common Cook Book"
         description="Use Face ID / Passkey to access."

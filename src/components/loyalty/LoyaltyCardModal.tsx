@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
+import { isBioRecentlyOk, markBioSuccess } from '@/hooks/useRecentBiometric';
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;

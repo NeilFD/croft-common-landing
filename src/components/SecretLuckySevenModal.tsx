@@ -5,6 +5,7 @@ import { AuthModal } from "@/components/AuthModal";
 import { useAuth } from "@/hooks/useAuth";
 import { Dice4, Dice3 } from "lucide-react";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
+import { isBioRecentlyOk, markBioSuccess } from "@/hooks/useRecentBiometric";
 
 interface SecretLuckySevenModalProps {
   open: boolean;
@@ -24,6 +25,13 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
       setShowDice(false);
       return;
     }
+    // Recently unlocked? Skip prompts.
+    if (isBioRecentlyOk()) {
+      setEmailModalOpen(false);
+      setBioModalOpen(false);
+      setShowDice(true);
+      return;
+    }
     // Prefer biometrics; if signed in already, show content
     if (!user) {
       setBioModalOpen(true);
@@ -41,6 +49,7 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
   };
 
   const handleBiometricSuccess = () => {
+    markBioSuccess();
     setBioModalOpen(false);
     setShowDice(true);
   };
