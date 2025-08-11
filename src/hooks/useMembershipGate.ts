@@ -153,9 +153,15 @@ export function useMembershipGate(): UseMembershipGate {
     setLinkOpen(false);
     setAllowed(true);
 
-    // Proactively ensure a passkey exists after email link so next gesture uses Face ID
+    // Proactively ensure a passkey exists after email link so next gesture uses Face ID,
+    // but only if we don't already have a stored userHandle to avoid duplicate prompts.
     setTimeout(async () => {
       try {
+        const existing = getStoredUserHandle();
+        if (existing) {
+          console.debug('[gate] post-link: passkey already present, skipping prompt');
+          return;
+        }
         const res = await ensureBiometricUnlockSerialized('Member');
         console.debug('[gate] post-link ensureBiometricUnlock', res);
         if (res.ok) markBioSuccess();
@@ -170,9 +176,15 @@ export function useMembershipGate(): UseMembershipGate {
     setAuthOpen(false);
     setAllowed(true);
 
-    // Also try to create a passkey after generic auth so next time Face ID works
+    // Also try to create a passkey after generic auth so next time Face ID works,
+    // but only if we don't already have a stored userHandle to avoid duplicate prompts.
     setTimeout(async () => {
       try {
+        const existing = getStoredUserHandle();
+        if (existing) {
+          console.debug('[gate] post-auth: passkey already present, skipping prompt');
+          return;
+        }
         const res = await ensureBiometricUnlockSerialized('Member');
         console.debug('[gate] post-auth ensureBiometricUnlock', res);
         if (res.ok) markBioSuccess();
