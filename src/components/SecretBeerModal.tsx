@@ -29,7 +29,7 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
     <>
       <BiometricUnlockModal
         isOpen={bioOpen}
-        onClose={() => {}}
+        onClose={handleCloseAll}
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock Secret Beer"
@@ -37,12 +37,12 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
       />
       <MembershipLinkModal
         open={linkOpen}
-        onClose={() => {}}
+        onClose={handleCloseAll}
         onSuccess={(email) => { handleLinkSuccess(email); }}
       />
       <AuthModal
         isOpen={authOpen}
-        onClose={() => {}}
+        onClose={handleCloseAll}
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Secret Beer"

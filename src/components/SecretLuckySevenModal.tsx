@@ -29,7 +29,7 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
     <>
       <BiometricUnlockModal
         isOpen={bioOpen}
-        onClose={() => {}}
+        onClose={handleCloseAll}
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock Lucky No 7"
@@ -37,12 +37,12 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
       />
       <MembershipLinkModal
         open={linkOpen}
-        onClose={() => {}}
+        onClose={handleCloseAll}
         onSuccess={(email) => { handleLinkSuccess(email); }}
       />
       <AuthModal
         isOpen={authOpen}
-        onClose={() => {}}
+        onClose={handleCloseAll}
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Lucky No 7"
