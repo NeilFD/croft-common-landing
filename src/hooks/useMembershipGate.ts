@@ -1,8 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredUserHandle } from "@/lib/biometricAuth";
-import { markBioSuccess, isBioRecentlyOk } from "@/hooks/useRecentBiometric";
+import { markBioSuccess } from "@/hooks/useRecentBiometric";
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
+import { toast } from "sonner";
 
 interface UseMembershipGate {
   bioOpen: boolean;
@@ -36,7 +37,7 @@ export function useMembershipGate(): UseMembershipGate {
     setChecking(false);
   }, []);
 
-  // Always attempt a silent biometric first; only show the modal if it fails
+  // Start gate: prefer silent server check using stored passkey handle. No TTL bypass.
   const start = useCallback(() => {
     const now = Date.now();
     if (inFlightRef.current) {
@@ -50,32 +51,48 @@ export function useMembershipGate(): UseMembershipGate {
     inFlightRef.current = true;
     lastStartTsRef.current = now;
 
-    // Fast-path: recently verified biometric -> skip prompts
-    if (isBioRecentlyOk()) {
-      console.debug('[gate] recent biometric OK - allowing without prompt');
-      setAllowed(true);
-      setChecking(false);
-      inFlightRef.current = false;
-      return;
-    }
-
     setAllowed(false);
     setChecking(true);
-    console.debug('[gate] start: auto biometric');
+
     (async () => {
       try {
-        console.debug('[gate] prompting biometric');
-        const res = await ensureBiometricUnlockSerialized('Member');
-        if (res.ok) {
-          markBioSuccess();
-          await handleBioSuccess();
+        const userHandle = getStoredUserHandle();
+        if (userHandle) {
+          console.debug('[gate] silent membership check with stored handle');
+          const { data, error } = await supabase.functions.invoke('check-membership', {
+            body: { userHandle }
+          });
+          if (error) {
+            console.debug('[gate] silent check error', error);
+            setLinkOpen(true);
+            setBioOpen(false);
+            return;
+          }
+          const d: any = data ?? {};
+          const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
+          console.debug('[gate] silent check result', { isLinked, data: d });
+          if (isLinked) {
+            setAllowed(true);
+            setLinkOpen(false);
+            setBioOpen(false);
+            toast.success('Croft Common Membership access granted via secure Face ID/Passkey');
+            return;
+          } else {
+            setLinkOpen(true);
+            setBioOpen(false);
+            return;
+          }
         } else {
-          console.debug('[gate] auto biometric failed', res);
+          console.debug('[gate] no stored handle -> prompt biometric to create passkey');
           setBioOpen(true);
+          setLinkOpen(false);
+          return;
         }
       } catch (e) {
-        console.debug('[gate] auto biometric error', e);
-        setBioOpen(true);
+        console.debug('[gate] start error', e);
+        // On unexpected errors, fall back to link
+        setLinkOpen(true);
+        setBioOpen(false);
       } finally {
         setChecking(false);
         inFlightRef.current = false;
