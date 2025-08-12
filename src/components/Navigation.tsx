@@ -124,7 +124,7 @@ const Navigation = () => {
                 onClick={() => handleNavClick(item.path)}
                 onMouseEnter={() => handleNavHover(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`h-8 px-3 text-xs font-industrial tracking-wide transition-all duration-200 hover:scale-105 ${isActive ? 'bg-foreground/10' : ''} ${getNavItemColor(item.name)}`}
+                className={`h-8 px-3 text-xs font-industrial tracking-wide transition-all duration-200 hover:scale-105 hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''} ${getNavItemColor(item.name)}`}
               >
                 {item.name}
               </Button>
@@ -162,7 +162,7 @@ const Navigation = () => {
                 size="sm"
                 onClick={() => handleNavClick(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`w-full justify-start text-left font-industrial tracking-tight transition-all duration-200 hover:scale-105 py-2 px-2 break-words ${isActive ? 'bg-foreground/10' : ''} ${getNavItemColor(item.name)}`}
+                className={`w-full justify-start text-left font-industrial tracking-tight transition-all duration-200 hover:scale-105 py-2 px-2 break-words hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''} ${getNavItemColor(item.name)}`}
               >
                 {item.name}
               </Button>
