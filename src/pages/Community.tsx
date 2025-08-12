@@ -45,7 +45,7 @@ const Community = () => {
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
             We didn't land here by accident.
             <br /><br />
-            Croft Common was built in the middle of it - the murals, the music, the noise, the roots.
+            Croft Common was built in the heart of it all - the murals, the music, the noise, the roots.
             <br /><br />
             Stokes Croft isn't a backdrop, it's part of the fabric. We’re here for more than trade. We give back in time, space, and support.
             <br /><br />
