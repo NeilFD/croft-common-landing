@@ -170,7 +170,7 @@ self.addEventListener('push', (event) => {
       badge: '/favicon.png',
       data: {
         url: data.url || '/',
-        clickToken: data.clickToken
+        click_token: data.click_token || data.clickToken
       },
       // Mobile-specific options
       vibrate: isMobile ? [200, 100, 200] : undefined,
@@ -193,39 +193,54 @@ self.addEventListener('notificationclick', (event) => {
   let targetUrl = data.url || '/';
   
   // Normalize URL
-  if (!targetUrl.startsWith('http')) {
+  if (!String(targetUrl).startsWith('http')) {
     targetUrl = new URL(targetUrl, self.location.origin).href;
   }
   
-  // Add click token for mobile analytics
-  if (data.clickToken) {
+  // Prefer snake_case token but support both
+  const clickToken = data.click_token || data.clickToken;
+  
+  // Append click token for analytics if present
+  if (clickToken) {
     const url = new URL(targetUrl);
-    url.searchParams.set('ntk', data.clickToken);
+    url.searchParams.set('ntk', clickToken);
     targetUrl = url.toString();
   }
   
   // Track click event
-  if (data.clickToken) {
+  if (clickToken) {
     fetch('/functions/v1/track-notification-event', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'notification_click', token: data.clickToken })
+      body: JSON.stringify({ type: 'notification_click', token: clickToken })
     }).catch(() => {}); // Silent fail
   }
   
-  // Mobile-optimized window handling
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
-      // Try to focus existing window
+  // Ensure the notification URL dominates navigation
+  event.waitUntil((async () => {
+    try {
+      const opened = await clients.openWindow(targetUrl);
+      if (opened) return;
+    } catch (_) {
+      // ignore
+    }
+  
+    const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    if (clientList.length > 0) {
+      // Navigate an existing same-origin client if possible
       for (const client of clientList) {
-        if (client.url.startsWith(self.location.origin)) {
-          client.postMessage({ type: 'NOTIFICATION_CLICK', url: targetUrl });
-          return client.focus();
+        if (client.url && client.url.startsWith(self.location.origin) && 'navigate' in client) {
+          await client.navigate(targetUrl);
+          await client.focus();
+          return;
         }
       }
-      
-      // Open new window
-      return clients.openWindow(targetUrl);
-    })
-  );
+      // As a fallback, just focus the first client
+      await clientList[0].focus();
+      return;
+    }
+  
+    // Last resort
+    await clients.openWindow(targetUrl);
+  })());
 });
