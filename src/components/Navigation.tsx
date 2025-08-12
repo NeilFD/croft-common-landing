@@ -104,7 +104,7 @@ const Navigation = () => {
           <img 
             src={BRAND_LOGO} 
             alt="Croft Common"
-            className="w-[4.5rem] h-[4.5rem]"
+            className="w-[4.5rem] h-[4.5rem] translate-x-2"
           />
           <div className="font-brutalist text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
             CROFT COMMON
