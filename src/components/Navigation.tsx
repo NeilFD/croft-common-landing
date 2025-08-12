@@ -162,10 +162,10 @@ const Navigation = () => {
                 size="sm"
                 onClick={() => handleNavClick(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`block w-[260px] sm:w-[300px] flex items-center justify-between text-left self-start font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 px-2 hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
+                className={`relative block w-fit text-left self-start font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 pl-2 pr-8 hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
               >
-                <span className="truncate pr-3">{item.name}</span>
-                <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
+                <span className="whitespace-nowrap">{item.name}</span>
+                <ArrowUpRight className="size-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
               </Button>
             );
           })}
