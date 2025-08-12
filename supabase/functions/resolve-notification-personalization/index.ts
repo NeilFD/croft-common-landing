@@ -73,26 +73,37 @@ serve(async (req) => {
     let firstName: string | null = null;
 
     if (sub?.user_id) {
-      // 3) Try auth user metadata
+      // 3) Try profiles table first for enhanced data
       try {
-        const { data: usr } = await admin.auth.admin.getUserById(sub.user_id);
-        const meta = usr?.user?.user_metadata as Record<string, unknown> | undefined;
-        const email = usr?.user?.email ?? null;
-        const mFirst = (
-          (meta?.["first_name"] as string | undefined) ||
-          (meta?.["given_name"] as string | undefined) ||
-          (meta?.["name"] as string | undefined)
-        ) ?? null;
-        firstName = firstPart(mFirst) || fromEmailLocal(email);
+        const { data: profile } = await admin
+          .from("profiles")
+          .select("first_name, last_name")
+          .eq("user_id", sub.user_id)
+          .maybeSingle();
 
-        // 4) If still nothing, try subscribers table by email match
-        if (!firstName && email) {
-          const { data: subr } = await admin
-            .from("subscribers")
-            .select("name, email")
-            .eq("email", email)
-            .maybeSingle();
-          firstName = firstPart(subr?.name) || fromEmailLocal(email);
+        if (profile?.first_name) {
+          firstName = profile.first_name;
+        } else {
+          // 4) Fallback to auth user metadata
+          const { data: usr } = await admin.auth.admin.getUserById(sub.user_id);
+          const meta = usr?.user?.user_metadata as Record<string, unknown> | undefined;
+          const email = usr?.user?.email ?? null;
+          const mFirst = (
+            (meta?.["first_name"] as string | undefined) ||
+            (meta?.["given_name"] as string | undefined) ||
+            (meta?.["name"] as string | undefined)
+          ) ?? null;
+          firstName = firstPart(mFirst) || fromEmailLocal(email);
+
+          // 5) If still nothing, try subscribers table by email match
+          if (!firstName && email) {
+            const { data: subr } = await admin
+              .from("subscribers")
+              .select("name, email")
+              .eq("email", email)
+              .maybeSingle();
+            firstName = firstPart(subr?.name) || fromEmailLocal(email);
+          }
         }
       } catch (e) {
         console.warn("resolve-personalization auth lookup error", e);

@@ -31,6 +31,20 @@ export const useAuth = () => {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
+
+          // Also try auto-linking on initial load if user is already signed in
+          if (session?.user) {
+            setTimeout(async () => {
+              try {
+                const { data } = await supabase.functions.invoke('auto-link-push-subscription');
+                if (data?.linked) {
+                  console.log('🔗 Push subscription automatically linked on load');
+                }
+              } catch (error) {
+                console.log('Auto-link failed (this is normal if no subscriptions exist):', error);
+              }
+            }, 1000);
+          }
         }
       } catch (error) {
         console.error('🚨 Exception getting initial session:', error);
@@ -42,7 +56,7 @@ export const useAuth = () => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         if (mounted) {
           console.log('🔐 Auth state change:', {
             event,
@@ -54,6 +68,18 @@ export const useAuth = () => {
           // Log any potential redirects
           if (event === 'SIGNED_IN' && session) {
             console.log('✅ User successfully signed in:', session.user.email);
+            
+            // Auto-link push subscriptions when user signs in
+            setTimeout(async () => {
+              try {
+                const { data } = await supabase.functions.invoke('auto-link-push-subscription');
+                if (data?.linked) {
+                  console.log('🔗 Push subscription automatically linked');
+                }
+              } catch (error) {
+                console.log('Auto-link failed (this is normal if no subscriptions exist):', error);
+              }
+            }, 1000); // Small delay to ensure auth is fully established
           } else if (event === 'SIGNED_OUT') {
             console.log('🚪 User signed out');
           } else if (event === 'TOKEN_REFRESHED') {

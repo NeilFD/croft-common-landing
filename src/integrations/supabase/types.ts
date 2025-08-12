@@ -482,6 +482,51 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          birthday: string | null
+          communication_preferences: Json | null
+          created_at: string
+          dietary_preferences: string[] | null
+          first_name: string | null
+          id: string
+          interests: string[] | null
+          last_name: string | null
+          member_since: string
+          phone_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthday?: string | null
+          communication_preferences?: Json | null
+          created_at?: string
+          dietary_preferences?: string[] | null
+          first_name?: string | null
+          id?: string
+          interests?: string[] | null
+          last_name?: string | null
+          member_since?: string
+          phone_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthday?: string | null
+          communication_preferences?: Json | null
+          created_at?: string
+          dietary_preferences?: string[] | null
+          first_name?: string | null
+          id?: string
+          interests?: string[] | null
+          last_name?: string | null
+          member_since?: string
+          phone_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_optin_events: {
         Row: {
           created_at: string
