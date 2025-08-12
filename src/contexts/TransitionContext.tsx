@@ -43,6 +43,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const timersRef = useRef<number[]>([]);
   const intervalRef = useRef<number | null>(null);
   const logoShownRef = useRef(false);
+  const [overlayVisible, setOverlayVisible] = useState(false);
 
   // Transition timing constants
   const STROBE_TOGGLE_MS = 166; // 3Hz max (toggle interval ~166ms; full cycle ~333ms)
@@ -54,10 +55,16 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const SOFT_FADE_TO_IMAGE_MS = 1400; // crossfade duration to image
   const SOFT_EXTRA_HOLD_MS = 200; // hold before hiding overlay
 
+  // Overlay/reveal timing
+  const OVERLAY_FADE_OUT_MS = 600; // smoother fade-out of overlay
+  const REVEAL_AFTER_NAV_MS = 200; // wait a beat after navigation before reveal
+
   const TEXTURE_URL = '/lovable-uploads/d1fb9178-8f7e-47fb-a8ac-71350264d76f.png';
 
   useEffect(() => {
     if (!isTransitioning) return;
+
+    setOverlayVisible(true);
 
     // Reset single-logo guard for this transition
     logoShownRef.current = false;
@@ -74,10 +81,14 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       if (targetPath) {
         navigate(targetPath);
       }
-      // Immediately hide overlay to avoid extra black screen
-      setIsTransitioning(false);
-      setTargetPath('');
-      setPhase('idle');
+      // Begin overlay fade-out, then finalize
+      setOverlayVisible(false);
+      const end = window.setTimeout(() => {
+        setIsTransitioning(false);
+        setTargetPath('');
+        setPhase('idle');
+      }, OVERLAY_FADE_OUT_MS);
+      timersRef.current.push(end);
     };
 
     // Soft transition branch
@@ -85,8 +96,10 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       // Accessibility: reduced motion -> skip long fades
       if (prefersReduced) {
         setPhase('soft-logo');
-        const end = window.setTimeout(navigateAndReset, SOFT_LOGO_INTRO_MS + 200);
-        timersRef.current.push(end);
+        const toNav = window.setTimeout(() => {
+          navigateAndReset();
+        }, SOFT_LOGO_INTRO_MS);
+        timersRef.current.push(toNav);
         return () => {
           timersRef.current.forEach(clearTimeout);
           timersRef.current = [];
@@ -95,18 +108,26 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
       setPhase('soft-logo');
       // Move to image and navigate shortly after
-      const toImage = window.setTimeout(() => {
+      const toImageAndNavigate = window.setTimeout(() => {
         setPhase('soft-image');
         if (targetPath) navigate(targetPath);
+
+        // Start revealing underlying page after a brief layout settle
+        const startReveal = window.setTimeout(() => {
+          setOverlayVisible(false);
+        }, REVEAL_AFTER_NAV_MS);
+        timersRef.current.push(startReveal);
+
+        // Finalize after overlay fade-out completes
+        const finalize = window.setTimeout(() => {
+          setIsTransitioning(false);
+          setTargetPath('');
+          setPhase('idle');
+        }, REVEAL_AFTER_NAV_MS + OVERLAY_FADE_OUT_MS);
+        timersRef.current.push(finalize);
       }, SOFT_LOGO_INTRO_MS);
 
-      const finish = window.setTimeout(() => {
-        setIsTransitioning(false);
-        setTargetPath('');
-        setPhase('idle');
-      }, SOFT_LOGO_INTRO_MS + SOFT_FADE_TO_IMAGE_MS + SOFT_EXTRA_HOLD_MS);
-
-      timersRef.current.push(toImage, finish);
+      timersRef.current.push(toImageAndNavigate);
       return () => {
         timersRef.current.forEach(clearTimeout);
         timersRef.current = [];
@@ -128,9 +149,13 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       if (targetPath) {
         navigate(targetPath);
       }
-      setIsTransitioning(false);
-      setTargetPath('');
-      setPhase('idle');
+      setOverlayVisible(false);
+      const end = window.setTimeout(() => {
+        setIsTransitioning(false);
+        setTargetPath('');
+        setPhase('idle');
+      }, OVERLAY_FADE_OUT_MS);
+      timersRef.current.push(end);
     };
 
     // Accessibility: reduced motion skips the strobe
@@ -188,8 +213,8 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     <TransitionContext.Provider value={{ isTransitioning, triggerTransition }}>
       {children}
       <div
-        className={`fixed inset-0 z-[99999] bg-void transition-opacity duration-100 ${
-          isTransitioning ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        className={`fixed inset-0 z-[99999] bg-void transition-opacity duration-[600ms] ${
+          overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         style={{ transformOrigin: 'center center', willChange: 'opacity, transform' }}
       >
