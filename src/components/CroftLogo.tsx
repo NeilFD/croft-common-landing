@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { BRAND_LOGO } from "@/data/brand";
+import fallbackLogo from "@/assets/croft-logo.png";
 
 interface CroftLogoProps {
   className?: string;
@@ -22,6 +23,12 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
         sizeClasses[size],
         className
       )}
+      onError={(e) => {
+        const img = e.currentTarget as HTMLImageElement;
+        if (img.src !== fallbackLogo) {
+          img.src = fallbackLogo;
+        }
+      }}
     />
   );
 };
