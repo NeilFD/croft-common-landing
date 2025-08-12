@@ -8,9 +8,10 @@ export type ArrowBoxProps = {
   ariaLabel?: string
   contrast?: 'neutral' | 'contrast'
   className?: string
+  icon?: React.ReactNode
 }
 
-export function ArrowBox({ direction, onClick, ariaLabel, contrast = 'contrast', className }: ArrowBoxProps) {
+export function ArrowBox({ direction, onClick, ariaLabel, contrast = 'contrast', className, icon }: ArrowBoxProps) {
   return (
     <button
       type="button"
@@ -24,7 +25,7 @@ export function ArrowBox({ direction, onClick, ariaLabel, contrast = 'contrast',
         className,
       )}
     >
-      {direction === 'left' ? <ChevronLeft className="size-5" /> : <ChevronRight className="size-5" />}
+      {icon ? icon : (direction === 'left' ? <ChevronLeft className="size-5" /> : <ChevronRight className="size-5" />)}
     </button>
   )
 }

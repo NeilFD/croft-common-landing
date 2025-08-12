@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import CroftLogo from './CroftLogo';
 import { MenuSection } from '@/data/menuData';
+import { GuideArrows } from '@/components/ui/GuideArrows';
 import useGestureDetection from '@/hooks/useGestureDetection';
 import SecretBeerModal from './SecretBeerModal';
 import SecretKitchensModal from './SecretKitchensModal';
@@ -220,6 +221,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                 />
               </div>
             )}
+            <GuideArrows contrast="neutral" />
             <button
               onClick={onClose}
               className={`w-10 h-10 rounded-full border border-background/30 
