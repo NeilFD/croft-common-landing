@@ -42,9 +42,9 @@ const LoyaltyBox: React.FC<LoyaltyBoxProps> = ({ index, filled, disabled, imageU
       ) : filled ? (
         <Check className="w-6 h-6 text-foreground" />
       ) : (
-        <div className="flex flex-col items-center justify-center text-foreground/70">
-          <Camera className="w-6 h-6 mb-1" />
-          <span className="text-xs">Box {index}</span>
+        <div className="flex flex-col items-center justify-center text-foreground/70 p-1">
+          <Camera className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] leading-tight">Box {index}</span>
         </div>
       )}
 

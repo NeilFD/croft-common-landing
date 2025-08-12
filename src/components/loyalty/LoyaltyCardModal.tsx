@@ -325,7 +325,7 @@ return (
       })}
     </div>
     <div className="block w-px bg-foreground/60 self-stretch shrink-0" aria-hidden />
-    <div className="w-24 sm:w-28 flex flex-col items-center justify-center">
+    <div className="w-28 sm:w-32 flex flex-col items-center justify-center">
       {(() => {
         const idx = 7;
         const filled = !!filledMap[idx];
