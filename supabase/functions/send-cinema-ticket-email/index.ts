@@ -37,7 +37,7 @@ const buildHtml = (p: EmailPayload, assetsBase: string) => {
     ? `${p.primaryName} + ${p.guestName}`
     : p.primaryName;
 
-  const logoPath = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png";
+  const logoPath = "/lovable-uploads/63419cda-09bf-4b7a-a6d0-d276c42efc8f.png";
   const logoUrl = assetsBase
     ? `${assetsBase.replace(/\/$/, '')}${logoPath}`
     : logoPath;

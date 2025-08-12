@@ -29,7 +29,7 @@ const handler = async (req: Request): Promise<Response> => {
     const requestOrigin = originHeader || new URL(req.url).origin;
     const siteBase = Deno.env.get('SITE_BASE_URL') || requestOrigin;
     const assetsBase = Deno.env.get('EMAIL_ASSETS_BASE_URL') || siteBase;
-    const logoPath = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png";
+    const logoPath = "/lovable-uploads/63419cda-09bf-4b7a-a6d0-d276c42efc8f.png";
     const logoUrl = `${assetsBase.replace(/\/$/, "")}${logoPath}`;
     const unsubscribeUrl = `${siteBase.replace(/\/$/, "")}/unsubscribe?token=${subscriberId}`;
     
