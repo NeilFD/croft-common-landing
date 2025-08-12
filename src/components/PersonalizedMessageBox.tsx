@@ -10,7 +10,7 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
   const greeting = firstName ? `Hey ${firstName},` : 'Hey there,';
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none px-4 py-8 pt-24 md:pt-32">
+    <div className="absolute inset-x-0 top-20 bottom-20 md:top-24 md:bottom-24 flex items-center justify-center z-30 pointer-events-none px-4">
       <div className="max-w-3xl w-full mx-auto pointer-events-auto">
         <div className="bg-background/80 backdrop-blur-md border border-charcoal/20 rounded-lg shadow-2xl relative min-h-[400px] md:min-h-[500px] flex flex-col justify-center p-6 md:p-10 lg:p-16">
           <div className="absolute top-2 right-2 md:top-4 md:right-4">
