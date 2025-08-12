@@ -51,13 +51,11 @@ const BeerHeroCarousel = () => {
       setIsFirstReady(true);
       try { autoplay.current?.play?.(); } catch {}
     };
-    if ('decode' in img) {
-      // @ts-ignore
-      img.decode().then(proceed).catch(proceed);
-    } else {
-      img.onload = proceed;
-      img.onerror = proceed;
-    }
+    // Try to decode ASAP, but also attach onload/onerror for wider support
+    // @ts-ignore
+    (img as any).decode?.().then(proceed).catch(proceed);
+    img.onload = proceed;
+    img.onerror = proceed;
     return () => { cancelled = true; };
   }, [emblaApi]);
 

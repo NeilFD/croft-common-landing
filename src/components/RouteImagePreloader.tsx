@@ -16,10 +16,8 @@ const RouteImagePreloader = () => {
     // Decode ASAP to ensure it's ready before carousels autoplay
     const img = new Image();
     img.src = url;
-    if ('decode' in img) {
-      // @ts-ignore
-      img.decode().catch(() => {});
-    }
+    // @ts-ignore
+    (img as any).decode?.().catch(() => {});
   }, [location.pathname]);
 
   return null;
