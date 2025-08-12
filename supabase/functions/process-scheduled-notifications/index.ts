@@ -70,6 +70,42 @@ function computeNextOccurrence(
   }
 }
 
+
+// Personalization helpers
+function renderTemplate(str: string, vars: { [k: string]: string | undefined }): string {
+  if (!str) return str;
+  return str.replace(/\{\{\s*(first_name)\s*\}\}/gi, (_: any, k: string) => {
+    const v = vars[k.toLowerCase()];
+    return v ? String(v) : "";
+  });
+}
+
+async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise<Map<string, string>> {
+  const uniq = Array.from(new Set((userIds || []).filter(Boolean)));
+  const map = new Map<string, string>();
+  for (const uid of uniq) {
+    try {
+      const { data: res } = await supabaseAdmin.auth.admin.getUserById(uid);
+      const u = res?.user as any;
+      const meta: any = u?.user_metadata ?? {};
+      let name: string | undefined = meta.first_name || meta.given_name || meta.name;
+      if (!name && u?.email) {
+        const { data: sub } = await supabaseAdmin
+          .from('subscribers')
+          .select('name')
+          .eq('email', u.email)
+          .maybeSingle();
+        name = sub?.name as string | undefined;
+      }
+      if (name) {
+        const first = String(name).trim().split(/\s+/)[0];
+        if (first) map.set(uid, first);
+      }
+    } catch (_e) {}
+  }
+  return map;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -110,8 +146,8 @@ serve(async (req) => {
 
       // Fetch recipients
       let query = supabase
-        .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth")
+      .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth, user_id")
         .eq("is_active", true);
 
       if (n.scope === "self" && n.created_by) {
@@ -131,15 +167,24 @@ serve(async (req) => {
       let success = 0;
       let failed = 0;
 
+      // Build personalization map (first names) for user-linked subscriptions
+      const userFirstNames = await buildFirstNameMap(
+        supabase,
+        (subs ?? []).map((s: any) => s.user_id as string).filter(Boolean)
+      );
+
       for (const s of subs ?? []) {
         const subscription = {
           endpoint: s.endpoint,
           keys: { p256dh: s.p256dh, auth: s.auth },
         };
         const clickToken = randomHex(16);
+        const first = (s as any).user_id ? userFirstNames.get((s as any).user_id) : undefined;
+        const personalizedTitle = renderTemplate(n.title, { first_name: first });
+        const personalizedBody = renderTemplate(n.body, { first_name: first });
         const payloadForSub = {
-          title: n.title,
-          body: n.body,
+          title: personalizedTitle,
+          body: personalizedBody,
           url: n.url ?? undefined,
           icon: n.icon ?? undefined,
           badge: n.badge ?? undefined,
