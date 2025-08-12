@@ -47,16 +47,18 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Check if email already exists
+    // Check if email already exists as an active subscriber
     const { data: existingSubscriber } = await supabaseAnon
       .from('subscribers')
       .select('id, is_active')
       .eq('email', email)
       .single();
 
-    if (existingSubscriber && existingSubscriber.is_active) {
+    // Only prevent subscription if they're already active AND this looks like a duplicate request
+    // Allow updates to preferences/profile data
+    if (existingSubscriber && existingSubscriber.is_active && (!phone && !birthday && (!dietaryPreferences || dietaryPreferences.length === 0) && (!interests || interests.length === 0))) {
       return new Response(
-        JSON.stringify({ error: "Email already subscribed" }),
+        JSON.stringify({ error: "Email already subscribed. Add preferences to update your profile." }),
         {
           status: 400,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -119,8 +121,8 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Insert or reactivate subscriber
-    const { data: subscriber, error: insertError } = await supabaseAnon
+    // Insert or reactivate subscriber (this should work for both new and existing users)
+    const { data: subscriber, error: insertError } = await supabaseAdmin
       .from('subscribers')
       .upsert({
         email,
@@ -128,6 +130,9 @@ const handler = async (req: Request): Promise<Response> => {
         consent_given: consent,
         consent_timestamp: new Date().toISOString(),
         is_active: true,
+      }, { 
+        onConflict: 'email',
+        ignoreDuplicates: false 
       })
       .select()
       .single();
