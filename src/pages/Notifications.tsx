@@ -1,7 +1,7 @@
-import PageLayout from "@/components/PageLayout";
-import { Button } from "@/components/ui/button";
+import NotificationsPageLayout from "@/components/NotificationsPageLayout";
+import PersonalizedMessageBox from "@/components/PersonalizedMessageBox";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const setMeta = (opts: { title: string; description?: string; canonical?: string }) => {
@@ -77,38 +77,34 @@ export default function Notifications() {
     };
   }, [token]);
 
-  const greeting = firstName ? `Hey ${firstName},` : 'Hey there,';
-
   return (
-    <PageLayout>
-      <main className="container mx-auto px-6 py-12">
-        <section className="max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground mb-4">{greeting}</h1>
-          <p className="text-lg text-muted-foreground mb-6">
-            We’ve got a few tables left tonight — want to come see us?
+    <NotificationsPageLayout>
+      <PersonalizedMessageBox firstName={firstName}>
+        <p>
+          We've got a few tables left tonight — want to come see us?
+        </p>
+        <div className="flex items-center gap-4 mt-6">
+          <a 
+            href="/book"
+            className="inline-block bg-foreground text-background px-6 py-3 font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200"
+          >
+            BOOK A TABLE
+          </a>
+          <a
+            href="https://www.croftcommon.com/book"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline text-foreground hover:text-accent-pink transition-colors duration-200"
+          >
+            Open booking in new tab
+          </a>
+        </div>
+        {!loading && !firstName && (
+          <p className="text-sm text-muted-foreground mt-6">
+            P.S. We couldn't personalise this message — but we'd still love to see you!
           </p>
-          <div className="flex items-center gap-3">
-            <Button asChild>
-              <Link to="/book" aria-label="Book a table at Croft Common">
-                Book a table
-              </Link>
-            </Button>
-            <a
-              className="underline text-primary"
-              href="https://www.croftcommon.com/book"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Open booking in new tab
-            </a>
-          </div>
-          {!loading && !firstName && (
-            <p className="text-sm text-muted-foreground mt-6">
-              P.S. We couldn’t personalise this message — but we’d still love to see you!
-            </p>
-          )}
-        </section>
-      </main>
-    </PageLayout>
+        )}
+      </PersonalizedMessageBox>
+    </NotificationsPageLayout>
   );
 }

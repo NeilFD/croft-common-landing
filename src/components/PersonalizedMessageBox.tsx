@@ -1,0 +1,50 @@
+import { ReactNode } from 'react';
+
+interface PersonalizedMessageBoxProps {
+  firstName?: string | null;
+  children?: ReactNode;
+}
+
+const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxProps) => {
+  const greeting = firstName ? `Hey ${firstName},` : 'Hey there,';
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
+      <div className="max-w-2xl mx-6 pointer-events-auto">
+        <div className="bg-background/80 backdrop-blur-md border border-charcoal/20 p-8 md:p-12 rounded-lg shadow-2xl">
+          <h1 className="font-brutalist text-3xl md:text-4xl text-foreground mb-6 leading-tight">
+            {greeting}
+          </h1>
+          
+          <div className="font-industrial text-lg md:text-xl text-muted-foreground space-y-4">
+            {children || (
+              <>
+                <p>
+                  We've got a few tables left tonight — want to come see us?
+                </p>
+                <div className="flex items-center gap-4 mt-6">
+                  <a 
+                    href="/book"
+                    className="inline-block bg-foreground text-background px-6 py-3 font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200"
+                  >
+                    BOOK A TABLE
+                  </a>
+                  <a
+                    href="https://www.croftcommon.com/book"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline text-foreground hover:text-accent-pink transition-colors duration-200"
+                  >
+                    Open booking in new tab
+                  </a>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PersonalizedMessageBox;

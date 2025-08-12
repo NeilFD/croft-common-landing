@@ -1,0 +1,128 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
+import OptimizedImage from './OptimizedImage';
+import { useImagePreloader } from '@/hooks/useImagePreloader';
+import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
+import { homeHeroImages as heroImages } from '@/data/heroImages';
+import CroftLogo from './CroftLogo';
+
+const NotificationsHeroCarousel = () => {
+  const isMobile = useIsMobile();
+  const { isSlowConnection } = useConnectionSpeed();
+  
+  // Optimize autoplay delay for mobile/slow connections
+  const autoplayDelay = isMobile || isSlowConnection ? 6000 : 4000;
+  const autoplay = useRef(Autoplay({ delay: autoplayDelay, stopOnInteraction: false }));
+  
+  const [emblaRef, emblaApi] = useEmblaCarousel(
+    { 
+      loop: true,
+      duration: isMobile ? 20 : 30 // Faster transitions on mobile
+    },
+    [autoplay.current]
+  );
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Smart image loading - prioritize first 2 images on mobile
+  const imageUrls = heroImages.map(img => img.src);
+  const priorityUrls = isMobile ? imageUrls.slice(0, 2) : imageUrls;
+  const { loading: imagesLoading } = useImagePreloader(priorityUrls, { enabled: true, priority: true });
+  const [isFirstReady, setIsFirstReady] = useState(false);
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCurrentSlide(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+  }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    const firstUrl = heroImages[0]?.src;
+    let cancelled = false;
+    let timeoutId: number | undefined;
+    if (autoplay.current && emblaApi) {
+      try { autoplay.current.stop(); } catch {}
+    }
+    const proceed = () => {
+      if (cancelled) return;
+      setIsFirstReady(true);
+      try { autoplay.current?.play?.(); } catch {}
+    };
+    if (!firstUrl) {
+      proceed();
+      return;
+    }
+    const img = new Image();
+    img.src = firstUrl;
+    // Try to decode ASAP, but also attach onload/onerror for wider support
+    // @ts-ignore
+    (img as any).decode?.().then(proceed).catch(proceed);
+    img.onload = proceed;
+    img.onerror = proceed;
+    // Safety: start anyway after 4.5s
+    // @ts-ignore
+    timeoutId = setTimeout(proceed, 4500);
+    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
+  }, [emblaApi]);
+
+  return (
+    <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
+      <div className="flex">
+        {heroImages.map((image, index) => (
+          <div 
+            key={index}
+            className="flex-[0_0_100%] relative min-h-screen"
+          >
+            {/* Optimized Background Image */}
+            <OptimizedImage
+              src={image.src}
+              alt={`Hero image ${index + 1}`}
+              className="min-h-screen"
+              priority={index === 0}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              sizes="100vw"
+              mobileOptimized={true}
+            />
+            {/* Subtle overlay for text readability */}
+            <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
+          </div>
+        ))}
+      </div>
+
+      {/* Fixed watermark overlay */}
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
+        <CroftLogo
+          className="w-[27.5rem] h-[27.5rem] sm:w-[30rem] sm:h-[30rem] md:w-[32.5rem] md:h-[32.5rem] lg:w-[35rem] lg:h-[35rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
+        />
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
+        <div className="flex flex-col items-center">
+          <div className="w-px h-16 bg-accent-pink"></div>
+          <div className="w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-accent-pink mt-1"></div>
+        </div>
+      </div>
+
+      {/* Slide indicators */}
+      <div className="absolute bottom-8 right-8 flex space-x-2 z-20">
+        {heroImages.map((_, index) => (
+          <div
+            key={index}
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              index === currentSlide ? 'bg-background' : 'bg-background/30'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default NotificationsHeroCarousel;
