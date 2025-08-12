@@ -24,7 +24,7 @@ const OptimizedImage = ({
   objectPosition
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [hasError, setHasError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
@@ -34,25 +34,52 @@ const OptimizedImage = ({
     }
   }, [priority]);
 
+  // Reset when src changes
+  useEffect(() => {
+    setIsLoaded(false);
+    setRetryCount(0);
+  }, [src]);
+
+  const buildBypassUrl = (u: string, r: number) => {
+    try {
+      const url = new URL(u, window.location.origin);
+      url.searchParams.set('sw-bypass', '1');
+      url.searchParams.set('r', String(r));
+      url.searchParams.set('ts', String(Date.now()));
+      return url.pathname + url.search + url.hash;
+    } catch {
+      // Fallback: naive append
+      const sep = u.includes('?') ? '&' : '?';
+      return `${u}${sep}sw-bypass=1&r=${r}&ts=${Date.now()}`;
+    }
+  };
+
+  const computedSrc = retryCount > 0 ? buildBypassUrl(src, retryCount) : src;
+
   const handleLoad = () => {
     setIsLoaded(true);
     onLoad?.();
   };
 
   const handleError = () => {
-    setHasError(true);
-    setIsLoaded(true);
+    // Retry up to 2 times with backoff
+    if (retryCount < 2) {
+      const delay = retryCount === 0 ? 600 : 1500;
+      window.setTimeout(() => setRetryCount((c) => c + 1), delay);
+      return;
+    }
+    // After retries, keep skeleton hidden state (do not flip to an error panel)
   };
 
   return (
-    <div className={cn("relative overflow-hidden", className)}>
-      {!isLoaded && !hasError && (
+    <div className={cn('relative overflow-hidden', className)}>
+      {!isLoaded && (
         <Skeleton className="absolute inset-0 bg-muted/20" />
       )}
       
       <img
         ref={imgRef}
-        src={src}
+        src={computedSrc}
         alt={alt}
         loading={priority ? 'eager' : loading}
         decoding="async"
@@ -60,18 +87,12 @@ const OptimizedImage = ({
         draggable={false}
         style={objectPosition ? { objectPosition } : undefined}
         className={cn(
-          "absolute inset-0 w-full h-full object-cover transition-opacity duration-500",
-          isLoaded ? "opacity-100" : "opacity-0"
+          'absolute inset-0 w-full h-full object-cover transition-opacity duration-500',
+          isLoaded ? 'opacity-100' : 'opacity-0'
         )}
         onLoad={handleLoad}
         onError={handleError}
       />
-      
-      {hasError && (
-        <div className="absolute inset-0 bg-muted/50 flex items-center justify-center">
-          <span className="text-muted-foreground text-sm">Failed to load image</span>
-        </div>
-      )}
     </div>
   );
 };

@@ -1,7 +1,10 @@
-
 /* Minimal service worker for PWA + Push */
 const SUPABASE_URL = 'https://xccidvoxhpgcnwinnyin.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU';
+
+const IMAGE_CACHE = 'images-v3';
+const ASSET_CACHE = 'assets-swr-v3';
+
 self.addEventListener('install', (event) => {
   // Activate immediately on install
   self.skipWaiting();
@@ -11,7 +14,7 @@ self.addEventListener('activate', (event) => {
   // Take control and clean old caches
   event.waitUntil((async () => {
     await self.clients.claim();
-    const keep = new Set(['images-v2', 'assets-swr-v2']);
+    const keep = new Set([IMAGE_CACHE, ASSET_CACHE]);
     const keys = await caches.keys();
     await Promise.all(keys.map((k) => keep.has(k) ? null : caches.delete(k)));
   })());
@@ -22,29 +25,44 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
+  // Allow explicit bypass for troubleshooting/retries
+  if (url.searchParams.get('sw-bypass') === '1') {
+    event.respondWith(fetch(req));
+    return;
+  }
+
   const isSameOrigin = url.origin === self.location.origin;
   const isImage = /\.(?:png|jpg|jpeg|gif|webp|avif|svg)$/i.test(url.pathname);
   const isUploads = isSameOrigin && url.pathname.startsWith('/lovable-uploads/');
   const isBuiltAsset = isSameOrigin && url.pathname.startsWith('/assets/');
+  const isBrand = isSameOrigin && url.pathname.startsWith('/brand/');
 
-  // Network-first with timeout for dynamic images (uploads)
+  // Never intercept brand assets - keep them deterministic
+  if (isBrand) {
+    event.respondWith(fetch(req));
+    return;
+  }
+
+  // Stale-while-revalidate for dynamic images (uploads)
   if (isImage && isUploads) {
     event.respondWith((async () => {
-      const cache = await caches.open('images-v2');
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort('timeout'), 2500);
-      try {
-        const fresh = await fetch(req, { signal: controller.signal });
-        clearTimeout(timeout);
-        if (fresh && fresh.ok) cache.put(req, fresh.clone());
-        return fresh;
-      } catch (_e) {
-        clearTimeout(timeout);
-        const cached = await cache.match(req, { ignoreVary: true });
-        if (cached) return cached;
-        // last resort
-        return fetch(req).catch(() => new Response('', { status: 504 }));
+      const cache = await caches.open(IMAGE_CACHE);
+      const cached = await cache.match(req, { ignoreVary: true });
+      const networkPromise = fetch(req).then((res) => {
+        if (res && res.ok) cache.put(req, res.clone());
+        return res;
+      }).catch(() => null);
+
+      if (cached) {
+        // Update in background
+        networkPromise.catch(() => {});
+        return cached;
       }
+
+      const fresh = await networkPromise;
+      if (fresh) return fresh;
+      // No fabricated 504s; let the browser handle retries/placeholder
+      return new Response('', { status: 204 });
     })());
     return;
   }
@@ -52,12 +70,12 @@ self.addEventListener('fetch', (event) => {
   // Cache-first with SWR for built assets and other same-origin images
   if (isBuiltAsset || (isImage && isSameOrigin)) {
     event.respondWith((async () => {
-      const cache = await caches.open('assets-swr-v2');
+      const cache = await caches.open(ASSET_CACHE);
       const cached = await cache.match(req, { ignoreVary: true });
       const fetchPromise = fetch(req).then((res) => {
         if (res && res.ok) cache.put(req, res.clone());
         return res;
-      }).catch(() => cached);
+      }).catch(() => cached || null);
       return cached || fetchPromise;
     })());
     return;

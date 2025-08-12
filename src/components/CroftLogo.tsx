@@ -25,6 +25,20 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
       )}
       onError={(e) => {
         const img = e.currentTarget as HTMLImageElement;
+        // One retry with SW bypass to avoid stale cache, then fallback
+        if (img.dataset.retried !== '1') {
+          img.dataset.retried = '1';
+          try {
+            const u = new URL(BRAND_LOGO, window.location.origin);
+            u.searchParams.set('sw-bypass', '1');
+            u.searchParams.set('ts', String(Date.now()));
+            img.src = u.pathname + u.search + u.hash;
+          } catch {
+            const sep = BRAND_LOGO.includes('?') ? '&' : '?';
+            img.src = `${BRAND_LOGO}${sep}sw-bypass=1&ts=${Date.now()}`;
+          }
+          return;
+        }
         if (img.dataset.fallbacked === '1') return;
         img.dataset.fallbacked = '1';
         img.src = fallbackLogo;
