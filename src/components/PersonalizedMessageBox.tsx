@@ -14,7 +14,15 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
       <div className="max-w-3xl mx-6 pointer-events-auto">
         <div className="bg-background/80 backdrop-blur-md border border-charcoal/20 p-10 md:p-16 rounded-lg shadow-2xl relative">
           <div className="absolute top-4 right-4">
-            <CroftLogo className="w-28 h-28 opacity-20" />
+            <CroftLogo className="w-28 h-28 brightness-0" />
+          </div>
+          <div className="absolute bottom-4 left-4">
+            <a 
+              href="/book"
+              className="inline-block bg-foreground text-background px-4 py-2 rounded-full font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200 no-underline"
+            >
+              Book
+            </a>
           </div>
           <h1 className="font-brutalist text-3xl md:text-4xl text-foreground mb-6 leading-tight">
             {greeting}
