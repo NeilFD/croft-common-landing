@@ -17,3 +17,29 @@ export function useIsMobile() {
 
   return !!isMobile
 }
+
+export function useConnectionSpeed() {
+  const [connectionType, setConnectionType] = React.useState<string>('unknown')
+  const [isSlowConnection, setIsSlowConnection] = React.useState(false)
+
+  React.useEffect(() => {
+    const connection = (navigator as any).connection
+    if (connection) {
+      const updateConnection = () => {
+        setConnectionType(connection.effectiveType || 'unknown')
+        setIsSlowConnection(
+          connection.effectiveType === 'slow-2g' || 
+          connection.effectiveType === '2g' ||
+          connection.downlink < 1.5
+        )
+      }
+      
+      updateConnection()
+      connection.addEventListener('change', updateConnection)
+      
+      return () => connection.removeEventListener('change', updateConnection)
+    }
+  }, [])
+
+  return { connectionType, isSlowConnection }
+}

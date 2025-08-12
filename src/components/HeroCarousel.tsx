@@ -4,27 +4,34 @@ import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import OptimizedImage from './OptimizedImage';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
+import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
 import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as heroImages } from '@/data/heroImages';
 import BookFloatingButton from './BookFloatingButton';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
 const HeroCarousel = () => {
-  const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
+  const isMobile = useIsMobile();
+  const { isSlowConnection } = useConnectionSpeed();
+  
+  // Optimize autoplay delay for mobile/slow connections
+  const autoplayDelay = isMobile || isSlowConnection ? 6000 : 4000;
+  const autoplay = useRef(Autoplay({ delay: autoplayDelay, stopOnInteraction: false }));
+  
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
       loop: true,
-      duration: 30 // Smooth transitions
+      duration: isMobile ? 20 : 30 // Faster transitions on mobile
     },
     [autoplay.current]
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Images provided by shared data module
-
+  // Smart image loading - prioritize first 2 images on mobile
   const imageUrls = heroImages.map(img => img.src);
-  const { loading: imagesLoading } = useImagePreloader(imageUrls, { enabled: true, priority: true });
+  const priorityUrls = isMobile ? imageUrls.slice(0, 2) : imageUrls;
+  const { loading: imagesLoading } = useImagePreloader(priorityUrls, { enabled: true, priority: true });
   const [isFirstReady, setIsFirstReady] = useState(false);
 
   const onSelect = useCallback(() => {
@@ -85,6 +92,7 @@ const HeroCarousel = () => {
               priority={index === 0}
               loading={index === 0 ? 'eager' : 'lazy'}
               sizes="100vw"
+              mobileOptimized={true}
             />
             {/* Subtle overlay for text readability */}
             <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>

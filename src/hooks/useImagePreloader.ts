@@ -20,11 +20,25 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
     const uniqueUrls = Array.from(new Set(imageUrls));
     const imgs: HTMLImageElement[] = [];
 
+    // Detect mobile and connection for smart loading
+    const isMobile = window.innerWidth < 768;
+    const connection = (navigator as any).connection;
+    const isSlowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g');
+    
+    // Limit concurrent loading on mobile/slow connections
+    const maxConcurrent = (isMobile || isSlowConnection) ? 2 : uniqueUrls.length;
+    const urlsToLoad = uniqueUrls.slice(0, maxConcurrent);
+
     const preloadImages = async () => {
-      const promises = uniqueUrls.map((url) => {
-        // If we've already preloaded this URL in this session, mark as loaded and skip network
+      // Initialize loaded images with already preloaded URLs
+      const alreadyLoaded = uniqueUrls.filter(url => preloadedUrls.has(url));
+      if (alreadyLoaded.length > 0 && isMounted) {
+        setLoadedImages(new Set(alreadyLoaded));
+      }
+
+      const promises = urlsToLoad.map((url) => {
+        // If already preloaded, skip network request
         if (preloadedUrls.has(url)) {
-          setLoadedImages(prev => new Set([...prev, url]));
           return Promise.resolve(url);
         }
 
@@ -38,6 +52,8 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
             settled = true;
             preloadedUrls.add(url);
             if (!isMounted) return resolve(url);
+            
+            // Safe state update - only when mounted and not during render
             setLoadedImages(prev => new Set([...prev, url]));
             resolve(url);
           };
@@ -45,16 +61,37 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
           img.onload = finalize;
           img.onerror = finalize;
           img.src = url;
-          // @ts-ignore - decode may not exist on all browsers
-          if ((img as any).decode) {
-            // @ts-ignore
-            (img as any).decode().then(finalize).catch(finalize);
+          
+          // Use decode for better performance when available
+          if ('decode' in img && typeof img.decode === 'function') {
+            img.decode().then(finalize).catch(finalize);
           }
         });
       });
 
       try {
         await Promise.all(promises);
+        
+        // Load remaining images progressively on mobile
+        if (isMobile && uniqueUrls.length > maxConcurrent) {
+          setTimeout(() => {
+            if (isMounted) {
+              const remainingUrls = uniqueUrls.slice(maxConcurrent);
+              remainingUrls.forEach(url => {
+                if (!preloadedUrls.has(url)) {
+                  const img = new Image();
+                  img.onload = () => {
+                    preloadedUrls.add(url);
+                    if (isMounted) {
+                      setLoadedImages(prev => new Set([...prev, url]));
+                    }
+                  };
+                  img.src = url;
+                }
+              });
+            }
+          }, 1000);
+        }
       } catch (error) {
         console.warn('Some images failed to preload:', error);
       } finally {
@@ -66,7 +103,7 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
 
     return () => {
       isMounted = false;
-      // Best-effort cancel further work
+      // Clean up image references
       imgs.forEach((img) => {
         img.onload = null as any;
         img.onerror = null as any;

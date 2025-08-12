@@ -25,12 +25,24 @@ export function isIosSafari(): boolean {
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) return null;
   try {
-    const reg = await navigator.serviceWorker.register('/sw.js');
-    console.log('✅ Service worker registered:', reg.scope);
+    // Use mobile-optimized service worker on mobile devices
+    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const swPath = isMobile ? '/sw-mobile.js' : '/sw.js';
+    
+    const reg = await navigator.serviceWorker.register(swPath);
+    console.log(`✅ Service worker registered (${isMobile ? 'mobile' : 'desktop'}):`, reg.scope);
     return reg;
   } catch (e) {
     console.error('Service worker registration failed:', e);
-    return null;
+    // Fallback to regular SW
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js');
+      console.log('✅ Fallback service worker registered:', reg.scope);
+      return reg;
+    } catch (fallbackError) {
+      console.error('Fallback service worker registration failed:', fallbackError);
+      return null;
+    }
   }
 }
 
