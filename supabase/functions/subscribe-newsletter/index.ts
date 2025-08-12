@@ -69,21 +69,49 @@ const handler = async (req: Request): Promise<Response> => {
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '';
 
-    // Create auth user with magic link
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email,
-      email_confirm: false,
-      user_metadata: {
-        first_name: firstName,
-        last_name: lastName,
-        full_name: name,
-      }
-    });
+    // Check if auth user already exists
+    let authData: any = null;
+    let isNewUser = false;
 
-    if (authError) {
-      console.error("Error creating auth user:", authError);
+    try {
+      // Try to get existing user by email
+      const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers();
+      const existingUser = existingUsers.users.find(u => u.email === email);
+      
+      if (existingUser) {
+        console.log(`User ${email} already exists in auth system`);
+        authData = { user: existingUser };
+      } else {
+        // Create new auth user with magic link
+        const { data: newAuthData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+          email,
+          email_confirm: false,
+          user_metadata: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: name,
+          }
+        });
+
+        if (authError) {
+          console.error("Error creating auth user:", authError);
+          return new Response(
+            JSON.stringify({ error: "Failed to create user account" }),
+            {
+              status: 500,
+              headers: { "Content-Type": "application/json", ...corsHeaders },
+            }
+          );
+        }
+        
+        authData = newAuthData;
+        isNewUser = true;
+        console.log(`Created new auth user for ${email}`);
+      }
+    } catch (error) {
+      console.error("Error handling auth user:", error);
       return new Response(
-        JSON.stringify({ error: "Failed to create user account" }),
+        JSON.stringify({ error: "Failed to process user account" }),
         {
           status: 500,
           headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -142,19 +170,21 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send magic link for authentication
-    const redirectUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app') || 'https://preview--croft-common-landing.lovable.app'}/`;
-    
-    const { error: magicLinkError } = await supabaseAdmin.auth.admin.generateLink({
-      type: 'magiclink',
-      email,
-      options: {
-        redirectTo: redirectUrl
-      }
-    });
+    // Send magic link for authentication (only for new users)
+    if (isNewUser) {
+      const redirectUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app') || 'https://preview--croft-common-landing.lovable.app'}/`;
+      
+      const { error: magicLinkError } = await supabaseAdmin.auth.admin.generateLink({
+        type: 'magiclink',
+        email,
+        options: {
+          redirectTo: redirectUrl
+        }
+      });
 
-    if (magicLinkError) {
-      console.error("Error generating magic link:", magicLinkError);
+      if (magicLinkError) {
+        console.error("Error generating magic link:", magicLinkError);
+      }
     }
 
     // Send enhanced welcome email
@@ -173,10 +203,15 @@ const handler = async (req: Request): Promise<Response> => {
       // Don't fail the subscription if email fails
     }
 
+    const successMessage = isNewUser 
+      ? "Successfully subscribed! Check your email to complete setup and enable personalized notifications."
+      : "Successfully updated your subscription! Your profile has been enhanced with your preferences.";
+
     return new Response(JSON.stringify({ 
       success: true, 
-      message: "Successfully subscribed! Check your email to complete setup and enable personalized notifications.",
-      userId: authData.user?.id
+      message: successMessage,
+      userId: authData.user?.id,
+      isNewUser: isNewUser
     }), {
       status: 200,
       headers: {
