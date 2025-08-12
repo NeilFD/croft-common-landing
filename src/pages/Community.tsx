@@ -58,7 +58,7 @@ const Community = () => {
         <div className="container mx-auto px-6 max-w-3xl">
           <Accordion type="single" collapsible>
             <AccordionItem value="common-good-thread">
-              <AccordionTrigger className="font-industrial text-sm uppercase tracking-wide inline-block border-2 border-foreground rounded-full px-3 py-2 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">Common Good thread</AccordionTrigger>
+              <AccordionTrigger className="font-industrial text-sm uppercase tracking-wide inline-flex items-center gap-2 leading-none border-2 border-foreground rounded-full px-3 py-2 mb-4 no-underline hover:no-underline hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">Common Good thread</AccordionTrigger>
               <AccordionContent>
                 <div className="max-h-[360px] overflow-y-auto pr-2">
                   {grouped.length === 0 ? (
