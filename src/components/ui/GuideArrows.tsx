@@ -13,17 +13,19 @@ export type GuideArrowsProps = {
 
 export function GuideArrows({ onDownLeft, onDown, contrast = 'neutral', className, ariaLabels }: GuideArrowsProps) {
   return (
-    <div className={cn('flex items-center gap-2', className)}>
+    <div className={cn('flex items-center gap-1.5', className)}>
       <ArrowBox
         direction="left"
-        icon={<ArrowDownLeft className="size-5" />}
+        size="sm"
+        icon={<ArrowDownLeft className="size-4" />}
         onClick={onDownLeft}
         ariaLabel={ariaLabels?.downLeft || 'Down left'}
         contrast={contrast}
       />
       <ArrowBox
         direction="right"
-        icon={<ArrowDown className="size-5" />}
+        size="sm"
+        icon={<ArrowDown className="size-4" />}
         onClick={onDown}
         ariaLabel={ariaLabels?.down || 'Down'}
         contrast={contrast}

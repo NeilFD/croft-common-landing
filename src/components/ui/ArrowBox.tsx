@@ -9,16 +9,18 @@ export type ArrowBoxProps = {
   contrast?: 'neutral' | 'contrast'
   className?: string
   icon?: React.ReactNode
+  size?: 'sm' | 'md' | 'lg'
 }
 
-export function ArrowBox({ direction, onClick, ariaLabel, contrast = 'contrast', className, icon }: ArrowBoxProps) {
+export function ArrowBox({ direction, onClick, ariaLabel, contrast = 'contrast', className, icon, size = 'md' }: ArrowBoxProps) {
   return (
     <button
       type="button"
       aria-label={ariaLabel || (direction === 'left' ? 'Previous' : 'Next')}
       onClick={onClick}
       className={cn(
-        'inline-flex items-center justify-center size-11 rounded-md border-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent-pink))] focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        'inline-flex items-center justify-center rounded-md border-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent-pink))] focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+        size === 'sm' ? 'size-8' : size === 'lg' ? 'size-12' : 'size-11',
         contrast === 'contrast'
           ? 'border-background text-background hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]'
           : 'border-foreground text-foreground hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))] bg-transparent',
