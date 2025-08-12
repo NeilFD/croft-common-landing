@@ -158,11 +158,11 @@ const Navigation = () => {
               <Button
                 key={item.name}
                 variant="frame"
-                shape="pill"
+                shape="square"
                 size="sm"
                 onClick={() => handleNavClick(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`w-full justify-start text-left font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 px-2 break-words hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
+                className={`justify-start text-left self-start font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 px-2 break-words hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
               >
                 {item.name}
               </Button>
