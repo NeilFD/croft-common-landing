@@ -10,8 +10,8 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
 
   return (
     <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-      <div className="max-w-2xl mx-6 pointer-events-auto">
-        <div className="bg-background/80 backdrop-blur-md border border-charcoal/20 p-8 md:p-12 rounded-lg shadow-2xl">
+      <div className="max-w-3xl mx-6 pointer-events-auto">
+        <div className="bg-background/80 backdrop-blur-md border border-charcoal/20 p-10 md:p-16 rounded-lg shadow-2xl">
           <h1 className="font-brutalist text-3xl md:text-4xl text-foreground mb-6 leading-tight">
             {greeting}
           </h1>
@@ -27,17 +27,12 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
                     href="/book"
                     className="inline-block bg-foreground text-background px-6 py-3 font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200"
                   >
-                    BOOK A TABLE
-                  </a>
-                  <a
-                    href="https://www.croftcommon.com/book"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline text-foreground hover:text-accent-pink transition-colors duration-200"
-                  >
-                    Open booking in new tab
+                    BOOK
                   </a>
                 </div>
+                <p className="mt-8 text-right font-industrial text-base">
+                  - Croft Common
+                </p>
               </>
             )}
           </div>
