@@ -266,7 +266,18 @@ serve(async (req) => {
       const first = (s as any).user_id ? userFirstNames.get((s as any).user_id) : undefined;
       const personalizedTitle = renderTemplate(payload!.title, { first_name: first });
       const personalizedBody = renderTemplate(payload!.body, { first_name: first });
-      const payloadForSub = { ...(payload as any), title: personalizedTitle, body: personalizedBody, click_token: clickToken, notification_id: notificationId };
+      
+      // Add click token to URL for personalized landing page
+      const urlWithToken = `${payload!.url}?ntk=${clickToken}`;
+      
+      const payloadForSub = { 
+        ...(payload as any), 
+        title: personalizedTitle, 
+        body: personalizedBody, 
+        url: urlWithToken,
+        click_token: clickToken, 
+        notification_id: notificationId 
+      };
 
       console.log(`📬 DEBUG: Processing subscription ${s.id}:`);
       console.log(`  - Endpoint: ${new URL(s.endpoint).hostname}`);
