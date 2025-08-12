@@ -3,13 +3,15 @@ import { useTransition } from '@/contexts/TransitionContext';
 import { preloadImages } from '@/hooks/useImagePreloader';
 import { UserMenu } from './UserMenu';
 import { Menu, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getRoutePreview } from '@/data/routeHeroMap';
+import { Button } from '@/components/ui/button';
 
 const Navigation = () => {
   const { triggerTransition } = useTransition();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   
   const navItems = [
     { name: 'CAFE', path: '/cafe' },
@@ -111,16 +113,24 @@ const Navigation = () => {
         
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center space-x-8">
-          {navItems.map((item) => (
-            <button
-              key={item.name}
-              onClick={() => handleNavClick(item.path)}
-              onMouseEnter={() => handleNavHover(item.path)}
-              className={`font-industrial text-sm tracking-wide text-foreground transition-all duration-200 hover:scale-105 active:scale-110 ${getNavItemColor(item.name)}`}
-            >
-              {item.name}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Button
+                key={item.name}
+                variant="frame"
+                shape="pill"
+                size="sm"
+                onClick={() => handleNavClick(item.path)}
+                onMouseEnter={() => handleNavHover(item.path)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`font-industrial tracking-wide transition-all duration-200 hover:scale-105 ${isActive ? 'bg-foreground/10' : ''} ${getNavItemColor(item.name)}`}
+              >
+                {item.name}
+              </Button>
+            );
+          })}
+
           <UserMenu />
         </div>
         
@@ -141,15 +151,23 @@ const Navigation = () => {
           : 'max-h-0 opacity-0 overflow-hidden'
       }`}>
         <div className="px-4 py-4 space-y-4 w-full">
-          {navItems.map((item) => (
-            <button
-              key={item.name}
-              onClick={() => handleNavClick(item.path)}
-              className={`block w-full text-left font-industrial text-sm tracking-tight text-foreground transition-all duration-200 hover:scale-105 py-2 px-2 break-words ${getNavItemColor(item.name)}`}
-            >
-              {item.name}
-            </button>
-          ))}
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Button
+                key={item.name}
+                variant="frame"
+                shape="pill"
+                size="sm"
+                onClick={() => handleNavClick(item.path)}
+                aria-current={isActive ? 'page' : undefined}
+                className={`w-full justify-start text-left font-industrial tracking-tight transition-all duration-200 hover:scale-105 py-2 px-2 break-words ${isActive ? 'bg-foreground/10' : ''} ${getNavItemColor(item.name)}`}
+              >
+                {item.name}
+              </Button>
+            );
+          })}
+
         </div>
       </div>
     </nav>
