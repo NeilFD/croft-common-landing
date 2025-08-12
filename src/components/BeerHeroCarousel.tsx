@@ -88,7 +88,7 @@ const BeerHeroCarousel = () => {
         <img 
           src={BRAND_LOGO}
           alt="Croft Common Watermark"
-          className="w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
+          className="w-[27.5rem] h-[27.5rem] sm:w-[30rem] sm:h-[30rem] md:w-[32.5rem] md:h-[32.5rem] lg:w-[35rem] lg:h-[35rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
           style={{ 
             filter: 'invert(1)'
           }}

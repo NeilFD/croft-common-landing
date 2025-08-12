@@ -85,7 +85,7 @@ const CommunityHeroCarousel = () => {
         <img 
           src={BRAND_LOGO}
           alt="Croft Common Watermark"
-          className="w-[20rem] h-[20rem] sm:w-[22rem] sm:h-[22rem] md:w-[24rem] md:h-[24rem] lg:w-[26rem] lg:h-[26rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
+          className="w-[25rem] h-[25rem] sm:w-[27.5rem] sm:h-[27.5rem] md:w-[30rem] md:h-[30rem] lg:w-[32.5rem] lg:h-[32.5rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
           style={{ 
             filter: 'invert(1)'
           }}
