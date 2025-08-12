@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
@@ -8,15 +8,17 @@ import { cafeHeroImages } from '@/data/heroImages';
 import { BRAND_LOGO } from '@/data/brand';
 
 const CafeHeroCarousel = () => {
+  const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
       loop: true,
       duration: 30 // Smooth transitions
     },
-    [Autoplay({ delay: 4000, stopOnInteraction: false })]
+    [autoplay.current]
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isFirstReady, setIsFirstReady] = useState(false);
 
   const cafeImages = cafeHeroImages;
 
@@ -30,6 +32,35 @@ const CafeHeroCarousel = () => {
     onSelect();
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    // Gate autoplay until the first image is decoded
+    const firstUrl = cafeImages[0]?.src;
+    let cancelled = false;
+    if (autoplay.current && emblaApi) {
+      try { autoplay.current.stop(); } catch {}
+    }
+    if (!firstUrl) {
+      setIsFirstReady(true);
+      try { autoplay.current?.play?.(); } catch {}
+      return;
+    }
+    const img = new Image();
+    img.src = firstUrl;
+    const proceed = () => {
+      if (cancelled) return;
+      setIsFirstReady(true);
+      try { autoplay.current?.play?.(); } catch {}
+    };
+    if ('decode' in img) {
+      // @ts-ignore
+      img.decode().then(proceed).catch(proceed);
+    } else {
+      img.onload = proceed;
+      img.onerror = proceed;
+    }
+    return () => { cancelled = true; };
+  }, [emblaApi]);
 
   return (
     <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>

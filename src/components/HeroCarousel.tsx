@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
@@ -10,12 +10,13 @@ import BookFloatingButton from './BookFloatingButton';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import { BRAND_LOGO } from '@/data/brand';
 const HeroCarousel = () => {
+  const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
       loop: true,
       duration: 30 // Smooth transitions
     },
-    [Autoplay({ delay: 4000, stopOnInteraction: false })]
+    [autoplay.current]
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -24,6 +25,7 @@ const HeroCarousel = () => {
 
   const imageUrls = heroImages.map(img => img.src);
   const { loading: imagesLoading } = useImagePreloader(imageUrls, { enabled: true, priority: true });
+  const [isFirstReady, setIsFirstReady] = useState(false);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -35,6 +37,34 @@ const HeroCarousel = () => {
     onSelect();
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    const firstUrl = heroImages[0]?.src;
+    let cancelled = false;
+    if (autoplay.current && emblaApi) {
+      try { autoplay.current.stop(); } catch {}
+    }
+    if (!firstUrl) {
+      setIsFirstReady(true);
+      try { autoplay.current?.play?.(); } catch {}
+      return;
+    }
+    const img = new Image();
+    img.src = firstUrl;
+    const proceed = () => {
+      if (cancelled) return;
+      setIsFirstReady(true);
+      try { autoplay.current?.play?.(); } catch {}
+    };
+    if ('decode' in img) {
+      // @ts-ignore
+      img.decode().then(proceed).catch(proceed);
+    } else {
+      img.onload = proceed;
+      img.onerror = proceed;
+    }
+    return () => { cancelled = true; };
+  }, [emblaApi]);
 
   const currentImage = heroImages[currentSlide];
 

@@ -14,14 +14,23 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
 
     const preloadImages = async () => {
       const promises = imageUrls.map((url) => {
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<string>((resolve) => {
           const img = new Image();
-          img.onload = () => {
+          img.src = url;
+
+          const finalize = () => {
             setLoadedImages(prev => new Set([...prev, url]));
             resolve(url);
           };
-          img.onerror = reject;
-          img.src = url;
+
+          // Attach both event fallback and decode for broad support
+          img.onload = finalize;
+          img.onerror = finalize;
+          // @ts-ignore - decode may not exist on all browsers
+          if ((img as any).decode) {
+            // @ts-ignore
+            img.decode().then(finalize).catch(finalize);
+          }
         });
       });
 

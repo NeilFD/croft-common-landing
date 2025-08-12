@@ -9,6 +9,7 @@ interface OptimizedImageProps {
   priority?: boolean;
   onLoad?: () => void;
   loading?: 'lazy' | 'eager';
+  sizes?: string;
 }
 
 const OptimizedImage = ({ 
@@ -17,7 +18,8 @@ const OptimizedImage = ({
   className, 
   priority = false, 
   onLoad,
-  loading = 'lazy'
+  loading = 'lazy',
+  sizes
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -42,6 +44,9 @@ const OptimizedImage = ({
         src={src}
         alt={alt}
         loading={priority ? 'eager' : loading}
+        decoding="async"
+        sizes={sizes}
+        draggable={false}
         className={cn(
           "absolute inset-0 w-full h-full object-cover transition-opacity duration-500",
           isLoaded ? "opacity-100" : "opacity-0"

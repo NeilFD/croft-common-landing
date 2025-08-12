@@ -13,8 +13,26 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Transparent pass-through; customize caching later if desired
-  return;
+  const req = event.request;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+
+  // Cache-first with SWR for images and built assets
+  const isSameOrigin = url.origin === self.location.origin;
+  const isImage = /\.(?:png|jpg|jpeg|gif|webp|avif|svg)$/i.test(url.pathname);
+  const isBuiltAsset = isSameOrigin && url.pathname.startsWith('/assets/');
+  if (isImage || isBuiltAsset) {
+    event.respondWith((async () => {
+      const cache = await caches.open('static-swr-v1');
+      const cached = await cache.match(req, { ignoreVary: true });
+      const fetchPromise = fetch(req).then((res) => {
+        if (res && res.ok) cache.put(req, res.clone());
+        return res;
+      }).catch(() => cached);
+      return cached || fetchPromise;
+    })());
+    return;
+  }
 });
 
 self.addEventListener('push', (event) => {

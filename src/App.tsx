@@ -24,7 +24,8 @@ import CommonGood from "./pages/CommonGood";
  import CommonGoodMessage from "./pages/CommonGoodMessage";
  import CroftCommonDateTime from "./pages/CroftCommonDateTime";
  import Book from "./pages/Book";
- import Admin from "./pages/Admin";
+import Admin from "./pages/Admin";
+import RouteImagePreloader from '@/components/RouteImagePreloader';
 const queryClient = new QueryClient();
 
 const LowercasePathGuard = () => {
@@ -68,6 +69,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <LowercasePathGuard />
+        <RouteImagePreloader />
         <TransitionProvider>
           <Routes>
             <Route path="/" element={<Index />} />
