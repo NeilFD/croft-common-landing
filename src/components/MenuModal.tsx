@@ -210,8 +210,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
               {getPageTitle()}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
-            <GuideArrows contrast="neutral" />
+          <div className="flex items-center gap-1">
+            <GuideArrows contrast="neutral" className="mr-1" />
             <button
               onClick={onClose}
               className={`w-10 h-10 rounded-full border border-background/30 
