@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { BRAND_LOGO } from "@/data/brand";
 
 interface CroftLogoProps {
   className?: string;
@@ -14,7 +15,7 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
 
   return (
     <img 
-      src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png"
+      src={BRAND_LOGO}
       alt="Croft Common Logo"
       className={cn(
         "object-contain",

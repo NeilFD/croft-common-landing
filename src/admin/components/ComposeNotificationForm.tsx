@@ -12,8 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const DEFAULT_ICON = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png";
-const DEFAULT_BADGE = "/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png";
+import { BRAND_LOGO } from "@/data/brand";
+const DEFAULT_ICON = BRAND_LOGO;
+const DEFAULT_BADGE = BRAND_LOGO;
 
 type Props = {
   onSent: () => void;

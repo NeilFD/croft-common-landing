@@ -3,7 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { hallHeroImages as heroImages } from '@/data/heroImages';
 import BookFloatingButton from '@/components/BookFloatingButton';
-
+import { BRAND_LOGO } from '@/data/brand';
 const HallHeroCarousel = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
@@ -53,7 +53,7 @@ const HallHeroCarousel = () => {
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
         <img 
-          src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
+          src={BRAND_LOGO}
           alt="Croft Common Watermark"
           className="w-[20rem] h-[20rem] sm:w-[22rem] sm:h-[22rem] md:w-[24rem] md:h-[24rem] lg:w-[26rem] lg:h-[26rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
           style={{ 

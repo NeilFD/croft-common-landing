@@ -8,7 +8,7 @@ import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
-
+import { BRAND_LOGO } from '@/data/brand';
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
@@ -45,7 +45,7 @@ const CommonRoom = () => {
         {/* Watermark image - positioned absolutely like other carousel pages */}
         <div className="absolute inset-0 z-0 pointer-events-none flex items-start justify-center pt-96 md:pt-48">
           <img 
-            src="/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png" 
+            src={BRAND_LOGO}
             alt="Common Room Layout"
             className="w-[20rem] h-[20rem] sm:w-[22rem] sm:h-[22rem] md:w-[24rem] md:h-[24rem] lg:w-[26rem] lg:h-[26rem] max-h-[60vh] opacity-20 object-contain"
           />

@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { useLocation, useNavigate } from 'react-router-dom';
 import CroftLogo from '@/components/CroftLogo';
 import { preloadImages } from '@/hooks/useImagePreloader';
-
+import { BRAND_LOGO } from '@/data/brand';
 
 interface TransitionContextType {
   isTransitioning: boolean;
@@ -70,7 +70,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     logoShownRef.current = false;
 
     // Preload assets for a seamless effect
-    preloadImages([TEXTURE_URL, '/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png']);
+    preloadImages([TEXTURE_URL, BRAND_LOGO]);
     if (previewSrc) preloadImages([previewSrc]);
 
     const prefersReduced = typeof window !== 'undefined' &&
