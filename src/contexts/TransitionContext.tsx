@@ -6,7 +6,7 @@ import { preloadImages } from '@/hooks/useImagePreloader';
 
 interface TransitionContextType {
   isTransitioning: boolean;
-  triggerTransition: (path: string) => void;
+  triggerTransition: (path: string, options?: { variant?: 'strobe' | 'soft'; previewSrc?: string }) => void;
 }
 
 const TransitionContext = createContext<TransitionContextType | undefined>(undefined);
@@ -26,15 +26,19 @@ interface TransitionProviderProps {
 export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [targetPath, setTargetPath] = useState('');
+  const [variant, setVariant] = useState<'strobe' | 'soft'>('strobe');
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const triggerTransition = (path: string) => {
+  const triggerTransition = (path: string, options?: { variant?: 'strobe' | 'soft'; previewSrc?: string }) => {
     setTargetPath(path);
+    setVariant(options?.variant ?? 'strobe');
+    setPreviewSrc(options?.previewSrc ?? null);
     setIsTransitioning(true);
   };
 
   // Strobe + logo transition implementation
-  const [phase, setPhase] = useState<'idle' | 'strobe' | 'logo'>('idle');
+  const [phase, setPhase] = useState<'idle' | 'strobe' | 'logo' | 'soft-logo' | 'soft-image'>('idle');
   const [strobeOn, setStrobeOn] = useState(false);
   const timersRef = useRef<number[]>([]);
   const intervalRef = useRef<number | null>(null);
@@ -44,6 +48,11 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const STROBE_TOGGLE_MS = 166; // 3Hz max (toggle interval ~166ms; full cycle ~333ms)
   const STROBE_DURATION_MS = 500; // single short strobe window
   const LOGO_DISPLAY_MS = 200; // single logo display duration
+
+  // Soft transition timing
+  const SOFT_LOGO_INTRO_MS = 300; // brief logo focus
+  const SOFT_FADE_TO_IMAGE_MS = 1400; // crossfade duration to image
+  const SOFT_EXTRA_HOLD_MS = 200; // hold before hiding overlay
 
   const TEXTURE_URL = '/lovable-uploads/d1fb9178-8f7e-47fb-a8ac-71350264d76f.png';
 
@@ -55,6 +64,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
     // Preload assets for a seamless effect
     preloadImages([TEXTURE_URL, '/lovable-uploads/e1833950-a130-4fb5-9a97-ed21a71fab46.png']);
+    if (previewSrc) preloadImages([previewSrc]);
 
     const prefersReduced = typeof window !== 'undefined' &&
       !!window.matchMedia &&
@@ -70,13 +80,66 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       setPhase('idle');
     };
 
+    // Soft transition branch
+    if (variant === 'soft') {
+      // Accessibility: reduced motion -> skip long fades
+      if (prefersReduced) {
+        setPhase('soft-logo');
+        const end = window.setTimeout(navigateAndReset, SOFT_LOGO_INTRO_MS + 200);
+        timersRef.current.push(end);
+        return () => {
+          timersRef.current.forEach(clearTimeout);
+          timersRef.current = [];
+        };
+      }
+
+      setPhase('soft-logo');
+      // Move to image and navigate shortly after
+      const toImage = window.setTimeout(() => {
+        setPhase('soft-image');
+        if (targetPath) navigate(targetPath);
+      }, SOFT_LOGO_INTRO_MS);
+
+      const finish = window.setTimeout(() => {
+        setIsTransitioning(false);
+        setTargetPath('');
+        setPhase('idle');
+      }, SOFT_LOGO_INTRO_MS + SOFT_FADE_TO_IMAGE_MS + SOFT_EXTRA_HOLD_MS);
+
+      timersRef.current.push(toImage, finish);
+      return () => {
+        timersRef.current.forEach(clearTimeout);
+        timersRef.current = [];
+      };
+    }
+
+    // Strobe + logo transition branch (default)
+    const endStrobe = () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      if (!logoShownRef.current) {
+        setPhase('logo');
+        logoShownRef.current = true;
+      }
+      setStrobeOn(false);
+    };
+
+    const finishStrobe = () => {
+      if (targetPath) {
+        navigate(targetPath);
+      }
+      setIsTransitioning(false);
+      setTargetPath('');
+      setPhase('idle');
+    };
+
     // Accessibility: reduced motion skips the strobe
     if (prefersReduced) {
       if (!logoShownRef.current) {
         setPhase('logo');
         logoShownRef.current = true;
       }
-      const end = window.setTimeout(navigateAndReset, LOGO_DISPLAY_MS + 600);
+      const end = window.setTimeout(finishStrobe, LOGO_DISPLAY_MS + 600);
       timersRef.current.push(end);
       return () => {
         timersRef.current.forEach(clearTimeout);
@@ -92,16 +155,10 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     }, STROBE_TOGGLE_MS) as unknown as number; // 3Hz max (toggle ~166ms; full cycle ~333ms)
 
     const toLogo = window.setTimeout(() => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
-      intervalRef.current = null;
-      if (!logoShownRef.current) {
-        setPhase('logo');
-        logoShownRef.current = true;
-      }
-      setStrobeOn(false);
+      endStrobe();
     }, STROBE_DURATION_MS); // single short strobe window
 
-    const finish = window.setTimeout(navigateAndReset, STROBE_DURATION_MS + LOGO_DISPLAY_MS + 600);
+    const finish = window.setTimeout(finishStrobe, STROBE_DURATION_MS + LOGO_DISPLAY_MS + 600);
 
     timersRef.current.push(toLogo, finish);
 
@@ -111,7 +168,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       intervalRef.current = null;
       timersRef.current = [];
     };
-  }, [isTransitioning, navigate, targetPath]);
+  }, [isTransitioning, navigate, targetPath, variant, previewSrc]);
 
   // Intro on first visit to home (per tab/session)
   const location = useLocation();

@@ -4,6 +4,7 @@ import { preloadImages } from '@/hooks/useImagePreloader';
 import { UserMenu } from './UserMenu';
 import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getRoutePreview } from '@/data/routeHeroMap';
 
 const Navigation = () => {
   const { triggerTransition } = useTransition();
@@ -61,14 +62,19 @@ const Navigation = () => {
     }
   };
 
-const handleNavClick = (path: string) => {
+  const handleNavClick = (path: string) => {
     setIsMobileMenuOpen(false); // Close mobile menu
     if (path === '/') {
-      // Only play transition when going home
+      // Only play strobe transition when going home
       triggerTransition('/');
     } else {
-      // Navigate instantly for other routes
-      navigate(path);
+      // Soft transition for section navigations
+      const preview = getRoutePreview(path);
+      if (preview) {
+        triggerTransition(path, { variant: 'soft', previewSrc: preview });
+      } else {
+        navigate(path);
+      }
     }
   };
 
