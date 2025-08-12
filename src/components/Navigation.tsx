@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTransition } from '@/contexts/TransitionContext';
 import { preloadImages } from '@/hooks/useImagePreloader';
 import { UserMenu } from './UserMenu';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getRoutePreview } from '@/data/routeHeroMap';
 import { Button } from '@/components/ui/button';
@@ -162,9 +162,10 @@ const Navigation = () => {
                 size="sm"
                 onClick={() => handleNavClick(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`block w-fit justify-start text-left self-start font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 px-2 break-words hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
+                className={`block w-[260px] sm:w-[300px] flex items-center justify-between text-left self-start font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 px-2 hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
               >
-                {item.name}
+                <span className="truncate pr-3">{item.name}</span>
+                <ArrowUpRight className="size-4 shrink-0" aria-hidden="true" />
               </Button>
             );
           })}
