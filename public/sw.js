@@ -175,6 +175,15 @@ self.addEventListener('notificationclick', (event) => {
         // no-op
       }
 
+      // Fallback: notify existing clients to force navigation on the main thread
+      try {
+        for (const c of allClients) {
+          try { c.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
+        }
+      } catch (_e) {
+        // no-op
+      }
+
       // Fallback: try navigating an existing same-origin tab
       try {
         const target = new URL(targetUrl);
@@ -186,6 +195,11 @@ self.addEventListener('notificationclick', (event) => {
         }
       } catch (_e) {
         // no-op
+      }
+
+      // If we still have a client, just focus it (message above should trigger navigation)
+      if (allClients.length > 0 && 'focus' in allClients[0]) {
+        return allClients[0].focus();
       }
 
       // Last resort
