@@ -77,10 +77,10 @@ const CommunityHeroCarousel = () => {
       </div>
 
       {/* Arrow controls */}
-      <div className="absolute inset-y-0 left-4 flex items-center z-20">
+      <div className="absolute inset-y-0 left-4 items-center z-20 hidden md:flex">
         <ArrowBox direction="left" contrast="contrast" ariaLabel="Previous slide" onClick={() => emblaApi?.scrollPrev()} />
       </div>
-      <div className="absolute inset-y-0 right-4 flex items-center z-20">
+      <div className="absolute inset-y-0 right-4 items-center z-20 hidden md:flex">
         <ArrowBox direction="right" contrast="contrast" ariaLabel="Next slide" onClick={() => emblaApi?.scrollNext()} />
       </div>
 
