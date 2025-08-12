@@ -24,32 +24,34 @@ import CommonGood from "./pages/CommonGood";
  import CommonGoodMessage from "./pages/CommonGoodMessage";
  import CroftCommonDateTime from "./pages/CroftCommonDateTime";
  import Book from "./pages/Book";
-import Admin from "./pages/Admin";
-import RouteImagePreloader from '@/components/RouteImagePreloader';
+ import Admin from "./pages/Admin";
+ import Notifications from "./pages/Notifications";
+ import RouteImagePreloader from '@/components/RouteImagePreloader';
 const queryClient = new QueryClient();
 
 const LowercasePathGuard = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const allowedRoots = new Set([
-    "", // homepage
-    "cafe",
-    "cocktails",
-    "beer",
-    "kitchens",
-    "hall",
-    "community",
-    "common-room",
-    "calendar",
-    "manage-event",
-    "privacy",
-    "unsubscribe",
-    "branding",
-    "common-good",
-    "book",
-    "admin",
-    "croft-common-datetime",
-  ]);
+     "", // homepage
+     "cafe",
+     "cocktails",
+     "beer",
+     "kitchens",
+     "hall",
+     "community",
+     "common-room",
+     "calendar",
+     "manage-event",
+     "privacy",
+     "unsubscribe",
+     "branding",
+     "common-good",
+     "book",
+     "admin",
+     "croft-common-datetime",
+     "notifications",
+   ]);
   useEffect(() => {
     const path = location.pathname;
     if (!/[A-Z]/.test(path)) return;
@@ -92,8 +94,9 @@ const App = () => (
             <Route path="/CroftCommonDate&Time" element={<Navigate to="/croft-common-datetime" replace />} />
             <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
             <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
-            <Route path="/book" element={<Book />} />
-            <Route path="/admin" element={<Admin />} />
+             <Route path="/book" element={<Book />} />
+             <Route path="/notifications" element={<Notifications />} />
+             <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

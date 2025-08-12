@@ -36,15 +36,21 @@ import { supabase } from '@/integrations/supabase/client';
 
   // Track notification opens via URL token and then clean the URL
   try {
-    const url = new URL(window.location.href);
-    const token = url.searchParams.get('ntk');
-    if (token) {
-      void supabase.functions.invoke('track-notification-event', {
-        body: { type: 'notification_open', token },
-      });
-      url.searchParams.delete('ntk');
-      window.history.replaceState({}, document.title, url.toString());
-    }
+     const url = new URL(window.location.href);
+     const token = url.searchParams.get('ntk');
+     if (token) {
+       try {
+         // Persist the token so feature pages can read it even if URL gets cleaned
+         sessionStorage.setItem('notifications.last_ntk', token);
+       } catch (_) {}
+ 
+       void supabase.functions.invoke('track-notification-event', {
+         body: { type: 'notification_open', token },
+       });
+       // Clean the URL
+       url.searchParams.delete('ntk');
+       window.history.replaceState({}, document.title, url.toString());
+     }
   } catch (_) {}
   // Optionally, expose registration for debugging
   (window as any).__pwaReg = reg;

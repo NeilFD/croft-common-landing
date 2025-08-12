@@ -139,3 +139,6 @@ verify_jwt = false
 
 [functions.loyalty-get-active-card]
 verify_jwt = false
+
+[functions.resolve-notification-personalization]
+verify_jwt = false
