@@ -104,7 +104,7 @@ const CommunityHeroCarousel = () => {
       </div>
 
       {/* Book Button */}
-      <BookFloatingButton />
+      <BookFloatingButton className="bottom-32 md:bottom-36" />
 
       {/* Menu Button */}
       <MenuButton pageType="community" menuData={communityMenuData} forceCafeAccent />

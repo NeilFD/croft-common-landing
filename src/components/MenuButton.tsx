@@ -2,6 +2,7 @@ import { useState } from 'react';
 import CroftLogo from './CroftLogo';
 import MenuModal from './MenuModal';
 import { MenuSection } from '@/data/menuData';
+import { cn } from '@/lib/utils';
 
 interface MenuButtonProps {
   pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
@@ -42,13 +43,13 @@ const MenuButton = ({ pageType, menuData, forceCafeAccent }: MenuButtonProps) =>
     <>
       <button
         onClick={() => setIsMenuOpen(true)}
-        className={`fixed bottom-20 right-8 z-50 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 
-          flex items-center justify-center group overflow-hidden button-breathing
-          before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0
-          ${pageType === 'community' || pageType === 'common-room'
-            ? 'bg-background/85 backdrop-blur-sm' 
+        className={cn(
+          "fixed right-8 z-50 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0",
+          pageType === 'community' ? 'bottom-16 md:bottom-20' : 'bottom-20',
+          (pageType === 'community' || pageType === 'common-room')
+            ? 'bg-background/85 backdrop-blur-sm'
             : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
-          }`}
+        )}
         style={{
           '--hover-bg': accentColor,
           '--breathing-color': accentColor,
