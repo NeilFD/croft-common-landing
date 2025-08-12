@@ -50,6 +50,7 @@ function renderTemplate(str: string, vars: { [k: string]: string | undefined }):
 
 async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise<Map<string, string>> {
   const uniq = Array.from(new Set((userIds || []).filter(Boolean)));
+  console.log(`👤 DEBUG: Building first name map for ${uniq.length} user IDs:`, uniq);
   const map = new Map<string, string>();
   for (const uid of uniq) {
     try {
@@ -61,6 +62,7 @@ async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise
         .maybeSingle();
       
       let name: string | undefined = profile?.first_name;
+      console.log(`📝 DEBUG: Profile lookup for ${uid}: first_name="${name}"`);
       
       // If not found in profiles, fallback to auth metadata
       if (!name) {
@@ -68,6 +70,7 @@ async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise
         const u = res?.user as any;
         const meta: any = u?.user_metadata ?? {};
         name = meta.first_name || meta.given_name || meta.name;
+        console.log(`🔐 DEBUG: Auth metadata for ${uid}: first_name="${meta.first_name}", given_name="${meta.given_name}", name="${meta.name}" -> using="${name}"`);
         
         // If still not found, check subscribers table by email
         if (!name && u?.email) {
@@ -77,15 +80,24 @@ async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise
             .eq('email', u.email)
             .maybeSingle();
           name = sub?.name as string | undefined;
+          console.log(`📧 DEBUG: Subscriber lookup for ${u.email}: name="${name}"`);
         }
       }
       
       if (name) {
         const first = String(name).trim().split(/\s+/)[0];
-        if (first) map.set(uid, first);
+        if (first) {
+          map.set(uid, first);
+          console.log(`✅ DEBUG: Mapped ${uid} -> "${first}"`);
+        }
+      } else {
+        console.log(`❌ DEBUG: No name found for ${uid}`);
       }
-    } catch (_e) {}
+    } catch (_e) {
+      console.log(`⚠️ DEBUG: Error looking up name for ${uid}:`, _e);
+    }
   }
+  console.log(`🗺️ DEBUG: Final first name map:`, Object.fromEntries(map));
   return map;
 }
 
@@ -161,6 +173,7 @@ serve(async (req) => {
     }
 
     // Fetch recipients
+    console.log(`🔍 DEBUG: Fetching subscriptions for scope="${scope}"`);
     let query = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth, user_id")
@@ -169,10 +182,20 @@ serve(async (req) => {
     if (scope === "self") {
       // Hardcode Neil's user ID for testing to bypass auth issues
       const testUserId = "d3da6974-b49c-4e24-a649-5690ff0c1bca";
+      console.log(`🎯 DEBUG: Self-scope detected, using hardcoded user ID: ${testUserId}`);
       query = query.eq("user_id", testUserId);
     }
 
     const { data: subs, error: subsErr } = await query;
+    console.log(`📊 DEBUG: Found ${subs?.length || 0} subscriptions for scope="${scope}"`);
+    if (subs && subs.length > 0) {
+      console.log(`📱 DEBUG: Subscription details:`, subs.map(s => ({
+        id: s.id,
+        endpoint_domain: new URL(s.endpoint).hostname,
+        user_id: s.user_id,
+        has_keys: !!(s.p256dh && s.auth)
+      })));
+    }
     if (subsErr) {
       console.error("Failed to load subscriptions:", subsErr);
       return new Response(JSON.stringify({ error: "Failed to load subscriptions" }), {
@@ -233,6 +256,7 @@ serve(async (req) => {
     );
 
     // Send sequentially; simple and reliable
+    console.log(`🚀 DEBUG: Starting to send notifications to ${subs?.length || 0} subscriptions`);
     for (const s of subs ?? []) {
       const subscription = {
         endpoint: s.endpoint,
@@ -244,9 +268,21 @@ serve(async (req) => {
       const personalizedBody = renderTemplate(payload!.body, { first_name: first });
       const payloadForSub = { ...(payload as any), title: personalizedTitle, body: personalizedBody, click_token: clickToken, notification_id: notificationId };
 
+      console.log(`📬 DEBUG: Processing subscription ${s.id}:`);
+      console.log(`  - Endpoint: ${new URL(s.endpoint).hostname}`);
+      console.log(`  - User ID: ${(s as any).user_id || 'null'}`);
+      console.log(`  - First name: "${first || 'none'}"`);
+      console.log(`  - Original title: "${payload!.title}"`);
+      console.log(`  - Personalized title: "${personalizedTitle}"`);
+      console.log(`  - Original body: "${payload!.body}"`);
+      console.log(`  - Personalized body: "${personalizedBody}"`);
+      console.log(`  - Full payload:`, payloadForSub);
+
       try {
+        console.log(`⏳ DEBUG: Sending push notification to ${new URL(s.endpoint).hostname}...`);
         await webpush.sendNotification(subscription as any, JSON.stringify(payloadForSub));
         success++;
+        console.log(`✅ DEBUG: Successfully sent to subscription ${s.id}`);
 
         await supabaseAdmin.from("notification_deliveries").insert({
           notification_id: notificationId,
@@ -256,10 +292,15 @@ serve(async (req) => {
           error: null,
           click_token: clickToken,
         } as any);
+        console.log(`💾 DEBUG: Recorded delivery as 'sent' for subscription ${s.id}`);
       } catch (err: any) {
         failed++;
         const statusCode = err?.statusCode ?? err?.status ?? 0;
         const isGone = statusCode === 404 || statusCode === 410;
+        console.log(`❌ DEBUG: Failed to send to subscription ${s.id}:`);
+        console.log(`  - Error: ${err?.message || err}`);
+        console.log(`  - Status code: ${statusCode}`);
+        console.log(`  - Is gone (404/410): ${isGone}`);
 
         // Deactivate dead endpoints
         if (isGone) {
@@ -267,6 +308,7 @@ serve(async (req) => {
             .from("push_subscriptions")
             .update({ is_active: false })
             .eq("id", s.id);
+          console.log(`🔒 DEBUG: Deactivated subscription ${s.id} due to gone status`);
         }
 
         await supabaseAdmin.from("notification_deliveries").insert({
@@ -277,10 +319,13 @@ serve(async (req) => {
           error: String(err?.message ?? err),
           click_token: clickToken,
         } as any);
+        console.log(`💾 DEBUG: Recorded delivery as '${isGone ? "deactivated" : "failed"}' for subscription ${s.id}`);
       }
     }
 
     const finalStatus = failed === 0 ? "sent" : success === 0 ? "failed" : "failed";
+    console.log(`📈 DEBUG: Final results - Success: ${success}, Failed: ${failed}, Status: ${finalStatus}`);
+    
     await supabaseAdmin
       .from("notifications")
       .update({
@@ -290,6 +335,9 @@ serve(async (req) => {
         sent_at: new Date().toISOString(),
       } as any)
       .eq("id", notificationId);
+    
+    console.log(`💾 DEBUG: Updated notification ${notificationId} with final counts and status`);
+    console.log(`🏁 DEBUG: send-push function completed successfully`);
 
     return new Response(
       JSON.stringify({
