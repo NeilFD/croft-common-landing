@@ -53,7 +53,7 @@ const Footer = ({
             <h4 className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90">
               CONTACT
             </h4>
-            <div className="space-y-3 text-sm font-industrial">
+            <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0 text-sm font-industrial">
               <a href="mailto:hello@croftcommon.co.uk" className="inline-block border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
                 hello@croftcommon.co.uk
               </a>
@@ -67,9 +67,9 @@ const Footer = ({
             <h4 className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90">
               HOURS
             </h4>
-            <div className="space-y-2 text-sm font-industrial text-background/80">
-              <div className="inline-block border border-background/60 px-2 py-1 rounded-md">SUN—THURS: 7AM—LATE</div>
-              <div className="inline-block border border-background/60 px-2 py-1 rounded-md">FRI—SAT: 7AM—LATER</div>
+            <div className="space-y-2 text-sm font-industrial">
+              <div className="inline-block border-2 border-background text-background px-3 py-1 rounded-lg">SUN—THURS: 7AM—LATE</div>
+              <div className="inline-block border-2 border-background text-background px-3 py-1 rounded-lg">FRI—SAT: 7AM—LATER</div>
             </div>
           </div>
         </div>
