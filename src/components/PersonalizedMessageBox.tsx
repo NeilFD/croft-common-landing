@@ -10,25 +10,25 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
   const greeting = firstName ? `Hey ${firstName},` : 'Hey there,';
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none">
-      <div className="max-w-3xl mx-6 pointer-events-auto">
-        <div className="bg-background/80 backdrop-blur-md border border-charcoal/20 p-10 md:p-16 rounded-lg shadow-2xl relative">
-          <div className="absolute top-4 right-4">
-            <CroftLogo className="w-28 h-28 brightness-0" />
+    <div className="absolute inset-0 flex items-center justify-center z-30 pointer-events-none px-4 py-8">
+      <div className="max-w-3xl w-full mx-auto pointer-events-auto">
+        <div className="bg-background/80 backdrop-blur-md border border-charcoal/20 p-6 md:p-10 lg:p-16 rounded-lg shadow-2xl relative">
+          <div className="absolute top-2 right-2 md:top-4 md:right-4">
+            <CroftLogo className="w-16 h-16 md:w-28 md:h-28 brightness-0" />
           </div>
-          <div className="absolute bottom-4 left-4">
+          <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4">
             <a 
               href="/book"
-              className="inline-block bg-foreground text-background px-4 py-2 rounded-full font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200 no-underline"
+              className="inline-block bg-foreground text-background px-3 py-1.5 md:px-4 md:py-2 rounded-full font-industrial text-xs md:text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200 no-underline"
             >
               Book
             </a>
           </div>
-          <h1 className="font-brutalist text-3xl md:text-4xl text-foreground mb-6 leading-tight">
+          <h1 className="font-brutalist text-2xl md:text-3xl lg:text-4xl text-foreground mb-4 md:mb-6 leading-tight pr-16 md:pr-32">
             {greeting}
           </h1>
           
-          <div className="font-industrial text-lg md:text-xl text-muted-foreground space-y-4">
+          <div className="font-industrial text-base md:text-lg lg:text-xl text-muted-foreground space-y-3 md:space-y-4 pb-12 md:pb-16">
             {children || (
               <>
                 <p>
@@ -42,7 +42,7 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
                     BOOK
                   </a>
                 </div>
-                <p className="mt-8 text-right font-industrial text-base">
+                <p className="mt-6 md:mt-8 text-right font-industrial text-sm md:text-base">
                   - Croft Common
                 </p>
               </>
