@@ -81,7 +81,7 @@ export default function Notifications() {
     <NotificationsPageLayout>
       <PersonalizedMessageBox firstName={firstName}>
         <p>
-          We've got a few tables left tonight — want to come see us?
+          Im so glad we managed to get you - We've got a few tables left tonight - come and see us ...
         </p>
         <p className="mt-8 text-right font-industrial text-base">
           - Croft Common
