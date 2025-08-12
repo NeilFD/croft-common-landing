@@ -7,7 +7,7 @@ interface PersonalizedMessageBoxProps {
 }
 
 const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxProps) => {
-  const greeting = firstName ? `Hey ${firstName},` : 'Hey there,';
+  const greeting = firstName ? `Hey ${firstName},` : 'Hey';
 
   return (
     <div className="absolute inset-x-0 top-44 bottom-20 md:top-44 md:bottom-24 flex items-center justify-center z-30 pointer-events-none px-4">
