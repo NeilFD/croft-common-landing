@@ -227,16 +227,19 @@ self.addEventListener('notificationclick', (event) => {
   
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
     if (clientList.length > 0) {
-      // Navigate an existing same-origin client if possible
+      // Attempt to navigate and also notify clients to force navigation on main thread
       for (const client of clientList) {
-        if (client.url && client.url.startsWith(self.location.origin) && 'navigate' in client) {
-          await client.navigate(targetUrl);
-          await client.focus();
-          return;
-        }
+        try {
+          if (client.url && client.url.startsWith(self.location.origin) && 'navigate' in client) {
+            await client.navigate(targetUrl);
+          }
+        } catch (_) {}
+        try {
+          client.postMessage({ type: 'SW_NAVIGATE', url: targetUrl });
+        } catch (_) {}
       }
-      // As a fallback, just focus the first client
-      await clientList[0].focus();
+      // Focus an existing client
+      try { await clientList[0].focus(); } catch (_) {}
       return;
     }
   

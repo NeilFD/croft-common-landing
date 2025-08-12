@@ -18,6 +18,23 @@ import { supabase } from '@/integrations/supabase/client';
   // Mount notifications prompt overlay (decides visibility internally)
   mountNotificationsOverlay(reg);
 
+  // SW message fallback to force navigation on notification clicks when app is open
+  if ('serviceWorker' in navigator && !(window as any).__swNavigateListenerAdded) {
+    (window as any).__swNavigateListenerAdded = true;
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      const data = (event as MessageEvent).data as any;
+      if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
+        try {
+          const target = new URL(data.url, window.location.origin);
+          // Always let the notification URL dominate
+          window.location.assign(target.toString());
+        } catch {
+          window.location.assign(data.url);
+        }
+      }
+    });
+  }
+
   // Opportunistic linking: if user is signed in and a subscription exists, link it to the user
   try {
     const [{ data: user }, sub] = await Promise.all([
