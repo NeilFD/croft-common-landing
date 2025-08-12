@@ -7,8 +7,6 @@ interface PersonalizedMessageBoxProps {
 }
 
 const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxProps) => {
-  const greeting = firstName ? `Hey ${firstName},` : 'Hey there,';
-
   return (
     <div className="absolute inset-x-0 top-44 bottom-20 md:top-44 md:bottom-24 flex items-center justify-center z-30 pointer-events-none px-4">
       <div className="max-w-3xl w-full mx-auto pointer-events-auto">
@@ -25,24 +23,15 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
             </a>
           </div>
           <div className="flex-grow flex flex-col justify-center">
-            <h1 className="font-brutalist text-2xl md:text-3xl lg:text-4xl text-foreground mb-4 md:mb-6 leading-tight pr-16 md:pr-32">
-              {greeting}
-            </h1>
-            
-            <div className="font-industrial text-base md:text-lg lg:text-xl text-muted-foreground space-y-3 md:space-y-4">
+            <div className="font-industrial text-base md:text-lg lg:text-xl text-muted-foreground space-y-3 md:space-y-4 pr-16 md:pr-32">
               {children || (
                 <>
-                  <p>
-                    We've got a few tables left tonight — want to come see us?
+                  <p className="font-brutalist text-2xl md:text-3xl lg:text-4xl text-foreground leading-tight">
+                    Hey {firstName && <span>{firstName}</span>}
                   </p>
-                  <div className="flex items-center gap-4 mt-6">
-                    <a 
-                      href="/book"
-                      className="inline-block bg-foreground text-background px-6 py-3 font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200"
-                    >
-                      BOOK
-                    </a>
-                  </div>
+                  <p>
+                    Im glad we caught you - We've got a few tables left tonight - you should come see us ...
+                  </p>
                   <p className="mt-6 md:mt-8 text-right font-industrial text-sm md:text-base">
                     - Croft Common
                   </p>
