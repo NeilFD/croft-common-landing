@@ -7,7 +7,7 @@ import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as heroImages } from '@/data/heroImages';
 import BookFloatingButton from './BookFloatingButton';
-
+import { ArrowBox } from '@/components/ui/ArrowBox';
 
 const HeroCarousel = () => {
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -70,6 +70,14 @@ const HeroCarousel = () => {
             filter: 'invert(1)'
           }}
         />
+      </div>
+
+      {/* Arrow controls (hidden on mobile) */}
+      <div className="absolute inset-y-0 left-4 items-center z-20 hidden md:flex">
+        <ArrowBox direction="left" contrast="contrast" ariaLabel="Previous slide" onClick={() => emblaApi?.scrollPrev()} />
+      </div>
+      <div className="absolute inset-y-0 right-4 items-center z-20 hidden md:flex">
+        <ArrowBox direction="right" contrast="contrast" ariaLabel="Next slide" onClick={() => emblaApi?.scrollNext()} />
       </div>
 
       {/* Scroll indicator */}
