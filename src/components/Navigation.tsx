@@ -6,7 +6,7 @@ import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getRoutePreview } from '@/data/routeHeroMap';
 import { Button } from '@/components/ui/button';
-import { BRAND_LOGO } from '@/data/brand';
+import CroftLogo from '@/components/CroftLogo';
 const Navigation = () => {
   const { triggerTransition } = useTransition();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -101,9 +101,8 @@ const Navigation = () => {
           onClick={() => handleNavClick('/')}
           className="flex items-center space-x-4 hover:scale-105 transition-transform duration-200"
         >
-          <img 
-            src={BRAND_LOGO} 
-            alt="Croft Common"
+          <CroftLogo 
+            size="lg"
             className="w-[4.5rem] h-[4.5rem] md:translate-x-2"
           />
           <div className="font-brutalist text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
