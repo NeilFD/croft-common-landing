@@ -106,13 +106,13 @@ const Navigation = () => {
             alt="Croft Common"
             className="w-16 h-16"
           />
-          <div className="font-brutalist text-2xl text-foreground tracking-tight">
+          <div className="font-brutalist text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
             CROFT COMMON
           </div>
         </button>
         
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-8">
+        <div className="hidden md:flex items-center space-x-4">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
@@ -124,12 +124,13 @@ const Navigation = () => {
                 onClick={() => handleNavClick(item.path)}
                 onMouseEnter={() => handleNavHover(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`font-industrial tracking-wide transition-all duration-200 hover:scale-105 ${isActive ? 'bg-foreground/10' : ''} ${getNavItemColor(item.name)}`}
+                className={`h-8 px-3 text-xs font-industrial tracking-wide transition-all duration-200 hover:scale-105 ${isActive ? 'bg-foreground/10' : ''} ${getNavItemColor(item.name)}`}
               >
                 {item.name}
               </Button>
             );
           })}
+
 
           <UserMenu />
         </div>
