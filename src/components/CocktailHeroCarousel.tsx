@@ -4,6 +4,7 @@ import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 import OptimizedImage from './OptimizedImage';
+import { ArrowBox } from '@/components/ui/ArrowBox';
 import { cocktailMenu } from '@/data/menuData';
 import { cocktailHeroImages as heroImages } from '@/data/heroImages';
 import CroftLogo from './CroftLogo';
@@ -92,6 +93,20 @@ const CocktailHeroCarousel = () => {
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
         <CroftLogo
           className="w-[27.5rem] h-[27.5rem] sm:w-[30rem] sm:h-[30rem] md:w-[32.5rem] md:h-[32.5rem] lg:w-[35rem] lg:h-[35rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
+        />
+      </div>
+
+      {/* Navigation arrows for larger screens */}
+      <div className="hidden md:block">
+        <ArrowBox 
+          direction="left" 
+          onClick={() => emblaApi?.scrollPrev()} 
+          className="absolute left-8 top-1/2 -translate-y-1/2 z-20"
+        />
+        <ArrowBox 
+          direction="right" 
+          onClick={() => emblaApi?.scrollNext()} 
+          className="absolute right-8 top-1/2 -translate-y-1/2 z-20"
         />
       </div>
 

@@ -5,8 +5,8 @@ import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 import { communityMenuData } from '@/data/menuData';
 import { communityHeroImages as heroImages } from '@/data/heroImages';
-import { ArrowBox } from '@/components/ui/ArrowBox';
 import OptimizedImage from './OptimizedImage';
+import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
 
 const CommunityHeroCarousel = () => {
@@ -93,6 +93,20 @@ const CommunityHeroCarousel = () => {
         />
       </div>
 
+      {/* Navigation arrows for larger screens */}
+      <div className="hidden md:block">
+        <ArrowBox 
+          direction="left" 
+          onClick={() => emblaApi?.scrollPrev()} 
+          className="absolute left-8 top-1/2 -translate-y-1/2 z-20"
+        />
+        <ArrowBox 
+          direction="right" 
+          onClick={() => emblaApi?.scrollNext()} 
+          className="absolute right-8 top-1/2 -translate-y-1/2 z-20"
+        />
+      </div>
+
       {/* Page Title Card Overlay */}
       <div className="absolute top-28 left-2 sm:left-4 md:left-[106px] z-20">
         <div className="block mr-auto w-fit max-w-[82vw] sm:max-w-none pl-2 pr-6 sm:px-4 py-3 border-2 border-background bg-transparent rounded-lg transition-all duration-300 hover:border-[hsl(var(--accent-pink))] text-left">
@@ -105,13 +119,6 @@ const CommunityHeroCarousel = () => {
         </div>
       </div>
 
-      {/* Arrow controls */}
-      <div className="absolute inset-y-0 left-4 items-center z-20 hidden md:flex">
-        <ArrowBox direction="left" contrast="contrast" ariaLabel="Previous slide" onClick={() => emblaApi?.scrollPrev()} />
-      </div>
-      <div className="absolute inset-y-0 right-4 items-center z-20 hidden md:flex">
-        <ArrowBox direction="right" contrast="contrast" ariaLabel="Next slide" onClick={() => emblaApi?.scrollNext()} />
-      </div>
 
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20">
