@@ -25,7 +25,7 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
       )}
       onError={(e) => {
         const img = e.currentTarget as HTMLImageElement;
-        // One retry with SW bypass to avoid stale cache, then fallback
+        // One immediate retry with SW bypass, then fallback
         if (img.dataset.retried !== '1') {
           img.dataset.retried = '1';
           try {
