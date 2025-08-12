@@ -204,7 +204,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         <div className="bg-background border-b border-steel/20 p-4 md:p-6 flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
             <div className="text-foreground flex-shrink-0">
-              <CroftLogo />
+              <CroftLogo size="lg" />
             </div>
             <h1 className="font-brutalist text-lg md:text-xl text-foreground tracking-wider truncate">
               {getPageTitle()}
