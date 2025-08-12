@@ -33,6 +33,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
   const [scope, setScope] = useState<"all" | "self">("all");
   const [dryRun, setDryRun] = useState(false);
   const [sending, setSending] = useState(false);
+  const [usePersonalization, setUsePersonalization] = useState(false);
 
   // Scheduling state
   const [isScheduled, setIsScheduled] = useState(false);
@@ -158,16 +159,23 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
 
   const normalizedUrl = useMemo(() => normalizeUrlInput(url), [url]);
 
-  const preview = useMemo(
-    () => ({
-      title: title || 'Preview title',
-      body: body || 'Preview body text appears here.',
+  const preview = useMemo(() => {
+    // Replace {{first_name}} with example name for preview when personalization is enabled
+    const previewTitle = usePersonalization && title.includes('{{first_name}}') 
+      ? title.replace(/\{\{first_name\}\}/g, 'John')
+      : title || 'Preview title';
+    const previewBody = usePersonalization && body.includes('{{first_name}}')
+      ? body.replace(/\{\{first_name\}\}/g, 'John') 
+      : body || 'Preview body text appears here.';
+    
+    return {
+      title: previewTitle,
+      body: previewBody,
       icon: icon || undefined,
       badge: badge || undefined,
       url: normalizedUrl || undefined,
-    }),
-    [title, body, icon, badge, normalizedUrl]
-  );
+    };
+  }, [title, body, icon, badge, normalizedUrl, usePersonalization]);
 
   const canSend = title.trim().length > 0 && body.trim().length > 0;
 
@@ -324,6 +332,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
     setBadge(DEFAULT_BADGE);
     setScope("all");
     setDryRun(false);
+    setUsePersonalization(false);
     setIsScheduled(false);
     setScheduleDate("");
     setScheduleTime("");
@@ -458,7 +467,41 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
               <Switch id="dry-run" checked={dryRun} onCheckedChange={setDryRun} />
               <Label htmlFor="dry-run">Dry run</Label>
             </div>
+
+            <div className="flex items-center gap-2">
+              <Switch id="personalization" checked={usePersonalization} onCheckedChange={setUsePersonalization} />
+              <Label htmlFor="personalization">Personalization</Label>
+            </div>
           </div>
+
+          {/* Personalization Help */}
+          {usePersonalization && (
+            <div className="rounded-md border bg-blue-50 dark:bg-blue-950/50 p-4 space-y-2">
+              <div className="flex items-start gap-2">
+                <Badge variant="secondary" className="text-xs">Template</Badge>
+                <div className="text-sm">
+                  <p className="font-medium text-blue-900 dark:text-blue-100">Use personalization templates in your message:</p>
+                  <div className="mt-2 space-y-1 text-blue-800 dark:text-blue-200">
+                    <p><code className="bg-blue-100 dark:bg-blue-900/50 px-1 rounded text-xs">{"{{first_name}}"}</code> - User's first name</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-300">Example: "Hey {"{{first_name}}"}, we have exciting news!"</p>
+                  </div>
+                  <Button 
+                    type="button" 
+                    size="sm" 
+                    variant="outline" 
+                    className="mt-2 text-xs h-7"
+                    onClick={() => {
+                      if (!title.includes('{{first_name}}')) {
+                        setTitle('Hey {{first_name}}, ' + title);
+                      }
+                    }}
+                  >
+                    Add to title
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Scheduling */}
           <div className="space-y-3 border rounded-md p-4">
