@@ -81,14 +81,17 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       if (targetPath) {
         navigate(targetPath);
       }
-      // Begin overlay fade-out, then finalize
-      setOverlayVisible(false);
-      const end = window.setTimeout(() => {
-        setIsTransitioning(false);
-        setTargetPath('');
-        setPhase('idle');
-      }, OVERLAY_FADE_OUT_MS);
-      timersRef.current.push(end);
+      // Hold overlay opaque briefly after navigation to prevent background flash
+      const hold = window.setTimeout(() => {
+        setOverlayVisible(false);
+        const end = window.setTimeout(() => {
+          setIsTransitioning(false);
+          setTargetPath('');
+          setPhase('idle');
+        }, OVERLAY_FADE_OUT_MS);
+        timersRef.current.push(end);
+      }, REVEAL_AFTER_NAV_MS);
+      timersRef.current.push(hold);
     };
 
     // Soft transition branch
@@ -134,13 +137,17 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       if (targetPath) {
         navigate(targetPath);
       }
-      setOverlayVisible(false);
-      const end = window.setTimeout(() => {
-        setIsTransitioning(false);
-        setTargetPath('');
-        setPhase('idle');
-      }, OVERLAY_FADE_OUT_MS);
-      timersRef.current.push(end);
+      // Hold overlay opaque briefly after navigation to prevent background flash
+      const hold = window.setTimeout(() => {
+        setOverlayVisible(false);
+        const end = window.setTimeout(() => {
+          setIsTransitioning(false);
+          setTargetPath('');
+          setPhase('idle');
+        }, OVERLAY_FADE_OUT_MS);
+        timersRef.current.push(end);
+      }, REVEAL_AFTER_NAV_MS);
+      timersRef.current.push(hold);
     };
 
     // Accessibility: reduced motion skips the strobe
