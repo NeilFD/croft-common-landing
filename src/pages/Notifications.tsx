@@ -83,7 +83,7 @@ export default function Notifications() {
         <p>
           We've got a few tables left tonight — want to come see us?
         </p>
-        <div className="flex items-center gap-4 mt-10">
+        <div className="flex items-center gap-4 mt-16">
           <a 
             href="/book"
             className="inline-block bg-foreground text-background px-6 py-3 font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200"
