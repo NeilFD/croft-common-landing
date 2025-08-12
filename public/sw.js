@@ -8,8 +8,13 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  // Take control of uncontrolled clients
-  event.waitUntil(self.clients.claim());
+  // Take control and clean old caches
+  event.waitUntil((async () => {
+    await self.clients.claim();
+    const keep = new Set(['images-v2', 'assets-swr-v2']);
+    const keys = await caches.keys();
+    await Promise.all(keys.map((k) => keep.has(k) ? null : caches.delete(k)));
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
@@ -17,13 +22,37 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
-  // Cache-first with SWR for images and built assets
   const isSameOrigin = url.origin === self.location.origin;
   const isImage = /\.(?:png|jpg|jpeg|gif|webp|avif|svg)$/i.test(url.pathname);
+  const isUploads = isSameOrigin && url.pathname.startsWith('/lovable-uploads/');
   const isBuiltAsset = isSameOrigin && url.pathname.startsWith('/assets/');
-  if (isImage || isBuiltAsset) {
+
+  // Network-first with timeout for dynamic images (uploads)
+  if (isImage && isUploads) {
     event.respondWith((async () => {
-      const cache = await caches.open('static-swr-v1');
+      const cache = await caches.open('images-v2');
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort('timeout'), 2500);
+      try {
+        const fresh = await fetch(req, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (fresh && fresh.ok) cache.put(req, fresh.clone());
+        return fresh;
+      } catch (_e) {
+        clearTimeout(timeout);
+        const cached = await cache.match(req, { ignoreVary: true });
+        if (cached) return cached;
+        // last resort
+        return fetch(req).catch(() => new Response('', { status: 504 }));
+      }
+    })());
+    return;
+  }
+
+  // Cache-first with SWR for built assets and other same-origin images
+  if (isBuiltAsset || (isImage && isSameOrigin)) {
+    event.respondWith((async () => {
+      const cache = await caches.open('assets-swr-v2');
       const cached = await cache.match(req, { ignoreVary: true });
       const fetchPromise = fetch(req).then((res) => {
         if (res && res.ok) cache.put(req, res.clone());

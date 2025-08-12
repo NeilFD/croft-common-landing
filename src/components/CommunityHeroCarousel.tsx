@@ -6,6 +6,7 @@ import BookFloatingButton from './BookFloatingButton';
 import { communityMenuData } from '@/data/menuData';
 import { communityHeroImages as heroImages } from '@/data/heroImages';
 import { ArrowBox } from '@/components/ui/ArrowBox';
+import OptimizedImage from './OptimizedImage';
 import { BRAND_LOGO } from '@/data/brand';
 
 const CommunityHeroCarousel = () => {
@@ -37,27 +38,30 @@ const CommunityHeroCarousel = () => {
   useEffect(() => {
     const firstUrl = heroImages[0]?.src;
     let cancelled = false;
+    let timeoutId: number | undefined;
     if (autoplay.current && emblaApi) {
       try { autoplay.current.stop(); } catch {}
     }
-    if (!firstUrl) {
-      setIsFirstReady(true);
-      try { autoplay.current?.play?.(); } catch {}
-      return;
-    }
-    const img = new Image();
-    img.src = firstUrl;
     const proceed = () => {
       if (cancelled) return;
       setIsFirstReady(true);
       try { autoplay.current?.play?.(); } catch {}
     };
+    if (!firstUrl) {
+      proceed();
+      return;
+    }
+    const img = new Image();
+    img.src = firstUrl;
     // Try to decode ASAP, but also attach onload/onerror for wider support
     // @ts-ignore
     (img as any).decode?.().then(proceed).catch(proceed);
     img.onload = proceed;
     img.onerror = proceed;
-    return () => { cancelled = true; };
+    // Safety: start anyway after 4.5s
+    // @ts-ignore
+    timeoutId = setTimeout(proceed, 4500);
+    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
   }, [emblaApi]);
 
   return (
@@ -68,13 +72,15 @@ const CommunityHeroCarousel = () => {
             key={index}
             className="flex-[0_0_100%] relative min-h-screen"
           >
-            {/* Background Image */}
-            <div 
-              className="absolute inset-0 bg-cover bg-no-repeat transition-all duration-1000"
-              style={{
-                backgroundImage: `url('${image.src}')`,
-                backgroundPosition: '50% 80%'
-              }}
+            {/* Optimized Background Image */}
+            <OptimizedImage
+              src={image.src}
+              alt={`Community hero image ${index + 1}`}
+              className="min-h-screen"
+              priority={index === 0}
+              loading={index === 0 ? 'eager' : 'lazy'}
+              sizes="100vw"
+              objectPosition={index === 0 ? '50% 80%' : undefined}
             />
           </div>
         ))}

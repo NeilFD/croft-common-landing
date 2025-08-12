@@ -25,9 +25,9 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
       )}
       onError={(e) => {
         const img = e.currentTarget as HTMLImageElement;
-        if (img.src !== fallbackLogo) {
-          img.src = fallbackLogo;
-        }
+        if (img.dataset.fallbacked === '1') return;
+        img.dataset.fallbacked = '1';
+        img.src = fallbackLogo;
       }}
     />
   );

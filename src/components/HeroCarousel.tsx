@@ -41,27 +41,30 @@ const HeroCarousel = () => {
   useEffect(() => {
     const firstUrl = heroImages[0]?.src;
     let cancelled = false;
+    let timeoutId: number | undefined;
     if (autoplay.current && emblaApi) {
       try { autoplay.current.stop(); } catch {}
     }
-    if (!firstUrl) {
-      setIsFirstReady(true);
-      try { autoplay.current?.play?.(); } catch {}
-      return;
-    }
-    const img = new Image();
-    img.src = firstUrl;
     const proceed = () => {
       if (cancelled) return;
       setIsFirstReady(true);
       try { autoplay.current?.play?.(); } catch {}
     };
+    if (!firstUrl) {
+      proceed();
+      return;
+    }
+    const img = new Image();
+    img.src = firstUrl;
     // Try to decode ASAP, but also attach onload/onerror for wider support
     // @ts-ignore
     (img as any).decode?.().then(proceed).catch(proceed);
     img.onload = proceed;
     img.onerror = proceed;
-    return () => { cancelled = true; };
+    // Safety: start anyway after 4.5s
+    // @ts-ignore
+    timeoutId = setTimeout(proceed, 4500);
+    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
   }, [emblaApi]);
 
   const currentImage = heroImages[currentSlide];
@@ -81,6 +84,7 @@ const HeroCarousel = () => {
               className="min-h-screen"
               priority={index === 0}
               loading={index === 0 ? 'eager' : 'lazy'}
+              sizes="100vw"
             />
             {/* Subtle overlay for text readability */}
             <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>

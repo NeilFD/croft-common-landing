@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +10,7 @@ interface OptimizedImageProps {
   onLoad?: () => void;
   loading?: 'lazy' | 'eager';
   sizes?: string;
+  objectPosition?: string;
 }
 
 const OptimizedImage = ({ 
@@ -19,10 +20,19 @@ const OptimizedImage = ({
   priority = false, 
   onLoad,
   loading = 'lazy',
-  sizes
+  sizes = '100vw',
+  objectPosition
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    // Set fetchpriority as a lowercase attribute to avoid React warnings
+    if (priority && imgRef.current) {
+      imgRef.current.setAttribute('fetchpriority', 'high');
+    }
+  }, [priority]);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -41,19 +51,20 @@ const OptimizedImage = ({
       )}
       
       <img
+        ref={imgRef}
         src={src}
         alt={alt}
         loading={priority ? 'eager' : loading}
         decoding="async"
         sizes={sizes}
         draggable={false}
+        style={objectPosition ? { objectPosition } : undefined}
         className={cn(
           "absolute inset-0 w-full h-full object-cover transition-opacity duration-500",
           isLoaded ? "opacity-100" : "opacity-0"
         )}
         onLoad={handleLoad}
         onError={handleError}
-        {...(priority && { fetchPriority: 'high' })}
       />
       
       {hasError && (
