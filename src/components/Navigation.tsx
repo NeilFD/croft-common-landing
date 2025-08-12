@@ -118,7 +118,7 @@ const Navigation = () => {
             return (
               <Button
                 key={item.name}
-                variant="frame"
+                variant="frameNeutral"
                 shape="pill"
                 size="sm"
                 onClick={() => handleNavClick(item.path)}
@@ -157,7 +157,7 @@ const Navigation = () => {
             return (
               <Button
                 key={item.name}
-                variant="frame"
+                variant="frameNeutral"
                 shape="square"
                 size="sm"
                 onClick={() => handleNavClick(item.path)}

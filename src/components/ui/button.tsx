@@ -20,6 +20,10 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         frame:
           "bg-transparent border-2 border-foreground/80 text-foreground hover:bg-foreground/10",
+        frameNeutral:
+          "bg-transparent border-2 border-foreground/70 text-foreground hover:bg-transparent hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]",
+        frameContrast:
+          "bg-transparent border-2 border-background text-background hover:bg-transparent hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]",
       },
       size: {
         default: "h-10 px-4 py-2",

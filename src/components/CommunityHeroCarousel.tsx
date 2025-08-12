@@ -5,6 +5,7 @@ import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 import { communityMenuData } from '@/data/menuData';
 import { communityHeroImages as heroImages } from '@/data/heroImages';
+import { ArrowBox } from '@/components/ui/ArrowBox';
 
 
 const CommunityHeroCarousel = () => {
@@ -73,6 +74,14 @@ const CommunityHeroCarousel = () => {
             COMMON GROUND
           </h2>
         </div>
+      </div>
+
+      {/* Arrow controls */}
+      <div className="absolute inset-y-0 left-4 flex items-center z-20">
+        <ArrowBox direction="left" contrast="contrast" ariaLabel="Previous slide" onClick={() => emblaApi?.scrollPrev()} />
+      </div>
+      <div className="absolute inset-y-0 right-4 flex items-center z-20">
+        <ArrowBox direction="right" contrast="contrast" ariaLabel="Next slide" onClick={() => emblaApi?.scrollNext()} />
       </div>
 
       {/* Scroll indicator */}

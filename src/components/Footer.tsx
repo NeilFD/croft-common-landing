@@ -53,9 +53,13 @@ const Footer = ({
             <h4 className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90">
               CONTACT
             </h4>
-            <div className="space-y-2 text-sm font-industrial text-background/70">
-              <div>hello@croftcommon.co.uk</div>
-              <div>0117 xxx xxxx</div>
+            <div className="space-y-3 text-sm font-industrial">
+              <a href="mailto:hello@croftcommon.co.uk" className="inline-block border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
+                hello@croftcommon.co.uk
+              </a>
+              <a href="tel:0117xxxxxxx" className="inline-block border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
+                0117 xxx xxxx
+              </a>
             </div>
           </div>
           
@@ -63,9 +67,9 @@ const Footer = ({
             <h4 className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90">
               HOURS
             </h4>
-            <div className="space-y-2 text-sm font-industrial text-background/70">
-              <div>SUN—THURS: 7AM—LATE</div>
-              <div>FRI—SAT: 7AM—LATER</div>
+            <div className="space-y-2 text-sm font-industrial text-background/80">
+              <div className="inline-block border border-background/60 px-2 py-1 rounded-md">SUN—THURS: 7AM—LATE</div>
+              <div className="inline-block border border-background/60 px-2 py-1 rounded-md">FRI—SAT: 7AM—LATER</div>
             </div>
           </div>
         </div>
@@ -77,7 +81,7 @@ const Footer = ({
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
           <div className="font-industrial text-sm uppercase tracking-wide text-background/80 mb-2">The Common Good</div>
-          <div className="font-brutalist text-4xl md:text-5xl text-background">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : '—'}</div>
+          <div className="inline-block px-4 py-2 border-2 border-background rounded-full font-brutalist text-4xl md:text-5xl text-background transition-colors duration-200">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : '—'}</div>
         </div>
       </div>
     </footer>;
