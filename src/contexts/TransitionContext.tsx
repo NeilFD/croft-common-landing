@@ -226,7 +226,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
               }`}
             />
             <div
-              className={`font-brutalist text-2xl md:text-3xl lg:text-4xl tracking-wider text-foreground transition-opacity duration-300 ${
+              className={`font-brutalist text-2xl md:text-3xl lg:text-4xl tracking-wider text-primary-foreground transition-opacity duration-300 ${
                 phase === 'soft-logo' || phase === 'logo' ? 'opacity-100' : 'opacity-0'
               }`}
               aria-hidden="true"
