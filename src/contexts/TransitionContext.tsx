@@ -203,12 +203,29 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
           draggable={false}
         />
 
+        {/* Soft transition preview image */}
+        {previewSrc && (
+          <img
+            src={previewSrc}
+            alt="Section preview"
+            className={`absolute inset-0 w-full h-full object-cover select-none transition-opacity duration-[1600ms] ${
+              phase === 'soft-image' ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="eager"
+            draggable={false}
+          />
+        )}
+
         {/* Centered logo */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <CroftLogo
-            className={`w-[30rem] h-[30rem] md:w-[25rem] md:h-[25rem] lg:w-[20rem] lg:h-[20rem] transition-all duration-200 ${
-              phase === 'logo' ? 'opacity-100 scale-100 invert brightness-110' : 'opacity-0 scale-95'
-            }`}
+            className={`w-[30rem] h-[30rem] md:w-[25rem] md:h-[25rem] lg:w-[20rem] lg:h-[20rem] transition-all ${
+              phase === 'soft-logo' || phase === 'logo' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            } ${
+              phase === 'soft-logo'
+                ? 'invert brightness-200 drop-shadow-[0_0_3rem_hsl(var(--foreground)/0.9)]'
+                : 'invert brightness-110'
+            } duration-200`}
           />
         </div>
       </div>
