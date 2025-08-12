@@ -20,7 +20,7 @@ export function ArrowBox({ direction, onClick, ariaLabel, contrast = 'contrast',
       onClick={onClick}
       className={cn(
         'inline-flex items-center justify-center rounded-md border-2 transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(var(--accent-pink))] focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-        size === 'sm' ? 'size-8' : size === 'lg' ? 'size-12' : 'size-11',
+        size === 'sm' ? 'size-7' : size === 'lg' ? 'size-12' : 'size-11',
         contrast === 'contrast'
           ? 'border-background text-background hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]'
           : 'border-foreground text-foreground hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))] bg-transparent',
