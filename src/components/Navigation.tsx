@@ -124,7 +124,7 @@ const Navigation = () => {
                 onClick={() => handleNavClick(item.path)}
                 onMouseEnter={() => handleNavHover(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`h-8 px-3 text-xs font-industrial tracking-wide text-foreground transition-all duration-200 hover:scale-105 hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
+                className={`h-8 px-3 text-xs font-industrial tracking-wide text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
               >
                 {item.name}
               </Button>
@@ -162,7 +162,7 @@ const Navigation = () => {
                 size="sm"
                 onClick={() => handleNavClick(item.path)}
                 aria-current={isActive ? 'page' : undefined}
-                className={`w-full justify-start text-left font-industrial tracking-tight text-foreground transition-all duration-200 hover:scale-105 py-2 px-2 break-words hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
+                className={`w-full justify-start text-left font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 px-2 break-words hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
               >
                 {item.name}
               </Button>
