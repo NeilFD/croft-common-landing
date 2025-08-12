@@ -211,17 +211,6 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            {showGestureIndicator && (
-              <div className="relative">
-                <img
-                  src="/lovable-uploads/6dd9122c-afc7-40b6-9cb4-48b5c1f0a84d.png"
-                  alt="Secret 7 gesture available"
-                  loading="lazy"
-                  className="w-6 h-6 opacity-80"
-                  title="Secret 7 gesture available"
-                />
-              </div>
-            )}
             <GuideArrows contrast="neutral" />
             <button
               onClick={onClose}
@@ -235,9 +224,21 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         </div>
 
         {/* Scrollable Content */}
-        <div className={`overflow-y-auto p-6 ${
+        <div className={`overflow-y-auto p-6 relative ${
           pageType === 'community' || pageType === 'common-room' ? 'max-h-[calc(90vh-120px)]' : 'max-h-[calc(95vh-120px)]'
         }`}>
+          {/* Secret gesture indicator in top-right corner of content */}
+          {showGestureIndicator && (
+            <div className="absolute top-4 right-4 z-10">
+              <img
+                src="/lovable-uploads/6dd9122c-afc7-40b6-9cb4-48b5c1f0a84d.png"
+                alt="Secret 7 gesture available"
+                loading="lazy"
+                className="w-6 h-6 opacity-60 hover:opacity-100 transition-opacity"
+                title="Secret 7 gesture available"
+              />
+            </div>
+          )}
           {false ? (
             <div></div>
           ) : (
