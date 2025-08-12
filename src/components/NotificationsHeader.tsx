@@ -6,7 +6,7 @@ const NotificationsHeader = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-charcoal">
       <div className="container mx-auto px-6 py-6 flex justify-center items-center">
-        <div className="flex items-center space-x-6">
+        <Link to="/" className="flex items-center space-x-6 hover:opacity-80 transition-opacity">
           <CroftLogo 
             size="lg"
             className="w-16 h-16"
@@ -14,7 +14,7 @@ const NotificationsHeader = () => {
           <div className="font-brutalist text-4xl text-foreground tracking-tight">
             CROFT COMMON
           </div>
-        </div>
+        </Link>
         
         <div className="absolute right-6">
           <Button asChild variant="frameNeutral" shape="pill" size="lg">
