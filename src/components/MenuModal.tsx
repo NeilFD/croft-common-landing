@@ -80,10 +80,11 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     return { x: 0, y: 0 };
   }, []);
   
-  // Enable secret gesture for cafe, beer, kitchens, community (to open Common Good Fund), hall, and common-room
-  const isSecretEnabled = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails';
+  // Detect if this is the standalone home menu (no gestures here)
+  const isHomeMenu = menuData.length > 0 && menuData[0].title === 'CROFT COMMON';
+  // Enable secret gesture for specific pages only (NEVER for the standalone home menu)
+  const isSecretEnabled = !isHomeMenu && (pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails');
   const showGestureIndicator = isSecretEnabled;
-
   // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
