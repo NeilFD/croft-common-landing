@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { BRAND_LOGO } from "@/data/brand";
+import OptimizedImage from "./OptimizedImage";
 import fallbackLogo from "@/assets/croft-logo.png";
 
 interface CroftLogoProps {
@@ -15,7 +16,7 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
   };
 
   return (
-    <img 
+    <OptimizedImage
       src={BRAND_LOGO}
       alt="Croft Common Logo"
       className={cn(
@@ -23,26 +24,9 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
         sizeClasses[size],
         className
       )}
-      onError={(e) => {
-        const img = e.currentTarget as HTMLImageElement;
-        // One immediate retry with SW bypass, then fallback
-        if (img.dataset.retried !== '1') {
-          img.dataset.retried = '1';
-          try {
-            const u = new URL(BRAND_LOGO, window.location.origin);
-            u.searchParams.set('sw-bypass', '1');
-            u.searchParams.set('ts', String(Date.now()));
-            img.src = u.pathname + u.search + u.hash;
-          } catch {
-            const sep = BRAND_LOGO.includes('?') ? '&' : '?';
-            img.src = `${BRAND_LOGO}${sep}sw-bypass=1&ts=${Date.now()}`;
-          }
-          return;
-        }
-        if (img.dataset.fallbacked === '1') return;
-        img.dataset.fallbacked = '1';
-        img.src = fallbackLogo;
-      }}
+      priority={size === 'lg'}
+      mobileOptimized={true}
+      sizes="(max-width: 768px) 50vw, 25vw"
     />
   );
 };

@@ -33,7 +33,10 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
       // Initialize loaded images with already preloaded URLs
       const alreadyLoaded = uniqueUrls.filter(url => preloadedUrls.has(url));
       if (alreadyLoaded.length > 0 && isMounted) {
-        setLoadedImages(new Set(alreadyLoaded));
+        // Use setTimeout to avoid setState during render
+        setTimeout(() => {
+          if (isMounted) setLoadedImages(new Set(alreadyLoaded));
+        }, 0);
       }
 
       const promises = urlsToLoad.map((url) => {
