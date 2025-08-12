@@ -27,7 +27,7 @@ import { supabase } from '@/integrations/supabase/client';
     const endpoint = (sub?.toJSON() as any)?.endpoint as string | undefined;
     const userId = user.user?.id;
     if (userId && endpoint) {
-      void supabase.functions.invoke("link-push-subscription", { body: { endpoint } });
+      void supabase.functions.invoke("auto-link-push-subscription", { body: { endpoint } });
     }
   } catch (e) {
     // non-fatal
