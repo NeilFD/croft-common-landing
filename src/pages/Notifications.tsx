@@ -88,22 +88,12 @@ export default function Notifications() {
             href="/book"
             className="inline-block bg-foreground text-background px-6 py-3 font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200"
           >
-            BOOK A TABLE
-          </a>
-          <a
-            href="https://www.croftcommon.com/book"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline text-foreground hover:text-accent-pink transition-colors duration-200"
-          >
-            Open booking in new tab
+            BOOK
           </a>
         </div>
-        {!loading && !firstName && (
-          <p className="text-sm text-muted-foreground mt-6">
-            P.S. We couldn't personalise this message — but we'd still love to see you!
-          </p>
-        )}
+        <p className="mt-8 text-right font-industrial text-base">
+          - Croft Common
+        </p>
       </PersonalizedMessageBox>
     </NotificationsPageLayout>
   );
