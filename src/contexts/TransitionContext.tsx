@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CroftLogo from '@/components/CroftLogo';
 import { preloadImages } from '@/hooks/useImagePreloader';
 
@@ -61,7 +61,9 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const navigateAndReset = () => {
-      navigate(targetPath);
+      if (targetPath) {
+        navigate(targetPath);
+      }
       // Immediately hide overlay to avoid extra black screen
       setIsTransitioning(false);
       setTargetPath('');
@@ -111,6 +113,20 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     };
   }, [isTransitioning, navigate, targetPath]);
 
+  // Intro on first visit to home (per tab/session)
+  const location = useLocation();
+  useEffect(() => {
+    try {
+      const played = sessionStorage.getItem('introPlayed') === '1';
+      if (location.pathname === '/' && !played && !isTransitioning) {
+        // Start intro without navigation
+        setTargetPath('');
+        setIsTransitioning(true);
+        sessionStorage.setItem('introPlayed', '1');
+      }
+    } catch {}
+  }, [location.pathname, isTransitioning]);
+
   return (
     <TransitionContext.Provider value={{ isTransitioning, triggerTransition }}>
       {children}
@@ -118,7 +134,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         className={`fixed inset-0 z-[99999] bg-void transition-opacity duration-100 ${
           isTransitioning ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ transformOrigin: 'center center' }}
+        style={{ transformOrigin: 'center center', willChange: 'opacity, transform' }}
       >
         {/* Texture strobe layer */}
         <img

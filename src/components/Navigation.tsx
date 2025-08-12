@@ -3,11 +3,12 @@ import { useTransition } from '@/contexts/TransitionContext';
 import { preloadImages } from '@/hooks/useImagePreloader';
 import { UserMenu } from './UserMenu';
 import { Menu, X } from 'lucide-react';
-
+import { useNavigate } from 'react-router-dom';
 
 const Navigation = () => {
   const { triggerTransition } = useTransition();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
   
   const navItems = [
     { name: 'CAFE', path: '/cafe' },
@@ -60,9 +61,15 @@ const Navigation = () => {
     }
   };
 
-  const handleNavClick = (path: string) => {
+const handleNavClick = (path: string) => {
     setIsMobileMenuOpen(false); // Close mobile menu
-    triggerTransition(path);
+    if (path === '/') {
+      // Only play transition when going home
+      triggerTransition('/');
+    } else {
+      // Navigate instantly for other routes
+      navigate(path);
+    }
   };
 
   const toggleMobileMenu = () => {
