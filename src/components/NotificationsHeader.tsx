@@ -17,10 +17,10 @@ const NotificationsHeader = () => {
         </div>
         
         <div className="absolute right-6">
-          <Button asChild variant="frameNeutral" shape="pill" size="sm">
+          <Button asChild variant="frameNeutral" shape="pill" size="lg">
             <Link 
               to="/book" 
-              className="h-8 px-4 text-sm font-industrial tracking-wide text-charcoal hover:border-accent-pink"
+              className="h-12 px-8 text-lg font-industrial tracking-wide text-charcoal hover:border-accent-pink"
             >
               BOOK
             </Link>
