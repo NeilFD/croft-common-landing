@@ -68,8 +68,8 @@ const BeerHeroCarousel = () => {
       </div>
 
       {/* Page Title Overlay */}
-      <div className="absolute top-24 left-[106px] z-20">
-        <h1 className="text-3xl font-light text-background tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-pink))] cursor-pointer">
+      <div className="absolute top-28 left-[106px] z-20">
+        <h1 className="inline-block px-3 py-1 border-2 border-foreground/90 text-foreground bg-background/10 rounded-lg text-3xl font-light tracking-[0.2em] uppercase transition-all duration-300 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))] cursor-pointer">
           BEER
         </h1>
       </div>
