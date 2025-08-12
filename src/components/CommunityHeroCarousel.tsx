@@ -7,7 +7,7 @@ import { communityMenuData } from '@/data/menuData';
 import { communityHeroImages as heroImages } from '@/data/heroImages';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import OptimizedImage from './OptimizedImage';
-import { BRAND_LOGO } from '@/data/brand';
+import CroftLogo from './CroftLogo';
 
 const CommunityHeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -88,13 +88,8 @@ const CommunityHeroCarousel = () => {
 
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
-        <img 
-          src={BRAND_LOGO}
-          alt="Croft Common Watermark"
-          className="w-[25rem] h-[25rem] sm:w-[27.5rem] sm:h-[27.5rem] md:w-[30rem] md:h-[30rem] lg:w-[32.5rem] lg:h-[32.5rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
-          style={{ 
-            filter: 'invert(1)'
-          }}
+        <CroftLogo
+          className="w-[25rem] h-[25rem] sm:w-[27.5rem] sm:h-[27.5rem] md:w-[30rem] md:h-[30rem] lg:w-[32.5rem] lg:h-[32.5rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
         />
       </div>
 

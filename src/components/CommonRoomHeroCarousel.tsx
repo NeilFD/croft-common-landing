@@ -2,7 +2,7 @@ import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 import { commonRoomHeroImages } from '@/data/heroImages';
 import { commonRoomMenuData } from '@/data/menuData';
-import { BRAND_LOGO } from '@/data/brand';
+import CroftLogo from './CroftLogo';
 
 const CommonRoomHeroCarousel = () => {
   return (
@@ -17,13 +17,8 @@ const CommonRoomHeroCarousel = () => {
 
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
-        <img 
-          src={BRAND_LOGO}
-          alt="Common Room Watermark"
-          className="w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer"
-          style={{ 
-            filter: 'invert(1)'
-          }}
+        <CroftLogo
+          className="w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
         />
       </div>
 
