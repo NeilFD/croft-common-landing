@@ -48,11 +48,11 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   // Transition timing constants
   const STROBE_TOGGLE_MS = 166; // 3Hz max (toggle interval ~166ms; full cycle ~333ms)
   const STROBE_DURATION_MS = 500; // single short strobe window
-  const LOGO_DISPLAY_MS = 200; // single logo display duration
+  const LOGO_DISPLAY_MS = 900; // show logo long enough to see
 
   // Soft transition timing
-  const SOFT_LOGO_INTRO_MS = 300; // brief logo focus
-  const SOFT_FADE_TO_IMAGE_MS = 1400; // crossfade duration to image
+  const SOFT_LOGO_INTRO_MS = 900; // show logo long enough to see
+  const SOFT_FADE_TO_IMAGE_MS = 1400; // crossfade duration to image (unused now)
   const SOFT_EXTRA_HOLD_MS = 200; // hold before hiding overlay
 
   // Overlay/reveal timing
@@ -227,19 +227,6 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
           }`}
           draggable={false}
         />
-
-        {/* Soft transition preview image */}
-        {previewSrc && (
-          <img
-            src={previewSrc}
-            alt="Section preview"
-            className={`absolute inset-0 w-full h-full object-cover select-none transition-opacity duration-[1600ms] ${
-              phase === 'soft-image' ? 'opacity-100' : 'opacity-0'
-            }`}
-            loading="eager"
-            draggable={false}
-          />
-        )}
 
         {/* Centered logo */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
