@@ -53,11 +53,11 @@ const Footer = ({
             <h4 className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90">
               CONTACT
             </h4>
-            <div className="flex flex-col md:flex-row md:space-x-3 space-y-3 md:space-y-0 text-sm font-industrial">
-              <a href="mailto:hello@croftcommon.co.uk" className="inline-block border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
+            <div className="flex flex-col md:flex-row md:gap-3 gap-3 text-sm font-industrial">
+              <a href="mailto:hello@croftcommon.co.uk" className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
                 hello@croftcommon.co.uk
               </a>
-              <a href="tel:0117xxxxxxx" className="inline-block border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
+              <a href="tel:0117xxxxxxx" className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
                 0117 xxx xxxx
               </a>
             </div>
