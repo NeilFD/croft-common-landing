@@ -107,27 +107,12 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       }
 
       setPhase('soft-logo');
-      // Move to image and navigate shortly after
-      const toImageAndNavigate = window.setTimeout(() => {
-        setPhase('soft-image');
-        if (targetPath) navigate(targetPath);
-
-        // Start revealing underlying page after a brief layout settle
-        const startReveal = window.setTimeout(() => {
-          setOverlayVisible(false);
-        }, REVEAL_AFTER_NAV_MS);
-        timersRef.current.push(startReveal);
-
-        // Finalize after overlay fade-out completes
-        const finalize = window.setTimeout(() => {
-          setIsTransitioning(false);
-          setTargetPath('');
-          setPhase('idle');
-        }, REVEAL_AFTER_NAV_MS + OVERLAY_FADE_OUT_MS);
-        timersRef.current.push(finalize);
+      // After logo hold, navigate and fade overlay out
+      const toNav = window.setTimeout(() => {
+        navigateAndReset();
       }, SOFT_LOGO_INTRO_MS);
 
-      timersRef.current.push(toImageAndNavigate);
+      timersRef.current.push(toNav);
       return () => {
         timersRef.current.forEach(clearTimeout);
         timersRef.current = [];
@@ -228,17 +213,27 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
           draggable={false}
         />
 
-        {/* Centered logo */}
+        {/* Centered logo + title */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <CroftLogo
-            className={`w-[30rem] h-[30rem] md:w-[25rem] md:h-[25rem] lg:w-[20rem] lg:h-[20rem] transition-all ${
-              phase === 'soft-logo' || phase === 'logo' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-            } ${
-              phase === 'soft-logo'
-                ? 'invert brightness-200 drop-shadow-[0_0_3rem_hsl(var(--foreground)/0.9)]'
-                : 'invert brightness-110'
-            } duration-200`}
-          />
+          <div className="flex flex-col items-center gap-6">
+            <CroftLogo
+              className={`w-[18rem] h-[18rem] md:w-[20rem] md:h-[20rem] lg:w-[22rem] lg:h-[22rem] transition-all duration-300 ${
+                phase === 'soft-logo' || phase === 'logo' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+              } ${
+                phase === 'soft-logo'
+                  ? 'invert brightness-200 drop-shadow-[0_0_3rem_hsl(var(--foreground)/0.9)]'
+                  : 'invert brightness-110'
+              }`}
+            />
+            <div
+              className={`font-brutalist text-2xl md:text-3xl lg:text-4xl tracking-wider text-foreground transition-opacity duration-300 ${
+                phase === 'soft-logo' || phase === 'logo' ? 'opacity-100' : 'opacity-0'
+              }`}
+              aria-hidden="true"
+            >
+              CROFT COMMON
+            </div>
+          </div>
         </div>
       </div>
     </TransitionContext.Provider>
