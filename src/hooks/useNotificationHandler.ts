@@ -40,44 +40,54 @@ export const useNotificationHandler = () => {
           // Silent fail for storage issues
         }
 
-        // Listen for banner messages from service worker
-        const handleServiceWorkerMessage = (event: MessageEvent) => {
-          console.log('🔔 App: Received message from SW:', event.data);
-          if (event.data?.type === 'SHOW_BANNER') {
-            const bannerData = event.data.data;
-            console.log('🔔 App: Showing banner with data:', bannerData);
-            showBanner({
-              title: bannerData.title || 'Notification',
-              body: bannerData.bannerMessage || bannerData.body || '',
-              bannerMessage: bannerData.bannerMessage,
-              url: bannerData.url,
-              icon: bannerData.icon,
-              notificationId: bannerData.notificationId || bannerData.notification_id,
-              clickToken: bannerData.clickToken || bannerData.click_token
-            });
-          }
-        };
-
-        navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
-
-        // Cleanup listener on unmount
-        return () => {
-          navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
-        };
-
-        // Clean URL of notification parameters after tracking
-        const newSearchParams = new URLSearchParams(searchParams);
-        newSearchParams.delete('ntk');
-        newSearchParams.delete('user');
-        
-        const newUrl = `${location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}${location.hash}`;
-        window.history.replaceState({}, '', newUrl);
-        
       } catch (error) {
         console.warn('[NotificationHandler] Error processing notification:', error);
       }
     };
 
     handleNotificationTracking();
+  }, [location.pathname, searchParams]);
+
+  // Separate useEffect for service worker message listener to avoid cleanup issues
+  useEffect(() => {
+    const handleServiceWorkerMessage = (event: MessageEvent) => {
+      console.log('🔔 App: Received message from SW:', event.data);
+      if (event.data?.type === 'SHOW_BANNER') {
+        const bannerData = event.data.data;
+        console.log('🔔 App: Showing banner with data:', bannerData);
+        showBanner({
+          title: bannerData.title || 'Notification',
+          body: bannerData.bannerMessage || bannerData.body || '',
+          bannerMessage: bannerData.bannerMessage,
+          url: bannerData.url,
+          icon: bannerData.icon,
+          notificationId: bannerData.notificationId,
+          clickToken: bannerData.clickToken
+        });
+      }
+    };
+
+    // Add listener
+    navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
+
+    // Cleanup on unmount
+    return () => {
+      navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
+    };
+  }, [showBanner]);
+
+  // Clean URL of notification parameters after handling
+  useEffect(() => {
+    const token = searchParams.get('ntk');
+    const userId = searchParams.get('user');
+    
+    if (token || userId) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.delete('ntk');
+      newSearchParams.delete('user');
+      
+      const newUrl = `${location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}${location.hash}`;
+      window.history.replaceState({}, '', newUrl);
+    }
   }, [location.pathname, searchParams]);
 };

@@ -182,54 +182,70 @@ self.addEventListener('notificationclick', (event) => {
       displayMode,
       appOrigin,
       totalClients: allClients.length,
-      clients: allClients.map(c => ({ url: c.url, visibility: c.visibilityState }))
+      clients: allClients.map(c => ({ url: c.url, visibility: c.visibilityState, focused: c.focused }))
     });
 
-    const isAppOpen = allClients.some(client => 
-      client.url.startsWith(appOrigin) && client.visibilityState === 'visible'
+    // Check for app clients (focused or visible)
+    const appClients = allClients.filter(client => client.url.startsWith(appOrigin));
+    const visibleAppClients = appClients.filter(client => 
+      client.visibilityState === 'visible' || client.focused
     );
 
-    console.log('🔔 SW: App open status:', isAppOpen);
+    console.log('🔔 SW: App open status:', {
+      appClients: appClients.length,
+      visibleAppClients: visibleAppClients.length,
+      shouldShowBanner: visibleAppClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')
+    });
 
-    if (isAppOpen && (displayMode === 'banner' || displayMode === 'both')) {
+    if (visibleAppClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')) {
       console.log('🔔 SW: Showing banner to open app');
       // Send banner data to the main app
       try {
-        for (const client of allClients) {
-          if (client.url.startsWith(appOrigin)) {
-            const bannerData = {
-              type: 'SHOW_BANNER',
-              data: {
-                title: event?.notification?.title || 'Notification',
-                body: notificationData.banner_message || event?.notification?.body || 'Notification content',
-                bannerMessage: notificationData.banner_message,
-                url: targetUrl,
-                icon: notificationData.icon,
-                notificationId: notificationData.notification_id,
-                clickToken: notificationData.click_token
-              }
-            };
-            console.log('🔔 SW: Posting banner message to client:', bannerData);
-            client.postMessage(bannerData);
+        const bannerData = {
+          type: 'SHOW_BANNER',
+          data: {
+            title: event?.notification?.title || 'Notification',
+            body: notificationData.banner_message || event?.notification?.body || 'Notification content',
+            bannerMessage: notificationData.banner_message,
+            url: targetUrl,
+            icon: notificationData.icon || event?.notification?.icon,
+            notificationId: notificationData.notification_id,
+            clickToken: notificationData.click_token
           }
+        };
+        console.log('🔔 SW: Posting banner message to clients:', bannerData);
+        
+        // Send to all visible app clients
+        for (const client of visibleAppClients) {
+          console.log('🔔 SW: Sending banner to client:', client.url);
+          client.postMessage(bannerData);
         }
-        // Focus the existing window
-        if (allClients.length > 0) {
-          await allClients[0].focus();
-        }
+        
+        // Focus the most recent client
+        await visibleAppClients[0].focus();
+        return; // Don't open new window
       } catch (err) {
         console.warn('🔔 SW: Failed to show banner, falling back to navigation:', err);
-        await self.clients.openWindow(targetUrl);
       }
-    } else {
-      console.log('🔔 SW: Opening new window to:', targetUrl);
-      // Always open a new browser window for navigation mode or when app is closed
+    }
+
+    // Navigation mode or fallback - always open the target URL
+    console.log('🔔 SW: Opening new window to:', targetUrl);
+    try {
+      const windowClient = await self.clients.openWindow(targetUrl);
+      if (windowClient) {
+        console.log('🔔 SW: Successfully opened window to:', targetUrl);
+        await windowClient.focus();
+      } else {
+        console.warn('🔔 SW: Failed to open window, no client returned');
+      }
+    } catch (e) {
+      console.warn('🔔 SW: Failed to open target URL:', e);
+      // Don't fall back to root - let the browser handle it
       try {
-        await self.clients.openWindow(targetUrl);
-      } catch (e) {
-        console.warn('🔔 SW: Failed to open target URL, falling back to root:', e);
-        // Fallback: open root if specific URL fails
         await self.clients.openWindow('/');
+      } catch (fallbackError) {
+        console.error('🔔 SW: Even fallback failed:', fallbackError);
       }
     }
   })());
