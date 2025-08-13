@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
-import { RouterBridge } from "@/components/RouterBridge";
+
 import Index from "./pages/Index";
 import Cafe from "./pages/Cafe";
 import Cocktails from "./pages/Cocktails";
@@ -71,7 +71,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <RouterBridge />
+        
         <LowercasePathGuard />
         <RouteImagePreloader />
         <TransitionProvider>

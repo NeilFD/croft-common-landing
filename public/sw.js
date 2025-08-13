@@ -104,31 +104,6 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
-// Utility: persist deep link for the page to pick up after resume
-async function saveDeepLink(url) {
-  try {
-    const cache = await caches.open('cc-deeplink');
-    await cache.put('/__deeplink__', new Response(JSON.stringify({
-      url,
-      ts: Date.now()
-    }), { headers: { 'Content-Type': 'application/json' } }));
-  } catch (e) {
-    // ignore
-  }
-}
-
-// Utility: broadcast to any live pages (best effort)
-function broadcastDeepLink(url) {
-  // BroadcastChannel may not exist in all SWs
-  try {
-    // @ts-ignore
-    const bc = new BroadcastChannel('cc-deeplink');
-    bc.postMessage({ url });
-    // Safari may require close
-    bc.close && bc.close();
-  } catch (e) { /* ignore */ }
-}
-
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
@@ -182,23 +157,11 @@ self.addEventListener('notificationclick', (event) => {
       }
     }
 
-    await saveDeepLink(targetUrl);
-    broadcastDeepLink(targetUrl);
-
-    const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-    // Prefer a same-origin client within our scope
-    const candidate = allClients.find(c => new URL(c.url).origin === self.location.origin);
-
-    if (candidate) {
-      try { await candidate.focus(); } catch (e) { /* ignore */ }
-      // Also try a direct message for good measure
-      try { candidate.postMessage({ type: 'OPEN_URL', url: targetUrl }); } catch (e) { /* ignore */ }
-      return;
-    }
-
-    // No client open, open a fresh one – this path works when app is closed
-    try { await self.clients.openWindow(targetUrl); } catch (e) {
-      // Fallback: at least open root so app can pick up the saved link on load
+    // Always open a new browser window, regardless of existing PWA clients
+    try {
+      await self.clients.openWindow(targetUrl);
+    } catch (e) {
+      // Fallback: open root if specific URL fails
       await self.clients.openWindow('/');
     }
   })());
