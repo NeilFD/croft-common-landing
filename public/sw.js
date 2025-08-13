@@ -16,7 +16,7 @@ self.addEventListener('activate', (event) => {
   // Take control and clean old caches
   event.waitUntil((async () => {
     await self.clients.claim();
-    const keep = new Set([IMAGE_CACHE, ASSET_CACHE]);
+    const keep = new Set([IMAGE_CACHE, ASSET_CACHE, NAV_CACHE]);
     const keys = await caches.keys();
     await Promise.all(keys.map((k) => keep.has(k) ? null : caches.delete(k)));
   })());
@@ -189,8 +189,13 @@ self.addEventListener('notificationclick', (event) => {
         ));
       } catch (_e) {}
 
+      let bc = null;
+      try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_e) {}
       // Notify existing clients to force navigation on the main thread (rebroadcast a few times)
       const broadcast = () => {
+        // Broadcast via BroadcastChannel (more reliable on iOS)
+        try { bc && bc.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
+        // And via direct postMessage to all clients
         for (const c of allClients) {
           try { c.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
         }
@@ -202,7 +207,9 @@ self.addEventListener('notificationclick', (event) => {
         broadcast();
         await delay(1000);
         broadcast();
-      } catch (_e) {}
+      } catch (_e) {} finally {
+        try { bc && bc.close(); } catch (_) {}
+      }
 
 
       // Fallback: try navigating an existing same-origin tab

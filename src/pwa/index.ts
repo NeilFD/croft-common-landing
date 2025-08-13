@@ -52,12 +52,42 @@ if ('serviceWorker' in navigator && !(window as any).__swNavigateListenerAdded) 
   });
 }
 
+// Also listen via BroadcastChannel for more reliable delivery on iOS
+if ('BroadcastChannel' in window && !(window as any).__navBcAdded) {
+  (window as any).__navBcAdded = true;
+  try {
+    const bc = new BroadcastChannel('nav-handoff-v1');
+    bc.addEventListener('message', async (event) => {
+      const data = (event as MessageEvent).data as any;
+      if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
+        try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
+        await consumeNavIntent();
+      }
+    });
+  } catch (_) {}
+}
+
+// Short burst polling on resume to catch intents even if focus/visibility events are flaky
+let __burstTimer: number | null = null;
+async function burstConsume(durationMs = 2000, intervalMs = 150) {
+  const start = Date.now();
+  if (__burstTimer) { clearInterval(__burstTimer); __burstTimer = null; }
+  __burstTimer = window.setInterval(async () => {
+    const consumed = await consumeNavIntent();
+    if (consumed || Date.now() - start > durationMs) {
+      if (__burstTimer) { clearInterval(__burstTimer); __burstTimer = null; }
+    }
+  }, intervalMs);
+  // Try once immediately as well
+  void consumeNavIntent();
+}
+
 // Consume any pending nav intent immediately on load and when app becomes visible/focused
 void consumeNavIntent();
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') void consumeNavIntent();
+  if (document.visibilityState === 'visible') burstConsume();
 });
-window.addEventListener('focus', () => { void consumeNavIntent(); });
+window.addEventListener('focus', () => { burstConsume(); });
 
 // Boot the PWA layer: register SW and mount overlay UI when appropriate
 (async () => {
