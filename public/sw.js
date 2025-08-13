@@ -130,15 +130,20 @@ self.addEventListener('notificationclick', (event) => {
 
   // Append tracking token and normalize same-origin path casing
   try {
-    const u = new URL(targetUrl);
-    if (u.origin === self.location.origin) {
-      u.pathname = u.pathname.toLowerCase();
+    const u = new URL(targetUrl, self.location.origin);
+    // Always ensure we use the notifications route for consistency
+    if (u.origin === self.location.origin && u.pathname !== '/notifications') {
+      u.pathname = '/notifications';
     }
+    u.pathname = u.pathname.toLowerCase();
     if (clickToken) {
       u.searchParams.set('ntk', clickToken);
     }
     targetUrl = u.toString();
-  } catch (_e) {}
+  } catch (_e) {
+    // Fallback to notifications page with token
+    targetUrl = `/notifications${clickToken ? `?ntk=${clickToken}` : ''}`;
+  }
 
   event.waitUntil((async () => {
     // Fire-and-forget tracking of the click

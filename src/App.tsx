@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
+import { useNotificationHandler } from "@/hooks/useNotificationHandler";
 
 import Index from "./pages/Index";
 import Cafe from "./pages/Cafe";
@@ -33,6 +34,10 @@ const queryClient = new QueryClient();
 const LowercasePathGuard = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  
+  // Handle notification deep links universally
+  useNotificationHandler();
+  
   const allowedRoots = new Set([
      "", // homepage
      "cafe",

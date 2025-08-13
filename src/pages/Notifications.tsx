@@ -33,13 +33,21 @@ export default function Notifications() {
 
   const token = useMemo(() => {
     const fromUrl = search.get('ntk');
-    if (fromUrl) return fromUrl;
+    if (fromUrl) {
+      // Store in session for future reference
+      try {
+        sessionStorage.setItem('notifications.last_ntk', fromUrl);
+      } catch {}
+      return fromUrl;
+    }
     try {
       return sessionStorage.getItem('notifications.last_ntk');
     } catch {
       return null;
     }
   }, [search]);
+
+  const userId = useMemo(() => search.get('user'), [search]);
 
   useEffect(() => {
     setMeta({
@@ -57,8 +65,22 @@ export default function Notifications() {
         return;
       }
       try {
+        // Track notification click
+        const { error: trackError } = await supabase.functions.invoke('track-notification-event', {
+          body: { 
+            type: 'notification_open', 
+            token, 
+            url: window.location.href,
+            user_id: userId 
+          },
+        });
+        if (trackError) {
+          console.warn('[Notifications] track error', trackError);
+        }
+
+        // Get personalization data
         const { data, error } = await supabase.functions.invoke('resolve-notification-personalization', {
-          body: { token, url: window.location.href },
+          body: { token, url: window.location.href, user_id: userId },
         });
         if (error) {
           console.warn('[Notifications] resolve error', error);
@@ -75,7 +97,7 @@ export default function Notifications() {
     return () => {
       active = false;
     };
-  }, [token]);
+  }, [token, userId]);
 
   return (
     <NotificationsPageLayout>

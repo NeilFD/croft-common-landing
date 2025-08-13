@@ -267,14 +267,15 @@ serve(async (req) => {
       const personalizedTitle = renderTemplate(payload!.title, { first_name: first });
       const personalizedBody = renderTemplate(payload!.body, { first_name: first });
       
-      // Add click token to URL for personalized landing page
-      const urlWithToken = `${payload!.url}?ntk=${clickToken}`;
+      // Generate valid notification URL - always use /notifications route
+      const baseUrl = payload!.url || "https://croftcommontest.com/notifications";
+      const notificationUrl = `/notifications?ntk=${clickToken}${(s as any).user_id ? `&user=${(s as any).user_id}` : ''}`;
       
       const payloadForSub = { 
         ...(payload as any), 
         title: personalizedTitle, 
         body: personalizedBody, 
-        url: urlWithToken,
+        url: notificationUrl,
         click_token: clickToken, 
         notification_id: notificationId 
       };
