@@ -174,10 +174,11 @@ self.addEventListener('notificationclick', (event) => {
         } catch (_e) {}
       }
 
-      // Fallback: open a new window if none navigated
+      // Fallback: open a bounce page that immediately redirects (more reliable)
       if (!navigated) {
         try {
-          const opened = await self.clients.openWindow(targetUrl);
+          const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
+          const opened = await self.clients.openWindow(bounceUrl);
           try {
             if (opened && 'focus' in opened) { await opened.focus(); }
           } catch (_) {}

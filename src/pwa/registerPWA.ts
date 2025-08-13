@@ -25,12 +25,10 @@ export function isIosSafari(): boolean {
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) return null;
   try {
-    // Use mobile-optimized service worker on mobile devices
-    const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    const swPath = isMobile ? '/sw-mobile.js' : '/sw.js';
-    
+    // Always use the unified service worker to keep logic consistent across devices
+    const swPath = '/sw.js';
     const reg = await navigator.serviceWorker.register(swPath);
-    console.log(`✅ Service worker registered (${isMobile ? 'mobile' : 'desktop'}):`, reg.scope);
+    console.log(`✅ Service worker registered (unified):`, reg.scope);
     return reg;
   } catch (e) {
     console.error('Service worker registration failed:', e);

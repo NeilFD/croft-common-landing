@@ -229,44 +229,50 @@ self.addEventListener('notificationclick', (event) => {
       ));
     } catch (_) {}
 
-    // Try opening a new window first (iOS-friendly)
-    try {
-      const opened = await clients.openWindow(targetUrl);
-      try { if (opened && 'focus' in opened) { await opened.focus(); } } catch (_) {}
-      // continue regardless; we'll also notify existing clients
-    } catch (_) {}
-
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
 
-    // Broadcast SW_NAVIGATE to all clients, multiple times to catch late listeners
+    // Try navigating existing clients first (best chance on iOS)
+    let navigated = false;
+    for (const client of clientList) {
+      try {
+        if ('navigate' in client) {
+          await client.navigate(targetUrl);
+          navigated = true;
+          try { if ('focus' in client) await client.focus(); } catch (_) {}
+        }
+      } catch (_) {}
+    }
+
+    // If none navigated, open a bounce page that immediately redirects
+    if (!navigated) {
+      try {
+        const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
+        const opened = await clients.openWindow(bounceUrl);
+        try { if (opened && 'focus' in opened) await opened.focus(); } catch (_) {}
+      } catch (_) {}
+    }
+
+    // Broadcast navigation intent via BroadcastChannel and direct postMessage
+    let bc = null;
+    try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_) {}
     const broadcast = () => {
+      try { bc && bc.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
       for (const client of clientList) {
         try { client.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
       }
     };
     const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-    if (clientList.length > 0) {
-      // Attempt to navigate each same-origin client
-      for (const client of clientList) {
-        try {
-          if (client.url && client.url.startsWith(self.location.origin) && 'navigate' in client) {
-            await client.navigate(targetUrl);
-          }
-        } catch (_) {}
-      }
-      try {
-        broadcast();
-        await delay(200);
-        broadcast();
-        await delay(1000);
-        broadcast();
-      } catch (_) {}
-      try { await clientList[0].focus(); } catch (_) {}
-      return;
+    try {
+      broadcast();
+      await delay(200);
+      broadcast();
+      await delay(1000);
+      broadcast();
+    } catch (_) {} finally {
+      try { bc && bc.close(); } catch (_) {}
     }
 
-    // Last resort
+    // Last resort: try to open target directly
     try { await clients.openWindow(targetUrl); } catch (_) {}
   })());
 });
