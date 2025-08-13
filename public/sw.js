@@ -151,6 +151,12 @@ self.addEventListener('notificationclick', (event) => {
   }
 
   event.waitUntil((async () => {
+    console.log('🔔 SW: Notification clicked', {
+      targetUrl,
+      clickToken,
+      notificationData
+    });
+
     // Fire-and-forget tracking of the click
     if (clickToken) {
       try {
@@ -168,19 +174,30 @@ self.addEventListener('notificationclick', (event) => {
     }
 
     // Check if we should show banner (if PWA is already open and display_mode includes banner)
-    const displayMode = notificationData.display_mode;
+    const displayMode = notificationData.display_mode || 'navigation';
     const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     const appOrigin = self.location.origin;
+    
+    console.log('🔔 SW: Client analysis', {
+      displayMode,
+      appOrigin,
+      totalClients: allClients.length,
+      clients: allClients.map(c => ({ url: c.url, visibility: c.visibilityState }))
+    });
+
     const isAppOpen = allClients.some(client => 
       client.url.startsWith(appOrigin) && client.visibilityState === 'visible'
     );
 
+    console.log('🔔 SW: App open status:', isAppOpen);
+
     if (isAppOpen && (displayMode === 'banner' || displayMode === 'both')) {
+      console.log('🔔 SW: Showing banner to open app');
       // Send banner data to the main app
       try {
         for (const client of allClients) {
           if (client.url.startsWith(appOrigin)) {
-            client.postMessage({
+            const bannerData = {
               type: 'SHOW_BANNER',
               data: {
                 title: event?.notification?.title || 'Notification',
@@ -191,7 +208,9 @@ self.addEventListener('notificationclick', (event) => {
                 notification_id: notificationData.notification_id,
                 click_token: notificationData.click_token
               }
-            });
+            };
+            console.log('🔔 SW: Posting banner message to client:', bannerData);
+            client.postMessage(bannerData);
           }
         }
         // Focus the existing window
@@ -199,14 +218,16 @@ self.addEventListener('notificationclick', (event) => {
           await allClients[0].focus();
         }
       } catch (err) {
-        console.warn('Failed to show banner, falling back to navigation:', err);
+        console.warn('🔔 SW: Failed to show banner, falling back to navigation:', err);
         await self.clients.openWindow(targetUrl);
       }
     } else {
+      console.log('🔔 SW: Opening new window to:', targetUrl);
       // Always open a new browser window for navigation mode or when app is closed
       try {
         await self.clients.openWindow(targetUrl);
       } catch (e) {
+        console.warn('🔔 SW: Failed to open target URL, falling back to root:', e);
         // Fallback: open root if specific URL fails
         await self.clients.openWindow('/');
       }

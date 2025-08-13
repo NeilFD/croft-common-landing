@@ -34,6 +34,7 @@ export const BannerNotificationProvider: React.FC<BannerNotificationProviderProp
   const [currentBanner, setCurrentBanner] = useState<BannerNotificationData | null>(null);
 
   const showBanner = (data: BannerNotificationData) => {
+    console.log('🔔 Banner Context: Setting banner data:', data);
     setCurrentBanner(data);
   };
 

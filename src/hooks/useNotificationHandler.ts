@@ -42,8 +42,10 @@ export const useNotificationHandler = () => {
 
         // Listen for banner messages from service worker
         const handleServiceWorkerMessage = (event: MessageEvent) => {
+          console.log('🔔 App: Received message from SW:', event.data);
           if (event.data?.type === 'SHOW_BANNER') {
             const bannerData = event.data.data;
+            console.log('🔔 App: Showing banner with data:', bannerData);
             showBanner({
               title: bannerData.title || 'Notification',
               body: bannerData.body || '',
