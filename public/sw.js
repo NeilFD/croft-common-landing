@@ -162,22 +162,22 @@ self.addEventListener('notificationclick', (event) => {
 
       const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
 
-      // Check if we have focused PWA clients (not including bounce pages)
-      const pwaCLients = allClients.filter(client => {
+      // Check for PWA clients (more liberal detection for mobile)
+      const pwaClients = allClients.filter(client => {
         try {
           const url = new URL(client.url);
           return url.origin === self.location.origin && 
-                 !url.pathname.includes('/nav.html') &&
-                 client.focused;
+                 !url.pathname.includes('/nav.html');
         } catch (_) {
           return false;
         }
       });
 
-      const hasFocusedPWA = pwaCLients.length > 0;
+      // On mobile, focused detection is unreliable, so use any PWA client
+      const hasPWAOpen = pwaClients.length > 0;
 
-      // If PWA is already open and focused, skip bounce page and use overlay system
-      if (hasFocusedPWA) {
+      // If PWA is already open, skip bounce page and use overlay system
+      if (hasPWAOpen) {
         // Persist navigation intent for overlay system
         try {
           const cache = await caches.open(NAV_CACHE);
