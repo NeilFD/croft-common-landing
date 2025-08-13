@@ -89,10 +89,10 @@ const LowercasePathGuard = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <BannerNotificationProvider>
+      <BannerNotificationProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
           <LowercasePathGuard />
           <RouteImagePreloader />
           <BannerOverlay />
@@ -125,8 +125,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
             </Routes>
           </TransitionProvider>
-        </BannerNotificationProvider>
-      </BrowserRouter>
+        </BrowserRouter>
+      </BannerNotificationProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
