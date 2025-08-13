@@ -220,7 +220,7 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil((async () => {
     try {
       const opened = await clients.openWindow(targetUrl);
-      if (opened) return;
+      // do not return here; we'll also notify existing clients to force navigation on the main thread
     } catch (_) {
       // ignore
     }

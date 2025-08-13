@@ -163,14 +163,17 @@ self.addEventListener('notificationclick', (event) => {
       // Try exact match first
       const exact = allClients.find((c) => c.url === targetUrl);
       if (exact && 'focus' in exact) {
-        return exact.focus();
+        try { await exact.focus(); } catch (_e) {}
+        // continue to ensure navigation message is delivered
       }
 
       // Prefer opening a new window directly to ensure path is respected (iOS-friendly)
       try {
         const opened = await self.clients.openWindow(targetUrl);
-        if (opened && 'focus' in opened) return opened.focus();
-        if (opened) return;
+        try {
+          if (opened && 'focus' in opened) { await opened.focus(); }
+        } catch (_) {}
+        // do not return; we'll also broadcast SW_NAVIGATE so the page can force navigation
       } catch (_e) {
         // no-op
       }
