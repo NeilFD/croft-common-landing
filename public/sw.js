@@ -4,8 +4,6 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const IMAGE_CACHE = 'images-v3';
 const ASSET_CACHE = 'assets-swr-v3';
-const NAV_CACHE = 'sw-nav-v1';
-const NAV_INTENT_URL = '/__sw_nav_intent';
 
 self.addEventListener('install', (event) => {
   // Activate immediately on install
@@ -16,7 +14,7 @@ self.addEventListener('activate', (event) => {
   // Take control and clean old caches
   event.waitUntil((async () => {
     await self.clients.claim();
-    const keep = new Set([IMAGE_CACHE, ASSET_CACHE, NAV_CACHE]);
+    const keep = new Set([IMAGE_CACHE, ASSET_CACHE]);
     const keys = await caches.keys();
     await Promise.all(keys.map((k) => keep.has(k) ? null : caches.delete(k)));
   })());
@@ -160,104 +158,12 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
 
-      const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
-
-      // Check for PWA clients - they must be visibilityState 'visible' to count as open
-      const pwaClients = allClients.filter(client => {
-        try {
-          const url = new URL(client.url);
-          // Must be from our origin, not a bounce page, and actually visible
-          return url.origin === self.location.origin && 
-                 !url.pathname.includes('/nav.html') &&
-                 (client.visibilityState === 'visible' || client.focused);
-        } catch (_) {
-          return false;
-        }
-      });
-
-      const hasPWAOpen = pwaClients.length > 0;
-      console.log('[SW] notification click - allClients:', allClients.length, 'pwaClients:', pwaClients.length, 'hasPWAOpen:', hasPWAOpen);
-
-      // If PWA is already open, skip bounce page and use overlay system
-      if (hasPWAOpen) {
-        // Persist navigation intent for overlay system with expiration
-        try {
-          const cache = await caches.open(NAV_CACHE);
-          const navigationIntent = {
-            url: targetUrl,
-            timestamp: Date.now(),
-            ttl: 5 * 60 * 1000, // 5 minutes
-            clickToken
-          };
-          await cache.put(NAV_INTENT_URL, new Response(
-            JSON.stringify(navigationIntent),
-            { headers: { 'Content-Type': 'application/json' } }
-          ));
-        } catch (_e) {}
-
-        // Broadcast to existing clients to trigger overlay
-        let bc = null;
-        try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_e) {}
-        const broadcast = () => {
-          try { bc && bc.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
-          for (const c of allClients) {
-            try { c.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
-          }
-        };
-        
-        // Multiple broadcasts to ensure delivery
-        const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-        try {
-          broadcast();
-          await delay(100);
-          broadcast();
-          await delay(300);
-          broadcast();
-        } catch (_) {} finally {
-          try { bc && bc.close(); } catch (_) {}
-        }
-        
-        return;
-      }
-
-      // PWA not open or not focused - use bounce page (existing behavior)
+      // Always use bounce page - simpler and more reliable
       try {
         const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}&mode=new`;
         const opened = await self.clients.openWindow(bounceUrl);
         try { if (opened && 'focus' in opened) { await opened.focus(); } } catch (_) {}
       } catch (_) {}
-
-      // Persist navigation intent for durable handoff
-      try {
-        const cache = await caches.open(NAV_CACHE);
-        await cache.put(NAV_INTENT_URL, new Response(
-          JSON.stringify({ url: targetUrl, ts: Date.now(), clickToken }),
-          { headers: { 'Content-Type': 'application/json' } }
-        ));
-      } catch (_e) {}
-
-      // Broadcast to all existing clients as backup
-      let bc = null;
-      try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_e) {}
-      const broadcast = () => {
-        try { bc && bc.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
-        for (const c of allClients) {
-          try { c.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
-        }
-      };
-      const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-      try {
-        broadcast();
-        await delay(200);
-        broadcast();
-        await delay(1000);
-        broadcast();
-      } catch (_) {} finally {
-        try { bc && bc.close(); } catch (_) {}
-      }
-
-      // Done
-      return;
     })()
   );
 });
