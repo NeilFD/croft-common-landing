@@ -162,22 +162,29 @@ self.addEventListener('notificationclick', (event) => {
 
       const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
 
-      // Try exact match first
-      const exact = allClients.find((c) => c.url === targetUrl);
-      if (exact && 'focus' in exact) {
-        try { await exact.focus(); } catch (_e) {}
-        // continue to ensure navigation message is delivered
+      // Actively navigate any existing clients to the target URL (most reliable on iOS)
+      let navigated = false;
+      for (const c of allClients) {
+        try {
+          if ('navigate' in c) {
+            await c.navigate(targetUrl);
+            navigated = true;
+            if ('focus' in c) { try { await c.focus(); } catch (_) {} }
+          }
+        } catch (_e) {}
       }
 
-      // Prefer opening a new window directly to ensure path is respected (iOS-friendly)
-      try {
-        const opened = await self.clients.openWindow(targetUrl);
+      // Fallback: open a new window if none navigated
+      if (!navigated) {
         try {
-          if (opened && 'focus' in opened) { await opened.focus(); }
-        } catch (_) {}
-        // do not return; we'll also broadcast SW_NAVIGATE so the page can force navigation
-      } catch (_e) {
-        // no-op
+          const opened = await self.clients.openWindow(targetUrl);
+          try {
+            if (opened && 'focus' in opened) { await opened.focus(); }
+          } catch (_) {}
+          // do not return; we'll also broadcast SW_NAVIGATE so the page can force navigation
+        } catch (_e) {
+          // no-op
+        }
       }
 
       // Persist navigation intent for durable handoff
