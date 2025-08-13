@@ -158,7 +158,28 @@ self.addEventListener('notificationclick', (event) => {
         }
       }
 
-      // Always use bounce page - simpler and more reliable
+      // Find any existing window client for our origin
+      const clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const sameOriginClient = clientsList.find(c => new URL(c.url).origin === self.location.origin);
+
+      if (sameOriginClient) {
+        // Try navigate first. If unsupported or blocked, fall back to postMessage
+        try {
+          if (typeof sameOriginClient.navigate === 'function') {
+            await sameOriginClient.navigate(targetUrl);
+            await sameOriginClient.focus();
+            return;
+          }
+        } catch (err) {
+          // ignore and fall through to postMessage
+        }
+
+        await sameOriginClient.focus();
+        sameOriginClient.postMessage({ type: 'OPEN_URL', url: targetUrl });
+        return;
+      }
+
+      // No client open, open a new window using bounce page
       try {
         const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}&mode=new`;
         const opened = await self.clients.openWindow(bounceUrl);
