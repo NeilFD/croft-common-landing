@@ -124,6 +124,28 @@ function Banner({ url, onOpen, onDismiss }: { url: string; onOpen: () => void; o
 function NavIntentOverlayImpl() {
   const { url, setUrl, refresh } = usePendingNavIntent();
 
+  // If we've already navigated to the target, clear the intent and hide the banner
+  useEffect(() => {
+    if (!url) return;
+    const isSame = (() => {
+      try {
+        const t = new URL(url, window.location.origin);
+        t.searchParams.delete('ntk');
+        const c = new URL(window.location.href);
+        c.searchParams.delete('ntk');
+        return t.origin === c.origin && t.pathname === c.pathname && t.search === c.search;
+      } catch {
+        return false;
+      }
+    })();
+    if (isSame) {
+      void (async () => {
+        await clearPendingUrl();
+        setUrl(null);
+      })();
+    }
+  }, [url, setUrl]);
+
   const onOpen = async () => {
     const target = (await peekPendingUrl()) || url;
     if (target) {

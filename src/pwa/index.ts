@@ -49,15 +49,21 @@ if ('serviceWorker' in navigator && !(window as any).__swNavigateListenerAdded) 
   (window as any).__swNavigateListenerAdded = true;
   navigator.serviceWorker.addEventListener('message', async (event) => {
     const data = (event as MessageEvent).data as any;
-    if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
-      try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
-      if (isIOSStandalone) {
-        if (import.meta.env.DEV) console.info('[PWA] iOS standalone: deferring to overlay for nav intent', data.url);
-        try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
-      } else {
-        await consumeNavIntent();
+      if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
+        try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
+        if (isIOSStandalone) {
+          if (document.visibilityState === 'visible') {
+            const ok = await consumeNavIntent();
+            if (!ok) {
+              try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+            }
+          } else {
+            try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+          }
+        } else {
+          await consumeNavIntent();
+        }
       }
-    }
   });
 }
 
@@ -71,8 +77,14 @@ if ('BroadcastChannel' in window && !(window as any).__navBcAdded) {
       if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
         try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
         if (isIOSStandalone) {
-          if (import.meta.env.DEV) console.info('[PWA] iOS standalone: BC handoff, show overlay', data.url);
-          try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+          if (document.visibilityState === 'visible') {
+            const ok = await consumeNavIntent();
+            if (!ok) {
+              try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+            }
+          } else {
+            try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+          }
         } else {
           await consumeNavIntent();
         }
@@ -97,11 +109,11 @@ async function burstConsume(durationMs = 2000, intervalMs = 150) {
 }
 
 // Consume any pending nav intent immediately on load and when app becomes visible/focused
-if (!isIOSStandalone) void consumeNavIntent();
+void consumeNavIntent();
 document.addEventListener('visibilitychange', () => {
-  if (!isIOSStandalone && document.visibilityState === 'visible') burstConsume();
+  if (document.visibilityState === 'visible') burstConsume();
 });
-window.addEventListener('focus', () => { if (!isIOSStandalone) burstConsume(); });
+window.addEventListener('focus', () => { burstConsume(); });
 
 // Boot the PWA layer: register SW and mount overlay UI when appropriate
 (async () => {
