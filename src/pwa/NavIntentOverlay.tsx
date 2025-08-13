@@ -6,6 +6,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 
 const NAV_CACHE = 'sw-nav-v1';
 const NAV_INTENT_URL = '/__sw_nav_intent';
+const DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+
+interface NavigationIntent {
+  url: string;
+  timestamp: number;
+  ttl?: number;
+  clickToken?: string;
+}
 
 function isIOSStandalone(): boolean {
   const ua = navigator.userAgent || '';
@@ -15,10 +23,29 @@ function isIOSStandalone(): boolean {
 }
 
 async function peekPendingUrl(): Promise<string | null> {
+  const now = Date.now();
+  
   // SessionStorage (set by SW message handler or other code)
   try {
     const s = sessionStorage.getItem('pwa.nav-intent');
-    if (s && typeof s === 'string') return s;
+    if (s && typeof s === 'string') {
+      try {
+        const intent: NavigationIntent = JSON.parse(s);
+        const ttl = intent.ttl || DEFAULT_TTL;
+        if (now - intent.timestamp > ttl) {
+          if (import.meta.env.DEV) console.info('[NavIntentOverlay] SessionStorage intent expired, clearing');
+          sessionStorage.removeItem('pwa.nav-intent');
+          return null;
+        }
+        if (import.meta.env.DEV) console.info('[NavIntentOverlay] Found valid intent in sessionStorage:', intent.url, 'age:', now - intent.timestamp, 'ms');
+        return intent.url;
+      } catch (e) {
+        // Handle legacy string format
+        if (import.meta.env.DEV) console.info('[NavIntentOverlay] Legacy format in sessionStorage, clearing');
+        sessionStorage.removeItem('pwa.nav-intent');
+        return null;
+      }
+    }
   } catch (_) {}
 
   // Cache Storage (durable handoff written by the SW)
@@ -28,7 +55,24 @@ async function peekPendingUrl(): Promise<string | null> {
       const res = await cache.match(NAV_INTENT_URL);
       if (res) {
         const data = await res.json().catch(() => null) as any;
-        if (data && typeof data.url === 'string') return data.url as string;
+        if (data && typeof data.url === 'string') {
+          // Check if it's the new format with timestamp
+          if (typeof data.timestamp === 'number') {
+            const ttl = data.ttl || DEFAULT_TTL;
+            if (now - data.timestamp > ttl) {
+              if (import.meta.env.DEV) console.info('[NavIntentOverlay] Cache intent expired, clearing');
+              await cache.delete(NAV_INTENT_URL);
+              return null;
+            }
+            if (import.meta.env.DEV) console.info('[NavIntentOverlay] Found valid intent in cache:', data.url, 'age:', now - data.timestamp, 'ms');
+            return data.url as string;
+          } else {
+            // Legacy format - clear it
+            if (import.meta.env.DEV) console.info('[NavIntentOverlay] Legacy format in cache, clearing');
+            await cache.delete(NAV_INTENT_URL);
+            return null;
+          }
+        }
       }
     } catch (_) {}
   }
@@ -36,11 +80,57 @@ async function peekPendingUrl(): Promise<string | null> {
 }
 
 async function clearPendingUrl() {
+  if (import.meta.env.DEV) console.info('[NavIntentOverlay] Clearing pending URL');
   try { sessionStorage.removeItem('pwa.nav-intent'); } catch (_) {}
   if ('caches' in window) {
     try {
       const cache = await caches.open(NAV_CACHE);
       await cache.delete(NAV_INTENT_URL);
+    } catch (_) {}
+  }
+}
+
+export async function cleanupExpiredIntents(): Promise<void> {
+  if (import.meta.env.DEV) console.info('[NavIntentOverlay] Cleaning up expired intents on startup');
+  const now = Date.now();
+  
+  // Clean sessionStorage
+  try {
+    const sessionData = sessionStorage.getItem('pwa.nav-intent');
+    if (sessionData) {
+      try {
+        const intent: NavigationIntent = JSON.parse(sessionData);
+        const ttl = intent.ttl || DEFAULT_TTL;
+        if (now - intent.timestamp > ttl) {
+          if (import.meta.env.DEV) console.info('[NavIntentOverlay] Removing expired sessionStorage intent');
+          sessionStorage.removeItem('pwa.nav-intent');
+        }
+      } catch (e) {
+        if (import.meta.env.DEV) console.info('[NavIntentOverlay] Removing invalid sessionStorage intent');
+        sessionStorage.removeItem('pwa.nav-intent');
+      }
+    }
+  } catch (_) {}
+  
+  // Clean cache storage
+  if ('caches' in window) {
+    try {
+      const cache = await caches.open(NAV_CACHE);
+      const response = await cache.match(NAV_INTENT_URL);
+      if (response) {
+        const data = await response.json().catch(() => null);
+        if (data && typeof data.timestamp === 'number') {
+          const ttl = data.ttl || DEFAULT_TTL;
+          if (now - data.timestamp > ttl) {
+            if (import.meta.env.DEV) console.info('[NavIntentOverlay] Removing expired cache intent');
+            await cache.delete(NAV_INTENT_URL);
+          }
+        } else {
+          // Remove legacy format
+          if (import.meta.env.DEV) console.info('[NavIntentOverlay] Removing legacy cache intent');
+          await cache.delete(NAV_INTENT_URL);
+        }
+      }
     } catch (_) {}
   }
 }
@@ -68,7 +158,12 @@ function usePendingNavIntent() {
         bc.addEventListener('message', async (event) => {
           const data = (event as MessageEvent).data as any;
           if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
-            try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
+            const intent: NavigationIntent = {
+              url: data.url,
+              timestamp: Date.now(),
+              ttl: DEFAULT_TTL
+            };
+            try { sessionStorage.setItem('pwa.nav-intent', JSON.stringify(intent)); } catch (_) {}
             if (import.meta.env.DEV) console.info('[NavIntentOverlay] received handoff via BroadcastChannel', data.url);
             await refresh();
           }
@@ -210,8 +305,13 @@ export async function mountNavIntentOverlay() {
   (window as any).__navIntentOverlayShow = async (url?: string) => {
     if (import.meta.env.DEV) console.info('[NavIntentOverlay] __navIntentOverlayShow called with:', url);
     if (url) {
+      const intent: NavigationIntent = {
+        url,
+        timestamp: Date.now(),
+        ttl: DEFAULT_TTL
+      };
       try { 
-        sessionStorage.setItem('pwa.nav-intent', url);
+        sessionStorage.setItem('pwa.nav-intent', JSON.stringify(intent));
         if (import.meta.env.DEV) console.info('[NavIntentOverlay] Set sessionStorage intent:', url);
       } catch (e) {
         if (import.meta.env.DEV) console.error('[NavIntentOverlay] Failed to set sessionStorage:', e);

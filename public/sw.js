@@ -180,11 +180,17 @@ self.addEventListener('notificationclick', (event) => {
 
       // If PWA is already open, skip bounce page and use overlay system
       if (hasPWAOpen) {
-        // Persist navigation intent for overlay system
+        // Persist navigation intent for overlay system with expiration
         try {
           const cache = await caches.open(NAV_CACHE);
+          const navigationIntent = {
+            url: targetUrl,
+            timestamp: Date.now(),
+            ttl: 5 * 60 * 1000, // 5 minutes
+            clickToken
+          };
           await cache.put(NAV_INTENT_URL, new Response(
-            JSON.stringify({ url: targetUrl, ts: Date.now(), clickToken }),
+            JSON.stringify(navigationIntent),
             { headers: { 'Content-Type': 'application/json' } }
           ));
         } catch (_e) {}

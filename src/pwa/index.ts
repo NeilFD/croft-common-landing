@@ -14,8 +14,26 @@ const isiOS = /iPad|iPhone|iPod/i.test(navigator.userAgent) || (navigator.userAg
 const isIOSStandalone = isiOS && isStandalone;
 async function consumeNavIntent(): Promise<boolean> {
   let url: string | null = null;
+  const now = Date.now();
+  const TTL = 5 * 60 * 1000; // 5 minutes
+  
   try {
-    url = sessionStorage.getItem('pwa.nav-intent');
+    const sessionData = sessionStorage.getItem('pwa.nav-intent');
+    if (sessionData) {
+      try {
+        const intent = JSON.parse(sessionData);
+        const ttl = intent.ttl || TTL;
+        if (now - intent.timestamp > ttl) {
+          if (import.meta.env.DEV) console.info('[PWA] SessionStorage intent expired, clearing');
+          sessionStorage.removeItem('pwa.nav-intent');
+        } else {
+          url = intent.url;
+        }
+      } catch (e) {
+        // Handle legacy string format - clear it
+        sessionStorage.removeItem('pwa.nav-intent');
+      }
+    }
   } catch (_) {}
 
   if (!url && 'caches' in window) {
@@ -24,8 +42,17 @@ async function consumeNavIntent(): Promise<boolean> {
       const res = await cache.match(NAV_INTENT_URL);
       if (res) {
         const data = await res.json().catch(() => null) as any;
-        if (data && typeof data.url === 'string') {
-          url = data.url;
+        if (data && typeof data.url === 'string' && typeof data.timestamp === 'number') {
+          const ttl = data.ttl || TTL;
+          if (now - data.timestamp > ttl) {
+            if (import.meta.env.DEV) console.info('[PWA] Cache intent expired, clearing');
+            await cache.delete(NAV_INTENT_URL);
+          } else {
+            url = data.url;
+          }
+        } else if (data && typeof data.url === 'string') {
+          // Legacy format - clear it
+          await cache.delete(NAV_INTENT_URL);
         }
       }
     } catch (_) {}
@@ -69,8 +96,9 @@ if ('serviceWorker' in navigator && !(window as any).__swNavigateListenerAdded) 
   (window as any).__swNavigateListenerAdded = true;
   navigator.serviceWorker.addEventListener('message', async (event) => {
     const data = (event as MessageEvent).data as any;
-        if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
-        try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
+      if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
+        const intent = { url: data.url, timestamp: Date.now(), ttl: 5 * 60 * 1000 };
+        try { sessionStorage.setItem('pwa.nav-intent', JSON.stringify(intent)); } catch (_) {}
         if (import.meta.env.DEV) console.info('[PWA] Received SW_NAVIGATE message:', data.url);
         
         // Force show the overlay first
@@ -102,7 +130,8 @@ if ('BroadcastChannel' in window && !(window as any).__navBcAdded) {
     bc.addEventListener('message', async (event) => {
       const data = (event as MessageEvent).data as any;
       if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
-        try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
+        const intent = { url: data.url, timestamp: Date.now(), ttl: 5 * 60 * 1000 };
+        try { sessionStorage.setItem('pwa.nav-intent', JSON.stringify(intent)); } catch (_) {}
         if (import.meta.env.DEV) console.info('[PWA] Received SW_NAVIGATE via BC:', data.url);
         
         // Force show the overlay first
@@ -156,6 +185,10 @@ window.addEventListener('focus', () => { burstConsume(); });
     if (import.meta.env.DEV) console.info('[PWA] Skipping SW on /admin');
     return;
   }
+  
+  // Clean up expired intents before processing
+  const { cleanupExpiredIntents } = await import('./NavIntentOverlay');
+  await cleanupExpiredIntents();
   
   // Mount nav intent overlay FIRST to ensure it's ready to receive messages
   if (import.meta.env.DEV) console.info('[PWA] Mounting nav intent overlay');
