@@ -31,6 +31,7 @@
         const params = new URLSearchParams(location.search);
         const target = params.get('to') || '/';
         const token = params.get('ntk');
+        const mode = params.get('mode'); // 'new' means this is from a fresh notification click
 
         // Best-effort telemetry (non-blocking)
         try {
@@ -47,14 +48,19 @@
           try { new BroadcastChannel('nav-handoff-v1').postMessage({ type: 'SW_NAVIGATE', url: target }); } catch(_){}
         }
 
+        // Check if we're in a new tab/window context vs embedded in PWA
+        const isNewContext = mode === 'new' || window === window.top;
+
         // Try immediate redirect (should work under notification click gesture)
         const go = () => {
           try { location.replace(new URL(target, location.origin).toString()); }
           catch { location.replace(target); }
         };
 
-        // Auto-attempt quickly, then rely on user button
-        setTimeout(go, 10);
+        // Only auto-redirect if we're in a new context (not embedded in PWA)
+        if (isNewContext) {
+          setTimeout(go, 10);
+        }
 
         document.getElementById('continue').addEventListener('click', function(){
           try {

@@ -162,9 +162,59 @@ self.addEventListener('notificationclick', (event) => {
 
       const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
 
-      // Always open bounce page in a user-activation context to guarantee navigation on iOS
+      // Check if we have focused PWA clients (not including bounce pages)
+      const pwaCLients = allClients.filter(client => {
+        try {
+          const url = new URL(client.url);
+          return url.origin === self.location.origin && 
+                 !url.pathname.includes('/nav.html') &&
+                 client.focused;
+        } catch (_) {
+          return false;
+        }
+      });
+
+      const hasFocusedPWA = pwaCLients.length > 0;
+
+      // If PWA is already open and focused, skip bounce page and use overlay system
+      if (hasFocusedPWA) {
+        // Persist navigation intent for overlay system
+        try {
+          const cache = await caches.open(NAV_CACHE);
+          await cache.put(NAV_INTENT_URL, new Response(
+            JSON.stringify({ url: targetUrl, ts: Date.now(), clickToken }),
+            { headers: { 'Content-Type': 'application/json' } }
+          ));
+        } catch (_e) {}
+
+        // Broadcast to existing clients to trigger overlay
+        let bc = null;
+        try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_e) {}
+        const broadcast = () => {
+          try { bc && bc.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
+          for (const c of allClients) {
+            try { c.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
+          }
+        };
+        
+        // Multiple broadcasts to ensure delivery
+        const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+        try {
+          broadcast();
+          await delay(100);
+          broadcast();
+          await delay(300);
+          broadcast();
+        } catch (_) {} finally {
+          try { bc && bc.close(); } catch (_) {}
+        }
+        
+        return;
+      }
+
+      // PWA not open or not focused - use bounce page (existing behavior)
       try {
-        const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
+        const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}&mode=new`;
         const opened = await self.clients.openWindow(bounceUrl);
         try { if (opened && 'focus' in opened) { await opened.focus(); } } catch (_) {}
       } catch (_) {}
@@ -178,7 +228,7 @@ self.addEventListener('notificationclick', (event) => {
         ));
       } catch (_e) {}
 
-      // Broadcast to all existing clients as an extra nudge
+      // Broadcast to all existing clients as backup
       let bc = null;
       try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_e) {}
       const broadcast = () => {
