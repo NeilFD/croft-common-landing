@@ -2,6 +2,8 @@
 const CACHE_NAME = 'croft-mobile-v1';
 const IMAGE_CACHE = 'images-mobile-v1';
 const ASSET_CACHE = 'assets-mobile-v1';
+const NAV_CACHE = 'sw-nav-v1';
+const NAV_INTENT_URL = '/__sw_nav_intent';
 
 // Mobile-specific cache strategies
 const MOBILE_MAX_CACHE_SIZE = 50 * 1024 * 1024; // 50MB limit for mobile
@@ -218,32 +220,53 @@ self.addEventListener('notificationclick', (event) => {
   
   // Ensure the notification URL dominates navigation
   event.waitUntil((async () => {
+    // Persist navigation intent in Cache Storage for durable handoff
+    try {
+      const cache = await caches.open(NAV_CACHE);
+      await cache.put(NAV_INTENT_URL, new Response(
+        JSON.stringify({ url: targetUrl, ts: Date.now(), clickToken }),
+        { headers: { 'Content-Type': 'application/json' } }
+      ));
+    } catch (_) {}
+
+    // Try opening a new window first (iOS-friendly)
     try {
       const opened = await clients.openWindow(targetUrl);
-      // do not return here; we'll also notify existing clients to force navigation on the main thread
-    } catch (_) {
-      // ignore
-    }
-  
+      try { if (opened && 'focus' in opened) { await opened.focus(); } } catch (_) {}
+      // continue regardless; we'll also notify existing clients
+    } catch (_) {}
+
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+
+    // Broadcast SW_NAVIGATE to all clients, multiple times to catch late listeners
+    const broadcast = () => {
+      for (const client of clientList) {
+        try { client.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
+      }
+    };
+    const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
     if (clientList.length > 0) {
-      // Attempt to navigate and also notify clients to force navigation on main thread
+      // Attempt to navigate each same-origin client
       for (const client of clientList) {
         try {
           if (client.url && client.url.startsWith(self.location.origin) && 'navigate' in client) {
             await client.navigate(targetUrl);
           }
         } catch (_) {}
-        try {
-          client.postMessage({ type: 'SW_NAVIGATE', url: targetUrl });
-        } catch (_) {}
       }
-      // Focus an existing client
+      try {
+        broadcast();
+        await delay(200);
+        broadcast();
+        await delay(1000);
+        broadcast();
+      } catch (_) {}
       try { await clientList[0].focus(); } catch (_) {}
       return;
     }
-  
+
     // Last resort
-    await clients.openWindow(targetUrl);
+    try { await clients.openWindow(targetUrl); } catch (_) {}
   })());
 });

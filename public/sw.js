@@ -4,6 +4,8 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const IMAGE_CACHE = 'images-v3';
 const ASSET_CACHE = 'assets-swr-v3';
+const NAV_CACHE = 'sw-nav-v1';
+const NAV_INTENT_URL = '/__sw_nav_intent';
 
 self.addEventListener('install', (event) => {
   // Activate immediately on install
@@ -178,14 +180,30 @@ self.addEventListener('notificationclick', (event) => {
         // no-op
       }
 
-      // Fallback: notify existing clients to force navigation on the main thread
+      // Persist navigation intent for durable handoff
       try {
+        const cache = await caches.open(NAV_CACHE);
+        await cache.put(NAV_INTENT_URL, new Response(
+          JSON.stringify({ url: targetUrl, ts: Date.now(), clickToken }),
+          { headers: { 'Content-Type': 'application/json' } }
+        ));
+      } catch (_e) {}
+
+      // Notify existing clients to force navigation on the main thread (rebroadcast a few times)
+      const broadcast = () => {
         for (const c of allClients) {
           try { c.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
         }
-      } catch (_e) {
-        // no-op
-      }
+      };
+      const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+      try {
+        broadcast();
+        await delay(200);
+        broadcast();
+        await delay(1000);
+        broadcast();
+      } catch (_e) {}
+
 
       // Fallback: try navigating an existing same-origin tab
       try {
