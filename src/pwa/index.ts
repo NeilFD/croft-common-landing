@@ -55,12 +55,9 @@ if ('serviceWorker' in navigator && !(window as any).__swNavigateListenerAdded) 
       if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
         try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
         if (isIOSStandalone) {
-          if (document.visibilityState === 'visible') {
-            const ok = await consumeNavIntent();
-            if (!ok) {
-              try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
-            }
-          } else {
+          const ok = await consumeNavIntent();
+          if (!ok) {
+            if (import.meta.env.DEV) console.info('[PWA] Programmatic nav failed, triggering overlay');
             try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
           }
         } else {
@@ -79,17 +76,10 @@ if ('BroadcastChannel' in window && !(window as any).__navBcAdded) {
       const data = (event as MessageEvent).data as any;
       if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
         try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
-        if (isIOSStandalone) {
-          if (document.visibilityState === 'visible') {
-            const ok = await consumeNavIntent();
-            if (!ok) {
-              try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
-            }
-          } else {
-            try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
-          }
-        } else {
-          await consumeNavIntent();
+        const ok = await consumeNavIntent();
+        if (!ok) {
+          if (import.meta.env.DEV) console.info('[PWA] Programmatic nav failed via BC, triggering overlay');
+          try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
         }
       }
     });

@@ -54,7 +54,7 @@ function usePendingNavIntent() {
   };
 
   useEffect(() => {
-    if (!isIOSStandalone()) return;
+    // Always listen for nav intents, not just on iOS standalone
 
     // Initial check
     void refresh();
@@ -78,12 +78,15 @@ function usePendingNavIntent() {
     // Also poll briefly when page becomes visible/focused
     const onVis = () => { if (document.visibilityState === 'visible') void refresh(); };
     const onFocus = () => { void refresh(); };
+    const onRefresh = () => { void refresh(); };
     document.addEventListener('visibilitychange', onVis);
     window.addEventListener('focus', onFocus);
+    window.addEventListener('nav-intent-refresh', onRefresh);
 
     return () => {
       document.removeEventListener('visibilitychange', onVis);
       window.removeEventListener('focus', onFocus);
+      window.removeEventListener('nav-intent-refresh', onRefresh);
       try { bc?.close(); } catch (_) {}
     };
   }, []);
@@ -164,7 +167,8 @@ function NavIntentOverlayImpl() {
     setUrl(null);
   };
 
-  if (!isIOSStandalone() || !url) return null;
+  // Show banner if we have a pending URL (on any platform when programmatic nav fails)
+  if (!url) return null;
   return <Banner url={url} onOpen={onOpen} onDismiss={onDismiss} />;
 }
 
@@ -190,6 +194,8 @@ export async function mountNavIntentOverlay() {
     if (url) {
       try { sessionStorage.setItem('pwa.nav-intent', url); } catch (_) {}
     }
-    // rely on component effects to pick it up
+    // Trigger a refresh to update the overlay state
+    const event = new CustomEvent('nav-intent-refresh');
+    window.dispatchEvent(event);
   };
 }
