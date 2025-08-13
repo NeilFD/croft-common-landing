@@ -104,6 +104,31 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
+// Utility: persist deep link for the page to pick up after resume
+async function saveDeepLink(url) {
+  try {
+    const cache = await caches.open('cc-deeplink');
+    await cache.put('/__deeplink__', new Response(JSON.stringify({
+      url,
+      ts: Date.now()
+    }), { headers: { 'Content-Type': 'application/json' } }));
+  } catch (e) {
+    // ignore
+  }
+}
+
+// Utility: broadcast to any live pages (best effort)
+function broadcastDeepLink(url) {
+  // BroadcastChannel may not exist in all SWs
+  try {
+    // @ts-ignore
+    const bc = new BroadcastChannel('cc-deeplink');
+    bc.postMessage({ url });
+    // Safari may require close
+    bc.close && bc.close();
+  } catch (e) { /* ignore */ }
+}
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
@@ -140,51 +165,41 @@ self.addEventListener('notificationclick', (event) => {
     targetUrl = u.toString();
   } catch (_e) {}
 
-  event.waitUntil(
-    (async () => {
-      // Fire-and-forget tracking of the click
-      if (clickToken) {
-        try {
-          await fetch(`${SUPABASE_URL}/functions/v1/track-notification-event`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'apikey': SUPABASE_ANON_KEY,
-            },
-            body: JSON.stringify({ type: 'notification_click', token: clickToken, url: targetUrl }),
-          });
-        } catch (_e) {
-          // no-op
-        }
-      }
-
-      // Find any existing window client for our origin
-      const clientsList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      const sameOriginClient = clientsList.find(c => new URL(c.url).origin === self.location.origin);
-
-      if (sameOriginClient) {
-        // Try navigate first. If unsupported or blocked, fall back to postMessage
-        try {
-          if (typeof sameOriginClient.navigate === 'function') {
-            await sameOriginClient.navigate(targetUrl);
-            await sameOriginClient.focus();
-            return;
-          }
-        } catch (err) {
-          // ignore and fall through to postMessage
-        }
-
-        await sameOriginClient.focus();
-        sameOriginClient.postMessage({ type: 'OPEN_URL', url: targetUrl });
-        return;
-      }
-
-      // No client open, open a new window using bounce page
+  event.waitUntil((async () => {
+    // Fire-and-forget tracking of the click
+    if (clickToken) {
       try {
-        const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}&mode=new`;
-        const opened = await self.clients.openWindow(bounceUrl);
-        try { if (opened && 'focus' in opened) { await opened.focus(); } } catch (_) {}
-      } catch (_) {}
-    })()
-  );
+        await fetch(`${SUPABASE_URL}/functions/v1/track-notification-event`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ type: 'notification_click', token: clickToken, url: targetUrl }),
+        });
+      } catch (_e) {
+        // no-op
+      }
+    }
+
+    await saveDeepLink(targetUrl);
+    broadcastDeepLink(targetUrl);
+
+    const allClients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    // Prefer a same-origin client within our scope
+    const candidate = allClients.find(c => new URL(c.url).origin === self.location.origin);
+
+    if (candidate) {
+      try { await candidate.focus(); } catch (e) { /* ignore */ }
+      // Also try a direct message for good measure
+      try { candidate.postMessage({ type: 'OPEN_URL', url: targetUrl }); } catch (e) { /* ignore */ }
+      return;
+    }
+
+    // No client open, open a fresh one – this path works when app is closed
+    try { await self.clients.openWindow(targetUrl); } catch (e) {
+      // Fallback: at least open root so app can pick up the saved link on load
+      await self.clients.openWindow('/');
+    }
+  })());
 });
