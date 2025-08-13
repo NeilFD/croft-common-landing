@@ -50,6 +50,7 @@ function usePendingNavIntent() {
 
   const refresh = async () => {
     const u = await peekPendingUrl();
+    if (import.meta.env.DEV) console.info('[NavIntentOverlay] refresh found URL:', u);
     setUrl(u);
   };
 
@@ -191,6 +192,7 @@ export async function mountNavIntentOverlay() {
 
   // Expose a tiny helper so other scripts can trigger the banner
   (window as any).__navIntentOverlayShow = async (url?: string) => {
+    if (import.meta.env.DEV) console.info('[NavIntentOverlay] __navIntentOverlayShow called with:', url);
     if (url) {
       try { sessionStorage.setItem('pwa.nav-intent', url); } catch (_) {}
     }

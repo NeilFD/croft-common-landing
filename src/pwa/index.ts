@@ -32,18 +32,35 @@ async function consumeNavIntent(): Promise<boolean> {
   }
 
   if (url) {
+    if (import.meta.env.DEV) console.info('[PWA] consumeNavIntent found URL:', url);
+    
     // On iOS standalone, avoid programmatic navigation and keep the intent intact
     // so the overlay can prompt the user with a proper gesture.
     if (isIOSStandalone) {
+      if (import.meta.env.DEV) console.info('[PWA] iOS standalone - skipping programmatic nav');
       return false;
     }
+    
+    // Try programmatic navigation but don't clear the intent yet
     try {
       const target = new URL(url, window.location.origin);
+      if (import.meta.env.DEV) console.info('[PWA] Attempting programmatic navigation to:', target.toString());
       window.location.assign(target.toString());
+      
+      // Clear the intent only after successful navigation
+      setTimeout(() => {
+        try { sessionStorage.removeItem('pwa.nav-intent'); } catch (_) {}
+        if ('caches' in window) {
+          caches.open(NAV_CACHE).then(cache => cache.delete(NAV_INTENT_URL)).catch(() => {});
+        }
+      }, 100);
+      
+      return true;
     } catch {
+      if (import.meta.env.DEV) console.info('[PWA] Programmatic navigation failed, keeping intent for overlay');
       window.location.assign(url);
+      return false;
     }
-    return true;
   }
   return false;
 }
@@ -52,16 +69,16 @@ if ('serviceWorker' in navigator && !(window as any).__swNavigateListenerAdded) 
   (window as any).__swNavigateListenerAdded = true;
   navigator.serviceWorker.addEventListener('message', async (event) => {
     const data = (event as MessageEvent).data as any;
-      if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
+        if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
         try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
-        if (isIOSStandalone) {
-          const ok = await consumeNavIntent();
-          if (!ok) {
-            if (import.meta.env.DEV) console.info('[PWA] Programmatic nav failed, triggering overlay');
-            try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
-          }
-        } else {
-          await consumeNavIntent();
+        if (import.meta.env.DEV) console.info('[PWA] Received SW_NAVIGATE message:', data.url);
+        
+        // Always try to show the overlay first, then try programmatic navigation
+        try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+        
+        const ok = await consumeNavIntent();
+        if (!ok) {
+          if (import.meta.env.DEV) console.info('[PWA] Programmatic nav failed, overlay should be showing');
         }
       }
   });
@@ -76,10 +93,14 @@ if ('BroadcastChannel' in window && !(window as any).__navBcAdded) {
       const data = (event as MessageEvent).data as any;
       if (data && data.type === 'SW_NAVIGATE' && typeof data.url === 'string') {
         try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
+        if (import.meta.env.DEV) console.info('[PWA] Received SW_NAVIGATE via BC:', data.url);
+        
+        // Always try to show the overlay first, then try programmatic navigation
+        try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+        
         const ok = await consumeNavIntent();
         if (!ok) {
-          if (import.meta.env.DEV) console.info('[PWA] Programmatic nav failed via BC, triggering overlay');
-          try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+          if (import.meta.env.DEV) console.info('[PWA] Programmatic nav failed via BC, overlay should be showing');
         }
       }
     });
