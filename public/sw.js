@@ -170,18 +170,27 @@ self.addEventListener('notificationclick', (event) => {
     // Check if we should show banner (if PWA is already open and display_mode includes banner)
     const displayMode = notificationData.display_mode;
     const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    const appOrigin = self.location.origin;
     const isAppOpen = allClients.some(client => 
-      client.url.includes('croftcommontest.com') && client.visibilityState === 'visible'
+      client.url.startsWith(appOrigin) && client.visibilityState === 'visible'
     );
 
     if (isAppOpen && (displayMode === 'banner' || displayMode === 'both')) {
       // Send banner data to the main app
       try {
         for (const client of allClients) {
-          if (client.url.includes('croftcommontest.com')) {
+          if (client.url.startsWith(appOrigin)) {
             client.postMessage({
               type: 'SHOW_BANNER',
-              data: notificationData
+              data: {
+                title: event?.notification?.title || 'Notification',
+                body: event?.notification?.body || '',
+                banner_message: notificationData.banner_message,
+                url: notificationData.url,
+                icon: event?.notification?.icon,
+                notification_id: notificationData.notification_id,
+                click_token: notificationData.click_token
+              }
             });
           }
         }

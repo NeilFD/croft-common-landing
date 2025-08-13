@@ -272,7 +272,7 @@ serve(async (req) => {
       
       // Generate full absolute URL for the intended route with tracking parameters
       const baseUrl = payload!.url || "/notifications";
-      const url = new URL(baseUrl, "https://croftcommontest.com");
+      const url = new URL(baseUrl, Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com') || "https://croftcommontest.com");
       url.searchParams.set('ntk', clickToken);
       if ((s as any).user_id) {
         url.searchParams.set('user', (s as any).user_id);
