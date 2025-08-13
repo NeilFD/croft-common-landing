@@ -135,6 +135,7 @@ export const AdminNotificationsApp: React.FC = () => {
   useEffect(() => {
     const processTokens = async () => {
       try {
+        console.log('🔐 Admin: Processing auth tokens on load');
         const hash = window.location.hash || "";
         const search = window.location.search || "";
         const hashParams = new URLSearchParams(hash.startsWith('#') ? hash.slice(1) : hash);
@@ -144,6 +145,14 @@ export const AdminNotificationsApp: React.FC = () => {
         let refresh_token = hashParams.get("refresh_token") || searchParams.get("refresh_token");
         let code = hashParams.get("code") || searchParams.get("code");
 
+        console.log('🔐 Admin: URL tokens found:', { 
+          hasAccessToken: !!access_token, 
+          hasRefreshToken: !!refresh_token, 
+          hasCode: !!code,
+          hash: hash.substring(0, 50),
+          search: search.substring(0, 50)
+        });
+
         // If not present in URL, check pending tokens captured by admin.html
         if ((!access_token || !refresh_token) && !code) {
           const pending = localStorage.getItem('pending_supabase_tokens');
@@ -152,27 +161,42 @@ export const AdminNotificationsApp: React.FC = () => {
               const parsed = JSON.parse(pending);
               access_token = parsed.at;
               refresh_token = parsed.rt;
+              console.log('🔐 Admin: Using pending tokens from localStorage');
             } catch {}
           }
           const pendingCode = localStorage.getItem('pending_supabase_code');
-          if (pendingCode) code = pendingCode;
+          if (pendingCode) {
+            code = pendingCode;
+            console.log('🔐 Admin: Using pending code from localStorage');
+          }
         }
 
+        // Process authentication BEFORE cleaning URL
         if (code && (!access_token || !refresh_token)) {
+          console.log('🔐 Admin: Exchanging code for session');
           try {
-            const { error } = await supabase.auth.exchangeCodeForSession(code);
-            if (!error) {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            if (!error && data.session) {
+              console.log('✅ Admin: Code exchange successful');
               try { localStorage.removeItem('pending_supabase_code'); } catch {}
+            } else {
+              console.error('🚨 Admin: Code exchange failed:', error);
             }
           } catch (e) {
-            console.error('exchangeCodeForSession failed', e);
+            console.error('🚨 Admin: exchangeCodeForSession failed', e);
           }
         } else if (access_token && refresh_token) {
-          await supabase.auth.setSession({ access_token, refresh_token });
+          console.log('🔐 Admin: Setting session with tokens');
+          const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+          if (!error && data.session) {
+            console.log('✅ Admin: Session set successfully');
+          } else {
+            console.error('🚨 Admin: Session set failed:', error);
+          }
           try { localStorage.removeItem('pending_supabase_tokens'); } catch {}
         }
 
-        // Clean the URL (remove both hash and query tokens)
+        // Clean the URL AFTER processing tokens
         const url = new URL(window.location.href);
         url.hash = "";
         url.searchParams.delete("access_token");
@@ -181,9 +205,10 @@ export const AdminNotificationsApp: React.FC = () => {
         if (url.searchParams.get("auth") === "true") {
           url.searchParams.delete("auth");
         }
+        console.log('🔐 Admin: Cleaning URL from', window.location.href, 'to', url.toString());
         window.history.replaceState({}, "", url.toString());
       } catch (e) {
-        console.error("Failed to process auth tokens from URL", e);
+        console.error("🚨 Admin: Failed to process auth tokens from URL", e);
       }
     };
     processTokens();

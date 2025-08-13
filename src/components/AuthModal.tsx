@@ -142,8 +142,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
     setLoading(true);
 
-    // Always redirect back to the admin console
-    const redirectUrl = `${window.location.origin}/admin.html?auth=true`;
+    // Always redirect back to the admin console on production domain
+    const redirectUrl = `https://croftcommontest.com/admin`;
     
     console.log('🔐 Sending magic link with redirect URL:', redirectUrl);
 
