@@ -28,8 +28,24 @@ import CommonGood from "./pages/CommonGood";
  import Book from "./pages/Book";
  import Admin from "./pages/Admin";
  import Notifications from "./pages/Notifications";
- import RouteImagePreloader from '@/components/RouteImagePreloader';
+import RouteImagePreloader from '@/components/RouteImagePreloader';
+import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
+import { BannerNotification } from "@/components/BannerNotification";
+import { useBannerNotification } from "@/contexts/BannerNotificationContext";
 const queryClient = new QueryClient();
+
+const BannerOverlay = () => {
+  const { currentBanner, dismissBanner } = useBannerNotification();
+
+  if (!currentBanner) return null;
+
+  return (
+    <BannerNotification
+      data={currentBanner}
+      onDismiss={dismissBanner}
+    />
+  );
+};
 
 const LowercasePathGuard = () => {
   const location = useLocation();
@@ -76,11 +92,12 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        
-        <LowercasePathGuard />
-        <RouteImagePreloader />
-        <TransitionProvider>
-          <Routes>
+        <BannerNotificationProvider>
+          <LowercasePathGuard />
+          <RouteImagePreloader />
+          <BannerOverlay />
+          <TransitionProvider>
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/cafe" element={<Cafe />} />
             <Route path="/cocktails" element={<Cocktails />} />
@@ -106,8 +123,9 @@ const App = () => (
              <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </TransitionProvider>
+            </Routes>
+          </TransitionProvider>
+        </BannerNotificationProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

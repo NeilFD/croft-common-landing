@@ -394,10 +394,12 @@ export type Database = {
         Row: {
           archived: boolean
           badge: string | null
+          banner_message: string | null
           body: string
           created_at: string
           created_by: string | null
           created_by_email: string | null
+          display_mode: string | null
           dry_run: boolean
           failed_count: number
           icon: string | null
@@ -421,10 +423,12 @@ export type Database = {
         Insert: {
           archived?: boolean
           badge?: string | null
+          banner_message?: string | null
           body: string
           created_at?: string
           created_by?: string | null
           created_by_email?: string | null
+          display_mode?: string | null
           dry_run?: boolean
           failed_count?: number
           icon?: string | null
@@ -448,10 +452,12 @@ export type Database = {
         Update: {
           archived?: boolean
           badge?: string | null
+          banner_message?: string | null
           body?: string
           created_at?: string
           created_by?: string | null
           created_by_email?: string | null
+          display_mode?: string | null
           dry_run?: boolean
           failed_count?: number
           icon?: string | null

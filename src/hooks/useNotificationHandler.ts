@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useBannerNotification } from '@/contexts/BannerNotificationContext';
 
 /**
  * Universal deep link handler for PWA notifications
@@ -9,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 export const useNotificationHandler = () => {
   const location = useLocation();
   const [searchParams] = useSearchParams();
+  const { showBanner } = useBannerNotification();
 
   useEffect(() => {
     const token = searchParams.get('ntk');
@@ -37,6 +39,29 @@ export const useNotificationHandler = () => {
         } catch {
           // Silent fail for storage issues
         }
+
+        // Listen for banner messages from service worker
+        const handleServiceWorkerMessage = (event: MessageEvent) => {
+          if (event.data?.type === 'SHOW_BANNER') {
+            const bannerData = event.data.data;
+            showBanner({
+              title: bannerData.title || 'Notification',
+              body: bannerData.body || '',
+              bannerMessage: bannerData.banner_message,
+              url: bannerData.url,
+              icon: bannerData.icon,
+              notificationId: bannerData.notification_id || '',
+              clickToken: bannerData.click_token
+            });
+          }
+        };
+
+        navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
+
+        // Cleanup listener on unmount
+        return () => {
+          navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
+        };
 
         // Clean URL of notification parameters after tracking
         const newSearchParams = new URLSearchParams(searchParams);

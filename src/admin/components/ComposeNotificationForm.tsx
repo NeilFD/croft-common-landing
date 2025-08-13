@@ -34,6 +34,10 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
   const [dryRun, setDryRun] = useState(false);
   const [sending, setSending] = useState(false);
   const [usePersonalization, setUsePersonalization] = useState(false);
+  
+  // Banner notification fields
+  const [bannerMessage, setBannerMessage] = useState('');
+  const [displayMode, setDisplayMode] = useState<'navigation' | 'banner' | 'both'>('navigation');
 
   // Scheduling state
   const [isScheduled, setIsScheduled] = useState(false);
@@ -292,6 +296,8 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
           url: normalizedUrl || undefined,
           icon: icon.trim() || undefined,
           badge: badge.trim() || undefined,
+          banner_message: bannerMessage.trim() || undefined,
+          display_mode: displayMode,
         },
         scope,
         dry_run: opts.dry_run,
@@ -412,6 +418,41 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
               onChange={(e) => setBody(e.target.value)}
             />
           </div>
+
+          <div className="space-y-2">
+            <Label>Display Mode</Label>
+            <RadioGroup value={displayMode} onValueChange={(value: any) => setDisplayMode(value)}>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="navigation" id="mode-navigation" />
+                <Label htmlFor="mode-navigation">Navigation (default)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="banner" id="mode-banner" />
+                <Label htmlFor="mode-banner">Banner (when PWA is open)</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="both" id="mode-both" />
+                <Label htmlFor="mode-both">Both</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {(displayMode === 'banner' || displayMode === 'both') && (
+            <div className="space-y-2">
+              <Label htmlFor="banner-message">Banner Message</Label>
+              <Textarea 
+                id="banner-message"
+                value={bannerMessage}
+                onChange={(e) => setBannerMessage(e.target.value)}
+                placeholder="Rich message displayed in banner overlay when PWA is open. Supports {{first_name}} personalization."
+                rows={4}
+              />
+              <p className="text-xs text-muted-foreground">
+                This message will be displayed in a full-screen banner when the PWA is already open. 
+                If empty, the body text will be used.
+              </p>
+            </div>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-2">

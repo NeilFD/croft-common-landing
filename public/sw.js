@@ -99,6 +99,8 @@ self.addEventListener('push', (event) => {
       url: data.url || '/',
       click_token: data.click_token || null,
       notification_id: data.notification_id || null,
+      banner_message: data.banner_message || null,
+      display_mode: data.display_mode || 'navigation',
     },
   };
   event.waitUntil(self.registration.showNotification(title, options));
@@ -127,6 +129,7 @@ self.addEventListener('notificationclick', (event) => {
 
   let targetUrl = normalize(event?.notification?.data?.url);
   const clickToken = event?.notification?.data?.click_token || null;
+  const notificationData = event?.notification?.data || {};
 
   // Normalize and ensure full absolute URL
   try {
@@ -164,12 +167,40 @@ self.addEventListener('notificationclick', (event) => {
       }
     }
 
-    // Always open a new browser window, regardless of existing PWA clients
-    try {
-      await self.clients.openWindow(targetUrl);
-    } catch (e) {
-      // Fallback: open root if specific URL fails
-      await self.clients.openWindow('/');
+    // Check if we should show banner (if PWA is already open and display_mode includes banner)
+    const displayMode = notificationData.display_mode;
+    const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+    const isAppOpen = allClients.some(client => 
+      client.url.includes('croftcommontest.com') && client.visibilityState === 'visible'
+    );
+
+    if (isAppOpen && (displayMode === 'banner' || displayMode === 'both')) {
+      // Send banner data to the main app
+      try {
+        for (const client of allClients) {
+          if (client.url.includes('croftcommontest.com')) {
+            client.postMessage({
+              type: 'SHOW_BANNER',
+              data: notificationData
+            });
+          }
+        }
+        // Focus the existing window
+        if (allClients.length > 0) {
+          await allClients[0].focus();
+        }
+      } catch (err) {
+        console.warn('Failed to show banner, falling back to navigation:', err);
+        await self.clients.openWindow(targetUrl);
+      }
+    } else {
+      // Always open a new browser window for navigation mode or when app is closed
+      try {
+        await self.clients.openWindow(targetUrl);
+      } catch (e) {
+        // Fallback: open root if specific URL fails
+        await self.clients.openWindow('/');
+      }
     }
   })());
 });

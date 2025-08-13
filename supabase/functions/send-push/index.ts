@@ -266,6 +266,9 @@ serve(async (req) => {
       const first = (s as any).user_id ? userFirstNames.get((s as any).user_id) : undefined;
       const personalizedTitle = renderTemplate(payload!.title, { first_name: first });
       const personalizedBody = renderTemplate(payload!.body, { first_name: first });
+      const personalizedBannerMessage = (payload as any).banner_message 
+        ? renderTemplate((payload as any).banner_message, { first_name: first })
+        : null;
       
       // Generate full absolute URL for the intended route with tracking parameters
       const baseUrl = payload!.url || "/notifications";
@@ -280,6 +283,7 @@ serve(async (req) => {
         ...(payload as any), 
         title: personalizedTitle, 
         body: personalizedBody, 
+        banner_message: personalizedBannerMessage,
         url: notificationUrl,
         click_token: clickToken, 
         notification_id: notificationId 
