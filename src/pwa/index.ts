@@ -73,8 +73,18 @@ if ('serviceWorker' in navigator && !(window as any).__swNavigateListenerAdded) 
         try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
         if (import.meta.env.DEV) console.info('[PWA] Received SW_NAVIGATE message:', data.url);
         
-        // Always try to show the overlay first, then try programmatic navigation
-        try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+        // Force show the overlay first
+        if (import.meta.env.DEV) console.info('[PWA] Attempting to show overlay...');
+        try { 
+          if ((window as any).__navIntentOverlayShow) {
+            (window as any).__navIntentOverlayShow(data.url);
+            if (import.meta.env.DEV) console.info('[PWA] Overlay show function called successfully');
+          } else {
+            if (import.meta.env.DEV) console.warn('[PWA] __navIntentOverlayShow not available');
+          }
+        } catch (e) {
+          if (import.meta.env.DEV) console.error('[PWA] Error calling overlay show:', e);
+        }
         
         const ok = await consumeNavIntent();
         if (!ok) {
@@ -95,8 +105,18 @@ if ('BroadcastChannel' in window && !(window as any).__navBcAdded) {
         try { sessionStorage.setItem('pwa.nav-intent', data.url); } catch (_) {}
         if (import.meta.env.DEV) console.info('[PWA] Received SW_NAVIGATE via BC:', data.url);
         
-        // Always try to show the overlay first, then try programmatic navigation
-        try { (window as any).__navIntentOverlayShow?.(data.url); } catch (_) {}
+        // Force show the overlay first
+        if (import.meta.env.DEV) console.info('[PWA] Attempting to show overlay via BC...');
+        try { 
+          if ((window as any).__navIntentOverlayShow) {
+            (window as any).__navIntentOverlayShow(data.url);
+            if (import.meta.env.DEV) console.info('[PWA] Overlay show function called successfully via BC');
+          } else {
+            if (import.meta.env.DEV) console.warn('[PWA] __navIntentOverlayShow not available via BC');
+          }
+        } catch (e) {
+          if (import.meta.env.DEV) console.error('[PWA] Error calling overlay show via BC:', e);
+        }
         
         const ok = await consumeNavIntent();
         if (!ok) {

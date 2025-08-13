@@ -128,6 +128,10 @@ function Banner({ url, onOpen, onDismiss }: { url: string; onOpen: () => void; o
 function NavIntentOverlayImpl() {
   const { url, setUrl, refresh } = usePendingNavIntent();
 
+  if (import.meta.env.DEV) {
+    console.info('[NavIntentOverlay] Component state - URL:', url);
+  }
+
   // If we've already navigated to the target, clear the intent and hide the banner
   useEffect(() => {
     if (!url) return;
@@ -143,6 +147,7 @@ function NavIntentOverlayImpl() {
       }
     })();
     if (isSame) {
+      if (import.meta.env.DEV) console.info('[NavIntentOverlay] Already on target page, clearing intent');
       void (async () => {
         await clearPendingUrl();
         setUrl(null);
@@ -169,7 +174,11 @@ function NavIntentOverlayImpl() {
   };
 
   // Show banner if we have a pending URL (on any platform when programmatic nav fails)
-  if (!url) return null;
+  if (!url) {
+    if (import.meta.env.DEV) console.info('[NavIntentOverlay] No URL, not showing banner');
+    return null;
+  }
+  if (import.meta.env.DEV) console.info('[NavIntentOverlay] Showing banner for URL:', url);
   return <Banner url={url} onOpen={onOpen} onDismiss={onDismiss} />;
 }
 
