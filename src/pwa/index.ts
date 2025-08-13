@@ -34,14 +34,14 @@ async function consumeNavIntent(): Promise<boolean> {
   if (url) {
     if (import.meta.env.DEV) console.info('[PWA] consumeNavIntent found URL:', url);
     
-    // On iOS standalone, avoid programmatic navigation and keep the intent intact
-    // so the overlay can prompt the user with a proper gesture.
-    if (isIOSStandalone) {
-      if (import.meta.env.DEV) console.info('[PWA] iOS standalone - skipping programmatic nav');
+    // On mobile devices, skip programmatic navigation and rely on user gesture via overlay
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile || isIOSStandalone) {
+      if (import.meta.env.DEV) console.info('[PWA] Mobile device - skipping programmatic nav, letting overlay handle it');
       return false;
     }
     
-    // Try programmatic navigation but don't clear the intent yet
+    // Only try programmatic navigation on desktop
     try {
       const target = new URL(url, window.location.origin);
       if (import.meta.env.DEV) console.info('[PWA] Attempting programmatic navigation to:', target.toString());
@@ -58,7 +58,7 @@ async function consumeNavIntent(): Promise<boolean> {
       return true;
     } catch {
       if (import.meta.env.DEV) console.info('[PWA] Programmatic navigation failed, keeping intent for overlay');
-      window.location.assign(url);
+      // Don't try fallback navigation - let overlay handle it
       return false;
     }
   }
