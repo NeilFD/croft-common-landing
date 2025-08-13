@@ -183,8 +183,13 @@ function NavIntentOverlayImpl() {
 }
 
 export async function mountNavIntentOverlay() {
+  if (import.meta.env.DEV) console.info('[NavIntentOverlay] mountNavIntentOverlay called');
+  
   // Only mount once
-  if ((window as any).__navIntentOverlayMounted) return;
+  if ((window as any).__navIntentOverlayMounted) {
+    if (import.meta.env.DEV) console.info('[NavIntentOverlay] Already mounted, skipping');
+    return;
+  }
   (window as any).__navIntentOverlayMounted = true;
 
   const rootId = 'nav-intent-overlay-root';
@@ -193,20 +198,30 @@ export async function mountNavIntentOverlay() {
     host = document.createElement('div');
     host.id = rootId;
     document.body.appendChild(host);
+    if (import.meta.env.DEV) console.info('[NavIntentOverlay] Created overlay host element');
   }
 
   const { createRoot } = await import('react-dom/client');
   const root = createRoot(host);
   root.render(React.createElement(NavIntentOverlayImpl));
+  if (import.meta.env.DEV) console.info('[NavIntentOverlay] React component rendered');
 
   // Expose a tiny helper so other scripts can trigger the banner
   (window as any).__navIntentOverlayShow = async (url?: string) => {
     if (import.meta.env.DEV) console.info('[NavIntentOverlay] __navIntentOverlayShow called with:', url);
     if (url) {
-      try { sessionStorage.setItem('pwa.nav-intent', url); } catch (_) {}
+      try { 
+        sessionStorage.setItem('pwa.nav-intent', url);
+        if (import.meta.env.DEV) console.info('[NavIntentOverlay] Set sessionStorage intent:', url);
+      } catch (e) {
+        if (import.meta.env.DEV) console.error('[NavIntentOverlay] Failed to set sessionStorage:', e);
+      }
     }
     // Trigger a refresh to update the overlay state
     const event = new CustomEvent('nav-intent-refresh');
     window.dispatchEvent(event);
+    if (import.meta.env.DEV) console.info('[NavIntentOverlay] Dispatched nav-intent-refresh event');
   };
+  
+  if (import.meta.env.DEV) console.info('[NavIntentOverlay] Mount complete, function exposed:', typeof (window as any).__navIntentOverlayShow);
 }

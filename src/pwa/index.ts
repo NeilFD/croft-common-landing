@@ -156,6 +156,12 @@ window.addEventListener('focus', () => { burstConsume(); });
     if (import.meta.env.DEV) console.info('[PWA] Skipping SW on /admin');
     return;
   }
+  
+  // Mount nav intent overlay FIRST to ensure it's ready to receive messages
+  if (import.meta.env.DEV) console.info('[PWA] Mounting nav intent overlay');
+  await mountNavIntentOverlay();
+  if (import.meta.env.DEV) console.info('[PWA] Nav intent overlay mounted, testing function availability:', typeof (window as any).__navIntentOverlayShow);
+  
   const reg = await registerServiceWorker();
   if (!isStandalone) {
     if (import.meta.env.DEV) console.info('[PWA] Not standalone: showing install overlay');
@@ -163,8 +169,6 @@ window.addEventListener('focus', () => { burstConsume(); });
   }
   // Mount notifications prompt overlay (decides visibility internally)
   mountNotificationsOverlay(reg);
-  // Mount nav intent overlay (iOS user-gesture fallback)
-  mountNavIntentOverlay();
 
   // SW navigation listener moved to top-level for earlier attachment
 
