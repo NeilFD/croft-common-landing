@@ -16,7 +16,6 @@ async function consumeNavIntent(): Promise<boolean> {
   let url: string | null = null;
   try {
     url = sessionStorage.getItem('pwa.nav-intent');
-    if (url) sessionStorage.removeItem('pwa.nav-intent');
   } catch (_) {}
 
   if (!url && 'caches' in window) {
@@ -25,7 +24,6 @@ async function consumeNavIntent(): Promise<boolean> {
       const res = await cache.match(NAV_INTENT_URL);
       if (res) {
         const data = await res.json().catch(() => null) as any;
-        await cache.delete(NAV_INTENT_URL);
         if (data && typeof data.url === 'string') {
           url = data.url;
         }
@@ -34,6 +32,11 @@ async function consumeNavIntent(): Promise<boolean> {
   }
 
   if (url) {
+    // On iOS standalone, avoid programmatic navigation and keep the intent intact
+    // so the overlay can prompt the user with a proper gesture.
+    if (isIOSStandalone) {
+      return false;
+    }
     try {
       const target = new URL(url, window.location.origin);
       window.location.assign(target.toString());
