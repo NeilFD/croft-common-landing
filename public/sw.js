@@ -128,21 +128,23 @@ self.addEventListener('notificationclick', (event) => {
   let targetUrl = normalize(event?.notification?.data?.url);
   const clickToken = event?.notification?.data?.click_token || null;
 
-  // Append tracking token and normalize same-origin path casing
+  // Normalize and ensure full absolute URL
   try {
     const u = new URL(targetUrl, self.location.origin);
-    // Always ensure we use the notifications route for consistency
-    if (u.origin === self.location.origin && u.pathname !== '/notifications') {
-      u.pathname = '/notifications';
-    }
+    // Keep original path but ensure lowercase for consistency
     u.pathname = u.pathname.toLowerCase();
-    if (clickToken) {
+    // Keep existing query parameters and add tracking token if needed
+    if (clickToken && !u.searchParams.get('ntk')) {
       u.searchParams.set('ntk', clickToken);
     }
     targetUrl = u.toString();
   } catch (_e) {
-    // Fallback to notifications page with token
-    targetUrl = `/notifications${clickToken ? `?ntk=${clickToken}` : ''}`;
+    // Fallback to root with token
+    const fallbackUrl = new URL('/', self.location.origin);
+    if (clickToken) {
+      fallbackUrl.searchParams.set('ntk', clickToken);
+    }
+    targetUrl = fallbackUrl.toString();
   }
 
   event.waitUntil((async () => {

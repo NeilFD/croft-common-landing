@@ -267,9 +267,14 @@ serve(async (req) => {
       const personalizedTitle = renderTemplate(payload!.title, { first_name: first });
       const personalizedBody = renderTemplate(payload!.body, { first_name: first });
       
-      // Generate valid notification URL - always use /notifications route
-      const baseUrl = payload!.url || "https://croftcommontest.com/notifications";
-      const notificationUrl = `/notifications?ntk=${clickToken}${(s as any).user_id ? `&user=${(s as any).user_id}` : ''}`;
+      // Generate full absolute URL for the intended route with tracking parameters
+      const baseUrl = payload!.url || "/notifications";
+      const url = new URL(baseUrl, "https://croftcommontest.com");
+      url.searchParams.set('ntk', clickToken);
+      if ((s as any).user_id) {
+        url.searchParams.set('user', (s as any).user_id);
+      }
+      const notificationUrl = url.toString();
       
       const payloadForSub = { 
         ...(payload as any), 
