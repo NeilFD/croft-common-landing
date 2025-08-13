@@ -162,31 +162,12 @@ self.addEventListener('notificationclick', (event) => {
 
       const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
 
-      // Actively navigate any existing clients to the target URL (most reliable on iOS)
-      let navigated = false;
-      for (const c of allClients) {
-        try {
-          if ('navigate' in c) {
-            await c.navigate(targetUrl);
-            navigated = true;
-            if ('focus' in c) { try { await c.focus(); } catch (_) {} }
-          }
-        } catch (_e) {}
-      }
-
-      // Fallback: open a bounce page that immediately redirects (more reliable)
-      if (!navigated) {
-        try {
-          const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
-          const opened = await self.clients.openWindow(bounceUrl);
-          try {
-            if (opened && 'focus' in opened) { await opened.focus(); }
-          } catch (_) {}
-          // do not return; we'll also broadcast SW_NAVIGATE so the page can force navigation
-        } catch (_e) {
-          // no-op
-        }
-      }
+      // Always open bounce page in a user-activation context to guarantee navigation on iOS
+      try {
+        const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
+        const opened = await self.clients.openWindow(bounceUrl);
+        try { if (opened && 'focus' in opened) { await opened.focus(); } } catch (_) {}
+      } catch (_) {}
 
       // Persist navigation intent for durable handoff
       try {
@@ -197,13 +178,11 @@ self.addEventListener('notificationclick', (event) => {
         ));
       } catch (_e) {}
 
+      // Broadcast to all existing clients as an extra nudge
       let bc = null;
       try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_e) {}
-      // Notify existing clients to force navigation on the main thread (rebroadcast a few times)
       const broadcast = () => {
-        // Broadcast via BroadcastChannel (more reliable on iOS)
         try { bc && bc.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
-        // And via direct postMessage to all clients
         for (const c of allClients) {
           try { c.postMessage({ type: 'SW_NAVIGATE', url: targetUrl }); } catch (_) {}
         }
@@ -215,31 +194,12 @@ self.addEventListener('notificationclick', (event) => {
         broadcast();
         await delay(1000);
         broadcast();
-      } catch (_e) {} finally {
+      } catch (_) {} finally {
         try { bc && bc.close(); } catch (_) {}
       }
 
-
-      // Fallback: try navigating an existing same-origin tab
-      try {
-        const target = new URL(targetUrl);
-        const sameOrigin = allClients.find((c) => new URL(c.url).origin === target.origin);
-        if (sameOrigin && 'navigate' in sameOrigin) {
-          await sameOrigin.navigate(targetUrl);
-          if ('focus' in sameOrigin) return sameOrigin.focus();
-          return;
-        }
-      } catch (_e) {
-        // no-op
-      }
-
-      // If we still have a client, just focus it (message above should trigger navigation)
-      if (allClients.length > 0 && 'focus' in allClients[0]) {
-        return allClients[0].focus();
-      }
-
-      // Last resort
-      return self.clients.openWindow(targetUrl);
+      // Done
+      return;
     })()
   );
 });

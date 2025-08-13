@@ -231,28 +231,14 @@ self.addEventListener('notificationclick', (event) => {
 
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
 
-    // Try navigating existing clients first (best chance on iOS)
-    let navigated = false;
-    for (const client of clientList) {
-      try {
-        if ('navigate' in client) {
-          await client.navigate(targetUrl);
-          navigated = true;
-          try { if ('focus' in client) await client.focus(); } catch (_) {}
-        }
-      } catch (_) {}
-    }
+    // Always open a bounce page with user activation to guarantee navigation on iOS
+    try {
+      const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
+      const opened = await clients.openWindow(bounceUrl);
+      try { if (opened && 'focus' in opened) await opened.focus(); } catch (_) {}
+    } catch (_) {}
 
-    // If none navigated, open a bounce page that immediately redirects
-    if (!navigated) {
-      try {
-        const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
-        const opened = await clients.openWindow(bounceUrl);
-        try { if (opened && 'focus' in opened) await opened.focus(); } catch (_) {}
-      } catch (_) {}
-    }
-
-    // Broadcast navigation intent via BroadcastChannel and direct postMessage
+    // Broadcast navigation intent to any existing clients as a nudge
     let bc = null;
     try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_) {}
     const broadcast = () => {
@@ -272,7 +258,7 @@ self.addEventListener('notificationclick', (event) => {
       try { bc && bc.close(); } catch (_) {}
     }
 
-    // Last resort: try to open target directly
-    try { await clients.openWindow(targetUrl); } catch (_) {}
+    // Done
+    return;
   })());
 });
