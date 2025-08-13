@@ -162,19 +162,21 @@ self.addEventListener('notificationclick', (event) => {
 
       const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
 
-      // Check for PWA clients (more liberal detection for mobile)
+      // Check for PWA clients - they must be visibilityState 'visible' to count as open
       const pwaClients = allClients.filter(client => {
         try {
           const url = new URL(client.url);
+          // Must be from our origin, not a bounce page, and actually visible
           return url.origin === self.location.origin && 
-                 !url.pathname.includes('/nav.html');
+                 !url.pathname.includes('/nav.html') &&
+                 (client.visibilityState === 'visible' || client.focused);
         } catch (_) {
           return false;
         }
       });
 
-      // On mobile, focused detection is unreliable, so use any PWA client
       const hasPWAOpen = pwaClients.length > 0;
+      console.log('[SW] notification click - allClients:', allClients.length, 'pwaClients:', pwaClients.length, 'hasPWAOpen:', hasPWAOpen);
 
       // If PWA is already open, skip bounce page and use overlay system
       if (hasPWAOpen) {
