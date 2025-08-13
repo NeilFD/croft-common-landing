@@ -48,12 +48,12 @@ export const useNotificationHandler = () => {
             console.log('🔔 App: Showing banner with data:', bannerData);
             showBanner({
               title: bannerData.title || 'Notification',
-              body: bannerData.body || '',
-              bannerMessage: bannerData.banner_message,
+              body: bannerData.bannerMessage || bannerData.body || '',
+              bannerMessage: bannerData.bannerMessage,
               url: bannerData.url,
               icon: bannerData.icon,
-              notificationId: bannerData.notification_id || '',
-              clickToken: bannerData.click_token
+              notificationId: bannerData.notificationId || bannerData.notification_id,
+              clickToken: bannerData.clickToken || bannerData.click_token
             });
           }
         };

@@ -204,7 +204,7 @@ serve(async (req) => {
       });
     }
 
-    // Create notification row
+    // Create notification row with banner fields
     const { data: inserted, error: insertErr } = await supabaseAdmin
       .from("notifications")
       .insert({
@@ -215,6 +215,8 @@ serve(async (req) => {
         url: payload.url ?? null,
         icon: payload.icon ?? null,
         badge: payload.badge ?? null,
+        banner_message: (payload as any).banner_message ?? null,
+        display_mode: (payload as any).display_mode ?? 'navigation',
         scope,
         dry_run: dryRun,
         recipients_count: subs?.length ?? 0,
@@ -272,7 +274,20 @@ serve(async (req) => {
       
       // Generate full absolute URL for the intended route with tracking parameters
       const baseUrl = payload!.url || "/notifications";
-      const url = new URL(baseUrl, Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovableproject.com') || "https://croftcommontest.com");
+      let url: URL;
+      try {
+        // Try to construct URL using the request origin if available
+        const requestOrigin = req.headers.get('origin') || req.headers.get('referer');
+        if (requestOrigin) {
+          url = new URL(baseUrl, requestOrigin);
+        } else {
+          // Fallback to production domain
+          url = new URL(baseUrl, "https://croftcommontest.com");
+        }
+      } catch {
+        // Final fallback
+        url = new URL(baseUrl, "https://croftcommontest.com");
+      }
       url.searchParams.set('ntk', clickToken);
       if ((s as any).user_id) {
         url.searchParams.set('user', (s as any).user_id);
@@ -284,6 +299,7 @@ serve(async (req) => {
         title: personalizedTitle, 
         body: personalizedBody, 
         banner_message: personalizedBannerMessage,
+        display_mode: (payload as any).display_mode || 'navigation',
         url: notificationUrl,
         click_token: clickToken, 
         notification_id: notificationId 

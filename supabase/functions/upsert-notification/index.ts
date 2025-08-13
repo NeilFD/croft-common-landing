@@ -78,6 +78,8 @@ serve(async (req) => {
       url: notification.url ?? null,
       icon: notification.icon ?? null,
       badge: notification.badge ?? null,
+      banner_message: (notification as any).banner_message ?? null,
+      display_mode: (notification as any).display_mode ?? 'navigation',
       scope: (notification.scope ?? "all") as "all" | "self",
       dry_run: Boolean(notification.dry_run ?? false),
       updated_at: nowISO,

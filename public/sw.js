@@ -201,12 +201,12 @@ self.addEventListener('notificationclick', (event) => {
               type: 'SHOW_BANNER',
               data: {
                 title: event?.notification?.title || 'Notification',
-                body: event?.notification?.body || '',
-                banner_message: notificationData.banner_message,
-                url: notificationData.url,
-                icon: event?.notification?.icon,
-                notification_id: notificationData.notification_id,
-                click_token: notificationData.click_token
+                body: notificationData.banner_message || event?.notification?.body || 'Notification content',
+                bannerMessage: notificationData.banner_message,
+                url: targetUrl,
+                icon: notificationData.icon,
+                notificationId: notificationData.notification_id,
+                clickToken: notificationData.click_token
               }
             };
             console.log('🔔 SW: Posting banner message to client:', bannerData);
