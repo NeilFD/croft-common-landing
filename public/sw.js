@@ -265,19 +265,32 @@ async function storeNudgeUrl(url) {
   }
 }
 
-// Simplified storage-first delivery - all scenarios rely on IndexedDB
+// Storage-first delivery with immediate messaging for open PWAs
 async function attemptNudgeDelivery(url) {
   console.log('🔔 SW: 📡 Storage-first NUDGE delivery for URL:', url);
   
   // URL is already stored in IndexedDB at this point
-  // Send one immediate message as performance optimization for open PWAs
   const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
   const hasOpenClients = clients.length > 0;
   
-  console.log(`🔔 SW: 📡 Sending one immediate message (${clients.length} clients open)`);
-  sendNudgeToClients(url, hasOpenClients);
+  if (hasOpenClients) {
+    console.log(`🔔 SW: 📡 Open PWA detected (${clients.length} clients) - sending immediate messages`);
+    
+    // Send immediate message
+    sendNudgeToClients(url, hasOpenClients);
+    
+    // Send retry message after 1 second for reliability
+    setTimeout(() => {
+      console.log('🔔 SW: 🔄 Sending retry message for open PWA');
+      sendNudgeToClients(url, hasOpenClients);
+    }, 1000);
+    
+  } else {
+    console.log('🔔 SW: 📡 No open clients - relying on IndexedDB for fresh app launch');
+    sendNudgeToClients(url, hasOpenClients);
+  }
   
-  // React app will find the URL via IndexedDB polling - no complex retry needed
+  // React app can also find the URL via IndexedDB polling as backup
 }
 
 function sendNudgeToClients(url, hasOpenClients = false) {
