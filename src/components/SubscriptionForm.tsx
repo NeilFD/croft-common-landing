@@ -78,7 +78,9 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
     setIsLoading(true);
     
     try {
+      console.log('DEBUG: birthdayDay:', birthdayDay, 'birthdayMonth:', birthdayMonth);
       const birthday = birthdayDay && birthdayMonth ? `${birthdayDay}/${birthdayMonth}` : null;
+      console.log('DEBUG: constructed birthday:', birthday);
       
       const profileData = {
         email, 
