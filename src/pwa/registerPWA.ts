@@ -24,23 +24,40 @@ export function isIosSafari(): boolean {
 
 export async function registerServiceWorker(): Promise<ServiceWorkerRegistration | null> {
   if (!('serviceWorker' in navigator)) return null;
+  
   try {
-    // Always use the unified service worker to keep logic consistent across devices
+    // First, check which service worker is currently active
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (registration?.active) {
+      const swUrl = registration.active.scriptURL;
+      console.log('🔍 Current service worker:', swUrl);
+      
+      // If mobile service worker is active, unregister it
+      if (swUrl.includes('sw-mobile.js')) {
+        console.log('⚠️ Mobile service worker detected - unregistering...');
+        await registration.unregister();
+        console.log('✅ Mobile service worker unregistered');
+      }
+    }
+    
+    // Force register the main service worker with NUDGE functionality
     const swPath = '/sw.js';
-    const reg = await navigator.serviceWorker.register(swPath);
-    console.log(`✅ Service worker registered (unified):`, reg.scope);
+    const reg = await navigator.serviceWorker.register(swPath, { 
+      scope: '/',
+      updateViaCache: 'none' // Force fresh registration
+    });
+    
+    console.log(`✅ Service worker registered (NUDGE-enabled):`, reg.scope);
+    console.log('🎯 Service worker script URL:', reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL);
+    
+    // Wait for the service worker to be ready
+    await navigator.serviceWorker.ready;
+    console.log('✅ Service worker is ready and active');
+    
     return reg;
   } catch (e) {
     console.error('Service worker registration failed:', e);
-    // Fallback to regular SW
-    try {
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      console.log('✅ Fallback service worker registered:', reg.scope);
-      return reg;
-    } catch (fallbackError) {
-      console.error('Fallback service worker registration failed:', fallbackError);
-      return null;
-    }
+    return null;
   }
 }
 

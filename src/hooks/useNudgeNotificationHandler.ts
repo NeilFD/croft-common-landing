@@ -216,15 +216,20 @@ export const useNudgeNotificationHandler = () => {
       console.log('🎯 NUDGE MESSAGE: Event origin:', event.origin);
       console.log('🎯 NUDGE MESSAGE: Is initial load?', isInitialLoad);
       
-      if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
-        console.log('🎯 NUDGE MESSAGE: ✅ Valid SHOW_NUDGE message received!');
+      // Support both SHOW_NUDGE (main SW) and SW_NAVIGATE (mobile SW) messages
+      const isValidMessage = (event.data.type === 'SHOW_NUDGE' && event.data.url) || 
+                            (event.data.type === 'SW_NAVIGATE' && event.data.url);
+      
+      if (isValidMessage) {
+        console.log(`🎯 NUDGE MESSAGE: ✅ Valid ${event.data.type} message received!`);
+        const url = event.data.url;
         
         // If app was already running, trigger a refresh to force component remount
         if (!isInitialLoad) {
           console.log('🎯 NUDGE MESSAGE: 🔄 App already open, triggering strategic refresh...');
-          console.log('🎯 NUDGE MESSAGE: Storing URL before refresh:', event.data.url);
+          console.log('🎯 NUDGE MESSAGE: Storing URL before refresh:', url);
           // Store the URL first, then refresh
-          sessionStorage.setItem('nudge_url', event.data.url);
+          sessionStorage.setItem('nudge_url', url);
           sessionStorage.removeItem('nudge_clicked');
           console.log('🎯 NUDGE MESSAGE: ⏰ Starting 3-second countdown to refresh...');
           setTimeout(() => {
@@ -234,9 +239,9 @@ export const useNudgeNotificationHandler = () => {
           return;
         }
         
-        console.log('🎯 NUDGE MESSAGE: Setting URL directly from message:', event.data.url);
-        setNudgeUrl(event.data.url);
-        sessionStorage.setItem('nudge_url', event.data.url);
+        console.log('🎯 NUDGE MESSAGE: Setting URL directly from message:', url);
+        setNudgeUrl(url);
+        sessionStorage.setItem('nudge_url', url);
         sessionStorage.removeItem('nudge_clicked');
         
         // Additional verification: check that the URL was actually set
@@ -246,7 +251,7 @@ export const useNudgeNotificationHandler = () => {
         }, 100);
       } else {
         console.log('🎯 NUDGE MESSAGE: ❌ Invalid or irrelevant message');
-        console.log('🎯 NUDGE MESSAGE: Expected type: SHOW_NUDGE, got:', event.data?.type);
+        console.log('🎯 NUDGE MESSAGE: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);
         console.log('🎯 NUDGE MESSAGE: Expected URL, got:', event.data?.url);
       }
     };
@@ -258,14 +263,19 @@ export const useNudgeNotificationHandler = () => {
       console.log('🎯 NUDGE WINDOW: ================== WINDOW MESSAGE ==================');
       console.log('🎯 NUDGE WINDOW: Event data:', event.data);
       
-      if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
-        console.log('🎯 NUDGE WINDOW: ✅ Valid window message received!');
+      // Support both SHOW_NUDGE (main SW) and SW_NAVIGATE (mobile SW) messages  
+      const isValidMessage = (event.data.type === 'SHOW_NUDGE' && event.data.url) || 
+                            (event.data.type === 'SW_NAVIGATE' && event.data.url);
+      
+      if (isValidMessage) {
+        console.log(`🎯 NUDGE WINDOW: ✅ Valid ${event.data.type} window message received!`);
+        const url = event.data.url;
         
         // If app was already running, trigger a refresh to force component remount
         if (!isInitialLoad) {
           console.log('🎯 NUDGE WINDOW: 🔄 App already open, triggering strategic refresh...');
           // Store the URL first, then refresh
-          sessionStorage.setItem('nudge_url', event.data.url);
+          sessionStorage.setItem('nudge_url', url);
           sessionStorage.removeItem('nudge_clicked');
           setTimeout(() => {
             window.location.reload();
@@ -273,9 +283,9 @@ export const useNudgeNotificationHandler = () => {
           return;
         }
         
-        console.log('🎯 NUDGE WINDOW: Setting URL from window message:', event.data.url);
-        setNudgeUrl(event.data.url);
-        sessionStorage.setItem('nudge_url', event.data.url);
+        console.log('🎯 NUDGE WINDOW: Setting URL from window message:', url);
+        setNudgeUrl(url);
+        sessionStorage.setItem('nudge_url', url);
         sessionStorage.removeItem('nudge_clicked');
         
         // Additional verification
@@ -285,6 +295,7 @@ export const useNudgeNotificationHandler = () => {
         }, 100);
       } else {
         console.log('🎯 NUDGE WINDOW: ❌ Invalid or irrelevant window message');
+        console.log('🎯 NUDGE WINDOW: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);
       }
     };
     
@@ -292,12 +303,22 @@ export const useNudgeNotificationHandler = () => {
     window.addEventListener('message', handleWindowMessage);
     console.log('🎯 NUDGE WINDOW: ✅ Window message listener added');
 
-    // Send app ready message to service worker
+    // Send app ready message to service worker with enhanced debugging
     if ('serviceWorker' in navigator) {
       console.log('🎯 NUDGE: 📡 Checking service worker registration...');
       navigator.serviceWorker.ready.then((registration) => {
         console.log('🎯 NUDGE: ✅ Service worker is ready');
+        console.log('🎯 NUDGE: 🔍 Service worker script URL:', registration.active?.scriptURL);
+        
         if (registration.active) {
+          // Check which service worker is active
+          const swUrl = registration.active.scriptURL;
+          if (swUrl.includes('sw-mobile.js')) {
+            console.log('⚠️ NUDGE: Mobile service worker detected - NUDGE may not work!');
+          } else if (swUrl.includes('sw.js')) {
+            console.log('✅ NUDGE: Main service worker detected - NUDGE should work');
+          }
+          
           console.log('🎯 NUDGE: 📤 Sending APP_READY to service worker');
           registration.active.postMessage({ 
             type: 'APP_READY',

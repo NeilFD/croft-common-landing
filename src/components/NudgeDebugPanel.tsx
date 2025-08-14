@@ -42,6 +42,22 @@ export const NudgeDebugPanel = () => {
     console.log('SessionStorage nudge_clicked:', sessionStorage.getItem('nudge_clicked'));
     console.log('SessionStorage app_initialized:', sessionStorage.getItem('app_initialized'));
     
+    // Check service worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then(registration => {
+        if (registration?.active) {
+          console.log('🔍 Active service worker:', registration.active.scriptURL);
+          if (registration.active.scriptURL.includes('sw-mobile.js')) {
+            console.log('⚠️ MOBILE SERVICE WORKER - NUDGE WILL NOT WORK!');
+          } else {
+            console.log('✅ Main service worker - NUDGE should work');
+          }
+        } else {
+          console.log('❌ No active service worker');
+        }
+      });
+    }
+    
     // Check IndexedDB
     const request = indexedDB.open('nudge-storage', 1);
     request.onsuccess = (event) => {
