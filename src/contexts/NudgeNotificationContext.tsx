@@ -32,114 +32,37 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
     const initializeFromStorage = async () => {
       console.log('🎯 NUDGE CONTEXT: Initializing from storage...');
       
-      // AGGRESSIVE CLEANUP: Clear all nudge data on fresh app launch
-      const isInitialLoad = !sessionStorage.getItem('app_initialized');
-      if (isInitialLoad) {
-        console.log('🎯 NUDGE CONTEXT: Initial app load - clearing all nudge data');
-        sessionStorage.removeItem('nudge_url');
-        sessionStorage.removeItem('nudge_clicked');
-        sessionStorage.setItem('app_initialized', 'true');
-        
-        // Clear IndexedDB too
-        try {
-          const request = indexedDB.open('nudge-storage', 2);
-          request.onsuccess = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result;
-            if (db.objectStoreNames.contains('nudge')) {
-              const transaction = db.transaction(['nudge'], 'readwrite');
-              const store = transaction.objectStore('nudge');
-              store.clear();
-              console.log('🎯 NUDGE CONTEXT: Cleared IndexedDB on initial load');
-            }
-            db.close();
-          };
-        } catch (error) {
-          console.log('🎯 NUDGE CONTEXT: Failed to clear IndexedDB:', error);
-        }
-        return; // Exit early - no nudge on fresh launch
-      }
+      // CRITICAL: Clear all nudge data on EVERY app launch - nudges should only come from active push flows
+      console.log('🎯 NUDGE CONTEXT: Clearing all nudge data - nudges only from active push notifications');
+      sessionStorage.removeItem('nudge_url');
+      sessionStorage.removeItem('nudge_clicked');
       
-      // Check sessionStorage first (only on subsequent loads)
-      const storedUrl = sessionStorage.getItem('nudge_url');
-      const storedClicked = sessionStorage.getItem('nudge_clicked') === 'true';
-      
-      if (storedUrl && storedUrl !== 'null' && storedUrl !== 'undefined') {
-        console.log('🎯 NUDGE CONTEXT: Found URL in sessionStorage:', storedUrl);
-        setNudgeUrlState(storedUrl);
-        setNudgeClicked(storedClicked);
-        return;
-      }
-
-      // Check IndexedDB as fallback with proper initialization
+      // ALWAYS clear IndexedDB on app launch - no persistent nudges across sessions
       try {
         const request = indexedDB.open('nudge-storage', 2);
-        
-        request.onupgradeneeded = (event) => {
-          console.log('🎯 NUDGE CONTEXT: Creating/upgrading nudge database');
-          const db = (event.target as IDBOpenDBRequest).result;
-          if (!db.objectStoreNames.contains('nudge')) {
-            db.createObjectStore('nudge');
-            console.log('🎯 NUDGE CONTEXT: Created nudge object store');
-          }
-        };
-        
         request.onsuccess = (event) => {
           const db = (event.target as IDBOpenDBRequest).result;
           if (db.objectStoreNames.contains('nudge')) {
-            const transaction = db.transaction(['nudge'], 'readonly');
+            const transaction = db.transaction(['nudge'], 'readwrite');
             const store = transaction.objectStore('nudge');
-            
-            // Check multiple keys that service worker might use
-            const checkKeys = ['current', 'delivery_pending', 'nudge_url'];
-            let foundUrl = false;
-            
-            const tryNextKey = (index: number) => {
-              if (index >= checkKeys.length || foundUrl) {
-                db.close();
-                return;
-              }
-              
-              const getRequest = store.get(checkKeys[index]);
-              getRequest.onsuccess = () => {
-                if (getRequest.result && !foundUrl) {
-                  const result = getRequest.result;
-                  
-                  // Validate that this is a real URL and not an undefined object
-                  let url = null;
-                  if (typeof result === 'string') {
-                    url = result;
-                  } else if (result.url && result.url !== 'undefined' && 
-                           !(result._type === 'undefined' && result.value === 'undefined')) {
-                    url = result.url;
-                  }
-                  
-                  if (url) {
-                    console.log('🎯 NUDGE CONTEXT: Found URL in IndexedDB key', checkKeys[index], ':', url);
-                    setNudgeUrlState(url);
-                    sessionStorage.setItem('nudge_url', url);
-                    foundUrl = true;
-                    db.close();
-                    return;
-                  }
-                }
-                tryNextKey(index + 1);
-              };
-              getRequest.onerror = () => tryNextKey(index + 1);
-            };
-            
-            tryNextKey(0);
-          } else {
-            console.log('🎯 NUDGE CONTEXT: No nudge store found');
-            db.close();
+            store.clear();
+            console.log('🎯 NUDGE CONTEXT: Cleared IndexedDB on launch');
+          }
+          db.close();
+        };
+        request.onupgradeneeded = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          if (!db.objectStoreNames.contains('nudge')) {
+            db.createObjectStore('nudge');
           }
         };
-        
-        request.onerror = () => {
-          console.log('🎯 NUDGE CONTEXT: IndexedDB open failed:', request.error);
-        };
       } catch (error) {
-        console.log('🎯 NUDGE CONTEXT: IndexedDB check failed:', error);
+        console.log('🎯 NUDGE CONTEXT: Failed to clear IndexedDB:', error);
       }
+      
+      // Mark app as initialized for this session
+      sessionStorage.setItem('app_initialized', 'true');
+      console.log('🎯 NUDGE CONTEXT: App initialized - waiting for active push notifications only');
     };
 
     initializeFromStorage();

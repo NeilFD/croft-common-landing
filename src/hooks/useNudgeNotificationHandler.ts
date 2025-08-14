@@ -11,17 +11,10 @@ export const useNudgeNotificationHandler = () => {
     console.log('🎯 NUDGE HANDLER: Starting with context state:', { nudgeUrl, nudgeClicked });
     console.log('🎯 NUDGE HANDLER: Current route:', location.pathname);
     
-    // Track if this is an initial app load vs a notification while app is open
-    const isInitialLoad = !sessionStorage.getItem('app_initialized');
-    sessionStorage.setItem('app_initialized', 'true');
-    console.log('🎯 NUDGE HANDLER: Initial load?', isInitialLoad);
-    console.log('🎯 NUDGE HANDLER: SessionStorage app_initialized:', sessionStorage.getItem('app_initialized'));
-    
-    // Log ALL current sessionStorage nudge-related keys
-    console.log('🎯 NUDGE HANDLER: Current sessionStorage state:');
-    console.log('  - nudge_url:', sessionStorage.getItem('nudge_url'));
-    console.log('  - nudge_clicked:', sessionStorage.getItem('nudge_clicked'));
-    console.log('  - app_initialized:', sessionStorage.getItem('app_initialized'));
+    // CRITICAL: Do NOT check for existing nudge URLs on handler initialization
+    // Nudges should ONLY come from active push notification flows, never from storage
+    console.log('🎯 NUDGE HANDLER: Initializing - waiting for active push notifications only');
+    console.log('🎯 NUDGE HANDLER: Current route:', location.pathname);
     // Enhanced IndexedDB initialization and checking
     const initializeAndCheckIndexedDB = () => {
       return new Promise<string | null>((resolve) => {
@@ -177,9 +170,8 @@ export const useNudgeNotificationHandler = () => {
       }
     };
     
-    // Simple storage check on initialization
-    console.log('🎯 NUDGE HANDLER: 🔍 Checking for existing NUDGE URLs');
-    checkForNudgeUrl();
+    // REMOVED: No checking for existing nudge URLs on initialization
+    // Nudges come ONLY from active push notification flows
 
     // Robust BroadcastChannel setup with retry
     let channel: BroadcastChannel | null = null;
@@ -222,7 +214,6 @@ export const useNudgeNotificationHandler = () => {
       console.log('🎯 NUDGE MESSAGE: Message type:', event.data?.type);
       console.log('🎯 NUDGE MESSAGE: Message URL:', event.data?.url);
       console.log('🎯 NUDGE MESSAGE: Event origin:', event.origin);
-      console.log('🎯 NUDGE MESSAGE: Is initial load?', isInitialLoad);
       
       // Support both SHOW_NUDGE (main SW) and SW_NAVIGATE (mobile SW) messages
       const isValidMessage = (event.data.type === 'SHOW_NUDGE' && event.data.url) || 
@@ -303,49 +294,24 @@ export const useNudgeNotificationHandler = () => {
     window.addEventListener('message', handleWindowMessage);
     console.log('🎯 NUDGE WINDOW: ✅ Window message listener added');
 
-    // Enhanced visibility change handler with IndexedDB polling
+    // Enhanced visibility change handler - ONLY check IndexedDB for fresh service worker messages
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('🎯 NUDGE: 👁️ Page became visible, starting enhanced checks...');
-        checkForNudgeUrl();
+        console.log('🎯 NUDGE: 👁️ Page became visible, checking for fresh service worker messages...');
         
-        // Immediate IndexedDB check with initialization
+        // Only check IndexedDB for fresh messages from service worker (not persistent storage)
         initializeAndCheckIndexedDB().then(url => {
           if (url && !nudgeUrl) {
-            console.log('🎯 NUDGE: ✓ Found URL on visibility change:', url);
+            console.log('🎯 NUDGE: ✓ Found fresh URL from service worker:', url);
             setNudgeUrl(url);
             sessionStorage.setItem('nudge_url', url);
           }
         });
-        
-        // Aggressive polling for open PWAs that might have missed messages
-        let pollCount = 0;
-        const pollInterval = setInterval(async () => {
-          pollCount++;
-          console.log(`🎯 NUDGE: 🔍 Visibility poll ${pollCount}/8`);
-          
-          // Check both sessionStorage and IndexedDB each poll
-          await checkForNudgeUrl();
-          const directUrl = await initializeAndCheckIndexedDB();
-          if (directUrl && !nudgeUrl) {
-            console.log(`🎯 NUDGE: ✓ Poll ${pollCount} found URL:`, directUrl);
-            setNudgeUrl(directUrl);
-            sessionStorage.setItem('nudge_url', directUrl);
-            clearInterval(pollInterval);
-            return;
-          }
-          
-          if (pollCount >= 8) {
-            clearInterval(pollInterval);
-            console.log('🎯 NUDGE: 🏁 Visibility polling complete');
-          }
-        }, 750);
       }
     };
     
     const handleFocus = () => {
-      console.log('🎯 NUDGE: 🎯 Window focused, starting enhanced recovery...');
-      checkForNudgeUrl();
+      console.log('🎯 NUDGE: 🎯 Window focused, checking for fresh service worker messages...');
       
       // Recreate BroadcastChannel on focus (connection might be stale)
       if (channel) {
@@ -353,37 +319,14 @@ export const useNudgeNotificationHandler = () => {
       }
       setupBroadcastChannel();
       
-      // Immediate deep IndexedDB check
+      // Only check IndexedDB for fresh messages from service worker (not persistent storage)
       initializeAndCheckIndexedDB().then(url => {
         if (url && !nudgeUrl) {
-          console.log('🎯 NUDGE: ✓ Focus found URL in IndexedDB:', url);
+          console.log('🎯 NUDGE: ✓ Focus found fresh URL from service worker:', url);
           setNudgeUrl(url);
           sessionStorage.setItem('nudge_url', url);
         }
       });
-      
-      // Enhanced polling for open PWAs with database initialization
-      let pollCount = 0;
-      const pollInterval = setInterval(async () => {
-        pollCount++;
-        console.log(`🎯 NUDGE: 🔄 Focus poll ${pollCount}/6`);
-        
-        // Check both storage methods
-        await checkForNudgeUrl();
-        const dbUrl = await initializeAndCheckIndexedDB();
-        if (dbUrl && !nudgeUrl) {
-          console.log(`🎯 NUDGE: ✓ Focus poll ${pollCount} found URL:`, dbUrl);
-          setNudgeUrl(dbUrl);
-          sessionStorage.setItem('nudge_url', dbUrl);
-          clearInterval(pollInterval);
-          return;
-        }
-        
-        if (pollCount >= 6) {
-          clearInterval(pollInterval);
-          console.log('🎯 NUDGE: 🏁 Focus polling complete');
-        }
-      }, 1200);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
