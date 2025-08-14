@@ -1,227 +1,143 @@
 import { useEffect } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useBannerNotification } from '@/contexts/BannerNotificationContext';
-import { toast } from '@/hooks/use-toast';
 
-/**
- * Universal deep link handler for PWA notifications
- * Processes notification tokens and handles tracking across all routes
- */
 export const useNotificationHandler = () => {
-  const location = useLocation();
-  const [searchParams] = useSearchParams();
   const { showBanner } = useBannerNotification();
 
   useEffect(() => {
-    const token = searchParams.get('ntk');
-    const userId = searchParams.get('user');
-    
-    if (!token) return;
+    // Handle notification tokens from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const notificationToken = urlParams.get('ntk');
+    const userId = urlParams.get('user');
 
-    const handleNotificationTracking = async () => {
-      try {
-        // Track notification open
-        await supabase.functions.invoke('track-notification-event', {
-          body: { 
-            type: 'notification_open', 
-            token, 
-            url: window.location.href,
-            user_id: userId 
-          },
-        });
-
-        // Store token for future reference
-        try {
-          sessionStorage.setItem('notifications.last_ntk', token);
-          if (userId) {
-            sessionStorage.setItem('notifications.last_user', userId);
-          }
-        } catch {
-          // Silent fail for storage issues
+    if (notificationToken) {
+      console.log('🔔 App: Processing notification token from URL:', notificationToken);
+      
+      // Store in session storage for potential later use
+      sessionStorage.setItem('notificationToken', notificationToken);
+      
+      // Track the notification open
+      supabase.functions.invoke('track-notification-event', {
+        body: {
+          type: 'notification_open',
+          token: notificationToken,
+          url: window.location.href
         }
-
-      } catch (error) {
-        console.warn('[NotificationHandler] Error processing notification:', error);
-      }
-    };
-
-    handleNotificationTracking();
-  }, [location.pathname, searchParams]);
-
-  // Enhanced message handling with comprehensive debugging
-  useEffect(() => {
-    console.log('🔔 App: Setting up enhanced notification message listeners');
-    
-    const handleMessage = (event: MessageEvent) => {
-      console.log('🔔 App: Message received:', {
-        type: event.data?.type,
-        origin: event.origin,
-        source: event.source === window ? 'window' : 'other',
-        data: event.data
+      }).then(() => {
+        console.log('🔔 App: Notification open tracked');
+      }).catch(error => {
+        console.error('🔔 App: Failed to track notification open:', error);
       });
-      
-      
-      
-      // Handle all banner-related message types
-      if (event.data?.type === 'SHOW_BANNER' || 
-          event.data?.type === 'CHECK_BANNER_STORAGE' || 
-          event.data?.type === 'FORCE_BANNER_CHECK') {
-        
-        const bannerData = event.data.data;
-        console.log('🔔 App: Processing banner message:', {
-          messageType: event.data.type,
-          bannerData,
-          bannerMessage: bannerData.bannerMessage,
-          body: bannerData.body
-        });
-        
-        
-        
-        showBanner({
-          title: bannerData.title || 'Notification',
-          body: bannerData.body || '',
-          bannerMessage: bannerData.bannerMessage,
-          url: bannerData.url,
-          icon: bannerData.icon,
-          notificationId: bannerData.notificationId,
-          clickToken: bannerData.clickToken
-        });
-      }
-    };
-
-    // Method 1: Service Worker messages with registration check
-    console.log('🔔 App: Registering service worker message listener');
-    navigator.serviceWorker?.addEventListener('message', handleMessage);
-    
-    // Method 2: Window messages (all origins for PWA compatibility)
-    console.log('🔔 App: Registering window message listener');
-    window.addEventListener('message', handleMessage);
-
-    // Method 3: BroadcastChannel listener
-    let broadcastChannel: BroadcastChannel | null = null;
-    try {
-      broadcastChannel = new BroadcastChannel('croft-banner-notifications');
-      broadcastChannel.addEventListener('message', handleMessage);
-      console.log('🔔 App: ✅ BroadcastChannel listener registered');
-    } catch (error) {
-      console.warn('🔔 App: ❌ BroadcastChannel not supported:', error);
     }
 
-    // Method 4: Check localStorage for pending notifications
-    const checkPendingNotifications = () => {
+    // Check database for pending banners
+    const checkPendingBanners = async () => {
+      const currentToken = notificationToken || sessionStorage.getItem('notificationToken');
+      if (!currentToken) return;
+
       try {
-        const pendingStr = localStorage.getItem('pending-banner-notification');
-        if (pendingStr) {
-          const pending = JSON.parse(pendingStr);
-          const age = Date.now() - pending.timestamp;
+        console.log('🔔 App: Checking database for pending banners with token:', currentToken);
+        
+        const { data: pendingBanners, error } = await supabase
+          .from('pending_banners')
+          .select('*')
+          .eq('notification_token', currentToken)
+          .eq('processed', false)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.error('🔔 App: Error fetching pending banners:', error);
+          return;
+        }
+
+        if (pendingBanners && pendingBanners.length > 0) {
+          const banner = pendingBanners[0];
+          console.log('🔔 App: Found pending banner in database:', banner);
           
-          // Only process if less than 30 seconds old
-          if (age < 30000) {
-            console.log('🔔 App: Found pending banner notification in localStorage:', pending);
-            handleMessage(pending);
-            localStorage.removeItem('pending-banner-notification');
-          } else {
-            // Clean up old notifications
-            localStorage.removeItem('pending-banner-notification');
-          }
+          showBanner({
+            title: banner.title,
+            body: banner.body,
+            bannerMessage: banner.banner_message,
+            url: banner.url,
+            icon: banner.icon,
+            notificationId: banner.id,
+            clickToken: currentToken
+          });
+
+          // Mark as processed
+          await supabase
+            .from('pending_banners')
+            .update({ processed: true, processed_at: new Date().toISOString() })
+            .eq('id', banner.id);
         }
       } catch (error) {
-        console.warn('🔔 App: ❌ Failed to check pending notifications:', error);
+        console.error('🔔 App: Error checking pending banners:', error);
       }
+    };
+
+    // Listen for BroadcastChannel messages (primary method)
+    const channel = new BroadcastChannel('notification-events');
+    const handleBroadcastMessage = (event: MessageEvent) => {
+      console.log('🔔 App: Received broadcast message:', event.data);
       
-      // Also check URL params
-      const currentParams = new URLSearchParams(window.location.search);
-      if (currentParams.get('ntk')) {
-        console.log('🔔 App: Detected notification token in URL');
+      if (event.data?.type === 'SHOW_BANNER' && event.data?.data) {
+        console.log('🔔 App: Showing banner from broadcast:', event.data.data);
+        showBanner(event.data.data);
       }
     };
 
-    // Method 5: Visibility change listener for immediate message checking
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        console.log('🔔 App: App became visible - checking for pending notifications');
-        checkPendingNotifications();
-        
-        // Send focus signal to service worker
-        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-          navigator.serviceWorker.controller.postMessage({
-            type: 'APP_FOCUSED',
-            timestamp: Date.now(),
-            url: window.location.href
-          });
-        }
-      }
-    };
-
-    // Method 6: Window focus listener as backup
-    const handleWindowFocus = () => {
-      console.log('🔔 App: Window focused - checking for pending notifications');
-      checkPendingNotifications();
-    };
-
-    // Register all event listeners
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleWindowFocus);
+    channel.addEventListener('message', handleBroadcastMessage);
     
-    // Initial check for pending notifications when component mounts
-    checkPendingNotifications();
+    // Check for pending banners immediately and on visibility/focus changes
+    checkPendingBanners();
+    
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🔔 App: Page became visible, checking for pending banners');
+        checkPendingBanners();
+      }
+    };
+    
+    const handleFocus = () => {
+      console.log('🔔 App: Window focused, checking for pending banners');
+      checkPendingBanners();
+    };
 
-    // Enhanced service worker registration with retry
-    if ('serviceWorker' in navigator) {
-      const setupServiceWorkerCommunication = async () => {
-        try {
-          const registration = await navigator.serviceWorker.ready;
-          console.log('🔔 App: ✅ Service worker ready, registration:', registration);
-          
-          // Send comprehensive ready signal
-          if (registration.active) {
-            registration.active.postMessage({
-              type: 'APP_READY',
-              timestamp: Date.now(),
-              url: window.location.href,
-              userAgent: navigator.userAgent,
-              isStandalone: window.matchMedia('(display-mode: standalone)').matches
-            });
-            console.log('🔔 App: ✅ Ready signal sent to service worker');
-          }
-          
-          // Set up message listener specifically for the active service worker
-          if (registration.active) {
-            registration.active.addEventListener?.('message', handleMessage);
-          }
-          
-        } catch (error) {
-          console.warn('🔔 App: ❌ Service worker setup failed:', error);
-        }
-      };
-      
-      setupServiceWorkerCommunication();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    // Send ready message to service worker
+    if (navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'APP_READY' });
+      console.log('🔔 App: Sent APP_READY to service worker');
     }
 
-    // Cleanup on unmount
+    // Cleanup
     return () => {
-      navigator.serviceWorker?.removeEventListener('message', handleMessage);
-      window.removeEventListener('message', handleMessage);
+      channel.removeEventListener('message', handleBroadcastMessage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleWindowFocus);
-      broadcastChannel?.close();
-      // No interval to clear
+      window.removeEventListener('focus', handleFocus);
+      channel.close();
     };
   }, [showBanner]);
 
-  // Clean URL of notification parameters after handling
   useEffect(() => {
-    const token = searchParams.get('ntk');
-    const userId = searchParams.get('user');
+    // Clean up URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasNotificationParams = urlParams.has('ntk') || urlParams.has('user');
     
-    if (token || userId) {
-      const newSearchParams = new URLSearchParams(searchParams);
-      newSearchParams.delete('ntk');
-      newSearchParams.delete('user');
+    if (hasNotificationParams) {
+      urlParams.delete('ntk');
+      urlParams.delete('user');
       
-      const newUrl = `${location.pathname}${newSearchParams.toString() ? `?${newSearchParams.toString()}` : ''}${location.hash}`;
+      const newUrl = urlParams.toString() 
+        ? `${window.location.pathname}?${urlParams.toString()}`
+        : window.location.pathname;
+      
       window.history.replaceState({}, '', newUrl);
+      console.log('🔔 App: Cleaned notification params from URL');
     }
-  }, [location.pathname, searchParams]);
+  }, []);
 };

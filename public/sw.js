@@ -107,147 +107,124 @@ self.addEventListener('push', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
+  console.log('🔔 SW: Notification clicked', { data: event.notification.data });
+  
   event.notification.close();
 
-  const normalize = (u) => {
+  const data = event.notification.data || {};
+  const { url, click_token: clickToken, display_mode: displayMode = 'navigation', banner_message: bannerMessage } = data;
+
+  // Extract notification token from URL for database storage
+  let notificationToken = null;
+  if (url) {
     try {
-      if (!u) return new URL('/', self.location.origin).href;
-      if (typeof u !== 'string') u = String(u);
-      u = u.trim();
-      if (u.startsWith('/')) {
-        return new URL(u, self.location.origin).href;
-      }
-      return new URL(u).href;
-    } catch (_e) {
-      try {
-        return new URL('https://' + String(u)).href;
-      } catch (_e2) {
-        return new URL('/', self.location.origin).href;
-      }
+      const urlObj = new URL(url);
+      notificationToken = urlObj.searchParams.get('ntk');
+    } catch (e) {
+      console.warn('🔔 SW: Could not parse URL:', e);
     }
-  };
+  }
 
-  let targetUrl = normalize(event?.notification?.data?.url);
-  const clickToken = event?.notification?.data?.click_token || null;
-  const notificationData = event?.notification?.data || {};
-  const bannerMessage = notificationData.banner_message;
+  // Store banner in database for reliability
+  if (notificationToken) {
+    try {
+      await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/store-pending-banner', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          notificationToken,
+          title: event.notification.title,
+          body: event.notification.body,
+          bannerMessage: bannerMessage,
+          url: url,
+          icon: event.notification.icon
+        })
+      });
+      console.log('🔔 SW: Banner stored in database');
+    } catch (error) {
+      console.error('🔔 SW: Failed to store banner in database:', error);
+    }
+  }
 
-  // Normalize and ensure full absolute URL
-  try {
-    const u = new URL(targetUrl, self.location.origin);
-    // Keep original path but ensure lowercase for consistency
-    u.pathname = u.pathname.toLowerCase();
-    // Keep existing query parameters and add tracking token if needed
-    if (clickToken && !u.searchParams.get('ntk')) {
-      u.searchParams.set('ntk', clickToken);
+  // Track notification click
+  if (clickToken) {
+    try {
+      await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/track-notification-event', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'notification_click',
+          token: clickToken,
+          url: url
+        })
+      });
+      console.log('🔔 SW: Click tracked successfully');
+    } catch (error) {
+      console.error('🔔 SW: Failed to track click:', error);
     }
-    targetUrl = u.toString();
-  } catch (_e) {
-    // Fallback to root with token
-    const fallbackUrl = new URL('/', self.location.origin);
-    if (clickToken) {
-      fallbackUrl.searchParams.set('ntk', clickToken);
-    }
-    targetUrl = fallbackUrl.toString();
   }
 
   event.waitUntil((async () => {
-    console.log('🔔 SW: Notification clicked', {
-      targetUrl,
-      clickToken,
-      notificationData,
-      bannerMessage: bannerMessage
-    });
+    // Handle based on display mode
+    if (displayMode === 'banner') {
+      console.log('🔔 SW: Banner mode - attempting to show banner');
+      
+      // Get all clients
+      const clients = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true
+      });
 
-    // Fire-and-forget tracking of the click
-    if (clickToken) {
-      try {
-        await fetch(`${SUPABASE_URL}/functions/v1/track-notification-event`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
-          },
-          body: JSON.stringify({ type: 'notification_click', token: clickToken, url: targetUrl }),
-        });
-      } catch (_e) {
-        // no-op
+      console.log('🔔 SW: Found clients:', clients.length);
+
+      let bannerShown = false;
+
+      // Try to show banner to any matching client
+      for (const client of clients) {
+        if (client.url.includes('croftcommontest.com') || client.url.includes('localhost')) {
+          console.log('🔔 SW: Sending banner to client:', client.url);
+          
+          const bannerData = {
+            type: 'SHOW_BANNER',
+            data: {
+              title: event.notification.title,
+              body: event.notification.body,
+              bannerMessage: bannerMessage,
+              url: url,
+              icon: event.notification.icon,
+              notificationId: data.notification_id,
+              clickToken: clickToken
+            }
+          };
+
+          console.log('🔔 SW: Banner data:', bannerData);
+
+          // Use BroadcastChannel as primary method
+          try {
+            const channel = new BroadcastChannel('notification-events');
+            channel.postMessage(bannerData);
+            console.log('🔔 SW: BroadcastChannel message sent');
+            bannerShown = true;
+            break;
+          } catch (error) {
+            console.error('🔔 SW: BroadcastChannel failed:', error);
+          }
+        }
+      }
+
+      if (!bannerShown) {
+        console.log('🔔 SW: No clients found, opening window');
+        if (url) {
+          await self.clients.openWindow(url);
+        }
+      }
+    } else {
+      // Navigation mode - always open a window
+      console.log('🔔 SW: Navigation mode - opening window');
+      if (url) {
+        await self.clients.openWindow(url);
       }
     }
-
-    // Check if we should show banner (if PWA is already open and display_mode includes banner)
-    const displayMode = notificationData.display_mode || 'navigation';
-    const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
-    const appOrigin = self.location.origin;
-
-    console.log('🔔 SW: COMPREHENSIVE Client analysis', {
-      displayMode,
-      appOrigin,
-      totalClients: allClients.length,
-      notificationData,
-      bannerMessage,
-      clients: allClients.map(c => ({ 
-        url: c.url, 
-        visibility: c.visibilityState, 
-        focused: c.focused, 
-        type: c.type,
-        frameType: c.frameType 
-      }))
-    });
-
-    // More aggressive client detection - find ANY window that could be our app
-    const appClients = allClients.filter(client => {
-      try {
-        const clientUrl = client.url.toLowerCase();
-        const hostname = self.location.hostname.toLowerCase();
-        
-        // Check for exact origin match first
-        if (clientUrl.startsWith(appOrigin.toLowerCase())) return true;
-        
-        // Check for hostname match (handles different ports/protocols)
-        if (clientUrl.includes(hostname)) return true;
-        
-        // Check for localhost variations
-        if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
-          if (clientUrl.includes('localhost') || clientUrl.includes('127.0.0.1')) return true;
-        }
-        
-        // Check for common development patterns
-        if (clientUrl.includes(':3000') || clientUrl.includes(':5173') || clientUrl.includes(':8080')) return true;
-        
-        return false;
-      } catch {
-        return false;
-      }
-    });
-
-    const shouldShowBanner = appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both');
-
-
-    console.log('🔔 SW: FINAL App open status:', {
-      appClients: appClients.length,
-      shouldShowBanner,
-      allClientDetails: appClients.map(c => ({ 
-        url: c.url, 
-        visible: c.visibilityState, 
-        focused: c.focused,
-        type: c.type,
-        id: c.id
-      })),
-      bannerMessagePresent: !!bannerMessage,
-      bannerMessageContent: bannerMessage
-    });
-
-    if (shouldShowBanner) {
-      console.log('🔔 SW: ✅ SHOWING BANNER to open app - preparing message');
-      
-      // Create comprehensive banner data with proper field mapping
-      const bannerData = {
-        type: 'SHOW_BANNER',
-        data: {
-          title: event?.notification?.title || 'Notification',
-          body: event?.notification?.body || 'Notification content',
-          bannerMessage: bannerMessage || notificationData.banner_message || null,
           url: targetUrl,
           icon: notificationData.icon || event?.notification?.icon,
           notificationId: notificationData.notification_id,

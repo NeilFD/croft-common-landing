@@ -53,16 +53,16 @@ export const BannerNotification: React.FC<BannerNotificationProps> = ({
     handleDismiss();
   };
 
-  // Debug logging to trace banner message content
-  console.log('🔔 Banner: Rendering notification with data:', {
-    title: data.title,
-    body: data.body,
-    bannerMessage: data.bannerMessage,
-    hasCustomBanner: !!data.bannerMessage,
-    finalMessage: data.bannerMessage || data.body
-  });
-
+  // Extract the correct banner message
   const displayMessage = data.bannerMessage || data.body;
+  
+  console.log('🔔 Banner: Rendering with message:', {
+    title: data.title,
+    originalBody: data.body,
+    bannerMessage: data.bannerMessage,
+    displayMessage,
+    hasCustomBanner: !!data.bannerMessage
+  });
 
 
   return (

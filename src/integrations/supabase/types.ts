@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -488,6 +488,45 @@ export type Database = {
           },
         ]
       }
+      pending_banners: {
+        Row: {
+          banner_message: string | null
+          body: string
+          created_at: string
+          icon: string | null
+          id: string
+          notification_token: string
+          processed: boolean
+          processed_at: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          banner_message?: string | null
+          body: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          notification_token: string
+          processed?: boolean
+          processed_at?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          banner_message?: string | null
+          body?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          notification_token?: string
+          processed?: boolean
+          processed_at?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           birthday: string | null
@@ -781,11 +820,11 @@ export type Database = {
     Functions: {
       create_cinema_booking: {
         Args: {
-          _user_id: string
           _email: string
-          _primary_name: string
           _guest_name: string
+          _primary_name: string
           _quantity: number
+          _user_id: string
         }
         Returns: {
           booking_id: string
@@ -797,18 +836,18 @@ export type Database = {
       get_cinema_status: {
         Args: Record<PropertyKey, never>
         Returns: {
-          release_id: string
-          month_key: string
-          screening_date: string
-          doors_time: string
-          screening_time: string
           capacity: number
-          tickets_sold: number
-          tickets_left: number
-          is_sold_out: boolean
-          title: string
           description: string
+          doors_time: string
+          is_sold_out: boolean
+          month_key: string
           poster_url: string
+          release_id: string
+          screening_date: string
+          screening_time: string
+          tickets_left: number
+          tickets_sold: number
+          title: string
         }[]
       }
       get_last_thursday: {
@@ -840,7 +879,7 @@ export type Database = {
         Returns: boolean
       }
       verify_event_management_token: {
-        Args: { token_input: string; event_id_input: string }
+        Args: { event_id_input: string; token_input: string }
         Returns: boolean
       }
     }
