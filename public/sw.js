@@ -180,104 +180,145 @@ self.addEventListener('notificationclick', (event) => {
     const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     const appOrigin = self.location.origin;
 
-    // CRITICAL DEBUG: Check if we have zero clients
-    if (allClients.length === 0) {
-      console.log('🔔 SW: ❌ ZERO CLIENTS FOUND - storing debug message');
-      // Store message for when app becomes visible
-      localStorage.setItem('sw-debug-zero-clients', JSON.stringify({
-        timestamp: Date.now(),
-        notificationTitle: title,
-        body: body,
-        displayMode: displayMode
-      }));
-      return;
-    }
-
-    
-    console.log('🔔 SW: Client analysis', {
+    console.log('🔔 SW: COMPREHENSIVE Client analysis', {
       displayMode,
       appOrigin,
       totalClients: allClients.length,
-      clients: allClients.map(c => ({ url: c.url, visibility: c.visibilityState, focused: c.focused }))
+      notificationData,
+      bannerMessage,
+      clients: allClients.map(c => ({ 
+        url: c.url, 
+        visibility: c.visibilityState, 
+        focused: c.focused, 
+        type: c.type,
+        frameType: c.frameType 
+      }))
     });
 
-    // Simplified origin detection - just check if URL contains our domain
+    // More aggressive client detection - find ANY window that could be our app
     const appClients = allClients.filter(client => {
       try {
         const clientUrl = client.url.toLowerCase();
-        // More permissive matching to handle any domain variations
-        return clientUrl.includes(self.location.hostname) || 
-               clientUrl.startsWith(appOrigin) ||
-               clientUrl.includes('localhost') ||
-               clientUrl.includes('127.0.0.1');
+        const hostname = self.location.hostname.toLowerCase();
+        
+        // Check for exact origin match first
+        if (clientUrl.startsWith(appOrigin.toLowerCase())) return true;
+        
+        // Check for hostname match (handles different ports/protocols)
+        if (clientUrl.includes(hostname)) return true;
+        
+        // Check for localhost variations
+        if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+          if (clientUrl.includes('localhost') || clientUrl.includes('127.0.0.1')) return true;
+        }
+        
+        // Check for common development patterns
+        if (clientUrl.includes(':3000') || clientUrl.includes(':5173') || clientUrl.includes(':8080')) return true;
+        
+        return false;
       } catch {
         return false;
       }
     });
-    
-    
-    // REMOVE visibility filtering - send to ALL app clients regardless of state
-    const visibleAppClients = appClients; // All clients are considered targetable
 
     const shouldShowBanner = appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both');
 
 
-    console.log('🔔 SW: App open status:', {
+    console.log('🔔 SW: FINAL App open status:', {
       appClients: appClients.length,
-      allClientStates: appClients.map(c => ({ url: c.url, visible: c.visibilityState, focused: c.focused })),
-      shouldShowBanner
+      shouldShowBanner,
+      allClientDetails: appClients.map(c => ({ 
+        url: c.url, 
+        visible: c.visibilityState, 
+        focused: c.focused,
+        type: c.type,
+        id: c.id
+      })),
+      bannerMessagePresent: !!bannerMessage,
+      bannerMessageContent: bannerMessage
     });
 
-    if (appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')) {
-      console.log('🔔 SW: Showing banner to open app');
-      // Send banner data to the main app
-      try {
+    if (shouldShowBanner) {
+      console.log('🔔 SW: ✅ SHOWING BANNER to open app - preparing message');
+      
+      // Create comprehensive banner data with proper field mapping
+      const bannerData = {
+        type: 'SHOW_BANNER',
+        data: {
+          title: event?.notification?.title || 'Notification',
+          body: event?.notification?.body || 'Notification content',
+          bannerMessage: bannerMessage || notificationData.banner_message || null,
+          url: targetUrl,
+          icon: notificationData.icon || event?.notification?.icon,
+          notificationId: notificationData.notification_id,
+          clickToken: notificationData.click_token
+        }
+      };
+      
+      console.log('🔔 SW: FINAL banner message payload:', {
+        fullPayload: bannerData,
+        bannerMessageValue: bannerData.data.bannerMessage,
+        bodyValue: bannerData.data.body,
+        titleValue: bannerData.data.title
+      });
+      
+      // Enhanced message delivery with multiple fallback methods
+      let messageSent = false;
+      
+      // Method 1: Direct client messaging
+      for (const client of appClients) {
+        try {
+          console.log('🔔 SW: Sending to client:', {
+            url: client.url,
+            state: client.visibilityState,
+            focused: client.focused
+          });
+          
+          await client.postMessage(bannerData);
+          messageSent = true;
+          console.log('🔔 SW: ✅ Message sent successfully to:', client.url);
+          
+        } catch (clientError) {
+          console.error('🔔 SW: ❌ Client message failed:', client.url, clientError);
+        }
+      }
         
-        const bannerData = {
-          type: 'SHOW_BANNER',
-          data: {
-            title: event?.notification?.title || 'Notification',
-            body: event?.notification?.body || 'Notification content',
-            bannerMessage: bannerMessage,
-            url: targetUrl,
-            icon: notificationData.icon || event?.notification?.icon,
-            notificationId: notificationData.notification_id,
-            clickToken: notificationData.click_token
-          }
-        };
-        
-        console.log('🔔 SW: Posting banner message to clients:', bannerData);
-        
-        // Method 1: Send to ALL app clients with enhanced debugging
-        console.log('🔔 SW: Sending banner to ALL app clients');
-        let messageSent = false;
-        
-        
-        for (const client of appClients) {
-          try {
-            
-            console.log('🔔 SW: Attempting to send banner to client:', {
-              url: client.url,
-              type: client.type,
-              id: client.id,
-              frameType: client.frameType,
-              visibilityState: client.visibilityState,
-              focused: client.focused
-            });
-            
-            client.postMessage(bannerData);
-            messageSent = true;
-            console.log('🔔 SW: ✅ Successfully sent message to client:', client.url);
-            
-            
-          } catch (clientError) {
-            console.warn('🔔 SW: ❌ Failed to send message to client:', client.url, clientError);
-            
-          }
+        // Method 2: BroadcastChannel as backup
+        try {
+          const broadcastChannel = new BroadcastChannel('croft-banner-notifications');
+          broadcastChannel.postMessage(bannerData);
+          broadcastChannel.close();
+          messageSent = true;
+          console.log('🔔 SW: ✅ Broadcast message sent');
+        } catch (broadcastError) {
+          console.warn('🔔 SW: ❌ Broadcast failed:', broadcastError);
         }
         
-        // Method 1.5: Direct window message as backup for same-origin
-        if (appClients.length > 0) {
+        // Method 3: Store in localStorage as final fallback
+        try {
+          self.localStorage?.setItem('pending-banner-notification', JSON.stringify({
+            ...bannerData,
+            timestamp: Date.now()
+          }));
+          console.log('🔔 SW: ✅ Stored banner in localStorage as fallback');
+        } catch (storageError) {
+          console.warn('🔔 SW: ❌ Storage fallback failed:', storageError);
+        }
+        
+        if (!messageSent) {
+          console.error('🔔 SW: ❌ ALL banner delivery methods failed!');
+        }
+        
+      } catch (bannerError) {
+        console.error('🔔 SW: ❌ Banner processing failed:', bannerError);
+      }
+      
+      // Don't navigate if we showed a banner
+      return;
+    }
+
+    // If no app clients or display mode is navigation, proceed with navigation
+    if (appClients.length === 0 || displayMode === 'navigation' || displayMode === 'both') {
           try {
             // Force a direct window message through the first available client
             const primaryClient = appClients[0];

@@ -108,28 +108,40 @@ export const useNotificationHandler = () => {
       console.warn('🔔 App: ❌ BroadcastChannel not supported:', error);
     }
 
-    // Method 4: Continuous polling for banner notifications (NO visibility restriction)
-    const aggressiveBannerPoll = () => {
-      // Check URL params
-      const currentParams = new URLSearchParams(window.location.search);
-      if (currentParams.get('ntk')) {
-        console.log('🔔 App: Polling detected notification token in URL');
+    // Method 4: Check localStorage for pending notifications
+    const checkPendingNotifications = () => {
+      try {
+        const pendingStr = localStorage.getItem('pending-banner-notification');
+        if (pendingStr) {
+          const pending = JSON.parse(pendingStr);
+          const age = Date.now() - pending.timestamp;
+          
+          // Only process if less than 30 seconds old
+          if (age < 30000) {
+            console.log('🔔 App: Found pending banner notification in localStorage:', pending);
+            handleMessage(pending);
+            localStorage.removeItem('pending-banner-notification');
+          } else {
+            // Clean up old notifications
+            localStorage.removeItem('pending-banner-notification');
+          }
+        }
+      } catch (error) {
+        console.warn('🔔 App: ❌ Failed to check pending notifications:', error);
       }
       
-      // Check for any pending banner messages from service worker
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'CHECK_BANNER_STATUS',
-          timestamp: Date.now()
-        });
+      // Also check URL params
+      const currentParams = new URLSearchParams(window.location.search);
+      if (currentParams.get('ntk')) {
+        console.log('🔔 App: Detected notification token in URL');
       }
     };
 
     // Method 5: Visibility change listener for immediate message checking
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        // Immediately check for pending messages when app becomes visible
-        aggressiveBannerPoll();
+        console.log('🔔 App: App became visible - checking for pending notifications');
+        checkPendingNotifications();
         
         // Send focus signal to service worker
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
@@ -144,15 +156,16 @@ export const useNotificationHandler = () => {
 
     // Method 6: Window focus listener as backup
     const handleWindowFocus = () => {
-      // Force immediate message check on focus
-      aggressiveBannerPoll();
+      console.log('🔔 App: Window focused - checking for pending notifications');
+      checkPendingNotifications();
     };
 
     // Register all event listeners
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleWindowFocus);
     
-    // Polling removed to stop frequent toasts
+    // Initial check for pending notifications when component mounts
+    checkPendingNotifications();
 
     // Enhanced service worker registration with retry
     if ('serviceWorker' in navigator) {
