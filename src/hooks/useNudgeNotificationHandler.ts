@@ -224,21 +224,7 @@ export const useNudgeNotificationHandler = () => {
         console.log(`🎯 NUDGE MESSAGE: ✅ Valid ${event.data.type} message received!`);
         const url = event.data.url;
         
-        // If app was already running, trigger a refresh to force component remount
-        if (!isInitialLoad) {
-          console.log('🎯 NUDGE MESSAGE: 🔄 App already open, triggering strategic refresh...');
-          console.log('🎯 NUDGE MESSAGE: Storing URL before refresh:', url);
-          // Store the URL first, then refresh
-          sessionStorage.setItem('nudge_url', url);
-          sessionStorage.removeItem('nudge_clicked');
-          console.log('🎯 NUDGE MESSAGE: ⏰ Starting 3-second countdown to refresh...');
-          setTimeout(() => {
-            console.log('🎯 NUDGE MESSAGE: 🚀 REFRESHING NOW!');
-            window.location.reload();
-          }, 3000); // Extended delay so you can see the logs
-          return;
-        }
-        
+        // Always set the URL immediately, regardless of app state
         console.log('🎯 NUDGE MESSAGE: Setting URL directly from message:', url);
         setNudgeUrl(url);
         sessionStorage.setItem('nudge_url', url);
@@ -271,18 +257,7 @@ export const useNudgeNotificationHandler = () => {
         console.log(`🎯 NUDGE WINDOW: ✅ Valid ${event.data.type} window message received!`);
         const url = event.data.url;
         
-        // If app was already running, trigger a refresh to force component remount
-        if (!isInitialLoad) {
-          console.log('🎯 NUDGE WINDOW: 🔄 App already open, triggering strategic refresh...');
-          // Store the URL first, then refresh
-          sessionStorage.setItem('nudge_url', url);
-          sessionStorage.removeItem('nudge_clicked');
-          setTimeout(() => {
-            window.location.reload();
-          }, 100);
-          return;
-        }
-        
+        // Always set the URL immediately, regardless of app state
         console.log('🎯 NUDGE WINDOW: Setting URL from window message:', url);
         setNudgeUrl(url);
         sessionStorage.setItem('nudge_url', url);
