@@ -114,57 +114,57 @@ self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {};
   const { url, click_token: clickToken, display_mode: displayMode = 'navigation', banner_message: bannerMessage } = data;
 
-  // Extract notification token from URL for database storage
-  let notificationToken = null;
-  if (url) {
-    try {
-      const urlObj = new URL(url);
-      notificationToken = urlObj.searchParams.get('ntk');
-    } catch (e) {
-      console.warn('🔔 SW: Could not parse URL:', e);
-    }
-  }
-
-  // Store banner in database for reliability
-  if (notificationToken) {
-    try {
-      await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/store-pending-banner', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          notificationToken,
-          title: event.notification.title,
-          body: event.notification.body,
-          bannerMessage: bannerMessage,
-          url: url,
-          icon: event.notification.icon
-        })
-      });
-      console.log('🔔 SW: Banner stored in database');
-    } catch (error) {
-      console.error('🔔 SW: Failed to store banner in database:', error);
-    }
-  }
-
-  // Track notification click
-  if (clickToken) {
-    try {
-      await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/track-notification-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'notification_click',
-          token: clickToken,
-          url: url
-        })
-      });
-      console.log('🔔 SW: Click tracked successfully');
-    } catch (error) {
-      console.error('🔔 SW: Failed to track click:', error);
-    }
-  }
-
   event.waitUntil((async () => {
+    // Extract notification token from URL for database storage
+    let notificationToken = null;
+    if (url) {
+      try {
+        const urlObj = new URL(url);
+        notificationToken = urlObj.searchParams.get('ntk');
+      } catch (e) {
+        console.warn('🔔 SW: Could not parse URL:', e);
+      }
+    }
+
+    // Store banner in database for reliability
+    if (notificationToken) {
+      try {
+        await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/store-pending-banner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            notificationToken,
+            title: event.notification.title,
+            body: event.notification.body,
+            bannerMessage: bannerMessage,
+            url: url,
+            icon: event.notification.icon
+          })
+        });
+        console.log('🔔 SW: Banner stored in database');
+      } catch (error) {
+        console.error('🔔 SW: Failed to store banner in database:', error);
+      }
+    }
+
+    // Track notification click
+    if (clickToken) {
+      try {
+        await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/track-notification-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'notification_click',
+            token: clickToken,
+            url: url
+          })
+        });
+        console.log('🔔 SW: Click tracked successfully');
+      } catch (error) {
+        console.error('🔔 SW: Failed to track click:', error);
+      }
+    }
+
     // Handle based on display mode
     if (displayMode === 'banner') {
       console.log('🔔 SW: Banner mode - attempting to show banner');
@@ -181,7 +181,7 @@ self.addEventListener('notificationclick', (event) => {
 
       // Try to show banner to any matching client
       for (const client of clients) {
-        if (client.url.includes('croftcommontest.com') || client.url.includes('localhost')) {
+        if (client.url.includes('lovableproject.com') || client.url.includes('localhost')) {
           console.log('🔔 SW: Sending banner to client:', client.url);
           
           const bannerData = {
@@ -225,164 +225,7 @@ self.addEventListener('notificationclick', (event) => {
         await self.clients.openWindow(url);
       }
     }
-          url: targetUrl,
-          icon: notificationData.icon || event?.notification?.icon,
-          notificationId: notificationData.notification_id,
-          clickToken: notificationData.click_token
-        }
-      };
-      
-      console.log('🔔 SW: FINAL banner message payload:', {
-        fullPayload: bannerData,
-        bannerMessageValue: bannerData.data.bannerMessage,
-        bodyValue: bannerData.data.body,
-        titleValue: bannerData.data.title
-      });
-      
-      // Enhanced message delivery with multiple fallback methods
-      let messageSent = false;
-      
-      // Method 1: Direct client messaging
-      for (const client of appClients) {
-        try {
-          console.log('🔔 SW: Sending to client:', {
-            url: client.url,
-            state: client.visibilityState,
-            focused: client.focused
-          });
-          
-          await client.postMessage(bannerData);
-          messageSent = true;
-          console.log('🔔 SW: ✅ Message sent successfully to:', client.url);
-          
-        } catch (clientError) {
-          console.error('🔔 SW: ❌ Client message failed:', client.url, clientError);
-        }
-      }
-        
-        // Method 2: BroadcastChannel as backup
-        try {
-          const broadcastChannel = new BroadcastChannel('croft-banner-notifications');
-          broadcastChannel.postMessage(bannerData);
-          broadcastChannel.close();
-          messageSent = true;
-          console.log('🔔 SW: ✅ Broadcast message sent');
-        } catch (broadcastError) {
-          console.warn('🔔 SW: ❌ Broadcast failed:', broadcastError);
-        }
-        
-        // Method 3: Store in localStorage as final fallback
-        try {
-          self.localStorage?.setItem('pending-banner-notification', JSON.stringify({
-            ...bannerData,
-            timestamp: Date.now()
-          }));
-          console.log('🔔 SW: ✅ Stored banner in localStorage as fallback');
-        } catch (storageError) {
-          console.warn('🔔 SW: ❌ Storage fallback failed:', storageError);
-        }
-        
-        if (!messageSent) {
-          console.error('🔔 SW: ❌ ALL banner delivery methods failed!');
-        }
-        
-      } catch (bannerError) {
-        console.error('🔔 SW: ❌ Banner processing failed:', bannerError);
-      }
-      
-      // Don't navigate if we showed a banner
-      return;
-    }
-
-    // If no app clients or display mode is navigation, proceed with navigation
-    if (appClients.length === 0 || displayMode === 'navigation' || displayMode === 'both') {
-          try {
-            // Force a direct window message through the first available client
-            const primaryClient = appClients[0];
-            console.log('🔔 SW: Sending direct window message through primary client');
-            primaryClient.postMessage({
-              type: 'FORCE_BANNER_CHECK',
-              data: bannerData,
-              timestamp: Date.now()
-            });
-          } catch (directError) {
-            console.warn('🔔 SW: Direct window message failed:', directError);
-          }
-        }
-        
-        // Method 2: Use BroadcastChannel as backup
-        try {
-          const broadcastChannel = new BroadcastChannel('croft-banner-notifications');
-          broadcastChannel.postMessage(bannerData);
-          console.log('🔔 SW: Banner sent via BroadcastChannel');
-          broadcastChannel.close();
-        } catch (broadcastError) {
-          console.warn('🔔 SW: BroadcastChannel failed:', broadcastError);
-        }
-        
-        // Method 3: Use localStorage as final fallback
-        try {
-          // Store the banner data with a timestamp
-          const fallbackData = {
-            ...bannerData,
-            timestamp: Date.now()
-          };
-          
-          // Use a temporary storage approach (will be cleaned up by React)
-          self.clients.matchAll().then(clients => {
-            clients.forEach(client => {
-              if (client.url.includes(self.location.origin)) {
-                try {
-                  // Send a special message to trigger localStorage check
-                  client.postMessage({
-                    type: 'CHECK_BANNER_STORAGE',
-                    data: fallbackData
-                  });
-                } catch (e) {
-                  console.warn('🔔 SW: Failed to send storage check message:', e);
-                }
-              }
-            });
-          });
-        } catch (storageError) {
-          console.warn('🔔 SW: localStorage fallback failed:', storageError);
-        }
-        
-        if (messageSent || appClients.length > 0) {
-          // Focus the first available client
-          try {
-            if (appClients.length > 0) {
-              await appClients[0].focus();
-            }
-          } catch (focusError) {
-            console.warn('🔔 SW: Failed to focus client:', focusError);
-          }
-          return; // Don't open new window
-        }
-      } catch (err) {
-        console.warn('🔔 SW: Failed to show banner, falling back to navigation:', err);
-      }
-    }
-
-    // Navigation mode or fallback - always open the target URL
-    console.log('🔔 SW: Opening new window to:', targetUrl);
-    try {
-      const windowClient = await self.clients.openWindow(targetUrl);
-      if (windowClient) {
-        console.log('🔔 SW: Successfully opened window to:', targetUrl);
-        await windowClient.focus();
-      } else {
-        console.warn('🔔 SW: Failed to open window, no client returned');
-      }
-    } catch (e) {
-      console.warn('🔔 SW: Failed to open target URL:', e);
-      // Don't fall back to root - let the browser handle it
-      try {
-        await self.clients.openWindow('/');
-      } catch (fallbackError) {
-        console.error('🔔 SW: Even fallback failed:', fallbackError);
-      }
-    }
+  })());
   })());
 });
 
