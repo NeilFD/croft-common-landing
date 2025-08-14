@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNudgeNotification } from '@/contexts/NudgeNotificationContext';
 
@@ -412,14 +412,21 @@ export const useNudgeNotificationHandler = () => {
   }, [setNudgeUrl]);
 
   // Navigation tracking: clear nudge when user navigates away from target URL
+  const [hasVisitedTarget, setHasVisitedTarget] = useState(false);
+  
   useEffect(() => {
-    if (!nudgeUrl || nudgeClicked) return;
+    if (!nudgeUrl || nudgeClicked) {
+      setHasVisitedTarget(false);
+      return;
+    }
     
     const currentPath = location.pathname;
-    console.log('🎯 NUDGE NAV: Checking navigation - current path:', currentPath, 'nudge URL:', nudgeUrl);
+    console.log('🎯 NUDGE NAV: Checking navigation - current path:', currentPath, 'nudge URL:', nudgeUrl, 'visited target:', hasVisitedTarget);
     
     // Parse the nudge URL to get the path
     let nudgePath: string;
+    let isExternal = false;
+    
     try {
       if (nudgeUrl.startsWith('http')) {
         // External URL - check if it's a different domain
@@ -427,14 +434,8 @@ export const useNudgeNotificationHandler = () => {
         const currentDomain = window.location.hostname;
         
         if (nudgeUrlObj.hostname !== currentDomain) {
-          console.log('🎯 NUDGE NAV: External URL detected, will clear after delay');
-          // For external URLs, clear after a brief delay to account for window.open
-          const clearTimer = setTimeout(() => {
-            console.log('🎯 NUDGE NAV: ✅ Clearing nudge for external navigation');
-            clearNudge();
-          }, 1500);
-          
-          return () => clearTimeout(clearTimer);
+          isExternal = true;
+          console.log('🎯 NUDGE NAV: External URL detected');
         } else {
           // Same domain, use the pathname
           nudgePath = nudgeUrlObj.pathname;
@@ -444,16 +445,26 @@ export const useNudgeNotificationHandler = () => {
         nudgePath = nudgeUrl.startsWith('/') ? nudgeUrl : `/${nudgeUrl}`;
       }
       
-      // Compare paths for internal navigation
-      if (nudgePath && currentPath !== nudgePath) {
+      // For internal URLs, check if user has reached the target
+      if (!isExternal && nudgePath && currentPath === nudgePath && !hasVisitedTarget) {
+        console.log('🎯 NUDGE NAV: ✅ User reached nudge target, marking as visited');
+        setHasVisitedTarget(true);
+      }
+      
+      // Only clear if user has visited the target and then navigated away
+      if (!isExternal && nudgePath && hasVisitedTarget && currentPath !== nudgePath) {
         console.log('🎯 NUDGE NAV: ✅ User navigated away from nudge target, clearing nudge');
         console.log('🎯 NUDGE NAV: Current:', currentPath, 'Target:', nudgePath);
         clearNudge();
       }
+      
+      // For external URLs, clear after user clicks (handled by the click handler)
+      // No automatic clearing for external URLs based on navigation
+      
     } catch (error) {
       console.error('🎯 NUDGE NAV: Error parsing nudge URL:', error);
     }
-  }, [location.pathname, nudgeUrl, nudgeClicked, clearNudge]);
+  }, [location.pathname, nudgeUrl, nudgeClicked, hasVisitedTarget, clearNudge]);
 
   // Simple clearing: clear nudge immediately when clicked + timeout backup
   useEffect(() => {
