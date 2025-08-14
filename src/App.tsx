@@ -33,6 +33,7 @@ import CommonGood from "./pages/CommonGood";
  import Admin from "./pages/Admin";
  import Notifications from "./pages/Notifications";
 import RouteImagePreloader from '@/components/RouteImagePreloader';
+import BrandAssetPreloader from '@/components/BrandAssetPreloader';
 import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
 import { BannerNotification } from "@/components/BannerNotification";
 import { useBannerNotification } from "@/contexts/BannerNotificationContext";
@@ -116,6 +117,7 @@ const App = () => (
            <NudgeHandlers />
            <LowercasePathGuard />
            <RouteImagePreloader />
+           <BrandAssetPreloader />
            <BannerOverlay />
            <NudgeFloatingButton />
           

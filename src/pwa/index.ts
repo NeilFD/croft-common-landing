@@ -3,6 +3,7 @@ import { registerServiceWorker, isStandalone } from './registerPWA';
 import { mountInstallOverlay } from './InstallPromptOverlay';
 import { mountNotificationsOverlay } from './NotificationsPromptOverlay';
 import { supabase } from '@/integrations/supabase/client';
+import { BRAND_LOGO } from '@/data/brand';
 
 // Boot the PWA layer: register SW and mount overlay UI when appropriate
 (async () => {
@@ -11,6 +12,14 @@ import { supabase } from '@/integrations/supabase/client';
     if (import.meta.env.DEV) console.info('[PWA] Skipping SW on /admin');
     return;
   }
+  
+  // Preload critical brand assets immediately for instant logo loading
+  const link = document.createElement('link');
+  link.rel = 'preload';
+  link.as = 'image';
+  link.href = BRAND_LOGO;
+  link.setAttribute('fetchpriority', 'high');
+  document.head.appendChild(link);
   
   const reg = await registerServiceWorker();
   if (!isStandalone) {

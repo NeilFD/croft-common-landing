@@ -104,6 +104,7 @@ const Navigation = () => {
           <CroftLogo 
             size="lg"
             className="w-[4.5rem] h-[4.5rem] md:translate-x-2"
+            priority={true}
           />
           <div className="font-brutalist text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
             CROFT COMMON

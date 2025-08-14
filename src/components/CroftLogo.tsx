@@ -6,9 +6,10 @@ import fallbackLogo from "@/assets/croft-logo.png";
 interface CroftLogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  priority?: boolean;
 }
 
-const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
+const CroftLogo = ({ className, size = 'md', priority = false }: CroftLogoProps) => {
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
@@ -24,7 +25,7 @@ const CroftLogo = ({ className, size = 'md' }: CroftLogoProps) => {
         sizeClasses[size],
         className
       )}
-      priority={size === 'lg'}
+      priority={priority || size === 'lg'}
       mobileOptimized={true}
       sizes="(max-width: 768px) 50vw, 25vw"
     />
