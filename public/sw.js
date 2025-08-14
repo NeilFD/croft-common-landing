@@ -226,15 +226,43 @@ self.addEventListener('notificationclick', (event) => {
         };
         console.log('🔔 SW: Posting banner message to clients:', bannerData);
         
-        // Send to all visible app clients
+        // Send to all visible app clients with retry logic
+        let messageSent = false;
         for (const client of visibleAppClients) {
-          console.log('🔔 SW: Sending banner to client:', client.url);
-          client.postMessage(bannerData);
+          try {
+            console.log('🔔 SW: Sending banner to client:', client.url);
+            client.postMessage(bannerData);
+            messageSent = true;
+          } catch (clientError) {
+            console.warn('🔔 SW: Failed to send message to client:', client.url, clientError);
+          }
         }
         
-        // Focus the most recent client
-        await visibleAppClients[0].focus();
-        return; // Don't open new window
+        // Also try sending to ALL app clients as backup
+        if (!messageSent) {
+          console.log('🔔 SW: Trying backup send to all app clients');
+          for (const client of appClients) {
+            try {
+              client.postMessage(bannerData);
+              messageSent = true;
+              console.log('🔔 SW: Backup message sent to:', client.url);
+            } catch (clientError) {
+              console.warn('🔔 SW: Backup send failed to:', client.url, clientError);
+            }
+          }
+        }
+        
+        if (messageSent) {
+          // Focus the most recent visible client
+          try {
+            await visibleAppClients[0].focus();
+          } catch (focusError) {
+            console.warn('🔔 SW: Failed to focus client:', focusError);
+          }
+          return; // Don't open new window
+        } else {
+          console.warn('🔔 SW: No messages sent successfully, falling back to navigation');
+        }
       } catch (err) {
         console.warn('🔔 SW: Failed to show banner, falling back to navigation:', err);
       }

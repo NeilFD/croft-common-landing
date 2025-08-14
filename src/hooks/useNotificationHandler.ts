@@ -51,7 +51,7 @@ export const useNotificationHandler = () => {
   // Separate useEffect for service worker message listener to avoid cleanup issues
   useEffect(() => {
     const handleServiceWorkerMessage = (event: MessageEvent) => {
-      console.log('🔔 App: Received message from SW:', event.data);
+      console.log('🔔 App: Received message from SW:', event.data, event.origin);
       if (event.data?.type === 'SHOW_BANNER') {
         const bannerData = event.data.data;
         console.log('🔔 App: Showing banner with data:', bannerData);
@@ -67,12 +67,30 @@ export const useNotificationHandler = () => {
       }
     };
 
-    // Add listener
+    // Enhanced message listener setup
     navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
+    
+    // Also listen on window for cross-origin messages
+    window.addEventListener('message', handleServiceWorkerMessage);
+
+    // Verify service worker is ready
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then((registration) => {
+        console.log('🔔 App: Service worker ready, message listener attached');
+        
+        // Send a test message to confirm communication
+        if (registration.active) {
+          console.log('🔔 App: Testing communication with service worker');
+        }
+      }).catch((error) => {
+        console.warn('🔔 App: Service worker ready check failed:', error);
+      });
+    }
 
     // Cleanup on unmount
     return () => {
       navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
+      window.removeEventListener('message', handleServiceWorkerMessage);
     };
   }, [showBanner]);
 
