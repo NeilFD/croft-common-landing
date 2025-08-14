@@ -187,7 +187,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
                 placeholder="Phone number (optional)"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="font-industrial border-2 border-foreground/30 bg-background text-foreground placeholder:text-foreground/50 focus:border-accent-pink"
+                className="font-industrial border border-foreground/30 bg-background text-foreground placeholder:text-foreground/50 focus:border-accent-pink"
               />
               
               {/* Birthday (day & month) */}
