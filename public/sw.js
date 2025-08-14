@@ -274,10 +274,29 @@ async function attemptNudgeDelivery(url) {
   const hasOpenClients = clients.length > 0;
   
   if (hasOpenClients) {
-    console.log(`🔔 SW: ⏰ Open clients detected (${clients.length}), adding 500ms buffer for listener setup`);
+    console.log(`🔔 SW: ⏰ Open clients detected (${clients.length}), using aggressive retry timing for NUDGE delivery`);
+    
+    // Initial attempt after 3 seconds to ensure React app is fully loaded
     setTimeout(() => {
+      console.log('🔔 SW: 🎯 Initial NUDGE attempt (3000ms)');
       sendNudgeToClients(url, hasOpenClients);
-    }, 500);
+    }, 3000);
+    
+    // Retry attempts for maximum reliability
+    setTimeout(() => {
+      console.log('🔔 SW: 🔄 NUDGE retry attempt 1 (1000ms)');
+      sendNudgeToClients(url, hasOpenClients);
+    }, 1000);
+    
+    setTimeout(() => {
+      console.log('🔔 SW: 🔄 NUDGE retry attempt 2 (5000ms)');
+      sendNudgeToClients(url, hasOpenClients);
+    }, 5000);
+    
+    setTimeout(() => {
+      console.log('🔔 SW: 🔄 NUDGE final retry attempt (7000ms)');
+      sendNudgeToClients(url, hasOpenClients);
+    }, 7000);
   } else {
     console.log('🔔 SW: ⚡ No open clients, sending immediately');
     sendNudgeToClients(url, hasOpenClients);

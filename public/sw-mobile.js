@@ -282,10 +282,29 @@ async function attemptMobileNudgeDelivery(url) {
   const hasOpenClients = clients.length > 0;
   
   if (hasOpenClients) {
-    console.log(`🔔 SW-MOBILE: ⏰ Open clients detected (${clients.length}), adding 500ms mobile buffer`);
+    console.log(`🔔 SW-MOBILE: ⏰ Open clients detected (${clients.length}), using aggressive mobile retry timing for NUDGE delivery`);
+    
+    // Initial attempt after 3 seconds to ensure React app is fully loaded
     setTimeout(() => {
+      console.log('🔔 SW-MOBILE: 🎯 Initial mobile NUDGE attempt (3000ms)');
       sendNudgeToClients(url, hasOpenClients);
-    }, 500);
+    }, 3000);
+    
+    // Retry attempts for maximum reliability  
+    setTimeout(() => {
+      console.log('🔔 SW-MOBILE: 🔄 Mobile NUDGE retry attempt 1 (1000ms)');
+      sendNudgeToClients(url, hasOpenClients);
+    }, 1000);
+    
+    setTimeout(() => {
+      console.log('🔔 SW-MOBILE: 🔄 Mobile NUDGE retry attempt 2 (5000ms)');
+      sendNudgeToClients(url, hasOpenClients);
+    }, 5000);
+    
+    setTimeout(() => {
+      console.log('🔔 SW-MOBILE: 🔄 Mobile NUDGE final retry attempt (7000ms)');
+      sendNudgeToClients(url, hasOpenClients);
+    }, 7000);
   } else {
     console.log('🔔 SW-MOBILE: ⚡ No open clients, sending immediately');
     sendNudgeToClients(url, hasOpenClients);
