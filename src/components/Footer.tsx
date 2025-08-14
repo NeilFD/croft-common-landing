@@ -68,8 +68,8 @@ const Footer = ({
               HOURS
             </h4>
             <div className="space-y-2 text-sm font-industrial">
-              <div className="block border-2 border-background text-background px-3 py-1 rounded-lg mb-2">SUN—THURS: 7AM—LATE</div>
-              <div className="block border-2 border-background text-background px-3 py-1 rounded-lg">FRI—SAT: 7AM—LATER</div>
+              <div className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg mb-2">SUN—THURS: 7AM—LATE</div>
+              <div className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg">FRI—SAT: 7AM—LATER</div>
             </div>
           </div>
         </div>
