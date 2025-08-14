@@ -75,9 +75,16 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
               const getRequest = store.get(checkKeys[index]);
               getRequest.onsuccess = () => {
                 if (getRequest.result && !foundUrl) {
-                  const url = typeof getRequest.result === 'string' 
-                    ? getRequest.result 
-                    : getRequest.result.url;
+                  const result = getRequest.result;
+                  
+                  // Validate that this is a real URL and not an undefined object
+                  let url = null;
+                  if (typeof result === 'string') {
+                    url = result;
+                  } else if (result.url && result.url !== 'undefined' && 
+                           !(result._type === 'undefined' && result.value === 'undefined')) {
+                    url = result.url;
+                  }
                   
                   if (url) {
                     console.log('🎯 NUDGE CONTEXT: Found URL in IndexedDB key', checkKeys[index], ':', url);
