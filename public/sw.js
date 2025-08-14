@@ -138,18 +138,7 @@ self.addEventListener('notificationclick', event => {
     if (url) {
       console.log('🔔 SW: Storing NUDGE URL in multiple storage locations:', url);
       
-      // Store in sessionStorage immediately for open PWA detection
-      try {
-        // Use storage API if available in service worker context
-        if (typeof self.localStorage !== 'undefined') {
-          self.sessionStorage.setItem('nudge_url', url);
-          self.sessionStorage.setItem('nudge_data', JSON.stringify({ url, timestamp: Date.now() }));
-          self.sessionStorage.removeItem('nudge_clicked');
-          console.log('🔔 SW: NUDGE stored in sessionStorage');
-        }
-      } catch (error) {
-        console.log('🔔 SW: sessionStorage not available in SW context:', error);
-      }
+      // Note: Service workers cannot access sessionStorage, only IndexedDB
       
       // Store in IndexedDB for persistence
       try {

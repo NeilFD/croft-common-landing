@@ -9,43 +9,98 @@ export const useNudgeNotificationHandler = () => {
   useEffect(() => {
     console.log('🎯 NUDGE: Handler initializing...');
     
-    // Simple check for nudge URL from storage
-    const checkForNudgeUrl = () => {
-      const storedNudgeUrl = sessionStorage.getItem('nudge_url');
+    // Robust IndexedDB checker with error handling
+    const checkIndexedDB = () => {
+      return new Promise<string | null>((resolve) => {
+        try {
+          const request = indexedDB.open('nudge-storage', 1);
+          
+          request.onerror = () => {
+            console.error('🎯 NUDGE: IndexedDB open failed');
+            resolve(null);
+          };
+          
+          request.onsuccess = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            
+            if (!db.objectStoreNames.contains('nudge')) {
+              console.log('🎯 NUDGE: No nudge store found');
+              resolve(null);
+              return;
+            }
+            
+            const transaction = db.transaction(['nudge'], 'readonly');
+            const store = transaction.objectStore('nudge');
+            const getRequest = store.get('current');
+            
+            getRequest.onerror = () => {
+              console.error('🎯 NUDGE: IndexedDB read failed');
+              resolve(null);
+            };
+            
+            getRequest.onsuccess = () => {
+              const result = getRequest.result;
+              if (result && result.url) {
+                console.log('🎯 NUDGE: Found URL in IndexedDB:', result.url);
+                resolve(result.url);
+              } else {
+                resolve(null);
+              }
+            };
+          };
+        } catch (error) {
+          console.error('🎯 NUDGE: IndexedDB check failed:', error);
+          resolve(null);
+        }
+      });
+    };
+    
+    // Check for nudge URL from both storage sources
+    const checkForNudgeUrl = async () => {
       const wasClicked = sessionStorage.getItem('nudge_clicked') === 'true';
       
-      if (storedNudgeUrl && !wasClicked) {
-        console.log('🎯 NUDGE: Found URL in sessionStorage:', storedNudgeUrl);
-        setNudgeUrl(storedNudgeUrl);
+      if (wasClicked) {
+        console.log('🎯 NUDGE: Already clicked, skipping checks');
+        return;
       }
       
-      // Check IndexedDB for persistence
-      try {
-        const request = indexedDB.open('nudge-storage', 1);
-        request.onsuccess = (event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
-          const transaction = db.transaction(['nudge'], 'readonly');
-          const store = transaction.objectStore('nudge');
-          const getRequest = store.get('current');
-          
-          getRequest.onsuccess = () => {
-            const result = getRequest.result;
-            if (result && result.url && !wasClicked) {
-              console.log('🎯 NUDGE: Found URL in IndexedDB:', result.url);
-              setNudgeUrl(result.url);
-              sessionStorage.setItem('nudge_url', result.url);
-            }
-          };
-        };
-      } catch (error) {
-        console.error('🎯 NUDGE: IndexedDB check failed:', error);
+      // Check sessionStorage first (fast)
+      const storedNudgeUrl = sessionStorage.getItem('nudge_url');
+      if (storedNudgeUrl) {
+        console.log('🎯 NUDGE: Found URL in sessionStorage:', storedNudgeUrl);
+        setNudgeUrl(storedNudgeUrl);
+        return;
+      }
+      
+      // Check IndexedDB (slower but persistent)
+      const indexedDBUrl = await checkIndexedDB();
+      if (indexedDBUrl) {
+        console.log('🎯 NUDGE: Setting URL from IndexedDB:', indexedDBUrl);
+        setNudgeUrl(indexedDBUrl);
+        sessionStorage.setItem('nudge_url', indexedDBUrl);
       }
     };
     
     checkForNudgeUrl();
 
-    // Simple BroadcastChannel setup
-    const channel = new BroadcastChannel('nudge-notification');
+    // Robust BroadcastChannel setup with retry
+    let channel: BroadcastChannel | null = null;
+    let retryCount = 0;
+    
+    const setupBroadcastChannel = () => {
+      try {
+        channel = new BroadcastChannel('nudge-notification');
+        console.log('🎯 NUDGE: BroadcastChannel created');
+        
+        channel.addEventListener('message', handleNudgeMessage);
+        channel.addEventListener('messageerror', (error) => {
+          console.error('🎯 NUDGE: BroadcastChannel message error:', error);
+        });
+        
+      } catch (error) {
+        console.error('🎯 NUDGE: BroadcastChannel setup failed:', error);
+      }
+    };
     
     const handleNudgeMessage = (event: MessageEvent) => {
       console.log('🎯 NUDGE: Received BroadcastChannel message:', event.data);
@@ -57,7 +112,7 @@ export const useNudgeNotificationHandler = () => {
       }
     };
 
-    channel.addEventListener('message', handleNudgeMessage);
+    setupBroadcastChannel();
 
     // Window message handling
     const handleWindowMessage = (event: MessageEvent) => {
@@ -85,28 +140,62 @@ export const useNudgeNotificationHandler = () => {
       });
     }
 
-    // Check for nudge URL when page becomes visible or focused
+    // Aggressive polling when page becomes visible or focused (open PWA fix)
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         console.log('🎯 NUDGE: Page became visible, checking for URL...');
         checkForNudgeUrl();
+        
+        // Aggressive polling for open PWAs that might have missed messages
+        let pollCount = 0;
+        const pollInterval = setInterval(async () => {
+          pollCount++;
+          console.log(`🎯 NUDGE: Visibility poll ${pollCount}/10`);
+          await checkForNudgeUrl();
+          
+          if (pollCount >= 10) {
+            clearInterval(pollInterval);
+            console.log('🎯 NUDGE: Visibility polling complete');
+          }
+        }, 500);
       }
     };
     
     const handleFocus = () => {
       console.log('🎯 NUDGE: Window focused, checking for URL...');
       checkForNudgeUrl();
+      
+      // Recreate BroadcastChannel on focus (connection might be stale)
+      if (channel) {
+        channel.close();
+      }
+      setupBroadcastChannel();
+      
+      // Aggressive polling for open PWAs
+      let pollCount = 0;
+      const pollInterval = setInterval(async () => {
+        pollCount++;
+        console.log(`🎯 NUDGE: Focus poll ${pollCount}/5`);
+        await checkForNudgeUrl();
+        
+        if (pollCount >= 5) {
+          clearInterval(pollInterval);
+          console.log('🎯 NUDGE: Focus polling complete');
+        }
+      }, 1000);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
 
     return () => {
-      channel.removeEventListener('message', handleNudgeMessage);
+      if (channel) {
+        channel.removeEventListener('message', handleNudgeMessage);
+        channel.close();
+      }
       window.removeEventListener('message', handleWindowMessage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
-      channel.close();
     };
   }, [setNudgeUrl]);
 
