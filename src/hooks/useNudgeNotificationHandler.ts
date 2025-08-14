@@ -80,10 +80,17 @@ export const useNudgeNotificationHandler = () => {
               if (completedRequests === 2) {
                 // Prioritize pending delivery over current
                 const result = pendingResult || currentResult;
-                if (result && result.url) {
+                
+                // Check if result is valid (not undefined objects from IndexedDB)
+                const isValidResult = result && 
+                  typeof result === 'object' && 
+                  result.url && 
+                  result.url !== 'undefined' &&
+                  !(result._type === 'undefined' && result.value === 'undefined');
+                
+                if (isValidResult) {
                   console.log('🎯 NUDGE DB: 🎉 FOUND URL:', result.url, 
                     pendingResult ? '(from PENDING delivery)' : '(from CURRENT store)');
-                  
                   
                   // Clear pending delivery flag if we found one
                   if (pendingResult) {
