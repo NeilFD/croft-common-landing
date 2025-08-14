@@ -28,7 +28,7 @@ export const useNudgeNotificationHandler = () => {
         console.log('🎯 NUDGE DB: ==================== STARTING DB INIT ====================');
         try {
           console.log('🎯 NUDGE DB: Opening IndexedDB connection...');
-          const request = indexedDB.open('nudge-storage', 1);
+          const request = indexedDB.open('nudge-storage', 2);
           
           request.onerror = () => {
             console.error('🎯 NUDGE DB: ❌ IndexedDB open FAILED:', request.error);
@@ -170,68 +170,9 @@ export const useNudgeNotificationHandler = () => {
       }
     };
     
-    // STEP 1: Immediate storage check (storage-first strategy)
-    const immediateCheck = async () => {
-      console.log('🎯 NUDGE HANDLER: 🔍 Immediate storage check on mount...');
-      const storedUrl = sessionStorage.getItem('nudge_url');
-      
-      if (storedUrl) {
-        console.log('🎯 NUDGE HANDLER: ⚡ Found URL in sessionStorage immediately:', storedUrl);
-        setNudgeUrl(storedUrl);
-        return;
-      }
-      
-      // Check IndexedDB immediately as well
-      try {
-        const dbUrl = await initializeAndCheckIndexedDB();
-        if (dbUrl) {
-          console.log('🎯 NUDGE HANDLER: ⚡ Found URL in IndexedDB immediately:', dbUrl);
-          setNudgeUrl(dbUrl);
-          sessionStorage.setItem('nudge_url', dbUrl);
-        }
-      } catch (error) {
-        console.error('🎯 NUDGE HANDLER: ❌ Immediate IndexedDB check failed:', error);
-      }
-    };
-    
-    immediateCheck();
-    
-    // STEP 2: Start aggressive polling (every 500ms for first 10 seconds)
-    let pollCount = 0;
-    const maxPolls = 20; // 10 seconds at 500ms intervals
-    
-    const aggressivePolling = setInterval(async () => {
-      pollCount++;
-      console.log(`🎯 NUDGE HANDLER: 🔄 Aggressive poll ${pollCount}/${maxPolls}`);
-      
-      // Check sessionStorage first (fastest)
-      const storedUrl = sessionStorage.getItem('nudge_url');
-      if (storedUrl) {
-        console.log('🎯 NUDGE HANDLER: ⚡ Aggressive poll found URL in sessionStorage:', storedUrl);
-        setNudgeUrl(storedUrl);
-        clearInterval(aggressivePolling);
-        return;
-      }
-      
-      // Check IndexedDB
-      try {
-        const dbUrl = await initializeAndCheckIndexedDB();
-        if (dbUrl) {
-          console.log('🎯 NUDGE HANDLER: ⚡ Aggressive poll found URL in IndexedDB:', dbUrl);
-          setNudgeUrl(dbUrl);
-          sessionStorage.setItem('nudge_url', dbUrl);
-          clearInterval(aggressivePolling);
-        }
-      } catch (error) {
-        console.error('🎯 NUDGE HANDLER: ❌ Aggressive poll IndexedDB check failed:', error);
-      }
-      
-      // Stop aggressive polling after max attempts
-      if (pollCount >= maxPolls) {
-        console.log('🎯 NUDGE HANDLER: ⏰ Aggressive polling completed, switching to normal mode');
-        clearInterval(aggressivePolling);
-      }
-    }, 500);
+    // Simple storage check on initialization
+    console.log('🎯 NUDGE HANDLER: 🔍 Checking for existing NUDGE URLs');
+    checkForNudgeUrl();
 
     // Robust BroadcastChannel setup with retry
     let channel: BroadcastChannel | null = null;
@@ -448,7 +389,7 @@ export const useNudgeNotificationHandler = () => {
     return () => {
       console.log('🎯 NUDGE HANDLER: 🧹 Cleaning up event listeners...');
       
-      clearInterval(aggressivePolling);
+      // Removed aggressive polling
       
       if (channel) {
         channel.removeEventListener('message', handleNudgeMessage);

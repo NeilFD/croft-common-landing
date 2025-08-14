@@ -192,7 +192,7 @@ self.addEventListener('push', (event) => {
 async function ensureNudgeDatabase() {
   return new Promise((resolve, reject) => {
     try {
-      const request = indexedDB.open('nudge-storage', 1);
+      const request = indexedDB.open('nudge-storage', 2);
       
       request.onerror = () => {
         console.error('🔔 SW-MOBILE: ❌ IndexedDB open failed:', request.error);
@@ -403,16 +403,8 @@ self.addEventListener('notificationclick', (event) => {
     if (targetUrl) {
       console.log('🔔 SW-MOBILE: 📡 Sending NUDGE message for URL:', targetUrl);
       
+      // Send immediately after storage
       sendNudgeToClients(targetUrl);
-      
-      // Enhanced delivery with timing fixes
-      const initialDelay = 4000; // Longer delay for mobile
-      console.log(`🔔 SW-MOBILE: ⏰ Waiting ${initialDelay}ms for mobile app initialization...`);
-      
-      setTimeout(() => {
-        console.log('🔔 SW-MOBILE: 📡 Initial NUDGE delivery attempt');
-        attemptMobileNudgeDelivery(targetUrl, 1);
-      }, initialDelay);
     }
 
     // Mobile-optimized navigation fallback (keep existing behavior as backup)

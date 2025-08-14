@@ -45,7 +45,7 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
 
       // Check IndexedDB as fallback with proper initialization
       try {
-        const request = indexedDB.open('nudge-storage', 1);
+        const request = indexedDB.open('nudge-storage', 2);
         
         request.onupgradeneeded = (event) => {
           console.log('🎯 NUDGE CONTEXT: Creating/upgrading nudge database');

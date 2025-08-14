@@ -166,21 +166,16 @@ self.addEventListener('notificationclick', event => {
       console.log('🔔 SW: Opened new window');
     }
     
-    // Enhanced NUDGE message delivery with exponential backoff
+    // Simple NUDGE message delivery - storage-first approach
     if (url) {
-      console.log('🔔 SW: 📡 Starting NUDGE delivery with timing fixes for URL:', url);
+      console.log('🔔 SW: 📡 Starting NUDGE delivery for URL:', url);
       
-      // Storage-first approach: always store before attempting delivery
+      // Store URL first
       await storeNudgeUrl(url);
       
-      // Wait for app initialization (3-5 seconds)
-      const initialDelay = 3000;
-      console.log(`🔔 SW: ⏰ Waiting ${initialDelay}ms for app initialization...`);
-      
-      setTimeout(() => {
-        console.log('🔔 SW: 📡 Initial NUDGE delivery attempt');
-        attemptNudgeDelivery(url, 1);
-      }, initialDelay);
+      // Send immediately after storage
+      console.log('🔔 SW: 📡 Sending NUDGE message immediately');
+      sendNudgeToClients(url, 1);
     }
   })());
 });
@@ -189,7 +184,7 @@ self.addEventListener('notificationclick', event => {
 async function ensureNudgeDatabase() {
   return new Promise((resolve, reject) => {
     try {
-      const request = indexedDB.open('nudge-storage', 1);
+      const request = indexedDB.open('nudge-storage', 2);
       
       request.onerror = () => {
         console.error('🔔 SW: ❌ IndexedDB open failed:', request.error);
