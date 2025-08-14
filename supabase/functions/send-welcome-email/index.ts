@@ -25,13 +25,8 @@ const handler = async (req: Request): Promise<Response> => {
     const { email, name, subscriberId }: WelcomeEmailRequest = await req.json();
 
     const displayName = name || "Friend";
-    const originHeader = req.headers.get('origin') || '';
-    const requestOrigin = originHeader || new URL(req.url).origin;
-    const siteBase = Deno.env.get('SITE_BASE_URL') || requestOrigin;
-    const assetsBase = Deno.env.get('EMAIL_ASSETS_BASE_URL') || siteBase;
-    const logoPath = "/brand/logo.png";
-    const logoUrl = `${assetsBase.replace(/\/$/, "")}${logoPath}`;
     const baseUrl = "http://croftcommontest.com";
+    const logoUrl = `${baseUrl}/brand/logo.png`;
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${subscriberId}`;
     
     const emailResponse = await resend.emails.send({
