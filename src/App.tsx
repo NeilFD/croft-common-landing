@@ -50,15 +50,20 @@ const BannerOverlay = () => {
   );
 };
 
-const LowercasePathGuard = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  
+// Notification handlers component that always runs
+const NotificationHandlers = () => {
   // Handle notification deep links universally
   useNotificationHandler();
   
   // Handle nudge notifications
   useNudgeNotificationHandler();
+  
+  return null;
+};
+
+const LowercasePathGuard = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const allowedRoots = new Set([
      "", // homepage
@@ -100,6 +105,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <NotificationHandlers />
           <LowercasePathGuard />
           <RouteImagePreloader />
           <BannerOverlay />
