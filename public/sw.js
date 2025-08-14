@@ -226,9 +226,11 @@ self.addEventListener('notificationclick', (event) => {
         };
         console.log('🔔 SW: Posting banner message to clients:', bannerData);
         
-        // Send to all visible app clients with retry logic
+        // Method 1: Send to ALL app clients (not just visible ones)
+        console.log('🔔 SW: Sending banner to ALL app clients');
         let messageSent = false;
-        for (const client of visibleAppClients) {
+        
+        for (const client of appClients) {
           try {
             console.log('🔔 SW: Sending banner to client:', client.url);
             client.postMessage(bannerData);
@@ -238,30 +240,54 @@ self.addEventListener('notificationclick', (event) => {
           }
         }
         
-        // Also try sending to ALL app clients as backup
-        if (!messageSent) {
-          console.log('🔔 SW: Trying backup send to all app clients');
-          for (const client of appClients) {
-            try {
-              client.postMessage(bannerData);
-              messageSent = true;
-              console.log('🔔 SW: Backup message sent to:', client.url);
-            } catch (clientError) {
-              console.warn('🔔 SW: Backup send failed to:', client.url, clientError);
-            }
-          }
+        // Method 2: Use BroadcastChannel as backup
+        try {
+          const broadcastChannel = new BroadcastChannel('croft-banner-notifications');
+          broadcastChannel.postMessage(bannerData);
+          console.log('🔔 SW: Banner sent via BroadcastChannel');
+          broadcastChannel.close();
+        } catch (broadcastError) {
+          console.warn('🔔 SW: BroadcastChannel failed:', broadcastError);
         }
         
-        if (messageSent) {
-          // Focus the most recent visible client
+        // Method 3: Use localStorage as final fallback
+        try {
+          // Store the banner data with a timestamp
+          const fallbackData = {
+            ...bannerData,
+            timestamp: Date.now()
+          };
+          
+          // Use a temporary storage approach (will be cleaned up by React)
+          self.clients.matchAll().then(clients => {
+            clients.forEach(client => {
+              if (client.url.includes(self.location.origin)) {
+                try {
+                  // Send a special message to trigger localStorage check
+                  client.postMessage({
+                    type: 'CHECK_BANNER_STORAGE',
+                    data: fallbackData
+                  });
+                } catch (e) {
+                  console.warn('🔔 SW: Failed to send storage check message:', e);
+                }
+              }
+            });
+          });
+        } catch (storageError) {
+          console.warn('🔔 SW: localStorage fallback failed:', storageError);
+        }
+        
+        if (messageSent || visibleAppClients.length > 0) {
+          // Focus the most recent visible client if available
           try {
-            await visibleAppClients[0].focus();
+            if (visibleAppClients.length > 0) {
+              await visibleAppClients[0].focus();
+            }
           } catch (focusError) {
             console.warn('🔔 SW: Failed to focus client:', focusError);
           }
           return; // Don't open new window
-        } else {
-          console.warn('🔔 SW: No messages sent successfully, falling back to navigation');
         }
       } catch (err) {
         console.warn('🔔 SW: Failed to show banner, falling back to navigation:', err);

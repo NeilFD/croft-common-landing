@@ -48,10 +48,11 @@ export const useNotificationHandler = () => {
     handleNotificationTracking();
   }, [location.pathname, searchParams]);
 
-  // Separate useEffect for service worker message listener to avoid cleanup issues
+  // Enhanced message handling with multiple channels
   useEffect(() => {
-    const handleServiceWorkerMessage = (event: MessageEvent) => {
-      console.log('🔔 App: Received message from SW:', event.data, event.origin);
+    const handleMessage = (event: MessageEvent) => {
+      console.log('🔔 App: Received message:', event.data, 'from:', event.origin);
+      
       if (event.data?.type === 'SHOW_BANNER') {
         const bannerData = event.data.data;
         console.log('🔔 App: Showing banner with data:', bannerData);
@@ -64,23 +65,61 @@ export const useNotificationHandler = () => {
           notificationId: bannerData.notificationId,
           clickToken: bannerData.clickToken
         });
+      } else if (event.data?.type === 'CHECK_BANNER_STORAGE') {
+        // Handle localStorage fallback
+        const bannerData = event.data.data;
+        console.log('🔔 App: Storage fallback triggered with data:', bannerData);
+        showBanner({
+          title: bannerData.title || 'Notification',
+          body: bannerData.bannerMessage || bannerData.body || '',
+          bannerMessage: bannerData.bannerMessage,
+          url: bannerData.url,
+          icon: bannerData.icon,
+          notificationId: bannerData.notificationId,
+          clickToken: bannerData.clickToken
+        });
       }
     };
 
-    // Enhanced message listener setup
-    navigator.serviceWorker?.addEventListener('message', handleServiceWorkerMessage);
+    // Method 1: Service Worker messages
+    navigator.serviceWorker?.addEventListener('message', handleMessage);
     
-    // Also listen on window for cross-origin messages
-    window.addEventListener('message', handleServiceWorkerMessage);
+    // Method 2: Window messages (cross-origin)
+    window.addEventListener('message', handleMessage);
+
+    // Method 3: BroadcastChannel listener
+    let broadcastChannel: BroadcastChannel | null = null;
+    try {
+      broadcastChannel = new BroadcastChannel('croft-banner-notifications');
+      broadcastChannel.addEventListener('message', handleMessage);
+      console.log('🔔 App: BroadcastChannel listener registered');
+    } catch (error) {
+      console.warn('🔔 App: BroadcastChannel not supported:', error);
+    }
+
+    // Method 4: Polling fallback for when app is active (runs every 2 seconds)
+    const pollForNotifications = () => {
+      // Check if there are any pending notification parameters in the URL
+      const currentParams = new URLSearchParams(window.location.search);
+      if (currentParams.get('ntk') && document.visibilityState === 'visible') {
+        console.log('🔔 App: Polling detected notification token in URL');
+        // URL params will be handled by the main useEffect
+      }
+    };
+
+    const pollInterval = setInterval(pollForNotifications, 2000);
 
     // Verify service worker is ready
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.ready.then((registration) => {
-        console.log('🔔 App: Service worker ready, message listener attached');
+        console.log('🔔 App: Service worker ready, all message listeners attached');
         
-        // Send a test message to confirm communication
+        // Send ready signal to service worker
         if (registration.active) {
-          console.log('🔔 App: Testing communication with service worker');
+          registration.active.postMessage({
+            type: 'APP_READY',
+            timestamp: Date.now()
+          });
         }
       }).catch((error) => {
         console.warn('🔔 App: Service worker ready check failed:', error);
@@ -89,8 +128,10 @@ export const useNotificationHandler = () => {
 
     // Cleanup on unmount
     return () => {
-      navigator.serviceWorker?.removeEventListener('message', handleServiceWorkerMessage);
-      window.removeEventListener('message', handleServiceWorkerMessage);
+      navigator.serviceWorker?.removeEventListener('message', handleMessage);
+      window.removeEventListener('message', handleMessage);
+      broadcastChannel?.close();
+      clearInterval(pollInterval);
     };
   }, [showBanner]);
 
