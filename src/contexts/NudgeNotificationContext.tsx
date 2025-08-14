@@ -27,6 +27,51 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
   const [nudgeUrl, setNudgeUrlState] = useState<string | null>(null);
   const [nudgeClicked, setNudgeClicked] = useState<boolean>(false);
 
+  // Initialize from storage on mount
+  React.useEffect(() => {
+    const initializeFromStorage = async () => {
+      console.log('🎯 NUDGE CONTEXT: Initializing from storage...');
+      
+      // Check sessionStorage first
+      const storedUrl = sessionStorage.getItem('nudge_url');
+      const storedClicked = sessionStorage.getItem('nudge_clicked') === 'true';
+      
+      if (storedUrl) {
+        console.log('🎯 NUDGE CONTEXT: Found URL in sessionStorage:', storedUrl);
+        setNudgeUrlState(storedUrl);
+        setNudgeClicked(storedClicked);
+        return;
+      }
+
+      // Check IndexedDB as fallback
+      try {
+        const request = indexedDB.open('nudge-storage', 1);
+        request.onsuccess = (event) => {
+          const db = (event.target as IDBOpenDBRequest).result;
+          if (db.objectStoreNames.contains('nudge-data')) {
+            const transaction = db.transaction(['nudge-data'], 'readonly');
+            const store = transaction.objectStore('nudge-data');
+            const getRequest = store.get('nudge_url');
+            
+            getRequest.onsuccess = () => {
+              if (getRequest.result?.url) {
+                console.log('🎯 NUDGE CONTEXT: Found URL in IndexedDB:', getRequest.result.url);
+                setNudgeUrlState(getRequest.result.url);
+                // Also sync to sessionStorage
+                sessionStorage.setItem('nudge_url', getRequest.result.url);
+              }
+            };
+          }
+          db.close();
+        };
+      } catch (error) {
+        console.log('🎯 NUDGE CONTEXT: IndexedDB check failed:', error);
+      }
+    };
+
+    initializeFromStorage();
+  }, []);
+
   const setNudgeUrl = (url: string | null) => {
     console.log('🎯 NUDGE CONTEXT: Setting URL:', url);
     setNudgeUrlState(url);

@@ -3,7 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
-import NudgeFloatingButton from './NudgeFloatingButton';
+
 import { communityMenuData } from '@/data/menuData';
 import { communityHeroImages as heroImages } from '@/data/heroImages';
 import OptimizedImage from './OptimizedImage';
@@ -140,9 +140,6 @@ const CommunityHeroCarousel = () => {
         ))}
       </div>
 
-      {/* Nudge Button (shown when notification clicked) */}
-      <NudgeFloatingButton className="bottom-48 md:bottom-52" />
-      
       {/* Book Button */}
       <BookFloatingButton className="bottom-32 md:bottom-36" />
 

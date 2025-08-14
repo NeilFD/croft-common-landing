@@ -1,6 +1,6 @@
 import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
-import NudgeFloatingButton from './NudgeFloatingButton';
+
 import { commonRoomHeroImages } from '@/data/heroImages';
 import { commonRoomMenuData } from '@/data/menuData';
 import CroftLogo from './CroftLogo';
@@ -43,9 +43,6 @@ const CommonRoomHeroCarousel = () => {
         </div>
       </div>
 
-      {/* Nudge Button (shown when notification clicked) */}
-      <NudgeFloatingButton />
-      
       {/* Book Button */}
       <BookFloatingButton />
 

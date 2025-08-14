@@ -3,7 +3,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
-import NudgeFloatingButton from './NudgeFloatingButton';
+
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import { beerMenu } from '@/data/menuData';
@@ -138,9 +138,6 @@ const BeerHeroCarousel = () => {
         ))}
       </div>
 
-      {/* Nudge Button (shown when notification clicked) */}
-      <NudgeFloatingButton />
-      
       {/* Book Button */}
       <BookFloatingButton />
 

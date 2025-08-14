@@ -5,7 +5,7 @@ import { hallHeroImages as heroImages } from '@/data/heroImages';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import BookFloatingButton from '@/components/BookFloatingButton';
-import NudgeFloatingButton from '@/components/NudgeFloatingButton';
+
 import CroftLogo from './CroftLogo';
 const HallHeroCarousel = () => {
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
@@ -133,9 +133,6 @@ const HallHeroCarousel = () => {
         ))}
       </div>
 
-      {/* Nudge Button (shown when notification clicked) */}
-      <NudgeFloatingButton />
-      
       {/* Book button */}
       <BookFloatingButton />
     </div>

@@ -8,7 +8,7 @@ import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
 import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as heroImages } from '@/data/heroImages';
 import BookFloatingButton from './BookFloatingButton';
-import NudgeFloatingButton from './NudgeFloatingButton';
+
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
 const HeroCarousel = () => {
@@ -135,9 +135,6 @@ const HeroCarousel = () => {
           />
         ))}
       </div>
-      
-      {/* Nudge Button (shown when notification clicked) */}
-      <NudgeFloatingButton />
       
       {/* Book Button */}
       <BookFloatingButton />
