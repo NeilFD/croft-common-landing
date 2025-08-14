@@ -304,11 +304,14 @@ function sendNudgeToClients(url, hasOpenClients = false) {
     delivery_method: 'smart_buffered'
   };
   
+  console.log('🔔 SW: 📤 Message to send:', message);
+  
   let broadcastSent = false;
   
   // Strategy 1: BroadcastChannel (primary for same-origin)
   try {
     const channel = new BroadcastChannel('nudge-notification');
+    console.log('🔔 SW: 📡 Sending BroadcastChannel message:', message);
     channel.postMessage(message);
     console.log('🔔 SW: ✅ BroadcastChannel NUDGE message sent');
     channel.close();
@@ -342,11 +345,13 @@ function sendNudgeToClients(url, hasOpenClients = false) {
     
     clients.forEach((client, index) => {
       try {
-        client.postMessage({
+        const clientMessage = {
           ...message,
           client_index: index,
           client_id: client.id.substring(0, 8)
-        });
+        };
+        console.log(`🔔 SW: 📡 Sending direct message to client ${index}:`, clientMessage);
+        client.postMessage(clientMessage);
         console.log(`🔔 SW: ✅ NUDGE message sent to client ${index}`);
       } catch (error) {
         console.error(`🔔 SW: ❌ Failed to send NUDGE to client ${index}:`, error);
