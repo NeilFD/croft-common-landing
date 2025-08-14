@@ -10,7 +10,7 @@ interface NudgeFloatingButtonProps {
 const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "" }) => {
   const accentColor = 'hsl(var(--accent-sage-green))';
   const navigate = useNavigate();
-  const { nudgeUrl, showNudgeButton } = useNudgeNotification();
+  const { nudgeUrl, showNudgeButton, markNudgeClicked } = useNudgeNotification();
 
   console.log('🎯 NUDGE BUTTON: Render check -', { showNudgeButton, nudgeUrl });
 
@@ -21,6 +21,8 @@ const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "
   const handleClick = () => {
     console.log('🎯 NUDGE BUTTON: Clicked! URL:', nudgeUrl);
     if (nudgeUrl) {
+      markNudgeClicked(); // Mark as clicked immediately
+      
       // Navigate to the URL (could be internal or external)
       if (nudgeUrl.startsWith('http')) {
         console.log('🎯 NUDGE BUTTON: Opening external URL');

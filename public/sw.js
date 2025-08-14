@@ -181,11 +181,12 @@ self.addEventListener('notificationclick', event => {
     if (url) {
       console.log('🔔 SW: Preparing to send NUDGE message for URL:', url);
       
-      // Send NUDGE message with multiple retry attempts
+      // Enhanced NUDGE message delivery with multiple attempts
       const sendNudgeMessage = async (attempt = 1) => {
         console.log(`🔔 SW: Sending NUDGE message (attempt ${attempt})`);
         
         try {
+          // Send BroadcastChannel message multiple times for reliability
           const nudgeChannel = new BroadcastChannel('nudge-notification');
           const nudgeMessage = {
             type: 'SHOW_NUDGE',
@@ -207,6 +208,21 @@ self.addEventListener('notificationclick', event => {
             }, '*');
             console.log('🔔 SW: NUDGE postMessage sent to window');
           }
+          
+          // Store in IndexedDB as backup for open PWA
+          const request = indexedDB.open('nudge-storage', 1);
+          request.onsuccess = (event) => {
+            const db = event.target.result;
+            const transaction = db.transaction(['nudge'], 'readwrite');
+            const store = transaction.objectStore('nudge');
+            store.put({ 
+              id: 'current', 
+              url: url, 
+              timestamp: Date.now(),
+              clicked: false
+            });
+            console.log('🔔 SW: NUDGE stored in IndexedDB');
+          };
           
         } catch (error) {
           console.error(`🔔 SW: NUDGE message attempt ${attempt} failed:`, error);

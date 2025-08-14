@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useNudgeNotification } from '@/contexts/NudgeNotificationContext';
 
 export const useNudgeNotificationHandler = () => {
-  const { setNudgeUrl, nudgeUrl, clearNudge } = useNudgeNotification();
+  const { setNudgeUrl, nudgeUrl, nudgeClicked, clearNudge } = useNudgeNotification();
   const location = useLocation();
 
   useEffect(() => {
@@ -13,13 +13,20 @@ export const useNudgeNotificationHandler = () => {
     const checkForNudgeUrl = async () => {
       console.log('🎯 NUDGE: Checking for stored URL...');
       
-      // Check sessionStorage first
-      const storedNudgeUrl = sessionStorage.getItem('nudge_url');
-      if (storedNudgeUrl) {
-        console.log('🎯 NUDGE: Found URL in sessionStorage:', storedNudgeUrl);
-        setNudgeUrl(storedNudgeUrl);
-        return;
-      }
+    // Check sessionStorage first
+    const storedNudgeUrl = sessionStorage.getItem('nudge_url');
+    const wasClicked = sessionStorage.getItem('nudge_clicked') === 'true';
+    
+    if (storedNudgeUrl && !wasClicked) {
+      console.log('🎯 NUDGE: Found URL in sessionStorage:', storedNudgeUrl);
+      setNudgeUrl(storedNudgeUrl);
+      return;
+    } else if (storedNudgeUrl && wasClicked) {
+      console.log('🎯 NUDGE: URL was already clicked, clearing');
+      sessionStorage.removeItem('nudge_url');
+      sessionStorage.removeItem('nudge_clicked');
+      return;
+    }
       
       // Check IndexedDB for persistence
       try {
@@ -85,14 +92,20 @@ export const useNudgeNotificationHandler = () => {
       });
     }
 
-    // Periodic check for nudge URL (fallback)
+    // Periodic check for nudge URL (more frequent for open PWA)
     const periodicCheck = setInterval(() => {
       const currentUrl = sessionStorage.getItem('nudge_url');
-      if (currentUrl && !nudgeUrl) {
+      const wasClicked = sessionStorage.getItem('nudge_clicked') === 'true';
+      
+      if (currentUrl && !nudgeUrl && !wasClicked) {
         console.log('🎯 NUDGE: Periodic check found URL:', currentUrl);
         setNudgeUrl(currentUrl);
+      } else if (currentUrl && wasClicked) {
+        console.log('🎯 NUDGE: Periodic check found clicked URL, clearing');
+        sessionStorage.removeItem('nudge_url');
+        sessionStorage.removeItem('nudge_clicked');
       }
-    }, 2000);
+    }, 1000); // More frequent for open PWA
 
     return () => {
       channel.removeEventListener('message', handleNudgeMessage);
@@ -102,16 +115,34 @@ export const useNudgeNotificationHandler = () => {
     };
   }, [setNudgeUrl]);
 
-  // Clear nudge when navigating away from the target URL
+  // Clear nudge when it has been clicked and user navigates
   useEffect(() => {
-    if (nudgeUrl) {
-      const targetPath = new URL(nudgeUrl, window.location.origin).pathname;
-      const currentPath = location.pathname;
-      
-      // If we're not on the target path anymore, clear the nudge
-      if (currentPath !== targetPath && !nudgeUrl.startsWith('http')) {
+    if (nudgeClicked && nudgeUrl) {
+      console.log('🎯 NUDGE: Button was clicked, clearing after navigation');
+      // Clear immediately if external URL (since user returned)
+      if (nudgeUrl.startsWith('http')) {
         clearNudge();
+      } else {
+        // For internal URLs, clear when navigating away from target
+        const targetPath = new URL(nudgeUrl, window.location.origin).pathname;
+        const currentPath = location.pathname;
+        if (currentPath !== targetPath) {
+          clearNudge();
+        }
       }
     }
-  }, [location.pathname, nudgeUrl, clearNudge]);
+  }, [location.pathname, nudgeUrl, nudgeClicked, clearNudge]);
+
+  // Also clear on page visibility change if clicked (user returned from external URL)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && nudgeClicked && nudgeUrl?.startsWith('http')) {
+        console.log('🎯 NUDGE: Page visible after external URL click, clearing');
+        setTimeout(() => clearNudge(), 1000); // Small delay to ensure user has "returned"
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [nudgeClicked, nudgeUrl, clearNudge]);
 };
