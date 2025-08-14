@@ -208,7 +208,7 @@ self.addEventListener('notificationclick', (event) => {
       shouldShowBanner: visibleAppClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')
     });
 
-    if (visibleAppClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')) {
+    if (appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')) {
       console.log('🔔 SW: Showing banner to open app');
       // Send banner data to the main app
       try {
