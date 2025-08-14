@@ -15,6 +15,13 @@ export const useNudgeNotificationHandler = () => {
     const isInitialLoad = !sessionStorage.getItem('app_initialized');
     sessionStorage.setItem('app_initialized', 'true');
     console.log('🎯 NUDGE HANDLER: Initial load?', isInitialLoad);
+    console.log('🎯 NUDGE HANDLER: SessionStorage app_initialized:', sessionStorage.getItem('app_initialized'));
+    
+    // Log ALL current sessionStorage nudge-related keys
+    console.log('🎯 NUDGE HANDLER: Current sessionStorage state:');
+    console.log('  - nudge_url:', sessionStorage.getItem('nudge_url'));
+    console.log('  - nudge_clicked:', sessionStorage.getItem('nudge_clicked'));
+    console.log('  - app_initialized:', sessionStorage.getItem('app_initialized'));
     // Enhanced IndexedDB initialization and checking
     const initializeAndCheckIndexedDB = () => {
       return new Promise<string | null>((resolve) => {
@@ -172,9 +179,11 @@ export const useNudgeNotificationHandler = () => {
     
     const setupBroadcastChannel = () => {
       console.log('🎯 NUDGE BC: ================== SETTING UP BROADCAST CHANNEL ==================');
+      console.log('🎯 NUDGE BC: BroadcastChannel supported?', 'BroadcastChannel' in window);
       try {
         channel = new BroadcastChannel('nudge-notification');
         console.log('🎯 NUDGE BC: ✅ BroadcastChannel created successfully');
+        console.log('🎯 NUDGE BC: Channel name:', channel.name);
         
         channel.addEventListener('message', handleNudgeMessage);
         channel.addEventListener('messageerror', (error) => {
@@ -182,6 +191,17 @@ export const useNudgeNotificationHandler = () => {
         });
         
         console.log('🎯 NUDGE BC: ✅ Event listeners attached');
+        
+        // Test the channel immediately
+        setTimeout(() => {
+          console.log('🎯 NUDGE BC: 🧪 Testing BroadcastChannel with test message...');
+          try {
+            channel?.postMessage({ type: 'TEST', source: 'react-app', timestamp: Date.now() });
+            console.log('🎯 NUDGE BC: ✅ Test message sent successfully');
+          } catch (error) {
+            console.error('🎯 NUDGE BC: ❌ Failed to send test message:', error);
+          }
+        }, 500);
         
       } catch (error) {
         console.error('🎯 NUDGE BC: ❌ BroadcastChannel setup failed:', error);
@@ -193,6 +213,8 @@ export const useNudgeNotificationHandler = () => {
       console.log('🎯 NUDGE MESSAGE: Event data:', event.data);
       console.log('🎯 NUDGE MESSAGE: Message type:', event.data?.type);
       console.log('🎯 NUDGE MESSAGE: Message URL:', event.data?.url);
+      console.log('🎯 NUDGE MESSAGE: Event origin:', event.origin);
+      console.log('🎯 NUDGE MESSAGE: Is initial load?', isInitialLoad);
       
       if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
         console.log('🎯 NUDGE MESSAGE: ✅ Valid SHOW_NUDGE message received!');
@@ -200,12 +222,15 @@ export const useNudgeNotificationHandler = () => {
         // If app was already running, trigger a refresh to force component remount
         if (!isInitialLoad) {
           console.log('🎯 NUDGE MESSAGE: 🔄 App already open, triggering strategic refresh...');
+          console.log('🎯 NUDGE MESSAGE: Storing URL before refresh:', event.data.url);
           // Store the URL first, then refresh
           sessionStorage.setItem('nudge_url', event.data.url);
           sessionStorage.removeItem('nudge_clicked');
+          console.log('🎯 NUDGE MESSAGE: ⏰ Starting 3-second countdown to refresh...');
           setTimeout(() => {
+            console.log('🎯 NUDGE MESSAGE: 🚀 REFRESHING NOW!');
             window.location.reload();
-          }, 100);
+          }, 3000); // Extended delay so you can see the logs
           return;
         }
         
@@ -221,6 +246,8 @@ export const useNudgeNotificationHandler = () => {
         }, 100);
       } else {
         console.log('🎯 NUDGE MESSAGE: ❌ Invalid or irrelevant message');
+        console.log('🎯 NUDGE MESSAGE: Expected type: SHOW_NUDGE, got:', event.data?.type);
+        console.log('🎯 NUDGE MESSAGE: Expected URL, got:', event.data?.url);
       }
     };
 
