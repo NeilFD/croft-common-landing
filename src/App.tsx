@@ -57,6 +57,11 @@ const NotificationHandlers = () => {
   // Handle notification deep links universally
   useNotificationHandler();
   
+  return null;
+};
+
+// Nudge handler component that runs inside NudgeNotificationProvider
+const NudgeHandlers = () => {
   // Handle nudge notifications
   useNudgeNotificationHandler();
   
@@ -107,11 +112,12 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <NotificationHandlers />
-          <LowercasePathGuard />
-          <RouteImagePreloader />
-          <BannerOverlay />
-          <NudgeFloatingButton />
+           <NotificationHandlers />
+           <NudgeHandlers />
+           <LowercasePathGuard />
+           <RouteImagePreloader />
+           <BannerOverlay />
+           <NudgeFloatingButton />
           
           <TransitionProvider>
             <Routes>
