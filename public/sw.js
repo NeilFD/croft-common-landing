@@ -130,6 +130,7 @@ self.addEventListener('notificationclick', (event) => {
   let targetUrl = normalize(event?.notification?.data?.url);
   const clickToken = event?.notification?.data?.click_token || null;
   const notificationData = event?.notification?.data || {};
+  const bannerMessage = notificationData.banner_message;
 
   // Normalize and ensure full absolute URL
   try {
@@ -154,7 +155,8 @@ self.addEventListener('notificationclick', (event) => {
     console.log('🔔 SW: Notification clicked', {
       targetUrl,
       clickToken,
-      notificationData
+      notificationData,
+      bannerMessage: bannerMessage
     });
 
     // Fire-and-forget tracking of the click
@@ -236,7 +238,7 @@ self.addEventListener('notificationclick', (event) => {
           data: {
             title: event?.notification?.title || 'Notification',
             body: event?.notification?.body || 'Notification content',
-            bannerMessage: notificationData.banner_message,
+            bannerMessage: bannerMessage,
             url: targetUrl,
             icon: notificationData.icon || event?.notification?.icon,
             notificationId: notificationData.notification_id,

@@ -71,7 +71,9 @@ export const useNotificationHandler = () => {
         const bannerData = event.data.data;
         console.log('🔔 App: Processing banner message:', {
           messageType: event.data.type,
-          bannerData
+          bannerData,
+          bannerMessage: bannerData.bannerMessage,
+          body: bannerData.body
         });
         
         
