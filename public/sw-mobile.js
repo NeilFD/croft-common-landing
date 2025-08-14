@@ -188,7 +188,139 @@ self.addEventListener('push', (event) => {
   }
 });
 
+// Robust IndexedDB initialization and storage functions for NUDGE
+async function ensureNudgeDatabase() {
+  return new Promise((resolve, reject) => {
+    try {
+      const request = indexedDB.open('nudge-storage', 1);
+      
+      request.onerror = () => {
+        console.error('🔔 SW-MOBILE: ❌ IndexedDB open failed:', request.error);
+        reject(request.error);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        console.log('🔔 SW-MOBILE: 🔧 Creating/upgrading nudge database');
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('nudge')) {
+          const store = db.createObjectStore('nudge');
+          console.log('🔔 SW-MOBILE: ✅ Created nudge object store');
+        }
+      };
+      
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        console.log('🔔 SW-MOBILE: ✅ Database connection established');
+        resolve(db);
+      };
+    } catch (error) {
+      console.error('🔔 SW-MOBILE: ❌ Database setup failed:', error);
+      reject(error);
+    }
+  });
+}
+
+async function storeNudgeUrl(url) {
+  console.log('🔔 SW-MOBILE: 📝 Starting robust nudge URL storage:', url);
+  
+  try {
+    const db = await ensureNudgeDatabase();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['nudge'], 'readwrite');
+      const store = transaction.objectStore('nudge');
+      
+      const data = { 
+        url, 
+        timestamp: Date.now(),
+        stored_by: 'mobile_service_worker',
+        click_processed: false
+      };
+      
+      // Store in both 'current' and 'delivery_pending' keys for reliability
+      const putCurrent = store.put(data, 'current');
+      const putPending = store.put({ ...data, pending_delivery: true }, 'delivery_pending');
+      
+      let completedOps = 0;
+      const checkCompletion = () => {
+        completedOps++;
+        if (completedOps === 2) {
+          console.log('🔔 SW-MOBILE: ✅ URL stored in both current and pending slots');
+          resolve();
+        }
+      };
+      
+      putCurrent.onsuccess = checkCompletion;
+      putCurrent.onerror = () => {
+        console.error('🔔 SW-MOBILE: ❌ Current store operation failed:', putCurrent.error);
+        reject(putCurrent.error);
+      };
+      
+      putPending.onsuccess = checkCompletion;
+      putPending.onerror = () => {
+        console.error('🔔 SW-MOBILE: ❌ Pending store operation failed:', putPending.error);
+        reject(putPending.error);
+      };
+      
+      transaction.onerror = () => {
+        console.error('🔔 SW-MOBILE: ❌ Transaction failed:', transaction.error);
+        reject(transaction.error);
+      };
+    });
+  } catch (error) {
+    console.error('🔔 SW-MOBILE: ❌ Storage operation failed:', error);
+    throw error;
+  }
+}
+
+function sendNudgeToClients(url) {
+  console.log('🔔 SW-MOBILE: 📡 Sending NUDGE to clients with multiple strategies:', url);
+  
+  const message = {
+    type: 'SHOW_NUDGE',
+    url: url,
+    timestamp: Date.now(),
+    delivery_method: 'mobile_enhanced_strategy'
+  };
+  
+  // Strategy 1: BroadcastChannel (primary for same-origin)
+  try {
+    const channel = new BroadcastChannel('nudge-notification');
+    channel.postMessage(message);
+    console.log('🔔 SW-MOBILE: ✅ BroadcastChannel NUDGE message sent');
+    channel.close();
+  } catch (error) {
+    console.error('🔔 SW-MOBILE: ❌ BroadcastChannel failed:', error);
+  }
+  
+  // Strategy 2: Direct client messaging (for active clients)
+  self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
+    console.log(`🔔 SW-MOBILE: 👥 Found ${clients.length} clients for direct NUDGE messaging`);
+    
+    if (clients.length === 0) {
+      console.log('🔔 SW-MOBILE: ℹ️ No active clients found for NUDGE');
+      return;
+    }
+    
+    clients.forEach((client, index) => {
+      try {
+        client.postMessage({
+          ...message,
+          client_index: index,
+          client_id: client.id.substring(0, 8)
+        });
+        console.log(`🔔 SW-MOBILE: ✅ NUDGE message sent to client ${index}`);
+      } catch (error) {
+        console.error(`🔔 SW-MOBILE: ❌ Failed to send NUDGE to client ${index}:`, error);
+      }
+    });
+  }).catch(error => {
+    console.error('🔔 SW-MOBILE: ❌ Failed to get clients for NUDGE:', error);
+  });
+}
+
 self.addEventListener('notificationclick', (event) => {
+  console.log('🔔 SW-MOBILE: Notification clicked');
   event.notification.close();
   
   const data = event.notification.data || {};
@@ -218,9 +350,23 @@ self.addEventListener('notificationclick', (event) => {
     }).catch(() => {}); // Silent fail
   }
   
-  // Ensure the notification URL dominates navigation
+  // Enhanced NUDGE functionality with mobile-optimized fallback
   event.waitUntil((async () => {
-    // Persist navigation intent in Cache Storage for durable handoff
+    console.log('🔔 SW-MOBILE: Processing notification click with NUDGE support:', data);
+
+    // NUDGE: Store URL in IndexedDB for reliable retrieval
+    if (targetUrl) {
+      console.log('🔔 SW-MOBILE: 💾 Storing NUDGE URL:', targetUrl);
+      
+      try {
+        await storeNudgeUrl(targetUrl);
+        console.log('🔔 SW-MOBILE: ✅ NUDGE URL stored successfully');
+      } catch (error) {
+        console.error('🔔 SW-MOBILE: ❌ NUDGE URL storage failed:', error);
+      }
+    }
+
+    // Persist navigation intent in Cache Storage for durable handoff (mobile compatibility)
     try {
       const cache = await caches.open(NAV_CACHE);
       await cache.put(NAV_INTENT_URL, new Response(
@@ -231,14 +377,27 @@ self.addEventListener('notificationclick', (event) => {
 
     const clientList = await clients.matchAll({ type: 'window', includeUncontrolled: true });
 
-    // Always open a bounce page with user activation to guarantee navigation on iOS
+    // NUDGE: Send NUDGE notification to all clients
+    if (targetUrl) {
+      console.log('🔔 SW-MOBILE: 📡 Sending NUDGE message for URL:', targetUrl);
+      
+      sendNudgeToClients(targetUrl);
+      
+      // Delayed retry for reliability (mobile PWA timing issues)
+      setTimeout(() => {
+        console.log('🔔 SW-MOBILE: 🔄 Retry NUDGE delivery');
+        sendNudgeToClients(targetUrl);
+      }, 1500);
+    }
+
+    // Mobile-optimized navigation fallback (keep existing behavior as backup)
     try {
       const bounceUrl = `/nav.html?to=${encodeURIComponent(targetUrl)}`;
       const opened = await clients.openWindow(bounceUrl);
       try { if (opened && 'focus' in opened) await opened.focus(); } catch (_) {}
     } catch (_) {}
 
-    // Broadcast navigation intent to any existing clients as a nudge
+    // Legacy broadcast for backward compatibility
     let bc = null;
     try { bc = new BroadcastChannel('nav-handoff-v1'); } catch (_) {}
     const broadcast = () => {
@@ -261,4 +420,17 @@ self.addEventListener('notificationclick', (event) => {
     // Done
     return;
   })());
+});
+
+// Message listener for app communication (NUDGE support)
+self.addEventListener('message', (event) => {
+  console.log('🔔 SW-MOBILE: Received message from client:', event.data);
+  
+  if (event.data?.type === 'APP_READY') {
+    console.log('🔔 SW-MOBILE: ✅ App ready signal received', {
+      timestamp: event.data.timestamp,
+      url: event.data.url,
+      serviceWorker: 'mobile'
+    });
+  }
 });
