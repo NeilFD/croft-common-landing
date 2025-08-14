@@ -150,12 +150,44 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Create enhanced profile with additional data
     if (authData.user) {
+      // Parse birthday into a proper date format
+      let parsedBirthday = null;
+      if (birthday) {
+        try {
+          // Handle various date formats like "7/October", "7th October", "Oct 7", etc.
+          const cleanBirthday = birthday.replace(/(\d+)(st|nd|rd|th)/g, '$1');
+          
+          // Try to parse different formats
+          let dateToparse = cleanBirthday;
+          
+          // Handle "7/October" format - convert to "October 7"
+          if (dateToparse.includes('/')) {
+            const parts = dateToparse.split('/');
+            if (parts.length === 2 && !parts[1].match(/^\d+$/)) {
+              dateToparse = `${parts[1]} ${parts[0]}`;
+            }
+          }
+          
+          // Parse with current year if no year provided
+          const currentYear = new Date().getFullYear();
+          const testDate = new Date(`${dateToparse} ${currentYear}`);
+          
+          if (!isNaN(testDate.getTime())) {
+            // Format as YYYY-MM-DD for PostgreSQL
+            parsedBirthday = testDate.toISOString().split('T')[0];
+          }
+        } catch (e) {
+          console.error("Error parsing birthday:", e);
+          // Leave as null if parsing fails
+        }
+      }
+
       const profileData = {
         user_id: authData.user.id,
         first_name: firstName || null,
         last_name: lastName || null,
         phone_number: phone || null,
-        birthday: birthday || null,
+        birthday: parsedBirthday,
         dietary_preferences: dietaryPreferences && dietaryPreferences.length > 0 ? dietaryPreferences : null,
         interests: interests && interests.length > 0 ? interests : null,
         communication_preferences: {
