@@ -12,16 +12,21 @@ const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "
   const navigate = useNavigate();
   const { nudgeUrl, showNudgeButton } = useNudgeNotification();
 
+  console.log('🎯 NUDGE BUTTON: Render check -', { showNudgeButton, nudgeUrl });
+
   if (!showNudgeButton || !nudgeUrl) {
     return null;
   }
 
   const handleClick = () => {
+    console.log('🎯 NUDGE BUTTON: Clicked! URL:', nudgeUrl);
     if (nudgeUrl) {
       // Navigate to the URL (could be internal or external)
       if (nudgeUrl.startsWith('http')) {
+        console.log('🎯 NUDGE BUTTON: Opening external URL');
         window.open(nudgeUrl, '_blank');
       } else {
+        console.log('🎯 NUDGE BUTTON: Navigating to internal URL');
         navigate(nudgeUrl);
       }
     }

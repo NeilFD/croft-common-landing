@@ -1,285 +1,239 @@
-/* Minimal service worker for PWA + Push */
-const SUPABASE_URL = 'https://xccidvoxhpgcnwinnyin.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU';
+// Service Worker for Croft App
+// Handles caching, push notifications, and app communication
 
-const IMAGE_CACHE = 'images-v3';
-const ASSET_CACHE = 'assets-swr-v3';
+const CACHE_NAME = 'croft-v2';
+const DEBUG_BYPASS = false; // Set to true to bypass all caching for troubleshooting
 
-self.addEventListener('install', (event) => {
-  // Activate immediately on install
+// Install event - immediately activate
+self.addEventListener('install', event => {
+  console.log('🔔 SW: Installing service worker');
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  // Take control and clean old caches
-  event.waitUntil((async () => {
-    await self.clients.claim();
-    const keep = new Set([IMAGE_CACHE, ASSET_CACHE]);
-    const keys = await caches.keys();
-    await Promise.all(keys.map((k) => keep.has(k) ? null : caches.delete(k)));
-  })());
+// Activate event - take control of clients
+self.addEventListener('activate', event => {
+  console.log('🔔 SW: Activating service worker');
+  
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('🔔 SW: Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      return self.clients.claim();
+    })
+  );
 });
 
-self.addEventListener('fetch', (event) => {
-  const req = event.request;
-  if (req.method !== 'GET') return;
-  const url = new URL(req.url);
-
-  // Allow explicit bypass for troubleshooting/retries
-  if (url.searchParams.get('sw-bypass') === '1') {
-    event.respondWith(fetch(req));
+// Fetch event - handle caching
+self.addEventListener('fetch', event => {
+  // Only handle GET requests
+  if (event.request.method !== 'GET') return;
+  
+  // Bypass caching for debugging if enabled
+  if (DEBUG_BYPASS) {
+    console.log('🔔 SW: Debug bypass enabled, skipping cache');
     return;
   }
 
-  const isSameOrigin = url.origin === self.location.origin;
-  const isImage = /\.(?:png|jpg|jpeg|gif|webp|avif|svg)$/i.test(url.pathname);
-  const isUploads = isSameOrigin && url.pathname.startsWith('/lovable-uploads/');
-  const isBuiltAsset = isSameOrigin && url.pathname.startsWith('/assets/');
-  const isBrand = isSameOrigin && url.pathname.startsWith('/brand/');
+  const url = new URL(event.request.url);
 
-  // Never intercept brand assets - keep them deterministic
-  if (isBrand) {
-    event.respondWith(fetch(req));
+  // Skip caching for brand assets to ensure they're always fresh
+  if (url.pathname.includes('/brand/')) {
     return;
   }
 
-  // Stale-while-revalidate for dynamic images (uploads)
-  if (isImage && isUploads) {
-    event.respondWith((async () => {
-      const cache = await caches.open(IMAGE_CACHE);
-      const cached = await cache.match(req, { ignoreVary: true });
-      const networkPromise = fetch(req).then((res) => {
-        if (res && res.ok) cache.put(req, res.clone());
-        return res;
-      }).catch(() => null);
+  // Handle same-origin requests
+  if (url.origin === self.location.origin) {
+    // Dynamic images strategy (uploads): stale-while-revalidate
+    if (url.pathname.startsWith('/lovable-uploads/')) {
+      event.respondWith(
+        caches.open(CACHE_NAME).then(cache => {
+          return cache.match(event.request).then(cachedResponse => {
+            const fetchPromise = fetch(event.request).then(networkResponse => {
+              cache.put(event.request, networkResponse.clone());
+              return networkResponse;
+            }).catch(() => cachedResponse);
+            
+            return cachedResponse || fetchPromise;
+          });
+        })
+      );
+      return;
+    }
 
-      if (cached) {
-        // Update in background
-        networkPromise.catch(() => {});
-        return cached;
-      }
-
-      const fresh = await networkPromise;
-      if (fresh) return fresh;
-      // No fabricated 504s; let the browser handle retries/placeholder
-      return new Response('', { status: 204 });
-    })());
-    return;
-  }
-
-  // Cache-first with SWR for built assets and other same-origin images
-  if (isBuiltAsset || (isImage && isSameOrigin)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(ASSET_CACHE);
-      const cached = await cache.match(req, { ignoreVary: true });
-      const fetchPromise = fetch(req).then((res) => {
-        if (res && res.ok) cache.put(req, res.clone());
-        return res;
-      }).catch(() => cached || null);
-      return cached || fetchPromise;
-    })());
-    return;
+    // Built assets and other images: cache first with SWR
+    if (url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
+      event.respondWith(
+        caches.open(CACHE_NAME).then(cache => {
+          return cache.match(event.request).then(cachedResponse => {
+            if (cachedResponse) {
+              // Serve from cache and update in background
+              fetch(event.request).then(networkResponse => {
+                cache.put(event.request, networkResponse.clone());
+              }).catch(() => {});
+              return cachedResponse;
+            }
+            
+            // Not in cache, fetch and cache
+            return fetch(event.request).then(networkResponse => {
+              cache.put(event.request, networkResponse.clone());
+              return networkResponse;
+            });
+          });
+        })
+      );
+    }
   }
 });
 
-self.addEventListener('push', (event) => {
+// Push event - handle incoming push notifications
+self.addEventListener('push', event => {
+  console.log('🔔 SW: Push event received');
+  
   let data = {};
   try {
     data = event.data ? event.data.json() : {};
-  } catch (_e) {
-    // no-op
+  } catch (error) {
+    console.error('🔔 SW: Error parsing push data:', error);
   }
-  const title = data.title || 'Croft Common';
+
+  const title = data.title || 'Croft Notification';
+  const body = data.body || 'New notification';
+  const icon = data.icon || '/brand/logo.png';
+  
   const options = {
-    body: data.body || '',
-    icon: data.icon || '/favicon.ico',
-    badge: data.badge || '/favicon.ico',
-    image: data.image || undefined,
-    data: {
-      url: data.url || '/',
-      click_token: data.click_token || null,
-      notification_id: data.notification_id || null,
-      banner_message: data.banner_message || null,
-      display_mode: data.display_mode || 'navigation',
-    },
+    body: body,
+    icon: icon,
+    badge: '/brand/logo.png',
+    data: data,
+    requireInteraction: true,
+    actions: []
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+
+  console.log('🔔 SW: Showing notification:', { title, options });
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
 });
 
-self.addEventListener('notificationclick', (event) => {
-  console.log('🔔 SW: Notification clicked', { data: event.notification.data });
-  
+// Notification click event - handle user interaction
+self.addEventListener('notificationclick', event => {
+  console.log('🔔 SW: Notification clicked');
   event.notification.close();
 
   const data = event.notification.data || {};
-  const { url, click_token: clickToken, display_mode: displayMode = 'navigation', banner_message: bannerMessage } = data;
-
-  // Send nudge notification to app via broadcast channel
-  if (url && url !== '/') {
-    const channel = new BroadcastChannel('nudge-notification');
-    channel.postMessage({
-      type: 'SHOW_NUDGE',
-      url: url
-    });
-    channel.close();
-  }
-
+  const url = data.url;
+  
   event.waitUntil((async () => {
-    // Extract notification token from URL for database storage
-    let notificationToken = null;
+    console.log('🔔 SW: Processing notification click with data:', data);
+
+    // Store the URL for NUDGE button in IndexedDB for persistence
     if (url) {
+      console.log('🔔 SW: Storing NUDGE URL in IndexedDB:', url);
       try {
-        const urlObj = new URL(url);
-        notificationToken = urlObj.searchParams.get('ntk');
-      } catch (e) {
-        console.warn('🔔 SW: Could not parse URL:', e);
-      }
-    }
-
-    // Store banner in database for reliability
-    if (notificationToken) {
-      try {
-        await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/store-pending-banner', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            notificationToken,
-            title: event.notification.title,
-            body: event.notification.body,
-            bannerMessage: bannerMessage,
-            url: url,
-            icon: event.notification.icon
-          })
-        });
-        console.log('🔔 SW: Banner stored in database');
+        const request = indexedDB.open('nudge-storage', 1);
+        request.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains('nudge')) {
+            db.createObjectStore('nudge', { keyPath: 'id' });
+          }
+        };
+        request.onsuccess = (event) => {
+          const db = event.target.result;
+          const transaction = db.transaction(['nudge'], 'readwrite');
+          const store = transaction.objectStore('nudge');
+          store.put({ id: 'current', url: url, timestamp: Date.now() });
+          console.log('🔔 SW: NUDGE URL stored in IndexedDB successfully');
+        };
       } catch (error) {
-        console.error('🔔 SW: Failed to store banner in database:', error);
+        console.error('🔔 SW: IndexedDB storage failed:', error);
       }
     }
 
-    // Track notification click
-    if (clickToken) {
-      try {
-        await fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/track-notification-event', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'notification_click',
-            token: clickToken,
-            url: url
-          })
-        });
-        console.log('🔔 SW: Click tracked successfully');
-      } catch (error) {
-        console.error('🔔 SW: Failed to track click:', error);
-      }
+    // Always open/focus the app first
+    console.log('🔔 SW: Opening/focusing app window');
+    let appWindow = null;
+    
+    // Try to focus existing window first
+    const clients = await self.clients.matchAll({ 
+      type: 'window', 
+      includeUncontrolled: true 
+    });
+    
+    if (clients.length > 0) {
+      appWindow = clients[0];
+      await appWindow.focus();
+      console.log('🔔 SW: Focused existing window');
+    } else {
+      // Open new window - always to the main app, not the notification URL
+      appWindow = await self.clients.openWindow('/');
+      console.log('🔔 SW: Opened new window');
     }
-
-    // Handle based on display mode
-    if (displayMode === 'banner') {
-      console.log('🔔 SW: Banner mode - attempting to show banner');
+    
+    // Send NUDGE message after ensuring app is ready
+    if (url) {
+      console.log('🔔 SW: Preparing to send NUDGE message for URL:', url);
       
-      // Get all clients
-      const clients = await self.clients.matchAll({
-        type: 'window',
-        includeUncontrolled: true
-      });
-
-      console.log('🔔 SW: Found clients:', clients.length);
-
-      let bannerShown = false;
-
-      // Try to show banner to any matching client
-      for (const client of clients) {
-        if (client.url.includes('lovableproject.com') || client.url.includes('localhost')) {
-          console.log('🔔 SW: Sending banner to client:', client.url);
-          
-          const bannerData = {
-            type: 'SHOW_BANNER',
-            data: {
-              title: event.notification.title,
-              body: event.notification.body,
-              bannerMessage: bannerMessage,
-              url: url,
-              icon: event.notification.icon,
-              notificationId: data.notification_id,
-              clickToken: clickToken
-            }
+      // Send NUDGE message with multiple retry attempts
+      const sendNudgeMessage = async (attempt = 1) => {
+        console.log(`🔔 SW: Sending NUDGE message (attempt ${attempt})`);
+        
+        try {
+          const nudgeChannel = new BroadcastChannel('nudge-notification');
+          const nudgeMessage = {
+            type: 'SHOW_NUDGE',
+            url: url,
+            timestamp: Date.now(),
+            attempt: attempt
           };
-
-          console.log('🔔 SW: Banner data:', bannerData);
-
-          // Use BroadcastChannel as primary method
-          try {
-            const channel = new BroadcastChannel('notification-events');
-            channel.postMessage(bannerData);
-            console.log('🔔 SW: BroadcastChannel message sent');
-            bannerShown = true;
-            break;
-          } catch (error) {
-            console.error('🔔 SW: BroadcastChannel failed:', error);
+          
+          nudgeChannel.postMessage(nudgeMessage);
+          console.log('🔔 SW: NUDGE BroadcastChannel message sent:', nudgeMessage);
+          nudgeChannel.close();
+          
+          // Also send to specific window if available
+          if (appWindow && appWindow.postMessage) {
+            appWindow.postMessage({
+              type: 'SET_NUDGE_URL',
+              url: url,
+              timestamp: Date.now()
+            }, '*');
+            console.log('🔔 SW: NUDGE postMessage sent to window');
+          }
+          
+        } catch (error) {
+          console.error(`🔔 SW: NUDGE message attempt ${attempt} failed:`, error);
+          
+          // Retry up to 3 times with increasing delays
+          if (attempt < 3) {
+            setTimeout(() => sendNudgeMessage(attempt + 1), attempt * 1000);
           }
         }
-      }
-
-      if (!bannerShown) {
-        console.log('🔔 SW: No clients found, opening window');
-        if (url) {
-          await self.clients.openWindow(url);
-        }
-      }
-    } else {
-      // Navigation mode - always open a window
-      console.log('🔔 SW: Navigation mode - opening window');
-      if (url) {
-        await self.clients.openWindow(url);
-      }
+      };
+      
+      // Send immediately and with delays to ensure delivery
+      sendNudgeMessage(1);
+      setTimeout(() => sendNudgeMessage(2), 1000);
+      setTimeout(() => sendNudgeMessage(3), 3000);
     }
-  })());
   })());
 });
 
-// Message listener for app communication and debugging
+// Message listener for app communication
 self.addEventListener('message', (event) => {
   console.log('🔔 SW: Received message from client:', event.data);
   
   if (event.data?.type === 'APP_READY') {
     console.log('🔔 SW: ✅ App ready signal received', {
       timestamp: event.data.timestamp,
-      url: event.data.url,
-      userAgent: event.data.userAgent,
-      isStandalone: event.data.isStandalone
-    });
-  }
-  
-  if (event.data?.type === 'APP_FOCUSED') {
-    console.log('🔔 SW: ✅ App focused signal received', {
-      timestamp: event.data.timestamp,
       url: event.data.url
-    });
-  }
-  
-  if (event.data?.type === 'CHECK_BANNER_STATUS') {
-    console.log('🔔 SW: Banner status check requested');
-  }
-
-  if (event.data?.type === 'PING_REQUEST') {
-    console.log('🔔 SW: Ping request received');
-    
-    // Get current client count and respond
-    self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
-      const response = {
-        clientCount: clients.length,
-        clients: clients.map(c => ({
-          url: c.url,
-          visibilityState: c.visibilityState,
-          focused: c.focused,
-          type: c.type
-        }))
-      };
-      
-      console.log('🔔 SW: Ping response:', response);
-      event.ports[0].postMessage(response);
     });
   }
 });
