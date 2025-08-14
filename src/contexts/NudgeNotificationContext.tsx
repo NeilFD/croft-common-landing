@@ -43,26 +43,65 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
         return;
       }
 
-      // Check IndexedDB as fallback
+      // Check IndexedDB as fallback with proper initialization
       try {
         const request = indexedDB.open('nudge-storage', 1);
+        
+        request.onupgradeneeded = (event) => {
+          console.log('🎯 NUDGE CONTEXT: Creating/upgrading nudge database');
+          const db = (event.target as IDBOpenDBRequest).result;
+          if (!db.objectStoreNames.contains('nudge')) {
+            db.createObjectStore('nudge');
+            console.log('🎯 NUDGE CONTEXT: Created nudge object store');
+          }
+        };
+        
         request.onsuccess = (event) => {
           const db = (event.target as IDBOpenDBRequest).result;
           if (db.objectStoreNames.contains('nudge')) {
             const transaction = db.transaction(['nudge'], 'readonly');
             const store = transaction.objectStore('nudge');
-            const getRequest = store.get('nudge_url');
             
-            getRequest.onsuccess = () => {
-              if (getRequest.result) {
-                console.log('🎯 NUDGE CONTEXT: Found URL in IndexedDB:', getRequest.result);
-                setNudgeUrlState(getRequest.result);
-                // Also sync to sessionStorage
-                sessionStorage.setItem('nudge_url', getRequest.result);
+            // Check multiple keys that service worker might use
+            const checkKeys = ['current', 'delivery_pending', 'nudge_url'];
+            let foundUrl = false;
+            
+            const tryNextKey = (index: number) => {
+              if (index >= checkKeys.length || foundUrl) {
+                db.close();
+                return;
               }
+              
+              const getRequest = store.get(checkKeys[index]);
+              getRequest.onsuccess = () => {
+                if (getRequest.result && !foundUrl) {
+                  const url = typeof getRequest.result === 'string' 
+                    ? getRequest.result 
+                    : getRequest.result.url;
+                  
+                  if (url) {
+                    console.log('🎯 NUDGE CONTEXT: Found URL in IndexedDB key', checkKeys[index], ':', url);
+                    setNudgeUrlState(url);
+                    sessionStorage.setItem('nudge_url', url);
+                    foundUrl = true;
+                    db.close();
+                    return;
+                  }
+                }
+                tryNextKey(index + 1);
+              };
+              getRequest.onerror = () => tryNextKey(index + 1);
             };
+            
+            tryNextKey(0);
+          } else {
+            console.log('🎯 NUDGE CONTEXT: No nudge store found');
+            db.close();
           }
-          db.close();
+        };
+        
+        request.onerror = () => {
+          console.log('🎯 NUDGE CONTEXT: IndexedDB open failed:', request.error);
         };
       } catch (error) {
         console.log('🎯 NUDGE CONTEXT: IndexedDB check failed:', error);
