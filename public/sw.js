@@ -265,42 +265,19 @@ async function storeNudgeUrl(url) {
   }
 }
 
-// Smart delivery system that buffers for open PWAs
+// Simplified storage-first delivery - all scenarios rely on IndexedDB
 async function attemptNudgeDelivery(url) {
-  console.log('🔔 SW: 📡 Starting smart NUDGE delivery for URL:', url);
+  console.log('🔔 SW: 📡 Storage-first NUDGE delivery for URL:', url);
   
-  // Check if any clients are open
+  // URL is already stored in IndexedDB at this point
+  // Send one immediate message as performance optimization for open PWAs
   const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
   const hasOpenClients = clients.length > 0;
   
-  if (hasOpenClients) {
-    console.log(`🔔 SW: ⏰ Open clients detected (${clients.length}), using aggressive retry timing for NUDGE delivery`);
-    
-    // Initial attempt after 3 seconds to ensure React app is fully loaded
-    setTimeout(() => {
-      console.log('🔔 SW: 🎯 Initial NUDGE attempt (3000ms)');
-      sendNudgeToClients(url, hasOpenClients);
-    }, 3000);
-    
-    // Retry attempts for maximum reliability
-    setTimeout(() => {
-      console.log('🔔 SW: 🔄 NUDGE retry attempt 1 (1000ms)');
-      sendNudgeToClients(url, hasOpenClients);
-    }, 1000);
-    
-    setTimeout(() => {
-      console.log('🔔 SW: 🔄 NUDGE retry attempt 2 (5000ms)');
-      sendNudgeToClients(url, hasOpenClients);
-    }, 5000);
-    
-    setTimeout(() => {
-      console.log('🔔 SW: 🔄 NUDGE final retry attempt (7000ms)');
-      sendNudgeToClients(url, hasOpenClients);
-    }, 7000);
-  } else {
-    console.log('🔔 SW: ⚡ No open clients, sending immediately');
-    sendNudgeToClients(url, hasOpenClients);
-  }
+  console.log(`🔔 SW: 📡 Sending one immediate message (${clients.length} clients open)`);
+  sendNudgeToClients(url, hasOpenClients);
+  
+  // React app will find the URL via IndexedDB polling - no complex retry needed
 }
 
 function sendNudgeToClients(url, hasOpenClients = false) {
