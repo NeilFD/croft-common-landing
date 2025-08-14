@@ -134,30 +134,15 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil((async () => {
     console.log('🔔 SW: Processing notification click with data:', data);
 
-    // Enhanced storage for NUDGE button in multiple locations
+    // Robust IndexedDB storage for NUDGE notifications
     if (url) {
-      console.log('🔔 SW: Storing NUDGE URL in multiple storage locations:', url);
+      console.log('🔔 SW: 💾 Storing NUDGE URL with robust strategy:', url);
       
-      // Note: Service workers cannot access sessionStorage, only IndexedDB
-      
-      // Store in IndexedDB for persistence
       try {
-        const request = indexedDB.open('nudge-storage', 1);
-        request.onupgradeneeded = (event) => {
-          const db = event.target.result;
-          if (!db.objectStoreNames.contains('nudge')) {
-            db.createObjectStore('nudge', { keyPath: 'id' });
-          }
-        };
-        request.onsuccess = (event) => {
-          const db = event.target.result;
-          const transaction = db.transaction(['nudge'], 'readwrite');
-          const store = transaction.objectStore('nudge');
-          store.put({ id: 'current', url: url, timestamp: Date.now(), clicked: false });
-          console.log('🔔 SW: NUDGE URL stored in IndexedDB successfully');
-        };
+        await storeNudgeUrl(url);
+        console.log('🔔 SW: ✅ NUDGE URL stored successfully');
       } catch (error) {
-        console.error('🔔 SW: IndexedDB storage failed:', error);
+        console.error('🔔 SW: ❌ NUDGE URL storage failed:', error);
       }
     }
 
@@ -181,45 +166,152 @@ self.addEventListener('notificationclick', event => {
       console.log('🔔 SW: Opened new window');
     }
     
-    // Simplified NUDGE message delivery for open PWA
+    // Enhanced NUDGE message delivery with multiple strategies
     if (url) {
-      console.log('🔔 SW: Sending NUDGE for URL:', url);
+      console.log('🔔 SW: 📡 Sending NUDGE with enhanced delivery for URL:', url);
       
-      // Single, reliable BroadcastChannel message + sessionStorage store
-      const sendNudgeMessage = async () => {
-        try {
-          // Method 1: BroadcastChannel (primary)
-          const nudgeChannel = new BroadcastChannel('nudge-notification');
-          nudgeChannel.postMessage({
-            type: 'SHOW_NUDGE',
-            url: url,
-            timestamp: Date.now()
-          });
-          console.log('🔔 SW: BroadcastChannel NUDGE sent');
-          nudgeChannel.close();
-          
-          // Method 2: Direct client messaging for open PWAs
-          const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
-          for (const client of allClients) {
-            client.postMessage({
-              type: 'SHOW_NUDGE',
-              url: url,
-              timestamp: Date.now()
-            });
-          }
-          console.log(`🔔 SW: Client messages sent to ${allClients.length} clients`);
-          
-        } catch (error) {
-          console.error('🔔 SW: NUDGE message delivery failed:', error);
-        }
-      };
+      // Send nudge message using multiple delivery strategies
+      sendNudgeToClients(url);
       
-      // Send immediately and once more after a short delay
-      sendNudgeMessage();
-      setTimeout(sendNudgeMessage, 1000);
+      // Delayed retry for reliability (open PWA timing issues)
+      setTimeout(() => {
+        console.log('🔔 SW: 🔄 Retry NUDGE delivery');
+        sendNudgeToClients(url);
+      }, 1500);
     }
   })());
 });
+
+// Robust IndexedDB initialization and storage functions
+async function ensureNudgeDatabase() {
+  return new Promise((resolve, reject) => {
+    try {
+      const request = indexedDB.open('nudge-storage', 1);
+      
+      request.onerror = () => {
+        console.error('🔔 SW: ❌ IndexedDB open failed:', request.error);
+        reject(request.error);
+      };
+      
+      request.onupgradeneeded = (event) => {
+        console.log('🔔 SW: 🔧 Creating/upgrading nudge database');
+        const db = event.target.result;
+        if (!db.objectStoreNames.contains('nudge')) {
+          const store = db.createObjectStore('nudge');
+          console.log('🔔 SW: ✅ Created nudge object store');
+        }
+      };
+      
+      request.onsuccess = (event) => {
+        const db = event.target.result;
+        console.log('🔔 SW: ✅ Database connection established');
+        resolve(db);
+      };
+    } catch (error) {
+      console.error('🔔 SW: ❌ Database setup failed:', error);
+      reject(error);
+    }
+  });
+}
+
+async function storeNudgeUrl(url) {
+  console.log('🔔 SW: 📝 Starting robust nudge URL storage:', url);
+  
+  try {
+    const db = await ensureNudgeDatabase();
+    
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['nudge'], 'readwrite');
+      const store = transaction.objectStore('nudge');
+      
+      const data = { 
+        url, 
+        timestamp: Date.now(),
+        stored_by: 'service_worker',
+        click_processed: false
+      };
+      
+      // Store in both 'current' and 'delivery_pending' keys for reliability
+      const putCurrent = store.put(data, 'current');
+      const putPending = store.put({ ...data, pending_delivery: true }, 'delivery_pending');
+      
+      let completedOps = 0;
+      const checkCompletion = () => {
+        completedOps++;
+        if (completedOps === 2) {
+          console.log('🔔 SW: ✅ URL stored in both current and pending slots');
+          resolve();
+        }
+      };
+      
+      putCurrent.onsuccess = checkCompletion;
+      putCurrent.onerror = () => {
+        console.error('🔔 SW: ❌ Current store operation failed:', putCurrent.error);
+        reject(putCurrent.error);
+      };
+      
+      putPending.onsuccess = checkCompletion;
+      putPending.onerror = () => {
+        console.error('🔔 SW: ❌ Pending store operation failed:', putPending.error);
+        reject(putPending.error);
+      };
+      
+      transaction.onerror = () => {
+        console.error('🔔 SW: ❌ Transaction failed:', transaction.error);
+        reject(transaction.error);
+      };
+    });
+  } catch (error) {
+    console.error('🔔 SW: ❌ Storage operation failed:', error);
+    throw error;
+  }
+}
+
+function sendNudgeToClients(url) {
+  console.log('🔔 SW: 📡 Sending nudge to clients with multiple strategies:', url);
+  
+  const message = {
+    type: 'SHOW_NUDGE',
+    url: url,
+    timestamp: Date.now(),
+    delivery_method: 'enhanced_multi_strategy'
+  };
+  
+  // Strategy 1: BroadcastChannel (primary for same-origin)
+  try {
+    const channel = new BroadcastChannel('nudge-notification');
+    channel.postMessage(message);
+    console.log('🔔 SW: ✅ BroadcastChannel message sent');
+    channel.close();
+  } catch (error) {
+    console.error('🔔 SW: ❌ BroadcastChannel failed:', error);
+  }
+  
+  // Strategy 2: Direct client messaging (for active clients)
+  self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
+    console.log(`🔔 SW: 👥 Found ${clients.length} clients for direct messaging`);
+    
+    if (clients.length === 0) {
+      console.log('🔔 SW: ℹ️ No active clients found');
+      return;
+    }
+    
+    clients.forEach((client, index) => {
+      try {
+        client.postMessage({
+          ...message,
+          client_index: index,
+          client_id: client.id.substring(0, 8)
+        });
+        console.log(`🔔 SW: ✅ Message sent to client ${index}`);
+      } catch (error) {
+        console.error(`🔔 SW: ❌ Failed to send to client ${index}:`, error);
+      }
+    });
+  }).catch(error => {
+    console.error('🔔 SW: ❌ Failed to get clients:', error);
+  });
+}
 
 // Message listener for app communication
 self.addEventListener('message', (event) => {

@@ -9,47 +9,100 @@ export const useNudgeNotificationHandler = () => {
   useEffect(() => {
     console.log('🎯 NUDGE: Handler initializing...');
     
-    // Robust IndexedDB checker with error handling
-    const checkIndexedDB = () => {
+    // Enhanced IndexedDB initialization and checking
+    const initializeAndCheckIndexedDB = () => {
       return new Promise<string | null>((resolve) => {
         try {
+          console.log('🎯 NUDGE: Initializing IndexedDB connection...');
           const request = indexedDB.open('nudge-storage', 1);
           
           request.onerror = () => {
-            console.error('🎯 NUDGE: IndexedDB open failed');
+            console.error('🎯 NUDGE: ✗ IndexedDB open failed');
             resolve(null);
+          };
+          
+          request.onupgradeneeded = (event) => {
+            console.log('🎯 NUDGE: Creating nudge database in React app');
+            const db = (event.target as IDBOpenDBRequest).result;
+            if (!db.objectStoreNames.contains('nudge')) {
+              db.createObjectStore('nudge');
+              console.log('🎯 NUDGE: ✓ Created nudge object store');
+            }
           };
           
           request.onsuccess = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
+            console.log('🎯 NUDGE: ✓ Database connection established');
             
             if (!db.objectStoreNames.contains('nudge')) {
-              console.log('🎯 NUDGE: No nudge store found');
+              console.log('🎯 NUDGE: ✗ No nudge store found in existing DB');
               resolve(null);
               return;
             }
             
+            // Check for current nudge URL
             const transaction = db.transaction(['nudge'], 'readonly');
             const store = transaction.objectStore('nudge');
-            const getRequest = store.get('current');
             
-            getRequest.onerror = () => {
-              console.error('🎯 NUDGE: IndexedDB read failed');
-              resolve(null);
+            // Check both 'current' and 'delivery_pending' keys
+            const getCurrentRequest = store.get('current');
+            const getPendingRequest = store.get('delivery_pending');
+            
+            let currentResult = null;
+            let pendingResult = null;
+            let completedRequests = 0;
+            
+            const checkCompletion = () => {
+              completedRequests++;
+              if (completedRequests === 2) {
+                // Prioritize pending delivery over current
+                const result = pendingResult || currentResult;
+                if (result && result.url) {
+                  console.log('🎯 NUDGE: ✓ Found URL in IndexedDB:', result.url, 
+                    pendingResult ? '(from pending)' : '(from current)');
+                  
+                  // Clear pending delivery flag if we found one
+                  if (pendingResult) {
+                    try {
+                      const clearTransaction = db.transaction(['nudge'], 'readwrite');
+                      const clearStore = clearTransaction.objectStore('nudge');
+                      clearStore.delete('delivery_pending');
+                      console.log('🎯 NUDGE: ✓ Cleared pending delivery flag');
+                    } catch (error) {
+                      console.error('🎯 NUDGE: ✗ Failed to clear pending flag:', error);
+                    }
+                  }
+                  
+                  resolve(result.url);
+                } else {
+                  console.log('🎯 NUDGE: No URL found in IndexedDB');
+                  resolve(null);
+                }
+              }
             };
             
-            getRequest.onsuccess = () => {
-              const result = getRequest.result;
-              if (result && result.url) {
-                console.log('🎯 NUDGE: Found URL in IndexedDB:', result.url);
-                resolve(result.url);
-              } else {
-                resolve(null);
-              }
+            getCurrentRequest.onerror = () => {
+              console.error('🎯 NUDGE: ✗ IndexedDB read failed for current');
+              checkCompletion();
+            };
+            
+            getCurrentRequest.onsuccess = () => {
+              currentResult = getCurrentRequest.result;
+              checkCompletion();
+            };
+            
+            getPendingRequest.onerror = () => {
+              console.error('🎯 NUDGE: ✗ IndexedDB read failed for pending');
+              checkCompletion();
+            };
+            
+            getPendingRequest.onsuccess = () => {
+              pendingResult = getPendingRequest.result;
+              checkCompletion();
             };
           };
         } catch (error) {
-          console.error('🎯 NUDGE: IndexedDB check failed:', error);
+          console.error('🎯 NUDGE: ✗ IndexedDB initialization failed:', error);
           resolve(null);
         }
       });
@@ -72,12 +125,14 @@ export const useNudgeNotificationHandler = () => {
         return;
       }
       
-      // Check IndexedDB (slower but persistent)
-      const indexedDBUrl = await checkIndexedDB();
+      // Check IndexedDB with initialization (slower but persistent)
+      const indexedDBUrl = await initializeAndCheckIndexedDB();
       if (indexedDBUrl) {
-        console.log('🎯 NUDGE: Setting URL from IndexedDB:', indexedDBUrl);
+        console.log('🎯 NUDGE: ✓ Setting URL from IndexedDB:', indexedDBUrl);
         setNudgeUrl(indexedDBUrl);
         sessionStorage.setItem('nudge_url', indexedDBUrl);
+      } else {
+        console.log('🎯 NUDGE: No URL found in any storage');
       }
     };
     
@@ -140,29 +195,48 @@ export const useNudgeNotificationHandler = () => {
       });
     }
 
-    // Aggressive polling when page becomes visible or focused (open PWA fix)
+    // Enhanced visibility change handler with IndexedDB polling
     const handleVisibilityChange = () => {
       if (!document.hidden) {
-        console.log('🎯 NUDGE: Page became visible, checking for URL...');
+        console.log('🎯 NUDGE: 👁️ Page became visible, starting enhanced checks...');
         checkForNudgeUrl();
+        
+        // Immediate IndexedDB check with initialization
+        initializeAndCheckIndexedDB().then(url => {
+          if (url && !nudgeUrl) {
+            console.log('🎯 NUDGE: ✓ Found URL on visibility change:', url);
+            setNudgeUrl(url);
+            sessionStorage.setItem('nudge_url', url);
+          }
+        });
         
         // Aggressive polling for open PWAs that might have missed messages
         let pollCount = 0;
         const pollInterval = setInterval(async () => {
           pollCount++;
-          console.log(`🎯 NUDGE: Visibility poll ${pollCount}/10`);
-          await checkForNudgeUrl();
+          console.log(`🎯 NUDGE: 🔍 Visibility poll ${pollCount}/8`);
           
-          if (pollCount >= 10) {
+          // Check both sessionStorage and IndexedDB each poll
+          await checkForNudgeUrl();
+          const directUrl = await initializeAndCheckIndexedDB();
+          if (directUrl && !nudgeUrl) {
+            console.log(`🎯 NUDGE: ✓ Poll ${pollCount} found URL:`, directUrl);
+            setNudgeUrl(directUrl);
+            sessionStorage.setItem('nudge_url', directUrl);
             clearInterval(pollInterval);
-            console.log('🎯 NUDGE: Visibility polling complete');
+            return;
           }
-        }, 500);
+          
+          if (pollCount >= 8) {
+            clearInterval(pollInterval);
+            console.log('🎯 NUDGE: 🏁 Visibility polling complete');
+          }
+        }, 750);
       }
     };
     
     const handleFocus = () => {
-      console.log('🎯 NUDGE: Window focused, checking for URL...');
+      console.log('🎯 NUDGE: 🎯 Window focused, starting enhanced recovery...');
       checkForNudgeUrl();
       
       // Recreate BroadcastChannel on focus (connection might be stale)
@@ -171,18 +245,37 @@ export const useNudgeNotificationHandler = () => {
       }
       setupBroadcastChannel();
       
-      // Aggressive polling for open PWAs
+      // Immediate deep IndexedDB check
+      initializeAndCheckIndexedDB().then(url => {
+        if (url && !nudgeUrl) {
+          console.log('🎯 NUDGE: ✓ Focus found URL in IndexedDB:', url);
+          setNudgeUrl(url);
+          sessionStorage.setItem('nudge_url', url);
+        }
+      });
+      
+      // Enhanced polling for open PWAs with database initialization
       let pollCount = 0;
       const pollInterval = setInterval(async () => {
         pollCount++;
-        console.log(`🎯 NUDGE: Focus poll ${pollCount}/5`);
-        await checkForNudgeUrl();
+        console.log(`🎯 NUDGE: 🔄 Focus poll ${pollCount}/6`);
         
-        if (pollCount >= 5) {
+        // Check both storage methods
+        await checkForNudgeUrl();
+        const dbUrl = await initializeAndCheckIndexedDB();
+        if (dbUrl && !nudgeUrl) {
+          console.log(`🎯 NUDGE: ✓ Focus poll ${pollCount} found URL:`, dbUrl);
+          setNudgeUrl(dbUrl);
+          sessionStorage.setItem('nudge_url', dbUrl);
           clearInterval(pollInterval);
-          console.log('🎯 NUDGE: Focus polling complete');
+          return;
         }
-      }, 1000);
+        
+        if (pollCount >= 6) {
+          clearInterval(pollInterval);
+          console.log('🎯 NUDGE: 🏁 Focus polling complete');
+        }
+      }, 1200);
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
