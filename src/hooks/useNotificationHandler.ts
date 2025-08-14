@@ -87,6 +87,12 @@ export const useNotificationHandler = () => {
           bannerData
         });
         
+        // 🔍 DEBUG: Show received banner data
+        toast({
+          title: "🔍 React Debug",
+          description: `bannerMessage: "${bannerData.bannerMessage || 'EMPTY'}" | body: "${bannerData.body || 'EMPTY'}"`
+        });
+        
         toast({
           title: "🔔 Banner Triggered",
           description: `Title: ${bannerData.title || 'No title'}`

@@ -272,6 +272,10 @@ self.addEventListener('notificationclick', (event) => {
       console.log('🔔 SW: Showing banner to open app');
       // Send banner data to the main app
       try {
+        // 🔍 DEBUG: Show what we extracted from notification data
+        console.log('🔔 SW DEBUG: Raw notificationData:', notificationData);
+        console.log('🔔 SW DEBUG: notification banner_message:', notificationData.banner_message);
+        
         const bannerData = {
           type: 'SHOW_BANNER',
           data: {
@@ -284,7 +288,24 @@ self.addEventListener('notificationclick', (event) => {
             clickToken: notificationData.click_token
           }
         };
+        
+        console.log('🔔 SW DEBUG: Complete bannerData:', bannerData);
         console.log('🔔 SW: Posting banner message to clients:', bannerData);
+        
+        // Send debug toast to show banner message value
+        if (appClients.length > 0) {
+          try {
+            appClients[0].postMessage({
+              type: 'SHOW_TOAST',
+              data: {
+                title: '🔍 SW Debug',
+                description: `banner_message: "${notificationData.banner_message || 'EMPTY'}"`
+              }
+            });
+          } catch (e) {
+            console.warn('🔔 SW: Failed to send debug toast:', e);
+          }
+        }
         
         // Method 1: Send to ALL app clients with enhanced debugging
         console.log('🔔 SW: Sending banner to ALL app clients');
