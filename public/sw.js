@@ -134,9 +134,24 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil((async () => {
     console.log('🔔 SW: Processing notification click with data:', data);
 
-    // Store the URL for NUDGE button in IndexedDB for persistence
+    // Enhanced storage for NUDGE button in multiple locations
     if (url) {
-      console.log('🔔 SW: Storing NUDGE URL in IndexedDB:', url);
+      console.log('🔔 SW: Storing NUDGE URL in multiple storage locations:', url);
+      
+      // Store in sessionStorage immediately for open PWA detection
+      try {
+        // Use storage API if available in service worker context
+        if (typeof self.localStorage !== 'undefined') {
+          self.sessionStorage.setItem('nudge_url', url);
+          self.sessionStorage.setItem('nudge_data', JSON.stringify({ url, timestamp: Date.now() }));
+          self.sessionStorage.removeItem('nudge_clicked');
+          console.log('🔔 SW: NUDGE stored in sessionStorage');
+        }
+      } catch (error) {
+        console.log('🔔 SW: sessionStorage not available in SW context:', error);
+      }
+      
+      // Store in IndexedDB for persistence
       try {
         const request = indexedDB.open('nudge-storage', 1);
         request.onupgradeneeded = (event) => {
@@ -149,7 +164,7 @@ self.addEventListener('notificationclick', event => {
           const db = event.target.result;
           const transaction = db.transaction(['nudge'], 'readwrite');
           const store = transaction.objectStore('nudge');
-          store.put({ id: 'current', url: url, timestamp: Date.now() });
+          store.put({ id: 'current', url: url, timestamp: Date.now(), clicked: false });
           console.log('🔔 SW: NUDGE URL stored in IndexedDB successfully');
         };
       } catch (error) {
@@ -177,67 +192,132 @@ self.addEventListener('notificationclick', event => {
       console.log('🔔 SW: Opened new window');
     }
     
-    // Send NUDGE message after ensuring app is ready
+    // Enhanced NUDGE message delivery system for open PWA
     if (url) {
-      console.log('🔔 SW: Preparing to send NUDGE message for URL:', url);
+      console.log('🔔 SW: Preparing enhanced NUDGE delivery for URL:', url);
       
-      // Enhanced NUDGE message delivery with multiple attempts
-      const sendNudgeMessage = async (attempt = 1) => {
-        console.log(`🔔 SW: Sending NUDGE message (attempt ${attempt})`);
-        
+      // Store URL immediately via client messaging to reach open PWA sessionStorage
+      const storeInClientStorage = async () => {
         try {
-          // Send BroadcastChannel message multiple times for reliability
-          const nudgeChannel = new BroadcastChannel('nudge-notification');
-          const nudgeMessage = {
-            type: 'SHOW_NUDGE',
-            url: url,
-            timestamp: Date.now(),
-            attempt: attempt
-          };
+          const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+          console.log('🔔 SW: Found clients for storage messaging:', allClients.length);
           
-          nudgeChannel.postMessage(nudgeMessage);
-          console.log('🔔 SW: NUDGE BroadcastChannel message sent:', nudgeMessage);
-          nudgeChannel.close();
-          
-          // Also send to specific window if available
-          if (appWindow && appWindow.postMessage) {
-            appWindow.postMessage({
-              type: 'SET_NUDGE_URL',
-              url: url,
-              timestamp: Date.now()
-            }, '*');
-            console.log('🔔 SW: NUDGE postMessage sent to window');
+          for (const client of allClients) {
+            try {
+              client.postMessage({
+                type: 'STORE_NUDGE_URL',
+                url: url,
+                timestamp: Date.now()
+              });
+              console.log('🔔 SW: Sent storage message to client:', client.id);
+            } catch (error) {
+              console.error('🔔 SW: Failed to send storage message to client:', error);
+            }
           }
-          
-          // Store in IndexedDB as backup for open PWA
-          const request = indexedDB.open('nudge-storage', 1);
-          request.onsuccess = (event) => {
-            const db = event.target.result;
-            const transaction = db.transaction(['nudge'], 'readwrite');
-            const store = transaction.objectStore('nudge');
-            store.put({ 
-              id: 'current', 
-              url: url, 
-              timestamp: Date.now(),
-              clicked: false
-            });
-            console.log('🔔 SW: NUDGE stored in IndexedDB');
-          };
-          
         } catch (error) {
-          console.error(`🔔 SW: NUDGE message attempt ${attempt} failed:`, error);
-          
-          // Retry up to 3 times with increasing delays
-          if (attempt < 3) {
-            setTimeout(() => sendNudgeMessage(attempt + 1), attempt * 1000);
-          }
+          console.error('🔔 SW: Failed to get clients for storage:', error);
         }
       };
       
-      // Send immediately and with delays to ensure delivery
-      sendNudgeMessage(1);
-      setTimeout(() => sendNudgeMessage(2), 1000);
-      setTimeout(() => sendNudgeMessage(3), 3000);
+      // Store immediately
+      storeInClientStorage();
+      
+      // Enhanced NUDGE message delivery with aggressive retry system
+      const sendEnhancedNudgeMessage = async (attempt = 1) => {
+        const maxAttempts = 20; // Much more aggressive
+        console.log(`🔔 SW: Enhanced NUDGE delivery attempt ${attempt}/${maxAttempts}`);
+        
+        if (attempt > maxAttempts) {
+          console.log('🔔 SW: Max NUDGE delivery attempts reached');
+          return;
+        }
+        
+        try {
+          // Get all available clients
+          const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+          console.log(`🔔 SW: Attempt ${attempt} - Found ${allClients.length} clients`);
+          
+          // Method 1: BroadcastChannel (primary for open PWA)
+          try {
+            const nudgeChannel = new BroadcastChannel('nudge-notification');
+            const nudgeMessage = {
+              type: 'SHOW_NUDGE',
+              url: url,
+              timestamp: Date.now(),
+              attempt: attempt,
+              source: 'enhanced-broadcast'
+            };
+            
+            nudgeChannel.postMessage(nudgeMessage);
+            console.log(`🔔 SW: Enhanced BroadcastChannel message sent (attempt ${attempt}):`, nudgeMessage);
+            nudgeChannel.close();
+          } catch (error) {
+            console.error('🔔 SW: BroadcastChannel failed:', error);
+          }
+          
+          // Method 2: Direct client messaging
+          for (const client of allClients) {
+            try {
+              client.postMessage({
+                type: 'SHOW_NUDGE',
+                url: url,
+                timestamp: Date.now(),
+                attempt: attempt,
+                source: 'enhanced-client'
+              });
+              console.log(`🔔 SW: Enhanced client message sent to ${client.id} (attempt ${attempt})`);
+            } catch (error) {
+              console.error(`🔔 SW: Failed to message client ${client.id}:`, error);
+            }
+          }
+          
+          // Method 3: Specific window messaging if available
+          if (appWindow && appWindow.postMessage) {
+            try {
+              appWindow.postMessage({
+                type: 'SHOW_NUDGE',
+                url: url,
+                timestamp: Date.now(),
+                attempt: attempt,
+                source: 'enhanced-window'
+              }, '*');
+              console.log(`🔔 SW: Enhanced window message sent (attempt ${attempt})`);
+            } catch (error) {
+              console.error('🔔 SW: Window postMessage failed:', error);
+            }
+          }
+          
+          // Progressive retry strategy
+          let delay;
+          if (attempt <= 5) {
+            delay = 300; // Quick retries for immediate response
+          } else if (attempt <= 10) {
+            delay = 1000; // Medium delay
+          } else {
+            delay = 2000; // Longer delay for persistence
+          }
+          
+          setTimeout(() => sendEnhancedNudgeMessage(attempt + 1), delay);
+          
+        } catch (error) {
+          console.error(`🔔 SW: Enhanced NUDGE delivery attempt ${attempt} failed:`, error);
+          setTimeout(() => sendEnhancedNudgeMessage(attempt + 1), 1000);
+        }
+      };
+      
+      // Start enhanced delivery immediately
+      sendEnhancedNudgeMessage(1);
+      
+      // Additional delayed attempts for focus scenarios
+      setTimeout(() => {
+        console.log('🔔 SW: Additional delivery wave for focus scenarios');
+        sendEnhancedNudgeMessage(1);
+      }, 3000);
+      
+      setTimeout(() => {
+        console.log('🔔 SW: Final delivery wave for persistent open PWA');
+        sendEnhancedNudgeMessage(1);
+      }, 6000);
     }
   })());
 });

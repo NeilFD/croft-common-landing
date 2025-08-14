@@ -7,26 +7,41 @@ export const useNudgeNotificationHandler = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.log('🎯 NUDGE: Handler initializing...');
+    console.log('🎯 NUDGE: Handler initializing with aggressive checking...');
     
-    // Check multiple sources for nudge URL on mount
-    const checkForNudgeUrl = async () => {
-      console.log('🎯 NUDGE: Checking for stored URL...');
+    // Aggressive check for nudge URL from multiple sources
+    const aggressiveNudgeCheck = async () => {
+      console.log('🎯 NUDGE: Aggressive checking for stored URL...');
       
-    // Check sessionStorage first
-    const storedNudgeUrl = sessionStorage.getItem('nudge_url');
-    const wasClicked = sessionStorage.getItem('nudge_clicked') === 'true';
-    
-    if (storedNudgeUrl && !wasClicked) {
-      console.log('🎯 NUDGE: Found URL in sessionStorage:', storedNudgeUrl);
-      setNudgeUrl(storedNudgeUrl);
-      return;
-    } else if (storedNudgeUrl && wasClicked) {
-      console.log('🎯 NUDGE: URL was already clicked, clearing');
-      sessionStorage.removeItem('nudge_url');
-      sessionStorage.removeItem('nudge_clicked');
-      return;
-    }
+      // Check sessionStorage first with multiple keys
+      const storedNudgeUrl = sessionStorage.getItem('nudge_url');
+      const nudgeData = sessionStorage.getItem('nudge_data');
+      const wasClicked = sessionStorage.getItem('nudge_clicked') === 'true';
+      
+      console.log('🎯 NUDGE: Storage state:', { storedNudgeUrl, nudgeData, wasClicked });
+      
+      if (storedNudgeUrl && !wasClicked) {
+        console.log('🎯 NUDGE: Found URL in sessionStorage:', storedNudgeUrl);
+        setNudgeUrl(storedNudgeUrl);
+        return true;
+      } else if (nudgeData && !wasClicked) {
+        try {
+          const parsed = JSON.parse(nudgeData);
+          if (parsed.url) {
+            console.log('🎯 NUDGE: Found URL in nudge_data:', parsed.url);
+            setNudgeUrl(parsed.url);
+            return true;
+          }
+        } catch (error) {
+          console.error('🎯 NUDGE: Failed to parse nudge_data:', error);
+        }
+      } else if ((storedNudgeUrl || nudgeData) && wasClicked) {
+        console.log('🎯 NUDGE: URL was already clicked, clearing all storage');
+        sessionStorage.removeItem('nudge_url');
+        sessionStorage.removeItem('nudge_data');
+        sessionStorage.removeItem('nudge_clicked');
+        return false;
+      }
       
       // Check IndexedDB for persistence
       try {
@@ -52,27 +67,55 @@ export const useNudgeNotificationHandler = () => {
       }
     };
     
-    checkForNudgeUrl();
+    aggressiveNudgeCheck();
 
-    // Listen for nudge messages from service worker
-    const channel = new BroadcastChannel('nudge-notification');
+    // Enhanced BroadcastChannel setup with multiple channels
+    let channel = new BroadcastChannel('nudge-notification');
     
     const handleNudgeMessage = (event: MessageEvent) => {
-      console.log('🎯 NUDGE: Received BroadcastChannel message:', event.data);
+      console.log('🎯 NUDGE: Received enhanced BroadcastChannel message:', event.data);
       if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
-        console.log('🎯 NUDGE: Setting URL from message:', event.data.url);
+        console.log('🎯 NUDGE: Setting URL from enhanced message:', event.data.url, 'source:', event.data.source);
         setNudgeUrl(event.data.url);
+        // Also store in sessionStorage for persistence
+        sessionStorage.setItem('nudge_url', event.data.url);
+        sessionStorage.removeItem('nudge_clicked');
       }
     };
 
-    channel.addEventListener('message', handleNudgeMessage);
+    const setupChannel = () => {
+      if (channel) {
+        channel.removeEventListener('message', handleNudgeMessage);
+        channel.close();
+      }
+      channel = new BroadcastChannel('nudge-notification');
+      channel.addEventListener('message', handleNudgeMessage);
+      console.log('🎯 NUDGE: Enhanced BroadcastChannel setup complete');
+    };
 
-    // Listen for direct window messages as backup
+    setupChannel();
+
+    // Enhanced window message handling with storage support
     const handleWindowMessage = (event: MessageEvent) => {
-      console.log('🎯 NUDGE: Received window message:', event.data);
-      if (event.data.type === 'SET_NUDGE_URL' && event.data.url) {
-        console.log('🎯 NUDGE: Setting URL from window message:', event.data.url);
+      console.log('🎯 NUDGE: Received enhanced window message:', event.data);
+      
+      // Handle storage messages from service worker
+      if (event.data.type === 'STORE_NUDGE_URL' && event.data.url) {
+        console.log('🎯 NUDGE: Storing URL from service worker:', event.data.url);
+        sessionStorage.setItem('nudge_url', event.data.url);
+        sessionStorage.setItem('nudge_data', JSON.stringify({ url: event.data.url, timestamp: event.data.timestamp }));
+        sessionStorage.removeItem('nudge_clicked');
+        // Immediately trigger aggressive check
+        setTimeout(() => aggressiveNudgeCheck(), 100);
+      }
+      
+      // Handle show nudge messages
+      if ((event.data.type === 'SET_NUDGE_URL' || event.data.type === 'SHOW_NUDGE') && event.data.url) {
+        console.log('🎯 NUDGE: Setting URL from enhanced window message:', event.data.url, 'source:', event.data.source);
         setNudgeUrl(event.data.url);
+        // Store in sessionStorage
+        sessionStorage.setItem('nudge_url', event.data.url);
+        sessionStorage.removeItem('nudge_clicked');
       }
     };
     
@@ -92,26 +135,58 @@ export const useNudgeNotificationHandler = () => {
       });
     }
 
-    // Periodic check for nudge URL (more frequent for open PWA)
-    const periodicCheck = setInterval(() => {
+    // Enhanced visibility and focus event handlers for aggressive checking
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('🎯 NUDGE: Page became visible, aggressive checking...');
+        setupChannel(); // Re-establish channel
+        setTimeout(() => aggressiveNudgeCheck(), 100);
+        setTimeout(() => aggressiveNudgeCheck(), 500);
+        setTimeout(() => aggressiveNudgeCheck(), 1000);
+      }
+    };
+    
+    const handleFocus = () => {
+      console.log('🎯 NUDGE: Window focused, aggressive checking...');
+      setupChannel(); // Re-establish channel
+      setTimeout(() => aggressiveNudgeCheck(), 100);
+      setTimeout(() => aggressiveNudgeCheck(), 500);
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    // Aggressive periodic check for nudge URL (high frequency for open PWA)
+    const aggressivePeriodicCheck = setInterval(() => {
+      if (!document.hidden) {
+        aggressiveNudgeCheck();
+      }
+    }, 500); // Very frequent for open PWA
+
+    // Standard periodic check as backup
+    const standardPeriodicCheck = setInterval(() => {
       const currentUrl = sessionStorage.getItem('nudge_url');
       const wasClicked = sessionStorage.getItem('nudge_clicked') === 'true';
       
       if (currentUrl && !nudgeUrl && !wasClicked) {
-        console.log('🎯 NUDGE: Periodic check found URL:', currentUrl);
+        console.log('🎯 NUDGE: Standard periodic check found URL:', currentUrl);
         setNudgeUrl(currentUrl);
       } else if (currentUrl && wasClicked) {
-        console.log('🎯 NUDGE: Periodic check found clicked URL, clearing');
+        console.log('🎯 NUDGE: Standard periodic check found clicked URL, clearing');
         sessionStorage.removeItem('nudge_url');
+        sessionStorage.removeItem('nudge_data');
         sessionStorage.removeItem('nudge_clicked');
       }
-    }, 1000); // More frequent for open PWA
+    }, 2000);
 
     return () => {
       channel.removeEventListener('message', handleNudgeMessage);
       window.removeEventListener('message', handleWindowMessage);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
       channel.close();
-      clearInterval(periodicCheck);
+      clearInterval(aggressivePeriodicCheck);
+      clearInterval(standardPeriodicCheck);
     };
   }, [setNudgeUrl]);
 
