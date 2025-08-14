@@ -109,46 +109,46 @@ const App = () => (
     <TooltipProvider>
       <BannerNotificationProvider>
         <NudgeNotificationProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <NotificationHandlers />
-            <NudgeHandlers />
-            <LowercasePathGuard />
-            <RouteImagePreloader />
-            <BannerOverlay />
-            <NudgeFloatingButton />
-            
-            <TransitionProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/cafe" element={<Cafe />} />
-                <Route path="/cocktails" element={<Cocktails />} />
-                <Route path="/beer" element={<Beer />} />
-                <Route path="/kitchens" element={<Kitchens />} />
-                <Route path="/hall" element={<Hall />} />
-                <Route path="/community" element={<Community />} />
-                <Route path="/common-room" element={<CommonRoom />} />
-                <Route path="/common-room/main" element={<CommonRoomMain />} />
-                <Route path="/calendar" element={<Calendar />} />
-                <Route path="/manage-event/:token" element={<ManageEvent />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/unsubscribe" element={<Unsubscribe />} />
-                <Route path="/branding" element={<Branding />} />
-                <Route path="/common-good" element={<CommonGood />} />
-                <Route path="/common-good/message" element={<CommonGoodMessage />} />
-                <Route path="/croft-common-datetime" element={<CroftCommonDateTime />} />
-                <Route path="/CroftCommonDate&Time" element={<Navigate to="/croft-common-datetime" replace />} />
-                <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
-                <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
-                <Route path="/book" element={<Book />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/admin" element={<Admin />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </TransitionProvider>
-          </BrowserRouter>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+           <NotificationHandlers />
+           <NudgeHandlers />
+           <LowercasePathGuard />
+           <RouteImagePreloader />
+           <BannerOverlay />
+           <NudgeFloatingButton />
+          
+          <TransitionProvider>
+            <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/cafe" element={<Cafe />} />
+            <Route path="/cocktails" element={<Cocktails />} />
+            <Route path="/beer" element={<Beer />} />
+            <Route path="/kitchens" element={<Kitchens />} />
+            <Route path="/hall" element={<Hall />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/common-room" element={<CommonRoom />} />
+            <Route path="/common-room/main" element={<CommonRoomMain />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/manage-event/:token" element={<ManageEvent />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/branding" element={<Branding />} />
+            <Route path="/common-good" element={<CommonGood />} />
+            <Route path="/common-good/message" element={<CommonGoodMessage />} />
+            <Route path="/croft-common-datetime" element={<CroftCommonDateTime />} />
+            <Route path="/CroftCommonDate&Time" element={<Navigate to="/croft-common-datetime" replace />} />
+            <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
+            <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
+             <Route path="/book" element={<Book />} />
+             <Route path="/notifications" element={<Notifications />} />
+             <Route path="/admin" element={<Admin />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TransitionProvider>
+        </BrowserRouter>
         </NudgeNotificationProvider>
       </BannerNotificationProvider>
     </TooltipProvider>

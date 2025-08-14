@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useNudgeNotification } from "@/contexts/NudgeNotificationContext";
 
@@ -10,26 +10,7 @@ interface NudgeFloatingButtonProps {
 const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "" }) => {
   const accentColor = 'hsl(var(--accent-sage-green))';
   const navigate = useNavigate();
-  const location = useLocation();
-  const { nudgeUrl, showNudgeButton, markNudgeClicked, clearNudge } = useNudgeNotification();
-
-  // Clear nudge when navigating away from the target URL
-  useEffect(() => {
-    if (nudgeUrl && showNudgeButton) {
-      const currentPath = location.pathname;
-      console.log('🎯 NUDGE BUTTON: Navigation check - Current path:', currentPath, 'Nudge URL:', nudgeUrl);
-      
-      // Check if current path matches the nudge URL
-      const urlMatches = nudgeUrl.startsWith('http') ? 
-        false : // External URLs never match current path
-        nudgeUrl === currentPath || nudgeUrl.startsWith(currentPath + '/');
-      
-      if (!urlMatches) {
-        console.log('🎯 NUDGE BUTTON: Path doesn\'t match nudge URL, clearing nudge');
-        clearNudge();
-      }
-    }
-  }, [location.pathname, nudgeUrl, showNudgeButton, clearNudge]);
+  const { nudgeUrl, showNudgeButton, markNudgeClicked } = useNudgeNotification();
 
   console.log('🎯 NUDGE BUTTON: Render check -', { 
     showNudgeButton, 
