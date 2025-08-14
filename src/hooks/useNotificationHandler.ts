@@ -48,27 +48,29 @@ export const useNotificationHandler = () => {
     handleNotificationTracking();
   }, [location.pathname, searchParams]);
 
-  // Enhanced message handling with multiple channels
+  // Enhanced message handling with comprehensive debugging
   useEffect(() => {
+    console.log('🔔 App: Setting up enhanced notification message listeners');
+    
     const handleMessage = (event: MessageEvent) => {
-      console.log('🔔 App: Received message:', event.data, 'from:', event.origin);
+      console.log('🔔 App: Message received:', {
+        type: event.data?.type,
+        origin: event.origin,
+        source: event.source === window ? 'window' : 'other',
+        data: event.data
+      });
       
-      if (event.data?.type === 'SHOW_BANNER') {
+      // Handle all banner-related message types
+      if (event.data?.type === 'SHOW_BANNER' || 
+          event.data?.type === 'CHECK_BANNER_STORAGE' || 
+          event.data?.type === 'FORCE_BANNER_CHECK') {
+        
         const bannerData = event.data.data;
-        console.log('🔔 App: Showing banner with data:', bannerData);
-        showBanner({
-          title: bannerData.title || 'Notification',
-          body: bannerData.bannerMessage || bannerData.body || '',
-          bannerMessage: bannerData.bannerMessage,
-          url: bannerData.url,
-          icon: bannerData.icon,
-          notificationId: bannerData.notificationId,
-          clickToken: bannerData.clickToken
+        console.log('🔔 App: Processing banner message:', {
+          messageType: event.data.type,
+          bannerData
         });
-      } else if (event.data?.type === 'CHECK_BANNER_STORAGE') {
-        // Handle localStorage fallback
-        const bannerData = event.data.data;
-        console.log('🔔 App: Storage fallback triggered with data:', bannerData);
+        
         showBanner({
           title: bannerData.title || 'Notification',
           body: bannerData.bannerMessage || bannerData.body || '',
@@ -81,10 +83,12 @@ export const useNotificationHandler = () => {
       }
     };
 
-    // Method 1: Service Worker messages
+    // Method 1: Service Worker messages with registration check
+    console.log('🔔 App: Registering service worker message listener');
     navigator.serviceWorker?.addEventListener('message', handleMessage);
     
-    // Method 2: Window messages (cross-origin)
+    // Method 2: Window messages (all origins for PWA compatibility)
+    console.log('🔔 App: Registering window message listener');
     window.addEventListener('message', handleMessage);
 
     // Method 3: BroadcastChannel listener
@@ -92,38 +96,62 @@ export const useNotificationHandler = () => {
     try {
       broadcastChannel = new BroadcastChannel('croft-banner-notifications');
       broadcastChannel.addEventListener('message', handleMessage);
-      console.log('🔔 App: BroadcastChannel listener registered');
+      console.log('🔔 App: ✅ BroadcastChannel listener registered');
     } catch (error) {
-      console.warn('🔔 App: BroadcastChannel not supported:', error);
+      console.warn('🔔 App: ❌ BroadcastChannel not supported:', error);
     }
 
-    // Method 4: Polling fallback for when app is active (runs every 2 seconds)
-    const pollForNotifications = () => {
-      // Check if there are any pending notification parameters in the URL
-      const currentParams = new URLSearchParams(window.location.search);
-      if (currentParams.get('ntk') && document.visibilityState === 'visible') {
-        console.log('🔔 App: Polling detected notification token in URL');
-        // URL params will be handled by the main useEffect
-      }
-    };
-
-    const pollInterval = setInterval(pollForNotifications, 2000);
-
-    // Verify service worker is ready
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.ready.then((registration) => {
-        console.log('🔔 App: Service worker ready, all message listeners attached');
+    // Method 4: Aggressive polling for banner notifications (every 1 second when visible)
+    const aggressiveBannerPoll = () => {
+      if (document.visibilityState === 'visible') {
+        // Check URL params
+        const currentParams = new URLSearchParams(window.location.search);
+        if (currentParams.get('ntk')) {
+          console.log('🔔 App: Polling detected notification token in URL');
+        }
         
-        // Send ready signal to service worker
-        if (registration.active) {
-          registration.active.postMessage({
-            type: 'APP_READY',
+        // Check for any pending banner messages from service worker
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'CHECK_BANNER_STATUS',
             timestamp: Date.now()
           });
         }
-      }).catch((error) => {
-        console.warn('🔔 App: Service worker ready check failed:', error);
-      });
+      }
+    };
+
+    const pollInterval = setInterval(aggressiveBannerPoll, 1000);
+
+    // Enhanced service worker registration with retry
+    if ('serviceWorker' in navigator) {
+      const setupServiceWorkerCommunication = async () => {
+        try {
+          const registration = await navigator.serviceWorker.ready;
+          console.log('🔔 App: ✅ Service worker ready, registration:', registration);
+          
+          // Send comprehensive ready signal
+          if (registration.active) {
+            registration.active.postMessage({
+              type: 'APP_READY',
+              timestamp: Date.now(),
+              url: window.location.href,
+              userAgent: navigator.userAgent,
+              isStandalone: window.matchMedia('(display-mode: standalone)').matches
+            });
+            console.log('🔔 App: ✅ Ready signal sent to service worker');
+          }
+          
+          // Set up message listener specifically for the active service worker
+          if (registration.active) {
+            registration.active.addEventListener?.('message', handleMessage);
+          }
+          
+        } catch (error) {
+          console.warn('🔔 App: ❌ Service worker setup failed:', error);
+        }
+      };
+      
+      setupServiceWorkerCommunication();
     }
 
     // Cleanup on unmount

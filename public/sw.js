@@ -185,15 +185,15 @@ self.addEventListener('notificationclick', (event) => {
       clients: allClients.map(c => ({ url: c.url, visibility: c.visibilityState, focused: c.focused }))
     });
 
-    // Check for app clients more broadly (any origin match for cross-domain issues)
-    const currentOrigin = new URL(self.location.origin);
+    // Simplified origin detection - just check if URL contains our domain
     const appClients = allClients.filter(client => {
       try {
-        const clientUrl = new URL(client.url);
-        // Match either exact origin or common domain patterns
-        return clientUrl.origin === appOrigin || 
-               clientUrl.hostname.includes('croftcommontest.com') ||
-               clientUrl.hostname.includes('lovableproject.com');
+        const clientUrl = client.url.toLowerCase();
+        // More permissive matching to handle any domain variations
+        return clientUrl.includes(self.location.hostname) || 
+               clientUrl.startsWith(appOrigin) ||
+               clientUrl.includes('localhost') ||
+               clientUrl.includes('127.0.0.1');
       } catch {
         return false;
       }
@@ -226,17 +226,39 @@ self.addEventListener('notificationclick', (event) => {
         };
         console.log('🔔 SW: Posting banner message to clients:', bannerData);
         
-        // Method 1: Send to ALL app clients (not just visible ones)
+        // Method 1: Send to ALL app clients with enhanced debugging
         console.log('🔔 SW: Sending banner to ALL app clients');
         let messageSent = false;
         
         for (const client of appClients) {
           try {
-            console.log('🔔 SW: Sending banner to client:', client.url);
+            console.log('🔔 SW: Attempting to send banner to client:', {
+              url: client.url,
+              type: client.type,
+              id: client.id,
+              frameType: client.frameType
+            });
             client.postMessage(bannerData);
             messageSent = true;
+            console.log('🔔 SW: ✅ Successfully sent message to client:', client.url);
           } catch (clientError) {
-            console.warn('🔔 SW: Failed to send message to client:', client.url, clientError);
+            console.warn('🔔 SW: ❌ Failed to send message to client:', client.url, clientError);
+          }
+        }
+        
+        // Method 1.5: Direct window message as backup for same-origin
+        if (appClients.length > 0) {
+          try {
+            // Force a direct window message through the first available client
+            const primaryClient = appClients[0];
+            console.log('🔔 SW: Sending direct window message through primary client');
+            primaryClient.postMessage({
+              type: 'FORCE_BANNER_CHECK',
+              data: bannerData,
+              timestamp: Date.now()
+            });
+          } catch (directError) {
+            console.warn('🔔 SW: Direct window message failed:', directError);
           }
         }
         
