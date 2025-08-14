@@ -32,37 +32,19 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
     const initializeFromStorage = async () => {
       console.log('🎯 NUDGE CONTEXT: Initializing from storage...');
       
-      // CRITICAL: Clear all nudge data on EVERY app launch - nudges should only come from active push flows
-      console.log('🎯 NUDGE CONTEXT: Clearing all nudge data - nudges only from active push notifications');
-      sessionStorage.removeItem('nudge_url');
-      sessionStorage.removeItem('nudge_clicked');
+      // Check for existing nudge URLs from sessionStorage first (fast check)
+      const storedUrl = sessionStorage.getItem('nudge_url');
+      const storedClicked = sessionStorage.getItem('nudge_clicked') === 'true';
       
-      // ALWAYS clear IndexedDB on app launch - no persistent nudges across sessions
-      try {
-        const request = indexedDB.open('nudge-storage', 2);
-        request.onsuccess = (event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
-          if (db.objectStoreNames.contains('nudge')) {
-            const transaction = db.transaction(['nudge'], 'readwrite');
-            const store = transaction.objectStore('nudge');
-            store.clear();
-            console.log('🎯 NUDGE CONTEXT: Cleared IndexedDB on launch');
-          }
-          db.close();
-        };
-        request.onupgradeneeded = (event) => {
-          const db = (event.target as IDBOpenDBRequest).result;
-          if (!db.objectStoreNames.contains('nudge')) {
-            db.createObjectStore('nudge');
-          }
-        };
-      } catch (error) {
-        console.log('🎯 NUDGE CONTEXT: Failed to clear IndexedDB:', error);
+      if (storedUrl && !storedClicked) {
+        console.log('🎯 NUDGE CONTEXT: Found existing URL in sessionStorage:', storedUrl);
+        setNudgeUrlState(storedUrl);
+        setNudgeClicked(false);
       }
       
       // Mark app as initialized for this session
       sessionStorage.setItem('app_initialized', 'true');
-      console.log('🎯 NUDGE CONTEXT: App initialized - waiting for active push notifications only');
+      console.log('🎯 NUDGE CONTEXT: App initialized - checking for existing notifications');
     };
 
     initializeFromStorage();

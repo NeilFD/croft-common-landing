@@ -11,10 +11,10 @@ export const useNudgeNotificationHandler = () => {
     console.log('🎯 NUDGE HANDLER: Starting with context state:', { nudgeUrl, nudgeClicked });
     console.log('🎯 NUDGE HANDLER: Current route:', location.pathname);
     
-    // CRITICAL: Do NOT check for existing nudge URLs on handler initialization
-    // Nudges should ONLY come from active push notification flows, never from storage
-    console.log('🎯 NUDGE HANDLER: Initializing - waiting for active push notifications only');
+    // Check for existing nudge URLs on handler initialization
+    console.log('🎯 NUDGE HANDLER: Initializing - checking for existing notifications');
     console.log('🎯 NUDGE HANDLER: Current route:', location.pathname);
+    
     // Enhanced IndexedDB initialization and checking
     const initializeAndCheckIndexedDB = () => {
       return new Promise<string | null>((resolve) => {
@@ -170,8 +170,8 @@ export const useNudgeNotificationHandler = () => {
       }
     };
     
-    // REMOVED: No checking for existing nudge URLs on initialization
-    // Nudges come ONLY from active push notification flows
+    // Check for existing nudge URLs on initialization
+    checkForNudgeUrl();
 
     // Robust BroadcastChannel setup with retry
     let channel: BroadcastChannel | null = null;
