@@ -229,12 +229,6 @@ export const useNudgeNotificationHandler = () => {
         setNudgeUrl(url);
         sessionStorage.setItem('nudge_url', url);
         sessionStorage.removeItem('nudge_clicked');
-        
-        // Additional verification: check that the URL was actually set
-        setTimeout(() => {
-          console.log('🎯 NUDGE MESSAGE: 🔍 Post-message verification check...');
-          checkForNudgeUrl();
-        }, 100);
       } else {
         console.log('🎯 NUDGE MESSAGE: ❌ Invalid or irrelevant message');
         console.log('🎯 NUDGE MESSAGE: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);
@@ -262,12 +256,6 @@ export const useNudgeNotificationHandler = () => {
         setNudgeUrl(url);
         sessionStorage.setItem('nudge_url', url);
         sessionStorage.removeItem('nudge_clicked');
-        
-        // Additional verification
-        setTimeout(() => {
-          console.log('🎯 NUDGE WINDOW: 🔍 Post-window-message verification...');
-          checkForNudgeUrl();
-        }, 100);
       } else {
         console.log('🎯 NUDGE WINDOW: ❌ Invalid or irrelevant window message');
         console.log('🎯 NUDGE WINDOW: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);

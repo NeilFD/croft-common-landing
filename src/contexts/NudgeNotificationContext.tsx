@@ -27,7 +27,7 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
   const [nudgeUrl, setNudgeUrlState] = useState<string | null>(null);
   const [nudgeClicked, setNudgeClicked] = useState<boolean>(false);
 
-  // Initialize from storage on mount
+  // Initialize from storage on mount and set up real-time sync
   React.useEffect(() => {
     const initializeFromStorage = async () => {
       console.log('🎯 NUDGE CONTEXT: Initializing from storage...');
@@ -109,7 +109,53 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
     };
 
     initializeFromStorage();
-  }, []);
+
+    // Set up storage event listener for sessionStorage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'nudge_url') {
+        console.log('🎯 NUDGE CONTEXT: Storage changed, nudge_url:', e.newValue);
+        if (e.newValue && e.newValue !== nudgeUrl) {
+          setNudgeUrlState(e.newValue);
+          setNudgeClicked(false);
+        } else if (!e.newValue) {
+          setNudgeUrlState(null);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Set up periodic sync when app is visible and context is null but storage has value
+    const syncInterval = setInterval(async () => {
+      if (!document.hidden && nudgeUrl === null) {
+        const storedUrl = sessionStorage.getItem('nudge_url');
+        if (storedUrl) {
+          console.log('🎯 NUDGE CONTEXT: Sync detected stored URL when context was null:', storedUrl);
+          setNudgeUrlState(storedUrl);
+          setNudgeClicked(sessionStorage.getItem('nudge_clicked') === 'true');
+        }
+      }
+    }, 2000);
+
+    // Set up focus/visibility recovery
+    const handleFocusRecovery = async () => {
+      const storedUrl = sessionStorage.getItem('nudge_url');
+      if (storedUrl && storedUrl !== nudgeUrl) {
+        console.log('🎯 NUDGE CONTEXT: Focus recovery found URL:', storedUrl);
+        setNudgeUrlState(storedUrl);
+        setNudgeClicked(sessionStorage.getItem('nudge_clicked') === 'true');
+      }
+    };
+
+    window.addEventListener('focus', handleFocusRecovery);
+    document.addEventListener('visibilitychange', handleFocusRecovery);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('focus', handleFocusRecovery);
+      document.removeEventListener('visibilitychange', handleFocusRecovery);
+      clearInterval(syncInterval);
+    };
+  }, [nudgeUrl]);
 
   const setNudgeUrl = (url: string | null) => {
     console.log('🎯 NUDGE CONTEXT: Setting URL:', url);
