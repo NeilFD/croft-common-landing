@@ -95,12 +95,17 @@ self.addEventListener('fetch', event => {
 // Push event - handle incoming push notifications
 self.addEventListener('push', event => {
   console.log('🔔 SW: Push event received');
+  console.log('🔔 SW: Raw event data object:', event.data);
   
   let data = {};
   try {
     data = event.data ? event.data.json() : {};
+    console.log('🔔 SW: ✅ PARSED PUSH DATA:', JSON.stringify(data, null, 2));
+    console.log('🔔 SW: 🎯 URL in push data:', data.url, typeof data.url);
+    console.log('🔔 SW: 🎯 Click token in push data:', data.click_token || data.clickToken);
   } catch (error) {
-    console.error('🔔 SW: Error parsing push data:', error);
+    console.error('🔔 SW: ❌ Error parsing push data:', error);
+    console.log('🔔 SW: Raw data text:', event.data ? event.data.text() : 'no data');
   }
 
   const title = data.title || 'Croft Notification';
@@ -131,8 +136,13 @@ self.addEventListener('notificationclick', event => {
   const data = event.notification.data || {};
   const url = data.url;
   
+  console.log('🔔 SW: 🎯 NOTIFICATION CLICK DATA INSPECTION:');
+  console.log('🔔 SW: Raw notification data:', JSON.stringify(data, null, 2));
+  console.log('🔔 SW: Extracted URL:', url, typeof url);
+  console.log('🔔 SW: URL is valid?', Boolean(url && url.length > 0));
+  
   event.waitUntil((async () => {
-    console.log('🔔 SW: Processing notification click with data:', data);
+    console.log('🔔 SW: Processing notification click with validated data:', data);
 
     // Robust IndexedDB storage for NUDGE notifications
     if (url) {
@@ -214,9 +224,22 @@ async function ensureNudgeDatabase() {
 
 async function storeNudgeUrl(url) {
   console.log('🔔 SW: 📝 Starting robust nudge URL storage:', url);
+  console.log('🔔 SW: 🎯 URL VALIDATION:', {
+    url: url,
+    type: typeof url,
+    length: url ? url.length : 0,
+    isString: typeof url === 'string',
+    isValid: Boolean(url && typeof url === 'string' && url.length > 0)
+  });
+  
+  if (!url || typeof url !== 'string' || url.length === 0) {
+    console.error('🔔 SW: ❌ INVALID URL - cannot store:', url);
+    throw new Error('Invalid URL provided for storage');
+  }
   
   try {
     const db = await ensureNudgeDatabase();
+    console.log('🔔 SW: ✅ Database ready for storage operation');
     
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['nudge'], 'readwrite');
@@ -229,26 +252,38 @@ async function storeNudgeUrl(url) {
         click_processed: false
       };
       
+      console.log('🔔 SW: 💾 DATA TO STORE:', JSON.stringify(data, null, 2));
+      
       // Store in both 'current' and 'delivery_pending' keys for reliability
       const putCurrent = store.put(data, 'current');
       const putPending = store.put({ ...data, pending_delivery: true }, 'delivery_pending');
       
+      console.log('🔔 SW: 📤 Initiated storage operations for both keys');
+      
       let completedOps = 0;
       const checkCompletion = () => {
         completedOps++;
+        console.log(`🔔 SW: ✅ Storage operation ${completedOps}/2 completed`);
         if (completedOps === 2) {
-          console.log('🔔 SW: ✅ URL stored in both current and pending slots');
+          console.log('🔔 SW: ✅ URL stored in both current and pending slots successfully');
+          console.log('🔔 SW: 📊 FINAL STORED DATA:', JSON.stringify(data, null, 2));
           resolve();
         }
       };
       
-      putCurrent.onsuccess = checkCompletion;
+      putCurrent.onsuccess = () => {
+        console.log('🔔 SW: ✅ Current key storage SUCCESS');
+        checkCompletion();
+      };
       putCurrent.onerror = () => {
         console.error('🔔 SW: ❌ Current store operation failed:', putCurrent.error);
         reject(putCurrent.error);
       };
       
-      putPending.onsuccess = checkCompletion;
+      putPending.onsuccess = () => {
+        console.log('🔔 SW: ✅ Pending key storage SUCCESS');
+        checkCompletion();
+      };
       putPending.onerror = () => {
         console.error('🔔 SW: ❌ Pending store operation failed:', putPending.error);
         reject(putPending.error);

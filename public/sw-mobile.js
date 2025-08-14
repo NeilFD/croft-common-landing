@@ -159,10 +159,20 @@ self.addEventListener('fetch', (event) => {
 
 // Handle push notifications with mobile-specific optimizations
 self.addEventListener('push', (event) => {
-  if (!event.data) return;
+  console.log('🔔 SW-MOBILE: Push event received');
+  console.log('🔔 SW-MOBILE: Raw event data object:', event.data);
+  
+  if (!event.data) {
+    console.log('🔔 SW-MOBILE: ❌ No data in push event');
+    return;
+  }
   
   try {
     const data = event.data.json();
+    console.log('🔔 SW-MOBILE: ✅ PARSED PUSH DATA:', JSON.stringify(data, null, 2));
+    console.log('🔔 SW-MOBILE: 🎯 URL in push data:', data.url, typeof data.url);
+    console.log('🔔 SW-MOBILE: 🎯 Click token in push data:', data.click_token || data.clickToken);
+    
     const isMobile = isMobileDevice();
     
     // Mobile-optimized notification options
@@ -222,9 +232,22 @@ async function ensureNudgeDatabase() {
 
 async function storeNudgeUrl(url) {
   console.log('🔔 SW-MOBILE: 📝 Starting robust nudge URL storage:', url);
+  console.log('🔔 SW-MOBILE: 🎯 URL VALIDATION:', {
+    url: url,
+    type: typeof url,
+    length: url ? url.length : 0,
+    isString: typeof url === 'string',
+    isValid: Boolean(url && typeof url === 'string' && url.length > 0)
+  });
+  
+  if (!url || typeof url !== 'string' || url.length === 0) {
+    console.error('🔔 SW-MOBILE: ❌ INVALID URL - cannot store:', url);
+    throw new Error('Invalid URL provided for storage');
+  }
   
   try {
     const db = await ensureNudgeDatabase();
+    console.log('🔔 SW-MOBILE: ✅ Database ready for storage operation');
     
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(['nudge'], 'readwrite');
@@ -237,26 +260,38 @@ async function storeNudgeUrl(url) {
         click_processed: false
       };
       
+      console.log('🔔 SW-MOBILE: 💾 DATA TO STORE:', JSON.stringify(data, null, 2));
+      
       // Store in both 'current' and 'delivery_pending' keys for reliability
       const putCurrent = store.put(data, 'current');
       const putPending = store.put({ ...data, pending_delivery: true }, 'delivery_pending');
       
+      console.log('🔔 SW-MOBILE: 📤 Initiated storage operations for both keys');
+      
       let completedOps = 0;
       const checkCompletion = () => {
         completedOps++;
+        console.log(`🔔 SW-MOBILE: ✅ Storage operation ${completedOps}/2 completed`);
         if (completedOps === 2) {
-          console.log('🔔 SW-MOBILE: ✅ URL stored in both current and pending slots');
+          console.log('🔔 SW-MOBILE: ✅ URL stored in both current and pending slots successfully');
+          console.log('🔔 SW-MOBILE: 📊 FINAL STORED DATA:', JSON.stringify(data, null, 2));
           resolve();
         }
       };
       
-      putCurrent.onsuccess = checkCompletion;
+      putCurrent.onsuccess = () => {
+        console.log('🔔 SW-MOBILE: ✅ Current key storage SUCCESS');
+        checkCompletion();
+      };
       putCurrent.onerror = () => {
         console.error('🔔 SW-MOBILE: ❌ Current store operation failed:', putCurrent.error);
         reject(putCurrent.error);
       };
       
-      putPending.onsuccess = checkCompletion;
+      putPending.onsuccess = () => {
+        console.log('🔔 SW-MOBILE: ✅ Pending key storage SUCCESS');
+        checkCompletion();
+      };
       putPending.onerror = () => {
         console.error('🔔 SW-MOBILE: ❌ Pending store operation failed:', putPending.error);
         reject(putPending.error);
@@ -375,7 +410,12 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
   const data = event.notification.data || {};
+  console.log('🔔 SW-MOBILE: 🎯 NOTIFICATION CLICK DATA INSPECTION:');
+  console.log('🔔 SW-MOBILE: Raw notification data:', JSON.stringify(data, null, 2));
+  
   let targetUrl = data.url || '/';
+  console.log('🔔 SW-MOBILE: Extracted URL:', targetUrl, typeof targetUrl);
+  console.log('🔔 SW-MOBILE: URL is valid?', Boolean(targetUrl && targetUrl.length > 0));
   
   // Normalize URL
   if (!String(targetUrl).startsWith('http')) {
