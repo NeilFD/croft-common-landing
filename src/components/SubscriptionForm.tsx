@@ -160,7 +160,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
         </div>
 
         <p className={`text-sm font-industrial text-center ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}>
-          We a little time to learn a bit about you,
+          We need a little of your time to learn a bit about you,
           <br />
           <span className="text-center block">click below (mandatory, sorry)</span>
         </p>
