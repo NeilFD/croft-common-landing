@@ -62,7 +62,7 @@ export const NudgeDebugPanel = () => {
   };
 
   return (
-    <div className="fixed top-4 right-4 bg-background border rounded-lg p-4 z-50 shadow-lg max-w-sm">
+    <div className="fixed top-20 right-4 bg-background border rounded-lg p-4 z-50 shadow-lg max-w-sm">
       <h3 className="font-bold mb-2">NUDGE Debug Panel</h3>
       
       <div className="mb-2 text-xs">
