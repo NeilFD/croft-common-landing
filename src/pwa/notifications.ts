@@ -15,7 +15,6 @@ function urlBase64ToUint8Array(base64String: string) {
 
 export async function enableNotifications(reg: ServiceWorkerRegistration): Promise<boolean> {
   if (!('Notification' in window)) {
-    toast({ title: 'Notifications unsupported', description: 'This browser does not support notifications.', variant: 'destructive' });
     return false;
   }
   try {
@@ -50,7 +49,6 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
           : 'On iPhone, go to Settings → Notifications → Croft Common → Allow Notifications. Then force-quit and reopen the app.';
       }
 
-      toast({ title: 'Permission not granted', description });
       return false;
     }
 
@@ -86,7 +84,6 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
 
   if (error) {
     console.error('Failed saving subscription:', error);
-    toast({ title: 'Could not save subscription', description: 'Please try again later.', variant: 'destructive' });
     return false;
   }
 
@@ -101,7 +98,6 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     },
   });
 
-  toast({ title: 'Notifications enabled', description: 'You will receive updates from Croft Common.' });
   return true;
   } catch (e) {
     console.error('Subscription error:', e);
@@ -111,7 +107,6 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
         ? 'Install the app to your Home Screen first, then try again.'
         : 'If you just changed Settings, force-quit and reopen the app, then try again.';
     }
-    toast({ title: 'Subscription failed', description, variant: 'destructive' });
     return false;
   }
 }
@@ -136,7 +131,6 @@ export async function resetNotifications(reg: ServiceWorkerRegistration): Promis
   return await enableNotifications(reg);
   } catch (e) {
     console.error('Reset notifications error:', e);
-    toast({ title: 'Reset failed', description: 'Please try again later.', variant: 'destructive' });
     return false;
   }
 }
