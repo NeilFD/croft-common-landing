@@ -48,17 +48,17 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
         const request = indexedDB.open('nudge-storage', 1);
         request.onsuccess = (event) => {
           const db = (event.target as IDBOpenDBRequest).result;
-          if (db.objectStoreNames.contains('nudge-data')) {
-            const transaction = db.transaction(['nudge-data'], 'readonly');
-            const store = transaction.objectStore('nudge-data');
+          if (db.objectStoreNames.contains('nudge')) {
+            const transaction = db.transaction(['nudge'], 'readonly');
+            const store = transaction.objectStore('nudge');
             const getRequest = store.get('nudge_url');
             
             getRequest.onsuccess = () => {
-              if (getRequest.result?.url) {
-                console.log('🎯 NUDGE CONTEXT: Found URL in IndexedDB:', getRequest.result.url);
-                setNudgeUrlState(getRequest.result.url);
+              if (getRequest.result) {
+                console.log('🎯 NUDGE CONTEXT: Found URL in IndexedDB:', getRequest.result);
+                setNudgeUrlState(getRequest.result);
                 // Also sync to sessionStorage
-                sessionStorage.setItem('nudge_url', getRequest.result.url);
+                sessionStorage.setItem('nudge_url', getRequest.result);
               }
             };
           }
