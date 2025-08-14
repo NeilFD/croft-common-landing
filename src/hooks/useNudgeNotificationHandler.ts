@@ -411,6 +411,50 @@ export const useNudgeNotificationHandler = () => {
     };
   }, [setNudgeUrl]);
 
+  // Navigation tracking: clear nudge when user navigates away from target URL
+  useEffect(() => {
+    if (!nudgeUrl || nudgeClicked) return;
+    
+    const currentPath = location.pathname;
+    console.log('🎯 NUDGE NAV: Checking navigation - current path:', currentPath, 'nudge URL:', nudgeUrl);
+    
+    // Parse the nudge URL to get the path
+    let nudgePath: string;
+    try {
+      if (nudgeUrl.startsWith('http')) {
+        // External URL - check if it's a different domain
+        const nudgeUrlObj = new URL(nudgeUrl);
+        const currentDomain = window.location.hostname;
+        
+        if (nudgeUrlObj.hostname !== currentDomain) {
+          console.log('🎯 NUDGE NAV: External URL detected, will clear after delay');
+          // For external URLs, clear after a brief delay to account for window.open
+          const clearTimer = setTimeout(() => {
+            console.log('🎯 NUDGE NAV: ✅ Clearing nudge for external navigation');
+            clearNudge();
+          }, 1500);
+          
+          return () => clearTimeout(clearTimer);
+        } else {
+          // Same domain, use the pathname
+          nudgePath = nudgeUrlObj.pathname;
+        }
+      } else {
+        // Internal path
+        nudgePath = nudgeUrl.startsWith('/') ? nudgeUrl : `/${nudgeUrl}`;
+      }
+      
+      // Compare paths for internal navigation
+      if (nudgePath && currentPath !== nudgePath) {
+        console.log('🎯 NUDGE NAV: ✅ User navigated away from nudge target, clearing nudge');
+        console.log('🎯 NUDGE NAV: Current:', currentPath, 'Target:', nudgePath);
+        clearNudge();
+      }
+    } catch (error) {
+      console.error('🎯 NUDGE NAV: Error parsing nudge URL:', error);
+    }
+  }, [location.pathname, nudgeUrl, nudgeClicked, clearNudge]);
+
   // Simple clearing: clear nudge immediately when clicked + timeout backup
   useEffect(() => {
     if (nudgeClicked) {
