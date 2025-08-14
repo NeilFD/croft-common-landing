@@ -63,7 +63,7 @@ const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "
       }}
     >
       <span className="relative z-10 font-brutalist tracking-wider text-xs text-background select-none">
-        NUDGE
+        CLICK ME
       </span>
     </button>
   );
