@@ -178,6 +178,19 @@ self.addEventListener('notificationclick', (event) => {
     const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     const appOrigin = self.location.origin;
 
+    // CRITICAL DEBUG: Check if we have zero clients
+    if (allClients.length === 0) {
+      console.log('🔔 SW: ❌ ZERO CLIENTS FOUND - storing debug message');
+      // Store message for when app becomes visible
+      localStorage.setItem('sw-debug-zero-clients', JSON.stringify({
+        timestamp: Date.now(),
+        notificationTitle: title,
+        body: body,
+        displayMode: displayMode
+      }));
+      return;
+    }
+
     // DEBUG 1: Send immediate debug toast about notification click
     for (const client of allClients) {
       try {
@@ -441,4 +454,49 @@ self.addEventListener('notificationclick', (event) => {
       }
     }
   })());
+});
+
+// Message listener for app communication and debugging
+self.addEventListener('message', (event) => {
+  console.log('🔔 SW: Received message from client:', event.data);
+  
+  if (event.data?.type === 'APP_READY') {
+    console.log('🔔 SW: ✅ App ready signal received', {
+      timestamp: event.data.timestamp,
+      url: event.data.url,
+      userAgent: event.data.userAgent,
+      isStandalone: event.data.isStandalone
+    });
+  }
+  
+  if (event.data?.type === 'APP_FOCUSED') {
+    console.log('🔔 SW: ✅ App focused signal received', {
+      timestamp: event.data.timestamp,
+      url: event.data.url
+    });
+  }
+  
+  if (event.data?.type === 'CHECK_BANNER_STATUS') {
+    console.log('🔔 SW: Banner status check requested');
+  }
+
+  if (event.data?.type === 'PING_REQUEST') {
+    console.log('🔔 SW: Ping request received');
+    
+    // Get current client count and respond
+    self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
+      const response = {
+        clientCount: clients.length,
+        clients: clients.map(c => ({
+          url: c.url,
+          visibilityState: c.visibilityState,
+          focused: c.focused,
+          type: c.type
+        }))
+      };
+      
+      console.log('🔔 SW: Ping response:', response);
+      event.ports[0].postMessage(response);
+    });
+  }
 });

@@ -125,10 +125,7 @@ export const useNotificationHandler = () => {
     // Method 4: Continuous polling for banner notifications (NO visibility restriction)
     const aggressiveBannerPoll = () => {
       // REMOVED visibility check - poll regardless of app state
-      toast({
-        title: "🔔 Polling Active",
-        description: `Visibility: ${document.visibilityState}`
-      });
+      // REMOVED polling toast to reduce noise
       
       // Check URL params
       const currentParams = new URLSearchParams(window.location.search);
