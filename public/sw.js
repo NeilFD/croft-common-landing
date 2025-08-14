@@ -177,6 +177,21 @@ self.addEventListener('notificationclick', (event) => {
     const displayMode = notificationData.display_mode || 'navigation';
     const allClients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
     const appOrigin = self.location.origin;
+
+    // DEBUG 1: Send immediate debug toast about notification click
+    for (const client of allClients) {
+      try {
+        client.postMessage({
+          type: 'SHOW_TOAST',
+          data: {
+            title: '🔔 SW: Notification Clicked',
+            description: `Found ${allClients.length} total clients, display: ${displayMode}`
+          }
+        });
+      } catch (e) {
+        console.warn('🔔 SW: Failed to send initial debug toast:', e);
+      }
+    }
     
     console.log('🔔 SW: Client analysis', {
       displayMode,
@@ -199,13 +214,45 @@ self.addEventListener('notificationclick', (event) => {
       }
     });
     
+    // DEBUG 2: Send client filtering results
+    for (const client of allClients) {
+      try {
+        client.postMessage({
+          type: 'SHOW_TOAST',
+          data: {
+            title: '🔔 SW: Client Filter',
+            description: `${allClients.length} total → ${appClients.length} app clients`
+          }
+        });
+      } catch (e) {
+        console.warn('🔔 SW: Failed to send filter debug toast:', e);
+      }
+    }
+    
     // REMOVE visibility filtering - send to ALL app clients regardless of state
     const visibleAppClients = appClients; // All clients are considered targetable
+
+    const shouldShowBanner = appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both');
+
+    // DEBUG 3: Send banner decision
+    for (const client of allClients) {
+      try {
+        client.postMessage({
+          type: 'SHOW_TOAST',
+          data: {
+            title: '🔔 SW: Banner Decision',
+            description: `Should show: ${shouldShowBanner}, Mode: ${displayMode}`
+          }
+        });
+      } catch (e) {
+        console.warn('🔔 SW: Failed to send decision debug toast:', e);
+      }
+    }
 
     console.log('🔔 SW: App open status:', {
       appClients: appClients.length,
       allClientStates: appClients.map(c => ({ url: c.url, visible: c.visibilityState, focused: c.focused })),
-      shouldShowBanner: appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')
+      shouldShowBanner
     });
 
     if (appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')) {
@@ -247,24 +294,36 @@ self.addEventListener('notificationclick', (event) => {
         
         for (const client of appClients) {
           try {
+            // DEBUG 4: Send attempt toast
+            client.postMessage({
+              type: 'SHOW_TOAST',
+              data: {
+                title: '🔔 SW: Sending Banner',
+                description: `Attempting to send to client: ${client.visibilityState}`
+              }
+            });
+            
             console.log('🔔 SW: Attempting to send banner to client:', {
               url: client.url,
               type: client.type,
               id: client.id,
-              frameType: client.frameType
+              frameType: client.frameType,
+              visibilityState: client.visibilityState,
+              focused: client.focused
             });
+            
             client.postMessage(bannerData);
             messageSent = true;
             console.log('🔔 SW: ✅ Successfully sent message to client:', client.url);
             
-            // Send success confirmation toast
+            // DEBUG 5: Send success confirmation toast
             setTimeout(() => {
               try {
                 client.postMessage({
                   type: 'SHOW_TOAST',
                   data: {
-                    title: '🔔 SW Success',
-                    description: `Banner sent to ${client.url.split('/').pop() || 'client'}`
+                    title: '🔔 SW: Banner Sent ✅',
+                    description: `Successfully sent to ${client.visibilityState} client`
                   }
                 });
               } catch (e) {
