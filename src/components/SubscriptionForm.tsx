@@ -166,10 +166,12 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
             size="lg"
             onClick={() => setShowOptionalFields(!showOptionalFields)}
             className={`font-brutalist text-sm uppercase tracking-wider border-2 transition-all duration-300 ${
-              variant === 'footer' 
-                ? 'border-background text-background hover:bg-background hover:text-void' 
-                : 'border-foreground text-foreground hover:bg-foreground hover:text-background'
-            } ${showOptionalFields ? 'animate-pulse' : ''}`}
+              showOptionalFields 
+                ? 'border-accent-pink text-accent-pink hover:bg-accent-pink hover:text-background' 
+                : variant === 'footer' 
+                  ? 'border-background text-background hover:border-accent-pink hover:text-accent-pink' 
+                  : 'border-foreground text-foreground hover:border-accent-pink hover:text-accent-pink'
+            }`}
           >
             <ChevronDown className={`w-4 h-4 mr-2 transition-transform duration-300 ${showOptionalFields ? 'rotate-180' : ''}`} />
             {showOptionalFields ? 'FEWER OPTIONS' : 'PERSONALISE YOUR EXPERIENCE'}
@@ -178,10 +180,8 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
 
         {/* Mandatory preferences */}
         {showOptionalFields && (
-          <div className={`space-y-6 p-6 border-2 ${
-            variant === 'footer' 
-              ? 'border-background bg-void/20' 
-              : 'border-foreground bg-surface'
+          <div className={`space-y-6 p-6 border-2 border-accent-pink bg-background ${
+            variant === 'footer' ? 'bg-background/95' : 'bg-background'
           }`}>
             <div className="grid gap-4">
               <Input
@@ -189,32 +189,22 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
                 placeholder="Phone number (optional)"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className={`font-industrial border-2 ${
-                  variant === 'footer' 
-                    ? 'border-background/50 bg-transparent text-background placeholder:text-background/50' 
-                    : 'border-foreground/50'
-                }`}
+                className="font-industrial border-2 border-foreground/30 bg-background text-foreground placeholder:text-foreground/50 focus:border-accent-pink"
               />
               
               {/* Birthday (day & month) */}
               <div>
-                <Label className={`text-sm font-brutalist uppercase tracking-wide mb-3 block ${
-                  variant === 'footer' ? 'text-background' : 'text-foreground'
-                }`}>
+                <Label className="text-sm font-brutalist uppercase tracking-wide mb-3 block text-foreground">
                   Birthday (day & month)
                 </Label>
                 <div className="grid grid-cols-2 gap-3">
                   <Select value={birthdayDay} onValueChange={setBirthdayDay}>
-                    <SelectTrigger className={`font-industrial border-2 ${
-                      variant === 'footer' 
-                        ? 'border-background/50 bg-transparent text-background' 
-                        : 'border-foreground/50'
-                    }`}>
+                    <SelectTrigger className="font-industrial border-2 border-foreground/30 bg-background text-foreground focus:border-accent-pink">
                       <SelectValue placeholder="Day" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-background border-2 border-accent-pink z-50">
                       {dayOptions.map((day) => (
-                        <SelectItem key={day} value={day} className="font-industrial">
+                        <SelectItem key={day} value={day} className="font-industrial text-foreground hover:bg-accent-pink hover:text-background">
                           {day}
                         </SelectItem>
                       ))}
@@ -222,16 +212,12 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
                   </Select>
                   
                   <Select value={birthdayMonth} onValueChange={setBirthdayMonth}>
-                    <SelectTrigger className={`font-industrial border-2 ${
-                      variant === 'footer' 
-                        ? 'border-background/50 bg-transparent text-background' 
-                        : 'border-foreground/50'
-                    }`}>
+                    <SelectTrigger className="font-industrial border-2 border-foreground/30 bg-background text-foreground focus:border-accent-pink">
                       <SelectValue placeholder="Month" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-background border-2 border-accent-pink z-50">
                       {monthOptions.map((month) => (
-                        <SelectItem key={month} value={month} className="font-industrial">
+                        <SelectItem key={month} value={month} className="font-industrial text-foreground hover:bg-accent-pink hover:text-background">
                           {month}
                         </SelectItem>
                       ))}
@@ -243,33 +229,21 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
 
             {/* Interests - Now mandatory and multiple select */}
             <div>
-              <Label className={`text-sm font-brutalist uppercase tracking-wide mb-3 block ${
-                variant === 'footer' ? 'text-background' : 'text-foreground'
-              }`}>
+              <Label className="text-sm font-brutalist uppercase tracking-wide mb-3 block text-foreground">
                 What interests you? <span className="text-accent-pink">*</span>
               </Label>
               <div className="space-y-2">
                 {interestOptions.map((option) => (
-                  <div key={option} className={`flex items-center space-x-3 p-2 border ${
-                    variant === 'footer' 
-                      ? 'border-background/30 hover:border-background/60' 
-                      : 'border-foreground/30 hover:border-foreground/60'
-                  } transition-colors`}>
+                  <div key={option} className="flex items-center space-x-3 p-2 border border-foreground/20 hover:border-accent-pink transition-colors bg-background">
                     <Checkbox
                       id={`interest-${option}`}
                       checked={interests.includes(option)}
                       onCheckedChange={() => toggleInterest(option)}
-                      className={`border-2 ${
-                        variant === 'footer' 
-                          ? 'border-background data-[state=checked]:bg-background data-[state=checked]:text-void' 
-                          : 'border-foreground data-[state=checked]:bg-foreground data-[state=checked]:text-background'
-                      }`}
+                      className="border-2 border-foreground data-[state=checked]:bg-accent-pink data-[state=checked]:text-background"
                     />
                     <Label 
                       htmlFor={`interest-${option}`} 
-                      className={`text-sm font-industrial cursor-pointer flex-1 ${
-                        variant === 'footer' ? 'text-background/90' : 'text-foreground/90'
-                      }`}
+                      className="text-sm font-industrial cursor-pointer flex-1 text-foreground"
                     >
                       {option}
                     </Label>
@@ -277,9 +251,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
                 ))}
               </div>
               {interests.length === 0 && (
-                <p className={`text-xs font-industrial mt-2 ${
-                  variant === 'footer' ? 'text-background/50' : 'text-foreground/50'
-                }`}>
+                <p className="text-xs font-industrial mt-2 text-foreground/70">
                   Please select at least one area of interest.
                 </p>
               )}
