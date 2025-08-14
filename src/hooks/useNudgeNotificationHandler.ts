@@ -247,20 +247,71 @@ export const useNudgeNotificationHandler = () => {
     // Set up BroadcastChannel immediately for open PWAs
     setupBroadcastChannel();
     
-    // Send APP_READY signal immediately
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      console.log('🎯 NUDGE HANDLER: 📡 Sending APP_READY signal to service worker');
-      navigator.serviceWorker.controller.postMessage({
-        type: 'APP_READY',
-        timestamp: Date.now(),
-        url: window.location.href
-      });
-    }
+    // Enhanced APP_READY signal with multiple confirmations
+    const sendAppReadySignal = () => {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        console.log('🎯 NUDGE HANDLER: 📡 Sending APP_READY signal to service worker');
+        navigator.serviceWorker.controller.postMessage({
+          type: 'APP_READY',
+          timestamp: Date.now(),
+          url: window.location.href,
+          hasListeners: {
+            broadcastChannel: !!channel,
+            serviceWorkerMessage: true,
+            windowMessage: true
+          }
+        });
+        console.log('🎯 NUDGE HANDLER: ✅ APP_READY signal sent with listener status');
+      } else {
+        console.log('🎯 NUDGE HANDLER: ❌ No service worker controller available for APP_READY');
+      }
+    };
+    
+    // Send initial APP_READY after a brief delay to ensure all listeners are set up
+    setTimeout(sendAppReadySignal, 100);
+
+    // Service Worker message handling - NEW! This catches direct postMessage from SW
+    const handleServiceWorkerMessage = (event: MessageEvent) => {
+      console.log('🎯 NUDGE SW-MSG: ================== SERVICE WORKER MESSAGE ==================');
+      console.log('🎯 NUDGE SW-MSG: Event data:', event.data);
+      console.log('🎯 NUDGE SW-MSG: Event source:', event.source);
+      console.log('🎯 NUDGE SW-MSG: Event origin:', event.origin);
+      
+      // Support both SHOW_NUDGE (main SW) and SW_NAVIGATE (mobile SW) messages  
+      const isValidMessage = (event.data.type === 'SHOW_NUDGE' && event.data.url) || 
+                            (event.data.type === 'SW_NAVIGATE' && event.data.url);
+      
+      if (isValidMessage) {
+        console.log(`🎯 NUDGE SW-MSG: ✅ Valid ${event.data.type} SERVICE WORKER message received!`);
+        const url = event.data.url;
+        
+        // Always set the URL immediately, regardless of app state
+        console.log('🎯 NUDGE SW-MSG: Setting URL from service worker message:', url);
+        setNudgeUrl(url);
+        sessionStorage.setItem('nudge_url', url);
+        sessionStorage.removeItem('nudge_clicked');
+        
+        // Send confirmation back to service worker
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'NUDGE_RECEIVED',
+            url: url,
+            timestamp: Date.now(),
+            source: 'service-worker-listener'
+          });
+        }
+      } else {
+        console.log('🎯 NUDGE SW-MSG: ❌ Invalid or irrelevant service worker message');
+        console.log('🎯 NUDGE SW-MSG: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);
+      }
+    };
 
     // Window message handling with enhanced logging
     const handleWindowMessage = (event: MessageEvent) => {
       console.log('🎯 NUDGE WINDOW: ================== WINDOW MESSAGE ==================');
       console.log('🎯 NUDGE WINDOW: Event data:', event.data);
+      console.log('🎯 NUDGE WINDOW: Event source:', event.source);
+      console.log('🎯 NUDGE WINDOW: Event origin:', event.origin);
       
       // Support both SHOW_NUDGE (main SW) and SW_NAVIGATE (mobile SW) messages  
       const isValidMessage = (event.data.type === 'SHOW_NUDGE' && event.data.url) || 
@@ -281,7 +332,8 @@ export const useNudgeNotificationHandler = () => {
           navigator.serviceWorker.controller.postMessage({
             type: 'NUDGE_RECEIVED',
             url: url,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            source: 'window-listener'
           });
         }
       } else {
@@ -289,6 +341,15 @@ export const useNudgeNotificationHandler = () => {
         console.log('🎯 NUDGE WINDOW: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);
       }
     };
+    
+    // Add BOTH service worker AND window message listeners
+    console.log('🎯 NUDGE SW-MSG: 📡 Adding service worker message listener');
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('message', handleServiceWorkerMessage);
+      console.log('🎯 NUDGE SW-MSG: ✅ Service worker message listener added');
+    } else {
+      console.log('🎯 NUDGE SW-MSG: ❌ Service worker not supported');
+    }
     
     console.log('🎯 NUDGE WINDOW: 📡 Adding window message listener');
     window.addEventListener('message', handleWindowMessage);
@@ -335,13 +396,15 @@ export const useNudgeNotificationHandler = () => {
     return () => {
       console.log('🎯 NUDGE HANDLER: 🧹 Cleaning up event listeners...');
       
-      // Removed aggressive polling
-      
       if (channel) {
         channel.removeEventListener('message', handleNudgeMessage);
         channel.close();
       }
       
+      // Clean up BOTH service worker and window message listeners
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.removeEventListener('message', handleServiceWorkerMessage);
+      }
       window.removeEventListener('message', handleWindowMessage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
