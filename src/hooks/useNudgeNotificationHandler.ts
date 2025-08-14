@@ -10,6 +10,11 @@ export const useNudgeNotificationHandler = () => {
     console.log('🎯 NUDGE HANDLER: ================== INITIALIZING ==================');
     console.log('🎯 NUDGE HANDLER: Starting with context state:', { nudgeUrl, nudgeClicked });
     console.log('🎯 NUDGE HANDLER: Current route:', location.pathname);
+    
+    // Track if this is an initial app load vs a notification while app is open
+    const isInitialLoad = !sessionStorage.getItem('app_initialized');
+    sessionStorage.setItem('app_initialized', 'true');
+    console.log('🎯 NUDGE HANDLER: Initial load?', isInitialLoad);
     // Enhanced IndexedDB initialization and checking
     const initializeAndCheckIndexedDB = () => {
       return new Promise<string | null>((resolve) => {
@@ -191,6 +196,19 @@ export const useNudgeNotificationHandler = () => {
       
       if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
         console.log('🎯 NUDGE MESSAGE: ✅ Valid SHOW_NUDGE message received!');
+        
+        // If app was already running, trigger a refresh to force component remount
+        if (!isInitialLoad) {
+          console.log('🎯 NUDGE MESSAGE: 🔄 App already open, triggering strategic refresh...');
+          // Store the URL first, then refresh
+          sessionStorage.setItem('nudge_url', event.data.url);
+          sessionStorage.removeItem('nudge_clicked');
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+          return;
+        }
+        
         console.log('🎯 NUDGE MESSAGE: Setting URL directly from message:', event.data.url);
         setNudgeUrl(event.data.url);
         sessionStorage.setItem('nudge_url', event.data.url);
@@ -215,6 +233,19 @@ export const useNudgeNotificationHandler = () => {
       
       if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
         console.log('🎯 NUDGE WINDOW: ✅ Valid window message received!');
+        
+        // If app was already running, trigger a refresh to force component remount
+        if (!isInitialLoad) {
+          console.log('🎯 NUDGE WINDOW: 🔄 App already open, triggering strategic refresh...');
+          // Store the URL first, then refresh
+          sessionStorage.setItem('nudge_url', event.data.url);
+          sessionStorage.removeItem('nudge_clicked');
+          setTimeout(() => {
+            window.location.reload();
+          }, 100);
+          return;
+        }
+        
         console.log('🎯 NUDGE WINDOW: Setting URL from window message:', event.data.url);
         setNudgeUrl(event.data.url);
         sessionStorage.setItem('nudge_url', event.data.url);
