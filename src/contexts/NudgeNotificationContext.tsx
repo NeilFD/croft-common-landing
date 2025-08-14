@@ -32,11 +32,38 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
     const initializeFromStorage = async () => {
       console.log('🎯 NUDGE CONTEXT: Initializing from storage...');
       
-      // Check sessionStorage first
+      // AGGRESSIVE CLEANUP: Clear all nudge data on fresh app launch
+      const isInitialLoad = !sessionStorage.getItem('app_initialized');
+      if (isInitialLoad) {
+        console.log('🎯 NUDGE CONTEXT: Initial app load - clearing all nudge data');
+        sessionStorage.removeItem('nudge_url');
+        sessionStorage.removeItem('nudge_clicked');
+        sessionStorage.setItem('app_initialized', 'true');
+        
+        // Clear IndexedDB too
+        try {
+          const request = indexedDB.open('nudge-storage', 2);
+          request.onsuccess = (event) => {
+            const db = (event.target as IDBOpenDBRequest).result;
+            if (db.objectStoreNames.contains('nudge')) {
+              const transaction = db.transaction(['nudge'], 'readwrite');
+              const store = transaction.objectStore('nudge');
+              store.clear();
+              console.log('🎯 NUDGE CONTEXT: Cleared IndexedDB on initial load');
+            }
+            db.close();
+          };
+        } catch (error) {
+          console.log('🎯 NUDGE CONTEXT: Failed to clear IndexedDB:', error);
+        }
+        return; // Exit early - no nudge on fresh launch
+      }
+      
+      // Check sessionStorage first (only on subsequent loads)
       const storedUrl = sessionStorage.getItem('nudge_url');
       const storedClicked = sessionStorage.getItem('nudge_clicked') === 'true';
       
-      if (storedUrl) {
+      if (storedUrl && storedUrl !== 'null' && storedUrl !== 'undefined') {
         console.log('🎯 NUDGE CONTEXT: Found URL in sessionStorage:', storedUrl);
         setNudgeUrlState(storedUrl);
         setNudgeClicked(storedClicked);
