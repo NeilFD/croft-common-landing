@@ -171,7 +171,7 @@ export const useNudgeNotificationHandler = () => {
     };
     
     // Check for existing nudge URLs on initialization
-    checkForNudgeUrl();
+    // checkForNudgeUrl(); // Removed - only check when messaged by SW
 
     // Robust BroadcastChannel setup with retry
     let channel: BroadcastChannel | null = null;
