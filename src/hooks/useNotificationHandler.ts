@@ -61,20 +61,7 @@ export const useNotificationHandler = () => {
         data: event.data
       });
       
-      // Show toast for any message received
-      toast({
-        title: "🔔 Message Received",
-        description: `Type: ${event.data?.type || 'unknown'}`
-      });
       
-      // Handle service worker debug toasts
-      if (event.data?.type === 'SHOW_TOAST') {
-        toast({
-          title: event.data.data.title,
-          description: event.data.data.description
-        });
-        return;
-      }
       
       // Handle all banner-related message types
       if (event.data?.type === 'SHOW_BANNER' || 
@@ -87,16 +74,7 @@ export const useNotificationHandler = () => {
           bannerData
         });
         
-        // 🔍 DEBUG: Show received banner data
-        toast({
-          title: "🔍 React Debug",
-          description: `bannerMessage: "${bannerData.bannerMessage || 'EMPTY'}" | body: "${bannerData.body || 'EMPTY'}"`
-        });
         
-        toast({
-          title: "🔔 Banner Triggered",
-          description: `Title: ${bannerData.title || 'No title'}`
-        });
         
         showBanner({
           title: bannerData.title || 'Notification',
@@ -147,11 +125,6 @@ export const useNotificationHandler = () => {
 
     // Method 5: Visibility change listener for immediate message checking
     const handleVisibilityChange = () => {
-      toast({
-        title: "🔔 Visibility Changed",
-        description: `New state: ${document.visibilityState}`
-      });
-      
       if (document.visibilityState === 'visible') {
         // Immediately check for pending messages when app becomes visible
         aggressiveBannerPoll();
@@ -169,11 +142,6 @@ export const useNotificationHandler = () => {
 
     // Method 6: Window focus listener as backup
     const handleWindowFocus = () => {
-      toast({
-        title: "🔔 Window Focused",
-        description: "Checking for pending messages"
-      });
-      
       // Force immediate message check on focus
       aggressiveBannerPoll();
     };
@@ -201,10 +169,6 @@ export const useNotificationHandler = () => {
               isStandalone: window.matchMedia('(display-mode: standalone)').matches
             });
             console.log('🔔 App: ✅ Ready signal sent to service worker');
-            toast({
-              title: "🔔 App Ready",
-              description: "Sent APP_READY to SW"
-            });
           }
           
           // Set up message listener specifically for the active service worker

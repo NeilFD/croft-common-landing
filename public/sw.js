@@ -191,20 +191,6 @@ self.addEventListener('notificationclick', (event) => {
       return;
     }
 
-    // DEBUG 1: Send immediate debug toast about notification click
-    for (const client of allClients) {
-      try {
-        client.postMessage({
-          type: 'SHOW_TOAST',
-          data: {
-            title: '🔔 SW: Notification Clicked',
-            description: `Found ${allClients.length} total clients, display: ${displayMode}`
-          }
-        });
-      } catch (e) {
-        console.warn('🔔 SW: Failed to send initial debug toast:', e);
-      }
-    }
     
     console.log('🔔 SW: Client analysis', {
       displayMode,
@@ -227,40 +213,12 @@ self.addEventListener('notificationclick', (event) => {
       }
     });
     
-    // DEBUG 2: Send client filtering results
-    for (const client of allClients) {
-      try {
-        client.postMessage({
-          type: 'SHOW_TOAST',
-          data: {
-            title: '🔔 SW: Client Filter',
-            description: `${allClients.length} total → ${appClients.length} app clients`
-          }
-        });
-      } catch (e) {
-        console.warn('🔔 SW: Failed to send filter debug toast:', e);
-      }
-    }
     
     // REMOVE visibility filtering - send to ALL app clients regardless of state
     const visibleAppClients = appClients; // All clients are considered targetable
 
     const shouldShowBanner = appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both');
 
-    // DEBUG 3: Send banner decision
-    for (const client of allClients) {
-      try {
-        client.postMessage({
-          type: 'SHOW_TOAST',
-          data: {
-            title: '🔔 SW: Banner Decision',
-            description: `Should show: ${shouldShowBanner}, Mode: ${displayMode}`
-          }
-        });
-      } catch (e) {
-        console.warn('🔔 SW: Failed to send decision debug toast:', e);
-      }
-    }
 
     console.log('🔔 SW: App open status:', {
       appClients: appClients.length,
@@ -272,9 +230,6 @@ self.addEventListener('notificationclick', (event) => {
       console.log('🔔 SW: Showing banner to open app');
       // Send banner data to the main app
       try {
-        // 🔍 DEBUG: Show what we extracted from notification data
-        console.log('🔔 SW DEBUG: Raw notificationData:', notificationData);
-        console.log('🔔 SW DEBUG: notification banner_message:', notificationData.banner_message);
         
         const bannerData = {
           type: 'SHOW_BANNER',
@@ -289,53 +244,15 @@ self.addEventListener('notificationclick', (event) => {
           }
         };
         
-        console.log('🔔 SW DEBUG: Complete bannerData:', bannerData);
         console.log('🔔 SW: Posting banner message to clients:', bannerData);
-        
-        // Send debug toast to show banner message value
-        if (appClients.length > 0) {
-          try {
-            appClients[0].postMessage({
-              type: 'SHOW_TOAST',
-              data: {
-                title: '🔍 SW Debug',
-                description: `banner_message: "${notificationData.banner_message || 'EMPTY'}"`
-              }
-            });
-          } catch (e) {
-            console.warn('🔔 SW: Failed to send debug toast:', e);
-          }
-        }
         
         // Method 1: Send to ALL app clients with enhanced debugging
         console.log('🔔 SW: Sending banner to ALL app clients');
         let messageSent = false;
         
-        // First send debug toast to all clients
-        for (const client of appClients) {
-          try {
-            client.postMessage({
-              type: 'SHOW_TOAST',
-              data: {
-                title: '🔔 SW Debug',
-                description: `Found ${appClients.length} clients, sending banner`
-              }
-            });
-          } catch (e) {
-            console.warn('🔔 SW: Failed to send debug toast:', e);
-          }
-        }
         
         for (const client of appClients) {
           try {
-            // DEBUG 4: Send attempt toast
-            client.postMessage({
-              type: 'SHOW_TOAST',
-              data: {
-                title: '🔔 SW: Sending Banner',
-                description: `Attempting to send to client: ${client.visibilityState}`
-              }
-            });
             
             console.log('🔔 SW: Attempting to send banner to client:', {
               url: client.url,
@@ -350,38 +267,10 @@ self.addEventListener('notificationclick', (event) => {
             messageSent = true;
             console.log('🔔 SW: ✅ Successfully sent message to client:', client.url);
             
-            // DEBUG 5: Send success confirmation toast
-            setTimeout(() => {
-              try {
-                client.postMessage({
-                  type: 'SHOW_TOAST',
-                  data: {
-                    title: '🔔 SW: Banner Sent ✅',
-                    description: `Successfully sent to ${client.visibilityState} client`
-                  }
-                });
-              } catch (e) {
-                console.warn('🔔 SW: Failed to send success toast:', e);
-              }
-            }, 100);
             
           } catch (clientError) {
             console.warn('🔔 SW: ❌ Failed to send message to client:', client.url, clientError);
             
-            // Send error toast to any working clients
-            appClients.forEach(c => {
-              if (c !== client) {
-                try {
-                  c.postMessage({
-                    type: 'SHOW_TOAST',
-                    data: {
-                      title: '🔔 SW Error',
-                      description: `Failed to send to ${client.url.split('/').pop()}`
-                    }
-                  });
-                } catch (e) {}
-              }
-            });
           }
         }
         

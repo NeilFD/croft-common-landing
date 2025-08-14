@@ -32,7 +32,7 @@ import RouteImagePreloader from '@/components/RouteImagePreloader';
 import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
 import { BannerNotification } from "@/components/BannerNotification";
 import { useBannerNotification } from "@/contexts/BannerNotificationContext";
-import { TestBannerButton } from "@/components/TestBannerButton";
+
 const queryClient = new QueryClient();
 
 const BannerOverlay = () => {
@@ -97,7 +97,7 @@ const App = () => (
           <LowercasePathGuard />
           <RouteImagePreloader />
           <BannerOverlay />
-          <TestBannerButton />
+          
           <TransitionProvider>
             <Routes>
             <Route path="/" element={<Index />} />
