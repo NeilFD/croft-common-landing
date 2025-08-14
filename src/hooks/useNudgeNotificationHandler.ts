@@ -170,8 +170,68 @@ export const useNudgeNotificationHandler = () => {
       }
     };
     
-    console.log('🎯 NUDGE HANDLER: 🚀 Starting initial check...');
-    checkForNudgeUrl();
+    // STEP 1: Immediate storage check (storage-first strategy)
+    const immediateCheck = async () => {
+      console.log('🎯 NUDGE HANDLER: 🔍 Immediate storage check on mount...');
+      const storedUrl = sessionStorage.getItem('nudge_url');
+      
+      if (storedUrl) {
+        console.log('🎯 NUDGE HANDLER: ⚡ Found URL in sessionStorage immediately:', storedUrl);
+        setNudgeUrl(storedUrl);
+        return;
+      }
+      
+      // Check IndexedDB immediately as well
+      try {
+        const dbUrl = await initializeAndCheckIndexedDB();
+        if (dbUrl) {
+          console.log('🎯 NUDGE HANDLER: ⚡ Found URL in IndexedDB immediately:', dbUrl);
+          setNudgeUrl(dbUrl);
+          sessionStorage.setItem('nudge_url', dbUrl);
+        }
+      } catch (error) {
+        console.error('🎯 NUDGE HANDLER: ❌ Immediate IndexedDB check failed:', error);
+      }
+    };
+    
+    immediateCheck();
+    
+    // STEP 2: Start aggressive polling (every 500ms for first 10 seconds)
+    let pollCount = 0;
+    const maxPolls = 20; // 10 seconds at 500ms intervals
+    
+    const aggressivePolling = setInterval(async () => {
+      pollCount++;
+      console.log(`🎯 NUDGE HANDLER: 🔄 Aggressive poll ${pollCount}/${maxPolls}`);
+      
+      // Check sessionStorage first (fastest)
+      const storedUrl = sessionStorage.getItem('nudge_url');
+      if (storedUrl) {
+        console.log('🎯 NUDGE HANDLER: ⚡ Aggressive poll found URL in sessionStorage:', storedUrl);
+        setNudgeUrl(storedUrl);
+        clearInterval(aggressivePolling);
+        return;
+      }
+      
+      // Check IndexedDB
+      try {
+        const dbUrl = await initializeAndCheckIndexedDB();
+        if (dbUrl) {
+          console.log('🎯 NUDGE HANDLER: ⚡ Aggressive poll found URL in IndexedDB:', dbUrl);
+          setNudgeUrl(dbUrl);
+          sessionStorage.setItem('nudge_url', dbUrl);
+          clearInterval(aggressivePolling);
+        }
+      } catch (error) {
+        console.error('🎯 NUDGE HANDLER: ❌ Aggressive poll IndexedDB check failed:', error);
+      }
+      
+      // Stop aggressive polling after max attempts
+      if (pollCount >= maxPolls) {
+        console.log('🎯 NUDGE HANDLER: ⏰ Aggressive polling completed, switching to normal mode');
+        clearInterval(aggressivePolling);
+      }
+    }, 500);
 
     // Robust BroadcastChannel setup with retry
     let channel: BroadcastChannel | null = null;
@@ -229,6 +289,15 @@ export const useNudgeNotificationHandler = () => {
         setNudgeUrl(url);
         sessionStorage.setItem('nudge_url', url);
         sessionStorage.removeItem('nudge_clicked');
+        
+        // Send confirmation back to service worker
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'NUDGE_RECEIVED',
+            url: url,
+            timestamp: Date.now()
+          });
+        }
       } else {
         console.log('🎯 NUDGE MESSAGE: ❌ Invalid or irrelevant message');
         console.log('🎯 NUDGE MESSAGE: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);
@@ -236,7 +305,22 @@ export const useNudgeNotificationHandler = () => {
       }
     };
 
-    setupBroadcastChannel();
+    // STEP 3: Send APP_READY signal after a short delay to ensure handlers are ready
+    setTimeout(() => {
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        console.log('🎯 NUDGE HANDLER: 📡 Sending APP_READY signal to service worker');
+        navigator.serviceWorker.controller.postMessage({
+          type: 'APP_READY',
+          timestamp: Date.now(),
+          url: window.location.href
+        });
+      }
+    }, 1000);
+    
+    // STEP 4: Set up communication channels after initialization
+    setTimeout(() => {
+      setupBroadcastChannel();
+    }, 1500);
 
     // Window message handling with enhanced logging
     const handleWindowMessage = (event: MessageEvent) => {
@@ -256,6 +340,15 @@ export const useNudgeNotificationHandler = () => {
         setNudgeUrl(url);
         sessionStorage.setItem('nudge_url', url);
         sessionStorage.removeItem('nudge_clicked');
+        
+        // Send confirmation back to service worker
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.controller.postMessage({
+            type: 'NUDGE_RECEIVED',
+            url: url,
+            timestamp: Date.now()
+          });
+        }
       } else {
         console.log('🎯 NUDGE WINDOW: ❌ Invalid or irrelevant window message');
         console.log('🎯 NUDGE WINDOW: Expected type: SHOW_NUDGE or SW_NAVIGATE, got:', event.data?.type);
@@ -265,39 +358,6 @@ export const useNudgeNotificationHandler = () => {
     console.log('🎯 NUDGE WINDOW: 📡 Adding window message listener');
     window.addEventListener('message', handleWindowMessage);
     console.log('🎯 NUDGE WINDOW: ✅ Window message listener added');
-
-    // Send app ready message to service worker with enhanced debugging
-    if ('serviceWorker' in navigator) {
-      console.log('🎯 NUDGE: 📡 Checking service worker registration...');
-      navigator.serviceWorker.ready.then((registration) => {
-        console.log('🎯 NUDGE: ✅ Service worker is ready');
-        console.log('🎯 NUDGE: 🔍 Service worker script URL:', registration.active?.scriptURL);
-        
-        if (registration.active) {
-          // Check which service worker is active
-          const swUrl = registration.active.scriptURL;
-          if (swUrl.includes('sw-mobile.js')) {
-            console.log('⚠️ NUDGE: Mobile service worker detected - NUDGE may not work!');
-          } else if (swUrl.includes('sw.js')) {
-            console.log('✅ NUDGE: Main service worker detected - NUDGE should work');
-          }
-          
-          console.log('🎯 NUDGE: 📤 Sending APP_READY to service worker');
-          registration.active.postMessage({ 
-            type: 'APP_READY',
-            timestamp: Date.now(),
-            url: window.location.href
-          });
-          console.log('🎯 NUDGE: ✅ APP_READY message sent');
-        } else {
-          console.log('🎯 NUDGE: ❌ No active service worker found');
-        }
-      }).catch(error => {
-        console.error('🎯 NUDGE: ❌ Service worker ready failed:', error);
-      });
-    } else {
-      console.log('🎯 NUDGE: ❌ Service worker not supported');
-    }
 
     // Enhanced visibility change handler with IndexedDB polling
     const handleVisibilityChange = () => {
@@ -386,10 +446,15 @@ export const useNudgeNotificationHandler = () => {
     window.addEventListener('focus', handleFocus);
 
     return () => {
+      console.log('🎯 NUDGE HANDLER: 🧹 Cleaning up event listeners...');
+      
+      clearInterval(aggressivePolling);
+      
       if (channel) {
         channel.removeEventListener('message', handleNudgeMessage);
         channel.close();
       }
+      
       window.removeEventListener('message', handleWindowMessage);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);

@@ -166,18 +166,21 @@ self.addEventListener('notificationclick', event => {
       console.log('🔔 SW: Opened new window');
     }
     
-    // Enhanced NUDGE message delivery with multiple strategies
+    // Enhanced NUDGE message delivery with exponential backoff
     if (url) {
-      console.log('🔔 SW: 📡 Sending NUDGE with enhanced delivery for URL:', url);
+      console.log('🔔 SW: 📡 Starting NUDGE delivery with timing fixes for URL:', url);
       
-      // Send nudge message using multiple delivery strategies
-      sendNudgeToClients(url);
+      // Storage-first approach: always store before attempting delivery
+      await storeNudgeUrl(url);
       
-      // Delayed retry for reliability (open PWA timing issues)
+      // Wait for app initialization (3-5 seconds)
+      const initialDelay = 3000;
+      console.log(`🔔 SW: ⏰ Waiting ${initialDelay}ms for app initialization...`);
+      
       setTimeout(() => {
-        console.log('🔔 SW: 🔄 Retry NUDGE delivery');
-        sendNudgeToClients(url);
-      }, 1500);
+        console.log('🔔 SW: 📡 Initial NUDGE delivery attempt');
+        attemptNudgeDelivery(url, 1);
+      }, initialDelay);
     }
   })());
 });
@@ -267,32 +270,54 @@ async function storeNudgeUrl(url) {
   }
 }
 
-function sendNudgeToClients(url) {
-  console.log('🔔 SW: 📡 Sending nudge to clients with multiple strategies:', url);
+// Exponential backoff delivery system
+function attemptNudgeDelivery(url, attempt = 1) {
+  const maxAttempts = 4;
+  const delays = [1000, 3000, 6000, 10000]; // 1s, 3s, 6s, 10s
+  
+  console.log(`🔔 SW: 📡 NUDGE delivery attempt ${attempt}/${maxAttempts} for URL:`, url);
+  
+  sendNudgeToClients(url, attempt);
+  
+  if (attempt < maxAttempts) {
+    const nextDelay = delays[attempt - 1] || 10000;
+    console.log(`🔔 SW: ⏰ Scheduling next attempt in ${nextDelay}ms`);
+    
+    setTimeout(() => {
+      attemptNudgeDelivery(url, attempt + 1);
+    }, nextDelay);
+  } else {
+    console.log('🔔 SW: ⚠️ All NUDGE delivery attempts completed');
+  }
+}
+
+function sendNudgeToClients(url, attempt = 1) {
+  console.log(`🔔 SW: 📡 Sending nudge to clients (attempt ${attempt}):`, url);
   
   const message = {
     type: 'SHOW_NUDGE',
     url: url,
     timestamp: Date.now(),
-    delivery_method: 'enhanced_multi_strategy'
+    attempt: attempt,
+    delivery_method: 'exponential_backoff'
   };
   
   // Strategy 1: BroadcastChannel (primary for same-origin)
   try {
     const channel = new BroadcastChannel('nudge-notification');
     channel.postMessage(message);
-    console.log('🔔 SW: ✅ BroadcastChannel message sent');
+    console.log(`🔔 SW: ✅ BroadcastChannel message sent (attempt ${attempt})`);
     channel.close();
   } catch (error) {
-    console.error('🔔 SW: ❌ BroadcastChannel failed:', error);
+    console.error(`🔔 SW: ❌ BroadcastChannel failed (attempt ${attempt}):`, error);
   }
   
   // Strategy 2: Direct client messaging (for active clients)
   self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
-    console.log(`🔔 SW: 👥 Found ${clients.length} clients for direct messaging`);
+    console.log(`🔔 SW: 👥 Found ${clients.length} clients for direct messaging (attempt ${attempt})`);
     
     if (clients.length === 0) {
-      console.log('🔔 SW: ℹ️ No active clients found');
+      console.log(`🔔 SW: ℹ️ No active clients found (attempt ${attempt})`);
       return;
     }
     
@@ -303,24 +328,60 @@ function sendNudgeToClients(url) {
           client_index: index,
           client_id: client.id.substring(0, 8)
         });
-        console.log(`🔔 SW: ✅ Message sent to client ${index}`);
+        console.log(`🔔 SW: ✅ Message sent to client ${index} (attempt ${attempt})`);
       } catch (error) {
-        console.error(`🔔 SW: ❌ Failed to send to client ${index}:`, error);
+        console.error(`🔔 SW: ❌ Failed to send to client ${index} (attempt ${attempt}):`, error);
       }
     });
   }).catch(error => {
-    console.error('🔔 SW: ❌ Failed to get clients:', error);
+    console.error(`🔔 SW: ❌ Failed to get clients (attempt ${attempt}):`, error);
   });
 }
+
+// Global state for tracking app readiness and pending NUDGEs
+let appReadyClients = new Set();
+let pendingNudges = [];
 
 // Message listener for app communication
 self.addEventListener('message', (event) => {
   console.log('🔔 SW: Received message from client:', event.data);
   
   if (event.data?.type === 'APP_READY') {
+    const clientId = event.source?.id || 'unknown';
+    appReadyClients.add(clientId);
+    
     console.log('🔔 SW: ✅ App ready signal received', {
       timestamp: event.data.timestamp,
-      url: event.data.url
+      url: event.data.url,
+      clientId: clientId.substring(0, 8),
+      totalReadyClients: appReadyClients.size
     });
+    
+    // Send any pending NUDGEs to this newly ready client
+    if (pendingNudges.length > 0) {
+      console.log(`🔔 SW: 📤 Sending ${pendingNudges.length} pending NUDGEs to ready client`);
+      pendingNudges.forEach(nudgeUrl => {
+        try {
+          event.source.postMessage({
+            type: 'SHOW_NUDGE',
+            url: nudgeUrl,
+            timestamp: Date.now(),
+            delivery_method: 'app_ready_delivery'
+          });
+          console.log('🔔 SW: ✅ Pending NUDGE sent:', nudgeUrl);
+        } catch (error) {
+          console.error('🔔 SW: ❌ Failed to send pending NUDGE:', error);
+        }
+      });
+      // Clear pending NUDGEs after successful delivery
+      pendingNudges = [];
+    }
+  }
+  
+  if (event.data?.type === 'NUDGE_RECEIVED') {
+    console.log('🔔 SW: ✅ NUDGE received confirmation from client');
+    // Remove from pending if it was there
+    const url = event.data.url;
+    pendingNudges = pendingNudges.filter(pendingUrl => pendingUrl !== url);
   }
 });

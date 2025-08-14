@@ -273,32 +273,54 @@ async function storeNudgeUrl(url) {
   }
 }
 
-function sendNudgeToClients(url) {
-  console.log('🔔 SW-MOBILE: 📡 Sending NUDGE to clients with multiple strategies:', url);
+// Mobile-specific exponential backoff delivery system
+function attemptMobileNudgeDelivery(url, attempt = 1) {
+  const maxAttempts = 5; // More attempts for mobile
+  const delays = [1000, 2000, 4000, 8000, 15000]; // Longer delays for mobile
+  
+  console.log(`🔔 SW-MOBILE: 📡 NUDGE delivery attempt ${attempt}/${maxAttempts} for URL:`, url);
+  
+  sendNudgeToClients(url, attempt);
+  
+  if (attempt < maxAttempts) {
+    const nextDelay = delays[attempt - 1] || 15000;
+    console.log(`🔔 SW-MOBILE: ⏰ Scheduling next mobile attempt in ${nextDelay}ms`);
+    
+    setTimeout(() => {
+      attemptMobileNudgeDelivery(url, attempt + 1);
+    }, nextDelay);
+  } else {
+    console.log('🔔 SW-MOBILE: ⚠️ All mobile NUDGE delivery attempts completed');
+  }
+}
+
+function sendNudgeToClients(url, attempt = 1) {
+  console.log(`🔔 SW-MOBILE: 📡 Sending NUDGE to clients (attempt ${attempt}):`, url);
   
   const message = {
     type: 'SHOW_NUDGE',
     url: url,
     timestamp: Date.now(),
-    delivery_method: 'mobile_enhanced_strategy'
+    attempt: attempt,
+    delivery_method: 'mobile_exponential_backoff'
   };
   
   // Strategy 1: BroadcastChannel (primary for same-origin)
   try {
     const channel = new BroadcastChannel('nudge-notification');
     channel.postMessage(message);
-    console.log('🔔 SW-MOBILE: ✅ BroadcastChannel NUDGE message sent');
+    console.log(`🔔 SW-MOBILE: ✅ BroadcastChannel NUDGE message sent (attempt ${attempt})`);
     channel.close();
   } catch (error) {
-    console.error('🔔 SW-MOBILE: ❌ BroadcastChannel failed:', error);
+    console.error(`🔔 SW-MOBILE: ❌ BroadcastChannel failed (attempt ${attempt}):`, error);
   }
   
   // Strategy 2: Direct client messaging (for active clients)
   self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
-    console.log(`🔔 SW-MOBILE: 👥 Found ${clients.length} clients for direct NUDGE messaging`);
+    console.log(`🔔 SW-MOBILE: 👥 Found ${clients.length} clients for direct NUDGE messaging (attempt ${attempt})`);
     
     if (clients.length === 0) {
-      console.log('🔔 SW-MOBILE: ℹ️ No active clients found for NUDGE');
+      console.log(`🔔 SW-MOBILE: ℹ️ No active clients found for NUDGE (attempt ${attempt})`);
       return;
     }
     
@@ -309,13 +331,13 @@ function sendNudgeToClients(url) {
           client_index: index,
           client_id: client.id.substring(0, 8)
         });
-        console.log(`🔔 SW-MOBILE: ✅ NUDGE message sent to client ${index}`);
+        console.log(`🔔 SW-MOBILE: ✅ NUDGE message sent to client ${index} (attempt ${attempt})`);
       } catch (error) {
-        console.error(`🔔 SW-MOBILE: ❌ Failed to send NUDGE to client ${index}:`, error);
+        console.error(`🔔 SW-MOBILE: ❌ Failed to send NUDGE to client ${index} (attempt ${attempt}):`, error);
       }
     });
   }).catch(error => {
-    console.error('🔔 SW-MOBILE: ❌ Failed to get clients for NUDGE:', error);
+    console.error(`🔔 SW-MOBILE: ❌ Failed to get clients for NUDGE (attempt ${attempt}):`, error);
   });
 }
 
@@ -383,11 +405,14 @@ self.addEventListener('notificationclick', (event) => {
       
       sendNudgeToClients(targetUrl);
       
-      // Delayed retry for reliability (mobile PWA timing issues)
+      // Enhanced delivery with timing fixes
+      const initialDelay = 4000; // Longer delay for mobile
+      console.log(`🔔 SW-MOBILE: ⏰ Waiting ${initialDelay}ms for mobile app initialization...`);
+      
       setTimeout(() => {
-        console.log('🔔 SW-MOBILE: 🔄 Retry NUDGE delivery');
-        sendNudgeToClients(targetUrl);
-      }, 1500);
+        console.log('🔔 SW-MOBILE: 📡 Initial NUDGE delivery attempt');
+        attemptMobileNudgeDelivery(targetUrl, 1);
+      }, initialDelay);
     }
 
     // Mobile-optimized navigation fallback (keep existing behavior as backup)
@@ -422,15 +447,51 @@ self.addEventListener('notificationclick', (event) => {
   })());
 });
 
+// Global state for tracking mobile app readiness and pending NUDGEs
+let mobileAppReadyClients = new Set();
+let mobilePendingNudges = [];
+
 // Message listener for app communication (NUDGE support)
 self.addEventListener('message', (event) => {
   console.log('🔔 SW-MOBILE: Received message from client:', event.data);
   
   if (event.data?.type === 'APP_READY') {
+    const clientId = event.source?.id || 'unknown';
+    mobileAppReadyClients.add(clientId);
+    
     console.log('🔔 SW-MOBILE: ✅ App ready signal received', {
       timestamp: event.data.timestamp,
       url: event.data.url,
-      serviceWorker: 'mobile'
+      serviceWorker: 'mobile',
+      clientId: clientId.substring(0, 8),
+      totalReadyClients: mobileAppReadyClients.size
     });
+    
+    // Send any pending NUDGEs to this newly ready mobile client
+    if (mobilePendingNudges.length > 0) {
+      console.log(`🔔 SW-MOBILE: 📤 Sending ${mobilePendingNudges.length} pending NUDGEs to ready mobile client`);
+      mobilePendingNudges.forEach(nudgeUrl => {
+        try {
+          event.source.postMessage({
+            type: 'SHOW_NUDGE',
+            url: nudgeUrl,
+            timestamp: Date.now(),
+            delivery_method: 'mobile_app_ready_delivery'
+          });
+          console.log('🔔 SW-MOBILE: ✅ Pending NUDGE sent:', nudgeUrl);
+        } catch (error) {
+          console.error('🔔 SW-MOBILE: ❌ Failed to send pending NUDGE:', error);
+        }
+      });
+      // Clear pending NUDGEs after successful delivery
+      mobilePendingNudges = [];
+    }
+  }
+  
+  if (event.data?.type === 'NUDGE_RECEIVED') {
+    console.log('🔔 SW-MOBILE: ✅ NUDGE received confirmation from mobile client');
+    // Remove from pending if it was there
+    const url = event.data.url;
+    mobilePendingNudges = mobilePendingNudges.filter(pendingUrl => pendingUrl !== url);
   }
 });
