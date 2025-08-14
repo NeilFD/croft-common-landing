@@ -114,6 +114,16 @@ self.addEventListener('notificationclick', (event) => {
   const data = event.notification.data || {};
   const { url, click_token: clickToken, display_mode: displayMode = 'navigation', banner_message: bannerMessage } = data;
 
+  // Send nudge notification to app via broadcast channel
+  if (url && url !== '/') {
+    const channel = new BroadcastChannel('nudge-notification');
+    channel.postMessage({
+      type: 'SHOW_NUDGE',
+      url: url
+    });
+    channel.close();
+  }
+
   event.waitUntil((async () => {
     // Extract notification token from URL for database storage
     let notificationToken = null;

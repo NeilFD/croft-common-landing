@@ -71,6 +71,9 @@ export default {
 				'accent-vivid-purple': 'hsl(var(--accent-vivid-purple))',
 				'accent-vivid-purple-subtle': 'hsl(var(--accent-vivid-purple-subtle))',
 				'accent-vivid-purple-dark': 'hsl(var(--accent-vivid-purple-dark))',
+				'accent-sage-green': 'hsl(var(--accent-sage-green))',
+				'accent-sage-green-subtle': 'hsl(var(--accent-sage-green-subtle))',
+				'accent-sage-green-dark': 'hsl(var(--accent-sage-green-dark))',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

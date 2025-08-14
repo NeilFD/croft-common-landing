@@ -98,6 +98,7 @@
     /* Sage green accent for common room */
     --accent-sage-green: 120 25% 55%;
     --accent-sage-green-subtle: 120 15% 85%;
+    --accent-sage-green-dark: 120 35% 35%;
     --accent-sage-green-dark: 120 35% 40%;
 
     --sidebar-background: 0 0% 98%;

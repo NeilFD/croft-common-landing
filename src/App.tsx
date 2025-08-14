@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
 import { useNotificationHandler } from "@/hooks/useNotificationHandler";
+import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
+import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
 
 import Index from "./pages/Index";
 import Cafe from "./pages/Cafe";
@@ -55,6 +57,9 @@ const LowercasePathGuard = () => {
   // Handle notification deep links universally
   useNotificationHandler();
   
+  // Handle nudge notifications
+  useNudgeNotificationHandler();
+  
   const allowedRoots = new Set([
      "", // homepage
      "cafe",
@@ -91,6 +96,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <BannerNotificationProvider>
+        <NudgeNotificationProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -128,6 +134,7 @@ const App = () => (
             </Routes>
           </TransitionProvider>
         </BrowserRouter>
+        </NudgeNotificationProvider>
       </BannerNotificationProvider>
     </TooltipProvider>
   </QueryClientProvider>
