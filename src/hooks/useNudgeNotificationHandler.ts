@@ -7,44 +7,51 @@ export const useNudgeNotificationHandler = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.log('🎯 NUDGE: Handler initializing...');
-    
+    console.log('🎯 NUDGE HANDLER: ================== INITIALIZING ==================');
+    console.log('🎯 NUDGE HANDLER: Starting with context state:', { nudgeUrl, nudgeClicked });
+    console.log('🎯 NUDGE HANDLER: Current route:', location.pathname);
     // Enhanced IndexedDB initialization and checking
     const initializeAndCheckIndexedDB = () => {
       return new Promise<string | null>((resolve) => {
+        console.log('🎯 NUDGE DB: ==================== STARTING DB INIT ====================');
         try {
-          console.log('🎯 NUDGE: Initializing IndexedDB connection...');
+          console.log('🎯 NUDGE DB: Opening IndexedDB connection...');
           const request = indexedDB.open('nudge-storage', 1);
           
           request.onerror = () => {
-            console.error('🎯 NUDGE: ✗ IndexedDB open failed');
+            console.error('🎯 NUDGE DB: ❌ IndexedDB open FAILED:', request.error);
             resolve(null);
           };
           
           request.onupgradeneeded = (event) => {
-            console.log('🎯 NUDGE: Creating nudge database in React app');
+            console.log('🎯 NUDGE DB: 🔧 DATABASE UPGRADE NEEDED - creating store...');
             const db = (event.target as IDBOpenDBRequest).result;
             if (!db.objectStoreNames.contains('nudge')) {
               db.createObjectStore('nudge');
-              console.log('🎯 NUDGE: ✓ Created nudge object store');
+              console.log('🎯 NUDGE DB: ✅ Created nudge object store in React app');
+            } else {
+              console.log('🎯 NUDGE DB: ℹ️ Nudge store already exists');
             }
           };
           
           request.onsuccess = (event) => {
             const db = (event.target as IDBOpenDBRequest).result;
-            console.log('🎯 NUDGE: ✓ Database connection established');
+            console.log('🎯 NUDGE DB: ✅ Database connection ESTABLISHED');
+            console.log('🎯 NUDGE DB: Available object stores:', Array.from(db.objectStoreNames));
             
             if (!db.objectStoreNames.contains('nudge')) {
-              console.log('🎯 NUDGE: ✗ No nudge store found in existing DB');
+              console.error('🎯 NUDGE DB: ❌ No nudge store found in existing DB');
               resolve(null);
               return;
             }
             
+            console.log('🎯 NUDGE DB: 🔍 Starting transaction to check for stored URLs...');
             // Check for current nudge URL
             const transaction = db.transaction(['nudge'], 'readonly');
             const store = transaction.objectStore('nudge');
             
             // Check both 'current' and 'delivery_pending' keys
+            console.log('🎯 NUDGE DB: 📋 Checking both current and delivery_pending keys...');
             const getCurrentRequest = store.get('current');
             const getPendingRequest = store.get('delivery_pending');
             
@@ -54,12 +61,17 @@ export const useNudgeNotificationHandler = () => {
             
             const checkCompletion = () => {
               completedRequests++;
+              console.log(`🎯 NUDGE DB: ✅ Request ${completedRequests}/2 completed`);
+              console.log('🎯 NUDGE DB: Current result:', currentResult);
+              console.log('🎯 NUDGE DB: Pending result:', pendingResult);
+              
               if (completedRequests === 2) {
                 // Prioritize pending delivery over current
                 const result = pendingResult || currentResult;
                 if (result && result.url) {
-                  console.log('🎯 NUDGE: ✓ Found URL in IndexedDB:', result.url, 
-                    pendingResult ? '(from pending)' : '(from current)');
+                  console.log('🎯 NUDGE DB: 🎉 FOUND URL:', result.url, 
+                    pendingResult ? '(from PENDING delivery)' : '(from CURRENT store)');
+                  
                   
                   // Clear pending delivery flag if we found one
                   if (pendingResult) {
@@ -67,75 +79,86 @@ export const useNudgeNotificationHandler = () => {
                       const clearTransaction = db.transaction(['nudge'], 'readwrite');
                       const clearStore = clearTransaction.objectStore('nudge');
                       clearStore.delete('delivery_pending');
-                      console.log('🎯 NUDGE: ✓ Cleared pending delivery flag');
+                      console.log('🎯 NUDGE DB: ✅ Cleared pending delivery flag successfully');
                     } catch (error) {
-                      console.error('🎯 NUDGE: ✗ Failed to clear pending flag:', error);
+                      console.error('🎯 NUDGE DB: ❌ Failed to clear pending flag:', error);
                     }
                   }
                   
                   resolve(result.url);
                 } else {
-                  console.log('🎯 NUDGE: No URL found in IndexedDB');
+                  console.log('🎯 NUDGE DB: 😔 NO URL found in either location');
                   resolve(null);
                 }
               }
             };
             
             getCurrentRequest.onerror = () => {
-              console.error('🎯 NUDGE: ✗ IndexedDB read failed for current');
+              console.error('🎯 NUDGE DB: ❌ IndexedDB read FAILED for current key');
               checkCompletion();
             };
             
             getCurrentRequest.onsuccess = () => {
               currentResult = getCurrentRequest.result;
+              console.log('🎯 NUDGE DB: ✅ Current key read SUCCESS:', currentResult);
               checkCompletion();
             };
             
             getPendingRequest.onerror = () => {
-              console.error('🎯 NUDGE: ✗ IndexedDB read failed for pending');
+              console.error('🎯 NUDGE DB: ❌ IndexedDB read FAILED for pending key');
               checkCompletion();
             };
             
             getPendingRequest.onsuccess = () => {
               pendingResult = getPendingRequest.result;
+              console.log('🎯 NUDGE DB: ✅ Pending key read SUCCESS:', pendingResult);
               checkCompletion();
             };
           };
         } catch (error) {
-          console.error('🎯 NUDGE: ✗ IndexedDB initialization failed:', error);
+          console.error('🎯 NUDGE DB: ❌ IndexedDB initialization CATASTROPHIC FAILURE:', error);
           resolve(null);
         }
       });
     };
     
-    // Check for nudge URL from both storage sources
+    // Check for nudge URL from both storage sources with detailed logging
     const checkForNudgeUrl = async () => {
+      console.log('🎯 NUDGE CHECK: ================== CHECKING FOR NUDGE URL ==================');
       const wasClicked = sessionStorage.getItem('nudge_clicked') === 'true';
+      console.log('🎯 NUDGE CHECK: Was already clicked?', wasClicked);
       
       if (wasClicked) {
-        console.log('🎯 NUDGE: Already clicked, skipping checks');
+        console.log('🎯 NUDGE CHECK: ❌ Already clicked, skipping all checks');
         return;
       }
       
       // Check sessionStorage first (fast)
+      console.log('🎯 NUDGE CHECK: 🔍 Checking sessionStorage...');
       const storedNudgeUrl = sessionStorage.getItem('nudge_url');
+      console.log('🎯 NUDGE CHECK: SessionStorage result:', storedNudgeUrl);
+      
       if (storedNudgeUrl) {
-        console.log('🎯 NUDGE: Found URL in sessionStorage:', storedNudgeUrl);
+        console.log('🎯 NUDGE CHECK: ✅ Found URL in sessionStorage:', storedNudgeUrl);
         setNudgeUrl(storedNudgeUrl);
         return;
       }
       
       // Check IndexedDB with initialization (slower but persistent)
+      console.log('🎯 NUDGE CHECK: 🔍 Checking IndexedDB with initialization...');
       const indexedDBUrl = await initializeAndCheckIndexedDB();
+      console.log('🎯 NUDGE CHECK: IndexedDB result:', indexedDBUrl);
+      
       if (indexedDBUrl) {
-        console.log('🎯 NUDGE: ✓ Setting URL from IndexedDB:', indexedDBUrl);
+        console.log('🎯 NUDGE CHECK: ✅ Setting URL from IndexedDB:', indexedDBUrl);
         setNudgeUrl(indexedDBUrl);
         sessionStorage.setItem('nudge_url', indexedDBUrl);
       } else {
-        console.log('🎯 NUDGE: No URL found in any storage');
+        console.log('🎯 NUDGE CHECK: 😔 No URL found in any storage location');
       }
     };
     
+    console.log('🎯 NUDGE HANDLER: 🚀 Starting initial check...');
     checkForNudgeUrl();
 
     // Robust BroadcastChannel setup with retry
@@ -143,39 +166,67 @@ export const useNudgeNotificationHandler = () => {
     let retryCount = 0;
     
     const setupBroadcastChannel = () => {
+      console.log('🎯 NUDGE BC: ================== SETTING UP BROADCAST CHANNEL ==================');
       try {
         channel = new BroadcastChannel('nudge-notification');
-        console.log('🎯 NUDGE: BroadcastChannel created');
+        console.log('🎯 NUDGE BC: ✅ BroadcastChannel created successfully');
         
         channel.addEventListener('message', handleNudgeMessage);
         channel.addEventListener('messageerror', (error) => {
-          console.error('🎯 NUDGE: BroadcastChannel message error:', error);
+          console.error('🎯 NUDGE BC: ❌ BroadcastChannel message error:', error);
         });
         
+        console.log('🎯 NUDGE BC: ✅ Event listeners attached');
+        
       } catch (error) {
-        console.error('🎯 NUDGE: BroadcastChannel setup failed:', error);
+        console.error('🎯 NUDGE BC: ❌ BroadcastChannel setup failed:', error);
       }
     };
     
     const handleNudgeMessage = (event: MessageEvent) => {
-      console.log('🎯 NUDGE: Received BroadcastChannel message:', event.data);
+      console.log('🎯 NUDGE MESSAGE: ================== RECEIVED MESSAGE ==================');
+      console.log('🎯 NUDGE MESSAGE: Event data:', event.data);
+      console.log('🎯 NUDGE MESSAGE: Message type:', event.data?.type);
+      console.log('🎯 NUDGE MESSAGE: Message URL:', event.data?.url);
+      
       if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
-        console.log('🎯 NUDGE: Setting URL from message:', event.data.url);
+        console.log('🎯 NUDGE MESSAGE: ✅ Valid SHOW_NUDGE message received!');
+        console.log('🎯 NUDGE MESSAGE: Setting URL directly from message:', event.data.url);
         setNudgeUrl(event.data.url);
         sessionStorage.setItem('nudge_url', event.data.url);
         sessionStorage.removeItem('nudge_clicked');
+        
+        // Additional verification: check that the URL was actually set
+        setTimeout(() => {
+          console.log('🎯 NUDGE MESSAGE: 🔍 Post-message verification check...');
+          checkForNudgeUrl();
+        }, 100);
+      } else {
+        console.log('🎯 NUDGE MESSAGE: ❌ Invalid or irrelevant message');
       }
     };
 
     setupBroadcastChannel();
 
-    // Window message handling
+    // Window message handling with enhanced logging
     const handleWindowMessage = (event: MessageEvent) => {
+      console.log('🎯 NUDGE WINDOW: ================== WINDOW MESSAGE ==================');
+      console.log('🎯 NUDGE WINDOW: Event data:', event.data);
+      
       if (event.data.type === 'SHOW_NUDGE' && event.data.url) {
-        console.log('🎯 NUDGE: Setting URL from window message:', event.data.url);
+        console.log('🎯 NUDGE WINDOW: ✅ Valid window message received!');
+        console.log('🎯 NUDGE WINDOW: Setting URL from window message:', event.data.url);
         setNudgeUrl(event.data.url);
         sessionStorage.setItem('nudge_url', event.data.url);
         sessionStorage.removeItem('nudge_clicked');
+        
+        // Additional verification
+        setTimeout(() => {
+          console.log('🎯 NUDGE WINDOW: 🔍 Post-window-message verification...');
+          checkForNudgeUrl();
+        }, 100);
+      } else {
+        console.log('🎯 NUDGE WINDOW: ❌ Invalid or irrelevant window message');
       }
     };
     
