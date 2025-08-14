@@ -53,7 +53,7 @@ const handler = async (req: Request): Promise<Response> => {
               <!-- New Geometric Logo -->
               <img src="${logoUrl}"
                    alt="Croft Common Logo" 
-                   style="width: 60px; height: 60px; margin: 0 auto 20px; display: block; object-fit: contain;" />
+                   style="width: 90px; height: 90px; margin: 0 auto 20px; display: block; object-fit: contain;" />
               <h1 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">CROFT COMMON</h1>
               <div style="width: 40px; height: 3px; background: #ff1b6b; margin: 15px auto 0;"></div>
             </div>
@@ -110,7 +110,7 @@ const handler = async (req: Request): Promise<Response> => {
                 <!-- Small Logo -->
                 <img src="${logoUrl}" 
                      alt="Croft Common Logo" 
-                     style="width: 30px; height: 30px; margin: 0 auto; display: block; object-fit: contain;" />
+                     style="width: 45px; height: 45px; margin: 0 auto; display: block; object-fit: contain;" />
               </div>
               <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #ff1b6b; text-decoration: none;">Unsubscribe here</a></p>
               <p style="color: #666666; font-family: 'Work Sans', Arial, sans-serif; font-size: 12px; line-height: 1.4; margin: 0;">Croft Common, Stokes Croft, Bristol</p>
