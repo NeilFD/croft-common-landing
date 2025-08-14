@@ -12,9 +12,15 @@ const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "
   const navigate = useNavigate();
   const { nudgeUrl, showNudgeButton, markNudgeClicked } = useNudgeNotification();
 
-  console.log('🎯 NUDGE BUTTON: Render check -', { showNudgeButton, nudgeUrl });
+  console.log('🎯 NUDGE BUTTON: Render check -', { 
+    showNudgeButton, 
+    nudgeUrl, 
+    nudgeUrlType: typeof nudgeUrl,
+    nudgeUrlValue: JSON.stringify(nudgeUrl) 
+  });
 
   if (!showNudgeButton || !nudgeUrl) {
+    console.log('🎯 NUDGE BUTTON: NOT SHOWING - showNudgeButton:', showNudgeButton, 'nudgeUrl:', nudgeUrl);
     return null;
   }
 

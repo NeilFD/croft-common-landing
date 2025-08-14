@@ -189,6 +189,12 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
   };
 
   const showNudgeButton = nudgeUrl !== null;
+  console.log('🎯 NUDGE CONTEXT: showNudgeButton calculation -', { 
+    nudgeUrl, 
+    nudgeUrlType: typeof nudgeUrl, 
+    showNudgeButton,
+    nudgeUrlValue: JSON.stringify(nudgeUrl)
+  });
 
   const value = {
     nudgeUrl,
