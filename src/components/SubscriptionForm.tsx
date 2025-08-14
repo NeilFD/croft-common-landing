@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { ChevronDown } from 'lucide-react';
 
 interface SubscriptionFormProps {
   variant?: 'footer' | 'homepage';
@@ -16,32 +17,34 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [birthday, setBirthday] = useState('');
-  const [dietaryPreferences, setDietaryPreferences] = useState<string[]>([]);
+  const [birthdayDay, setBirthdayDay] = useState('');
+  const [birthdayMonth, setBirthdayMonth] = useState('');
   const [interests, setInterests] = useState<string[]>([]);
   const [consent, setConsent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const { toast } = useToast();
 
-  const dietaryOptions = [
-    'Vegetarian', 'Vegan', 'Gluten-free', 'Dairy-free', 
-    'Nut-free', 'Halal', 'Kosher', 'Keto', 'Pescatarian'
-  ];
-
   const interestOptions = [
-    'Beer', 'Cocktails', 'Wine', 'Coffee', 'Live Music', 
-    'Comedy', 'Cinema', 'Cooking', 'Art', 'Networking',
-    'Community Events', 'Private Dining'
+    'Private Events & Bookings',
+    'Corporate Hospitality',
+    'Wine Tastings & Masterclasses',
+    'Cocktail Masterclasses',
+    'Beer & Brewing Events',
+    'Cooking Classes',
+    'Art & Creative Workshops',
+    'Networking Events',
+    'Live Music & Entertainment',
+    'Special Occasions & Celebrations',
+    'Wedding & Party Catering',
+    'Business Meetings & Workspace'
   ];
 
-  const toggleDietaryPreference = (preference: string) => {
-    setDietaryPreferences(prev => 
-      prev.includes(preference) 
-        ? prev.filter(p => p !== preference)
-        : [...prev, preference]
-    );
-  };
+  const dayOptions = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+  const monthOptions = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
 
   const toggleInterest = (interest: string) => {
     setInterests(prev => 
@@ -63,16 +66,26 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
       return;
     }
 
+    if (showOptionalFields && interests.length === 0) {
+      toast({
+        title: "Interests required",
+        description: "Please select at least one interest to help us personalise your experience.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     
     try {
+      const birthday = birthdayDay && birthdayMonth ? `${birthdayDay}/${birthdayMonth}` : null;
+      
       const profileData = {
         email, 
         name, 
         consent,
         phone: phone || null,
-        birthday: birthday || null,
-        dietaryPreferences: dietaryPreferences.length > 0 ? dietaryPreferences : null,
+        birthday,
         interests: interests.length > 0 ? interests : null
       };
 
@@ -91,8 +104,8 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
       setEmail('');
       setName('');
       setPhone('');
-      setBirthday('');
-      setDietaryPreferences([]);
+      setBirthdayDay('');
+      setBirthdayMonth('');
       setInterests([]);
       setConsent(false);
       setShowOptionalFields(false);
@@ -147,83 +160,127 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
         <div className="text-center">
           <Button
             type="button"
-            variant="ghost"
-            size="sm"
+            variant="outline"
+            size="lg"
             onClick={() => setShowOptionalFields(!showOptionalFields)}
-            className={`font-industrial text-sm ${variant === 'footer' ? 'text-background/70 hover:text-background' : 'text-foreground/70 hover:text-foreground'}`}
+            className={`font-brutalist text-sm uppercase tracking-wider border-2 transition-all duration-300 ${
+              variant === 'footer' 
+                ? 'border-background text-background hover:bg-background hover:text-void' 
+                : 'border-foreground text-foreground hover:bg-foreground hover:text-background'
+            } ${showOptionalFields ? 'animate-pulse' : ''}`}
           >
-            {showOptionalFields ? '− Less options' : '+ Help us personalize your experience'}
+            <ChevronDown className={`w-4 h-4 mr-2 transition-transform duration-300 ${showOptionalFields ? 'rotate-180' : ''}`} />
+            {showOptionalFields ? 'FEWER OPTIONS' : 'PERSONALISE YOUR EXPERIENCE'}
           </Button>
         </div>
 
-        {/* Optional fields */}
+        {/* Mandatory preferences */}
         {showOptionalFields && (
-          <div className="space-y-4 p-4 rounded-lg bg-muted/20">
-            <div className="grid gap-3">
+          <div className={`space-y-6 p-6 border-2 ${
+            variant === 'footer' 
+              ? 'border-background bg-void/20' 
+              : 'border-foreground bg-surface'
+          }`}>
+            <div className="grid gap-4">
               <Input
                 type="tel"
                 placeholder="Phone number (optional)"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="font-industrial"
+                className={`font-industrial border-2 ${
+                  variant === 'footer' 
+                    ? 'border-background/50 bg-transparent text-background placeholder:text-background/50' 
+                    : 'border-foreground/50'
+                }`}
               />
-              <Input
-                type="date"
-                placeholder="Birthday (optional)"
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className="font-industrial"
-              />
-            </div>
-
-            {/* Dietary preferences */}
-            <div>
-              <Label className={`text-sm font-industrial ${variant === 'footer' ? 'text-background/90' : 'text-foreground/90'}`}>
-                Dietary Preferences (optional)
-              </Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {dietaryOptions.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`dietary-${option}`}
-                      checked={dietaryPreferences.includes(option)}
-                      onCheckedChange={() => toggleDietaryPreference(option)}
-                      className={variant === 'footer' ? 'border-background data-[state=checked]:bg-background data-[state=checked]:text-void' : ''}
-                    />
-                    <Label 
-                      htmlFor={`dietary-${option}`} 
-                      className={`text-xs font-industrial ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}
-                    >
-                      {option}
-                    </Label>
-                  </div>
-                ))}
+              
+              {/* Birthday (day & month) */}
+              <div>
+                <Label className={`text-sm font-brutalist uppercase tracking-wide mb-3 block ${
+                  variant === 'footer' ? 'text-background' : 'text-foreground'
+                }`}>
+                  Birthday (day & month)
+                </Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <Select value={birthdayDay} onValueChange={setBirthdayDay}>
+                    <SelectTrigger className={`font-industrial border-2 ${
+                      variant === 'footer' 
+                        ? 'border-background/50 bg-transparent text-background' 
+                        : 'border-foreground/50'
+                    }`}>
+                      <SelectValue placeholder="Day" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {dayOptions.map((day) => (
+                        <SelectItem key={day} value={day} className="font-industrial">
+                          {day}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  <Select value={birthdayMonth} onValueChange={setBirthdayMonth}>
+                    <SelectTrigger className={`font-industrial border-2 ${
+                      variant === 'footer' 
+                        ? 'border-background/50 bg-transparent text-background' 
+                        : 'border-foreground/50'
+                    }`}>
+                      <SelectValue placeholder="Month" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthOptions.map((month) => (
+                        <SelectItem key={month} value={month} className="font-industrial">
+                          {month}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            {/* Interests */}
+            {/* Interests - Now mandatory and multiple select */}
             <div>
-              <Label className={`text-sm font-industrial ${variant === 'footer' ? 'text-background/90' : 'text-foreground/90'}`}>
-                Interests (optional)
+              <Label className={`text-sm font-brutalist uppercase tracking-wide mb-3 block ${
+                variant === 'footer' ? 'text-background' : 'text-foreground'
+              }`}>
+                What interests you? <span className="text-accent-pink">*</span>
               </Label>
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              <div className="space-y-2">
                 {interestOptions.map((option) => (
-                  <div key={option} className="flex items-center space-x-2">
+                  <div key={option} className={`flex items-center space-x-3 p-2 border ${
+                    variant === 'footer' 
+                      ? 'border-background/30 hover:border-background/60' 
+                      : 'border-foreground/30 hover:border-foreground/60'
+                  } transition-colors`}>
                     <Checkbox
                       id={`interest-${option}`}
                       checked={interests.includes(option)}
                       onCheckedChange={() => toggleInterest(option)}
-                      className={variant === 'footer' ? 'border-background data-[state=checked]:bg-background data-[state=checked]:text-void' : ''}
+                      className={`border-2 ${
+                        variant === 'footer' 
+                          ? 'border-background data-[state=checked]:bg-background data-[state=checked]:text-void' 
+                          : 'border-foreground data-[state=checked]:bg-foreground data-[state=checked]:text-background'
+                      }`}
                     />
                     <Label 
                       htmlFor={`interest-${option}`} 
-                      className={`text-xs font-industrial ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}
+                      className={`text-sm font-industrial cursor-pointer flex-1 ${
+                        variant === 'footer' ? 'text-background/90' : 'text-foreground/90'
+                      }`}
                     >
                       {option}
                     </Label>
                   </div>
                 ))}
               </div>
+              {interests.length === 0 && (
+                <p className={`text-xs font-industrial mt-2 ${
+                  variant === 'footer' ? 'text-background/50' : 'text-foreground/50'
+                }`}>
+                  Please select at least one area of interest.
+                </p>
+              )}
             </div>
           </div>
         )}
