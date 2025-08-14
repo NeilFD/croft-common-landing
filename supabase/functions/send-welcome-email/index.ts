@@ -27,9 +27,7 @@ const handler = async (req: Request): Promise<Response> => {
     const displayName = name || "Friend";
     const baseUrl = "http://croftcommontest.com";
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${subscriberId}`;
-    
-    // Base64 encoded logo (Croft Common geometric logo)
-    const logoBase64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATwAAAE8CAYAAAB5Pm2lAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA8klEQVR4nO3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOA1v9QAATXN7E0AAAAASUVORK5CYII=";
+    const logoUrl = `${baseUrl}/brand/logo.png`;
     
     const emailResponse = await resend.emails.send({
       from: "Croft Common <hello@thehive-hospitality.com>",
@@ -53,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
             <!-- Header with Logo -->
             <div style="background: #ffffff; padding: 40px 20px; text-align: center; border-bottom: 4px solid #ff1b6b;">
               <!-- New Geometric Logo -->
-              <img src="${logoBase64}" 
+              <img src="${logoUrl}"
                    alt="Croft Common Logo" 
                    style="width: 60px; height: 60px; margin: 0 auto 20px; display: block; object-fit: contain;" />
               <h1 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">CROFT COMMON</h1>
@@ -110,7 +108,7 @@ const handler = async (req: Request): Promise<Response> => {
             <div style="background: #ffffff; padding: 30px; text-align: center; border-top: 2px solid #ff1b6b;">
               <div style="margin-bottom: 20px;">
                 <!-- Small Logo -->
-                <img src="${logoBase64}" 
+                <img src="${logoUrl}" 
                      alt="Croft Common Logo" 
                      style="width: 30px; height: 30px; margin: 0 auto; display: block; object-fit: contain;" />
               </div>
