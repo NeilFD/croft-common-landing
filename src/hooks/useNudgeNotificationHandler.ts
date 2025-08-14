@@ -288,20 +288,31 @@ export const useNudgeNotificationHandler = () => {
       }
     };
     
+    console.log('🎯 NUDGE WINDOW: 📡 Adding window message listener');
     window.addEventListener('message', handleWindowMessage);
+    console.log('🎯 NUDGE WINDOW: ✅ Window message listener added');
 
     // Send app ready message to service worker
     if ('serviceWorker' in navigator) {
+      console.log('🎯 NUDGE: 📡 Checking service worker registration...');
       navigator.serviceWorker.ready.then((registration) => {
+        console.log('🎯 NUDGE: ✅ Service worker is ready');
         if (registration.active) {
+          console.log('🎯 NUDGE: 📤 Sending APP_READY to service worker');
           registration.active.postMessage({ 
             type: 'APP_READY',
             timestamp: Date.now(),
             url: window.location.href
           });
-          console.log('🎯 NUDGE: Sent APP_READY to service worker');
+          console.log('🎯 NUDGE: ✅ APP_READY message sent');
+        } else {
+          console.log('🎯 NUDGE: ❌ No active service worker found');
         }
+      }).catch(error => {
+        console.error('🎯 NUDGE: ❌ Service worker ready failed:', error);
       });
+    } else {
+      console.log('🎯 NUDGE: ❌ Service worker not supported');
     }
 
     // Enhanced visibility change handler with IndexedDB polling

@@ -8,6 +8,8 @@ import { TransitionProvider } from "@/contexts/TransitionContext";
 import { useNotificationHandler } from "@/hooks/useNotificationHandler";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
 import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
+import NudgeFloatingButton from './components/NudgeFloatingButton';
+import { NudgeDebugPanel } from './components/NudgeDebugPanel';
 
 import Index from "./pages/Index";
 import Cafe from "./pages/Cafe";
@@ -109,6 +111,8 @@ const App = () => (
           <LowercasePathGuard />
           <RouteImagePreloader />
           <BannerOverlay />
+          <NudgeDebugPanel />
+          <NudgeFloatingButton />
           
           <TransitionProvider>
             <Routes>
