@@ -199,7 +199,10 @@ const handler = async (req: Request): Promise<Response> => {
 
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
-        .upsert(profileData);
+        .upsert(profileData, { 
+          onConflict: 'user_id',
+          ignoreDuplicates: false 
+        });
 
       if (profileError) {
         console.error("Error creating profile:", profileError);
