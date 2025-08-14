@@ -185,8 +185,19 @@ self.addEventListener('notificationclick', (event) => {
       clients: allClients.map(c => ({ url: c.url, visibility: c.visibilityState, focused: c.focused }))
     });
 
-    // Check for app clients (focused or visible)
-    const appClients = allClients.filter(client => client.url.startsWith(appOrigin));
+    // Check for app clients more broadly (any origin match for cross-domain issues)
+    const currentOrigin = new URL(self.location.origin);
+    const appClients = allClients.filter(client => {
+      try {
+        const clientUrl = new URL(client.url);
+        // Match either exact origin or common domain patterns
+        return clientUrl.origin === appOrigin || 
+               clientUrl.hostname.includes('croftcommontest.com') ||
+               clientUrl.hostname.includes('lovableproject.com');
+      } catch {
+        return false;
+      }
+    });
     const visibleAppClients = appClients.filter(client => 
       client.visibilityState === 'visible' || client.focused
     );

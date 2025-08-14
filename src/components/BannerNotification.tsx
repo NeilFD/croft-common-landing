@@ -21,7 +21,7 @@ interface BannerNotificationProps {
 export const BannerNotification: React.FC<BannerNotificationProps> = ({
   data,
   onDismiss,
-  autoHideDelay = 8000
+  autoHideDelay = 0
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
