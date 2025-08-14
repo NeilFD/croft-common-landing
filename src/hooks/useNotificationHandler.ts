@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useBannerNotification } from '@/contexts/BannerNotificationContext';
+import { toast } from '@/hooks/use-toast';
 
 /**
  * Universal deep link handler for PWA notifications
@@ -60,6 +61,21 @@ export const useNotificationHandler = () => {
         data: event.data
       });
       
+      // Show toast for any message received
+      toast({
+        title: "🔔 Message Received",
+        description: `Type: ${event.data?.type || 'unknown'}`
+      });
+      
+      // Handle service worker debug toasts
+      if (event.data?.type === 'SHOW_TOAST') {
+        toast({
+          title: event.data.data.title,
+          description: event.data.data.description
+        });
+        return;
+      }
+      
       // Handle all banner-related message types
       if (event.data?.type === 'SHOW_BANNER' || 
           event.data?.type === 'CHECK_BANNER_STORAGE' || 
@@ -69,6 +85,11 @@ export const useNotificationHandler = () => {
         console.log('🔔 App: Processing banner message:', {
           messageType: event.data.type,
           bannerData
+        });
+        
+        toast({
+          title: "🔔 Banner Triggered",
+          description: `Title: ${bannerData.title || 'No title'}`
         });
         
         showBanner({
@@ -139,6 +160,10 @@ export const useNotificationHandler = () => {
               isStandalone: window.matchMedia('(display-mode: standalone)').matches
             });
             console.log('🔔 App: ✅ Ready signal sent to service worker');
+            toast({
+              title: "🔔 App Ready",
+              description: "Sent APP_READY to SW"
+            });
           }
           
           // Set up message listener specifically for the active service worker

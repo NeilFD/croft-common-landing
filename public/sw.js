@@ -230,6 +230,21 @@ self.addEventListener('notificationclick', (event) => {
         console.log('🔔 SW: Sending banner to ALL app clients');
         let messageSent = false;
         
+        // First send debug toast to all clients
+        for (const client of appClients) {
+          try {
+            client.postMessage({
+              type: 'SHOW_TOAST',
+              data: {
+                title: '🔔 SW Debug',
+                description: `Found ${appClients.length} clients, sending banner`
+              }
+            });
+          } catch (e) {
+            console.warn('🔔 SW: Failed to send debug toast:', e);
+          }
+        }
+        
         for (const client of appClients) {
           try {
             console.log('🔔 SW: Attempting to send banner to client:', {
@@ -241,8 +256,39 @@ self.addEventListener('notificationclick', (event) => {
             client.postMessage(bannerData);
             messageSent = true;
             console.log('🔔 SW: ✅ Successfully sent message to client:', client.url);
+            
+            // Send success confirmation toast
+            setTimeout(() => {
+              try {
+                client.postMessage({
+                  type: 'SHOW_TOAST',
+                  data: {
+                    title: '🔔 SW Success',
+                    description: `Banner sent to ${client.url.split('/').pop() || 'client'}`
+                  }
+                });
+              } catch (e) {
+                console.warn('🔔 SW: Failed to send success toast:', e);
+              }
+            }, 100);
+            
           } catch (clientError) {
             console.warn('🔔 SW: ❌ Failed to send message to client:', client.url, clientError);
+            
+            // Send error toast to any working clients
+            appClients.forEach(c => {
+              if (c !== client) {
+                try {
+                  c.postMessage({
+                    type: 'SHOW_TOAST',
+                    data: {
+                      title: '🔔 SW Error',
+                      description: `Failed to send to ${client.url.split('/').pop()}`
+                    }
+                  });
+                } catch (e) {}
+              }
+            });
           }
         }
         

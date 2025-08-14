@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 interface BannerNotificationData {
   title: string;
@@ -35,10 +36,18 @@ export const BannerNotificationProvider: React.FC<BannerNotificationProviderProp
 
   const showBanner = (data: BannerNotificationData) => {
     console.log('🔔 Banner Context: Setting banner data:', data);
+    toast({
+      title: "🔔 Banner Context",
+      description: `Showing: ${data.title}`
+    });
     setCurrentBanner(data);
   };
 
   const dismissBanner = () => {
+    toast({
+      title: "🔔 Banner Dismissed",
+      description: "Banner removed"
+    });
     setCurrentBanner(null);
   };
 
