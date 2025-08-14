@@ -33,6 +33,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
     'Beer & Brewing Events',
     'Cooking Classes',
     'Art & Creative Workshops',
+    'Film & Cinema',
     'Networking Events',
     'Live Music & Entertainment',
     'Special Occasions & Celebrations',
