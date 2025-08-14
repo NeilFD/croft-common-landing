@@ -124,9 +124,6 @@ export const useNotificationHandler = () => {
 
     // Method 4: Continuous polling for banner notifications (NO visibility restriction)
     const aggressiveBannerPoll = () => {
-      // REMOVED visibility check - poll regardless of app state
-      // REMOVED polling toast to reduce noise
-      
       // Check URL params
       const currentParams = new URLSearchParams(window.location.search);
       if (currentParams.get('ntk')) {
@@ -179,7 +176,7 @@ export const useNotificationHandler = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleWindowFocus);
     
-    const pollInterval = setInterval(aggressiveBannerPoll, 1000);
+    // Polling removed to stop frequent toasts
 
     // Enhanced service worker registration with retry
     if ('serviceWorker' in navigator) {
@@ -224,7 +221,7 @@ export const useNotificationHandler = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleWindowFocus);
       broadcastChannel?.close();
-      clearInterval(pollInterval);
+      // No interval to clear
     };
   }, [showBanner]);
 
