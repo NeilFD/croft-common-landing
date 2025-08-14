@@ -280,7 +280,7 @@ self.addEventListener('notificationclick', (event) => {
           type: 'SHOW_BANNER',
           data: {
             title: event?.notification?.title || 'Notification',
-            body: notificationData.banner_message || event?.notification?.body || 'Notification content',
+            body: event?.notification?.body || 'Notification content',
             bannerMessage: notificationData.banner_message,
             url: targetUrl,
             icon: notificationData.icon || event?.notification?.icon,
