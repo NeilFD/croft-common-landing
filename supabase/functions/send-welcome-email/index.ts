@@ -29,9 +29,10 @@ const handler = async (req: Request): Promise<Response> => {
     const requestOrigin = originHeader || new URL(req.url).origin;
     const siteBase = Deno.env.get('SITE_BASE_URL') || requestOrigin;
     const assetsBase = Deno.env.get('EMAIL_ASSETS_BASE_URL') || siteBase;
-    const logoPath = "/lovable-uploads/63419cda-09bf-4b7a-a6d0-d276c42efc8f.png";
+    const logoPath = "/brand/logo.png";
     const logoUrl = `${assetsBase.replace(/\/$/, "")}${logoPath}`;
-    const unsubscribeUrl = `${siteBase.replace(/\/$/, "")}/unsubscribe?token=${subscriberId}`;
+    const baseUrl = "http://croftcommontest.com";
+    const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${subscriberId}`;
     
     const emailResponse = await resend.emails.send({
       from: "Croft Common <hello@thehive-hospitality.com>",
@@ -78,7 +79,7 @@ const handler = async (req: Request): Promise<Response> => {
               <!-- Call to Action Box -->
               <div style="background: #ffffff; padding: 35px; margin: 35px 0; border: 2px solid #ff1b6b;">
                 <h3 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; margin: 0 0 20px 0; text-transform: uppercase; text-align: center;">To unlock The Common Room:</h3>
-                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="${siteBase.replace(/\/$/, '')}/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">${siteBase.replace(/\/$/, '')}/common-room</a></p>
+                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="${baseUrl}/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">${baseUrl}/common-room</a></p>
                 <div style="background: #f8f8f8; border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: left;">
                   <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Draw a 7.</p>
                   <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Boldly. A single line.</p>
