@@ -246,22 +246,18 @@ export const useNudgeNotificationHandler = () => {
       }
     };
 
-    // STEP 3: Send APP_READY signal after a short delay to ensure handlers are ready
-    setTimeout(() => {
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        console.log('🎯 NUDGE HANDLER: 📡 Sending APP_READY signal to service worker');
-        navigator.serviceWorker.controller.postMessage({
-          type: 'APP_READY',
-          timestamp: Date.now(),
-          url: window.location.href
-        });
-      }
-    }, 1000);
+    // Set up BroadcastChannel immediately for open PWAs
+    setupBroadcastChannel();
     
-    // STEP 4: Set up communication channels after initialization
-    setTimeout(() => {
-      setupBroadcastChannel();
-    }, 1500);
+    // Send APP_READY signal immediately
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      console.log('🎯 NUDGE HANDLER: 📡 Sending APP_READY signal to service worker');
+      navigator.serviceWorker.controller.postMessage({
+        type: 'APP_READY',
+        timestamp: Date.now(),
+        url: window.location.href
+      });
+    }
 
     // Window message handling with enhanced logging
     const handleWindowMessage = (event: MessageEvent) => {

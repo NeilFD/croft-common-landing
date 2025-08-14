@@ -173,9 +173,9 @@ self.addEventListener('notificationclick', event => {
       // Store URL first
       await storeNudgeUrl(url);
       
-      // Send immediately after storage
-      console.log('🔔 SW: 📡 Sending NUDGE message immediately');
-      sendNudgeToClients(url, 1);
+      // Send with smart delivery system
+      console.log('🔔 SW: 📡 Starting smart NUDGE delivery');
+      attemptNudgeDelivery(url);
     }
   })());
 });
@@ -265,54 +265,69 @@ async function storeNudgeUrl(url) {
   }
 }
 
-// Exponential backoff delivery system
-function attemptNudgeDelivery(url, attempt = 1) {
-  const maxAttempts = 4;
-  const delays = [1000, 3000, 6000, 10000]; // 1s, 3s, 6s, 10s
+// Smart delivery system that buffers for open PWAs
+async function attemptNudgeDelivery(url) {
+  console.log('🔔 SW: 📡 Starting smart NUDGE delivery for URL:', url);
   
-  console.log(`🔔 SW: 📡 NUDGE delivery attempt ${attempt}/${maxAttempts} for URL:`, url);
+  // Check if any clients are open
+  const clients = await self.clients.matchAll({ includeUncontrolled: true, type: 'window' });
+  const hasOpenClients = clients.length > 0;
   
-  sendNudgeToClients(url, attempt);
-  
-  if (attempt < maxAttempts) {
-    const nextDelay = delays[attempt - 1] || 10000;
-    console.log(`🔔 SW: ⏰ Scheduling next attempt in ${nextDelay}ms`);
-    
+  if (hasOpenClients) {
+    console.log(`🔔 SW: ⏰ Open clients detected (${clients.length}), adding 500ms buffer for listener setup`);
     setTimeout(() => {
-      attemptNudgeDelivery(url, attempt + 1);
-    }, nextDelay);
+      sendNudgeToClients(url, hasOpenClients);
+    }, 500);
   } else {
-    console.log('🔔 SW: ⚠️ All NUDGE delivery attempts completed');
+    console.log('🔔 SW: ⚡ No open clients, sending immediately');
+    sendNudgeToClients(url, hasOpenClients);
   }
 }
 
-function sendNudgeToClients(url, attempt = 1) {
-  console.log(`🔔 SW: 📡 Sending nudge to clients (attempt ${attempt}):`, url);
+function sendNudgeToClients(url, hasOpenClients = false) {
+  console.log(`🔔 SW: 📡 Sending nudge to clients (open clients: ${hasOpenClients}):`, url);
   
   const message = {
     type: 'SHOW_NUDGE',
     url: url,
     timestamp: Date.now(),
-    attempt: attempt,
-    delivery_method: 'exponential_backoff'
+    hasOpenClients: hasOpenClients,
+    delivery_method: 'smart_buffered'
   };
+  
+  let broadcastSent = false;
   
   // Strategy 1: BroadcastChannel (primary for same-origin)
   try {
     const channel = new BroadcastChannel('nudge-notification');
     channel.postMessage(message);
-    console.log(`🔔 SW: ✅ BroadcastChannel message sent (attempt ${attempt})`);
+    console.log('🔔 SW: ✅ BroadcastChannel NUDGE message sent');
     channel.close();
+    broadcastSent = true;
   } catch (error) {
-    console.error(`🔔 SW: ❌ BroadcastChannel failed (attempt ${attempt}):`, error);
+    console.error('🔔 SW: ❌ BroadcastChannel failed:', error);
+  }
+  
+  // Add retry for BroadcastChannel if no confirmation received
+  if (broadcastSent && hasOpenClients) {
+    setTimeout(() => {
+      try {
+        const retryChannel = new BroadcastChannel('nudge-notification');
+        retryChannel.postMessage({...message, retry: true});
+        console.log('🔔 SW: 🔄 BroadcastChannel retry sent');
+        retryChannel.close();
+      } catch (error) {
+        console.error('🔔 SW: ❌ BroadcastChannel retry failed:', error);
+      }
+    }, 2000);
   }
   
   // Strategy 2: Direct client messaging (for active clients)
   self.clients.matchAll({ includeUncontrolled: true, type: 'window' }).then(clients => {
-    console.log(`🔔 SW: 👥 Found ${clients.length} clients for direct messaging (attempt ${attempt})`);
+    console.log(`🔔 SW: 👥 Found ${clients.length} clients for direct NUDGE messaging`);
     
     if (clients.length === 0) {
-      console.log(`🔔 SW: ℹ️ No active clients found (attempt ${attempt})`);
+      console.log('🔔 SW: ℹ️ No active clients found for NUDGE');
       return;
     }
     
@@ -323,13 +338,13 @@ function sendNudgeToClients(url, attempt = 1) {
           client_index: index,
           client_id: client.id.substring(0, 8)
         });
-        console.log(`🔔 SW: ✅ Message sent to client ${index} (attempt ${attempt})`);
+        console.log(`🔔 SW: ✅ NUDGE message sent to client ${index}`);
       } catch (error) {
-        console.error(`🔔 SW: ❌ Failed to send to client ${index} (attempt ${attempt}):`, error);
+        console.error(`🔔 SW: ❌ Failed to send NUDGE to client ${index}:`, error);
       }
     });
   }).catch(error => {
-    console.error(`🔔 SW: ❌ Failed to get clients (attempt ${attempt}):`, error);
+    console.error('🔔 SW: ❌ Failed to get clients for NUDGE:', error);
   });
 }
 
