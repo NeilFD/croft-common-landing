@@ -198,14 +198,14 @@ self.addEventListener('notificationclick', (event) => {
         return false;
       }
     });
-    const visibleAppClients = appClients.filter(client => 
-      client.visibilityState === 'visible' || client.focused
-    );
+    
+    // REMOVE visibility filtering - send to ALL app clients regardless of state
+    const visibleAppClients = appClients; // All clients are considered targetable
 
     console.log('🔔 SW: App open status:', {
       appClients: appClients.length,
-      visibleAppClients: visibleAppClients.length,
-      shouldShowBanner: visibleAppClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')
+      allClientStates: appClients.map(c => ({ url: c.url, visible: c.visibilityState, focused: c.focused })),
+      shouldShowBanner: appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')
     });
 
     if (appClients.length > 0 && (displayMode === 'banner' || displayMode === 'both')) {
@@ -346,11 +346,11 @@ self.addEventListener('notificationclick', (event) => {
           console.warn('🔔 SW: localStorage fallback failed:', storageError);
         }
         
-        if (messageSent || visibleAppClients.length > 0) {
-          // Focus the most recent visible client if available
+        if (messageSent || appClients.length > 0) {
+          // Focus the first available client
           try {
-            if (visibleAppClients.length > 0) {
-              await visibleAppClients[0].focus();
+            if (appClients.length > 0) {
+              await appClients[0].focus();
             }
           } catch (focusError) {
             console.warn('🔔 SW: Failed to focus client:', focusError);

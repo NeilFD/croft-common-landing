@@ -122,25 +122,66 @@ export const useNotificationHandler = () => {
       console.warn('🔔 App: ❌ BroadcastChannel not supported:', error);
     }
 
-    // Method 4: Aggressive polling for banner notifications (every 1 second when visible)
+    // Method 4: Continuous polling for banner notifications (NO visibility restriction)
     const aggressiveBannerPoll = () => {
+      // REMOVED visibility check - poll regardless of app state
+      toast({
+        title: "🔔 Polling Active",
+        description: `Visibility: ${document.visibilityState}`
+      });
+      
+      // Check URL params
+      const currentParams = new URLSearchParams(window.location.search);
+      if (currentParams.get('ntk')) {
+        console.log('🔔 App: Polling detected notification token in URL');
+      }
+      
+      // Check for any pending banner messages from service worker
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'CHECK_BANNER_STATUS',
+          timestamp: Date.now()
+        });
+      }
+    };
+
+    // Method 5: Visibility change listener for immediate message checking
+    const handleVisibilityChange = () => {
+      toast({
+        title: "🔔 Visibility Changed",
+        description: `New state: ${document.visibilityState}`
+      });
+      
       if (document.visibilityState === 'visible') {
-        // Check URL params
-        const currentParams = new URLSearchParams(window.location.search);
-        if (currentParams.get('ntk')) {
-          console.log('🔔 App: Polling detected notification token in URL');
-        }
+        // Immediately check for pending messages when app becomes visible
+        aggressiveBannerPoll();
         
-        // Check for any pending banner messages from service worker
+        // Send focus signal to service worker
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
           navigator.serviceWorker.controller.postMessage({
-            type: 'CHECK_BANNER_STATUS',
-            timestamp: Date.now()
+            type: 'APP_FOCUSED',
+            timestamp: Date.now(),
+            url: window.location.href
           });
         }
       }
     };
 
+    // Method 6: Window focus listener as backup
+    const handleWindowFocus = () => {
+      toast({
+        title: "🔔 Window Focused",
+        description: "Checking for pending messages"
+      });
+      
+      // Force immediate message check on focus
+      aggressiveBannerPoll();
+    };
+
+    // Register all event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleWindowFocus);
+    
     const pollInterval = setInterval(aggressiveBannerPoll, 1000);
 
     // Enhanced service worker registration with retry
@@ -183,6 +224,8 @@ export const useNotificationHandler = () => {
     return () => {
       navigator.serviceWorker?.removeEventListener('message', handleMessage);
       window.removeEventListener('message', handleMessage);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleWindowFocus);
       broadcastChannel?.close();
       clearInterval(pollInterval);
     };
