@@ -55,12 +55,6 @@ export const BannerNotification: React.FC<BannerNotificationProps> = ({
 
   const displayMessage = data.bannerMessage || data.body;
 
-  // 🔍 DEBUG: Show what banner component received
-  console.log('🔔 Banner Component DEBUG:', {
-    bannerMessage: data.bannerMessage,
-    body: data.body,
-    displayMessage
-  });
 
   return (
     <div 

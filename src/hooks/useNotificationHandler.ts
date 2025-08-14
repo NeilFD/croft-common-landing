@@ -78,7 +78,7 @@ export const useNotificationHandler = () => {
         
         showBanner({
           title: bannerData.title || 'Notification',
-          body: bannerData.bannerMessage || bannerData.body || '',
+          body: bannerData.body || '',
           bannerMessage: bannerData.bannerMessage,
           url: bannerData.url,
           icon: bannerData.icon,
