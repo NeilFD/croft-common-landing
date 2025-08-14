@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface NudgeNotificationContextType {
   nudgeUrl: string | null;
@@ -27,7 +26,6 @@ interface NudgeNotificationProviderProps {
 export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps> = ({ children }) => {
   const [nudgeUrl, setNudgeUrlState] = useState<string | null>(null);
   const [nudgeClicked, setNudgeClicked] = useState<boolean>(false);
-  const location = useLocation();
 
   // Initialize from storage on mount and set up real-time sync
   React.useEffect(() => {
@@ -97,24 +95,6 @@ export const NudgeNotificationProvider: React.FC<NudgeNotificationProviderProps>
       clearInterval(syncInterval);
     };
   }, [nudgeUrl]);
-
-  // Clear nudge when navigating away from the target URL
-  useEffect(() => {
-    if (nudgeUrl && !nudgeClicked) {
-      const currentPath = location.pathname;
-      console.log('🎯 NUDGE CONTEXT: Navigation check - Current path:', currentPath, 'Nudge URL:', nudgeUrl);
-      
-      // Check if current path matches the nudge URL
-      const urlMatches = nudgeUrl.startsWith('http') ? 
-        false : // External URLs never match current path
-        nudgeUrl === currentPath || nudgeUrl.startsWith(currentPath + '/');
-      
-      if (!urlMatches) {
-        console.log('🎯 NUDGE CONTEXT: Path doesn\'t match nudge URL, clearing nudge');
-        clearNudge();
-      }
-    }
-  }, [location.pathname, nudgeUrl, nudgeClicked]);
 
   const setNudgeUrl = (url: string | null) => {
     console.log('🎯 NUDGE CONTEXT: Setting URL:', url);
