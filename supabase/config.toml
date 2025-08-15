@@ -142,3 +142,9 @@ verify_jwt = false
 
 [functions.resolve-notification-personalization]
 verify_jwt = false
+
+[functions.send-welcome-email]
+verify_jwt = false
+
+[functions.send-welcome-emails-batch]
+verify_jwt = false
