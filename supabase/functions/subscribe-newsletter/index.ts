@@ -210,38 +210,37 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send magic link for authentication (only for new users)
+    // Send email verification for new users (replaces manual magic link generation)
     if (isNewUser) {
       const redirectUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app') || 'https://preview--croft-common-landing.lovable.app'}/`;
       
-      const { error: magicLinkError } = await supabaseAdmin.auth.admin.generateLink({
-        type: 'magiclink',
+      const { error: emailError } = await supabaseAdmin.auth.signInWithOtp({
         email,
         options: {
-          redirectTo: redirectUrl
+          emailRedirectTo: redirectUrl,
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            full_name: name,
+          }
         }
       });
 
-      if (magicLinkError) {
-        console.error("Error generating magic link:", magicLinkError);
+      if (emailError) {
+        console.error("Error sending verification email:", emailError);
+        return new Response(
+          JSON.stringify({ error: "Failed to send verification email" }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
       }
+      
+      console.log(`Verification email sent to ${email}`);
     }
 
-    // Send enhanced welcome email
-    const welcomeResponse = await supabaseAnon.functions.invoke('send-welcome-email', {
-      body: { 
-        email: subscriber.email, 
-        name: subscriber.name,
-        firstName: firstName,
-        subscriberId: subscriber.id,
-        userId: authData.user?.id
-      }
-    });
-
-    if (welcomeResponse.error) {
-      console.error("Error sending welcome email:", welcomeResponse.error);
-      // Don't fail the subscription if email fails
-    }
+    // Note: Welcome email will be sent automatically after email verification via database trigger
 
     const successMessage = isNewUser 
       ? "Successfully subscribed! Check your email to complete setup and enable personalized notifications."
