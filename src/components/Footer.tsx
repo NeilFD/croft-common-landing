@@ -1,12 +1,16 @@
 import SubscriptionForm from './SubscriptionForm';
+import MembershipLinkModal from './MembershipLinkModal';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 const Footer = ({
   showSubscription = true
 }: {
   showSubscription?: boolean;
 }) => {
   const [cgTotal, setCgTotal] = useState<number | null>(null);
+  const [linkModalOpen, setLinkModalOpen] = useState(false);
+  const { toast } = useToast();
   useEffect(() => {
     let mounted = true;
     const fetchTotals = async () => {
@@ -76,13 +80,30 @@ const Footer = ({
         
         <div className="border-t border-background/20 mt-12 pt-8 flex justify-between items-center">
           <div className="font-industrial text-xs text-background/50">© 2025 CROFT COMMON LTD</div>
-          
+          <button 
+            onClick={() => setLinkModalOpen(true)}
+            className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
+          >
+            Link Membership
+          </button>
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
           <div className="font-industrial text-sm uppercase tracking-wide text-background/80 mb-2">The Common Good</div>
           <div className="inline-block px-4 py-2 border-2 border-background rounded-full font-brutalist text-4xl md:text-5xl text-background transition-colors duration-200">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : '—'}</div>
         </div>
+
+        <MembershipLinkModal 
+          open={linkModalOpen}
+          onClose={() => setLinkModalOpen(false)}
+          onSuccess={(email) => {
+            setLinkModalOpen(false);
+            toast({
+              title: "Membership Linked",
+              description: `Successfully linked to ${email}. You'll now receive personalized notifications.`,
+            });
+          }}
+        />
       </div>
     </footer>;
 };
