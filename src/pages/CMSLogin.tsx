@@ -1,105 +1,95 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { AuthModal } from '@/components/AuthModal';
 
 const CMSLogin = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      navigate('/cms');
-    }
-  }, [user, navigate]);
+    const processAuthFromUrl = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      const accessToken = params.get('access_token') || hashParams.get('access_token');
+      const refreshToken = params.get('refresh_token') || hashParams.get('refresh_token');
+      const code = params.get('code');
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        setError(error.message);
-      } else {
-        navigate('/cms');
+      if (accessToken && refreshToken) {
+        try {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (!error) {
+            await refreshSession();
+            // Clean up URL
+            window.history.replaceState({}, document.title, '/cms/login');
+            navigate('/cms');
+            return;
+          }
+        } catch (error) {
+          console.error('Error setting session:', error);
+        }
+      } else if (code) {
+        try {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (!error) {
+            await refreshSession();
+            // Clean up URL
+            window.history.replaceState({}, document.title, '/cms/login');
+            navigate('/cms');
+            return;
+          }
+        } catch (error) {
+          console.error('Error exchanging code:', error);
+        }
       }
-    } catch (err) {
-      setError('An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
+
+      // Check if user is already authenticated
+      if (user) {
+        navigate('/cms');
+      } else {
+        setShowAuthModal(true);
+      }
+    };
+
+    processAuthFromUrl();
+  }, [user, navigate, refreshSession]);
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    navigate('/cms');
   };
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="font-brutalist text-2xl">CMS Login</CardTitle>
-          <p className="text-muted-foreground font-industrial">
-            Access the content management system
+      <div className="text-center">
+        <h1 className="font-brutalist text-2xl mb-2">CMS Access</h1>
+        <p className="text-muted-foreground font-industrial mb-4">
+          Content Management System
+        </p>
+        {!user && (
+          <p className="text-sm text-muted-foreground">
+            Redirecting to authentication...
           </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
-                Email
-              </label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter your email"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Enter your password"
-              />
-            </div>
-            
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        )}
+      </div>
+      
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+        requireAllowedDomain={true}
+        title="CMS Access"
+        description="Enter your email to access the content management system"
+        emailSentTitle="Check Your Email"
+        emailSentDescription="We've sent you a secure login link to access the CMS"
+      />
     </div>
   );
 };
