@@ -69,15 +69,43 @@ export const useAuth = () => {
           if (event === 'SIGNED_IN' && session) {
             console.log('✅ User successfully signed in:', session.user.email);
             
-            // Auto-link push subscriptions when user signs in
+            // Check if this is a new user who just verified their email
+            // and send welcome email if they're a subscriber
             setTimeout(async () => {
               try {
+                // First auto-link push subscriptions
                 const { data } = await supabase.functions.invoke('auto-link-push-subscription');
                 if (data?.linked) {
                   console.log('🔗 Push subscription automatically linked');
                 }
+                
+                // Check if user is a subscriber and send welcome email
+                const { data: subscriber } = await supabase
+                  .from('subscribers')
+                  .select('*')
+                  .eq('email', session.user.email)
+                  .eq('is_active', true)
+                  .single();
+                
+                if (subscriber) {
+                  console.log('📧 Sending welcome email to subscriber:', session.user.email);
+                  const welcomeResponse = await supabase.functions.invoke('send-welcome-email', {
+                    body: {
+                      email: session.user.email,
+                      name: subscriber.name,
+                      subscriberId: subscriber.id,
+                      userId: session.user.id
+                    }
+                  });
+                  
+                  if (welcomeResponse.error) {
+                    console.error('❌ Welcome email failed:', welcomeResponse.error);
+                  } else {
+                    console.log('✅ Welcome email sent successfully');
+                  }
+                }
               } catch (error) {
-                console.log('Auto-link failed (this is normal if no subscriptions exist):', error);
+                console.log('Auto-operations failed:', error);
               }
             }, 1000); // Small delay to ensure auth is fully established
           } else if (event === 'SIGNED_OUT') {
