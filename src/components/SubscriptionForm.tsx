@@ -172,11 +172,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
             variant="outline"
             size="lg"
             onClick={() => setShowOptionalFields(!showOptionalFields)}
-            className={`font-brutalist text-sm uppercase tracking-wider border-2 transition-all duration-300 text-foreground ${
-              showOptionalFields 
-                ? 'border-accent-pink hover:bg-accent-pink hover:text-background' 
-                : 'border-foreground hover:border-accent-pink'
-            }`}
+            className="font-brutalist text-sm uppercase tracking-wider border-2 border-accent-pink bg-accent-pink text-background hover:bg-background hover:text-foreground transition-all duration-300"
           >
             <ChevronDown className={`w-4 h-4 mr-2 transition-transform duration-300 ${showOptionalFields ? 'rotate-180' : ''}`} />
             {showOptionalFields ? 'FEWER OPTIONS' : 'PERSONALISE YOUR EXPERIENCE'}
