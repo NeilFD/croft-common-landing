@@ -36,7 +36,8 @@ const Footer = ({
       clearInterval(id);
     };
   }, []);
-  return <footer className="bg-void text-background py-16">
+  return (
+    <footer className="bg-void text-background py-16">
       <div className="container mx-auto px-6">
         {/* Newsletter subscription section */}
       {showSubscription && <div className="mb-16 text-center">
@@ -105,6 +106,8 @@ const Footer = ({
           }}
         />
       </div>
-    </footer>;
+    </footer>
+  );
 };
+
 export default Footer;
