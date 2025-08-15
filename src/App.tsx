@@ -30,8 +30,10 @@ import CommonGood from "./pages/CommonGood";
  import CommonGoodMessage from "./pages/CommonGoodMessage";
  import CroftCommonDateTime from "./pages/CroftCommonDateTime";
  import Book from "./pages/Book";
- import Admin from "./pages/Admin";
- import Notifications from "./pages/Notifications";
+import Admin from "./pages/Admin";
+import CMS from "./pages/CMS";
+import CMSLogin from "./pages/CMSLogin";
+import Notifications from "./pages/Notifications";
 import RouteImagePreloader from '@/components/RouteImagePreloader';
 import BrandAssetPreloader from '@/components/BrandAssetPreloader';
 import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
@@ -146,7 +148,9 @@ const App = () => (
              <Route path="/book" element={<Book />} />
              <Route path="/notifications" element={<Notifications />} />
              <Route path="/admin" element={<Admin />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+             <Route path="/cms/login" element={<CMSLogin />} />
+             <Route path="/cms" element={<CMS />} />
+             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
           </TransitionProvider>

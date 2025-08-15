@@ -118,6 +118,174 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_brand_assets: {
+        Row: {
+          asset_key: string
+          asset_type: string
+          asset_value: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          published: boolean
+          updated_at: string
+        }
+        Insert: {
+          asset_key: string
+          asset_type: string
+          asset_value: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published?: boolean
+          updated_at?: string
+        }
+        Update: {
+          asset_key?: string
+          asset_type?: string
+          asset_value?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          published?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_content: {
+        Row: {
+          content_data: Json
+          content_key: string
+          content_type: Database["public"]["Enums"]["cms_content_type"]
+          created_at: string
+          created_by: string | null
+          id: string
+          page: string
+          published: boolean
+          section: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          content_data: Json
+          content_key: string
+          content_type?: Database["public"]["Enums"]["cms_content_type"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          page: string
+          published?: boolean
+          section: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          content_data?: Json
+          content_key?: string
+          content_type?: Database["public"]["Enums"]["cms_content_type"]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          page?: string
+          published?: boolean
+          section?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      cms_design_tokens: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          css_variable: string | null
+          description: string | null
+          id: string
+          published: boolean
+          token_key: string
+          token_type: string
+          token_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          css_variable?: string | null
+          description?: string | null
+          id?: string
+          published?: boolean
+          token_key: string
+          token_type: string
+          token_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          css_variable?: string | null
+          description?: string | null
+          id?: string
+          published?: boolean
+          token_key?: string
+          token_type?: string
+          token_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_images: {
+        Row: {
+          alt_text: string | null
+          asset_type: Database["public"]["Enums"]["cms_asset_type"]
+          carousel_name: string | null
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string
+          metadata: Json | null
+          page: string | null
+          published: boolean
+          sort_order: number | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          alt_text?: string | null
+          asset_type: Database["public"]["Enums"]["cms_asset_type"]
+          carousel_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url: string
+          metadata?: Json | null
+          page?: string | null
+          published?: boolean
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alt_text?: string | null
+          asset_type?: Database["public"]["Enums"]["cms_asset_type"]
+          carousel_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string
+          metadata?: Json | null
+          page?: string | null
+          published?: boolean
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       common_good_messages: {
         Row: {
           amount_cents: number
@@ -884,6 +1052,8 @@ export type Database = {
       }
     }
     Enums: {
+      cms_asset_type: "logo" | "icon" | "hero_image" | "carousel_image"
+      cms_content_type: "text" | "richtext" | "json"
       delivery_status: "sent" | "failed" | "deactivated" | "logged"
       loyalty_card_type: "regular" | "lucky7"
       notification_scope: "all" | "self"
@@ -1015,6 +1185,8 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      cms_asset_type: ["logo", "icon", "hero_image", "carousel_image"],
+      cms_content_type: ["text", "richtext", "json"],
       delivery_status: ["sent", "failed", "deactivated", "logged"],
       loyalty_card_type: ["regular", "lucky7"],
       notification_scope: ["all", "self"],
