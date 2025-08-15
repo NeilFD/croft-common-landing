@@ -884,7 +884,7 @@ export type Database = {
       }
     }
     Enums: {
-      delivery_status: "sent" | "failed" | "deactivated"
+      delivery_status: "sent" | "failed" | "deactivated" | "logged"
       loyalty_card_type: "regular" | "lucky7"
       notification_scope: "all" | "self"
       notification_status: "draft" | "queued" | "sending" | "sent" | "failed"
@@ -1015,7 +1015,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      delivery_status: ["sent", "failed", "deactivated"],
+      delivery_status: ["sent", "failed", "deactivated", "logged"],
       loyalty_card_type: ["regular", "lucky7"],
       notification_scope: ["all", "self"],
       notification_status: ["draft", "queued", "sending", "sent", "failed"],
