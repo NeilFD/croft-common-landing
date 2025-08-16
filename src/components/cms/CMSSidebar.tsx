@@ -52,37 +52,49 @@ const pageStructure = [
     name: 'Cafe',
     path: '/cms/visual/cafe',
     icon: Coffee,
-    sections: []
+    sections: [
+      { name: 'Menu', path: '/cms/visual/cafe/menu' }
+    ]
   },
   {
     name: 'Cocktails',
     path: '/cms/visual/cocktails',
     icon: Wine,
-    sections: []
+    sections: [
+      { name: 'Menu', path: '/cms/visual/cocktails/menu' }
+    ]
   },
   {
     name: 'Beer',
     path: '/cms/visual/beer',
     icon: Beer,
-    sections: []
+    sections: [
+      { name: 'Menu', path: '/cms/visual/beer/menu' }
+    ]
   },
   {
     name: 'Kitchens',
     path: '/cms/visual/kitchens',
     icon: ChefHat,
-    sections: []
+    sections: [
+      { name: 'Menu', path: '/cms/visual/kitchens/menu' }
+    ]
   },
   {
     name: 'Hall',
     path: '/cms/visual/hall',
     icon: Calendar,
-    sections: []
+    sections: [
+      { name: 'Menu', path: '/cms/visual/hall/menu' }
+    ]
   },
   {
     name: 'Community',
     path: '/cms/visual/community',
     icon: Users,
-    sections: []
+    sections: [
+      { name: 'Menu', path: '/cms/visual/community/menu' }
+    ]
   },
   {
     name: 'Common Room',

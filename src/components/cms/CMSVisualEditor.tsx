@@ -15,6 +15,7 @@ import Hall from '@/pages/Hall';
 import Community from '@/pages/Community';
 import CommonRoom from '@/pages/CommonRoom';
 import Index from '@/pages/Index';
+import CMSMenuModal from '@/pages/CMSMenuModal';
 
 interface CMSVisualEditorProps {
   currentPage: string;
@@ -29,6 +30,13 @@ const pageComponents: Record<string, React.ComponentType> = {
   'hall': Hall,
   'community': Community,
   'common-room': CommonRoom,
+  // Menu modal routes
+  'cafe/menu': CMSMenuModal,
+  'cocktails/menu': CMSMenuModal,
+  'beer/menu': CMSMenuModal,
+  'kitchens/menu': CMSMenuModal,
+  'hall/menu': CMSMenuModal,
+  'community/menu': CMSMenuModal,
 };
 
 export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {

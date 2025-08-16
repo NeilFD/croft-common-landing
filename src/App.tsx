@@ -151,6 +151,7 @@ const App = () => (
              <Route path="/admin" element={<Admin />} />
              <Route path="/cms/login" element={<CMSLogin />} />
              <Route path="/cms/visual/:page" element={<CMSVisual />} />
+             <Route path="/cms/visual/:page/menu" element={<CMSVisual />} />
              <Route path="/cms/*" element={<CMS />} />
              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
