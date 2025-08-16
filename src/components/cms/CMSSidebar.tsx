@@ -158,7 +158,10 @@ export const CMSSidebar = () => {
     isActiveItem ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
 
   return (
-    <Sidebar className={state === "collapsed" ? "w-14" : "w-80"} collapsible="icon">
+    <Sidebar 
+      className={state === "collapsed" ? "w-0 min-w-0" : "w-80"} 
+      collapsible="icon"
+    >
       <SidebarContent>
         {/* Pages Section */}
         <SidebarGroup>
