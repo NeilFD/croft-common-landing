@@ -3,6 +3,7 @@ import CroftLogo from './CroftLogo';
 import MenuModal from './MenuModal';
 import { MenuSection } from '@/data/menuData';
 import { cn } from '@/lib/utils';
+import { CMSText } from './cms/CMSText';
 
 interface MenuButtonProps {
   pageType: 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
@@ -73,9 +74,13 @@ const MenuButton = ({ pageType, menuData, forceCafeAccent }: MenuButtonProps) =>
           }
         }}
       >
-        <span className="relative z-10 font-brutalist tracking-wider text-xs text-background select-none">
-          OPEN
-        </span>
+        <CMSText
+          page="global"
+          section="buttons"
+          contentKey="open"
+          fallback="OPEN"
+          className="relative z-10 font-brutalist tracking-wider text-xs text-background select-none"
+        />
       </button>
 
       <MenuModal

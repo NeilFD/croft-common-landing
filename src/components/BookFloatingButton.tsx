@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { CMSText } from "./cms/CMSText";
 
 interface BookFloatingButtonProps {
   className?: string;
@@ -32,9 +33,13 @@ const BookFloatingButton: React.FC<BookFloatingButtonProps> = ({ className = "" 
         e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
       }}
     >
-      <span className="relative z-10 font-brutalist tracking-wider text-xs text-background select-none">
-        BOOK
-      </span>
+      <CMSText
+        page="global"
+        section="buttons"
+        contentKey="book"
+        fallback="BOOK"
+        className="relative z-10 font-brutalist tracking-wider text-xs text-background select-none"
+      />
     </button>
   );
 };
