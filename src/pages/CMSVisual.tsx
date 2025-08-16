@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { CMSLayout } from '@/components/cms/CMSLayout';
 import { CMSVisualEditor } from '@/components/cms/CMSVisualEditor';
 import { CMSVisualHeader } from '@/components/cms/CMSVisualHeader';
@@ -9,7 +9,13 @@ import { useEditMode } from '@/contexts/EditModeContext';
 
 const CMSVisual = () => {
   const { page } = useParams<{ page: string }>();
+  const location = useLocation();
   const [isPublishing, setIsPublishing] = useState(false);
+  
+  // Extract the full path after /cms/visual/
+  const fullPath = location.pathname.replace('/cms/visual/', '');
+  const currentPage = fullPath || page || 'home';
+  
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(page || 'home');
   const { resetPendingChanges } = useEditMode();
 
@@ -53,7 +59,7 @@ const CMSVisual = () => {
           isPublishing={isPublishing}
           draftCount={draftCount}
         />
-        <CMSVisualEditor currentPage={page || 'home'} />
+        <CMSVisualEditor currentPage={currentPage} />
       </div>
     </CMSLayout>
   );
