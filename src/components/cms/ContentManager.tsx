@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, Edit } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -19,24 +18,38 @@ interface ContentItem {
   published: boolean;
 }
 
-const ContentManager = () => {
+interface ContentManagerProps {
+  page?: string;
+  pageTitle?: string;
+  section?: string;
+}
+
+const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSection }: ContentManagerProps = {}) => {
   const { user } = useAuth();
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<string | null>(null);
 
-  const pages = ['index', 'beer', 'cafe', 'cocktails', 'kitchens', 'hall'];
-
   useEffect(() => {
     fetchContent();
-  }, []);
+  }, [selectedPage, selectedSection]);
 
   const fetchContent = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('cms_content')
-        .select('*')
+        .select('*');
+
+      if (selectedPage) {
+        query = query.eq('page', selectedPage);
+      }
+      
+      if (selectedSection) {
+        query = query.eq('section', selectedSection);
+      }
+
+      const { data, error } = await query
         .order('page', { ascending: true })
         .order('section', { ascending: true });
 
@@ -81,90 +94,72 @@ const ContentManager = () => {
     }
   };
 
-  const getContentByPage = (page: string) => {
-    return content.filter(item => item.page === page);
-  };
-
   if (loading) {
-    return <div className="text-center py-8">Loading content...</div>;
+    return <div className="p-6">Loading content...</div>;
   }
+
+  const title = pageTitle ? `Content Manager - ${pageTitle}` : 'Content Manager';
+  const description = selectedPage 
+    ? `Manage content for the ${pageTitle || selectedPage} page${selectedSection ? ` (${selectedSection} section)` : ''}`
+    : 'Manage content across all pages';
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Page Content Management</CardTitle>
-          <p className="text-muted-foreground">
-            Edit headlines, descriptions, and other text content for each page.
-          </p>
-        </CardHeader>
-      </Card>
+      <div>
+        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+        <p className="text-muted-foreground">{description}</p>
+      </div>
 
-      <Tabs defaultValue={pages[0]} className="space-y-6">
-        <TabsList className="grid grid-cols-6 w-full">
-          {pages.map((page) => (
-            <TabsTrigger key={page} value={page} className="capitalize">
-              {page === 'index' ? 'Home' : page}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {pages.map((page) => (
-          <TabsContent key={page} value={page} className="space-y-4">
-            <div className="grid gap-4">
-              {getContentByPage(page).map((item) => (
-                <Card key={item.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-lg capitalize">
-                          {item.content_key.replace('_', ' ')}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          {item.section} section
-                        </p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingItem(editingItem === item.id ? null : item.id)}
-                      >
-                        <Edit className="h-4 w-4 mr-2" />
-                        {editingItem === item.id ? 'Cancel' : 'Edit'}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    {editingItem === item.id ? (
-                      <EditableContent
-                        item={item}
-                        onSave={updateContent}
-                        saving={saving === item.id}
-                      />
-                    ) : (
-                      <div className="whitespace-pre-wrap p-4 bg-muted rounded-md">
-                        {item.content_data?.text || 'No content'}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {getContentByPage(page).length === 0 && (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <p className="text-muted-foreground">
-                      No content found for this page. 
-                      <br />
-                      Try importing content first from the Import tab.
+      {content.length > 0 ? (
+        <div className="space-y-4">
+          {content.map(item => (
+            <Card key={item.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-lg">
+                      {item.content_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      {item.page} page • {item.section} section
                     </p>
-                  </CardContent>
-                </Card>
-              )}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditingItem(editingItem === item.id ? null : item.id)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {editingItem === item.id ? 'Cancel' : 'Edit'}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {editingItem === item.id ? (
+                  <EditableContent
+                    item={item}
+                    onSave={updateContent}
+                    saving={saving === item.id}
+                  />
+                ) : (
+                  <div className="whitespace-pre-wrap p-4 bg-muted rounded-md">
+                    {item.content_data?.text || 'No content'}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8 text-muted-foreground">
+              No content found{selectedPage ? ` for ${pageTitle || selectedPage}` : ''}. 
+              Content will appear here once it's created.
             </div>
-          </TabsContent>
-        ))}
-      </Tabs>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

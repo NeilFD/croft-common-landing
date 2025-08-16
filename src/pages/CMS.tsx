@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import CMSDashboard from '@/components/cms/CMSDashboard';
 
 const CMS = () => {
@@ -77,15 +75,7 @@ const CMS = () => {
     return null;
   }
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <main className="pt-20">
-        <CMSDashboard />
-      </main>
-      <Footer />
-    </div>
-  );
+  return <CMSDashboard />;
 };
 
 export default CMS;

@@ -187,7 +187,7 @@ export const CMSSidebar = () => {
                               className={getNavClass(isParentActive(page.path))}
                             >
                               <page.icon className="mr-2 h-4 w-4" />
-                              {!collapsed && (
+                              {state !== "collapsed" && (
                                 <>
                                   <span>{page.name}</span>
                                   <ChevronDown className="ml-auto h-4 w-4" />
@@ -204,7 +204,7 @@ export const CMSSidebar = () => {
                                     className={getNavClass(isActive(section.path))}
                                   >
                                     <NavLink to={section.path}>
-                                      {!collapsed && section.name}
+                                      {state !== "collapsed" && section.name}
                                     </NavLink>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
@@ -219,7 +219,7 @@ export const CMSSidebar = () => {
                         >
                           <NavLink to={page.path}>
                             <page.icon className="mr-2 h-4 w-4" />
-                            {!collapsed && page.name}
+                            {state !== "collapsed" && page.name}
                           </NavLink>
                         </SidebarMenuButton>
                       )}
@@ -241,9 +241,9 @@ export const CMSSidebar = () => {
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Globe className="mr-2 h-4 w-4" />
-                  {!collapsed && "Global Content"}
+                  {state !== "collapsed" && "Global Content"}
                 </span>
-                {!collapsed && <ChevronDown className="h-4 w-4" />}
+                {state !== "collapsed" && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -257,7 +257,7 @@ export const CMSSidebar = () => {
                       >
                         <NavLink to={section.path}>
                           <section.icon className="mr-2 h-4 w-4" />
-                          {!collapsed && section.name}
+                          {state !== "collapsed" && section.name}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -278,9 +278,9 @@ export const CMSSidebar = () => {
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Settings className="mr-2 h-4 w-4" />
-                  {!collapsed && "Management"}
+                  {state !== "collapsed" && "Management"}
                 </span>
-                {!collapsed && <ChevronDown className="h-4 w-4" />}
+                {state !== "collapsed" && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -294,7 +294,7 @@ export const CMSSidebar = () => {
                       >
                         <NavLink to={section.path}>
                           <section.icon className="mr-2 h-4 w-4" />
-                          {!collapsed && section.name}
+                          {state !== "collapsed" && section.name}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
