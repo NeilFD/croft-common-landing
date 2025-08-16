@@ -9,10 +9,13 @@ import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { BRAND_LOGO } from '@/data/brand';
+import { CMSText } from '@/components/cms/CMSText';
+import { useCMSMode } from '@/contexts/CMSModeContext';
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
   const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
+  const { isCMSMode } = useCMSMode();
 
   const handleGestureComplete = () => {
     // Silent-first biometric attempt; UI shows only if needed
@@ -27,20 +30,30 @@ const CommonRoom = () => {
   }, [allowed, navigate, reset]);
   return (
     <div className="min-h-screen bg-white">
-      <Navigation />
+      {!isCMSMode && <Navigation />}
       {/* Hero area with watermark */}
       <main ref={containerRef} className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-40 md:pt-32 px-4">
         {/* Page Title - responsive positioning */}
         <div className="absolute top-40 left-1/2 transform -translate-x-1/2 md:top-24 md:left-[106px] md:transform-none z-20">
-          <h1 className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] cursor-pointer text-center md:text-left">
-            THE COMMON ROOM
-          </h1>
+          <CMSText
+            page="common-room"
+            section="hero"
+            contentKey="title"
+            fallback="THE COMMON ROOM"
+            as="h1"
+            className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] cursor-pointer text-center md:text-left"
+          />
         </div>
         
         {/* Sign in text - responsive spacing and sizing */}
-        <h2 className="relative z-20 text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-24 md:mb-20 mt-32 md:mt-16">
-          Sign in here
-        </h2>
+        <CMSText
+          page="common-room"
+          section="hero"
+          contentKey="subtitle"
+          fallback="Sign in here"
+          as="h2"
+          className="relative z-20 text-lg md:text-2xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase mb-24 md:mb-20 mt-32 md:mt-16"
+        />
         
         {/* Watermark image - positioned absolutely like other carousel pages */}
         <div className="absolute inset-0 z-0 pointer-events-none flex items-start justify-center pt-96 md:pt-48">
@@ -51,7 +64,7 @@ const CommonRoom = () => {
           />
         </div>
       </main>
-      <Footer />
+      {!isCMSMode && <Footer />}
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
       <BiometricUnlockModal
         isOpen={bioOpen}
