@@ -73,7 +73,7 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
 
   return (
     <div 
-      className="fixed inset-0 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4 z-50"
+      className="fixed inset-0 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4 z-30"
       onClick={handleBackdropClick}
     >
       <div 

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { CMSLayout } from '@/components/cms/CMSLayout';
 import { CMSVisualHeader } from '@/components/cms/CMSVisualHeader';
 import { useState } from 'react';
@@ -17,6 +17,7 @@ import {
 } from '@/data/menuData';
 
 const CMSMenuModal = () => {
+  const navigate = useNavigate();
   const location = window.location;
   // Extract page from the current path (e.g., /cms/visual/cafe/menu -> cafe)
   const pathParts = location.pathname.split('/');
@@ -25,6 +26,11 @@ const CMSMenuModal = () => {
   console.log('CMSMenuModal - Location pathname:', location.pathname);
   console.log('CMSMenuModal - Path parts:', pathParts);
   console.log('CMSMenuModal - Extracted page:', page);
+
+  const handleClose = () => {
+    // Navigate back to the parent page (remove /menu from the path)
+    navigate(`/cms/visual/${page}`);
+  };
   const [isPublishing, setIsPublishing] = useState(false);
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(page || 'home');
   const { resetPendingChanges } = useEditMode();
@@ -106,7 +112,7 @@ const CMSMenuModal = () => {
           <div className="w-full h-full relative">
             <EditableMenuModal
               isOpen={true}
-              onClose={() => {}} // No-op in CMS mode
+              onClose={handleClose}
               pageType={pageType}
               menuData={getMenuData()}
             />
