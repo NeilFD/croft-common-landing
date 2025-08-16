@@ -93,9 +93,9 @@ const CMSMenuModal = () => {
   const pageType = page as 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
 
   return (
-    <div className="flex-1 overflow-hidden bg-muted/20">
+    <div className="flex-1 overflow-hidden bg-muted/20 relative">
       <CMSModeProvider isCMSMode={true}>
-        <div className="h-full flex items-center justify-center">
+        <div className="h-full flex items-center justify-center relative">
           <div className="w-full h-full relative">
             <EditableMenuModal
               isOpen={true}
