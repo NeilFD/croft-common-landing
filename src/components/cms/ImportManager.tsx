@@ -62,6 +62,21 @@ const ImportManager = () => {
       setProgress(25);
       
       console.log('🔄 Starting content import with user:', user.id);
+      console.log('🔄 User email:', user.email);
+      
+      // Test authentication and permissions first
+      const { data: testData, error: testError } = await supabase
+        .from('cms_content')
+        .select('count')
+        .limit(1);
+      
+      if (testError) {
+        console.error('❌ Permission test failed:', testError);
+        updateStep('content', false, `Permission error: ${testError.message}`);
+        return;
+      }
+      
+      console.log('✅ Permission test passed');
       
       // Import comprehensive page content from existing site
       const contentData = [
