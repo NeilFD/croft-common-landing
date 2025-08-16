@@ -70,12 +70,30 @@ export const CMSText = ({
       let editPosition = {};
       
       if (isInButton) {
-        // For buttons, position the editor above and slightly to the left
+        // For buttons, position the editor well above and to the side for visibility
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        
+        // Calculate optimal position - prefer above and to the left, but adjust if needed
+        let topPos = rect.top - 120; // More space above
+        let leftPos = rect.left - 100; // More space to the left
+        
+        // Adjust if it would go off screen
+        if (topPos < 20) {
+          topPos = rect.bottom + 20; // Position below if no room above
+        }
+        if (leftPos < 20) {
+          leftPos = 20; // Ensure minimum left margin
+        }
+        if (leftPos + 320 > viewportWidth) {
+          leftPos = viewportWidth - 340; // Ensure it fits on screen
+        }
+        
         editPosition = {
           position: 'fixed',
-          top: `${Math.max(rect.top - 80, 20)}px`, // Above the button with padding
-          left: `${Math.max(rect.left - 50, 20)}px`, // Slightly left with padding
-          width: '280px', // Fixed width for better usability
+          top: `${topPos}px`,
+          left: `${leftPos}px`,
+          width: '320px', // Wider for better usability
           zIndex: 10000,
         };
       } else {
