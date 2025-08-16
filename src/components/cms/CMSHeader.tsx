@@ -9,7 +9,11 @@ export const CMSHeader = () => {
     <header className="flex items-center justify-between h-16 px-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="p-2 hover:bg-accent rounded-md border border-border bg-background shadow-sm" />
-        <CroftLogo size="md" className="ml-2" priority />
+        <CroftLogo size="lg" className="ml-2" priority />
+        <div className="flex flex-col">
+          <h2 className="text-lg font-bold tracking-wide text-foreground">CROFT COMMON</h2>
+          <div className="border-l border-border h-8 mx-2 hidden" />
+        </div>
         <div className="border-l border-border h-8 mx-2" />
         <div>
           <h1 className="text-xl font-semibold">Content Management System</h1>
