@@ -7,7 +7,9 @@ import { toast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Check, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Check, X, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
 
 interface CMSTextProps {
   page: string;
@@ -34,12 +36,28 @@ export const CMSText = ({
   const [editValue, setEditValue] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [originalStyles, setOriginalStyles] = useState<any>({});
+  const [positioning, setPositioning] = useState({
+    alignment: 'left',
+    marginTop: '0',
+    marginBottom: '0',
+    marginLeft: '0',
+    marginRight: '0'
+  });
   const inputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const originalElementRef = useRef<any>(null);
 
   // Show fallback while loading, or if no content after loading
-  const displayText = loading ? fallback : (content ?? fallback);
+  const displayText = loading ? fallback : (content?.content_data?.text ?? fallback);
+  
+  // Get positioning from content data
+  const currentPositioning = content?.content_data?.positioning || {
+    alignment: 'left',
+    marginTop: '0',
+    marginBottom: '0',
+    marginLeft: '0',
+    marginRight: '0'
+  };
 
   useEffect(() => {
     if (isEditing) {
@@ -118,6 +136,7 @@ export const CMSText = ({
     
     console.log('🎯 CMS: About to set edit state...');
     setEditValue(displayText);
+    setPositioning(currentPositioning);
     setIsEditing(true);
     console.log('🎯 CMS: Set editing to true, edit value:', displayText);
   };
@@ -125,7 +144,10 @@ export const CMSText = ({
   const handleSave = async () => {
     console.log('🎯 CMS: SAVE STARTED - editValue:', editValue, 'displayText:', displayText);
     
-    if (editValue === displayText) {
+    const hasTextChanged = editValue !== displayText;
+    const hasPositioningChanged = JSON.stringify(positioning) !== JSON.stringify(currentPositioning);
+    
+    if (!hasTextChanged && !hasPositioningChanged) {
       console.log('🎯 CMS: No changes detected, skipping save');
       setIsEditing(false);
       return;
@@ -165,7 +187,7 @@ export const CMSText = ({
 
       console.log('🎯 CMS: Existing content query result:', existingContent, 'Error:', selectError);
 
-      const contentData = { text: editValue };
+      const contentData = { text: editValue, positioning };
       console.log('🎯 CMS: Content data to save:', contentData);
 
       if (existingContent) {
@@ -271,37 +293,109 @@ export const CMSText = ({
           onClick={handleCancel}
         />
         
-        {/* Editing container positioned optimally */}
+          {/* Editing container positioned optimally */}
         <div 
-          className="fixed bg-white border-2 border-blue-500 rounded-lg shadow-2xl p-3 space-y-3 z-[99999]"
+          className="fixed bg-white border-2 border-blue-500 rounded-lg shadow-2xl p-4 space-y-4 z-[99999] max-w-md"
           style={originalStyles}
         >
           <div className="text-xs text-gray-600 font-medium border-b pb-2">
             ✏️ Editing: {page} / {section} / {contentKey}
           </div>
           
-          <div className="relative">
-            {isMultiline ? (
-              <Textarea
-                ref={textareaRef}
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="border-2 border-gray-300 bg-white text-gray-900 resize-none min-h-[80px] w-full"
-                disabled={isSaving}
-                placeholder="Enter your text..."
-              />
-            ) : (
-              <Input
-                ref={inputRef}
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="border-2 border-gray-300 bg-white text-gray-900 w-full"
-                disabled={isSaving}
-                placeholder="Enter your text..."
-              />
-            )}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs font-medium text-gray-700">Content</Label>
+              {isMultiline ? (
+                <Textarea
+                  ref={textareaRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="border-2 border-gray-300 bg-white text-gray-900 resize-none min-h-[80px] w-full mt-1"
+                  disabled={isSaving}
+                  placeholder="Enter your text..."
+                />
+              ) : (
+                <Input
+                  ref={inputRef}
+                  value={editValue}
+                  onChange={(e) => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="border-2 border-gray-300 bg-white text-gray-900 w-full mt-1"
+                  disabled={isSaving}
+                  placeholder="Enter your text..."
+                />
+              )}
+            </div>
+
+            {/* Positioning Controls */}
+            <div className="space-y-3 border-t pt-3">
+              <div>
+                <Label className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                  <AlignLeft className="h-3 w-3" />
+                  Text Alignment
+                </Label>
+                <Select value={positioning.alignment} onValueChange={(value) => setPositioning(prev => ({ ...prev, alignment: value }))}>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="left">
+                      <div className="flex items-center gap-2">
+                        <AlignLeft className="h-3 w-3" />
+                        Left
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="center">
+                      <div className="flex items-center gap-2">
+                        <AlignCenter className="h-3 w-3" />
+                        Center
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="right">
+                      <div className="flex items-center gap-2">
+                        <AlignRight className="h-3 w-3" />
+                        Right
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Margin Controls */}
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs font-medium text-gray-700">Top Margin</Label>
+                  <Select value={positioning.marginTop} onValueChange={(value) => setPositioning(prev => ({ ...prev, marginTop: value }))}>
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">None</SelectItem>
+                      <SelectItem value="1">Small</SelectItem>
+                      <SelectItem value="2">Medium</SelectItem>
+                      <SelectItem value="4">Large</SelectItem>
+                      <SelectItem value="8">X-Large</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-700">Bottom Margin</Label>
+                  <Select value={positioning.marginBottom} onValueChange={(value) => setPositioning(prev => ({ ...prev, marginBottom: value }))}>
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">None</SelectItem>
+                      <SelectItem value="1">Small</SelectItem>
+                      <SelectItem value="2">Medium</SelectItem>
+                      <SelectItem value="4">Large</SelectItem>
+                      <SelectItem value="8">X-Large</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* Action buttons */}
@@ -319,7 +413,7 @@ export const CMSText = ({
             <Button
               size="sm"
               onClick={handleSave}
-              disabled={isSaving || editValue === displayText}
+              disabled={isSaving || (editValue === displayText && JSON.stringify(positioning) === JSON.stringify(currentPositioning))}
               className="bg-blue-500 text-white hover:bg-blue-600"
             >
               <Check className="h-3 w-3 mr-1" />
@@ -346,11 +440,29 @@ export const CMSText = ({
     );
   };
 
+  // Generate positioning classes
+  const getPositioningClasses = () => {
+    const classes = [];
+    
+    // Text alignment
+    if (currentPositioning.alignment === 'center') classes.push('text-center');
+    else if (currentPositioning.alignment === 'right') classes.push('text-right');
+    else classes.push('text-left');
+    
+    // Margins (using Tailwind spacing scale)
+    if (currentPositioning.marginTop !== '0') classes.push(`mt-${currentPositioning.marginTop}`);
+    if (currentPositioning.marginBottom !== '0') classes.push(`mb-${currentPositioning.marginBottom}`);
+    if (currentPositioning.marginLeft !== '0') classes.push(`ml-${currentPositioning.marginLeft}`);
+    if (currentPositioning.marginRight !== '0') classes.push(`mr-${currentPositioning.marginRight}`);
+    
+    return classes.join(' ');
+  };
+
   return (
     <>
       <Component 
         ref={originalElementRef}
-        className={`${className} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
+        className={`${className} ${getPositioningClasses()} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
         onClick={handleEdit}
         title={isEditMode ? 'Click to edit (CMS)' : undefined}
       >

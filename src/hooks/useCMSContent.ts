@@ -11,7 +11,7 @@ interface CMSContent {
 }
 
 export const useCMSContent = (page: string, section: string, contentKey: string, showDrafts = false) => {
-  const [content, setContent] = useState<string | null>(null);
+  const [content, setContent] = useState<CMSContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -50,11 +50,12 @@ export const useCMSContent = (page: string, section: string, contentKey: string,
         return;
       }
 
-      if (data?.content_data && typeof data.content_data === 'object' && 'text' in data.content_data) {
-        console.log('🎯 useCMSContent: Setting content to:', data.content_data.text);
-        setContent(data.content_data.text as string);
+      if (data) {
+        console.log('🎯 useCMSContent: Setting content to full data object:', data);
+        setContent(data as CMSContent);
       } else {
-        console.log('🎯 useCMSContent: No valid content data found, data:', data);
+        console.log('🎯 useCMSContent: No content data found');
+        setContent(null);
       }
     } catch (err) {
       console.warn('Failed to fetch CMS content:', err);
