@@ -26,7 +26,7 @@ export const useCMSContent = (page: string, section: string, contentKey: string)
           .eq('section', section)
           .eq('content_key', contentKey)
           .eq('published', true)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.warn('CMS content not found:', error);
