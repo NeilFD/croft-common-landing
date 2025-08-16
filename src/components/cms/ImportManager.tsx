@@ -243,7 +243,10 @@ const ImportManager = () => {
 
       const { error: contentError } = await supabase
         .from('cms_content')
-        .insert(contentData);
+        .upsert(contentData, { 
+          onConflict: 'page,section,content_key',
+          ignoreDuplicates: false 
+        });
 
       if (contentError) {
         console.error('❌ Content import error:', contentError);
@@ -739,7 +742,10 @@ const ImportManager = () => {
 
       const { error: imageError } = await supabase
         .from('cms_images')
-        .insert(imageData);
+        .upsert(imageData, { 
+          onConflict: 'id',
+          ignoreDuplicates: false 
+        });
 
       if (imageError) throw imageError;
       updateStep('images', true);
@@ -789,7 +795,10 @@ const ImportManager = () => {
 
       const { error: brandError } = await supabase
         .from('cms_brand_assets')
-        .insert(brandData);
+        .upsert(brandData, { 
+          onConflict: 'asset_key,asset_type',
+          ignoreDuplicates: false 
+        });
 
       if (brandError) throw brandError;
       updateStep('brand', true);
@@ -973,7 +982,10 @@ const ImportManager = () => {
 
       const { error: designError } = await supabase
         .from('cms_design_tokens')
-        .insert(designTokens);
+        .upsert(designTokens, { 
+          onConflict: 'token_key,token_type',
+          ignoreDuplicates: false 
+        });
 
       if (designError) throw designError;
       updateStep('design', true);
