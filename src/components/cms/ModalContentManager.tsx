@@ -9,7 +9,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Wand2 } from 'lucide-react';
+import { sanitizeContentText, bulkCleanContent } from '@/lib/contentSanitizer';
 
 interface ModalContent {
   id: string;
@@ -42,6 +43,7 @@ export const ModalContentManager = () => {
   const [content, setContent] = useState<ModalContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedModalType, setSelectedModalType] = useState('auth');
+  const [cleaningContent, setCleaningContent] = useState(false);
   const [newItem, setNewItem] = useState({
     content_section: 'header',
     content_key: '',
@@ -117,16 +119,21 @@ export const ModalContentManager = () => {
 
   const updateContent = async (id: string, field: string, value: any) => {
     try {
+      // Clean text content before saving
+      const cleanedValue = (field === 'content_value' || field === 'content_key') 
+        ? sanitizeContentText(value) 
+        : value;
+
       const { error } = await supabase
         .from('cms_modal_content')
-        .update({ [field]: value })
+        .update({ [field]: cleanedValue })
         .eq('id', id);
 
       if (error) throw error;
 
       setContent(prev => 
         prev.map(item => 
-          item.id === id ? { ...item, [field]: value } : item
+          item.id === id ? { ...item, [field]: cleanedValue } : item
         )
       );
 
@@ -141,6 +148,62 @@ export const ModalContentManager = () => {
         description: "Failed to update content",
         variant: "destructive",
       });
+    }
+  };
+
+  const cleanAllModalContent = async () => {
+    if (!user) return;
+
+    setCleaningContent(true);
+    try {
+      const records = content.map(item => ({
+        id: item.id,
+        content: item.content_value
+      }));
+
+      const { success, failed } = await bulkCleanContent(
+        records,
+        async (id, cleanedContent) => {
+          const { error } = await supabase
+            .from('cms_modal_content')
+            .update({
+              content_value: cleanedContent,
+            })
+            .eq('id', id);
+
+          if (error) throw error;
+        }
+      );
+
+      if (success > 0) {
+        await fetchContent(); // Refresh content
+        toast({
+          title: "Success",
+          description: `Cleaned ${success} modal content items`
+        });
+      } else {
+        toast({
+          title: "Info",
+          description: "No modal content needed cleaning"
+        });
+      }
+
+      if (failed > 0) {
+        toast({
+          title: "Warning",
+          description: `Failed to clean ${failed} items`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error cleaning modal content:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clean modal content",
+        variant: "destructive"
+      });
+    } finally {
+      setCleaningContent(false);
     }
   };
 
@@ -221,11 +284,23 @@ export const ModalContentManager = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Modal Content Manager</h2>
-        <p className="text-muted-foreground">
-          Manage content for different modal dialogs throughout the site
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Modal Content Manager</h2>
+          <p className="text-muted-foreground">
+            Manage content for different modal dialogs throughout the site
+          </p>
+        </div>
+        {content.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={cleanAllModalContent}
+            disabled={cleaningContent}
+          >
+            <Wand2 className="h-4 w-4 mr-2" />
+            {cleaningContent ? 'Cleaning...' : 'Clean All HTML'}
+          </Button>
+        )}
       </div>
 
       <Card>
@@ -390,6 +465,7 @@ export const ModalContentManager = () => {
                     value={item.content_value}
                     onChange={(e) => updateContent(item.id, 'content_value', e.target.value)}
                     rows={3}
+                    className="whitespace-pre-wrap word-wrap break-words resize-y"
                   />
                 </div>
               </div>

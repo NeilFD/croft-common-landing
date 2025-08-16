@@ -3,10 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, Edit } from 'lucide-react';
+import { Save, Edit, Wand2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { sanitizeContentText, bulkCleanContent } from '@/lib/contentSanitizer';
 
 interface ContentItem {
   id: string;
@@ -30,6 +31,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<string | null>(null);
+  const [cleaningContent, setCleaningContent] = useState(false);
 
   useEffect(() => {
     fetchContent();
@@ -68,10 +70,13 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
 
     setSaving(item.id);
     try {
+      // Clean the text before saving
+      const cleanedText = sanitizeContentText(newText);
+      
       const { error } = await supabase
         .from('cms_content')
         .update({
-          content_data: { text: newText },
+          content_data: { text: cleanedText },
           updated_at: new Date().toISOString(),
         })
         .eq('id', item.id);
@@ -80,7 +85,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
 
       setContent(prev => prev.map(c => 
         c.id === item.id 
-          ? { ...c, content_data: { text: newText } }
+          ? { ...c, content_data: { text: cleanedText } }
           : c
       ));
 
@@ -91,6 +96,49 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
       toast.error('Failed to update content');
     } finally {
       setSaving(null);
+    }
+  };
+
+  const cleanAllContent = async () => {
+    if (!user) return;
+
+    setCleaningContent(true);
+    try {
+      const records = content.map(item => ({
+        id: item.id,
+        content: item.content_data?.text || ''
+      }));
+
+      const { success, failed } = await bulkCleanContent(
+        records,
+        async (id, cleanedContent) => {
+          const { error } = await supabase
+            .from('cms_content')
+            .update({
+              content_data: { text: cleanedContent },
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', id);
+
+          if (error) throw error;
+        }
+      );
+
+      if (success > 0) {
+        await fetchContent(); // Refresh content
+        toast.success(`Cleaned ${success} content items`);
+      } else {
+        toast.info('No content needed cleaning');
+      }
+
+      if (failed > 0) {
+        toast.error(`Failed to clean ${failed} items`);
+      }
+    } catch (error) {
+      console.error('Error cleaning content:', error);
+      toast.error('Failed to clean content');
+    } finally {
+      setCleaningContent(false);
     }
   };
 
@@ -105,9 +153,21 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-        <p className="text-muted-foreground">{description}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
+          <p className="text-muted-foreground">{description}</p>
+        </div>
+        {content.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={cleanAllContent}
+            disabled={cleaningContent}
+          >
+            <Wand2 className="h-4 w-4 mr-2" />
+            {cleaningContent ? 'Cleaning...' : 'Clean All HTML'}
+          </Button>
+        )}
       </div>
 
       {content.length > 0 ? (
@@ -142,7 +202,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
                     saving={saving === item.id}
                   />
                 ) : (
-                  <div className="whitespace-pre-wrap p-4 bg-muted rounded-md">
+                  <div className="whitespace-pre-wrap word-wrap break-words overflow-wrap-anywhere p-4 bg-muted rounded-md">
                     {item.content_data?.text || 'No content'}
                   </div>
                 )}
@@ -186,12 +246,13 @@ const EditableContent = ({ item, onSave, saving }: EditableContentProps) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={6}
-          className="min-h-32"
+          className="min-h-32 whitespace-pre-wrap word-wrap break-words resize-y"
         />
       ) : (
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}
+          className="word-wrap break-words"
         />
       )}
       

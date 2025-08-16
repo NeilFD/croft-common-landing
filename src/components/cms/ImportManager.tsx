@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { sanitizeContentText } from '@/lib/contentSanitizer';
 import { 
   cafeMenuData, 
   cocktailsMenuData, 
@@ -268,9 +269,17 @@ const ImportManager = () => {
 
       console.log('📝 Attempting to insert content data:', contentData.length, 'items');
 
+      // Clean content before insertion
+      const cleanedContentData = contentData.map(item => ({
+        ...item,
+        content_data: { 
+          text: sanitizeContentText(item.content_data.text)
+        }
+      }));
+
       const { error: contentError } = await supabase
         .from('cms_content')
-        .upsert(contentData, { 
+        .upsert(cleanedContentData, { 
           onConflict: 'page,section,content_key',
           ignoreDuplicates: false 
         });
@@ -798,9 +807,9 @@ const ImportManager = () => {
           sort_order: sectionIndex,
           created_by: user.id,
           items: section.items.map((item, itemIndex) => ({
-            item_name: item.name,
-            description: item.description || null,
-            price: item.price || null,
+            item_name: sanitizeContentText(item.name),
+            description: item.description ? sanitizeContentText(item.description) : null,
+            price: item.price ? sanitizeContentText(item.price) : null,
             is_email: item.isEmail || false,
             is_link: item.isLink || false,
             sort_order: itemIndex,
@@ -815,9 +824,9 @@ const ImportManager = () => {
           sort_order: sectionIndex,
           created_by: user.id,
           items: section.items.map((item, itemIndex) => ({
-            item_name: item.name,
-            description: item.description || null,
-            price: item.price || null,
+            item_name: sanitizeContentText(item.name),
+            description: item.description ? sanitizeContentText(item.description) : null,
+            price: item.price ? sanitizeContentText(item.price) : null,
             is_email: item.isEmail || false,
             is_link: item.isLink || false,
             sort_order: itemIndex,
@@ -832,9 +841,9 @@ const ImportManager = () => {
           sort_order: sectionIndex,
           created_by: user.id,
           items: section.items.map((item, itemIndex) => ({
-            item_name: item.name,
-            description: item.description || null,
-            price: item.price || null,
+            item_name: sanitizeContentText(item.name),
+            description: item.description ? sanitizeContentText(item.description) : null,
+            price: item.price ? sanitizeContentText(item.price) : null,
             is_email: item.isEmail || false,
             is_link: item.isLink || false,
             sort_order: itemIndex,
@@ -849,9 +858,9 @@ const ImportManager = () => {
           sort_order: sectionIndex,
           created_by: user.id,
           items: section.items.map((item, itemIndex) => ({
-            item_name: item.name,
-            description: item.description || null,
-            price: item.price || null,
+            item_name: sanitizeContentText(item.name),
+            description: item.description ? sanitizeContentText(item.description) : null,
+            price: item.price ? sanitizeContentText(item.price) : null,
             is_email: item.isEmail || false,
             is_link: item.isLink || false,
             sort_order: itemIndex,
@@ -866,9 +875,9 @@ const ImportManager = () => {
           sort_order: sectionIndex,
           created_by: user.id,
           items: section.items.map((item, itemIndex) => ({
-            item_name: item.name,
-            description: item.description || null,
-            price: item.price || null,
+            item_name: sanitizeContentText(item.name),
+            description: item.description ? sanitizeContentText(item.description) : null,
+            price: item.price ? sanitizeContentText(item.price) : null,
             is_email: item.isEmail || false,
             is_link: item.isLink || false,
             sort_order: itemIndex,
@@ -883,9 +892,9 @@ const ImportManager = () => {
           sort_order: sectionIndex,
           created_by: user.id,
           items: section.items.map((item, itemIndex) => ({
-            item_name: item.name,
-            description: item.description || null,
-            price: item.price || null,
+            item_name: sanitizeContentText(item.name),
+            description: item.description ? sanitizeContentText(item.description) : null,
+            price: item.price ? sanitizeContentText(item.price) : null,
             is_email: item.isEmail || false,
             is_link: item.isLink || false,
             sort_order: itemIndex,
@@ -900,9 +909,9 @@ const ImportManager = () => {
           sort_order: sectionIndex,
           created_by: user.id,
           items: section.items.map((item, itemIndex) => ({
-            item_name: item.name,
-            description: item.description || null,
-            price: item.price || null,
+            item_name: sanitizeContentText(item.name),
+            description: item.description ? sanitizeContentText(item.description) : null,
+            price: item.price ? sanitizeContentText(item.price) : null,
             is_email: item.isEmail || false,
             is_link: item.isLink || false,
             sort_order: itemIndex,
@@ -1082,11 +1091,16 @@ const ImportManager = () => {
         },
       ];
 
-      // Insert modal content with error handling for duplicates
+      // Clean and insert modal content with error handling for duplicates
       for (const content of modalContent) {
+        const cleanedContent = {
+          ...content,
+          content_value: sanitizeContentText(content.content_value)
+        };
+
         const { error: modalError } = await supabase
           .from('cms_modal_content')
-          .insert(content);
+          .insert(cleanedContent);
 
         // Ignore duplicate errors (23505), throw others
         if (modalError && modalError.code !== '23505') {
@@ -1229,13 +1243,18 @@ const ImportManager = () => {
         },
       ];
 
-      // Insert global content with error handling for duplicates
+      // Clean and insert global content with error handling for duplicates
       for (const content of globalContent) {
+        const cleanedContent = {
+          ...content,
+          content_value: sanitizeContentText(content.content_value)
+        };
+
         const { error: globalError } = await supabase
           .from('cms_global_content')
-          .insert(content);
+          .insert(cleanedContent);
 
-        // Ignore duplicate errors (23505), throw others
+        // Ignore duplicate errors (23505), throw others  
         if (globalError && globalError.code !== '23505') {
           throw globalError;
         }

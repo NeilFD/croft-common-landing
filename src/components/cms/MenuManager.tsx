@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, GripVertical, Mail, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Mail, ExternalLink, Wand2 } from 'lucide-react';
+import { sanitizeContentText, bulkCleanContent } from '@/lib/contentSanitizer';
 
 interface MenuSection {
   id: string;
@@ -43,6 +44,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
   const [items, setItems] = useState<Record<string, MenuItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [newSectionName, setNewSectionName] = useState('');
+  const [cleaningContent, setCleaningContent] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -224,12 +226,20 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
 
   const updateItem = async (item: MenuItem) => {
     try {
+      // Clean text fields before saving
+      const cleanedItem = {
+        ...item,
+        item_name: sanitizeContentText(item.item_name),
+        description: item.description ? sanitizeContentText(item.description) : item.description,
+        price: item.price ? sanitizeContentText(item.price) : item.price
+      };
+
       const { error } = await supabase
         .from('cms_menu_items')
         .update({
-          item_name: item.item_name,
-          price: item.price,
-          description: item.description,
+          item_name: cleanedItem.item_name,
+          price: cleanedItem.price,
+          description: cleanedItem.description,
           is_email: item.is_email,
           is_link: item.is_link,
           link_url: item.link_url,
@@ -238,6 +248,14 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
         .eq('id', item.id);
 
       if (error) throw error;
+
+      // Update local state with cleaned data
+      setItems(prev => ({
+        ...prev,
+        [item.section_id]: prev[item.section_id]?.map(i => 
+          i.id === item.id ? cleanedItem : i
+        ) || []
+      }));
 
       toast({
         title: "Success",
@@ -250,6 +268,76 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
         description: "Failed to update item",
         variant: "destructive"
       });
+    }
+  };
+
+  const cleanAllMenuContent = async () => {
+    if (!user) return;
+
+    setCleaningContent(true);
+    try {
+      let totalCleaned = 0;
+      let totalFailed = 0;
+
+      // Clean all menu items
+      for (const sectionItems of Object.values(items)) {
+        const records = sectionItems.map(item => ({
+          id: item.id,
+          content: [item.item_name, item.description, item.price].filter(Boolean).join(' ')
+        }));
+
+        const { success, failed } = await bulkCleanContent(
+          records,
+          async (id, cleanedContent) => {
+            const item = sectionItems.find(i => i.id === id);
+            if (!item) return;
+
+            const { error } = await supabase
+              .from('cms_menu_items')
+              .update({
+                item_name: sanitizeContentText(item.item_name),
+                description: item.description ? sanitizeContentText(item.description) : item.description,
+                price: item.price ? sanitizeContentText(item.price) : item.price,
+              })
+              .eq('id', id);
+
+            if (error) throw error;
+          }
+        );
+
+        totalCleaned += success;
+        totalFailed += failed;
+      }
+
+      if (totalCleaned > 0) {
+        await fetchMenuData(); // Refresh data
+        toast({
+          title: "Success",
+          description: `Cleaned ${totalCleaned} menu items`
+        });
+      } else {
+        toast({
+          title: "Info",
+          description: "No menu content needed cleaning"
+        });
+      }
+
+      if (totalFailed > 0) {
+        toast({
+          title: "Warning",
+          description: `Failed to clean ${totalFailed} items`,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error cleaning menu content:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clean menu content",
+        variant: "destructive"
+      });
+    } finally {
+      setCleaningContent(false);
     }
   };
 
@@ -287,11 +375,23 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Menu Manager - {pageTitle}</h2>
-        <p className="text-muted-foreground">
-          Manage menu sections and items for the {pageTitle} page
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">Menu Manager - {pageTitle}</h2>
+          <p className="text-muted-foreground">
+            Manage menu sections and items for the {pageTitle} page
+          </p>
+        </div>
+        {sections.length > 0 && (
+          <Button
+            variant="outline"
+            onClick={cleanAllMenuContent}
+            disabled={cleaningContent}
+          >
+            <Wand2 className="h-4 w-4 mr-2" />
+            {cleaningContent ? 'Cleaning...' : 'Clean All HTML'}
+          </Button>
+        )}
       </div>
 
       {/* Create New Section */}
@@ -428,6 +528,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
                             }}
                             onBlur={() => updateItem(item)}
                             rows={3}
+                            className="whitespace-pre-wrap word-wrap break-words resize-y"
                           />
                         </div>
                       </div>
