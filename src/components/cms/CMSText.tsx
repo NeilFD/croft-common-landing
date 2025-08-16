@@ -123,7 +123,10 @@ export const CMSText = ({
   };
 
   const handleSave = async () => {
+    console.log('🎯 CMS: SAVE STARTED - editValue:', editValue, 'displayText:', displayText);
+    
     if (editValue === displayText) {
+      console.log('🎯 CMS: No changes detected, skipping save');
       setIsEditing(false);
       return;
     }
@@ -132,8 +135,10 @@ export const CMSText = ({
     incrementPendingChanges();
 
     try {
+      console.log('🎯 CMS: Checking for existing content...', { page, section, contentKey });
+      
       // Check if content exists
-      const { data: existingContent } = await supabase
+      const { data: existingContent, error: selectError } = await supabase
         .from('cms_content')
         .select('id')
         .eq('page', page)
@@ -141,21 +146,33 @@ export const CMSText = ({
         .eq('content_key', contentKey)
         .maybeSingle();
 
+      console.log('🎯 CMS: Existing content query result:', existingContent, 'Error:', selectError);
+
       const contentData = { text: editValue };
+      console.log('🎯 CMS: Content data to save:', contentData);
 
       if (existingContent) {
+        console.log('🎯 CMS: Updating existing content with ID:', existingContent.id);
+        
         // Update existing content as draft
-        await supabase
+        const { data: updateData, error: updateError } = await supabase
           .from('cms_content')
           .update({ 
             content_data: contentData,
             published: false, // Save as draft
             updated_at: new Date().toISOString()
           })
-          .eq('id', existingContent.id);
+          .eq('id', existingContent.id)
+          .select();
+          
+        console.log('🎯 CMS: Update result:', updateData, 'Error:', updateError);
+        
+        if (updateError) throw updateError;
       } else {
+        console.log('🎯 CMS: Creating new content entry');
+        
         // Create new content as draft
-        await supabase
+        const { data: insertData, error: insertError } = await supabase
           .from('cms_content')
           .insert({
             page,
@@ -164,8 +181,15 @@ export const CMSText = ({
             content_type: 'text',
             content_data: contentData,
             published: false // Save as draft
-          });
+          })
+          .select();
+          
+        console.log('🎯 CMS: Insert result:', insertData, 'Error:', insertError);
+        
+        if (insertError) throw insertError;
       }
+
+      console.log('🎯 CMS: Save successful, showing toast and refreshing content');
 
       toast({
         title: "Content Saved",
@@ -173,10 +197,14 @@ export const CMSText = ({
       });
       
       setIsEditing(false);
+      
       // Refresh content to show the saved changes
+      console.log('🎯 CMS: Calling refreshContent...');
       refreshContent();
+      
+      console.log('🎯 CMS: Save process completed successfully');
     } catch (error) {
-      console.error('Error saving content:', error);
+      console.error('🎯 CMS: Error saving content:', error);
       toast({
         title: "Save Failed",
         description: "There was an error saving your changes.",
