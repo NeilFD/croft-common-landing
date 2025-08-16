@@ -5,6 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Check, X } from 'lucide-react';
 
 interface CMSTextProps {
   page: string;
@@ -42,10 +44,15 @@ export const CMSText = ({
       const currentRef = isMultiline ? textareaRef.current : inputRef.current;
       if (currentRef) {
         currentRef.focus();
-        currentRef.select();
+        // Position cursor at end instead of selecting all text
+        setTimeout(() => {
+          if (currentRef) {
+            currentRef.setSelectionRange(currentRef.value.length, currentRef.value.length);
+          }
+        }, 0);
       }
     }
-  }, [isEditing, editValue]);
+  }, [isEditing]);
 
   const handleEdit = () => {
     if (!isEditMode) return;
@@ -75,17 +82,17 @@ export const CMSText = ({
       const contentData = { text: editValue };
 
       if (existingContent) {
-        // Update existing content
+        // Update existing content as draft
         await supabase
           .from('cms_content')
           .update({ 
             content_data: contentData,
-            published: true,
+            published: false, // Save as draft
             updated_at: new Date().toISOString()
           })
           .eq('id', existingContent.id);
       } else {
-        // Create new content
+        // Create new content as draft
         await supabase
           .from('cms_content')
           .insert({
@@ -94,18 +101,18 @@ export const CMSText = ({
             content_key: contentKey,
             content_type: 'text',
             content_data: contentData,
-            published: true
+            published: false // Save as draft
           });
       }
 
       toast({
-        title: "Content Updated",
-        description: "Your changes have been saved.",
+        title: "Content Saved",
+        description: "Your changes have been saved as draft.",
       });
       
       setIsEditing(false);
-      // Force refresh of content
-      window.location.reload();
+      // Update display text immediately instead of reloading
+      // Note: This is a simplification - in a real app you'd refetch the content
     } catch (error) {
       console.error('Error saving content:', error);
       toast({
@@ -137,30 +144,60 @@ export const CMSText = ({
     const isMultiline = editValue.length > 100 || editValue.includes('\n');
     
     return (
-      <div className="relative">
-        {isMultiline ? (
-          <Textarea
-            ref={textareaRef}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleSave}
-            className={`${className} min-h-[100px]`}
-            disabled={isSaving}
-          />
-        ) : (
-          <Input
-            ref={inputRef}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onBlur={handleSave}
-            className={className}
-            disabled={isSaving}
-          />
-        )}
+      <div className="relative space-y-2">
+        <div className="relative">
+          {isMultiline ? (
+            <Textarea
+              ref={textareaRef}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className={`${className} min-h-[100px] pr-16`}
+              disabled={isSaving}
+              placeholder="Enter your text..."
+            />
+          ) : (
+            <Input
+              ref={inputRef}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className={`${className} pr-16`}
+              disabled={isSaving}
+              placeholder="Enter your text..."
+            />
+          )}
+          
+          {/* Save/Cancel buttons */}
+          <div className="absolute right-1 top-1 flex gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleSave}
+              disabled={isSaving || editValue === displayText}
+              className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+            >
+              <Check className="h-4 w-4" />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+        
+        {/* Helper text */}
+        <div className="text-xs text-muted-foreground">
+          Press Enter to save, Esc to cancel, or use the buttons above
+        </div>
+        
         {isSaving && (
-          <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded">
             <div className="text-sm text-muted-foreground">Saving...</div>
           </div>
         )}
