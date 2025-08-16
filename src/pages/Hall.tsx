@@ -3,7 +3,6 @@ import Footer from '@/components/Footer';
 import HallHeroCarousel from '@/components/HallHeroCarousel';
 import MenuButton from '@/components/MenuButton';
 import { hallMenuData } from '@/data/menuData';
-import CMSPageHeader from '@/components/cms/CMSPageHeader';
 
 const Hall = () => {
   return (
@@ -12,14 +11,14 @@ const Hall = () => {
       <HallHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
-          <CMSPageHeader
-            page="hall"
-            defaultTitle="HALL"
-            defaultDescription="An empty room. Blank canvas. Full sound. Lights cut. Walls shake. Life's big moments.
-
-Strip it back. Fill it up."
-            titleClassName="font-brutalist text-4xl md:text-6xl mb-8 text-foreground transition-all duration-300 hover:opacity-80 cursor-pointer"
-          />
+          <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground transition-all duration-300 hover:opacity-80 cursor-pointer">
+            HALL
+          </h2>
+          <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
+            An empty room. Blank canvas. Full sound. Lights cut. Walls shake. Life's big moments. 
+            <br /><br />
+            Strip it back. Fill it up.
+          </p>
         </div>
       </section>
       <Footer />

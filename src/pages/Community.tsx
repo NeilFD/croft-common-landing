@@ -5,7 +5,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { format } from 'date-fns';
-import CMSPageHeader from '@/components/cms/CMSPageHeader';
 
 interface CommonGoodRow { message: string; posted_at: string; }
 
@@ -42,12 +41,7 @@ const Community = () => {
       <CommunityHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
-           <CMSPageHeader
-            page="community"
-            defaultTitle="COMMON GROUND"
-            defaultDescription="We didn't land here by accident. Croft Common was built in the heart of it all - the murals, the music, the noise, it has roots. Stokes Croft isn't a backdrop, it's part of the fabric. We're here for more than trade. We give back in time, space, and support. Always add, never subtract."
-            titleClassName="font-brutalist text-4xl md:text-6xl mb-8 text-foreground"
-          />
+          <h1 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">COMMON GROUND</h1>
           <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
             We didn't land here by accident.
             <br /><br />

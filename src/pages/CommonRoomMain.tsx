@@ -1,7 +1,6 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CommonRoomHeroCarousel from "@/components/CommonRoomHeroCarousel";
-import CMSPageHeader from '@/components/cms/CMSPageHeader';
 
 const CommonRoomMain = () => {
   return (
@@ -20,15 +19,16 @@ const CommonRoomMain = () => {
         <CommonRoomHeroCarousel />
         <section className="py-24 bg-background">
           <div className="container mx-auto px-6 text-center">
-            <CMSPageHeader
-              page="common-room"
-              defaultTitle="THE COMMON ROOM"
-              defaultDescription="Quiet access. Shared space. Early invites. Inside track.
-
-A place to hear first, see first, know first.
-
-Members, not membership."
-            />
+            <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">
+              THE COMMON ROOM
+            </h2>
+            <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
+              Quiet access. Shared space. Early invites. Inside track.
+              <br /><br />
+              A place to hear first, see first, know first.
+              <br /><br />
+              Members, not membership.
+            </p>
           </div>
         </section>
         <Footer showSubscription={false} />
