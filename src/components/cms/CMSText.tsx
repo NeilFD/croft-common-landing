@@ -27,7 +27,7 @@ export const CMSText = ({
   as: Component = 'div'
 }: CMSTextProps) => {
   const { isEditMode, incrementPendingChanges, decrementPendingChanges } = useEditMode();
-  const { content, loading, error } = useCMSContent(page, section, contentKey, isEditMode);
+  const { content, loading, error, refreshContent } = useCMSContent(page, section, contentKey, isEditMode);
   
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -46,30 +46,39 @@ export const CMSText = ({
       const currentRef = isMultiline ? textareaRef.current : inputRef.current;
       if (currentRef) {
         currentRef.focus();
-        // Position cursor at end instead of selecting all text
-        setTimeout(() => {
-          if (currentRef) {
-            currentRef.setSelectionRange(currentRef.value.length, currentRef.value.length);
-          }
-        }, 0);
+        // Select all text for better editing experience
+        currentRef.select();
       }
     }
   }, [isEditing]);
 
-  const handleEdit = () => {
+  const handleEdit = (e: React.MouseEvent) => {
     if (!isEditMode) return;
     
-    // Capture original element styles before editing
+    // Stop propagation to prevent parent button/link clicks
+    e.stopPropagation();
+    e.preventDefault();
+    
+    // Capture original element styles and position before editing
     if (originalElementRef.current) {
       const computedStyles = window.getComputedStyle(originalElementRef.current);
+      const rect = originalElementRef.current.getBoundingClientRect();
       setOriginalStyles({
         fontSize: computedStyles.fontSize,
         lineHeight: computedStyles.lineHeight,
         textAlign: computedStyles.textAlign,
         fontWeight: computedStyles.fontWeight,
         fontFamily: computedStyles.fontFamily,
-        height: originalElementRef.current.offsetHeight,
-        width: originalElementRef.current.offsetWidth,
+        color: computedStyles.color,
+        padding: computedStyles.padding,
+        margin: computedStyles.margin,
+        borderRadius: computedStyles.borderRadius,
+        position: 'absolute',
+        top: `${rect.top + window.scrollY}px`,
+        left: `${rect.left + window.scrollX}px`,
+        height: `${rect.height}px`,
+        width: `${rect.width}px`,
+        zIndex: 9999,
       });
     }
     
@@ -128,8 +137,8 @@ export const CMSText = ({
       });
       
       setIsEditing(false);
-      // Update display text immediately instead of reloading
-      // Note: This is a simplification - in a real app you'd refetch the content
+      // Refresh content to show the saved changes
+      refreshContent();
     } catch (error) {
       console.error('Error saving content:', error);
       toast({
@@ -159,25 +168,17 @@ export const CMSText = ({
 
   if (isEditing) {
     const isMultiline = editValue.length > 100 || editValue.includes('\n');
-    const minHeight = Math.max(parseInt(originalStyles.height) || 40, 40);
-    
-    const editingStyles = {
-      fontSize: originalStyles.fontSize || 'inherit',
-      fontWeight: originalStyles.fontWeight || 'inherit',
-      fontFamily: originalStyles.fontFamily || 'inherit',
-      textAlign: originalStyles.textAlign || 'inherit',
-      lineHeight: originalStyles.lineHeight || 'inherit',
-      minHeight: `${minHeight}px`,
-      width: originalStyles.width ? `${originalStyles.width}px` : 'auto',
-    };
     
     return (
       <>
         {/* Backdrop to prevent interaction with other elements */}
-        <div className="fixed inset-0 bg-black/10 z-40" onClick={handleCancel} />
+        <div className="fixed inset-0 bg-black/20 z-[9998]" onClick={handleCancel} />
         
-        {/* Editing container with high z-index */}
-        <div className="relative z-50 space-y-2">
+        {/* Editing container positioned exactly where the original text was */}
+        <div 
+          className="space-y-2"
+          style={originalStyles}
+        >
           <div className="relative">
             {isMultiline ? (
               <Textarea
@@ -185,8 +186,7 @@ export const CMSText = ({
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className={`${className} pr-20 resize-none`}
-                style={editingStyles}
+                className="border-2 border-primary bg-background text-foreground pr-20 resize-none"
                 disabled={isSaving}
                 placeholder="Enter your text..."
               />
@@ -196,15 +196,14 @@ export const CMSText = ({
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className={`${className} pr-20`}
-                style={editingStyles}
+                className="border-2 border-primary bg-background text-foreground pr-20"
                 disabled={isSaving}
                 placeholder="Enter your text..."
               />
             )}
             
-            {/* Save/Cancel buttons with high z-index */}
-            <div className="absolute right-2 top-2 flex gap-1 z-60 bg-background rounded border shadow-lg p-1">
+            {/* Save/Cancel buttons */}
+            <div className="absolute right-2 top-2 flex gap-1 bg-background rounded border shadow-lg p-1">
               <Button
                 size="sm"
                 variant="ghost"
@@ -227,12 +226,12 @@ export const CMSText = ({
           </div>
           
           {/* Helper text */}
-          <div className="text-xs text-muted-foreground bg-background/80 p-1 rounded">
+          <div className="text-xs text-muted-foreground bg-background/90 p-2 rounded border shadow-sm">
             Press Enter to save, Esc to cancel, or use the buttons above
           </div>
           
           {isSaving && (
-            <div className="absolute inset-0 bg-background/50 flex items-center justify-center rounded z-70">
+            <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded">
               <div className="text-sm text-muted-foreground">Saving...</div>
             </div>
           )}
@@ -244,11 +243,14 @@ export const CMSText = ({
   return (
     <Component 
       ref={originalElementRef}
-      className={`${className} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30' : ''}`}
+      className={`${className} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
       onClick={handleEdit}
-      title={isEditMode ? 'Click to edit' : undefined}
+      title={isEditMode ? 'Click to edit (CMS)' : undefined}
     >
       {displayText}
+      {isEditMode && (
+        <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-60" />
+      )}
     </Component>
   );
 };
