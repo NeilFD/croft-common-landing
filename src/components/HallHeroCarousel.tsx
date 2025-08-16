@@ -5,8 +5,10 @@ import { hallHeroImages as heroImages } from '@/data/heroImages';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import BookFloatingButton from '@/components/BookFloatingButton';
+import MenuButton from '@/components/MenuButton';
 import { CMSText } from '@/components/cms/CMSText';
 import CroftLogo from './CroftLogo';
+import { hallMenuData } from '@/data/menuData';
 const HallHeroCarousel = () => {
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -140,6 +142,9 @@ const HallHeroCarousel = () => {
 
       {/* Book button */}
       <BookFloatingButton />
+      
+      {/* Menu button */}
+      <MenuButton pageType="hall" menuData={hallMenuData} />
     </div>
   );
 };

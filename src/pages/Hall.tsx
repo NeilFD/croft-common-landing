@@ -1,8 +1,6 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import HallHeroCarousel from '@/components/HallHeroCarousel';
-import MenuButton from '@/components/MenuButton';
-import { hallMenuData } from '@/data/menuData';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { CMSText } from '@/components/cms/CMSText';
 
@@ -34,7 +32,6 @@ const Hall = () => {
         </div>
       </section>
       {!isCMSMode && <Footer />}
-      {!isCMSMode && <MenuButton pageType="hall" menuData={hallMenuData} />}
     </div>
   );
 };
