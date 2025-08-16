@@ -63,6 +63,32 @@ export const CMSText = ({
     if (originalElementRef.current) {
       const computedStyles = window.getComputedStyle(originalElementRef.current);
       const rect = originalElementRef.current.getBoundingClientRect();
+      
+      // Check if this element is inside a button (common for floating buttons)
+      const isInButton = originalElementRef.current.closest('button') !== null;
+      
+      let editPosition = {};
+      
+      if (isInButton) {
+        // For buttons, position the editor above and slightly to the left
+        editPosition = {
+          position: 'fixed',
+          top: `${Math.max(rect.top - 80, 20)}px`, // Above the button with padding
+          left: `${Math.max(rect.left - 50, 20)}px`, // Slightly left with padding
+          width: '280px', // Fixed width for better usability
+          zIndex: 10000,
+        };
+      } else {
+        // For other elements, overlay in place
+        editPosition = {
+          position: 'absolute',
+          top: `${rect.top + window.scrollY}px`,
+          left: `${rect.left + window.scrollX}px`,
+          width: `${Math.max(rect.width, 200)}px`,
+          zIndex: 9999,
+        };
+      }
+      
       setOriginalStyles({
         fontSize: computedStyles.fontSize,
         lineHeight: computedStyles.lineHeight,
@@ -73,12 +99,7 @@ export const CMSText = ({
         padding: computedStyles.padding,
         margin: computedStyles.margin,
         borderRadius: computedStyles.borderRadius,
-        position: 'absolute',
-        top: `${rect.top + window.scrollY}px`,
-        left: `${rect.left + window.scrollX}px`,
-        height: `${rect.height}px`,
-        width: `${rect.width}px`,
-        zIndex: 9999,
+        ...editPosition,
       });
     }
     
@@ -174,11 +195,15 @@ export const CMSText = ({
         {/* Backdrop to prevent interaction with other elements */}
         <div className="fixed inset-0 bg-black/20 z-[9998]" onClick={handleCancel} />
         
-        {/* Editing container positioned exactly where the original text was */}
+        {/* Editing container positioned optimally */}
         <div 
-          className="space-y-2"
+          className="bg-background border-2 border-primary rounded-lg shadow-xl p-3 space-y-3"
           style={originalStyles}
         >
+          <div className="text-xs text-muted-foreground font-medium border-b pb-2">
+            Editing: {page} / {section} / {contentKey}
+          </div>
+          
           <div className="relative">
             {isMultiline ? (
               <Textarea
@@ -186,7 +211,7 @@ export const CMSText = ({
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="border-2 border-primary bg-background text-foreground pr-20 resize-none"
+                className="border-2 border-muted bg-background text-foreground resize-none min-h-[80px]"
                 disabled={isSaving}
                 placeholder="Enter your text..."
               />
@@ -196,43 +221,47 @@ export const CMSText = ({
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="border-2 border-primary bg-background text-foreground pr-20"
+                className="border-2 border-muted bg-background text-foreground"
                 disabled={isSaving}
                 placeholder="Enter your text..."
               />
             )}
-            
-            {/* Save/Cancel buttons */}
-            <div className="absolute right-2 top-2 flex gap-1 bg-background rounded border shadow-lg p-1">
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleSave}
-                disabled={isSaving || editValue === displayText}
-                className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
-              >
-                <Check className="h-3 w-3" />
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={handleCancel}
-                disabled={isSaving}
-                className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
+          </div>
+          
+          {/* Action buttons */}
+          <div className="flex gap-2 justify-end">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSaving}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={isSaving || editValue === displayText}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Check className="h-3 w-3 mr-1" />
+              Save
+            </Button>
           </div>
           
           {/* Helper text */}
-          <div className="text-xs text-muted-foreground bg-background/90 p-2 rounded border shadow-sm">
-            Press Enter to save, Esc to cancel, or use the buttons above
+          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded border-t">
+            💡 Press <kbd className="px-1 bg-background border rounded">Enter</kbd> to save, <kbd className="px-1 bg-background border rounded">Esc</kbd> to cancel
           </div>
           
           {isSaving && (
-            <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded">
-              <div className="text-sm text-muted-foreground">Saving...</div>
+            <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
+              <div className="text-sm text-muted-foreground flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                Saving...
+              </div>
             </div>
           )}
         </div>
