@@ -171,15 +171,18 @@ export const CMSSidebar = () => {
                         <Collapsible>
                           <CollapsibleTrigger asChild>
                             <SidebarMenuButton 
+                              asChild
                               className={getNavClass(isParentActive(page.path))}
                             >
-                              <page.icon className="mr-2 h-4 w-4" />
-                              {state !== "collapsed" && (
-                                <>
-                                  <span>{page.name}</span>
-                                  <ChevronDown className="ml-auto h-4 w-4" />
-                                </>
-                              )}
+                              <NavLink to={page.path}>
+                                <page.icon className="mr-2 h-4 w-4" />
+                                {state !== "collapsed" && (
+                                  <>
+                                    <span>{page.name}</span>
+                                    <ChevronDown className="ml-auto h-4 w-4" />
+                                  </>
+                                )}
+                              </NavLink>
                             </SidebarMenuButton>
                           </CollapsibleTrigger>
                           <CollapsibleContent>
