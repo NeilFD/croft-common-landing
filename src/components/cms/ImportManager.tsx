@@ -743,7 +743,7 @@ const ImportManager = () => {
       const { error: imageError } = await supabase
         .from('cms_images')
         .upsert(imageData, { 
-          onConflict: 'id',
+          onConflict: 'image_url,page,carousel_name',
           ignoreDuplicates: false 
         });
 
