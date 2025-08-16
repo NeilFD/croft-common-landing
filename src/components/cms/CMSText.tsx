@@ -97,9 +97,36 @@ export const CMSText = ({
       
       console.log('🎯 CMS: Is in button:', isInButton, 'Button parent:', buttonParent);
       
-      // Simple positioning - always above the element
-      const topPos = Math.max(rect.top - 180, 20); // Above with fallback
-      const leftPos = Math.max(rect.left - 50, 20); // Slightly left with fallback
+      // Smart positioning with viewport boundary detection
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const popupWidth = 350; // Account for popup width
+      const popupHeight = 400; // Account for popup height
+      
+      // Calculate preferred position (above and to the left)
+      let topPos = rect.top - popupHeight - 10;
+      let leftPos = rect.left - 50;
+      
+      // Boundary checks and adjustments
+      // If popup goes above viewport, position below element
+      if (topPos < 20) {
+        topPos = rect.bottom + 10;
+      }
+      
+      // If popup goes below viewport, position at bottom with margin
+      if (topPos + popupHeight > viewportHeight - 20) {
+        topPos = viewportHeight - popupHeight - 20;
+      }
+      
+      // If popup goes too far left, adjust right
+      if (leftPos < 20) {
+        leftPos = 20;
+      }
+      
+      // If popup goes too far right, adjust left
+      if (leftPos + popupWidth > viewportWidth - 20) {
+        leftPos = viewportWidth - popupWidth - 20;
+      }
       
       console.log('🎯 CMS: Calculated position:', { topPos, leftPos });
       
