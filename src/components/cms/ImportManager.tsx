@@ -6,6 +6,15 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Upload, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { 
+  cafeMenuData, 
+  cocktailsMenuData, 
+  beerMenuData, 
+  kitchensMenuData, 
+  hallMenuData, 
+  communityMenuData, 
+  commonRoomMenuData 
+} from '@/data/menuData';
 
 interface ImportStep {
   id: string;
@@ -30,6 +39,24 @@ const ImportManager = () => {
       id: 'images',
       name: 'Import Hero Images',
       description: 'All carousel images with metadata and descriptions',
+      completed: false,
+    },
+    {
+      id: 'menus',
+      name: 'Import Menu Content',
+      description: 'All menu sections and items from cafe, cocktails, beer, kitchens',
+      completed: false,
+    },
+    {
+      id: 'modals',
+      name: 'Import Modal Content',
+      description: 'Secret modal content for Beer, Cinema, Kitchens, Lucky Seven',
+      completed: false,
+    },
+    {
+      id: 'global',
+      name: 'Import Global Content',
+      description: 'Footer, navigation, subscription forms, and global elements',
       completed: false,
     },
     {
@@ -756,6 +783,443 @@ const ImportManager = () => {
     }
   };
 
+  const importMenus = async () => {
+    if (!user) return;
+
+    try {
+      setProgress(30);
+
+      // Import from existing menuData.ts file
+      const menuImports = [
+        // Cafe Menu
+        ...cafeMenuData.map((section, sectionIndex) => ({
+          page: 'cafe',
+          section_name: section.title,
+          sort_order: sectionIndex,
+          created_by: user.id,
+          items: section.items.map((item, itemIndex) => ({
+            item_name: item.name,
+            description: item.description || null,
+            price: item.price || null,
+            is_email: item.isEmail || false,
+            is_link: item.isLink || false,
+            sort_order: itemIndex,
+            created_by: user.id,
+          }))
+        })),
+        
+        // Cocktails Menu
+        ...cocktailsMenuData.map((section, sectionIndex) => ({
+          page: 'cocktails',
+          section_name: section.title,
+          sort_order: sectionIndex,
+          created_by: user.id,
+          items: section.items.map((item, itemIndex) => ({
+            item_name: item.name,
+            description: item.description || null,
+            price: item.price || null,
+            is_email: item.isEmail || false,
+            is_link: item.isLink || false,
+            sort_order: itemIndex,
+            created_by: user.id,
+          }))
+        })),
+        
+        // Beer Menu
+        ...beerMenuData.map((section, sectionIndex) => ({
+          page: 'beer',
+          section_name: section.title,
+          sort_order: sectionIndex,
+          created_by: user.id,
+          items: section.items.map((item, itemIndex) => ({
+            item_name: item.name,
+            description: item.description || null,
+            price: item.price || null,
+            is_email: item.isEmail || false,
+            is_link: item.isLink || false,
+            sort_order: itemIndex,
+            created_by: user.id,
+          }))
+        })),
+        
+        // Kitchens Menu
+        ...kitchensMenuData.map((section, sectionIndex) => ({
+          page: 'kitchens',
+          section_name: section.title,
+          sort_order: sectionIndex,
+          created_by: user.id,
+          items: section.items.map((item, itemIndex) => ({
+            item_name: item.name,
+            description: item.description || null,
+            price: item.price || null,
+            is_email: item.isEmail || false,
+            is_link: item.isLink || false,
+            sort_order: itemIndex,
+            created_by: user.id,
+          }))
+        })),
+        
+        // Hall Menu
+        ...hallMenuData.map((section, sectionIndex) => ({
+          page: 'hall',
+          section_name: section.title,
+          sort_order: sectionIndex,
+          created_by: user.id,
+          items: section.items.map((item, itemIndex) => ({
+            item_name: item.name,
+            description: item.description || null,
+            price: item.price || null,
+            is_email: item.isEmail || false,
+            is_link: item.isLink || false,
+            sort_order: itemIndex,
+            created_by: user.id,
+          }))
+        })),
+        
+        // Community Menu
+        ...communityMenuData.map((section, sectionIndex) => ({
+          page: 'community',
+          section_name: section.title,
+          sort_order: sectionIndex,
+          created_by: user.id,
+          items: section.items.map((item, itemIndex) => ({
+            item_name: item.name,
+            description: item.description || null,
+            price: item.price || null,
+            is_email: item.isEmail || false,
+            is_link: item.isLink || false,
+            sort_order: itemIndex,
+            created_by: user.id,
+          }))
+        })),
+        
+        // Common Room Menu
+        ...commonRoomMenuData.map((section, sectionIndex) => ({
+          page: 'common-room',
+          section_name: section.title,
+          sort_order: sectionIndex,
+          created_by: user.id,
+          items: section.items.map((item, itemIndex) => ({
+            item_name: item.name,
+            description: item.description || null,
+            price: item.price || null,
+            is_email: item.isEmail || false,
+            is_link: item.isLink || false,
+            sort_order: itemIndex,
+            created_by: user.id,
+          }))
+        })),
+      ];
+
+      // First create sections, then items
+      for (const menuSection of menuImports) {
+        const { items, ...sectionData } = menuSection;
+        
+        const { data: sectionResult, error: sectionError } = await supabase
+          .from('cms_menu_sections')
+          .upsert(sectionData, { 
+            onConflict: 'page,section_name',
+            ignoreDuplicates: false 
+          })
+          .select('id')
+          .single();
+
+        if (sectionError) throw sectionError;
+
+        const itemsWithSectionId = items.map(item => ({
+          ...item,
+          section_id: sectionResult.id,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from('cms_menu_items')
+          .upsert(itemsWithSectionId, { 
+            onConflict: 'section_id,item_name',
+            ignoreDuplicates: false 
+          });
+
+        if (itemsError) throw itemsError;
+      }
+
+      updateStep('menus', true);
+
+    } catch (error) {
+      updateStep('menus', false, error instanceof Error ? error.message : 'Failed to import menus');
+      throw error;
+    }
+  };
+
+  const importModals = async () => {
+    if (!user) return;
+
+    try {
+      setProgress(45);
+
+      const modalContent = [
+        // Secret Beer Modal
+        {
+          modal_type: 'beer',
+          content_section: 'header',
+          content_key: 'title',
+          content_value: 'Membership. Not Members',
+          created_by: user.id,
+        },
+        {
+          modal_type: 'beer',
+          content_section: 'body',
+          content_key: 'description',
+          content_value: 'Keep it quiet. Just say the word: [SECRET_WORD]',
+          created_by: user.id,
+        },
+        {
+          modal_type: 'beer',
+          content_section: 'body',
+          content_key: 'offer',
+          content_value: 'Not-So-Common IPA: 2.5/5',
+          created_by: user.id,
+        },
+        
+        // Secret Lucky Seven Modal
+        {
+          modal_type: 'lucky_seven',
+          content_section: 'header',
+          content_key: 'title',
+          content_value: 'Lucky No 7',
+          created_by: user.id,
+        },
+        {
+          modal_type: 'lucky_seven',
+          content_section: 'body',
+          content_key: 'instructions',
+          content_value: 'Show this to the bartender. Take the dice. Roll a seven. Your drink\'s on us.',
+          created_by: user.id,
+        },
+        {
+          modal_type: 'lucky_seven',
+          content_section: 'body',
+          content_key: 'limitation',
+          content_value: 'Two max. Don\'t be greedy.',
+          created_by: user.id,
+        },
+        
+        // Secret Kitchens Modal (content from component)
+        {
+          modal_type: 'kitchens',
+          content_section: 'header',
+          content_key: 'title',
+          content_value: 'Secret Kitchen Menu',
+          created_by: user.id,
+        },
+        
+        // Secret Cinema Modal
+        {
+          modal_type: 'cinema',
+          content_section: 'header',
+          content_key: 'title',
+          content_value: 'Secret Cinema',
+          created_by: user.id,
+        },
+        {
+          modal_type: 'cinema',
+          content_section: 'body',
+          content_key: 'description',
+          content_value: 'Monthly exclusive screenings for members',
+          created_by: user.id,
+        },
+        
+        // Auth Modal
+        {
+          modal_type: 'auth',
+          content_section: 'header',
+          content_key: 'title',
+          content_value: 'Join Croft Common',
+          created_by: user.id,
+        },
+        {
+          modal_type: 'auth',
+          content_section: 'body',
+          content_key: 'description',
+          content_value: 'We\'ll email you a magic link to get started.',
+          created_by: user.id,
+        },
+        
+        // Membership Modal
+        {
+          modal_type: 'membership',
+          content_section: 'header',
+          content_key: 'title',
+          content_value: 'Common Membership',
+          created_by: user.id,
+        },
+        {
+          modal_type: 'membership',
+          content_section: 'body',
+          content_key: 'description',
+          content_value: 'Unlock exclusive access to members-only events, secret menus, and community perks.',
+          created_by: user.id,
+        },
+      ];
+
+      const { error: modalError } = await supabase
+        .from('cms_modal_content')
+        .upsert(modalContent, { 
+          onConflict: 'modal_type,content_section,content_key',
+          ignoreDuplicates: false 
+        });
+
+      if (modalError) throw modalError;
+      updateStep('modals', true);
+
+    } catch (error) {
+      updateStep('modals', false, error instanceof Error ? error.message : 'Failed to import modal content');
+      throw error;
+    }
+  };
+
+  const importGlobalContent = async () => {
+    if (!user) return;
+
+    try {
+      setProgress(60);
+
+      const globalContent = [
+        // Footer Content
+        {
+          content_type: 'footer',
+          content_key: 'company_name',
+          content_value: 'CROFT COMMON',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'location',
+          content_value: 'Stokes Croft, Bristol',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'tagline',
+          content_value: 'Pure Hospitality',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'email',
+          content_value: 'hello@croftcommon.co.uk',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'phone',
+          content_value: '0117 xxx xxxx',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'hours_weekdays',
+          content_value: 'SUN—THURS: 7AM—LATE',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'hours_weekend',
+          content_value: 'FRI—SAT: 7AM—LATER',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'copyright',
+          content_value: '© 2025 CROFT COMMON LTD',
+          created_by: user.id,
+        },
+        {
+          content_type: 'footer',
+          content_key: 'common_good_title',
+          content_value: 'The Common Good',
+          created_by: user.id,
+        },
+        
+        // Navigation Content
+        {
+          content_type: 'navigation',
+          content_key: 'cafe_label',
+          content_value: 'CAFE',
+          created_by: user.id,
+        },
+        {
+          content_type: 'navigation',
+          content_key: 'cocktails_label',
+          content_value: 'COCKTAILS',
+          created_by: user.id,
+        },
+        {
+          content_type: 'navigation',
+          content_key: 'beer_label',
+          content_value: 'BEER',
+          created_by: user.id,
+        },
+        {
+          content_type: 'navigation',
+          content_key: 'kitchens_label',
+          content_value: 'KITCHENS',
+          created_by: user.id,
+        },
+        {
+          content_type: 'navigation',
+          content_key: 'hall_label',
+          content_value: 'HALL',
+          created_by: user.id,
+        },
+        {
+          content_type: 'navigation',
+          content_key: 'community_label',
+          content_value: 'COMMUNITY',
+          created_by: user.id,
+        },
+        {
+          content_type: 'navigation',
+          content_key: 'common_room_label',
+          content_value: 'THE COMMON ROOM',
+          created_by: user.id,
+        },
+        
+        // Subscription Form Content
+        {
+          content_type: 'subscription',
+          content_key: 'placeholder',
+          content_value: 'Enter your email',
+          created_by: user.id,
+        },
+        {
+          content_type: 'subscription',
+          content_key: 'button_text',
+          content_value: 'Subscribe',
+          created_by: user.id,
+        },
+        {
+          content_type: 'subscription',
+          content_key: 'success_message',
+          content_value: 'Thanks for subscribing!',
+          created_by: user.id,
+        },
+      ];
+
+      const { error: globalError } = await supabase
+        .from('cms_global_content')
+        .upsert(globalContent, { 
+          onConflict: 'content_type,content_key',
+          ignoreDuplicates: false 
+        });
+
+      if (globalError) throw globalError;
+      updateStep('global', true);
+
+    } catch (error) {
+      updateStep('global', false, error instanceof Error ? error.message : 'Failed to import global content');
+      throw error;
+    }
+  };
+
   const importBrandAssets = async () => {
     if (!user) return;
 
@@ -1004,6 +1468,9 @@ const ImportManager = () => {
     try {
       await importContent();
       await importImages();
+      await importMenus();
+      await importModals();
+      await importGlobalContent();
       await importBrandAssets();
       await importDesignTokens();
     } catch (error) {
