@@ -16,6 +16,16 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
   const containerRef = useRef<HTMLDivElement>(null);
   const { isEditMode } = useEditMode();
 
+  const handleClose = () => {
+    console.log('Modal close button clicked');
+    onClose();
+  };
+
+  const handleBackdropClick = () => {
+    console.log('Modal backdrop clicked');
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const getPageTitle = () => {
@@ -64,7 +74,7 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
   return (
     <div 
       className="fixed inset-0 z-40 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4"
-      onClick={onClose}
+      onClick={handleBackdropClick}
     >
       <div 
         ref={containerRef}
@@ -94,7 +104,7 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
               <div className="text-xs text-muted-foreground mr-3">Click text to edit</div>
             )}
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className={`w-10 h-10 rounded-full border border-background/30 
                 ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
                 transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
