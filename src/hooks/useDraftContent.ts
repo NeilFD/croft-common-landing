@@ -51,6 +51,17 @@ export const useDraftContent = (page: string) => {
 
   useEffect(() => {
     fetchDraftCount();
+    
+    // Listen for draft content changes
+    const handleDraftChange = () => {
+      fetchDraftCount();
+    };
+    
+    window.addEventListener('draftContentChanged', handleDraftChange);
+    
+    return () => {
+      window.removeEventListener('draftContentChanged', handleDraftChange);
+    };
   }, [page]);
 
   return { 

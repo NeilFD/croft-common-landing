@@ -278,6 +278,11 @@ export const CMSText = ({
       console.log('🎯 CMS: Calling refreshContent...');
       refreshContent();
       
+      // Trigger a custom event to notify other components about draft changes
+      window.dispatchEvent(new CustomEvent('draftContentChanged', { 
+        detail: { page, section, contentKey } 
+      }));
+      
       console.log('🎯 CMS: Save process completed successfully');
     } catch (error) {
       console.error('🎯 CMS: Error saving content:', error);
