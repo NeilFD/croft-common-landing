@@ -33,6 +33,7 @@ import CommonGood from "./pages/CommonGood";
 import Admin from "./pages/Admin";
 import CMS from "./pages/CMS";
 import CMSLogin from "./pages/CMSLogin";
+import CMSVisual from "./pages/CMSVisual";
 import Notifications from "./pages/Notifications";
 import RouteImagePreloader from '@/components/RouteImagePreloader';
 import BrandAssetPreloader from '@/components/BrandAssetPreloader';
@@ -149,6 +150,7 @@ const App = () => (
              <Route path="/notifications" element={<Notifications />} />
              <Route path="/admin" element={<Admin />} />
              <Route path="/cms/login" element={<CMSLogin />} />
+             <Route path="/cms/visual/:page" element={<CMSVisual />} />
              <Route path="/cms/*" element={<CMS />} />
              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

@@ -44,79 +44,51 @@ const pageStructure = [
   },
   {
     name: 'Home (Index)',
-    path: '/cms/pages/home',
+    path: '/cms/visual/home',
     icon: Home,
-    sections: [
-      { name: 'Hero Section', path: '/cms/pages/home/hero' },
-      { name: 'Main Content', path: '/cms/pages/home/content' },
-      { name: 'Menu Modal', path: '/cms/pages/home/menu' }
-    ]
+    sections: []
   },
   {
     name: 'Cafe',
-    path: '/cms/pages/cafe',
+    path: '/cms/visual/cafe',
     icon: Coffee,
-    sections: [
-      { name: 'Page Content', path: '/cms/pages/cafe/content' },
-      { name: 'Menu Sections', path: '/cms/pages/cafe/menu' }
-    ]
+    sections: []
   },
   {
     name: 'Cocktails',
-    path: '/cms/pages/cocktails',
+    path: '/cms/visual/cocktails',
     icon: Wine,
-    sections: [
-      { name: 'Page Content', path: '/cms/pages/cocktails/content' },
-      { name: 'Menu Sections', path: '/cms/pages/cocktails/menu' },
-      { name: 'Secret Lucky Seven', path: '/cms/pages/cocktails/secret' }
-    ]
+    sections: []
   },
   {
     name: 'Beer',
-    path: '/cms/pages/beer',
+    path: '/cms/visual/beer',
     icon: Beer,
-    sections: [
-      { name: 'Page Content', path: '/cms/pages/beer/content' },
-      { name: 'Menu Sections', path: '/cms/pages/beer/menu' },
-      { name: 'Secret Beer Modal', path: '/cms/pages/beer/secret' }
-    ]
+    sections: []
   },
   {
     name: 'Kitchens',
-    path: '/cms/pages/kitchens',
+    path: '/cms/visual/kitchens',
     icon: ChefHat,
-    sections: [
-      { name: 'Page Content', path: '/cms/pages/kitchens/content' },
-      { name: 'Menu Sections', path: '/cms/pages/kitchens/menu' },
-      { name: 'Secret Kitchens Modal', path: '/cms/pages/kitchens/secret' }
-    ]
+    sections: []
   },
   {
     name: 'Hall',
-    path: '/cms/pages/hall',
+    path: '/cms/visual/hall',
     icon: Calendar,
-    sections: [
-      { name: 'Page Content', path: '/cms/pages/hall/content' },
-      { name: 'Menu Modal', path: '/cms/pages/hall/menu' }
-    ]
+    sections: []
   },
   {
     name: 'Community',
-    path: '/cms/pages/community',
+    path: '/cms/visual/community',
     icon: Users,
-    sections: [
-      { name: 'Page Content', path: '/cms/pages/community/content' },
-      { name: 'Menu Modal', path: '/cms/pages/community/menu' }
-    ]
+    sections: []
   },
   {
     name: 'Common Room',
-    path: '/cms/pages/common-room',
+    path: '/cms/visual/common-room',
     icon: Building2,
-    sections: [
-      { name: 'Page Content', path: '/cms/pages/common-room/content' },
-      { name: 'Menu Sections', path: '/cms/pages/common-room/menu' }
-    ]
+    sections: []
   }
 ];
 
