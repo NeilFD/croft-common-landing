@@ -149,7 +149,7 @@ const App = () => (
              <Route path="/notifications" element={<Notifications />} />
              <Route path="/admin" element={<Admin />} />
              <Route path="/cms/login" element={<CMSLogin />} />
-             <Route path="/cms" element={<CMS />} />
+             <Route path="/cms/*" element={<CMS />} />
              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
