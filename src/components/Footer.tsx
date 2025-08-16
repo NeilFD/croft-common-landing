@@ -3,6 +3,7 @@ import MembershipLinkModal from './MembershipLinkModal';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { CMSText } from './cms/CMSText';
 const Footer = ({
   showSubscription = true
 }: {
@@ -44,54 +45,119 @@ const Footer = ({
             <SubscriptionForm variant="footer" className="max-w-md mx-auto" />
           </div>}
         
-        <div className="grid md:grid-cols-3 gap-12">
+         <div className="grid md:grid-cols-3 gap-12">
           <div>
-            <h3 className="font-brutalist text-2xl mb-6">CROFT COMMON</h3>
-            <p className="font-industrial text-sm text-background/70 leading-relaxed">
-              Stokes Croft, Bristol
-              <br />
-              Pure Hospitality
-            </p>
+            <CMSText
+              page="global"
+              section="footer"
+              contentKey="title"
+              fallback="CROFT COMMON"
+              className="font-brutalist text-2xl mb-6"
+              as="h3"
+            />
+            <CMSText
+              page="global"
+              section="footer"
+              contentKey="description"
+              fallback="Stokes Croft, Bristol<br />Pure Hospitality"
+              className="font-industrial text-sm text-background/70 leading-relaxed"
+              as="p"
+            />
           </div>
           
           <div>
-            <h4 className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90">
-              CONTACT
-            </h4>
+            <CMSText
+              page="global"
+              section="footer"
+              contentKey="contact_title"
+              fallback="CONTACT"
+              className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90"
+              as="h4"
+            />
             <div className="flex flex-col md:flex-row md:gap-3 gap-3 text-sm font-industrial">
-              <a href="mailto:hello@croftcommon.co.uk" className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
-                hello@croftcommon.co.uk
-              </a>
-              <a href="tel:0117xxxxxxx" className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
-                0117 xxx xxxx
-              </a>
+              <CMSText
+                page="global"
+                section="footer"
+                contentKey="email"
+                fallback="hello@croftcommon.co.uk"
+                className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
+                as="a"
+              />
+              <CMSText
+                page="global"
+                section="footer"
+                contentKey="phone"
+                fallback="0117 xxx xxxx"
+                className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
+                as="a"
+              />
             </div>
           </div>
           
           <div>
-            <h4 className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90">
-              HOURS
-            </h4>
+            <CMSText
+              page="global"
+              section="footer"
+              contentKey="hours_title"
+              fallback="HOURS"
+              className="font-industrial text-sm uppercase tracking-wide mb-4 text-background/90"
+              as="h4"
+            />
             <div className="space-y-2 text-sm font-industrial">
-              <div className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg mb-2">SUN—THURS: 7AM—LATE</div>
-              <div className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg">FRI—SAT: 7AM—LATER</div>
+              <CMSText
+                page="global"
+                section="footer"
+                contentKey="hours_weekday"
+                fallback="SUN—THURS: 7AM—LATE"
+                className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg mb-2"
+                as="div"
+              />
+              <CMSText
+                page="global"
+                section="footer"
+                contentKey="hours_weekend"
+                fallback="FRI—SAT: 7AM—LATER"
+                className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg"
+                as="div"
+              />
             </div>
           </div>
         </div>
         
         <div className="border-t border-background/20 mt-12 pt-8 flex justify-between items-center">
-          <div className="font-industrial text-xs text-background/50">© 2025 CROFT COMMON LTD</div>
+          <CMSText
+            page="global"
+            section="footer"
+            contentKey="copyright"
+            fallback="© 2025 CROFT COMMON LTD"
+            className="font-industrial text-xs text-background/50"
+            as="div"
+          />
           <button 
             onClick={() => setLinkModalOpen(true)}
             className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
           >
-            Link Membership
+            <CMSText
+              page="global"
+              section="footer"
+              contentKey="membership_link_text"
+              fallback="Link Membership"
+              className=""
+              as="div"
+            />
           </button>
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">
-          <div className="font-industrial text-sm uppercase tracking-wide text-background/80 mb-2">The Common Good</div>
-          <div className="inline-block px-4 py-2 border-2 border-background rounded-full font-brutalist text-4xl md:text-5xl text-background transition-colors duration-200">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : '—'}</div>
+          <CMSText
+            page="global"
+            section="footer"
+            contentKey="common_good_title"
+            fallback="The Common Good"
+            className="font-industrial text-sm uppercase tracking-wide text-background/80 mb-2"
+            as="div"
+          />
+          <div className="inline-block px-4 py-2 border-2 border-background rounded-full font-brutalist text-4xl md:text-5xl text-background transition-colors duration-200">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : "—"}</div>
         </div>
 
         <MembershipLinkModal 

@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown } from 'lucide-react';
+import { CMSText } from './cms/CMSText';
 
 interface SubscriptionFormProps {
   variant?: 'footer' | 'homepage';
@@ -129,14 +130,22 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
   return (
     <div className={className}>
       <div className="text-center mb-8">
-        <h3 className={`font-brutalist text-2xl md:text-3xl mb-4 ${variant === 'footer' ? 'text-background' : 'text-foreground'}`}>
-          STEP CLOSER
-        </h3>
-        <p className={`font-industrial text-lg max-w-xl mx-auto ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}>
-          Not everything gets broadcast. Cross the line. Stay in the know.
-          <br /><br />
-          The Common Room - for membership, not members.
-        </p>
+        <CMSText
+          page="global"
+          section="subscription_form"
+          contentKey="title"
+          fallback="STEP CLOSER"
+          className={`font-brutalist text-2xl md:text-3xl mb-4 ${variant === 'footer' ? 'text-background' : 'text-foreground'}`}
+          as="h3"
+        />
+        <CMSText
+          page="global"
+          section="subscription_form"
+          contentKey="description"
+          fallback="Not everything gets broadcast. Cross the line. Stay in the know.<br /><br />The Common Room - for membership, not members."
+          className={`font-industrial text-lg max-w-xl mx-auto ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}
+          as="p"
+        />
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto">
@@ -159,11 +168,14 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
           />
         </div>
 
-        <p className={`text-sm font-industrial text-center ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}>
-          We need a little of your time to learn a bit about you,
-          <br />
-          <span className="text-center block">click below (mandatory, sorry)</span>
-        </p>
+        <CMSText
+          page="global"
+          section="subscription_form"
+          contentKey="prompt_text"
+          fallback="We need a little of your time to learn a bit about you, click below (mandatory, sorry)"
+          className={`text-sm font-industrial text-center ${variant === 'footer' ? 'text-background/70' : 'text-foreground/70'}`}
+          as="p"
+        />
 
         {/* Optional fields toggle */}
         <div className="text-center">
@@ -175,7 +187,14 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
             className="font-brutalist text-sm uppercase tracking-wider border-2 border-accent-pink bg-accent-pink text-background hover:bg-background hover:text-foreground transition-all duration-300"
           >
             <ChevronDown className={`w-4 h-4 mr-2 transition-transform duration-300 ${showOptionalFields ? 'rotate-180' : ''}`} />
-            {showOptionalFields ? 'FEWER OPTIONS' : 'PERSONALISE YOUR EXPERIENCE'}
+            <CMSText
+              page="global"
+              section="subscription_form"
+              contentKey="personalize_button_text"
+              fallback={showOptionalFields ? "FEWER OPTIONS" : "PERSONALISE YOUR EXPERIENCE"}
+              className=""
+              as="div"
+            />
           </Button>
         </div>
 
@@ -287,12 +306,35 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
               : ''
           }`}
         >
-          {isLoading ? 'JOINING...' : 'FOR COMMON PEOPLE'}
+          {isLoading ? (
+            <CMSText
+              page="global"
+              section="subscription_form"
+              contentKey="loading_text"
+              fallback="JOINING..."
+              className=""
+              as="div"
+            />
+          ) : (
+            <CMSText
+              page="global"
+              section="subscription_form"
+              contentKey="submit_button_text"
+              fallback="FOR COMMON PEOPLE"
+              className=""
+              as="div"
+            />
+          )}
         </Button>
         
-        <p className={`text-xs font-industrial text-center ${variant === 'footer' ? 'text-background/50' : 'text-foreground/50'}`}>
-          Subscribers receive exclusive access to The Common Room and community updates.
-        </p>
+        <CMSText
+          page="global"
+          section="subscription_form"
+          contentKey="disclaimer_text"
+          fallback="Subscribers receive exclusive access to The Common Room and community updates."
+          className={`text-xs font-industrial text-center ${variant === 'footer' ? 'text-background/50' : 'text-foreground/50'}`}
+          as="p"
+        />
       </form>
     </div>
   );

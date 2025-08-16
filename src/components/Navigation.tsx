@@ -7,6 +7,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getRoutePreview } from '@/data/routeHeroMap';
 import { Button } from '@/components/ui/button';
 import CroftLogo from '@/components/CroftLogo';
+import { CMSText } from './cms/CMSText';
 const Navigation = () => {
   const { triggerTransition } = useTransition();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -106,9 +107,14 @@ const Navigation = () => {
             className="w-[4.5rem] h-[4.5rem] md:translate-x-2"
             priority={true}
           />
-          <div className="font-brutalist text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
-            CROFT COMMON
-          </div>
+          <CMSText
+            page="global"
+            section="navigation"
+            contentKey="brand_name"
+            fallback="CROFT COMMON"
+            className="font-brutalist text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap"
+            as="div"
+          />
         </button>
         
         {/* Desktop Navigation */}
