@@ -135,12 +135,29 @@ export const CMSText = ({
     incrementPendingChanges();
 
     try {
+      // Check current user and session
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('🎯 CMS: Current user:', user, 'Error:', userError);
+      
+      if (!user) {
+        console.log('🎯 CMS: No user authenticated - this is the problem!');
+        toast({
+          title: "Authentication Required",
+          description: "You need to be logged in to edit content.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log('🎯 CMS: User email:', user.email);
+      console.log('🎯 CMS: User ID:', user.id);
+      
       console.log('🎯 CMS: Checking for existing content...', { page, section, contentKey });
       
       // Check if content exists
       const { data: existingContent, error: selectError } = await supabase
         .from('cms_content')
-        .select('id')
+        .select('id, created_by')
         .eq('page', page)
         .eq('section', section)
         .eq('content_key', contentKey)
@@ -153,6 +170,7 @@ export const CMSText = ({
 
       if (existingContent) {
         console.log('🎯 CMS: Updating existing content with ID:', existingContent.id);
+        console.log('🎯 CMS: Original creator:', existingContent.created_by, 'Current user:', user.id);
         
         // Update existing content as draft
         const { data: updateData, error: updateError } = await supabase
@@ -167,9 +185,12 @@ export const CMSText = ({
           
         console.log('🎯 CMS: Update result:', updateData, 'Error:', updateError);
         
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.log('🎯 CMS: Update failed:', updateError);
+          throw updateError;
+        }
       } else {
-        console.log('🎯 CMS: Creating new content entry');
+        console.log('🎯 CMS: Creating new content entry with created_by:', user.id);
         
         // Create new content as draft
         const { data: insertData, error: insertError } = await supabase
@@ -180,13 +201,17 @@ export const CMSText = ({
             content_key: contentKey,
             content_type: 'text',
             content_data: contentData,
-            published: false // Save as draft
+            published: false, // Save as draft
+            created_by: user.id  // Set the creator
           })
           .select();
           
         console.log('🎯 CMS: Insert result:', insertData, 'Error:', insertError);
         
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.log('🎯 CMS: Insert failed:', insertError);
+          throw insertError;
+        }
       }
 
       console.log('🎯 CMS: Save successful, showing toast and refreshing content');
@@ -207,7 +232,7 @@ export const CMSText = ({
       console.error('🎯 CMS: Error saving content:', error);
       toast({
         title: "Save Failed",
-        description: "There was an error saving your changes.",
+        description: `Error: ${error.message || 'Unknown error'}`,
         variant: "destructive",
       });
     } finally {
