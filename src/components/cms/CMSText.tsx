@@ -1,4 +1,5 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useCMSContent } from '@/hooks/useCMSContent';
 import { useEditMode } from '@/contexts/EditModeContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -201,21 +202,29 @@ export const CMSText = ({
     }
   };
 
-  if (isEditing) {
+  // Render editing interface using React Portal
+  const renderEditingInterface = () => {
+    if (!isEditing) return null;
+    
     const isMultiline = editValue.length > 100 || editValue.includes('\n');
     
-    return (
+    console.log('🎯 CMS: Rendering editing interface via portal');
+    
+    return createPortal(
       <>
         {/* Backdrop to prevent interaction with other elements */}
-        <div className="fixed inset-0 bg-black/20 z-[9998]" onClick={handleCancel} />
+        <div 
+          className="fixed inset-0 bg-black/20 z-[99998]" 
+          onClick={handleCancel}
+        />
         
         {/* Editing container positioned optimally */}
         <div 
-          className="bg-background border-2 border-primary rounded-lg shadow-xl p-3 space-y-3"
+          className="fixed bg-white border-2 border-blue-500 rounded-lg shadow-2xl p-3 space-y-3 z-[99999]"
           style={originalStyles}
         >
-          <div className="text-xs text-muted-foreground font-medium border-b pb-2">
-            Editing: {page} / {section} / {contentKey}
+          <div className="text-xs text-gray-600 font-medium border-b pb-2">
+            ✏️ Editing: {page} / {section} / {contentKey}
           </div>
           
           <div className="relative">
@@ -225,7 +234,7 @@ export const CMSText = ({
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="border-2 border-muted bg-background text-foreground resize-none min-h-[80px]"
+                className="border-2 border-gray-300 bg-white text-gray-900 resize-none min-h-[80px] w-full"
                 disabled={isSaving}
                 placeholder="Enter your text..."
               />
@@ -235,7 +244,7 @@ export const CMSText = ({
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                className="border-2 border-muted bg-background text-foreground"
+                className="border-2 border-gray-300 bg-white text-gray-900 w-full"
                 disabled={isSaving}
                 placeholder="Enter your text..."
               />
@@ -249,7 +258,7 @@ export const CMSText = ({
               variant="outline"
               onClick={handleCancel}
               disabled={isSaving}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-gray-600 hover:text-gray-900 border-gray-300"
             >
               <X className="h-3 w-3 mr-1" />
               Cancel
@@ -258,7 +267,7 @@ export const CMSText = ({
               size="sm"
               onClick={handleSave}
               disabled={isSaving || editValue === displayText}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
+              className="bg-blue-500 text-white hover:bg-blue-600"
             >
               <Check className="h-3 w-3 mr-1" />
               Save
@@ -266,34 +275,40 @@ export const CMSText = ({
           </div>
           
           {/* Helper text */}
-          <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded border-t">
-            💡 Press <kbd className="px-1 bg-background border rounded">Enter</kbd> to save, <kbd className="px-1 bg-background border rounded">Esc</kbd> to cancel
+          <div className="text-xs text-gray-500 bg-gray-50 p-2 rounded border-t">
+            💡 Press <kbd className="px-1 bg-white border rounded">Enter</kbd> to save, <kbd className="px-1 bg-white border rounded">Esc</kbd> to cancel
           </div>
           
           {isSaving && (
-            <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
-              <div className="text-sm text-muted-foreground flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg">
+              <div className="text-sm text-gray-600 flex items-center gap-2">
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 Saving...
               </div>
             </div>
           )}
         </div>
-      </>
+      </>,
+      document.body
     );
-  }
+  };
 
   return (
-    <Component 
-      ref={originalElementRef}
-      className={`${className} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
-      onClick={handleEdit}
-      title={isEditMode ? 'Click to edit (CMS)' : undefined}
-    >
-      {displayText}
-      {isEditMode && (
-        <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-60" />
-      )}
-    </Component>
+    <>
+      <Component 
+        ref={originalElementRef}
+        className={`${className} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
+        onClick={handleEdit}
+        title={isEditMode ? 'Click to edit (CMS)' : undefined}
+      >
+        {displayText}
+        {isEditMode && (
+          <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-60" />
+        )}
+      </Component>
+      
+      {/* Render editing interface via portal */}
+      {renderEditingInterface()}
+    </>
   );
 };
