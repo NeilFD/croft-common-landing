@@ -915,30 +915,52 @@ const ImportManager = () => {
       for (const menuSection of menuImports) {
         const { items, ...sectionData } = menuSection;
         
+        // Insert section without onConflict to avoid constraint issues
         const { data: sectionResult, error: sectionError } = await supabase
           .from('cms_menu_sections')
-          .upsert(sectionData, { 
-            onConflict: 'page,section_name',
-            ignoreDuplicates: false 
-          })
+          .insert(sectionData)
           .select('id')
           .single();
 
-        if (sectionError) throw sectionError;
+        if (sectionError) {
+          // If it's a duplicate, try to find existing section
+          if (sectionError.code === '23505') {
+            const { data: existingSection } = await supabase
+              .from('cms_menu_sections')
+              .select('id')
+              .eq('page', sectionData.page)
+              .eq('section_name', sectionData.section_name)
+              .single();
+            
+            if (existingSection) {
+              const itemsWithSectionId = items.map(item => ({
+                ...item,
+                section_id: existingSection.id,
+              }));
 
-        const itemsWithSectionId = items.map(item => ({
-          ...item,
-          section_id: sectionResult.id,
-        }));
+              // Try to insert items, ignore duplicates
+              await supabase
+                .from('cms_menu_items')
+                .insert(itemsWithSectionId);
+            }
+          } else {
+            throw sectionError;
+          }
+        } else {
+          const itemsWithSectionId = items.map(item => ({
+            ...item,
+            section_id: sectionResult.id,
+          }));
 
-        const { error: itemsError } = await supabase
-          .from('cms_menu_items')
-          .upsert(itemsWithSectionId, { 
-            onConflict: 'section_id,item_name',
-            ignoreDuplicates: false 
-          });
+          const { error: itemsError } = await supabase
+            .from('cms_menu_items')
+            .insert(itemsWithSectionId);
 
-        if (itemsError) throw itemsError;
+          // Ignore duplicate item errors
+          if (itemsError && itemsError.code !== '23505') {
+            throw itemsError;
+          }
+        }
       }
 
       updateStep('menus', true);
@@ -1060,14 +1082,17 @@ const ImportManager = () => {
         },
       ];
 
-      const { error: modalError } = await supabase
-        .from('cms_modal_content')
-        .upsert(modalContent, { 
-          onConflict: 'modal_type,content_section,content_key',
-          ignoreDuplicates: false 
-        });
+      // Insert modal content with error handling for duplicates
+      for (const content of modalContent) {
+        const { error: modalError } = await supabase
+          .from('cms_modal_content')
+          .insert(content);
 
-      if (modalError) throw modalError;
+        // Ignore duplicate errors (23505), throw others
+        if (modalError && modalError.code !== '23505') {
+          throw modalError;
+        }
+      }
       updateStep('modals', true);
 
     } catch (error) {
@@ -1204,14 +1229,17 @@ const ImportManager = () => {
         },
       ];
 
-      const { error: globalError } = await supabase
-        .from('cms_global_content')
-        .upsert(globalContent, { 
-          onConflict: 'content_type,content_key',
-          ignoreDuplicates: false 
-        });
+      // Insert global content with error handling for duplicates
+      for (const content of globalContent) {
+        const { error: globalError } = await supabase
+          .from('cms_global_content')
+          .insert(content);
 
-      if (globalError) throw globalError;
+        // Ignore duplicate errors (23505), throw others
+        if (globalError && globalError.code !== '23505') {
+          throw globalError;
+        }
+      }
       updateStep('global', true);
 
     } catch (error) {
