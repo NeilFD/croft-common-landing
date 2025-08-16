@@ -299,7 +299,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
         
         <Button 
           type="submit" 
-          disabled={isLoading}
+          disabled={isLoading || (showOptionalFields && interests.length === 0)}
           className={`w-full font-industrial uppercase tracking-wide ${
             variant === 'footer' 
               ? 'bg-background text-void hover:bg-background/90' 
