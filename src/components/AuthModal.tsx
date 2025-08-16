@@ -143,8 +143,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
     setLoading(true);
 
-    // Use provided redirectUrl or default to admin
-    const magicLinkRedirectUrl = redirectUrl || `https://croftcommontest.com/admin`;
+    // Use provided redirectUrl or construct default based on current domain
+    const magicLinkRedirectUrl = redirectUrl || `${window.location.origin}/admin`;
     
     console.log('🔐 Sending magic link with redirect URL:', magicLinkRedirectUrl);
 
