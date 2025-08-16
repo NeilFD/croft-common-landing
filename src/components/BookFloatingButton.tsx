@@ -1,8 +1,9 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { CMSText } from "./cms/CMSText";
 import { useEditMode } from "@/contexts/EditModeContext";
+import { useCMSMode } from "@/contexts/CMSModeContext";
 
 interface BookFloatingButtonProps {
   className?: string;
@@ -11,7 +12,13 @@ interface BookFloatingButtonProps {
 const BookFloatingButton: React.FC<BookFloatingButtonProps> = ({ className = "" }) => {
   const accentColor = 'hsl(var(--accent-pink))';
   const navigate = useNavigate();
+  const location = useLocation();
   const { isEditMode } = useEditMode();
+  const { isCMSMode } = useCMSMode();
+  
+  // Special z-index boost for Hall page in CMS mode only
+  const isHallPageInCMS = location.pathname === '/hall' && isCMSMode;
+  const zIndexClass = isHallPageInCMS ? 'z-[9999]' : 'z-40';
 
   return (
     <button
@@ -27,7 +34,7 @@ const BookFloatingButton: React.FC<BookFloatingButtonProps> = ({ className = "" 
         navigate('/book');
       }}
       className={cn(
-        "fixed bottom-36 right-8 z-40 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing-delayed border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0",
+        `fixed bottom-36 right-8 ${zIndexClass} w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing-delayed border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0`,
         className
       )}
       style={{
