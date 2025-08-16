@@ -52,6 +52,10 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
   const [isPublishing, setIsPublishing] = useState(false);
 
   const PageComponent = pageComponents[currentPage];
+  
+  console.log('CMSVisualEditor - Current page:', currentPage);
+  console.log('CMSVisualEditor - Page component:', PageComponent);
+  console.log('CMSVisualEditor - Available components:', Object.keys(pageComponents));
 
   const handlePublish = async () => {
     setIsPublishing(true);

@@ -16,6 +16,11 @@ const CMSVisual = () => {
   const fullPath = location.pathname.replace('/cms/visual/', '');
   const currentPage = fullPath || page || 'home';
   
+  console.log('CMSVisual - Location pathname:', location.pathname);
+  console.log('CMSVisual - Full path:', fullPath);
+  console.log('CMSVisual - Current page:', currentPage);
+  console.log('CMSVisual - Page param:', page);
+  
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(page || 'home');
   const { resetPendingChanges } = useEditMode();
 
