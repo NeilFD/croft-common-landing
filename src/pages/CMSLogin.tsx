@@ -89,6 +89,7 @@ const CMSLogin = () => {
         description="Enter your email to access the content management system"
         emailSentTitle="Check Your Email"
         emailSentDescription="We've sent you a secure login link to access the CMS"
+        redirectUrl="https://croftcommontest.com/cms/login"
       />
     </div>
   );

@@ -17,6 +17,7 @@ interface AuthModalProps {
   onMagicLinkSent?: () => void;
   emailSentTitle?: string;
   emailSentDescription?: ReactNode;
+  redirectUrl?: string;
 }
 
 const validateEmailDomain = async (email: string): Promise<boolean> => {
@@ -32,7 +33,7 @@ const validateEmailDomain = async (email: string): Promise<boolean> => {
   return data;
 };
 
-export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent, emailSentTitle, emailSentDescription }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent, emailSentTitle, emailSentDescription, redirectUrl }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -142,17 +143,17 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
     setLoading(true);
 
-    // Always redirect back to the admin console on production domain
-    const redirectUrl = `https://croftcommontest.com/admin`;
+    // Use provided redirectUrl or default to admin
+    const magicLinkRedirectUrl = redirectUrl || `https://croftcommontest.com/admin`;
     
-    console.log('🔐 Sending magic link with redirect URL:', redirectUrl);
+    console.log('🔐 Sending magic link with redirect URL:', magicLinkRedirectUrl);
 
     
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: magicLinkRedirectUrl,
           // Add shouldCreateUser to handle new signups
           shouldCreateUser: true
         }
