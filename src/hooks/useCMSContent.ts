@@ -10,7 +10,7 @@ interface CMSContent {
   published: boolean;
 }
 
-export const useCMSContent = (page: string, section: string, contentKey: string) => {
+export const useCMSContent = (page: string, section: string, contentKey: string, showDrafts = false) => {
   const [content, setContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -19,14 +19,23 @@ export const useCMSContent = (page: string, section: string, contentKey: string)
     const fetchContent = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        
+        // Build query - if showDrafts is true, get the latest content regardless of published status
+        let query = supabase
           .from('cms_content')
           .select('*')
           .eq('page', page)
           .eq('section', section)
-          .eq('content_key', contentKey)
-          .eq('published', true)
-          .maybeSingle();
+          .eq('content_key', contentKey);
+        
+        if (!showDrafts) {
+          query = query.eq('published', true);
+        }
+        
+        // Order by updated_at desc to get the latest version
+        query = query.order('updated_at', { ascending: false });
+        
+        const { data, error } = await query.maybeSingle();
 
         if (error) {
           console.warn('CMS content not found:', error);
@@ -46,7 +55,7 @@ export const useCMSContent = (page: string, section: string, contentKey: string)
     };
 
     fetchContent();
-  }, [page, section, contentKey]);
+  }, [page, section, contentKey, showDrafts]);
 
   return { content, loading, error };
 };

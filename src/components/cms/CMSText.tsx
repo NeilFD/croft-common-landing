@@ -26,8 +26,8 @@ export const CMSText = ({
   className = '',
   as: Component = 'div'
 }: CMSTextProps) => {
-  const { content, loading, error } = useCMSContent(page, section, contentKey);
   const { isEditMode, incrementPendingChanges, decrementPendingChanges } = useEditMode();
+  const { content, loading, error } = useCMSContent(page, section, contentKey, isEditMode);
   
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
