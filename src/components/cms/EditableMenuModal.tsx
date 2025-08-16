@@ -122,17 +122,41 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
             {/* Special handling for Hall and Community - plain text descriptions */}
             {(pageType === 'hall' || pageType === 'community') ? (
               <div className="space-y-6">
-                <CMSText
-                  page={pageType}
-                  section="modal"
-                  contentKey="description"
-                  fallback={pageType === 'hall' 
-                    ? "An empty room. Blank canvas. Full sound. Lights cut. Walls shake. Life's big moments. Strip it back. Fill it up.\n\nContact us for bookings and events."
-                    : "We're here because of this place. This building. This street. This city. So we give back, not just lip service.\n\nWe stock local. We hire local. We pay fair. We build shifts that work for real lives. We open our doors to good causes and community groups - sometimes for hire, often for free.\n\nWe believe space should be shared as well as sold. That hospitality can have roots, not just margins.\n\nCroft Common is for everyone. Common Ground for all. It's built to add, never subtract.\n\nFor The Common Good\n\nQuestions/Queries/Requests/Ideas we're ready for you.\n\ncommunity@croftcommon.com"
-                  }
-                  as="div"
-                  className="font-industrial text-lg text-foreground max-w-4xl mx-auto leading-relaxed whitespace-pre-line text-center"
-                />
+                {pageType === 'hall' ? (
+                  /* Use actual menu data for Hall */
+                  menuData.map((section, sectionIndex) => (
+                    <div key={sectionIndex} className="space-y-6">
+                      <h3 className="font-brutalist text-2xl text-foreground text-center">{section.title}</h3>
+                      <div className="space-y-4">
+                        {section.items.map((item, itemIndex) => (
+                          <div key={itemIndex} className="text-center">
+                            {item.isEmail ? (
+                              <a 
+                                href={`mailto:${item.name}`} 
+                                className="font-industrial text-lg text-foreground hover:text-accent-electric-blue transition-colors duration-300 block"
+                              >
+                                {item.name}
+                              </a>
+                            ) : (
+                              <p className="font-industrial text-lg text-foreground leading-relaxed">
+                                {item.name}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <CMSText
+                    page={pageType}
+                    section="modal"
+                    contentKey="description"
+                    fallback="We're here because of this place. This building. This street. This city. So we give back, not just lip service.\n\nWe stock local. We hire local. We pay fair. We build shifts that work for real lives. We open our doors to good causes and community groups - sometimes for hire, often for free.\n\nWe believe space should be shared as well as sold. That hospitality can have roots, not just margins.\n\nCroft Common is for everyone. Common Ground for all. It's built to add, never subtract.\n\nFor The Common Good\n\nQuestions/Queries/Requests/Ideas we're ready for you.\n\ncommunity@croftcommon.com"
+                    as="div"
+                    className="font-industrial text-lg text-foreground max-w-4xl mx-auto leading-relaxed whitespace-pre-line text-center"
+                  />
+                )}
               </div>
             ) : (
               /* Menu items for Cafe, Cocktails, Beer, Kitchens */
