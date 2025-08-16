@@ -21,8 +21,8 @@ export const CMSText = ({
 }: CMSTextProps) => {
   const { content, loading, error } = useCMSContent(page, section, contentKey);
 
-  // While loading or if there's an error, show the fallback
-  const displayText = content || fallback;
+  // Show fallback while loading, or if no content after loading
+  const displayText = loading ? fallback : (content ?? fallback);
 
   return (
     <Component className={className}>
