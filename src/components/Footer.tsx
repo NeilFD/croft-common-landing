@@ -75,22 +75,32 @@ const Footer = ({
               as="h4"
             />
             <div className="flex flex-col md:flex-row md:gap-3 gap-3 text-sm font-industrial">
-              <CMSText
-                page="global"
-                section="footer"
-                contentKey="email"
-                fallback="hello@croftcommon.co.uk"
+              <a 
+                href="mailto:hello@croftcommon.co.uk"
                 className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
-                as="a"
-              />
-              <CMSText
-                page="global"
-                section="footer"
-                contentKey="phone"
-                fallback="0117 xxx xxxx"
+              >
+                <CMSText
+                  page="global"
+                  section="footer"
+                  contentKey="email"
+                  fallback="hello@croftcommon.co.uk"
+                  className=""
+                  as="div"
+                />
+              </a>
+              <a 
+                href="tel:01171234567"
                 className="w-fit border-2 border-background text-background px-3 py-1 rounded-lg transition-colors duration-200 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
-                as="a"
-              />
+              >
+                <CMSText
+                  page="global"
+                  section="footer"
+                  contentKey="phone"
+                  fallback="0117 123 4567"
+                  className=""
+                  as="div"
+                />
+              </a>
             </div>
           </div>
           
