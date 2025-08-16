@@ -62,7 +62,10 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
   const isNeutral = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'hall';
 
   return (
-    <div className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4">
+    <div 
+      className="fixed inset-0 z-40 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4"
+      onClick={onClose}
+    >
       <div 
         ref={containerRef}
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
