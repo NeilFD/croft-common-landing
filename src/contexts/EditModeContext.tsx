@@ -13,10 +13,11 @@ interface EditModeContextType {
 
 const EditModeContext = createContext<EditModeContextType | undefined>(undefined);
 
-export const useEditMode = () => {
+export const useEditMode = (): EditModeContextType => {
   const context = useContext(EditModeContext);
+  
+  // Return default values when no provider exists (outside CMS)
   if (!context) {
-    // Return default values when no provider exists (outside CMS)
     return {
       isEditMode: false,
       toggleEditMode: () => {},
@@ -28,6 +29,7 @@ export const useEditMode = () => {
       resetPendingChanges: () => {}
     };
   }
+  
   return context;
 };
 
