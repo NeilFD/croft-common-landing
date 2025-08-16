@@ -12,9 +12,9 @@ export const CMSLayout = ({ children }: CMSLayoutProps) => {
   return (
     <EditModeProvider>
       <SidebarProvider defaultOpen={true}>
-        <div className="min-h-screen flex w-full relative">
+        <div className="min-h-screen flex w-full">
           <CMSSidebar />
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 min-w-0">
             {children}
           </div>
         </div>

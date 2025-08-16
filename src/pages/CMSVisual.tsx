@@ -36,7 +36,7 @@ const CMSVisual = () => {
 
   return (
     <CMSLayout>
-      <div className="flex flex-col h-full -m-6">
+      <div className="flex flex-col h-screen">
         <CMSVisualHeader 
           currentPage={page}
           onPublish={handlePublish}
