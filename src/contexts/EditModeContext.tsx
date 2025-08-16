@@ -16,7 +16,17 @@ const EditModeContext = createContext<EditModeContextType | undefined>(undefined
 export const useEditMode = () => {
   const context = useContext(EditModeContext);
   if (!context) {
-    throw new Error('useEditMode must be used within an EditModeProvider');
+    // Return default values when no provider exists (outside CMS)
+    return {
+      isEditMode: false,
+      toggleEditMode: () => {},
+      isPreviewMode: false,
+      togglePreviewMode: () => {},
+      pendingChanges: 0,
+      incrementPendingChanges: () => {},
+      decrementPendingChanges: () => {},
+      resetPendingChanges: () => {}
+    };
   }
   return context;
 };
