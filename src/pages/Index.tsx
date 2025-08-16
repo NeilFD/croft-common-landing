@@ -2,15 +2,18 @@ import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import SubscriptionForm from "@/components/SubscriptionForm";
 import Footer from "@/components/Footer";
+import { useCMSMode } from "@/contexts/CMSModeContext";
 
 
 const Index = () => {
+  const { isCMSMode } = useCMSMode();
+
   return (
     <div className="min-h-screen">
-      <Navigation />
+      {!isCMSMode && <Navigation />}
       <HeroSection />
       
-      <Footer />
+      {!isCMSMode && <Footer />}
     </div>
   );
 };

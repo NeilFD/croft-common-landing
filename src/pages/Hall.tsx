@@ -3,11 +3,14 @@ import Footer from '@/components/Footer';
 import HallHeroCarousel from '@/components/HallHeroCarousel';
 import MenuButton from '@/components/MenuButton';
 import { hallMenuData } from '@/data/menuData';
+import { useCMSMode } from '@/contexts/CMSModeContext';
 
 const Hall = () => {
+  const { isCMSMode } = useCMSMode();
+
   return (
     <div className="min-h-screen">
-      <Navigation />
+      {!isCMSMode && <Navigation />}
       <HallHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
@@ -21,8 +24,8 @@ const Hall = () => {
           </p>
         </div>
       </section>
-      <Footer />
-      <MenuButton pageType="hall" menuData={hallMenuData} />
+      {!isCMSMode && <Footer />}
+      {!isCMSMode && <MenuButton pageType="hall" menuData={hallMenuData} />}
     </div>
   );
 };

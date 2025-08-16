@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useEditMode } from '@/contexts/EditModeContext';
+import { CMSModeProvider } from '@/contexts/CMSModeContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Edit, Globe, Save, RefreshCw } from 'lucide-react';
@@ -88,7 +89,9 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
       {/* Page Preview */}
       <div className="flex-1 overflow-auto bg-muted/20">
         <div className={`transition-all duration-200 ${isEditMode ? 'ring-2 ring-primary/20' : ''}`}>
-          <PageComponent />
+          <CMSModeProvider isCMSMode={true}>
+            <PageComponent />
+          </CMSModeProvider>
         </div>
       </div>
 

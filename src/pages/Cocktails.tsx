@@ -1,11 +1,14 @@
 import Navigation from '@/components/Navigation';
 import CocktailHeroCarousel from '@/components/CocktailHeroCarousel';
 import Footer from '@/components/Footer';
+import { useCMSMode } from '@/contexts/CMSModeContext';
 
 const Cocktails = () => {
+  const { isCMSMode } = useCMSMode();
+
   return (
     <div className="min-h-screen">
-      <Navigation />
+      {!isCMSMode && <Navigation />}
       <CocktailHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
@@ -19,7 +22,7 @@ const Cocktails = () => {
           </p>
         </div>
       </section>
-      <Footer />
+      {!isCMSMode && <Footer />}
     </div>
   );
 };
