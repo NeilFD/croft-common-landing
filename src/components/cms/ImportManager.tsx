@@ -58,8 +58,9 @@ const ImportManager = () => {
     try {
       setProgress(25);
       
-      // Import page content
+      // Import comprehensive page content from existing site
       const contentData = [
+        // Index/Home page
         {
           page: 'index',
           section: 'hero',
@@ -68,6 +69,16 @@ const ImportManager = () => {
           content_data: { text: 'CROFT COMMON' },
           created_by: user.id,
         },
+        {
+          page: 'index',
+          section: 'hero',
+          content_key: 'subtitle',
+          content_type: 'text' as const,
+          content_data: { text: 'Members Club & Cultural Hub' },
+          created_by: user.id,
+        },
+        
+        // Beer page
         {
           page: 'beer',
           section: 'main',
@@ -86,6 +97,48 @@ const ImportManager = () => {
           },
           created_by: user.id,
         },
+        
+        // Cafe page
+        {
+          page: 'cafe',
+          section: 'main',
+          content_key: 'title',
+          content_type: 'text' as const,
+          content_data: { text: 'CAFE' },
+          created_by: user.id,
+        },
+        {
+          page: 'cafe',
+          section: 'main',
+          content_key: 'description',
+          content_type: 'text' as const,
+          content_data: { 
+            text: 'Natural light. Coffee culture. Local roasts. Morning rituals and afternoon breaks.\n\nSimple pleasures.' 
+          },
+          created_by: user.id,
+        },
+        
+        // Cocktails page
+        {
+          page: 'cocktails',
+          section: 'main',
+          content_key: 'title',
+          content_type: 'text' as const,
+          content_data: { text: 'COCKTAILS' },
+          created_by: user.id,
+        },
+        {
+          page: 'cocktails',
+          section: 'main',
+          content_key: 'description',
+          content_type: 'text' as const,
+          content_data: { 
+            text: 'Craft cocktails. Intimate lighting. Curated spirits. Late conversations and shared moments.\n\nTaste elevated.' 
+          },
+          created_by: user.id,
+        },
+        
+        // Hall page
         {
           page: 'hall',
           section: 'main',
@@ -101,6 +154,66 @@ const ImportManager = () => {
           content_type: 'text' as const,
           content_data: { 
             text: 'An empty room. Blank canvas. Full sound. Lights cut. Walls shake. Life\'s big moments.\n\nStrip it back. Fill it up.' 
+          },
+          created_by: user.id,
+        },
+        
+        // Kitchens page
+        {
+          page: 'kitchens',
+          section: 'main',
+          content_key: 'title',
+          content_type: 'text' as const,
+          content_data: { text: 'KITCHENS' },
+          created_by: user.id,
+        },
+        {
+          page: 'kitchens',
+          section: 'main',
+          content_key: 'description',
+          content_type: 'text' as const,
+          content_data: { 
+            text: 'Professional kitchens. Creative collaboration. Food artistry. Where passion meets precision.\n\nCook. Create. Share.' 
+          },
+          created_by: user.id,
+        },
+        
+        // Community page
+        {
+          page: 'community',
+          section: 'main',
+          content_key: 'title',
+          content_type: 'text' as const,
+          content_data: { text: 'COMMUNITY' },
+          created_by: user.id,
+        },
+        {
+          page: 'community',
+          section: 'main',
+          content_key: 'description',
+          content_type: 'text' as const,
+          content_data: { 
+            text: 'Shared spaces. Collective energy. Cultural connection. Where ideas flourish and friendships form.\n\nTogether we grow.' 
+          },
+          created_by: user.id,
+        },
+        
+        // Common Room page
+        {
+          page: 'common-room',
+          section: 'main',
+          content_key: 'title',
+          content_type: 'text' as const,
+          content_data: { text: 'COMMON ROOM' },
+          created_by: user.id,
+        },
+        {
+          page: 'common-room',
+          section: 'main',
+          content_key: 'description',
+          content_type: 'text' as const,
+          content_data: { 
+            text: 'Flexible workspace. Quiet focus. Comfortable seating. Where productivity meets community.\n\nWork reimagined.' 
           },
           created_by: user.id,
         },
@@ -125,16 +238,52 @@ const ImportManager = () => {
     try {
       setProgress(50);
 
-      // Sample hero images data (you can expand this with actual image URLs)
+      // Import all hero images from existing site data
       const imageData = [
+        // Home hero images
         {
           asset_type: 'hero_image' as const,
           page: 'index',
-          carousel_name: 'main_hero',
-          title: 'Main Hero Image',
-          description: 'Primary hero image for homepage',
-          image_url: '/lovable-uploads/00e4abb5-7048-4240-9a07-44d31b238a96.png',
-          alt_text: 'Croft Common interior',
+          carousel_name: 'home_hero',
+          title: 'Home Hero Image 1',
+          description: 'Dark industrial interior with warm lighting',
+          image_url: '/lovable-uploads/554a5ea5-4c34-4b71-971b-a896a47f8927.png',
+          alt_text: 'Croft Common dark interior with industrial design',
+          sort_order: 1,
+          created_by: user.id,
+        },
+        {
+          asset_type: 'hero_image' as const,
+          page: 'index',
+          carousel_name: 'home_hero',
+          title: 'Home Hero Image 2',
+          description: 'Warm community space',
+          image_url: '/lovable-uploads/2cf25417-28ae-479d-b6b8-19e126392333.png',
+          alt_text: 'Warm community gathering space',
+          sort_order: 2,
+          created_by: user.id,
+        },
+        {
+          asset_type: 'hero_image' as const,
+          page: 'index',
+          carousel_name: 'home_hero',
+          title: 'Home Hero Image 3',
+          description: 'Modern workspace interior',
+          image_url: '/lovable-uploads/64b7fab3-00a9-4045-9318-590eb75f1336.png',
+          alt_text: 'Modern collaborative workspace',
+          sort_order: 3,
+          created_by: user.id,
+        },
+        
+        // Beer hero images
+        {
+          asset_type: 'hero_image' as const,
+          page: 'beer',
+          carousel_name: 'beer_hero',
+          title: 'Beer Section Hero 1',
+          description: 'Industrial bar area with steel and concrete',
+          image_url: '/lovable-uploads/a6fcbd2e-334d-49e3-9b5d-d7dd0e87d852.png',
+          alt_text: 'Industrial beer bar with steel fixtures',
           sort_order: 1,
           created_by: user.id,
         },
@@ -142,14 +291,146 @@ const ImportManager = () => {
           asset_type: 'hero_image' as const,
           page: 'beer',
           carousel_name: 'beer_hero',
-          title: 'Beer Section Hero',
-          description: 'Hero image for beer section',
-          image_url: '/lovable-uploads/2adc6d27-c55e-409e-a08f-06f29113262f.png',
-          alt_text: 'Beer area interior',
+          title: 'Beer Section Hero 2',
+          description: 'Long tables and bar setup',
+          image_url: '/lovable-uploads/3a5090a3-760f-4496-8672-bd8724569325.png',
+          alt_text: 'Long communal tables in beer area',
+          sort_order: 2,
+          created_by: user.id,
+        },
+        
+        // Cafe hero images
+        {
+          asset_type: 'hero_image' as const,
+          page: 'cafe',
+          carousel_name: 'cafe_hero',
+          title: 'Cafe Section Hero 1',
+          description: 'Natural light coffee space',
+          image_url: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png',
+          alt_text: 'Bright cafe space with natural lighting',
           sort_order: 1,
           created_by: user.id,
         },
-        // Add more images as needed
+        {
+          asset_type: 'hero_image' as const,
+          page: 'cafe',
+          carousel_name: 'cafe_hero',
+          title: 'Cafe Section Hero 2',
+          description: 'Coffee counter and seating',
+          image_url: '/lovable-uploads/544efa64-6a2b-4db8-ba10-4da2954a97da.png',
+          alt_text: 'Coffee counter with comfortable seating',
+          sort_order: 2,
+          created_by: user.id,
+        },
+        
+        // Cocktails hero images
+        {
+          asset_type: 'hero_image' as const,
+          page: 'cocktails',
+          carousel_name: 'cocktail_hero',
+          title: 'Cocktails Section Hero 1',
+          description: 'Intimate cocktail bar atmosphere',
+          image_url: '/lovable-uploads/8dc68acd-38ac-4910-a909-716d78b1d187.png',
+          alt_text: 'Intimate cocktail bar with warm lighting',
+          sort_order: 1,
+          created_by: user.id,
+        },
+        {
+          asset_type: 'hero_image' as const,
+          page: 'cocktails',
+          carousel_name: 'cocktail_hero',
+          title: 'Cocktails Section Hero 2',
+          description: 'Sophisticated bar setup',
+          image_url: '/lovable-uploads/19074a8e-e1ee-4793-8c75-c60bd7818a99.png',
+          alt_text: 'Sophisticated cocktail preparation area',
+          sort_order: 2,
+          created_by: user.id,
+        },
+        
+        // Hall hero images
+        {
+          asset_type: 'hero_image' as const,
+          page: 'hall',
+          carousel_name: 'hall_hero',
+          title: 'Hall Section Hero 1',
+          description: 'Empty event space ready for transformation',
+          image_url: '/lovable-uploads/4d7c9143-3421-4c65-9601-29c65667740a.png',
+          alt_text: 'Empty hall space with industrial architecture',
+          sort_order: 1,
+          created_by: user.id,
+        },
+        {
+          asset_type: 'hero_image' as const,
+          page: 'hall',
+          carousel_name: 'hall_hero',
+          title: 'Hall Section Hero 2',
+          description: 'Event space in use',
+          image_url: '/lovable-uploads/834974e6-ab56-4571-946b-b3b09c2ee678.png',
+          alt_text: 'Hall space during an event',
+          sort_order: 2,
+          created_by: user.id,
+        },
+        
+        // Kitchens hero images
+        {
+          asset_type: 'hero_image' as const,
+          page: 'kitchens',
+          carousel_name: 'kitchen_hero',
+          title: 'Kitchens Section Hero 1',
+          description: 'Professional kitchen workspace',
+          image_url: '/lovable-uploads/7a67832c-682c-437c-80c0-30edc2a10f56.png',
+          alt_text: 'Professional kitchen with steel equipment',
+          sort_order: 1,
+          created_by: user.id,
+        },
+        {
+          asset_type: 'hero_image' as const,
+          page: 'kitchens',
+          carousel_name: 'kitchen_hero',
+          title: 'Kitchens Section Hero 2',
+          description: 'Industrial cooking space',
+          image_url: '/lovable-uploads/5101ed7f-1323-4112-82b4-a09d6d501a36.png',
+          alt_text: 'Industrial kitchen workspace',
+          sort_order: 2,
+          created_by: user.id,
+        },
+        
+        // Community hero images
+        {
+          asset_type: 'hero_image' as const,
+          page: 'community',
+          carousel_name: 'community_hero',
+          title: 'Community Section Hero 1',
+          description: 'Community gathering space',
+          image_url: '/lovable-uploads/2a013145-1125-485a-bc81-556ddb550540.png',
+          alt_text: 'Community members in shared space',
+          sort_order: 1,
+          created_by: user.id,
+        },
+        {
+          asset_type: 'hero_image' as const,
+          page: 'community',
+          carousel_name: 'community_hero',
+          title: 'Community Section Hero 2',
+          description: 'Collaborative workspace',
+          image_url: '/lovable-uploads/dc15ca32-0829-46a6-9db5-897ebaafaff9.png',
+          alt_text: 'Collaborative community workspace',
+          sort_order: 2,
+          created_by: user.id,
+        },
+        
+        // Common Room hero images
+        {
+          asset_type: 'hero_image' as const,
+          page: 'common-room',
+          carousel_name: 'common_room_hero',
+          title: 'Common Room Section Hero',
+          description: 'Flexible workspace and meeting area',
+          image_url: '/lovable-uploads/322fb5be-0402-4d55-8a72-b5e9c3253eef.png',
+          alt_text: 'Common room with flexible seating arrangements',
+          sort_order: 1,
+          created_by: user.id,
+        },
       ];
 
       const { error: imageError } = await supabase
@@ -221,32 +502,169 @@ const ImportManager = () => {
     try {
       setProgress(90);
 
+      // Import comprehensive design tokens from existing CSS
       const designTokens = [
+        // Core palette
         {
-          token_key: 'primary_color',
+          token_key: 'background',
           token_type: 'color',
-          token_value: 'hsl(var(--primary))',
+          token_value: '0 0% 100%',
+          css_variable: '--background',
+          description: 'Primary background color',
+          created_by: user.id,
+        },
+        {
+          token_key: 'foreground',
+          token_type: 'color',
+          token_value: '0 0% 0%',
+          css_variable: '--foreground',
+          description: 'Primary text color',
+          created_by: user.id,
+        },
+        {
+          token_key: 'primary',
+          token_type: 'color',
+          token_value: '0 0% 0%',
           css_variable: '--primary',
           description: 'Primary brand color',
           created_by: user.id,
         },
+        
+        // Industrial palette
+        {
+          token_key: 'surface',
+          token_type: 'color',
+          token_value: '0 0% 98%',
+          css_variable: '--surface',
+          description: 'Light surface color',
+          created_by: user.id,
+        },
+        {
+          token_key: 'surface_dark',
+          token_type: 'color',
+          token_value: '0 0% 8%',
+          css_variable: '--surface-dark',
+          description: 'Dark surface color',
+          created_by: user.id,
+        },
+        {
+          token_key: 'concrete',
+          token_type: 'color',
+          token_value: '0 0% 85%',
+          css_variable: '--concrete',
+          description: 'Concrete grey color',
+          created_by: user.id,
+        },
+        {
+          token_key: 'steel',
+          token_type: 'color',
+          token_value: '0 0% 40%',
+          css_variable: '--steel',
+          description: 'Steel grey color',
+          created_by: user.id,
+        },
+        {
+          token_key: 'charcoal',
+          token_type: 'color',
+          token_value: '0 0% 15%',
+          css_variable: '--charcoal',
+          description: 'Charcoal dark grey',
+          created_by: user.id,
+        },
+        {
+          token_key: 'void',
+          token_type: 'color',
+          token_value: '0 0% 5%',
+          css_variable: '--void',
+          description: 'Deep void black',
+          created_by: user.id,
+        },
+        
+        // Accent colors
         {
           token_key: 'accent_pink',
           token_type: 'color',
-          token_value: 'hsl(var(--accent-pink))',
+          token_value: '350 80% 65%',
           css_variable: '--accent-pink',
           description: 'Pink accent color',
           created_by: user.id,
         },
         {
-          token_key: 'background_color',
+          token_key: 'accent_lime',
           token_type: 'color',
-          token_value: 'hsl(var(--background))',
-          css_variable: '--background',
-          description: 'Background color',
+          token_value: '85 80% 55%',
+          css_variable: '--accent-lime',
+          description: 'Lime green accent for cocktails',
           created_by: user.id,
         },
-        // Add more design tokens as needed
+        {
+          token_key: 'accent_orange',
+          token_type: 'color',
+          token_value: '22 100% 55%',
+          css_variable: '--accent-orange',
+          description: 'Bright orange accent for beer',
+          created_by: user.id,
+        },
+        {
+          token_key: 'accent_blood_red',
+          token_type: 'color',
+          token_value: '0 100% 35%',
+          css_variable: '--accent-blood-red',
+          description: 'Blood red accent for kitchens',
+          created_by: user.id,
+        },
+        {
+          token_key: 'accent_electric_blue',
+          token_type: 'color',
+          token_value: '194 100% 50%',
+          css_variable: '--accent-electric-blue',
+          description: 'Electric blue accent for community',
+          created_by: user.id,
+        },
+        {
+          token_key: 'accent_vivid_purple',
+          token_type: 'color',
+          token_value: '261 80% 57%',
+          css_variable: '--accent-vivid-purple',
+          description: 'Vivid purple accent for hall',
+          created_by: user.id,
+        },
+        {
+          token_key: 'accent_sage_green',
+          token_type: 'color',
+          token_value: '120 25% 55%',
+          css_variable: '--accent-sage-green',
+          description: 'Sage green accent for common room',
+          created_by: user.id,
+        },
+        
+        // Typography
+        {
+          token_key: 'font_brutalist',
+          token_type: 'font',
+          token_value: 'Oswald, Arial Black, Helvetica, sans-serif',
+          css_variable: '--font-brutalist',
+          description: 'Brutalist font for headlines',
+          created_by: user.id,
+        },
+        {
+          token_key: 'font_industrial',
+          token_type: 'font',
+          token_value: 'Work Sans, Arial, Helvetica, sans-serif',
+          css_variable: '--font-industrial',
+          description: 'Industrial font for body text',
+          created_by: user.id,
+        },
+        
+        // Spacing
+        {
+          token_key: 'border_radius',
+          token_type: 'spacing',
+          token_value: '0',
+          css_variable: '--radius',
+          description: 'Border radius (brutalist = no radius)',
+          created_by: user.id,
+        },
       ];
 
       const { error: designError } = await supabase
@@ -342,10 +760,10 @@ const ImportManager = () => {
             </div>
             <Button 
               onClick={handleImport} 
-              disabled={importing || allCompleted}
+              disabled={importing || allCompleted || !user}
               className="ml-auto"
             >
-              {importing ? 'Importing...' : allCompleted ? 'Import Complete' : 'Start Import'}
+              {!user ? 'Login Required' : importing ? 'Importing...' : allCompleted ? 'Import Complete' : 'Start Import'}
             </Button>
           </div>
         </CardContent>
