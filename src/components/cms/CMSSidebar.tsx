@@ -159,7 +159,7 @@ export const CMSSidebar = () => {
 
   return (
     <Sidebar 
-      className={state === "collapsed" ? "w-0 min-w-0" : "w-80"} 
+      className="border-r"
       collapsible="icon"
     >
       <SidebarContent>

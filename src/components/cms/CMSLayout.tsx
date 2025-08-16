@@ -10,14 +10,14 @@ interface CMSLayoutProps {
 export const CMSLayout = ({ children }: CMSLayoutProps) => {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full relative">
         <CMSSidebar />
-        <SidebarInset className="flex-1 min-w-0">
+        <div className="flex-1 flex flex-col min-w-0">
           <CMSHeader />
           <main className="flex-1 p-6 overflow-auto">
             {children}
           </main>
-        </SidebarInset>
+        </div>
       </div>
     </SidebarProvider>
   );

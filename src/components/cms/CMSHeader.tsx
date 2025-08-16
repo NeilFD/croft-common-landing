@@ -8,7 +8,7 @@ export const CMSHeader = () => {
   return (
     <header className="flex items-center justify-between h-16 px-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="flex items-center gap-4">
-        <SidebarTrigger />
+        <SidebarTrigger className="p-2 hover:bg-accent rounded-md border border-border bg-background shadow-sm" />
         <CroftLogo size="md" className="ml-2" priority />
         <div className="border-l border-border h-8 mx-2" />
         <div>
