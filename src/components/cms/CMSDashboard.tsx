@@ -10,9 +10,6 @@ import ImportManager from './ImportManager';
 import { SecretContentManager } from './SecretContentManager';
 import { ModalContentManager } from './ModalContentManager';
 import { DesignTokenManager } from './DesignTokenManager';
-import CMSFooterContent from '../../pages/CMSFooterContent';
-import CMSNavigation from '../../pages/CMSNavigation';
-import CMSSubscriptionForm from '../../pages/CMSSubscriptionForm';
 
 export default function CMSDashboard() {
   return (
@@ -50,15 +47,7 @@ export default function CMSDashboard() {
         <Route path="pages/common-room/content" element={<ContentManager page="common-room" pageTitle="Common Room" />} />
         <Route path="pages/common-room/menu" element={<MenuManager page="common-room" pageTitle="Common Room" />} />
         
-        {/* Global Content Management - New Visual Editors */}
-        <Route path="visual/global/footer" element={<CMSFooterContent />} />
-        <Route path="visual/global/navigation" element={<CMSNavigation />} />
-        <Route path="visual/global/subscription" element={<CMSSubscriptionForm />} />
-        
-        {/* Legacy Global Content Management - Keep for compatibility */}
-        <Route path="global/footer" element={<GlobalContentManager contentType="footer" />} />
-        <Route path="global/navigation" element={<GlobalContentManager contentType="navigation" />} />
-        <Route path="global/subscription" element={<GlobalContentManager contentType="subscription_form" />} />
+        {/* Global Content Management - Legacy routes only */}
         <Route path="global/modals" element={<ModalContentManager />} />
         
         {/* Management Tools */}

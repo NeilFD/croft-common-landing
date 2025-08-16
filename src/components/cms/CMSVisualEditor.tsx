@@ -17,6 +17,11 @@ import CommonRoom from '@/pages/CommonRoom';
 import Index from '@/pages/Index';
 import CMSMenuModal from '@/pages/CMSMenuModal';
 
+// Import global component preview pages
+import CMSFooterPreview from '@/pages/CMSFooterPreview';
+import CMSNavigationPreview from '@/pages/CMSNavigationPreview';
+import CMSSubscriptionPreview from '@/pages/CMSSubscriptionPreview';
+
 interface CMSVisualEditorProps {
   currentPage: string;
 }
@@ -37,6 +42,10 @@ const pageComponents: Record<string, React.ComponentType> = {
   'kitchens/menu': CMSMenuModal,
   'hall/menu': CMSMenuModal,
   'community/menu': CMSMenuModal,
+  // Global component preview routes
+  'global/footer': CMSFooterPreview,
+  'global/navigation': CMSNavigationPreview,
+  'global/subscription': CMSSubscriptionPreview,
 };
 
 export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
