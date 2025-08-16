@@ -114,8 +114,8 @@ export const CMSText = ({
       }
       
       // If popup goes below viewport, position at bottom with margin
-      if (topPos + popupHeight > viewportHeight - 20) {
-        topPos = viewportHeight - popupHeight - 20;
+      if (topPos + popupHeight > viewportHeight - 40) {
+        topPos = viewportHeight - popupHeight - 40;
       }
       
       // If popup goes too far left, adjust right
