@@ -61,6 +61,8 @@ export const CMSText = ({
     e.stopPropagation();
     e.preventDefault();
     
+    console.log('🎯 CMS: originalElementRef.current:', originalElementRef.current);
+    
     // Capture original element styles and position before editing
     if (originalElementRef.current) {
       const computedStyles = window.getComputedStyle(originalElementRef.current);
@@ -74,53 +76,46 @@ export const CMSText = ({
       
       console.log('🎯 CMS: Is in button:', isInButton, 'Button parent:', buttonParent);
       
-      let editPosition = {};
+      // Simple positioning - always above the element
+      const topPos = Math.max(rect.top - 180, 20); // Above with fallback
+      const leftPos = Math.max(rect.left - 50, 20); // Slightly left with fallback
       
-      if (isInButton && buttonParent) {
-        // Get the button's position for more accurate positioning
-        const buttonRect = buttonParent.getBoundingClientRect();
-        console.log('🎯 CMS: Button rect:', buttonRect);
-        
-        // Position the editor above the button with some spacing
-        const topPos = buttonRect.top - 150; // Above the button
-        const leftPos = Math.max(buttonRect.left - 50, 20); // Slightly to the left, but not off screen
-        
-        console.log('🎯 CMS: Calculated position:', { topPos, leftPos });
-        
-        editPosition = {
-          position: 'fixed',
-          top: `${topPos}px`,
-          left: `${leftPos}px`,
-          width: '300px',
-          zIndex: 50000, // Very high z-index to ensure it's on top
-        };
-      } else {
-        // For other elements, overlay in place
-        editPosition = {
-          position: 'fixed',
-          top: `${rect.top - 10}px`,
-          left: `${rect.left}px`,
-          width: `${Math.max(rect.width, 200)}px`,
-          zIndex: 50000,
-        };
-      }
+      console.log('🎯 CMS: Calculated position:', { topPos, leftPos });
+      
+      const editPosition = {
+        position: 'fixed' as const,
+        top: `${topPos}px`,
+        left: `${leftPos}px`,
+        width: '300px',
+        zIndex: 99999,
+        backgroundColor: 'white',
+        border: '2px solid #007acc',
+        borderRadius: '8px',
+        padding: '12px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+      };
       
       console.log('🎯 CMS: Final edit position:', editPosition);
       
+      setOriginalStyles(editPosition);
+    } else {
+      console.log('🎯 CMS: originalElementRef.current is null!');
+      // Fallback positioning if ref is null
       setOriginalStyles({
-        fontSize: computedStyles.fontSize,
-        lineHeight: computedStyles.lineHeight,
-        textAlign: computedStyles.textAlign,
-        fontWeight: computedStyles.fontWeight,
-        fontFamily: computedStyles.fontFamily,
-        color: computedStyles.color,
-        padding: '8px',
-        margin: '0',
+        position: 'fixed' as const,
+        top: '100px',
+        left: '100px',
+        width: '300px',
+        zIndex: 99999,
+        backgroundColor: 'white',
+        border: '2px solid #007acc',
         borderRadius: '8px',
-        ...editPosition,
+        padding: '12px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
       });
     }
     
+    console.log('🎯 CMS: About to set edit state...');
     setEditValue(displayText);
     setIsEditing(true);
     console.log('🎯 CMS: Set editing to true, edit value:', displayText);
