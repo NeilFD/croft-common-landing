@@ -1,6 +1,7 @@
 import Navigation from '@/components/Navigation';
 import CafeHeroCarousel from '@/components/CafeHeroCarousel';
 import Footer from '@/components/Footer';
+import { CMSText } from '@/components/cms/CMSText';
 
 const Cafe = () => {
   return (
@@ -9,14 +10,24 @@ const Cafe = () => {
       <CafeHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">
-            CAFÉ
-          </h2>
-          <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            Open early. Concrete counters. Black coffee. Warm light. A place to meet, A place to work, A place to linger.
-            <br /><br />
-            Music & movement.
-          </p>
+          <CMSText
+            page="cafe"
+            section="hero"
+            contentKey="title"
+            fallback="CAFÉ"
+            as="h2"
+            className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground"
+          />
+          <CMSText
+            page="cafe"
+            section="hero"
+            contentKey="description"
+            fallback="Open early. Concrete counters. Black coffee. Warm light. A place to meet, A place to work, A place to linger.
+
+Music & movement."
+            as="p"
+            className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed"
+          />
         </div>
       </section>
       <Footer />
