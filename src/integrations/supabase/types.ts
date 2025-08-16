@@ -235,6 +235,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cms_global_content: {
+        Row: {
+          content_data: Json | null
+          content_key: string
+          content_type: string
+          content_value: string
+          created_at: string
+          created_by: string | null
+          id: string
+          published: boolean
+          updated_at: string
+        }
+        Insert: {
+          content_data?: Json | null
+          content_key: string
+          content_type: string
+          content_value: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published?: boolean
+          updated_at?: string
+        }
+        Update: {
+          content_data?: Json | null
+          content_key?: string
+          content_type?: string
+          content_value?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cms_images: {
         Row: {
           alt_text: string | null
@@ -282,6 +318,134 @@ export type Database = {
           published?: boolean
           sort_order?: number | null
           title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_menu_items: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_email: boolean
+          is_link: boolean
+          item_name: string
+          link_url: string | null
+          price: string | null
+          published: boolean
+          section_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_email?: boolean
+          is_link?: boolean
+          item_name: string
+          link_url?: string | null
+          price?: string | null
+          published?: boolean
+          section_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_email?: boolean
+          is_link?: boolean
+          item_name?: string
+          link_url?: string | null
+          price?: string | null
+          published?: boolean
+          section_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cms_menu_items_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "cms_menu_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cms_menu_sections: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          page: string
+          published: boolean
+          section_name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          page: string
+          published?: boolean
+          section_name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          page?: string
+          published?: boolean
+          section_name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cms_modal_content: {
+        Row: {
+          content_data: Json | null
+          content_key: string
+          content_section: string
+          content_value: string
+          created_at: string
+          created_by: string | null
+          id: string
+          modal_type: string
+          published: boolean
+          updated_at: string
+        }
+        Insert: {
+          content_data?: Json | null
+          content_key: string
+          content_section: string
+          content_value: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          modal_type: string
+          published?: boolean
+          updated_at?: string
+        }
+        Update: {
+          content_data?: Json | null
+          content_key?: string
+          content_section?: string
+          content_value?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          modal_type?: string
+          published?: boolean
           updated_at?: string
         }
         Relationships: []
