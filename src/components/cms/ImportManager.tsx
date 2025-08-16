@@ -53,10 +53,15 @@ const ImportManager = () => {
   };
 
   const importContent = async () => {
-    if (!user) return;
+    if (!user) {
+      updateStep('content', false, 'User not authenticated');
+      return;
+    }
 
     try {
       setProgress(25);
+      
+      console.log('🔄 Starting content import with user:', user.id);
       
       // Import comprehensive page content from existing site
       const contentData = [
@@ -219,15 +224,24 @@ const ImportManager = () => {
         },
       ];
 
+      console.log('📝 Attempting to insert content data:', contentData.length, 'items');
+
       const { error: contentError } = await supabase
         .from('cms_content')
         .insert(contentData);
 
-      if (contentError) throw contentError;
+      if (contentError) {
+        console.error('❌ Content import error:', contentError);
+        throw contentError;
+      }
+      
+      console.log('✅ Content import successful');
       updateStep('content', true);
 
     } catch (error) {
-      updateStep('content', false, error instanceof Error ? error.message : 'Failed to import content');
+      console.error('❌ Import content failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to import content';
+      updateStep('content', false, errorMessage);
       throw error;
     }
   };
