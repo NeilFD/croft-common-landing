@@ -12,7 +12,7 @@ const Cafe = () => {
         <div className="container mx-auto px-6 text-center">
           <CMSText
             page="cafe"
-            section="hero"
+            section="main"
             contentKey="title"
             fallback="CAFÉ"
             as="h2"
@@ -20,7 +20,7 @@ const Cafe = () => {
           />
           <CMSText
             page="cafe"
-            section="hero"
+            section="main"
             contentKey="description"
             fallback="Open early. Concrete counters. Black coffee. Warm light. A place to meet, A place to work, A place to linger.
 
