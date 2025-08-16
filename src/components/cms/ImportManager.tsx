@@ -983,7 +983,7 @@ const ImportManager = () => {
       const { error: designError } = await supabase
         .from('cms_design_tokens')
         .upsert(designTokens, { 
-          onConflict: 'token_key,token_type',
+          onConflict: 'token_key',
           ignoreDuplicates: false 
         });
 
