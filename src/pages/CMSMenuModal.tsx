@@ -17,7 +17,14 @@ import {
 } from '@/data/menuData';
 
 const CMSMenuModal = () => {
-  const { page } = useParams<{ page: string }>();
+  const location = window.location;
+  // Extract page from the current path (e.g., /cms/visual/cafe/menu -> cafe)
+  const pathParts = location.pathname.split('/');
+  const page = pathParts[pathParts.length - 2]; // Get the part before 'menu'
+  
+  console.log('CMSMenuModal - Location pathname:', location.pathname);
+  console.log('CMSMenuModal - Path parts:', pathParts);
+  console.log('CMSMenuModal - Extracted page:', page);
   const [isPublishing, setIsPublishing] = useState(false);
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(page || 'home');
   const { resetPendingChanges } = useEditMode();
@@ -93,9 +100,9 @@ const CMSMenuModal = () => {
   const pageType = page as 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
 
   return (
-    <div className="flex-1 overflow-hidden bg-muted/20 relative">
+    <div className="flex-1 overflow-hidden bg-muted/20">
       <CMSModeProvider isCMSMode={true}>
-        <div className="h-full flex items-center justify-center relative">
+        <div className="h-full flex items-center justify-center">
           <div className="w-full h-full relative">
             <EditableMenuModal
               isOpen={true}
