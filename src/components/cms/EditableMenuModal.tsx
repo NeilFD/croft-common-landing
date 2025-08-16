@@ -128,7 +128,7 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
                   contentKey="description"
                   fallback={pageType === 'hall' 
                     ? "An empty room. Blank canvas. Full sound. Lights cut. Walls shake. Life's big moments. Strip it back. Fill it up.\n\nContact us for bookings and events."
-                    : "We believe in community. We believe in supporting local. We believe in making a difference.\n\nJoin us in making Croft Common a place where everyone belongs."
+                    : "We're here because of this place. This building. This street. This city. So we give back, not just lip service.\n\nWe stock local. We hire local. We pay fair. We build shifts that work for real lives. We open our doors to good causes and community groups - sometimes for hire, often for free.\n\nWe believe space should be shared as well as sold. That hospitality can have roots, not just margins.\n\nCroft Common is for everyone. Common Ground for all. It's built to add, never subtract.\n\nFor The Common Good\n\nQuestions/Queries/Requests/Ideas we're ready for you.\n\ncommunity@croftcommon.com"
                   }
                   as="div"
                   className="font-industrial text-lg text-foreground max-w-4xl mx-auto leading-relaxed whitespace-pre-line text-center"
