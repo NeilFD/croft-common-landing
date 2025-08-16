@@ -500,19 +500,45 @@ export const CMSText = ({
     }
     
     if (container) {
-      // Remove existing positioning classes
-      container.classList.remove('left-4', 'right-4', 'left-1/2', '-translate-x-1/2', 'w-full', 'text-left', 'text-center', 'text-right');
+      // Remove ALL positioning and transform related classes comprehensively
+      const classesToRemove = Array.from(container.classList).filter((className: string) => {
+        return className.match(/^(left-|right-|top-|bottom-|translate-|transform|md:|lg:|xl:|sm:)/) ||
+               className.includes('left-') ||
+               className.includes('right-') ||
+               className.includes('translate') ||
+               className.includes('transform') ||
+               className.includes('text-left') ||
+               className.includes('text-center') ||
+               className.includes('text-right');
+      });
+      
+      classesToRemove.forEach(className => container.classList.remove(className));
+      
+      // Force override with inline styles to ensure precedence
+      container.style.removeProperty('left');
+      container.style.removeProperty('right');
+      container.style.removeProperty('transform');
+      container.style.removeProperty('text-align');
       
       // Apply new positioning based on selection
       switch (containerPosition) {
         case 'page-left':
-          container.classList.add('left-4', 'text-left');
+          container.style.left = '1rem';
+          container.style.right = 'auto';
+          container.style.transform = 'none';
+          container.style.textAlign = 'left';
           break;
         case 'page-center':
-          container.classList.add('left-1/2', '-translate-x-1/2', 'text-center');
+          container.style.left = '50%';
+          container.style.right = 'auto';
+          container.style.transform = 'translateX(-50%)';
+          container.style.textAlign = 'center';
           break;
         case 'page-right':
-          container.classList.add('right-4', 'text-right');
+          container.style.left = 'auto';
+          container.style.right = '1rem';
+          container.style.transform = 'none';
+          container.style.textAlign = 'right';
           break;
       }
     }
