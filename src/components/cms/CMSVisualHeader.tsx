@@ -10,13 +10,15 @@ interface CMSVisualHeaderProps {
   onPublish?: () => void;
   onViewLive?: () => void;
   isPublishing?: boolean;
+  draftCount?: number;
 }
 
 export const CMSVisualHeader = ({ 
   currentPage, 
   onPublish, 
   onViewLive, 
-  isPublishing 
+  isPublishing,
+  draftCount = 0
 }: CMSVisualHeaderProps) => {
   const { 
     isEditMode, 
@@ -52,6 +54,12 @@ export const CMSVisualHeader = ({
           </Badge>
         )}
         
+        {draftCount > 0 && (
+          <Badge variant="outline" className="text-xs">
+            {draftCount} Draft{draftCount !== 1 ? 's' : ''}
+          </Badge>
+        )}
+        
         <Button 
           variant="outline" 
           size="sm" 
@@ -74,10 +82,10 @@ export const CMSVisualHeader = ({
             size="sm" 
             className="gap-2"
             onClick={onPublish}
-            disabled={pendingChanges === 0 || isPublishing}
+            disabled={(pendingChanges === 0 && draftCount === 0) || isPublishing}
           >
             {isPublishing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isPublishing ? 'Publishing...' : 'Publish'}
+            {isPublishing ? 'Publishing...' : draftCount > 0 ? 'Publish Drafts' : 'Publish'}
           </Button>
         )}
       </div>

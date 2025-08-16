@@ -4,20 +4,29 @@ import { CMSVisualEditor } from '@/components/cms/CMSVisualEditor';
 import { CMSVisualHeader } from '@/components/cms/CMSVisualHeader';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { useDraftContent } from '@/hooks/useDraftContent';
+import { useEditMode } from '@/contexts/EditModeContext';
 
 const CMSVisual = () => {
   const { page } = useParams<{ page: string }>();
   const [isPublishing, setIsPublishing] = useState(false);
+  const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(page || 'home');
+  const { resetPendingChanges } = useEditMode();
 
   const handlePublish = async () => {
     setIsPublishing(true);
     try {
-      // Simulate publishing process
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      toast({
-        title: "Changes Published",
-        description: "Your content has been published to the live site.",
-      });
+      const result = await publishDrafts();
+      
+      if (result.success) {
+        resetPendingChanges();
+        toast({
+          title: "Changes Published",
+          description: "Your content has been published to the live site.",
+        });
+      } else {
+        throw new Error('Failed to publish drafts');
+      }
     } catch (error) {
       toast({
         title: "Publishing Failed",
@@ -42,6 +51,7 @@ const CMSVisual = () => {
           onPublish={handlePublish}
           onViewLive={handleViewLive}
           isPublishing={isPublishing}
+          draftCount={draftCount}
         />
         <CMSVisualEditor currentPage={page || 'home'} />
       </div>
