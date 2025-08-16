@@ -85,59 +85,6 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
 
   return (
     <div className="flex-1 flex flex-col h-full">
-      {/* Visual Editor Toolbar */}
-      <div className="flex items-center justify-between p-4 border-b bg-background/95 backdrop-blur">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold capitalize">
-            {currentPage === 'home' ? 'Home Page' : `${currentPage} Page`}
-          </h1>
-          
-          <div className="flex items-center gap-2">
-            <Badge variant={isEditMode ? "default" : "outline"} className="text-xs">
-              {isEditMode ? 'Edit Mode' : 'View Mode'}
-            </Badge>
-            
-            {pendingChanges > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                {pendingChanges} Unsaved Change{pendingChanges > 1 ? 's' : ''}
-              </Badge>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={toggleEditMode}
-            className="gap-2"
-          >
-            {isEditMode ? <Eye className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
-            {isEditMode ? 'Preview' : 'Edit'}
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleViewLive}
-            className="gap-2"
-          >
-            <Globe className="h-4 w-4" />
-            View Live
-          </Button>
-          
-          <Button 
-            size="sm" 
-            onClick={handlePublish}
-            disabled={pendingChanges === 0 || isPublishing}
-            className="gap-2"
-          >
-            {isPublishing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            {isPublishing ? 'Publishing...' : 'Publish'}
-          </Button>
-        </div>
-      </div>
-
       {/* Page Preview */}
       <div className="flex-1 overflow-auto bg-muted/20">
         <div className={`transition-all duration-200 ${isEditMode ? 'ring-2 ring-primary/20' : ''}`}>
