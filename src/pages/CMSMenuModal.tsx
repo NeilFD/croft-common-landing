@@ -93,31 +93,20 @@ const CMSMenuModal = () => {
   const pageType = page as 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
 
   return (
-    <CMSLayout>
-      <div className="flex flex-col h-screen">
-        <CMSVisualHeader 
-          currentPage={page}
-          onPublish={handlePublish}
-          onViewLive={handleViewLive}
-          isPublishing={isPublishing}
-          draftCount={draftCount}
-        />
-        <div className="flex-1 overflow-hidden bg-muted/20">
-          <CMSModeProvider isCMSMode={true}>
-            <div className="h-full flex items-center justify-center">
-              <div className="w-full h-full relative">
-                <EditableMenuModal
-                  isOpen={true}
-                  onClose={() => {}} // No-op in CMS mode
-                  pageType={pageType}
-                  menuData={getMenuData()}
-                />
-              </div>
-            </div>
-          </CMSModeProvider>
+    <div className="flex-1 overflow-hidden bg-muted/20">
+      <CMSModeProvider isCMSMode={true}>
+        <div className="h-full flex items-center justify-center">
+          <div className="w-full h-full relative">
+            <EditableMenuModal
+              isOpen={true}
+              onClose={() => {}} // No-op in CMS mode
+              pageType={pageType}
+              menuData={getMenuData()}
+            />
+          </div>
         </div>
-      </div>
-    </CMSLayout>
+      </CMSModeProvider>
+    </div>
   );
 };
 
