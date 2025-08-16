@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Check, X, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { Check, X, AlignLeft, AlignCenter, AlignRight, Move, Layout } from 'lucide-react';
 
 interface CMSTextProps {
   page: string;
@@ -38,6 +38,7 @@ export const CMSText = ({
   const [originalStyles, setOriginalStyles] = useState<any>({});
   const [positioning, setPositioning] = useState({
     alignment: 'left',
+    containerPosition: 'default',
     marginTop: '0',
     marginBottom: '0',
     marginLeft: '0',
@@ -53,6 +54,7 @@ export const CMSText = ({
   // Get positioning from content data
   const currentPositioning = content?.content_data?.positioning || {
     alignment: 'left',
+    containerPosition: 'default',
     marginTop: '0',
     marginBottom: '0',
     marginLeft: '0',
@@ -332,6 +334,24 @@ export const CMSText = ({
             <div className="space-y-3 border-t pt-3">
               <div>
                 <Label className="text-xs font-medium text-gray-700 flex items-center gap-1">
+                  <Layout className="h-3 w-3" />
+                  Page Position
+                </Label>
+                <Select value={positioning.containerPosition} onValueChange={(value) => setPositioning(prev => ({ ...prev, containerPosition: value }))}>
+                  <SelectTrigger className="w-full mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Default Position</SelectItem>
+                    <SelectItem value="page-left">Page Left</SelectItem>
+                    <SelectItem value="page-center">Page Center</SelectItem>
+                    <SelectItem value="page-right">Page Right</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label className="text-xs font-medium text-gray-700 flex items-center gap-1">
                   <AlignLeft className="h-3 w-3" />
                   Text Alignment
                 </Label>
@@ -457,6 +477,53 @@ export const CMSText = ({
     
     return classes.join(' ');
   };
+
+  // Apply container positioning to parent elements
+  const applyContainerPositioning = () => {
+    if (!originalElementRef.current) return;
+    
+    const containerPosition = currentPositioning.containerPosition;
+    if (containerPosition === 'default') return;
+    
+    // Find the positioned parent container (absolute, relative, fixed)
+    let container = originalElementRef.current.parentElement;
+    while (container && container !== document.body) {
+      const computedStyle = window.getComputedStyle(container);
+      if (['absolute', 'relative', 'fixed'].includes(computedStyle.position)) {
+        break;
+      }
+      container = container.parentElement;
+    }
+    
+    if (!container || container === document.body) {
+      container = originalElementRef.current.parentElement;
+    }
+    
+    if (container) {
+      // Remove existing positioning classes
+      container.classList.remove('left-4', 'right-4', 'left-1/2', '-translate-x-1/2', 'w-full', 'text-left', 'text-center', 'text-right');
+      
+      // Apply new positioning based on selection
+      switch (containerPosition) {
+        case 'page-left':
+          container.classList.add('left-4', 'text-left');
+          break;
+        case 'page-center':
+          container.classList.add('left-1/2', '-translate-x-1/2', 'text-center');
+          break;
+        case 'page-right':
+          container.classList.add('right-4', 'text-right');
+          break;
+      }
+    }
+  };
+
+  // Apply positioning when content changes
+  useEffect(() => {
+    if (currentPositioning.containerPosition !== 'default') {
+      applyContainerPositioning();
+    }
+  }, [currentPositioning.containerPosition]);
 
   return (
     <>
