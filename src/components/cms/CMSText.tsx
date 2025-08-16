@@ -101,7 +101,7 @@ export const CMSText = ({
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       const popupWidth = 350; // Account for popup width
-      const popupHeight = 400; // Account for popup height
+      const popupHeight = 450; // Increased to account for actual popup height
       
       // Calculate preferred position (above and to the left)
       let topPos = rect.top - popupHeight - 10;
@@ -114,8 +114,8 @@ export const CMSText = ({
       }
       
       // If popup goes below viewport, position at bottom with margin
-      if (topPos + popupHeight > viewportHeight - 40) {
-        topPos = viewportHeight - popupHeight - 40;
+      if (topPos + popupHeight > viewportHeight - 80) {
+        topPos = viewportHeight - popupHeight - 80;
       }
       
       // If popup goes too far left, adjust right
