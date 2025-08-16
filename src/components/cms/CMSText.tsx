@@ -55,6 +55,8 @@ export const CMSText = ({
   const handleEdit = (e: React.MouseEvent) => {
     if (!isEditMode) return;
     
+    console.log('🎯 CMS: Edit clicked, current target:', e.currentTarget);
+    
     // Stop propagation to prevent parent button/link clicks
     e.stopPropagation();
     e.preventDefault();
@@ -64,48 +66,46 @@ export const CMSText = ({
       const computedStyles = window.getComputedStyle(originalElementRef.current);
       const rect = originalElementRef.current.getBoundingClientRect();
       
+      console.log('🎯 CMS: Element rect:', rect);
+      
       // Check if this element is inside a button (common for floating buttons)
-      const isInButton = originalElementRef.current.closest('button') !== null;
+      const buttonParent = originalElementRef.current.closest('button');
+      const isInButton = buttonParent !== null;
+      
+      console.log('🎯 CMS: Is in button:', isInButton, 'Button parent:', buttonParent);
       
       let editPosition = {};
       
-      if (isInButton) {
-        // For buttons, position the editor well above and to the side for visibility
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
+      if (isInButton && buttonParent) {
+        // Get the button's position for more accurate positioning
+        const buttonRect = buttonParent.getBoundingClientRect();
+        console.log('🎯 CMS: Button rect:', buttonRect);
         
-        // Calculate optimal position - prefer above and to the left, but adjust if needed
-        let topPos = rect.top - 120; // More space above
-        let leftPos = rect.left - 100; // More space to the left
+        // Position the editor above the button with some spacing
+        const topPos = buttonRect.top - 150; // Above the button
+        const leftPos = Math.max(buttonRect.left - 50, 20); // Slightly to the left, but not off screen
         
-        // Adjust if it would go off screen
-        if (topPos < 20) {
-          topPos = rect.bottom + 20; // Position below if no room above
-        }
-        if (leftPos < 20) {
-          leftPos = 20; // Ensure minimum left margin
-        }
-        if (leftPos + 320 > viewportWidth) {
-          leftPos = viewportWidth - 340; // Ensure it fits on screen
-        }
+        console.log('🎯 CMS: Calculated position:', { topPos, leftPos });
         
         editPosition = {
           position: 'fixed',
           top: `${topPos}px`,
           left: `${leftPos}px`,
-          width: '320px', // Wider for better usability
-          zIndex: 10000,
+          width: '300px',
+          zIndex: 50000, // Very high z-index to ensure it's on top
         };
       } else {
         // For other elements, overlay in place
         editPosition = {
-          position: 'absolute',
-          top: `${rect.top + window.scrollY}px`,
-          left: `${rect.left + window.scrollX}px`,
+          position: 'fixed',
+          top: `${rect.top - 10}px`,
+          left: `${rect.left}px`,
           width: `${Math.max(rect.width, 200)}px`,
-          zIndex: 9999,
+          zIndex: 50000,
         };
       }
+      
+      console.log('🎯 CMS: Final edit position:', editPosition);
       
       setOriginalStyles({
         fontSize: computedStyles.fontSize,
@@ -114,15 +114,16 @@ export const CMSText = ({
         fontWeight: computedStyles.fontWeight,
         fontFamily: computedStyles.fontFamily,
         color: computedStyles.color,
-        padding: computedStyles.padding,
-        margin: computedStyles.margin,
-        borderRadius: computedStyles.borderRadius,
+        padding: '8px',
+        margin: '0',
+        borderRadius: '8px',
         ...editPosition,
       });
     }
     
     setEditValue(displayText);
     setIsEditing(true);
+    console.log('🎯 CMS: Set editing to true, edit value:', displayText);
   };
 
   const handleSave = async () => {
