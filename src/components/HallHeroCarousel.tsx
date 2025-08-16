@@ -5,7 +5,7 @@ import { hallHeroImages as heroImages } from '@/data/heroImages';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import BookFloatingButton from '@/components/BookFloatingButton';
-
+import { CMSText } from '@/components/cms/CMSText';
 import CroftLogo from './CroftLogo';
 const HallHeroCarousel = () => {
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
@@ -108,9 +108,14 @@ const HallHeroCarousel = () => {
 
       {/* Page Title Overlay */}
       <div className="absolute top-28 left-4 md:left-[106px] z-20">
-        <h1 className="inline-block px-3 py-1 border-2 border-background text-background bg-transparent rounded-lg text-3xl font-light tracking-[0.2em] uppercase transition-all duration-300 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))] cursor-pointer">
-          HALL
-        </h1>
+        <CMSText 
+          page="hall" 
+          section="hero" 
+          contentKey="overlay-title" 
+          fallback="HALL"
+          as="h1"
+          className="inline-block px-3 py-1 border-2 border-background text-background bg-transparent rounded-lg text-3xl font-light tracking-[0.2em] uppercase transition-all duration-300 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))] cursor-pointer"
+        />
       </div>
 
       {/* Scroll indicator */}
