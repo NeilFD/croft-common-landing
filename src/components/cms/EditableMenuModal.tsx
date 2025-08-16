@@ -123,24 +123,43 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
             {(pageType === 'hall' || pageType === 'community') ? (
               <div className="space-y-6">
                 {pageType === 'hall' ? (
-                  /* Use actual menu data for Hall */
+                  /* Use actual menu data for Hall with CMSText for editability */
                   menuData.map((section, sectionIndex) => (
                     <div key={sectionIndex} className="space-y-6">
-                      <h3 className="font-brutalist text-2xl text-foreground text-center">{section.title}</h3>
+                      <CMSText 
+                        page="hall" 
+                        section="menu" 
+                        contentKey="section_title" 
+                        fallback={section.title}
+                        as="h3"
+                        className="font-brutalist text-2xl text-foreground text-center"
+                      />
                       <div className="space-y-4">
                         {section.items.map((item, itemIndex) => (
                           <div key={itemIndex} className="text-center">
                             {item.isEmail ? (
                               <a 
-                                href={`mailto:${item.name}`} 
+                                href={`mailto:${item.name}`}
                                 className="font-industrial text-lg text-foreground hover:text-accent-electric-blue transition-colors duration-300 block"
                               >
-                                {item.name}
+                                <CMSText 
+                                  page="hall" 
+                                  section="menu" 
+                                  contentKey={`item_email_${itemIndex}`} 
+                                  fallback={item.name}
+                                  as="div"
+                                  className="inline"
+                                />
                               </a>
                             ) : (
-                              <p className="font-industrial text-lg text-foreground leading-relaxed">
-                                {item.name}
-                              </p>
+                              <CMSText 
+                                page="hall" 
+                                section="menu" 
+                                contentKey={`item_${itemIndex}`} 
+                                fallback={item.name}
+                                as="p"
+                                className="font-industrial text-lg text-foreground leading-relaxed"
+                              />
                             )}
                           </div>
                         ))}
