@@ -1,6 +1,7 @@
 import Navigation from '@/components/Navigation';
 import CocktailHeroCarousel from '@/components/CocktailHeroCarousel';
 import Footer from '@/components/Footer';
+import CMSPageHeader from '@/components/cms/CMSPageHeader';
 
 const Cocktails = () => {
   return (
@@ -9,14 +10,13 @@ const Cocktails = () => {
       <CocktailHeroCarousel />
       <section className="py-24 bg-background">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">
-            COCKTAILS
-          </h2>
-          <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-            Lights down. Bottles up. Zinc Top. Sharp drinks. Soft shadows. Built for late.
-            <br /><br />
-            Vibe
-          </p>
+          <CMSPageHeader
+            page="cocktails"
+            defaultTitle="COCKTAILS"
+            defaultDescription="Lights down. Bottles up. Zinc Top. Sharp drinks. Soft shadows. Built for late.
+
+Vibe"
+          />
         </div>
       </section>
       <Footer />
