@@ -105,9 +105,9 @@ const pageStructure = [
 ];
 
 const globalSections = [
-  { name: 'Footer Content', path: '/cms/global/footer', icon: FileText },
-  { name: 'Navigation', path: '/cms/global/navigation', icon: Globe },
-  { name: 'Subscription Form', path: '/cms/global/subscription', icon: MessageSquare },
+  { name: 'Footer Content', path: '/cms/visual/global/footer', icon: FileText },
+  { name: 'Navigation', path: '/cms/visual/global/navigation', icon: Globe },
+  { name: 'Subscription Form', path: '/cms/visual/global/subscription', icon: MessageSquare },
   { name: 'Modal Content', path: '/cms/global/modals', icon: Eye }
 ];
 
