@@ -169,22 +169,24 @@ export const CMSSidebar = () => {
                     <SidebarMenuItem key={page.path}>
                       {page.sections.length > 0 ? (
                         <Collapsible>
-                          <CollapsibleTrigger asChild>
+                          <div className="flex items-center">
                             <SidebarMenuButton 
                               asChild
-                              className={getNavClass(isParentActive(page.path))}
+                              className={`${getNavClass(isParentActive(page.path))} flex-1`}
                             >
                               <NavLink to={page.path}>
                                 <page.icon className="mr-2 h-4 w-4" />
-                                {state !== "collapsed" && (
-                                  <>
-                                    <span>{page.name}</span>
-                                    <ChevronDown className="ml-auto h-4 w-4" />
-                                  </>
-                                )}
+                                {state !== "collapsed" && <span>{page.name}</span>}
                               </NavLink>
                             </SidebarMenuButton>
-                          </CollapsibleTrigger>
+                            {state !== "collapsed" && (
+                              <CollapsibleTrigger asChild>
+                                <button className="p-1 hover:bg-accent rounded">
+                                  <ChevronDown className="h-4 w-4" />
+                                </button>
+                              </CollapsibleTrigger>
+                            )}
+                          </div>
                           <CollapsibleContent>
                             <SidebarMenuSub>
                               {page.sections.map((section) => (
