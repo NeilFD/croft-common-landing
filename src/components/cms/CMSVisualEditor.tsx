@@ -15,12 +15,19 @@ import Hall from '@/pages/Hall';
 import Community from '@/pages/Community';
 import CommonRoom from '@/pages/CommonRoom';
 import Index from '@/pages/Index';
+import Book from '@/pages/Book';
+import Calendar from '@/pages/Calendar';
+import Notifications from '@/pages/Notifications';
+import CommonGood from '@/pages/CommonGood';
+import Privacy from '@/pages/Privacy';
 import CMSMenuModal from '@/pages/CMSMenuModal';
 
 // Import global component preview pages
 import CMSFooterPreview from '@/pages/CMSFooterPreview';
 import CMSNavigationPreview from '@/pages/CMSNavigationPreview';
 import CMSSubscriptionPreview from '@/pages/CMSSubscriptionPreview';
+import CMSEmailTemplates from '@/pages/CMSEmailTemplates';
+import CMSFAQPage from '@/pages/CMSFAQPage';
 
 interface CMSVisualEditorProps {
   currentPage: string;
@@ -35,6 +42,12 @@ const pageComponents: Record<string, React.ComponentType> = {
   'hall': Hall,
   'community': Community,
   'common-room': CommonRoom,
+  'book': Book,
+  'calendar': Calendar,
+  'notifications': Notifications,
+  'common-good': CommonGood,
+  'privacy': Privacy,
+  
   // Menu modal routes
   'cafe/menu': CMSMenuModal,
   'cocktails/menu': CMSMenuModal,
@@ -42,13 +55,19 @@ const pageComponents: Record<string, React.ComponentType> = {
   'kitchens/menu': CMSMenuModal,
   'hall/menu': CMSMenuModal,
   'community/menu': CMSMenuModal,
+  
   // Global component preview routes
   'global/footer': CMSFooterPreview,
   'global/navigation': CMSNavigationPreview,
   'global/subscription': CMSSubscriptionPreview,
+  'global/menu-modal': CMSMenuModal,
+  'global/email-templates': CMSEmailTemplates,
+  'global/faq': CMSFAQPage,
 };
 
 export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
+  console.log('🎨 CMSVisualEditor: Rendering page:', currentPage);
+  
   const { 
     isEditMode, 
     toggleEditMode, 
@@ -60,11 +79,14 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
   
   const [isPublishing, setIsPublishing] = useState(false);
 
-  const PageComponent = pageComponents[currentPage];
+  // Normalize the page name
+  const normalizedPage = currentPage.toLowerCase().replace(/^\//, '');
+  const PageComponent = pageComponents[normalizedPage];
   
-  console.log('CMSVisualEditor - Current page:', currentPage);
-  console.log('CMSVisualEditor - Page component:', PageComponent);
-  console.log('CMSVisualEditor - Available components:', Object.keys(pageComponents));
+  console.log('🎨 CMSVisualEditor - Current page:', currentPage);
+  console.log('🎨 CMSVisualEditor - Normalized page:', normalizedPage);
+  console.log('🎨 CMSVisualEditor - Page component found:', !!PageComponent);
+  console.log('🎨 CMSVisualEditor - Available components:', Object.keys(pageComponents));
 
   const handlePublish = async () => {
     setIsPublishing(true);
@@ -93,13 +115,19 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
   };
 
   if (!PageComponent) {
+    console.warn('⚠️ No component found for page:', normalizedPage);
+    
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold mb-4">Page Not Found</h2>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground mb-4">
             The page "{currentPage}" is not available for visual editing yet.
           </p>
+          <div className="text-sm text-muted-foreground">
+            <strong>Available pages:</strong><br />
+            {Object.keys(pageComponents).join(', ')}
+          </div>
         </div>
       </div>
     );

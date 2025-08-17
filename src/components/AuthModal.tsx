@@ -144,7 +144,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     setLoading(true);
 
     // Use provided redirectUrl or construct default based on current domain
-    const magicLinkRedirectUrl = redirectUrl || `${window.location.origin}/admin`;
+    const magicLinkRedirectUrl = redirectUrl || `${window.location.origin}/cms/login`;
     
     console.log('🔐 Sending magic link with redirect URL:', magicLinkRedirectUrl);
 
