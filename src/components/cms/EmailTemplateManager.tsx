@@ -245,112 +245,136 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Mail className="h-6 w-6 text-primary" />
-          <div>
-            <h1 className="text-2xl font-bold">{config.title}</h1>
-            <p className="text-muted-foreground">{config.description}</p>
+    <div className="h-full flex flex-col max-w-full">
+      {/* Header Section - Fixed */}
+      <div className="flex-shrink-0 pb-6 border-b">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <Mail className="h-6 w-6 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold truncate">{config.title}</h1>
+              <p className="text-muted-foreground text-sm">{config.description}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <a href={config.previewUrl} target="_blank" rel="noopener noreferrer">
-              <Eye className="h-4 w-4 mr-2" />
-              Preview
-            </a>
-          </Button>
-          <Button variant="outline" size="sm">
-            <TestTube className="h-4 w-4 mr-2" />
-            Send Test
-          </Button>
+          <div className="flex gap-2 flex-shrink-0">
+            <Button variant="outline" size="sm" asChild>
+              <a href={config.previewUrl} target="_blank" rel="noopener noreferrer">
+                <Eye className="h-4 w-4 mr-2" />
+                Preview
+              </a>
+            </Button>
+            <Button variant="outline" size="sm">
+              <TestTube className="h-4 w-4 mr-2" />
+              Send Test
+            </Button>
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue={Object.keys(sections)[0]} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-4">
-          {Object.keys(sections).map((section) => (
-            <TabsTrigger key={section} value={section} className="text-xs">
-              {section}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Content Section - Scrollable */}
+      <div className="flex-1 pt-6 min-h-0">
+        <Tabs defaultValue={Object.keys(sections)[0]} className="h-full flex flex-col">
+          {/* Responsive Tabs List */}
+          <div className="flex-shrink-0 mb-4">
+            <div className="overflow-x-auto">
+              <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max">
+                {Object.keys(sections).map((section) => (
+                  <TabsTrigger 
+                    key={section} 
+                    value={section} 
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                  >
+                    {section}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
+          </div>
 
-        {Object.entries(sections).map(([sectionName, keys]) => (
-          <TabsContent key={sectionName} value={sectionName}>
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {sectionName}
-                  <Badge variant="secondary">{keys.length} fields</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {keys.map((key, index) => {
-                  const item = content[key];
-                  if (!item) return null;
+          {/* Tab Content - Scrollable */}
+          <div className="flex-1 min-h-0">
+            {Object.entries(sections).map(([sectionName, keys]) => (
+              <TabsContent key={sectionName} value={sectionName} className="h-full mt-0">
+                <div className="h-full overflow-y-auto pr-2">
+                  <Card>
+                    <CardHeader className="pb-4">
+                      <CardTitle className="flex items-center gap-2 text-lg">
+                        {sectionName}
+                        <Badge variant="secondary" className="text-xs">{keys.length} fields</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6 pb-6">
+                      {keys.map((key, index) => {
+                        const item = content[key];
+                        if (!item) return null;
 
-                  const isTextarea = item.content_value.length > 100 || 
-                                   item.content_value.includes('\n') ||
-                                   key.includes('instruction') ||
-                                   key.includes('closing') ||
-                                   key.includes('tagline');
+                        const isTextarea = item.content_value.length > 100 || 
+                                         item.content_value.includes('\n') ||
+                                         key.includes('instruction') ||
+                                         key.includes('closing') ||
+                                         key.includes('tagline');
 
-                  return (
-                    <div key={key} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <label className="text-sm font-medium">
-                            {getFieldLabel(key)}
-                          </label>
-                          {getFieldDescription(key) && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {getFieldDescription(key)}
-                            </p>
-                          )}
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateContent(key, item.content_value)}
-                          disabled={saving === key}
-                        >
-                          {saving === key ? (
-                            <>Saving...</>
-                          ) : (
-                            <>
-                              <Save className="h-3 w-3 mr-1" />
-                              Save
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                        return (
+                          <div key={key} className="space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+                              <div className="flex-1 min-w-0">
+                                <label className="text-sm font-medium block">
+                                  {getFieldLabel(key)}
+                                </label>
+                                {getFieldDescription(key) && (
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {getFieldDescription(key)}
+                                  </p>
+                                )}
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateContent(key, item.content_value)}
+                                disabled={saving === key}
+                                className="flex-shrink-0 w-full sm:w-auto"
+                              >
+                                {saving === key ? (
+                                  <>Saving...</>
+                                ) : (
+                                  <>
+                                    <Save className="h-3 w-3 mr-1" />
+                                    Save
+                                  </>
+                                )}
+                              </Button>
+                            </div>
 
-                      {isTextarea ? (
-                        <Textarea
-                          value={item.content_value}
-                          onChange={(e) => handleInputChange(key, e.target.value)}
-                          className="min-h-[80px]"
-                          placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
-                        />
-                      ) : (
-                        <Input
-                          value={item.content_value}
-                          onChange={(e) => handleInputChange(key, e.target.value)}
-                          placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
-                        />
-                      )}
+                            <div className="w-full">
+                              {isTextarea ? (
+                                <Textarea
+                                  value={item.content_value}
+                                  onChange={(e) => handleInputChange(key, e.target.value)}
+                                  className="min-h-[80px] w-full resize-y"
+                                  placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
+                                />
+                              ) : (
+                                <Input
+                                  value={item.content_value}
+                                  onChange={(e) => handleInputChange(key, e.target.value)}
+                                  className="w-full"
+                                  placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
+                                />
+                              )}
+                            </div>
 
-                      {index < keys.length - 1 && <Separator className="mt-4" />}
-                    </div>
-                  );
-                })}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
+                            {index < keys.length - 1 && <Separator className="mt-6" />}
+                          </div>
+                        );
+                      })}
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            ))}
+          </div>
+        </Tabs>
+      </div>
     </div>
   );
 };
