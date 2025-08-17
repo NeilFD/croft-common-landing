@@ -627,7 +627,10 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
       <Input
         placeholder="Description"
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={(e) => {
+          console.log('📝 Description input changed:', e.target.value);
+          setDescription(e.target.value);
+        }}
         className="w-full"
       />
       <Input
