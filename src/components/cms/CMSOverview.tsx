@@ -98,14 +98,14 @@ export const CMSOverview = () => {
   };
 
   const pages = [
-    { name: 'Home', icon: Home, path: '/cms/pages/home/content', description: 'Main landing page content' },
-    { name: 'Cafe', icon: Coffee, path: '/cms/pages/cafe/content', description: 'Coffee and food menu' },
-    { name: 'Cocktails', icon: Wine, path: '/cms/pages/cocktails/content', description: 'Cocktail menu and specials' },
-    { name: 'Beer', icon: Beer, path: '/cms/pages/beer/content', description: 'Beer selection and information' },
-    { name: 'Kitchens', icon: ChefHat, path: '/cms/pages/kitchens/content', description: 'Full kitchen menu' },
-    { name: 'Hall', icon: Calendar, path: '/cms/pages/hall/content', description: 'Event space information' },
-    { name: 'Community', icon: Users, path: '/cms/pages/community/content', description: 'Community information' },
-    { name: 'Common Room', icon: Building2, path: '/cms/pages/common-room/content', description: 'Membership space details' }
+    { name: 'Home', icon: Home, path: '/cms/visual/home', description: 'Main landing page content' },
+    { name: 'Cafe', icon: Coffee, path: '/cms/visual/cafe', description: 'Coffee and food menu' },
+    { name: 'Cocktails', icon: Wine, path: '/cms/visual/cocktails', description: 'Cocktail menu and specials' },
+    { name: 'Beer', icon: Beer, path: '/cms/visual/beer', description: 'Beer selection and information' },
+    { name: 'Kitchens', icon: ChefHat, path: '/cms/visual/kitchens', description: 'Full kitchen menu' },
+    { name: 'Hall', icon: Calendar, path: '/cms/visual/hall', description: 'Event space information' },
+    { name: 'Community', icon: Users, path: '/cms/visual/community', description: 'Community information' },
+    { name: 'Common Room', icon: Building2, path: '/cms/visual/common-room', description: 'Membership space details' }
   ];
 
   const quickActions = [
