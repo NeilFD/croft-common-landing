@@ -57,8 +57,8 @@ const ImageManager = () => {
     'main_hero', 
     'beer_hero', 
     'cafe_hero', 
-    'cocktails_hero', 
-    'kitchens_hero', 
+    'cocktail_hero', 
+    'kitchen_hero', 
     'hall_hero', 
     'community_hero',
     'common_room_hero'
