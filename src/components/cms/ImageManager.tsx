@@ -601,6 +601,13 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
   const [sortOrder, setSortOrder] = useState(image.sort_order);
 
   const handleSave = () => {
+    console.log('🔧 EditableImageForm handleSave called with:', {
+      title,
+      description,
+      alt_text: altText,
+      sort_order: sortOrder,
+    });
+    
     onSave({
       title,
       description,
