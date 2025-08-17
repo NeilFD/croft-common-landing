@@ -453,7 +453,7 @@ const ImageManager = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="h-6 w-6 p-0 bg-background/80 hover:bg-background"
+                        className="h-6 w-6 p-0 bg-black/70 hover:bg-black/80 border border-white/20 rounded-full shadow-lg backdrop-blur-sm"
                         onClick={() => {
                           const newSelection = new Set(selectedImages);
                           if (newSelection.has(image.id)) {
@@ -465,18 +465,18 @@ const ImageManager = () => {
                         }}
                       >
                         {selectedImages.has(image.id) ? (
-                          <CheckCircle className="h-4 w-4" />
+                          <CheckCircle className="h-4 w-4 text-green-400" />
                         ) : (
-                          <Circle className="h-4 w-4" />
+                          <Circle className="h-4 w-4 text-white/80" />
                         )}
                       </Button>
                     </div>
 
                     <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
                       {!image.published && (
-                        <Badge variant="secondary" className="text-xs">Draft</Badge>
+                        <Badge variant="secondary" className="text-xs bg-orange-500/90 text-white border-0 shadow-lg">Draft</Badge>
                       )}
-                      <Badge variant="outline" className="text-xs">#{image.sort_order}</Badge>
+                      <Badge variant="outline" className="text-xs bg-black/70 text-white border-white/20 shadow-lg backdrop-blur-sm">#{image.sort_order}</Badge>
                       <Button
                         variant="ghost"
                         size="sm"
