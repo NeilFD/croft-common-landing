@@ -269,6 +269,43 @@ export const CMSSidebar = () => {
           </Collapsible>
         </SidebarGroup>
 
+        {/* Email Templates Section */}
+        <SidebarGroup>
+          <Collapsible 
+            open={expandedSections.emails} 
+            onOpenChange={() => toggleSection('emails')}
+          >
+            <CollapsibleTrigger asChild>
+              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                <span className="flex items-center">
+                  <Mail className="mr-2 h-4 w-4" />
+                  {state !== "collapsed" && "Email Templates"}
+                </span>
+                {state !== "collapsed" && <ChevronDown className="h-4 w-4" />}
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {emailTemplateStructure.map((template) => (
+                    <SidebarMenuItem key={template.path}>
+                      <SidebarMenuButton 
+                        asChild
+                        className={getNavClass(isActive(template.path))}
+                      >
+                        <NavLink to={template.path}>
+                          <template.icon className="mr-2 h-4 w-4" />
+                          {state !== "collapsed" && template.name}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </SidebarGroup>
+
         {/* Management Section */}
         <SidebarGroup>
           <Collapsible 

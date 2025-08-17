@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@4.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY") || "");
 
@@ -21,6 +22,30 @@ type EmailPayload = {
   title?: string | null;
 };
 
+// Initialize Supabase client
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+const getEmailContent = async (keys: string[]) => {
+  const { data, error } = await supabase
+    .from('cms_global_content')
+    .select('content_key, content_value')
+    .eq('content_type', 'email_template')
+    .in('content_key', keys)
+    .eq('published', true);
+
+  if (error) {
+    console.error('Error fetching email content:', error);
+    return {};
+  }
+
+  return data.reduce((acc, item) => {
+    acc[item.content_key] = item.content_value;
+    return acc;
+  }, {} as Record<string, string>);
+};
+
 const fmtDate = (isoDate: string) => {
   try {
     const d = new Date(isoDate);
@@ -30,7 +55,18 @@ const fmtDate = (isoDate: string) => {
   }
 };
 
-const buildHtml = (p: EmailPayload, assetsBase: string) => {
+const buildHtml = async (p: EmailPayload, assetsBase: string) => {
+  // Fetch cinema email content from CMS
+  const contentKeys = [
+    'cinema_email_header_brand',
+    'cinema_email_confirmation_title',
+    'cinema_email_ticket_label',
+    'cinema_email_tagline'
+  ];
+
+  const content = await getEmailContent(contentKeys);
+  const getContent = (key: string, fallback: string) => content[key] || fallback;
+
   const title = p.title || "Croft Common Secret Cinema";
   const dateStr = fmtDate(p.screeningDate);
   const namesLine = p.quantity === 2 && p.guestName
@@ -45,7 +81,7 @@ const buildHtml = (p: EmailPayload, assetsBase: string) => {
   const ticketBadge = (num: number) => `
     <span style="display:inline-block; border:2px dashed #cfcfd4; padding:8px 12px; border-radius:999px; background:#f2f3f7; margin-right:16px; margin-bottom:12px;">
       <img src="${logoUrl}" alt="Croft Common cinema ticket" width="28" height="28" style="display:inline-block; vertical-align:middle; border-radius:6px; margin-right:8px;" />
-      <span style="display:inline-block; vertical-align:middle; font-size:14px; font-weight:700; color:#111;">Ticket #${num}</span>
+      <span style="display:inline-block; vertical-align:middle; font-size:14px; font-weight:700; color:#111;">${getContent('cinema_email_ticket_label', 'Ticket #')}${num}</span>
     </span>`;
 
   const badges = (p.ticketNumbers || []).map(ticketBadge).join('');
@@ -60,13 +96,13 @@ const buildHtml = (p: EmailPayload, assetsBase: string) => {
               <img src="${logoUrl}" alt="Croft Common" width="32" height="32" style="display:block; background:#ffffff; border-radius:6px;" />
             </td>
             <td style="vertical-align:middle; padding-left:18px;">
-              <div style="font-weight:700; font-size:16px; color:#ffffff;">Croft Common • Secret Cinema</div>
+              <div style="font-weight:700; font-size:16px; color:#ffffff;">${getContent('cinema_email_header_brand', 'Croft Common • Secret Cinema')}</div>
             </td>
           </tr>
         </table>
       </div>
       <div style="padding:22px;">
-        <h2 style="margin:0 0 10px 0; font-size:22px; color:#111;">Your tickets are confirmed</h2>
+        <h2 style="margin:0 0 10px 0; font-size:22px; color:#111;">${getContent('cinema_email_confirmation_title', 'Your tickets are confirmed')}</h2>
         <div style="margin:6px 0 14px 0;">${badges}</div>
         <p style="margin:0 0 8px 0; font-weight:700; font-size:16px;">${title}</p>
         <p style="margin:0 0 8px 0;">
@@ -76,7 +112,7 @@ const buildHtml = (p: EmailPayload, assetsBase: string) => {
         <p style="margin:0 0 8px 0;">
           <strong>Name${p.quantity === 2 ? 's' : ''}:</strong> ${namesLine}
         </p>
-        <p style="margin:16px 0 0 0; color:#555;">One night. One screen. Fifty tickets. The last Thursday of every month. Cult. Classic. Contemporary. Always uncommonly good.</p>
+        <p style="margin:16px 0 0 0; color:#555;">${getContent('cinema_email_tagline', 'One night. One screen. Fifty tickets. The last Thursday of every month. Cult. Classic. Contemporary. Always uncommonly good.')}</p>
       </div>
     </div>
   </div>
@@ -105,12 +141,22 @@ serve(async (req) => {
       });
     }
 
+    // Fetch email settings from CMS
+    const settingsKeys = ['cinema_email_from_address', 'cinema_email_subject_template'];
+    const settings = await getEmailContent(settingsKeys);
+    
     const assetsBase = Deno.env.get('EMAIL_ASSETS_BASE_URL') || req.headers.get('origin') || '';
-    const html = buildHtml(payload, assetsBase);
-    const subject = `${payload.title ? 'Your ' + payload.title + ' Ticket' + (payload.ticketNumbers.length > 1 ? 's' : '') : 'Your Cinema Ticket' + (payload.ticketNumbers.length > 1 ? 's' : '')}: #${payload.ticketNumbers.join(', ')}`;
+    const html = await buildHtml(payload, assetsBase);
+    
+    // Build subject from template
+    const subjectTemplate = settings.cinema_email_subject_template || '{title} Ticket{plural}: #{ticketNumbers}';
+    const subject = subjectTemplate
+      .replace('{title}', payload.title ? 'Your ' + payload.title : 'Your Cinema')
+      .replace('{plural}', payload.ticketNumbers.length > 1 ? 's' : '')
+      .replace('{ticketNumbers}', payload.ticketNumbers.join(', '));
 
     const res = await resend.emails.send({
-      from: "Secret Cinema <secretcinema@thehive-hospitality.com>",
+      from: settings.cinema_email_from_address || "Secret Cinema <secretcinema@thehive-hospitality.com>",
       to: [payload.toEmail],
       subject,
       html,

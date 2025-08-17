@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.53.0';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -15,6 +16,30 @@ interface WelcomeEmailRequest {
   subscriberId: string;
 }
 
+// Initialize Supabase client
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+const getEmailContent = async (keys: string[]) => {
+  const { data, error } = await supabase
+    .from('cms_global_content')
+    .select('content_key, content_value')
+    .eq('content_type', 'email_template')
+    .in('content_key', keys)
+    .eq('published', true);
+
+  if (error) {
+    console.error('Error fetching email content:', error);
+    return {};
+  }
+
+  return data.reduce((acc, item) => {
+    acc[item.content_key] = item.content_value;
+    return acc;
+  }, {} as Record<string, string>);
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -29,10 +54,45 @@ const handler = async (req: Request): Promise<Response> => {
     const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${subscriberId}`;
     const logoUrl = `${baseUrl}/brand/logo.png`;
     
+    // Fetch email content from CMS
+    const contentKeys = [
+      'welcome_email_from_address',
+      'welcome_email_subject',
+      'welcome_email_header_title',
+      'welcome_email_greeting_template',
+      'welcome_email_intro_text',
+      'welcome_email_seven_intro',
+      'welcome_email_seven_context',
+      'welcome_email_seven_everywhere',
+      'welcome_email_seven_conclusion',
+      'welcome_email_cta_title',
+      'welcome_email_cta_instructions',
+      'welcome_email_instruction_1',
+      'welcome_email_instruction_2',
+      'welcome_email_instruction_3',
+      'welcome_email_instruction_4',
+      'welcome_email_visual_cue_title',
+      'welcome_email_visual_cue_1',
+      'welcome_email_visual_cue_2',
+      'welcome_email_visual_cue_3',
+      'welcome_email_visual_cue_4',
+      'welcome_email_closing_1',
+      'welcome_email_closing_2',
+      'welcome_email_closing_3',
+      'welcome_email_signature',
+      'welcome_email_unsubscribe_text',
+      'welcome_email_footer_address'
+    ];
+
+    const content = await getEmailContent(contentKeys);
+    
+    // Fallback values in case CMS content is missing
+    const getContent = (key: string, fallback: string) => content[key] || fallback;
+    
     const emailResponse = await resend.emails.send({
-      from: "Croft Common <hello@thehive-hospitality.com>",
+      from: getContent('welcome_email_from_address', 'Croft Common <hello@thehive-hospitality.com>'),
       to: [email],
-      subject: "You're In",
+      subject: getContent('welcome_email_subject', "You're In"),
       html: `
         <!DOCTYPE html>
         <html lang="en">
@@ -42,7 +102,7 @@ const handler = async (req: Request): Promise<Response> => {
           <link rel="preconnect" href="https://fonts.googleapis.com">
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
           <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Work+Sans:wght@400;600&display=swap" rel="stylesheet">
-          <title>You're In - Croft Common</title>
+          <title>${getContent('welcome_email_subject', "You're In")}</title>
         </head>
         <body style="margin: 0; padding: 0; background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%); font-family: 'Work Sans', Arial, sans-serif;">
           <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">Unlock The Common Room with Lucky No 7 — look for the ⑦ in the top-right, draw it to reveal secret pages.</div>
@@ -50,57 +110,56 @@ const handler = async (req: Request): Promise<Response> => {
             
             <!-- Header with Logo -->
             <div style="background: #ffffff; padding: 40px 20px; text-align: center; border-bottom: 4px solid #ff1b6b;">
-              <!-- New Geometric Logo -->
               <img src="${logoUrl}"
                    alt="Croft Common Logo" 
                    style="width: 90px; height: 90px; margin: 0 auto 20px; display: block; object-fit: contain;" />
-              <h1 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">CROFT COMMON</h1>
+              <h1 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 32px; font-weight: 700; letter-spacing: 0.2em; margin: 0; text-transform: uppercase;">${getContent('welcome_email_header_title', 'CROFT COMMON')}</h1>
               <div style="width: 40px; height: 3px; background: #ff1b6b; margin: 15px auto 0;"></div>
             </div>
             
             <!-- Main Content -->
             <div style="padding: 40px 30px; background: #ffffff;">
-              <h2 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 24px; font-weight: 400; letter-spacing: 0.05em; margin: 0 0 30px 0; text-transform: uppercase;">Hi ${displayName},</h2>
+              <h2 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 24px; font-weight: 400; letter-spacing: 0.05em; margin: 0 0 30px 0; text-transform: uppercase;">${getContent('welcome_email_greeting_template', 'Hi {displayName},').replace('{displayName}', displayName)}</h2>
               
-              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; line-height: 1.7; margin: 0 0 25px 0; font-weight: 400;">Thanks for stepping closer. You didn't just subscribe - you crossed the threshold.</p>
+              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; line-height: 1.7; margin: 0 0 25px 0; font-weight: 400;">${getContent('welcome_email_intro_text', 'Thanks for stepping closer. You didn\'t just subscribe - you crossed the threshold.')}</p>
               
               <div style="padding: 30px 0; border-top: 1px solid #e5e5e5; border-bottom: 1px solid #e5e5e5; margin: 30px 0;">
-                <p style="color: #1a1a1a; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0 0 15px 0;">Seven's always meant something to us.</p>
-                <p style="color: #1a1a1a; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0 0 15px 0;">Seven days. Seven sins. Seven seas. Lucky number seven.</p>
-                <p style="color: #1a1a1a; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0 0 15px 0;">It's everywhere.</p>
-                <p style="color: #ff1b6b; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0; font-weight: 600;">Now it opens something else, it's the key.</p>
+                <p style="color: #1a1a1a; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0 0 15px 0;">${getContent('welcome_email_seven_intro', 'Seven\'s always meant something to us.')}</p>
+                <p style="color: #1a1a1a; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0 0 15px 0;">${getContent('welcome_email_seven_context', 'Seven days. Seven sins. Seven seas. Lucky number seven.')}</p>
+                <p style="color: #1a1a1a; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0 0 15px 0;">${getContent('welcome_email_seven_everywhere', 'It\'s everywhere.')}</p>
+                <p style="color: #ff1b6b; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.8; margin: 0; font-weight: 600;">${getContent('welcome_email_seven_conclusion', 'Now it opens something else, it\'s the key.')}</p>
               </div>
               
               <!-- Call to Action Box -->
               <div style="background: #ffffff; padding: 35px; margin: 35px 0; border: 2px solid #ff1b6b;">
-                <h3 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; margin: 0 0 20px 0; text-transform: uppercase; text-align: center;">To unlock The Common Room:</h3>
-                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">Visit <a href="${baseUrl}/common-room" style="color: #ff1b6b; text-decoration: none; font-weight: 600;">${baseUrl}/common-room</a></p>
+                <h3 style="color: #000000; font-family: 'Oswald', Arial Black, sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; margin: 0 0 20px 0; text-transform: uppercase; text-align: center;">${getContent('welcome_email_cta_title', 'To unlock The Common Room:')}</h3>
+                <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">${getContent('welcome_email_cta_instructions', 'Visit {baseUrl}/common-room').replace('{baseUrl}', baseUrl)}</p>
                 <div style="background: #f8f8f8; border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: left;">
-                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Draw a 7.</p>
-                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">Boldly. A single line.</p>
-                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">One gesture.</p>
-                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0; letter-spacing: 0.05em;">You're in</p>
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">${getContent('welcome_email_instruction_1', 'Draw a 7.')}</p>
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">${getContent('welcome_email_instruction_2', 'Boldly. A single line.')}</p>
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">${getContent('welcome_email_instruction_3', 'One gesture.')}</p>
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0; letter-spacing: 0.05em;">${getContent('welcome_email_instruction_4', 'You\'re in')}</p>
                 </div>
               </div>
               <div style="padding: 24px; border: 1px solid #eaeaea; background: #f9fafb; margin: 24px 0;">
                 <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
                   <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:999px; background:#111; color:#ffffff; font-weight:700; font-family:'Oswald', Arial, sans-serif;">⑦</span>
-                  <span style="font-family: 'Oswald', Arial Black, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; font-weight:700;">Visual cue</span>
+                  <span style="font-family: 'Oswald', Arial Black, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; font-weight:700;">${getContent('welcome_email_visual_cue_title', 'Visual cue')}</span>
                 </div>
-                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">Look for Lucky No 7.</p>
-                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">Top right around the site.</p>
-                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">Draw it.</p>
-                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0;">Unlock the good stuff.</p>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">${getContent('welcome_email_visual_cue_1', 'Look for Lucky No 7.')}</p>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">${getContent('welcome_email_visual_cue_2', 'Top right around the site.')}</p>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">${getContent('welcome_email_visual_cue_3', 'Draw it.')}</p>
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0;">${getContent('welcome_email_visual_cue_4', 'Unlock the good stuff.')}</p>
               </div>
               
-              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">Inside, you'll find what's not shouted. The stuff that doesn't always make it to the flyers, the feed, or the posters.</p>
+              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">${getContent('welcome_email_closing_1', 'Inside, you\'ll find what\'s not shouted. The stuff that doesn\'t always make it to the flyers, the feed, or the posters.')}</p>
               
-              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">We'll still drop into your inbox when it matters, but The Common Room is where the common knowledge lives. Quiet perks. First looks. An early heads-up.</p>
+              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">${getContent('welcome_email_closing_2', 'We\'ll still drop into your inbox when it matters, but The Common Room is where the common knowledge lives. Quiet perks. First looks. An early heads-up.')}</p>
               
-              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 40px 0;">See you on the inside.</p>
+              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 40px 0;">${getContent('welcome_email_closing_3', 'See you on the inside.')}</p>
               
               <div style="text-align: right; border-top: 1px solid #e5e5e5; padding-top: 25px;">
-                <p style="color: #1a1a1a; font-family: 'Oswald', Arial, sans-serif; font-size: 16px; font-weight: 400; margin: 0; letter-spacing: 0.1em;">— CROFT COMMON</p>
+                <p style="color: #1a1a1a; font-family: 'Oswald', Arial, sans-serif; font-size: 16px; font-weight: 400; margin: 0; letter-spacing: 0.1em;">${getContent('welcome_email_signature', '— CROFT COMMON')}</p>
               </div>
             </div>
             
@@ -112,8 +171,8 @@ const handler = async (req: Request): Promise<Response> => {
                      alt="Croft Common Logo" 
                      style="width: 45px; height: 45px; margin: 0 auto; display: block; object-fit: contain;" />
               </div>
-              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">Don't want these emails? <a href="${unsubscribeUrl}" style="color: #ff1b6b; text-decoration: none;">Unsubscribe here</a></p>
-              <p style="color: #666666; font-family: 'Work Sans', Arial, sans-serif; font-size: 12px; line-height: 1.4; margin: 0;">Croft Common, Stokes Croft, Bristol</p>
+              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 13px; line-height: 1.5; margin: 0 0 10px 0;">${getContent('welcome_email_unsubscribe_text', 'Don\'t want these emails?')} <a href="${unsubscribeUrl}" style="color: #ff1b6b; text-decoration: none;">Unsubscribe here</a></p>
+              <p style="color: #666666; font-family: 'Work Sans', Arial, sans-serif; font-size: 12px; line-height: 1.4; margin: 0;">${getContent('welcome_email_footer_address', 'Croft Common, Stokes Croft, Bristol')}</p>
             </div>
             
           </div>
