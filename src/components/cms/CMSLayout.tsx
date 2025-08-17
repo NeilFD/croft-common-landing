@@ -12,14 +12,12 @@ export const CMSLayout = ({ children }: CMSLayoutProps) => {
   return (
     <EditModeProvider>
       <SidebarProvider defaultOpen={false}>
-        <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
-          <CMSHeader />
-          <div className="flex flex-1 min-h-0">
-            <CMSSidebar />
-            <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-auto">
-              {children}
-            </main>
-          </div>
+        <CMSHeader />
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <CMSSidebar />
+          <main className="flex-1 min-w-0 p-4 md:p-6 lg:p-8 overflow-auto">
+            {children}
+          </main>
         </div>
       </SidebarProvider>
     </EditModeProvider>
