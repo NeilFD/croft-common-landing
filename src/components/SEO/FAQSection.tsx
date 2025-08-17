@@ -62,31 +62,37 @@ export const FAQSection = ({
   return (
     <>
       <StructuredData data={faqSchema} />
-      <section className={`py-16 ${className}`}>
+      <section className={`py-8 ${className}`}>
         <div className="container mx-auto px-6">
-          <h2 className="font-brutalist text-3xl md:text-4xl mb-12 text-center text-foreground">
-            {title}
-          </h2>
-          <div className="max-w-4xl mx-auto">
-            <Accordion type="multiple" className="space-y-4">
-              {faqs.map((faq, index) => (
-                <AccordionItem 
-                  key={index} 
-                  value={`item-${index}`}
-                  className="border border-border rounded-lg overflow-hidden bg-card"
-                >
-                  <AccordionTrigger className="px-6 py-4 text-left font-industrial text-lg font-medium text-foreground hover:no-underline hover:bg-muted/50 transition-colors [&[data-state=open]]:bg-muted/30">
-                    {faq.question}
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6 pt-0">
-                    <p className="font-industrial text-muted-foreground leading-relaxed">
-                      {faq.answer}
-                    </p>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          </div>
+          <Accordion type="single" collapsible className="max-w-6xl mx-auto">
+            <AccordionItem value="faq-section" className="border border-border rounded-lg bg-card">
+              <AccordionTrigger className="px-6 py-4 text-left font-brutalist text-2xl md:text-3xl font-medium text-foreground hover:no-underline hover:bg-muted/50 transition-colors">
+                {title}
+              </AccordionTrigger>
+              <AccordionContent className="px-6 pb-6 pt-0">
+                <div className="max-w-4xl mx-auto">
+                  <Accordion type="multiple" className="space-y-4 mt-6">
+                    {faqs.map((faq, index) => (
+                      <AccordionItem 
+                        key={index} 
+                        value={`item-${index}`}
+                        className="border border-border rounded-lg overflow-hidden bg-card"
+                      >
+                        <AccordionTrigger className="px-6 py-4 text-left font-industrial text-lg font-medium text-foreground hover:no-underline hover:bg-muted/50 transition-colors [&[data-state=open]]:bg-muted/30">
+                          {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6 pt-0">
+                          <p className="font-industrial text-muted-foreground leading-relaxed">
+                            {faq.answer}
+                          </p>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </section>
     </>
