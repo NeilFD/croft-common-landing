@@ -374,11 +374,11 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Menu Manager - {pageTitle}</h2>
-          <p className="text-muted-foreground">
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight break-words">Menu Manager - {pageTitle}</h2>
+          <p className="text-muted-foreground break-words">
             Manage menu sections and items for the {pageTitle} page
           </p>
         </div>
@@ -387,6 +387,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
             variant="outline"
             onClick={cleanAllMenuContent}
             disabled={cleaningContent}
+            className="w-full sm:w-auto flex-shrink-0 min-h-[44px] sm:min-h-auto"
           >
             <Wand2 className="h-4 w-4 mr-2" />
             {cleaningContent ? 'Cleaning...' : 'Clean All HTML'}
@@ -401,14 +402,15 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
           <CardDescription>Create a new menu section for this page</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2">
             <Input
               placeholder="Section name (e.g., Coffee, Pastries)"
               value={newSectionName}
               onChange={(e) => setNewSectionName(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && createSection()}
+              className="flex-1 w-full"
             />
-            <Button onClick={createSection} disabled={!newSectionName.trim()}>
+            <Button onClick={createSection} disabled={!newSectionName.trim()} className="w-full sm:w-auto min-h-[44px] sm:min-h-auto">
               <Plus className="h-4 w-4 mr-2" />
               Add Section
             </Button>
@@ -420,8 +422,8 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
       {sections.map((section) => (
         <Card key={section.id}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
+            <div className="flex flex-col gap-4">
+              <div className="space-y-3">
                 <Input
                   value={section.section_name}
                   onChange={(e) => {
@@ -429,9 +431,9 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
                     setSections(sections.map(s => s.id === section.id ? updatedSection : s));
                   }}
                   onBlur={() => updateSection(section)}
-                  className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0"
+                  className="text-lg font-semibold border-none p-0 h-auto focus-visible:ring-0 w-full"
                 />
-                <div className="flex items-center gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                   <div className="flex items-center space-x-2">
                     <Switch
                       id={`published-${section.id}`}
@@ -451,11 +453,12 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
                   </Badge>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => createItem(section.id)}
+                  className="flex-1 min-h-[44px] sm:min-h-auto"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Item
@@ -464,7 +467,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
                   variant="outline"
                   size="sm"
                   onClick={() => deleteSection(section.id)}
-                  className="text-destructive hover:text-destructive"
+                  className="text-destructive hover:text-destructive flex-1 min-h-[44px] sm:min-h-auto"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -476,7 +479,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
               {(items[section.id] || []).map((item) => (
                 <Card key={item.id} className="border-l-4 border-l-accent">
                   <CardContent className="pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-4">
                       <div className="space-y-3">
                         <div>
                           <Label htmlFor={`name-${item.id}`}>Item Name</Label>
@@ -491,6 +494,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
                               }));
                             }}
                             onBlur={() => updateItem(item)}
+                            className="w-full"
                           />
                         </div>
                         

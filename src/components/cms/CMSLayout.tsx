@@ -11,10 +11,10 @@ interface CMSLayoutProps {
 export const CMSLayout = ({ children }: CMSLayoutProps) => {
   return (
     <EditModeProvider>
-      <SidebarProvider defaultOpen={true}>
-        <div className="min-h-screen flex w-full">
+      <SidebarProvider defaultOpen={false}>
+        <div className="min-h-screen flex w-full overflow-x-hidden">
           <CMSSidebar />
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             {children}
           </div>
         </div>

@@ -152,17 +152,18 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
     : 'Manage content across all pages';
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-          <p className="text-muted-foreground">{description}</p>
+    <div className="space-y-6 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight break-words">{title}</h2>
+          <p className="text-muted-foreground break-words">{description}</p>
         </div>
         {content.length > 0 && (
           <Button
             variant="outline"
             onClick={cleanAllContent}
             disabled={cleaningContent}
+            className="w-full sm:w-auto flex-shrink-0 min-h-[44px] sm:min-h-auto"
           >
             <Wand2 className="h-4 w-4 mr-2" />
             {cleaningContent ? 'Cleaning...' : 'Clean All HTML'}
@@ -175,12 +176,12 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
           {content.map(item => (
             <Card key={item.id}>
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                  <div className="min-w-0">
+                    <CardTitle className="text-lg break-words">
                       {item.content_key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </CardTitle>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground break-words">
                       {item.page} page • {item.section} section
                     </p>
                   </div>
@@ -188,6 +189,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
                     variant="outline"
                     size="sm"
                     onClick={() => setEditingItem(editingItem === item.id ? null : item.id)}
+                    className="w-full sm:w-auto flex-shrink-0 min-h-[44px] sm:min-h-auto"
                   >
                     <Edit className="h-4 w-4 mr-2" />
                     {editingItem === item.id ? 'Cancel' : 'Edit'}
@@ -202,7 +204,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
                     saving={saving === item.id}
                   />
                 ) : (
-                  <div className="whitespace-pre-wrap word-wrap break-words overflow-wrap-anywhere p-4 bg-muted rounded-md">
+                  <div className="whitespace-pre-wrap break-words p-4 bg-muted rounded-md overflow-x-auto">
                     {item.content_data?.text || 'No content'}
                   </div>
                 )}
@@ -246,13 +248,13 @@ const EditableContent = ({ item, onSave, saving }: EditableContentProps) => {
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={6}
-          className="min-h-32 whitespace-pre-wrap word-wrap break-words resize-y"
+          className="min-h-32 whitespace-pre-wrap break-words resize-y w-full"
         />
       ) : (
         <Input
           value={text}
           onChange={(e) => setText(e.target.value)}
-          className="word-wrap break-words"
+          className="break-words w-full"
         />
       )}
       
@@ -260,6 +262,7 @@ const EditableContent = ({ item, onSave, saving }: EditableContentProps) => {
         <Button
           onClick={handleSave}
           disabled={saving || text === item.content_data?.text}
+          className="w-full sm:w-auto min-h-[44px] sm:min-h-auto"
         >
           <Save className="h-4 w-4 mr-2" />
           {saving ? 'Saving...' : 'Save Changes'}

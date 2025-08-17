@@ -109,27 +109,29 @@ const ImageManager = () => {
       </Card>
 
       <Tabs defaultValue={carouselTypes[0]} className="space-y-6">
-        <TabsList className="grid grid-cols-7 w-full">
-          {carouselTypes.map((carousel) => (
-            <TabsTrigger key={carousel} value={carousel} className="text-xs">
-              {carousel.replace('_hero', '').replace('_', ' ')}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="overflow-x-auto -mx-3 sm:mx-0 px-3 sm:px-0">
+          <TabsList className="inline-flex h-10 items-center justify-start rounded-md bg-muted p-1 text-muted-foreground min-w-max w-full sm:w-auto">
+            {carouselTypes.map((carousel) => (
+              <TabsTrigger key={carousel} value={carousel} className="text-xs whitespace-nowrap px-2 sm:px-3 min-h-[44px] sm:min-h-auto">
+                {carousel.replace('_hero', '').replace('_', ' ')}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         {carouselTypes.map((carousel) => (
           <TabsContent key={carousel} value={carousel} className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
               <h3 className="text-lg font-semibold capitalize">
                 {carousel.replace('_', ' ')} Images
               </h3>
-              <Button variant="outline">
+              <Button variant="outline" className="w-full sm:w-auto">
                 <Upload className="h-4 w-4 mr-2" />
                 Add New Image
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {getImagesByCarousel(carousel).map((image) => (
                 <Card key={image.id}>
                   <CardContent className="p-4">
@@ -152,35 +154,37 @@ const ImageManager = () => {
                         onCancel={() => setEditingImage(null)}
                       />
                     ) : (
-                      <div className="space-y-2">
-                        <h4 className="font-medium truncate">
-                          {image.title || 'Untitled'}
-                        </h4>
-                        <p className="text-sm text-muted-foreground truncate">
-                          {image.description || 'No description'}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Order: {image.sort_order}
-                        </p>
-                        
-                        <div className="flex justify-between items-center pt-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setEditingImage(image.id)}
-                          >
-                            <Edit className="h-3 w-3 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteImage(image.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                        <div className="space-y-2">
+                          <h4 className="font-medium break-words">
+                            {image.title || 'Untitled'}
+                          </h4>
+                          <p className="text-sm text-muted-foreground break-words">
+                            {image.description || 'No description'}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Order: {image.sort_order}
+                          </p>
+                          
+                          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEditingImage(image.id)}
+                              className="flex-1 min-h-[44px] sm:min-h-auto"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteImage(image.id)}
+                              className="flex-1 min-h-[44px] sm:min-h-auto"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </div>
-                      </div>
                     )}
                   </CardContent>
                 </Card>
@@ -232,29 +236,33 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
         placeholder="Image title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
+        className="w-full"
       />
       <Input
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
+        className="w-full"
       />
       <Input
         placeholder="Alt text"
         value={altText}
         onChange={(e) => setAltText(e.target.value)}
+        className="w-full"
       />
       <Input
         type="number"
         placeholder="Sort order"
         value={sortOrder}
         onChange={(e) => setSortOrder(parseInt(e.target.value) || 0)}
+        className="w-full"
       />
       
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onCancel}>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button variant="outline" size="sm" onClick={onCancel} className="flex-1 min-h-[44px] sm:min-h-auto">
           Cancel
         </Button>
-        <Button size="sm" onClick={handleSave}>
+        <Button size="sm" onClick={handleSave} className="flex-1 min-h-[44px] sm:min-h-auto">
           <Save className="h-3 w-3 mr-1" />
           Save
         </Button>
