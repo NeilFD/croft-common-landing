@@ -32,6 +32,27 @@ export type Database = {
         }
         Relationships: []
       }
+      app_settings: {
+        Row: {
+          created_at: string | null
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
+      }
       cinema_bookings: {
         Row: {
           created_at: string
@@ -1164,6 +1185,10 @@ export type Database = {
           ticket_numbers: number[]
           tickets_left: number
         }[]
+      }
+      get_app_setting: {
+        Args: { setting_key: string }
+        Returns: string
       }
       get_cinema_status: {
         Args: Record<PropertyKey, never>
