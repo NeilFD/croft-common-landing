@@ -62,6 +62,23 @@ export default function CMSEmailPreview() {
     return '<p>Preview not available for this template</p>';
   };
 
+  // Helper function to dynamically render numbered fields
+  const renderDynamicFields = (pattern: string, wrapperFn?: (content: string, index: number, array: string[]) => string) => {
+    const fields = Object.keys(content)
+      .filter(key => key.match(new RegExp(pattern.replace('*', '\\d+'))))
+      .sort((a, b) => {
+        const aNum = parseInt(a.match(/_(\d+)$/)?.[1] || '0');
+        const bNum = parseInt(b.match(/_(\d+)$/)?.[1] || '0');
+        return aNum - bNum;
+      });
+    
+    const values = fields.map(key => content[key] || '').filter(val => val.trim());
+    
+    return values.map((value, index) => {
+      return wrapperFn ? wrapperFn(value, index, values) : value;
+    }).join('');
+  };
+
   const generateWelcomeEmailHtml = () => {
     const displayName = 'John';
     const baseUrl = 'http://croftcommontest.com';
@@ -117,10 +134,9 @@ export default function CMSEmailPreview() {
                 ${(content.welcome_email_cta_instructions || '').replace('{baseUrl}', baseUrl)}
               </p>
               <div style="background: #f8f8f8; border: 1px solid #ff1b6b; padding: 20px; margin: 20px 0; text-align: left;">
-                <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">${content.welcome_email_instruction_1 || ''}</p>
-                <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">${content.welcome_email_instruction_2 || ''}</p>
-                <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 8px 0; letter-spacing: 0.05em;">${content.welcome_email_instruction_3 || ''}</p>
-                <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0; letter-spacing: 0.05em;">${content.welcome_email_instruction_4 || ''}</p>
+                ${renderDynamicFields('welcome_email_instruction_*', (instruction, index, array) => `
+                  <p style="color: #000000; font-family: 'Work Sans', Arial, sans-serif; font-size: 18px; font-weight: 400; margin: 0 0 ${index === array.length - 1 ? '0' : '8px'} 0; letter-spacing: 0.05em;">${instruction}</p>
+                `)}
               </div>
             </div>
             
@@ -129,15 +145,14 @@ export default function CMSEmailPreview() {
                 <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:999px; background:#111; color:#ffffff; font-weight:700; font-family:'Oswald', Arial, sans-serif;">⑦</span>
                 <span style="font-family: 'Oswald', Arial Black, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; font-weight:700;">${content.welcome_email_visual_cue_title || ''}</span>
               </div>
-              <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">${content.welcome_email_visual_cue_1 || ''}</p>
-              <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">${content.welcome_email_visual_cue_2 || ''}</p>
-              <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 0 6px 0;">${content.welcome_email_visual_cue_3 || ''}</p>
-              <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0;">${content.welcome_email_visual_cue_4 || ''}</p>
+              ${renderDynamicFields('welcome_email_visual_cue_*', (cue, index, array) => `
+                <p style="color:#1a1a1a; font-family:'Work Sans', Arial, sans-serif; font-size:16px; line-height:1.6; margin:0 ${index === array.length - 1 ? '0' : '0 6px 0'};">${cue}</p>
+              `)}
             </div>
             
-            <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">${content.welcome_email_closing_1 || ''}</p>
-            <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 25px 0;">${content.welcome_email_closing_2 || ''}</p>
-            <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 40px 0;">${content.welcome_email_closing_3 || ''}</p>
+            ${renderDynamicFields('welcome_email_closing_*', (closing, index, array) => `
+              <p style="color: #333333; font-family: 'Work Sans', Arial, sans-serif; font-size: 16px; line-height: 1.7; margin: 0 0 ${index === array.length - 1 ? '40px' : '25px'} 0;">${closing}</p>
+            `)}
             
             <div style="text-align: right; border-top: 1px solid #e5e5e5; padding-top: 25px;">
               <p style="color: #1a1a1a; font-family: 'Oswald', Arial, sans-serif; font-size: 16px; font-weight: 400; margin: 0; letter-spacing: 0.1em;">${content.welcome_email_signature || ''}</p>
@@ -264,10 +279,7 @@ export default function CMSEmailPreview() {
         <div style="background: #e3f2fd; padding: 16px; border-radius: 6px; margin-bottom: 24px;">
           <h3 style="color: #1976d2; margin: 0 0 12px 0; font-size: 16px;">${content.event_email_features_title || 'What you can do:'}</h3>
           <ul style="color: #333; margin: 0; padding-left: 20px;">
-            <li>${content.event_email_feature_1 || 'Edit event details'}</li>
-            <li>${content.event_email_feature_2 || 'Mark event as sold out'}</li>
-            <li>${content.event_email_feature_3 || 'Upload or change event images'}</li>
-            <li>${content.event_email_feature_4 || 'Delete the event if needed'}</li>
+            ${renderDynamicFields('event_email_feature_*', (feature) => `<li>${feature}</li>`)}
           </ul>
         </div>
 

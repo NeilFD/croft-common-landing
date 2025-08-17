@@ -150,10 +150,17 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
     return [...staticFields, ...dynamicFieldsForSection];
   };
 
-  // Check if a field can be deleted (not in static config)
+  // Check if a field can be deleted (protect only essential fields)
   const canDeleteField = (sectionName: string, fieldKey: string) => {
-    const staticFields = sections[sectionName] || [];
-    return !staticFields.includes(fieldKey);
+    // Protect essential fields that should never be deleted
+    const protectedFields = [
+      `${templateType}_email_from_address`,
+      `${templateType}_email_subject`,
+      `${templateType}_email_subject_template`,
+      `${templateType}_email_subject_new`,
+      `${templateType}_email_subject_update`
+    ];
+    return !protectedFields.includes(fieldKey);
   };
 
   // Generate next field key for a section
