@@ -7,10 +7,18 @@ import BookFloatingButton from './BookFloatingButton';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import { kitchensMenu } from '@/data/menuData';
-import { kitchenHeroImages as kitchenImages } from '@/data/heroImages';
+import { kitchenHeroImages as fallbackKitchenImages } from '@/data/heroImages';
+import { useCMSImages } from '@/hooks/useCMSImages';
 import CroftLogo from './CroftLogo';
 
 const KitchensHeroCarousel = () => {
+  // Fetch CMS images with fallback to static images
+  const { images: kitchenImages, loading: imagesLoading } = useCMSImages(
+    'kitchens', 
+    'kitchen_hero', 
+    { fallbackImages: fallbackKitchenImages }
+  );
+  
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 

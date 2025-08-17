@@ -7,10 +7,18 @@ import BookFloatingButton from './BookFloatingButton';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import { beerMenu } from '@/data/menuData';
-import { beerHeroImages as heroImages } from '@/data/heroImages';
+import { beerHeroImages as fallbackHeroImages } from '@/data/heroImages';
+import { useCMSImages } from '@/hooks/useCMSImages';
 import CroftLogo from './CroftLogo';
 
 const BeerHeroCarousel = () => {
+  // Fetch CMS images with fallback to static images
+  const { images: heroImages, loading: imagesLoading } = useCMSImages(
+    'beer', 
+    'beer_hero', 
+    { fallbackImages: fallbackHeroImages }
+  );
+  
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 

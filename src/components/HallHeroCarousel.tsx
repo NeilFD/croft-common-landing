@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
-import { hallHeroImages as heroImages } from '@/data/heroImages';
+import { hallHeroImages as fallbackHeroImages } from '@/data/heroImages';
+import { useCMSImages } from '@/hooks/useCMSImages';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import BookFloatingButton from '@/components/BookFloatingButton';
@@ -10,6 +11,13 @@ import { CMSText } from '@/components/cms/CMSText';
 import CroftLogo from './CroftLogo';
 import { hallMenuData } from '@/data/menuData';
 const HallHeroCarousel = () => {
+  // Fetch CMS images with fallback to static images
+  const { images: heroImages, loading: imagesLoading } = useCMSImages(
+    'hall', 
+    'hall_hero', 
+    { fallbackImages: fallbackHeroImages }
+  );
+  
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 

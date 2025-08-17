@@ -1,18 +1,26 @@
 import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 
-import { commonRoomHeroImages } from '@/data/heroImages';
+import { commonRoomHeroImages as fallbackCommonRoomImages } from '@/data/heroImages';
+import { useCMSImages } from '@/hooks/useCMSImages';
 import { commonRoomMenuData } from '@/data/menuData';
 import CroftLogo from './CroftLogo';
 
 const CommonRoomHeroCarousel = () => {
+  // Fetch CMS images with fallback to static images
+  const { images: commonRoomImages, loading: imagesLoading } = useCMSImages(
+    'common-room', 
+    'common_room_hero', 
+    { fallbackImages: fallbackCommonRoomImages }
+  );
+  
   return (
     <div className="relative min-h-screen overflow-hidden">
       {/* Single Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('${commonRoomHeroImages[0].src}')`
+          backgroundImage: `url('${commonRoomImages[0]?.src}')`
         }}
       />
 

@@ -5,12 +5,20 @@ import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 
 import { communityMenuData } from '@/data/menuData';
-import { communityHeroImages as heroImages } from '@/data/heroImages';
+import { communityHeroImages as fallbackHeroImages } from '@/data/heroImages';
+import { useCMSImages } from '@/hooks/useCMSImages';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
 
 const CommunityHeroCarousel = () => {
+  // Fetch CMS images with fallback to static images
+  const { images: heroImages, loading: imagesLoading } = useCMSImages(
+    'community', 
+    'community_hero', 
+    { fallbackImages: fallbackHeroImages }
+  );
+  
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFirstReady, setIsFirstReady] = useState(false);
 

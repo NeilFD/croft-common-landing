@@ -6,7 +6,8 @@ import OptimizedImage from './OptimizedImage';
 import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
 import { homeMenu } from '@/data/menuData';
-import { homeHeroImages as heroImages } from '@/data/heroImages';
+import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
+import { useCMSImages } from '@/hooks/useCMSImages';
 import BookFloatingButton from './BookFloatingButton';
 
 import { ArrowBox } from '@/components/ui/ArrowBox';
@@ -14,6 +15,13 @@ import CroftLogo from './CroftLogo';
 const HeroCarousel = () => {
   const isMobile = useIsMobile();
   const { isSlowConnection } = useConnectionSpeed();
+  
+  // Fetch CMS images with fallback to static images
+  const { images: heroImages, loading: imagesLoading } = useCMSImages(
+    'index', 
+    'main_hero', 
+    { fallbackImages: fallbackHeroImages }
+  );
   
   // Optimize autoplay delay for mobile/slow connections
   const autoplayDelay = isMobile || isSlowConnection ? 6000 : 4000;
@@ -32,7 +40,7 @@ const HeroCarousel = () => {
   // Smart image loading - prioritize first 2 images on mobile
   const imageUrls = heroImages.map(img => img.src);
   const priorityUrls = isMobile ? imageUrls.slice(0, 2) : imageUrls;
-  const { loading: imagesLoading } = useImagePreloader(priorityUrls, { enabled: true, priority: true });
+  const { loading: imagePreloadLoading } = useImagePreloader(priorityUrls, { enabled: !imagesLoading, priority: true });
   const [isFirstReady, setIsFirstReady] = useState(false);
 
   const onSelect = useCallback(() => {

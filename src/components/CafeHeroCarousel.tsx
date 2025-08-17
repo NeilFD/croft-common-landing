@@ -7,11 +7,19 @@ import BookFloatingButton from './BookFloatingButton';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import { cafeMenu } from '@/data/menuData';
-import { cafeHeroImages } from '@/data/heroImages';
+import { cafeHeroImages as fallbackCafeImages } from '@/data/heroImages';
+import { useCMSImages } from '@/hooks/useCMSImages';
 import CroftLogo from './CroftLogo';
 import { CMSText } from './cms/CMSText';
 
 const CafeHeroCarousel = () => {
+  // Fetch CMS images with fallback to static images
+  const { images: cafeImages, loading: imagesLoading } = useCMSImages(
+    'cafe', 
+    'cafe_hero', 
+    { fallbackImages: fallbackCafeImages }
+  );
+  
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
@@ -24,7 +32,7 @@ const CafeHeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFirstReady, setIsFirstReady] = useState(false);
 
-  const cafeImages = cafeHeroImages;
+  
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
