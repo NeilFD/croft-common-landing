@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useLocation, NavLink } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   Sidebar,
   SidebarContent,
@@ -126,7 +127,8 @@ const managementSections = [
 ];
 
 export const CMSSidebar = () => {
-  const { state } = useSidebar();
+  const { state, open } = useSidebar();
+  const isMobile = useIsMobile();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -150,6 +152,9 @@ export const CMSSidebar = () => {
   const getNavClass = (isActiveItem: boolean) =>
     isActiveItem ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
 
+  // Show text when not collapsed OR when on mobile and sidebar is open
+  const showText = state !== "collapsed" || (isMobile && open);
+
   return (
     <Sidebar 
       className="border-r"
@@ -166,9 +171,9 @@ export const CMSSidebar = () => {
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <FileText className="mr-2 h-4 w-4" />
-                  {state !== "collapsed" && "Pages"}
+                  {showText && "Pages"}
                 </span>
-                {state !== "collapsed" && <ChevronDown className="h-4 w-4" />}
+                {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -185,10 +190,10 @@ export const CMSSidebar = () => {
                             >
                               <NavLink to={page.path}>
                                 <page.icon className="mr-2 h-4 w-4" />
-                                {state !== "collapsed" && <span>{page.name}</span>}
+                                {showText && <span>{page.name}</span>}
                               </NavLink>
                             </SidebarMenuButton>
-                            {state !== "collapsed" && (
+                            {showText && (
                               <CollapsibleTrigger asChild>
                                 <button className="p-1 hover:bg-accent rounded">
                                   <ChevronDown className="h-4 w-4" />
@@ -205,7 +210,7 @@ export const CMSSidebar = () => {
                                     className={getNavClass(isActive(section.path))}
                                   >
                                     <NavLink to={section.path}>
-                                      {state !== "collapsed" && section.name}
+                                       {showText && section.name}
                                     </NavLink>
                                   </SidebarMenuSubButton>
                                 </SidebarMenuSubItem>
@@ -220,7 +225,7 @@ export const CMSSidebar = () => {
                         >
                           <NavLink to={page.path}>
                             <page.icon className="mr-2 h-4 w-4" />
-                            {state !== "collapsed" && page.name}
+                            {showText && page.name}
                           </NavLink>
                         </SidebarMenuButton>
                       )}
@@ -242,9 +247,9 @@ export const CMSSidebar = () => {
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Globe className="mr-2 h-4 w-4" />
-                  {state !== "collapsed" && "Global Content"}
+                  {showText && "Global Content"}
                 </span>
-                {state !== "collapsed" && <ChevronDown className="h-4 w-4" />}
+                {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -258,7 +263,7 @@ export const CMSSidebar = () => {
                       >
                         <NavLink to={section.path}>
                           <section.icon className="mr-2 h-4 w-4" />
-                          {state !== "collapsed" && section.name}
+                           {showText && section.name}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -279,9 +284,9 @@ export const CMSSidebar = () => {
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Mail className="mr-2 h-4 w-4" />
-                  {state !== "collapsed" && "Email Templates"}
+                  {showText && "Email Templates"}
                 </span>
-                {state !== "collapsed" && <ChevronDown className="h-4 w-4" />}
+                {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -295,7 +300,7 @@ export const CMSSidebar = () => {
                       >
                         <NavLink to={template.path}>
                           <template.icon className="mr-2 h-4 w-4" />
-                          {state !== "collapsed" && template.name}
+                          {showText && template.name}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -316,9 +321,9 @@ export const CMSSidebar = () => {
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
                 <span className="flex items-center">
                   <Settings className="mr-2 h-4 w-4" />
-                  {state !== "collapsed" && "Management"}
+                  {showText && "Management"}
                 </span>
-                {state !== "collapsed" && <ChevronDown className="h-4 w-4" />}
+                {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
             </CollapsibleTrigger>
             <CollapsibleContent>
@@ -332,7 +337,7 @@ export const CMSSidebar = () => {
                       >
                         <NavLink to={section.path}>
                           <section.icon className="mr-2 h-4 w-4" />
-                          {state !== "collapsed" && section.name}
+                          {showText && section.name}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
