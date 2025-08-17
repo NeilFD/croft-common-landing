@@ -6,7 +6,7 @@ import CroftLogo from '@/components/CroftLogo';
 
 export const CMSHeader = () => {
   return (
-    <header className="flex items-center justify-between h-16 px-3 sm:px-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="flex items-center justify-between h-16 px-3 sm:px-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative z-50">
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         <SidebarTrigger className="p-2 hover:bg-accent rounded-md border border-border bg-background shadow-sm flex-shrink-0" />
         <CroftLogo size="lg" className="hidden sm:block ml-2" priority />
