@@ -3,12 +3,34 @@ import CocktailHeroCarousel from '@/components/CocktailHeroCarousel';
 import Footer from '@/components/Footer';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { CMSText } from '@/components/cms/CMSText';
+import { EnhancedMetaTags } from "@/components/SEO/EnhancedMetaTags";
+import { StructuredData, useRestaurantSchema, useBreadcrumbSchema } from "@/components/SEO/StructuredData";
+import { FAQSection } from "@/components/SEO/FAQSection";
+import { useSEO } from "@/hooks/useSEO";
 
 const Cocktails = () => {
   const { isCMSMode } = useCMSMode();
+  const seoData = useSEO();
+  const restaurantSchema = useRestaurantSchema('/cocktails');
+  const breadcrumbSchema = useBreadcrumbSchema('/cocktails');
 
   return (
     <div className="min-h-screen">
+      <EnhancedMetaTags
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        url={seoData.url}
+        type={seoData.type}
+        restaurant={{
+          cuisine: ["Cocktails", "Drinks", "Bar"],
+          priceRange: "££",
+          acceptsReservations: false
+        }}
+      />
+      <StructuredData data={restaurantSchema} />
+      <StructuredData data={breadcrumbSchema} />
+      
       {!isCMSMode && <Navigation />}
       <CocktailHeroCarousel />
       <section className="py-24 bg-background">
@@ -18,7 +40,7 @@ const Cocktails = () => {
             section="hero" 
             contentKey="title" 
             fallback="COCKTAILS"
-            as="h2"
+            as="h1"
             className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground"
           />
           <CMSText 
@@ -31,7 +53,17 @@ const Cocktails = () => {
           />
         </div>
       </section>
-      {!isCMSMode && <Footer />}
+      
+      {!isCMSMode && (
+        <>
+          <FAQSection 
+            page="cocktails"
+            title="Cocktails FAQ"
+            className="bg-muted/30"
+          />
+          <Footer />
+        </>
+      )}
     </div>
   );
 };

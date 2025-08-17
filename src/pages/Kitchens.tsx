@@ -3,12 +3,34 @@ import Footer from '@/components/Footer';
 import KitchensHeroCarousel from '@/components/KitchensHeroCarousel';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { CMSText } from '@/components/cms/CMSText';
+import { EnhancedMetaTags } from "@/components/SEO/EnhancedMetaTags";
+import { StructuredData, useRestaurantSchema, useBreadcrumbSchema } from "@/components/SEO/StructuredData";
+import { FAQSection } from "@/components/SEO/FAQSection";
+import { useSEO } from "@/hooks/useSEO";
 
 const Kitchens = () => {
   const { isCMSMode } = useCMSMode();
+  const seoData = useSEO();
+  const restaurantSchema = useRestaurantSchema('/kitchens');
+  const breadcrumbSchema = useBreadcrumbSchema('/kitchens');
 
   return (
     <div className="min-h-screen">
+      <EnhancedMetaTags
+        title={seoData.title}
+        description={seoData.description}
+        keywords={seoData.keywords}
+        url={seoData.url}
+        type={seoData.type}
+        restaurant={{
+          cuisine: ["Street Food", "International", "Fast Casual"],
+          priceRange: "££",
+          acceptsReservations: false
+        }}
+      />
+      <StructuredData data={restaurantSchema} />
+      <StructuredData data={breadcrumbSchema} />
+      
       {!isCMSMode && <Navigation />}
       <KitchensHeroCarousel />
       <section className="py-24 bg-background">
@@ -18,7 +40,7 @@ const Kitchens = () => {
             section="hero" 
             contentKey="title" 
             fallback="KITCHENS"
-            as="h2"
+            as="h1"
             className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground"
           />
           <CMSText 
@@ -31,7 +53,17 @@ const Kitchens = () => {
           />
         </div>
       </section>
-      {!isCMSMode && <Footer />}
+      
+      {!isCMSMode && (
+        <>
+          <FAQSection 
+            page="kitchens"
+            title="Kitchens FAQ"
+            className="bg-muted/30"
+          />
+          <Footer />
+        </>
+      )}
     </div>
   );
 };
