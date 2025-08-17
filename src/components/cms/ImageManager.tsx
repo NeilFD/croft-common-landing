@@ -155,6 +155,8 @@ const ImageManager = () => {
 
   const updateImage = async (imageId: string, updates: any) => {
     try {
+      console.log('🖼️ Updating image:', imageId, 'with updates:', updates);
+      
       const { error } = await supabase
         .from('cms_images')
         .update(updates)
@@ -162,9 +164,13 @@ const ImageManager = () => {
 
       if (error) throw error;
 
-      setImages(prev => prev.map(img => 
-        img.id === imageId ? { ...img, ...updates } : img
-      ));
+      setImages(prev => {
+        const updatedImages = prev.map(img => 
+          img.id === imageId ? { ...img, ...updates } : img
+        );
+        console.log('🖼️ Updated images state:', updatedImages.find(img => img.id === imageId));
+        return updatedImages;
+      });
 
       toast.success('Image updated successfully');
       setEditingImage(null);
