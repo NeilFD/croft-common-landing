@@ -245,11 +245,11 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   }
 
   return (
-    <div className="h-full flex flex-col max-w-full">
+    <div className="h-full flex flex-col w-full">
       {/* Header Section - Fixed */}
-      <div className="flex-shrink-0 pb-6 border-b">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3 min-w-0">
+      <div className="flex-shrink-0 pb-6 border-b px-6 pt-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 max-w-full">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             <Mail className="h-6 w-6 text-primary flex-shrink-0" />
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-bold truncate">{config.title}</h1>
@@ -272,7 +272,7 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
       </div>
 
       {/* Content Section - Scrollable */}
-      <div className="flex-1 pt-6 min-h-0">
+      <div className="flex-1 pt-6 min-h-0 px-6">
         <Tabs defaultValue={Object.keys(sections)[0]} className="h-full flex flex-col">
           {/* Responsive Tabs List */}
           <div className="flex-shrink-0 mb-4">
