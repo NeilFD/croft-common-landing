@@ -108,14 +108,6 @@ export const CMSOverview = () => {
     { name: 'Common Room', icon: Building2, path: '/cms/visual/common-room', description: 'Membership space details' }
   ];
 
-  const quickActions = [
-    { name: 'Edit Page Content', icon: FileText, path: '/cms/pages/home/content', description: 'Update text and copy' },
-    { name: 'Manage Menus', icon: ChefHat, path: '/cms/pages/cafe/menu', description: 'Edit menu items and pricing' },
-    { name: 'Upload Images', icon: Image, path: '/cms/images', description: 'Add new photos and media' },
-    { name: 'Update Branding', icon: Palette, path: '/cms/brand', description: 'Modify colors and assets' },
-    { name: 'Global Settings', icon: Settings, path: '/cms/global/footer', description: 'Footer and navigation' },
-    { name: 'Import/Export', icon: Download, path: '/cms/import', description: 'Backup and restore content' }
-  ];
 
   if (loading) {
     return <div className="p-6">Loading overview...</div>;
@@ -214,85 +206,81 @@ export const CMSOverview = () => {
         </CardContent>
       </Card>
 
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5" />
-              Quick Actions
-            </CardTitle>
-            <CardDescription>
-              Common tasks to manage your content
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {quickActions.map((action) => (
-              <Button
-                key={action.name}
-                variant="ghost"
-                className="w-full justify-start h-auto p-3"
-                onClick={() => navigate(action.path)}
-              >
-                <div className="flex items-center gap-3 w-full">
-                  <action.icon className="h-4 w-4" />
-                  <div className="text-left">
-                    <div className="font-medium">{action.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {action.description}
-                    </div>
-                  </div>
+      {/* System Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            System Status
+          </CardTitle>
+          <CardDescription>
+            Current status and recent activity
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Website Status</span>
+            <Badge className="bg-green-100 text-green-800">Live</Badge>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Content Status</span>
+            <Badge variant="outline">
+              {stats.publishedContent}/{stats.totalContent} Published
+            </Badge>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm">Last Updated</span>
+            <span className="text-xs text-muted-foreground">
+              {stats.lastUpdated !== 'Never' 
+                ? new Date(stats.lastUpdated).toLocaleDateString()
+                : 'Never'
+              }
+            </span>
+          </div>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="w-full gap-2"
+            onClick={() => window.open('/', '_blank')}
+          >
+            <Eye className="h-4 w-4" />
+            Preview Live Site
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Import/Export */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Download className="h-5 w-5" />
+            Content Management
+          </CardTitle>
+          <CardDescription>
+            Backup and restore your content
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            variant="outline"
+            className="w-full justify-start h-auto p-4"
+            onClick={() => navigate('/cms/import')}
+          >
+            <div className="flex items-center gap-3 w-full">
+              <Download className="h-5 w-5" />
+              <div className="text-left">
+                <div className="font-medium">Import/Export</div>
+                <div className="text-sm text-muted-foreground">
+                  Backup and restore content
                 </div>
-              </Button>
-            ))}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              System Status
-            </CardTitle>
-            <CardDescription>
-              Current status and recent activity
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Website Status</span>
-              <Badge className="bg-green-100 text-green-800">Live</Badge>
+              </div>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Content Status</span>
-              <Badge variant="outline">
-                {stats.publishedContent}/{stats.totalContent} Published
-              </Badge>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Last Updated</span>
-              <span className="text-xs text-muted-foreground">
-                {stats.lastUpdated !== 'Never' 
-                  ? new Date(stats.lastUpdated).toLocaleDateString()
-                  : 'Never'
-                }
-              </span>
-            </div>
-
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full gap-2"
-              onClick={() => window.open('/', '_blank')}
-            >
-              <Eye className="h-4 w-4" />
-              Preview Live Site
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 };
