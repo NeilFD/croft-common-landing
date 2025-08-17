@@ -9,7 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { Mail, Save, Eye, TestTube } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Mail, Save, Eye, TestTube, Plus, X } from 'lucide-react';
 
 interface EmailContent {
   id: string;
@@ -131,6 +132,7 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   const [content, setContent] = useState<Record<string, EmailContent>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
+  const [dynamicFields, setDynamicFields] = useState<Record<string, string[]>>({});
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -140,6 +142,42 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   useEffect(() => {
     fetchContent();
   }, [templateType]);
+
+  // Get all fields for a section (static + dynamic)
+  const getSectionFields = (sectionName: string) => {
+    const staticFields = sections[sectionName] || [];
+    const dynamicFieldsForSection = dynamicFields[sectionName] || [];
+    return [...staticFields, ...dynamicFieldsForSection];
+  };
+
+  // Check if a field can be deleted (not in static config)
+  const canDeleteField = (sectionName: string, fieldKey: string) => {
+    const staticFields = sections[sectionName] || [];
+    return !staticFields.includes(fieldKey);
+  };
+
+  // Generate next field key for a section
+  const getNextFieldKey = (sectionName: string) => {
+    const allFields = getSectionFields(sectionName);
+    const numberedFields = allFields.filter(key => /_\d+$/.test(key));
+    
+    if (numberedFields.length === 0) {
+      // No numbered fields exist, start with _1
+      const baseKey = `${templateType}_email_${sectionName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+      return `${baseKey}_1`;
+    }
+    
+    // Find the highest number and increment
+    const numbers = numberedFields.map(key => {
+      const match = key.match(/_(\d+)$/);
+      return match ? parseInt(match[1]) : 0;
+    });
+    const maxNumber = Math.max(...numbers);
+    
+    // Use the base pattern from existing numbered fields
+    const basePattern = numberedFields[0].replace(/_\d+$/, '');
+    return `${basePattern}_${maxNumber + 1}`;
+  };
 
   const fetchContent = async () => {
     setLoading(true);
@@ -158,6 +196,24 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
       }, {} as Record<string, EmailContent>);
 
       setContent(contentMap);
+
+      // Identify dynamic fields (fields that exist in DB but not in static config)
+      const dynamicFieldsMap: Record<string, string[]> = {};
+      Object.keys(sections).forEach(sectionName => {
+        const staticFields = sections[sectionName];
+        const sectionDynamicFields = Object.keys(contentMap).filter(key => {
+          const belongsToSection = staticFields.some(staticField => {
+            const basePattern = staticField.replace(/_\d+$/, '');
+            return key.startsWith(basePattern) && key !== staticField;
+          });
+          return belongsToSection && !staticFields.includes(key);
+        });
+        if (sectionDynamicFields.length > 0) {
+          dynamicFieldsMap[sectionName] = sectionDynamicFields;
+        }
+      });
+      
+      setDynamicFields(dynamicFieldsMap);
     } catch (error) {
       console.error('Error fetching email content:', error);
       toast({
@@ -209,6 +265,88 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
       ...prev,
       [key]: { ...prev[key], content_value: value }
     }));
+  };
+
+  // Add new field to section
+  const addField = async (sectionName: string) => {
+    const newFieldKey = getNextFieldKey(sectionName);
+    
+    try {
+      const { error } = await supabase
+        .from('cms_global_content')
+        .insert({
+          content_key: newFieldKey,
+          content_value: '',
+          content_type: 'email_template',
+          created_by: user?.id
+        });
+
+      if (error) throw error;
+
+      // Update local state
+      setContent(prev => ({
+        ...prev,
+        [newFieldKey]: {
+          id: crypto.randomUUID(),
+          content_key: newFieldKey,
+          content_value: '',
+          published: true
+        }
+      }));
+
+      setDynamicFields(prev => ({
+        ...prev,
+        [sectionName]: [...(prev[sectionName] || []), newFieldKey]
+      }));
+
+      toast({
+        title: "Field Added",
+        description: `New field added to ${sectionName}`,
+      });
+    } catch (error) {
+      console.error('Error adding field:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add new field.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Remove field from section
+  const removeField = async (sectionName: string, fieldKey: string) => {
+    try {
+      const { error } = await supabase
+        .from('cms_global_content')
+        .delete()
+        .eq('content_key', fieldKey);
+
+      if (error) throw error;
+
+      // Update local state
+      setContent(prev => {
+        const newContent = { ...prev };
+        delete newContent[fieldKey];
+        return newContent;
+      });
+
+      setDynamicFields(prev => ({
+        ...prev,
+        [sectionName]: (prev[sectionName] || []).filter(key => key !== fieldKey)
+      }));
+
+      toast({
+        title: "Field Removed",
+        description: `Field removed from ${sectionName}`,
+      });
+    } catch (error) {
+      console.error('Error removing field:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove field.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getFieldLabel = (key: string) => {
@@ -293,85 +431,135 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
 
           {/* Tab Content - Scrollable */}
           <div className="flex-1 min-h-0">
-            {Object.entries(sections).map(([sectionName, keys]) => (
-              <TabsContent key={sectionName} value={sectionName} className="h-full mt-0">
-                <div className="h-full overflow-y-auto pr-2">
-                  <Card>
-                    <CardHeader className="pb-4">
-                      <CardTitle className="flex items-center gap-2 text-lg">
-                        {sectionName}
-                        <Badge variant="secondary" className="text-xs">{keys.length} fields</Badge>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6 pb-6">
-                      {keys.map((key, index) => {
-                        const item = content[key];
-                        if (!item) return null;
+            {Object.entries(sections).map(([sectionName, staticKeys]) => {
+              const allKeys = getSectionFields(sectionName);
+              
+              return (
+                <TabsContent key={sectionName} value={sectionName} className="h-full mt-0">
+                  <div className="h-full overflow-y-auto pr-2">
+                    <Card>
+                      <CardHeader className="pb-4">
+                        <CardTitle className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 text-lg">
+                            {sectionName}
+                            <Badge variant="secondary" className="text-xs">{allKeys.length} fields</Badge>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => addField(sectionName)}
+                            className="flex items-center gap-1"
+                          >
+                            <Plus className="h-3 w-3" />
+                            Add Field
+                          </Button>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-6 pb-6">
+                        {allKeys.map((key, index) => {
+                          const item = content[key];
+                          if (!item) return null;
 
-                        const isTextarea = item.content_value.length > 100 || 
-                                         item.content_value.includes('\n') ||
-                                         key.includes('instruction') ||
-                                         key.includes('closing') ||
-                                         key.includes('tagline');
+                          const isTextarea = item.content_value.length > 100 || 
+                                           item.content_value.includes('\n') ||
+                                           key.includes('instruction') ||
+                                           key.includes('closing') ||
+                                           key.includes('tagline') ||
+                                           key.includes('feature');
 
-                        return (
-                          <div key={key} className="space-y-3">
-                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
-                              <div className="flex-1 min-w-0">
-                                <label className="text-sm font-medium block">
-                                  {getFieldLabel(key)}
-                                </label>
-                                {getFieldDescription(key) && (
-                                  <p className="text-xs text-muted-foreground mt-1">
-                                    {getFieldDescription(key)}
-                                  </p>
+                          const canDelete = canDeleteField(sectionName, key);
+
+                          return (
+                            <div key={key} className="space-y-3">
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <label className="text-sm font-medium block">
+                                      {getFieldLabel(key)}
+                                    </label>
+                                    {canDelete && (
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>Delete Field</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              Are you sure you want to delete "{getFieldLabel(key)}"? This action cannot be undone.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction
+                                              onClick={() => removeField(sectionName, key)}
+                                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                              Delete
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    )}
+                                  </div>
+                                  {getFieldDescription(key) && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      {getFieldDescription(key)}
+                                    </p>
+                                  )}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => updateContent(key, item.content_value)}
+                                  disabled={saving === key}
+                                  className="flex-shrink-0 w-full sm:w-auto"
+                                >
+                                  {saving === key ? (
+                                    <>Saving...</>
+                                  ) : (
+                                    <>
+                                      <Save className="h-3 w-3 mr-1" />
+                                      Save
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+
+                              <div className="w-full">
+                                {isTextarea ? (
+                                  <Textarea
+                                    value={item.content_value}
+                                    onChange={(e) => handleInputChange(key, e.target.value)}
+                                    className="min-h-[80px] w-full resize-y"
+                                    placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
+                                  />
+                                ) : (
+                                  <Input
+                                    value={item.content_value}
+                                    onChange={(e) => handleInputChange(key, e.target.value)}
+                                    className="w-full"
+                                    placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
+                                  />
                                 )}
                               </div>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => updateContent(key, item.content_value)}
-                                disabled={saving === key}
-                                className="flex-shrink-0 w-full sm:w-auto"
-                              >
-                                {saving === key ? (
-                                  <>Saving...</>
-                                ) : (
-                                  <>
-                                    <Save className="h-3 w-3 mr-1" />
-                                    Save
-                                  </>
-                                )}
-                              </Button>
-                            </div>
 
-                            <div className="w-full">
-                              {isTextarea ? (
-                                <Textarea
-                                  value={item.content_value}
-                                  onChange={(e) => handleInputChange(key, e.target.value)}
-                                  className="min-h-[80px] w-full resize-y"
-                                  placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
-                                />
-                              ) : (
-                                <Input
-                                  value={item.content_value}
-                                  onChange={(e) => handleInputChange(key, e.target.value)}
-                                  className="w-full"
-                                  placeholder={`Enter ${getFieldLabel(key).toLowerCase()}...`}
-                                />
-                              )}
+                              {index < allKeys.length - 1 && <Separator className="mt-6" />}
                             </div>
-
-                            {index < keys.length - 1 && <Separator className="mt-6" />}
-                          </div>
-                        );
-                      })}
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-            ))}
+                          );
+                        })}
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+              );
+            })}
           </div>
         </Tabs>
       </div>
