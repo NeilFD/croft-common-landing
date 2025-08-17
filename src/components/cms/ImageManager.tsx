@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -593,6 +594,31 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
   const [description, setDescription] = useState(image.description || '');
   const [altText, setAltText] = useState(image.alt_text || '');
   const [sortOrder, setSortOrder] = useState(image.sort_order);
+  const [page, setPage] = useState(image.page || '');
+  const [carouselName, setCarouselName] = useState(image.carousel_name || '');
+
+  const pageOptions = [
+    { value: 'index', label: 'Home / Index' },
+    { value: 'beer', label: 'Beer' },
+    { value: 'cafe', label: 'Cafe' },
+    { value: 'cocktails', label: 'Cocktails' },
+    { value: 'kitchens', label: 'Kitchens' },
+    { value: 'hall', label: 'Hall' },
+    { value: 'community', label: 'Community' },
+    { value: 'common_room', label: 'Common Room' },
+    { value: 'notifications', label: 'Notifications' }
+  ];
+
+  const carouselOptions = [
+    { value: 'main_hero', label: 'Main Hero' },
+    { value: 'beer_hero', label: 'Beer Hero' },
+    { value: 'cafe_hero', label: 'Cafe Hero' },
+    { value: 'cocktails_hero', label: 'Cocktails Hero' },
+    { value: 'kitchens_hero', label: 'Kitchens Hero' },
+    { value: 'hall_hero', label: 'Hall Hero' },
+    { value: 'community_hero', label: 'Community Hero' },
+    { value: 'common_room_hero', label: 'Common Room Hero' }
+  ];
 
   const handleSave = () => {
     onSave({
@@ -600,6 +626,8 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
       description: description.trim(),
       alt_text: altText.trim(),
       sort_order: sortOrder,
+      page: page.trim(),
+      carousel_name: carouselName.trim(),
     });
   };
 
@@ -624,6 +652,41 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
         onChange={(e) => setAltText(e.target.value)}
         className="w-full"
       />
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="text-sm font-medium mb-1 block">Page</label>
+          <Select value={page} onValueChange={setPage}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select page" />
+            </SelectTrigger>
+            <SelectContent>
+              {pageOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div>
+          <label className="text-sm font-medium mb-1 block">Carousel Name</label>
+          <Select value={carouselName} onValueChange={setCarouselName}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select carousel" />
+            </SelectTrigger>
+            <SelectContent>
+              {carouselOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      
       <Input
         type="number"
         placeholder="Sort order"
