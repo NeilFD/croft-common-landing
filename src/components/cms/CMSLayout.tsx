@@ -16,9 +16,9 @@ export const CMSLayout = ({ children }: CMSLayoutProps) => {
           <CMSHeader />
           <div className="flex flex-1 min-h-0">
             <CMSSidebar />
-            <div className="flex-1 min-w-0 w-full p-4 md:p-6 lg:p-8">
+            <SidebarInset className="flex-1 p-4 md:p-6 lg:p-8">
               {children}
-            </div>
+            </SidebarInset>
           </div>
         </div>
       </SidebarProvider>
