@@ -1,11 +1,13 @@
 import { useParams, useLocation } from 'react-router-dom';
-import { CMSLayout } from '@/components/cms/CMSLayout';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { CMSSidebar } from '@/components/cms/CMSSidebar';
 import { CMSVisualEditor } from '@/components/cms/CMSVisualEditor';
 import { CMSVisualHeader } from '@/components/cms/CMSVisualHeader';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useDraftContent } from '@/hooks/useDraftContent';
 import { useEditMode } from '@/contexts/EditModeContext';
+import { EditModeProvider } from '@/contexts/EditModeContext';
 
 const CMSVisual = () => {
   const { page } = useParams<{ page: string }>();
@@ -55,18 +57,25 @@ const CMSVisual = () => {
   };
 
   return (
-    <CMSLayout>
-      <div className="flex flex-col h-screen">
-        <CMSVisualHeader 
-          currentPage={page}
-          onPublish={handlePublish}
-          onViewLive={handleViewLive}
-          isPublishing={isPublishing}
-          draftCount={draftCount}
-        />
-        <CMSVisualEditor currentPage={currentPage} />
-      </div>
-    </CMSLayout>
+    <EditModeProvider>
+      <SidebarProvider defaultOpen={false}>
+        <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
+          <CMSVisualHeader 
+            currentPage={page}
+            onPublish={handlePublish}
+            onViewLive={handleViewLive}
+            isPublishing={isPublishing}
+            draftCount={draftCount}
+          />
+          <div className="flex flex-1 min-h-0">
+            <CMSSidebar />
+            <main className="flex-1 min-w-0 overflow-auto">
+              <CMSVisualEditor currentPage={currentPage} />
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    </EditModeProvider>
   );
 };
 
