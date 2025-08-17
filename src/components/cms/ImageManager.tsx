@@ -162,10 +162,9 @@ const ImageManager = () => {
 
       if (error) throw error;
 
-      setImages(prev => prev.map(img => 
-        img.id === imageId ? { ...img, ...updates } : img
-      ));
-
+      // Refresh the data from the database to ensure we have the latest
+      await fetchImages();
+      
       toast.success('Image updated successfully');
       setEditingImage(null);
     } catch (error) {
