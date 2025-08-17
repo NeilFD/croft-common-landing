@@ -5,6 +5,7 @@ import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { EnhancedMetaTags } from "@/components/SEO/EnhancedMetaTags";
 import { StructuredData, useRestaurantSchema, useBreadcrumbSchema } from "@/components/SEO/StructuredData";
+import { FAQSection } from "@/components/SEO/FAQSection";
 import { useSEO } from "@/hooks/useSEO";
 
 const Cafe = () => {
@@ -54,7 +55,16 @@ Music & movement."
           />
         </div>
       </section>
-      {!isCMSMode && <Footer />}
+      {!isCMSMode && (
+        <>
+          <FAQSection 
+            page="cafe"
+            title="Café FAQ"
+            className="bg-muted/30"
+          />
+          <Footer />
+        </>
+      )}
     </div>
   );
 };

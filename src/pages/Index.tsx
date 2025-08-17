@@ -16,28 +16,6 @@ const Index = () => {
   const restaurantSchema = useRestaurantSchema('/');
   const breadcrumbSchema = useBreadcrumbSchema('/');
 
-  const homeFAQs = [
-    {
-      question: "What is Croft Common?",
-      answer: "Croft Common is a vibrant community space offering exceptional food, craft beer, cocktails, and memorable events. We're a place where neighbors become friends and experiences become memories."
-    },
-    {
-      question: "What type of food do you serve?",
-      answer: "We serve a diverse menu featuring British and international cuisine, made with fresh, locally-sourced ingredients. Our kitchen offers everything from light cafe bites to hearty pub meals."
-    },
-    {
-      question: "Do you host private events?",
-      answer: "Yes! Our versatile spaces are perfect for private dining, celebrations, meetings, and community gatherings. Contact us to discuss your event needs."
-    },
-    {
-      question: "What are your opening hours?",
-      answer: "We're open Monday through Sunday, 9:00 AM to 11:00 PM. Please check our calendar for special events and holiday hours."
-    },
-    {
-      question: "Do you accept reservations?",
-      answer: "Yes, we accept reservations for dining. You can book a table through our website or by calling us directly."
-    }
-  ];
 
   return (
     <div className="min-h-screen">
@@ -63,7 +41,7 @@ const Index = () => {
       {!isCMSMode && (
         <>
           <FAQSection 
-            faqs={homeFAQs}
+            page="home"
             title="Frequently Asked Questions"
             className="bg-background"
           />

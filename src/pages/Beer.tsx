@@ -14,24 +14,6 @@ const Beer = () => {
   const restaurantSchema = useRestaurantSchema('/beer');
   const breadcrumbSchema = useBreadcrumbSchema('/beer');
 
-  const beerFAQs = [
-    {
-      question: "What types of beer do you serve?",
-      answer: "We offer a carefully curated selection of craft beers and traditional ales, including local brews, seasonal specials, and classic favorites served fresh from our steel lines."
-    },
-    {
-      question: "Do you have beer tasting events?",
-      answer: "Yes! We regularly host beer tasting events and brewery nights. Check our calendar for upcoming events and special beer releases."
-    },
-    {
-      question: "Can I book a table for just drinks?",
-      answer: "Absolutely! Our long tables and comfortable seating are perfect for drinks with friends. No food order required - just good company and cold pints."
-    },
-    {
-      question: "Do you serve food with your beer?",
-      answer: "Yes, our kitchen serves perfectly paired pub food that complements our beer selection. From hearty meals to light snacks, we have something for every appetite."
-    }
-  ];
 
   return (
     <div className="min-h-screen">
@@ -76,7 +58,7 @@ const Beer = () => {
       {!isCMSMode && (
         <>
           <FAQSection 
-            faqs={beerFAQs}
+            page="beer"
             title="Beer & Drinks FAQ"
             className="bg-muted/30"
           />
