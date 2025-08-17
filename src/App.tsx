@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HelmetProvider } from "react-helmet-async";
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
@@ -109,10 +110,11 @@ const LowercasePathGuard = () => {
 };
  
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BannerNotificationProvider>
-        <NudgeNotificationProvider>
+  <HelmetProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BannerNotificationProvider>
+          <NudgeNotificationProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -157,10 +159,11 @@ const App = () => (
             </Routes>
           </TransitionProvider>
         </BrowserRouter>
-        </NudgeNotificationProvider>
-      </BannerNotificationProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+          </NudgeNotificationProvider>
+        </BannerNotificationProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </HelmetProvider>
 );
  
 export default App;
