@@ -10,6 +10,8 @@ import ImportManager from './ImportManager';
 import { SecretContentManager } from './SecretContentManager';
 import { ModalContentManager } from './ModalContentManager';
 import { DesignTokenManager } from './DesignTokenManager';
+import CMSEmailTemplates from '@/pages/CMSEmailTemplates';
+import CMSEmailPreview from '@/pages/CMSEmailPreview';
 
 export default function CMSDashboard() {
   return (
@@ -49,6 +51,10 @@ export default function CMSDashboard() {
         
         {/* Global Content Management - Legacy routes only */}
         <Route path="global/modals" element={<ModalContentManager />} />
+        
+        {/* Email Templates */}
+        <Route path="email-templates/:template" element={<CMSEmailTemplates />} />
+        <Route path="email-templates/:template/preview" element={<CMSEmailPreview />} />
         
         {/* Management Tools */}
         <Route path="images" element={<ImageManager />} />

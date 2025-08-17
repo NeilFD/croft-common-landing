@@ -32,7 +32,9 @@ import {
   ChevronDown,
   Globe,
   MessageSquare,
-  Eye
+  Eye,
+  Mail,
+  Ticket
 } from 'lucide-react';
 
 const pageStructure = [
@@ -111,6 +113,12 @@ const globalSections = [
   { name: 'Modal Content', path: '/cms/global/modals', icon: Eye }
 ];
 
+const emailTemplateStructure = [
+  { name: 'Welcome Email', path: '/cms/email-templates/welcome', icon: Mail },
+  { name: 'Cinema Tickets', path: '/cms/email-templates/cinema', icon: Ticket },
+  { name: 'Event Management', path: '/cms/email-templates/event', icon: Calendar },
+];
+
 const managementSections = [
   { name: 'Images', path: '/cms/images', icon: Image },
   { name: 'Brand Assets', path: '/cms/brand', icon: Palette },
@@ -125,6 +133,7 @@ export const CMSSidebar = () => {
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     pages: true,
     global: false,
+    emails: false,
     management: false
   });
 
