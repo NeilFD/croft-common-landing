@@ -152,8 +152,8 @@ export const CMSSidebar = () => {
   const getNavClass = (isActiveItem: boolean) =>
     isActiveItem ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
 
-  // Show text when not collapsed OR when on mobile and sidebar is open
-  const showText = state !== "collapsed" || (isMobile && open);
+  // Show text when not collapsed OR when on mobile (mobile should always show text when open)
+  const showText = state !== "collapsed" || isMobile;
 
   return (
     <Sidebar 
