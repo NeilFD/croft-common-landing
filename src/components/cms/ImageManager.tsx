@@ -613,8 +613,8 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
     { value: 'main_hero', label: 'Main Hero' },
     { value: 'beer_hero', label: 'Beer Hero' },
     { value: 'cafe_hero', label: 'Cafe Hero' },
-    { value: 'cocktails_hero', label: 'Cocktails Hero' },
-    { value: 'kitchens_hero', label: 'Kitchens Hero' },
+    { value: 'cocktail_hero', label: 'Cocktails Hero' },
+    { value: 'kitchen_hero', label: 'Kitchens Hero' },
     { value: 'hall_hero', label: 'Hall Hero' },
     { value: 'community_hero', label: 'Community Hero' },
     { value: 'common_room_hero', label: 'Common Room Hero' }
