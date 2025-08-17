@@ -155,8 +155,6 @@ const ImageManager = () => {
 
   const updateImage = async (imageId: string, updates: any) => {
     try {
-      console.log('🖼️ Updating image:', imageId, 'with updates:', updates);
-      
       const { error } = await supabase
         .from('cms_images')
         .update(updates)
@@ -164,13 +162,9 @@ const ImageManager = () => {
 
       if (error) throw error;
 
-      setImages(prev => {
-        const updatedImages = prev.map(img => 
-          img.id === imageId ? { ...img, ...updates } : img
-        );
-        console.log('🖼️ Updated images state:', updatedImages.find(img => img.id === imageId));
-        return updatedImages;
-      });
+      setImages(prev => prev.map(img => 
+        img.id === imageId ? { ...img, ...updates } : img
+      ));
 
       toast.success('Image updated successfully');
       setEditingImage(null);
@@ -600,26 +594,11 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
   const [altText, setAltText] = useState(image.alt_text || '');
   const [sortOrder, setSortOrder] = useState(image.sort_order);
 
-  console.log('🎬 EditableImageForm initialized with:', {
-    imageId: image.id,
-    title: image.title,
-    description: image.description,
-    alt_text: image.alt_text,
-    stateDescription: description
-  });
-
   const handleSave = () => {
-    console.log('🔧 EditableImageForm handleSave called with:', {
-      title,
-      description,
-      alt_text: altText,
-      sort_order: sortOrder,
-    });
-    
     onSave({
-      title,
-      description,
-      alt_text: altText,
+      title: title.trim(),
+      description: description.trim(),
+      alt_text: altText.trim(),
       sort_order: sortOrder,
     });
   };
@@ -635,10 +614,7 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
       <Input
         placeholder="Description"
         value={description}
-        onChange={(e) => {
-          console.log('📝 Description input changed:', e.target.value);
-          setDescription(e.target.value);
-        }}
+        onChange={(e) => setDescription(e.target.value)}
         className="w-full"
       />
       <Input
