@@ -160,7 +160,7 @@ export const CMSSidebar = () => {
       className="border-r"
       collapsible="icon"
     >
-      <SidebarContent>
+      <SidebarContent className="pt-16">
         {/* Pages Section */}
         <SidebarGroup>
           <Collapsible 
