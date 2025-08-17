@@ -32,6 +32,7 @@ import CommonGood from "./pages/CommonGood";
  import CroftCommonDateTime from "./pages/CroftCommonDateTime";
  import Book from "./pages/Book";
 import Admin from "./pages/Admin";
+import CMSFAQPage from "./pages/CMSFAQPage";
 import CMS from "./pages/CMS";
 import CMSLogin from "./pages/CMSLogin";
 import CMSVisual from "./pages/CMSVisual";
@@ -152,6 +153,7 @@ const App = () => (
              <Route path="/notifications" element={<Notifications />} />
              <Route path="/admin" element={<Admin />} />
              <Route path="/cms/login" element={<CMSLogin />} />
+             <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
              <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
              <Route path="/cms/*" element={<CMS />} />
              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -35,7 +35,8 @@ import {
   MessageSquare,
   Eye,
   Mail,
-  Ticket
+  Ticket,
+  HelpCircle
 } from 'lucide-react';
 
 const pageStructure = [
@@ -49,14 +50,17 @@ const pageStructure = [
     name: 'Home (Index)',
     path: '/cms/visual/home',
     icon: Home,
-    sections: []
+    sections: [
+      { name: 'FAQ', path: '/cms/faq/home' }
+    ]
   },
   {
     name: 'Cafe',
     path: '/cms/visual/cafe',
     icon: Coffee,
     sections: [
-      { name: 'Menu', path: '/cms/visual/cafe/menu' }
+      { name: 'Menu', path: '/cms/visual/cafe/menu' },
+      { name: 'FAQ', path: '/cms/faq/cafe' }
     ]
   },
   {
@@ -64,7 +68,8 @@ const pageStructure = [
     path: '/cms/visual/cocktails',
     icon: Wine,
     sections: [
-      { name: 'Menu', path: '/cms/visual/cocktails/menu' }
+      { name: 'Menu', path: '/cms/visual/cocktails/menu' },
+      { name: 'FAQ', path: '/cms/faq/cocktails' }
     ]
   },
   {
@@ -72,7 +77,8 @@ const pageStructure = [
     path: '/cms/visual/beer',
     icon: Beer,
     sections: [
-      { name: 'Menu', path: '/cms/visual/beer/menu' }
+      { name: 'Menu', path: '/cms/visual/beer/menu' },
+      { name: 'FAQ', path: '/cms/faq/beer' }
     ]
   },
   {
@@ -80,7 +86,8 @@ const pageStructure = [
     path: '/cms/visual/kitchens',
     icon: ChefHat,
     sections: [
-      { name: 'Menu', path: '/cms/visual/kitchens/menu' }
+      { name: 'Menu', path: '/cms/visual/kitchens/menu' },
+      { name: 'FAQ', path: '/cms/faq/kitchens' }
     ]
   },
   {
@@ -88,7 +95,8 @@ const pageStructure = [
     path: '/cms/visual/hall',
     icon: Calendar,
     sections: [
-      { name: 'Menu', path: '/cms/visual/hall/menu' }
+      { name: 'Menu', path: '/cms/visual/hall/menu' },
+      { name: 'FAQ', path: '/cms/faq/hall' }
     ]
   },
   {
@@ -96,14 +104,17 @@ const pageStructure = [
     path: '/cms/visual/community',
     icon: Users,
     sections: [
-      { name: 'Menu', path: '/cms/visual/community/menu' }
+      { name: 'Menu', path: '/cms/visual/community/menu' },
+      { name: 'FAQ', path: '/cms/faq/community' }
     ]
   },
   {
     name: 'Common Room',
     path: '/cms/visual/common-room',
     icon: Building2,
-    sections: []
+    sections: [
+      { name: 'FAQ', path: '/cms/faq/common-room' }
+    ]
   }
 ];
 
