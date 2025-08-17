@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -610,11 +611,12 @@ const EditableImageForm = ({ image, onSave, onCancel }: EditableImageFormProps) 
         onChange={(e) => setTitle(e.target.value)}
         className="w-full"
       />
-      <Input
+      <Textarea
         placeholder="Description"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        className="w-full"
+        className="w-full min-h-[80px]"
+        rows={3}
       />
       <Input
         placeholder="Alt text"
