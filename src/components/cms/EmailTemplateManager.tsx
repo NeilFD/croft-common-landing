@@ -245,9 +245,9 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="flex flex-col min-h-full">
       {/* Header Section - Fixed */}
-      <div className="flex-shrink-0 p-6 border-b bg-background">
+      <div className="flex-shrink-0 p-6 border-b">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <Mail className="h-6 w-6 text-primary flex-shrink-0" />

@@ -1,6 +1,5 @@
 import { useParams } from 'react-router-dom';
 import { EmailTemplateManager } from '@/components/cms/EmailTemplateManager';
-import { CMSLayout } from '@/components/cms/CMSLayout';
 
 export default function CMSEmailTemplates() {
   const { template } = useParams<{ template: string }>();
@@ -10,9 +9,5 @@ export default function CMSEmailTemplates() {
     ? (template as 'welcome' | 'cinema' | 'event')
     : 'welcome';
 
-  return (
-    <CMSLayout>
-      <EmailTemplateManager templateType={templateType} />
-    </CMSLayout>
-  );
+  return <EmailTemplateManager templateType={templateType} />;
 }
