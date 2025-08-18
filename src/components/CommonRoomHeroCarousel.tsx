@@ -62,8 +62,8 @@ const CommonRoomHeroCarousel = () => {
         isDrawing={gestureState.isDrawing} 
       />
 
-      {/* Page Title Card Overlay with Secret Cue */}
-      <div className="absolute top-28 left-4 md:left-[106px] z-20 flex items-center gap-4">
+      {/* Page Title Card Overlay */}
+      <div className="absolute top-28 left-4 md:left-[106px] z-20">
         <div className="inline-block px-4 py-3 border-2 border-background bg-transparent rounded-lg transition-all duration-300 hover:border-[hsl(var(--accent-pink))]">
           <h1 className="text-2xl font-light text-background tracking-[0.2em] uppercase transition-colors duration-300 hover:text-[hsl(var(--accent-pink))] cursor-pointer">
             THE COMMON ROOM
@@ -72,9 +72,11 @@ const CommonRoomHeroCarousel = () => {
             HOSPITALITY, FOR GOOD
           </h2>
         </div>
-        
-        {/* Secret gesture cue - visible to all users who reach this page */}
-        <div className="text-6xl opacity-30 text-background transition-opacity duration-300 hover:opacity-50 pointer-events-none">
+      </div>
+
+      {/* Secret gesture cue - top right corner */}
+      <div className="absolute top-8 right-8 z-20">
+        <div className="text-6xl opacity-50 text-background transition-opacity duration-300 hover:opacity-70 pointer-events-none">
           ⑦
         </div>
       </div>
