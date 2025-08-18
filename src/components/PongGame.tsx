@@ -68,8 +68,10 @@ const PongGame = ({ onClose }: PongGameProps) => {
   // Audio is now handled by the comprehensive chiptune system in PongAudioManager
 
   const toggleAudio = async () => {
+    console.log('🔊 toggleAudio called');
     const newMutedState = toggleMute();
     setAudioEnabled(!newMutedState);
+    console.log('🔊 Audio toggled to:', !newMutedState);
   };
 
   const handleMobileAudioEnable = () => {
@@ -327,29 +329,55 @@ const PongGame = ({ onClose }: PongGameProps) => {
         )}
 
         {/* Control buttons */}
-        <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto z-20">
+        <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto z-30">
           <Button
-            onClick={toggleAudio}
-            onTouchEnd={(e) => {
+            onTouchStart={(e) => {
+              console.log('🔊 Audio button touchstart');
               e.preventDefault();
+              e.stopPropagation();
+              toggleAudio();
+            }}
+            onClick={(e) => {
+              console.log('🔊 Audio button click');
+              e.preventDefault();
+              e.stopPropagation();
               toggleAudio();
             }}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10 touch-manipulation select-none"
+            className="text-white hover:bg-white/10 bg-white/5 min-w-[44px] min-h-[44px] pointer-events-auto"
+            style={{ 
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none'
+            }}
             aria-label="Toggle audio"
           >
             {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
           <Button
-            onClick={onClose}
-            onTouchEnd={(e) => {
+            onTouchStart={(e) => {
+              console.log('🔊 Close button touchstart');
               e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+            onClick={(e) => {
+              console.log('🔊 Close button click');
+              e.preventDefault();
+              e.stopPropagation();
               onClose();
             }}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10 touch-manipulation select-none"
+            className="text-white hover:bg-white/10 bg-white/5 min-w-[44px] min-h-[44px] pointer-events-auto"
+            style={{ 
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none'
+            }}
             aria-label="Close game"
           >
             <X className="h-4 w-4" />
