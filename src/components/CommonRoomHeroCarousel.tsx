@@ -29,7 +29,7 @@ const CommonRoomHeroCarousel = () => {
     setShowPongGame(true);
   };
 
-  // Initialize gesture detection
+  // Initialize gesture detection using the seven gesture hook
   const gestureState = useGestureDetection(handleGestureComplete);
   
   return (
