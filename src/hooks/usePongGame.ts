@@ -188,7 +188,7 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       state.speedLevel++;
       state.lastSpeedIncrease = score;
       const speedMultiplier = 1 + (state.speedLevel - 1) * 0.2; // 20% increase per level
-      const maxSpeedMultiplier = 2.5; // Cap at 250% of base speed
+      const maxSpeedMultiplier = 5.0; // Cap at 500% of base speed
       
       const finalSpeedMultiplier = Math.min(speedMultiplier, maxSpeedMultiplier);
       
