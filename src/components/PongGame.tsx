@@ -76,38 +76,38 @@ const PongGame = ({ onClose }: PongGameProps) => {
     if (audioInitializing) return;
     
     setAudioInitializing(true);
-    console.log('🎵 Mobile audio enable clicked - iPhone detected');
+    console.log('🔊 Mobile audio enable button clicked');
     
     try {
-      // iOS Safari requires AudioContext creation and immediate audio within user gesture
       const audioManager = audioManagerRef.current;
       if (!audioManager) {
-        console.error('🎵 Audio manager not available');
+        console.error('🔊 Audio manager not available');
         return;
       }
 
       // Step 1: Create AudioContext synchronously within user gesture
       const contextCreated = audioManager.initializeAudioContext();
       if (!contextCreated) {
-        console.error('🎵 Failed to create AudioContext');
+        console.error('🔊 Failed to create AudioContext');
         return;
       }
-
-      console.log('🎵 AudioContext created successfully');
+      console.log('🔊 AudioContext created successfully');
 
       // Step 2: Initialize audio system asynchronously (this is safe after context creation)
       await audioManager.initializeAudio();
-      console.log('🎵 Audio system initialized');
+      console.log('🔊 Audio system initialized');
 
-      // Step 3: Start music immediately
-      await audioManager.playMusic('intro', false);
-      console.log('🎵 Music started successfully');
+      // Step 3: Test with immediate sound effect
+      audioManager.playSoundEffect('paddle');
+      console.log('🔊 Test sound played');
       
-      // Set states immediately after successful initialization
+      // Step 4: Set states after successful initialization
       setMobileAudioEnabled(true);
       setAudioEnabled(true);
+      console.log('🔊 Mobile audio enabled successfully');
+      
     } catch (error) {
-      console.error('🎵 Mobile audio enable failed:', error);
+      console.error('🔊 Mobile audio enable failed:', error);
     } finally {
       setAudioInitializing(false);
     }
@@ -163,26 +163,33 @@ const PongGame = ({ onClose }: PongGameProps) => {
       
       // Wait for auth state to fully load, then check submission logic
       const checkAuthAndSubmit = () => {
-        console.log('🏆 Auth state - loading:', authLoading, 'isAuthenticated:', isAuthenticated);
-        console.log('🏆 Score submission check - score:', score, 'qualifying:', isQualifyingHighScore(score));
+        console.log('🏆 DEBUG - Auth state loading:', authLoading, 'isAuthenticated:', isAuthenticated);
+        console.log('🏆 DEBUG - High scores count:', highScores.length, 'scores:', highScores.map(s => s.score));
+        console.log('🏆 DEBUG - Current score:', score, 'qualifying:', isQualifyingHighScore(score));
         
+        // CRITICAL: Do not proceed if auth is still loading
         if (authLoading) {
-          // Auth still loading, wait longer
-          console.log('🏆 Auth still loading, waiting...');
+          console.log('🏆 DEBUG - Auth still loading, waiting...');
           setTimeout(checkAuthAndSubmit, 200);
           return;
         }
         
+        // CRITICAL: Only show modal for unauthenticated users with qualifying scores
         if (isAuthenticated) {
-          console.log('🏆 Submitting score for authenticated user');
+          console.log('🏆 DEBUG - User authenticated, submitting score directly');
           submitScore(score);
-        } else if (isQualifyingHighScore(score)) {
-          // Only show modal for unauthenticated users with qualifying high scores
-          console.log('🏆 Showing anonymous modal - user not authenticated and score qualifies');
-          setPendingScore(score);
-          setShowAnonymousModal(true);
         } else {
-          console.log('🏆 Score does not qualify for high score list or user is authenticated');
+          // User is NOT authenticated
+          const qualifies = isQualifyingHighScore(score);
+          console.log('🏆 DEBUG - User NOT authenticated, score qualifies:', qualifies);
+          
+          if (qualifies) {
+            console.log('🏆 DEBUG - SHOWING ANONYMOUS MODAL');
+            setPendingScore(score);
+            setShowAnonymousModal(true);
+          } else {
+            console.log('🏆 DEBUG - Score too low, not showing modal');
+          }
         }
       };
       
