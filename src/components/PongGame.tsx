@@ -121,36 +121,25 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
   // Handle touch movement for mobile paddle control
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    // Only handle touches when game is actively running and touch is on canvas
-    if (gameRunning && canvasRef.current) {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const touch = e.touches[0];
-      const touchX = touch.clientX - rect.left;
-      const touchY = touch.clientY - rect.top;
-      
-      // Only handle if touch is within canvas bounds
-      if (touchX >= 0 && touchX <= rect.width && touchY >= 0 && touchY <= rect.height) {
-        e.preventDefault();
-        updatePaddlePosition(touchY);
-      }
-    }
-  }, [updatePaddlePosition, gameRunning]);
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    const y = e.touches[0].clientY - rect.top;
+    e.preventDefault();
+    updatePaddlePosition(y);
+  }, [updatePaddlePosition]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Only attach touch listeners when game is running
-    if (gameRunning) {
-      canvas.addEventListener('mousemove', handleMouseMove);
-      canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
-    }
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     
     return () => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [handleMouseMove, handleTouchMove, gameRunning]);
+  }, [handleMouseMove, handleTouchMove]);
 
   // Helper function to check if score qualifies as high score
   const isQualifyingHighScore = useCallback((score: number) => {
