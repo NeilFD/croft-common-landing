@@ -23,25 +23,45 @@ export class PongAudioManager {
   private musicVolume = 0.3;
   private sfxVolume = 0.7;
   private currentTrackType: 'intro' | 'main' | 'victory' | 'gameover' | null = null;
+  private isInitialized = false;
 
   // Pre-generated audio buffers
   private audioBuffers: Map<string, AudioBuffer> = new Map();
 
-  async initialize(): Promise<void> {
+  // Initialize AudioContext synchronously within user gesture
+  initializeAudioContext(): boolean {
     try {
-      console.log('Initializing PongAudioManager...');
+      console.log('Creating AudioContext within user gesture...');
       this.audioContext = new AudioContext();
+      console.log('AudioContext created, state:', this.audioContext.state);
+      return true;
+    } catch (error) {
+      console.error('AudioContext creation failed:', error);
+      return false;
+    }
+  }
+
+  // Generate all audio content asynchronously after AudioContext is ready
+  async initializeAudio(): Promise<void> {
+    if (!this.audioContext) {
+      console.error('AudioContext not created - call initializeAudioContext() first');
+      return;
+    }
+
+    try {
+      console.log('Setting up audio system...');
       
-      // Resume AudioContext if suspended (required for user interaction)
+      // Resume AudioContext if suspended
       if (this.audioContext.state === 'suspended') {
-        console.log('AudioContext suspended, attempting to resume...');
+        console.log('Resuming AudioContext...');
         await this.audioContext.resume();
+        console.log('AudioContext resumed, state:', this.audioContext.state);
       }
       
-      console.log('AudioContext state:', this.audioContext.state);
       await this.setupAudioGraph();
       await this.generateAllAudio();
-      console.log('Audio initialization complete');
+      this.isInitialized = true;
+      console.log('Audio system fully initialized');
     } catch (error) {
       console.error('Audio initialization failed:', error);
     }
@@ -339,8 +359,8 @@ export class PongAudioManager {
   }
 
   async playMusic(trackType: 'intro' | 'main' | 'victory' | 'gameover', loop = false): Promise<void> {
-    if (!this.audioContext || !this.musicGain) {
-      console.warn('AudioContext or musicGain not available');
+    if (!this.audioContext || !this.musicGain || !this.isInitialized) {
+      console.warn('Audio system not ready. Context:', !!this.audioContext, 'Gain:', !!this.musicGain, 'Initialized:', this.isInitialized);
       return;
     }
 
@@ -348,6 +368,7 @@ export class PongAudioManager {
     if (this.audioContext.state === 'suspended') {
       console.log('Resuming AudioContext for music playback...');
       await this.audioContext.resume();
+      console.log('AudioContext state after resume:', this.audioContext.state);
     }
 
     this.stopMusic();
@@ -391,8 +412,8 @@ export class PongAudioManager {
   }
 
   async playSoundEffect(effectName: string): Promise<void> {
-    if (!this.audioContext || !this.sfxGain) {
-      console.warn('AudioContext or sfxGain not available');
+    if (!this.audioContext || !this.sfxGain || !this.isInitialized) {
+      console.warn('Audio system not ready for sound effects. Context:', !!this.audioContext, 'Gain:', !!this.sfxGain, 'Initialized:', this.isInitialized);
       return;
     }
 

@@ -43,16 +43,37 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
   const startTimeRef = useRef<number>();
   const audioManagerRef = useRef<PongAudioManager>();
 
-  // Initialize comprehensive chiptune audio system
-  const initializeAudio = useCallback(async () => {
+  // Initialize audio manager (but not AudioContext yet)
+  const prepareAudio = useCallback(async () => {
     try {
       const { PongAudioManager } = await import('../lib/PongAudioManager');
       audioManagerRef.current = new PongAudioManager();
-      await audioManagerRef.current.initialize();
     } catch (error) {
-      console.warn('Audio initialization failed:', error);
+      console.warn('Audio preparation failed:', error);
     }
   }, []);
+
+  // Initialize AudioContext within user gesture and then generate audio
+  const initializeAudio = useCallback(async () => {
+    if (!audioManagerRef.current) {
+      await prepareAudio();
+    }
+    
+    if (!audioManagerRef.current) {
+      console.error('Failed to create audio manager');
+      return;
+    }
+
+    // Create AudioContext synchronously within user gesture
+    const success = audioManagerRef.current.initializeAudioContext();
+    if (!success) {
+      console.error('Failed to create AudioContext');
+      return;
+    }
+
+    // Generate audio content asynchronously
+    await audioManagerRef.current.initializeAudio();
+  }, [prepareAudio]);
 
   const playSound = useCallback((soundName: string) => {
     audioManagerRef.current?.playSoundEffect(soundName);
@@ -257,8 +278,13 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     animationFrameRef.current = requestAnimationFrame(gameLoop);
   }, [gameRunning, updateGame, draw]);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback(async () => {
     if (!canvasRef.current) return;
+    
+    console.log('Starting game and initializing audio...');
+    
+    // Initialize audio SYNCHRONOUSLY within user gesture
+    await initializeAudio();
     
     initializeGame();
     setGameRunning(true);
@@ -266,13 +292,11 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     setScore(0);
     startTimeRef.current = Date.now();
     
-    // Initialize audio and play intro then transition to main loop
-    initializeAudio().then(() => {
-      audioManagerRef.current?.playMusic('intro', false);
-      setTimeout(() => {
-        audioManagerRef.current?.playMusic('main', true);
-      }, 3000); // 3 second intro
-    });
+    // Play intro immediately, then transition to main loop
+    audioManagerRef.current?.playMusic('intro', false);
+    setTimeout(() => {
+      audioManagerRef.current?.playMusic('main', true);
+    }, 3000); // 3 second intro
     
     gameLoop();
   }, [canvasRef, initializeGame, gameLoop, initializeAudio]);
@@ -351,11 +375,12 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     };
   }, [gameRunning, gameLoop]);
 
-  // Initialize game on mount
+  // Initialize game and prepare audio on mount
   useEffect(() => {
     initializeGame();
     draw();
-  }, [initializeGame, draw]);
+    prepareAudio(); // Prepare audio manager (but not AudioContext)
+  }, [initializeGame, draw, prepareAudio]);
 
   // Cleanup on unmount
   useEffect(() => {
