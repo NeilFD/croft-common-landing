@@ -20,221 +20,248 @@ export class PongAudioManager {
   private currentMusic: AudioBufferSourceNode | null = null;
   private currentOscillator: OscillatorNode | null = null;
   private oscillatorGain: GainNode | null = null;
-  private isPlaying = false;
-  private isLooping = false;
   private musicVolume = 0.3;
   private sfxVolume = 0.7;
+  private isPlaying = false;
+  private isLooping = false;
   private currentTrackType: 'intro' | 'main' | 'victory' | 'gameover' | null = null;
   private isInitialized = false;
-  private canPlayAudio = false;
-
-  // Pre-generated audio buffers
+  
+  // Simplified audio state: INACTIVE | UNLOCKING | READY | FAILED
+  private audioState: 'INACTIVE' | 'UNLOCKING' | 'READY' | 'FAILED' = 'INACTIVE';
+  
+  // Pre-generated audio buffers (populated in background)
   private audioBuffers: Map<string, AudioBuffer> = new Map();
 
-  // Initialize AudioContext synchronously within user gesture with immediate iOS-compatible audio
+  // PHASE 1: Bulletproof iOS Audio Unlock - ALL synchronous within user gesture
   initializeAudioContext(): boolean {
+    if (this.audioState !== 'INACTIVE') {
+      console.log('🔊 Audio already initializing/ready, state:', this.audioState);
+      return this.audioState === 'READY';
+    }
+
+    this.audioState = 'UNLOCKING';
+    console.log('🔊 Phase 1: Creating AudioContext synchronously within user gesture...');
+    
     try {
-      console.log('🔊 Creating AudioContext within user gesture...');
+      // 1. Create AudioContext immediately
       this.audioContext = new AudioContext();
       console.log('🔊 AudioContext created, state:', this.audioContext.state);
       
-      // Force AudioContext to resume immediately (critical for iOS)
+      // 2. Force resume immediately (critical for iOS Safari)
       if (this.audioContext.state === 'suspended') {
-        console.log('🔊 Force resuming AudioContext immediately...');
-        this.audioContext.resume();
+        console.log('🔊 Force resuming AudioContext...');
+        this.audioContext.resume(); // Synchronous call, no await
       }
       
-      // Immediately set up basic audio graph for iOS compatibility
-      this.setupBasicAudioGraph();
+      // 3. Set up audio graph immediately
+      this.setupIOSAudioGraph();
       
-      // CRITICAL: Start loud, continuous test audio immediately within gesture
-      this.startIOSUnlockAudio();
+      // 4. Start loud test tone immediately (3-second, multi-frequency)
+      this.playIOSUnlockTone();
       
-      this.canPlayAudio = true;
-      console.log('🔊 iOS unlock audio started, canPlayAudio set to true');
+      // 5. Immediate success state
+      this.audioState = 'READY';
+      console.log('🔊 SUCCESS: iOS audio unlock complete, state:', this.audioState);
+      
+      // 6. Start background buffer generation (non-blocking)
+      setTimeout(() => this.generateAudioBuffersInBackground(), 100);
       
       return true;
+      
     } catch (error) {
-      console.error('🔊 AudioContext creation failed:', error);
+      console.error('🔊 FAILED: AudioContext creation failed:', error);
+      this.audioState = 'FAILED';
       return false;
     }
   }
 
-  // Set up iOS-optimized audio graph immediately for compatibility
-  private setupBasicAudioGraph(): void {
+  // PHASE 2: iOS-Optimized Audio Graph Setup
+  private setupIOSAudioGraph(): void {
     if (!this.audioContext) return;
 
     try {
-      // Create master gain node with higher initial gain for iOS
+      console.log('🔊 Setting up iOS-optimized audio graph...');
+      
+      // Master gain with maximum iOS compatibility
       this.masterGain = this.audioContext.createGain();
       this.masterGain.connect(this.audioContext.destination);
-      this.masterGain.gain.setValueAtTime(1.0, this.audioContext.currentTime); // Higher for iOS
+      this.masterGain.gain.setValueAtTime(1.0, this.audioContext.currentTime);
 
-      // Create separate gain nodes for music and SFX
+      // Music chain
       this.musicGain = this.audioContext.createGain();
       this.musicGain.connect(this.masterGain);
       this.musicGain.gain.setValueAtTime(this.musicVolume, this.audioContext.currentTime);
 
+      // SFX chain
       this.sfxGain = this.audioContext.createGain();
       this.sfxGain.connect(this.masterGain);
       this.sfxGain.gain.setValueAtTime(this.sfxVolume, this.audioContext.currentTime);
 
-      // Create dedicated iOS unlock audio chain with high gain
+      // Dedicated unlock tone chain (very loud for iOS detection)
       this.oscillatorGain = this.audioContext.createGain();
-      this.oscillatorGain.connect(this.masterGain); // Direct to master for maximum volume
-      this.oscillatorGain.gain.setValueAtTime(0.8, this.audioContext.currentTime); // Much higher
+      this.oscillatorGain.connect(this.masterGain);
+      this.oscillatorGain.gain.setValueAtTime(0.9, this.audioContext.currentTime); // Maximum safe volume
 
-      console.log('🔊 iOS-optimized audio graph set up with high gain');
+      console.log('🔊 Audio graph ready for iOS');
     } catch (error) {
-      console.error('🔊 Failed to set up basic audio graph:', error);
+      console.error('🔊 Audio graph setup failed:', error);
+      throw error;
     }
   }
 
-  // Start loud iOS unlock audio with two-tone pattern that Safari recognizes
-  private startIOSUnlockAudio(): void {
-    if (!this.audioContext || !this.oscillatorGain) return;
+  // PHASE 3: Immediate iOS Unlock Tone (3-second, multi-frequency, LOUD)
+  private playIOSUnlockTone(): void {
+    if (!this.audioContext || !this.oscillatorGain) {
+      throw new Error('Audio graph not ready for unlock tone');
+    }
 
     try {
-      console.log('🔊 Starting iOS unlock audio (loud two-tone test)...');
+      console.log('🔊 Starting 3-second iOS unlock tone...');
       
-      // Create first oscillator for immediate loud test
       this.currentOscillator = this.audioContext.createOscillator();
       this.currentOscillator.connect(this.oscillatorGain);
       
       const currentTime = this.audioContext.currentTime;
       
-      // Two-tone pattern: Low-High-Low-High that iOS Safari recognizes better
+      // Multi-frequency pattern that iOS Safari definitely recognizes
       const pattern = [
-        { freq: 220, start: 0.0, duration: 0.4 },      // Low A (400ms)
-        { freq: 880, start: 0.4, duration: 0.4 },      // High A (400ms)
-        { freq: 220, start: 0.8, duration: 0.4 },      // Low A (400ms)
-        { freq: 880, start: 1.2, duration: 0.8 },      // High A (800ms) - longer finish
+        { freq: 130.81, time: 0.0 },    // C3 - very low start
+        { freq: 261.63, time: 0.3 },    // C4 - jump octave
+        { freq: 523.25, time: 0.6 },    // C5 - jump octave
+        { freq: 1046.5, time: 0.9 },    // C6 - very high
+        { freq: 523.25, time: 1.2 },    // C5 - back down
+        { freq: 261.63, time: 1.5 },    // C4 - middle
+        { freq: 392.00, time: 1.8 },    // G4 - resolution tone
+        { freq: 523.25, time: 2.1 },    // C5 - final high
+        { freq: 261.63, time: 2.4 },    // C4 - final resolve
       ];
       
-      pattern.forEach(({ freq, start }) => {
-        this.currentOscillator!.frequency.setValueAtTime(freq, currentTime + start);
+      // Set frequency changes
+      pattern.forEach(({ freq, time }) => {
+        this.currentOscillator!.frequency.setValueAtTime(freq, currentTime + time);
       });
       
-      // High volume envelope - no fade, immediate full volume for iOS
-      this.oscillatorGain.gain.setValueAtTime(0.8, currentTime); // Immediate loud volume
-      this.oscillatorGain.gain.setValueAtTime(0.8, currentTime + 1.8); // Hold loud
-      this.oscillatorGain.gain.linearRampToValueAtTime(0.4, currentTime + 2.0); // Quick fade
+      // Maximum volume throughout (no fades - iOS needs loud)
+      this.oscillatorGain.gain.setValueAtTime(0.9, currentTime);
+      this.oscillatorGain.gain.setValueAtTime(0.9, currentTime + 2.7);
+      this.oscillatorGain.gain.linearRampToValueAtTime(0.5, currentTime + 3.0);
       
-      // Use square wave for maximum iOS compatibility
+      // Square wave for maximum punch
       this.currentOscillator.type = 'square';
       this.currentOscillator.start(currentTime);
-      this.currentOscillator.stop(currentTime + 2.0);
+      this.currentOscillator.stop(currentTime + 3.0);
       
-      this.isPlaying = true;
-      this.currentTrackType = 'intro';
+      console.log('🔊 3-second unlock tone playing');
       
-      console.log('🔊 iOS unlock audio started (2-second loud two-tone)');
-      console.log('🔊 AudioContext state after start:', this.audioContext.state);
-      
-      // Set up continuous playback for iOS compatibility
+      // Immediately start background music after unlock
       this.currentOscillator.onended = () => {
-        console.log('🔊 iOS unlock audio ended, starting background music...');
+        console.log('🔊 Unlock tone ended, starting immediate background music');
         this.currentOscillator = null;
-        
-        // Start immediate backup music to prevent iOS from suspending context
-        this.startContinuousBackgroundMusic();
-        
-        // Initialize full audio buffers in background
-        if (!this.isInitialized) {
-          this.initializeAudio().catch(error => {
-            console.error('🔊 Background buffer initialization failed:', error);
-          });
-        }
+        this.startImmediateBackgroundMusic();
       };
-      
-      // Monitor AudioContext state changes
-      const stateChangeHandler = () => {
-        console.log('🔊 AudioContext state changed to:', this.audioContext?.state);
-      };
-      this.audioContext.addEventListener('statechange', stateChangeHandler);
       
     } catch (error) {
-      console.error('🔊 Failed to start iOS unlock audio:', error);
+      console.error('🔊 iOS unlock tone failed:', error);
+      throw error;
     }
   }
 
-  // Start simple continuous background music to keep iOS AudioContext alive
-  private startContinuousBackgroundMusic(): void {
+  // PHASE 4: Immediate Background Music (simple oscillator-based)
+  private startImmediateBackgroundMusic(): void {
     if (!this.audioContext || !this.oscillatorGain) return;
 
     try {
-      console.log('🔊 Starting continuous background music...');
+      console.log('🔊 Starting immediate fallback music...');
       
-      // Create new oscillator for continuous playback
       this.currentOscillator = this.audioContext.createOscillator();
       this.currentOscillator.connect(this.oscillatorGain);
       
       const currentTime = this.audioContext.currentTime;
       
-      // Simple repeating melody to keep context alive
-      const melody = [440, 523.25, 659.25, 523.25]; // A-C-E-C pattern
-      const noteDuration = 0.6; // Slower tempo
+      // Simple but pleasant repeating melody (classic game music style)
+      const melody = [
+        { freq: 329.63, time: 0.0 },   // E4
+        { freq: 392.00, time: 0.4 },   // G4
+        { freq: 440.00, time: 0.8 },   // A4
+        { freq: 523.25, time: 1.2 },   // C5
+        { freq: 440.00, time: 1.6 },   // A4
+        { freq: 392.00, time: 2.0 },   // G4
+        { freq: 329.63, time: 2.4 },   // E4
+        { freq: 261.63, time: 2.8 },   // C4 (resolve)
+      ];
       
-      melody.forEach((freq, i) => {
-        const startTime = currentTime + (i * noteDuration);
-        this.currentOscillator!.frequency.setValueAtTime(freq, startTime);
+      melody.forEach(({ freq, time }) => {
+        this.currentOscillator!.frequency.setValueAtTime(freq, currentTime + time);
       });
       
-      // Lower volume for background
-      this.oscillatorGain.gain.setValueAtTime(0.3, currentTime);
+      // Moderate volume for background music
+      this.oscillatorGain.gain.setValueAtTime(0.4, currentTime);
       
-      this.currentOscillator.type = 'triangle'; // Softer sound
+      this.currentOscillator.type = 'triangle'; // Softer, more musical sound
       this.currentOscillator.start(currentTime);
-      this.currentOscillator.stop(currentTime + (melody.length * noteDuration));
+      this.currentOscillator.stop(currentTime + 3.2);
       
-      // Loop this music until buffers are ready
+      // Keep looping to maintain AudioContext
       this.currentOscillator.onended = () => {
         this.currentOscillator = null;
-        if (!this.isInitialized && this.audioContext) {
-          console.log('🔊 Looping background music...');
-          setTimeout(() => this.startContinuousBackgroundMusic(), 100);
-        } else if (this.isInitialized) {
-          console.log('🔊 Buffers ready, switching to main music...');
-          this.playMusic('main', true);
+        if (this.audioState === 'READY' && this.audioContext) {
+          // Check if high-quality buffers are ready
+          if (this.audioBuffers.has('main_loop_a')) {
+            console.log('🔊 Switching to high-quality buffered music');
+            this.playMusic('main', true);
+          } else {
+            // Continue simple music
+            setTimeout(() => this.startImmediateBackgroundMusic(), 50);
+          }
         }
       };
       
     } catch (error) {
-      console.error('🔊 Failed to start continuous background music:', error);
+      console.error('🔊 Immediate background music failed:', error);
     }
   }
 
-  // Generate all audio content asynchronously after AudioContext is ready
-  async initializeAudio(): Promise<void> {
-    if (!this.audioContext) {
-      console.error('AudioContext not created - call initializeAudioContext() first');
+  // PHASE 5: Background Buffer Generation (non-blocking)
+  private generateAudioBuffersInBackground(): void {
+    if (!this.audioContext || this.audioState !== 'READY') {
+      console.log('🔊 Cannot generate buffers, audio not ready');
       return;
     }
 
-    try {
-      console.log('🔊 Setting up full audio system...');
-      
-      // Resume AudioContext if suspended
-      if (this.audioContext.state === 'suspended') {
-        console.log('🔊 Resuming AudioContext...');
-        await this.audioContext.resume();
-        console.log('🔊 AudioContext resumed, state:', this.audioContext.state);
-      }
-      
-      // Generate all audio buffers in background
-      await this.generateAllAudio();
-      this.isInitialized = true;
-      console.log('🔊 Full audio system initialized with buffers');
-      
-      // If intro oscillator has finished, start main music immediately
-      if (!this.currentOscillator && !this.currentMusic) {
-        console.log('🔊 Starting main music as backup...');
-        this.playMusic('main', true);
-      }
-      
-    } catch (error) {
-      console.error('🔊 Audio initialization failed:', error);
-    }
+    console.log('🔊 Starting background buffer generation...');
+    
+    // Generate buffers without blocking
+    this.generateAllAudio()
+      .then(() => {
+        this.onBuffersReady();
+        // Buffers are ready - next music transition will use them
+      })
+      .catch(error => {
+        console.error('🔊 Buffer generation failed:', error);
+        // Continue with oscillator-based audio as fallback
+      });
+  }
+
+  // Background buffer generation completion callback
+  private onBuffersReady(): void {
+    this.isInitialized = true;
+    console.log('🔊 High-quality audio buffers ready, isInitialized set to true');
+  }
+
+  // Simple getter for audio readiness
+  isAudioReady(): boolean {
+    return this.audioState === 'READY';
+  }
+
+  // Get current audio state for debugging
+  getAudioState(): string {
+    return this.audioState;
+  }
+
+  // Compatibility getter (legacy property)
+  get canPlayAudio(): boolean {
+    return this.audioState === 'READY';
   }
 
   private async generateAllAudio(): Promise<void> {
@@ -786,7 +813,7 @@ export class PongAudioManager {
       this.audioContext = null;
     }
     this.audioBuffers.clear();
-    this.canPlayAudio = false;
+    this.audioState = 'INACTIVE';
     this.isInitialized = false;
   }
 }

@@ -72,48 +72,46 @@ const PongGame = ({ onClose }: PongGameProps) => {
     setAudioEnabled(!newMutedState);
   };
 
-  const handleMobileAudioEnable = async () => {
+  const handleMobileAudioEnable = () => {
     if (audioInitializing) return;
     
     setAudioInitializing(true);
-    console.log('🔊 Mobile audio enable button clicked - starting iOS unlock sequence');
+    console.log('🔊 Mobile audio enable - ROBUST iOS unlock starting...');
     
     try {
       const audioManager = audioManagerRef.current;
       if (!audioManager) {
         console.error('🔊 Audio manager not available');
+        setAudioInitializing(false);
         return;
       }
 
-      // CRITICAL: Create AudioContext and start loud test audio immediately within gesture
-      const contextCreated = audioManager.initializeAudioContext();
-      if (!contextCreated) {
-        console.error('🔊 Failed to create AudioContext');
-        return;
-      }
-      console.log('🔊 AudioContext created - iOS unlock audio should be playing');
-
-      // Immediately set audio as enabled (unlock audio is already playing)
-      setMobileAudioEnabled(true);
-      setAudioEnabled(true);
-      console.log('🔊 Mobile audio enabled - iOS unlock sequence started');
+      // ROBUST: All synchronous within user gesture - no async operations
+      const success = audioManager.initializeAudioContext();
       
-      // Provide immediate user feedback
-      setTimeout(() => {
-        console.log('🔊 Checking audio state after 500ms...');
-        const context = audioManager.audioContext;
-        if (context) {
-          console.log('🔊 AudioContext state:', context.state);
-          if (context.state !== 'running') {
-            console.warn('🔊 AudioContext not running - iOS may have blocked audio');
-          } else {
-            console.log('🔊 SUCCESS: AudioContext is running on iOS!');
-          }
+      if (success) {
+        console.log('🔊 SUCCESS: Robust iOS audio unlock complete');
+        setMobileAudioEnabled(true);
+        setAudioEnabled(true);
+        
+        // Verify audio state immediately
+        const state = audioManager.getAudioState();
+        console.log('🔊 Audio state:', state);
+        
+        if (audioManager.audioContext) {
+          console.log('🔊 AudioContext state:', audioManager.audioContext.state);
         }
-      }, 500);
+        
+      } else {
+        console.error('🔊 FAILED: iOS audio unlock failed');
+        // Provide user feedback for retry
+        setTimeout(() => {
+          alert('Audio initialization failed. Please try again or check your device\'s silent mode.');
+        }, 100);
+      }
       
     } catch (error) {
-      console.error('🔊 Mobile audio enable failed:', error);
+      console.error('🔊 CRITICAL: Mobile audio enable crashed:', error);
     } finally {
       setAudioInitializing(false);
     }

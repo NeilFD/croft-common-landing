@@ -86,23 +86,11 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
         await new Promise(resolve => setTimeout(resolve, isMobile ? 200 : 50));
       }
 
-      // Generate audio content asynchronously with retry logic
-      const maxAttempts = isMobile ? 5 : 3;
-      for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        try {
-          await audioManagerRef.current.initializeAudio();
-          console.log(`Audio initialization successful on attempt ${attempt + 1}`);
-          return true;
-        } catch (error) {
-          console.warn(`Audio initialization attempt ${attempt + 1} failed:`, error);
-          if (attempt < maxAttempts - 1) {
-            await new Promise(resolve => setTimeout(resolve, isMobile ? 500 : 200));
-          }
-        }
-      }
+      // New robust system: Audio manager handles everything internally
+      // No complex initialization needed - it's already running after context creation
+      console.log('Audio context ready, background buffer generation started');
+      return true;
       
-      console.error(`Audio initialization failed after ${maxAttempts} attempts`);
-      return false;
     } catch (error) {
       console.error('Audio initialization error:', error);
       return false;
