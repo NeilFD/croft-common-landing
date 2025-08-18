@@ -57,15 +57,16 @@ export class PongAudioManager {
       oscillator.connect(gainNode);
       gainNode.connect(this.audioContext.destination);
       
-      // Very quiet, very short tone - but audible enough to unlock iOS audio
-      gainNode.gain.setValueAtTime(0.1, this.audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.2);
+      // Louder, longer tone for reliable iOS audio unlock
+      gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.8);
       
-      oscillator.frequency.setValueAtTime(880, this.audioContext.currentTime);
+      // Use 440Hz A note - more audible and reliable
+      oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
       oscillator.start(this.audioContext.currentTime);
-      oscillator.stop(this.audioContext.currentTime + 0.2);
+      oscillator.stop(this.audioContext.currentTime + 0.8);
       
-      console.log('🔊 iOS unlock tone played (880Hz, 0.2s)');
+      console.log('🔊 iOS unlock tone played (440Hz, 0.8s, volume 0.4)');
     } catch (error) {
       console.error('🔊 Failed to play minimal tone:', error);
     }

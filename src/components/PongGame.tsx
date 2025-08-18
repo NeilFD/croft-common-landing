@@ -93,15 +93,19 @@ const PongGame = ({ onClose }: PongGameProps) => {
       }
       console.log('🔊 AudioContext created successfully');
 
-      // Step 2: Initialize audio system asynchronously (this is safe after context creation)
+      // Step 2: Wait briefly for iOS unlock tone to process
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Step 3: Initialize audio system asynchronously
       await audioManager.initializeAudio();
       console.log('🔊 Audio system initialized');
 
-      // Step 3: Test with immediate sound effect
+      // Step 4: Test with immediate sound effect and start music
       audioManager.playSoundEffect('paddle');
-      console.log('🔊 Test sound played');
+      audioManager.playMusic('intro', false);
+      console.log('🔊 Test sound and intro music started');
       
-      // Step 4: Set states after successful initialization
+      // Step 5: Set states after successful initialization
       setMobileAudioEnabled(true);
       setAudioEnabled(true);
       console.log('🔊 Mobile audio enabled successfully');
