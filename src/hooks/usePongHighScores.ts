@@ -14,7 +14,7 @@ interface PongScore {
 export const usePongHighScores = () => {
   const [highScores, setHighScores] = useState<PongScore[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const fetchHighScores = useCallback(async () => {
     try {
@@ -148,5 +148,6 @@ export const usePongHighScores = () => {
     requestAnonymousScore,
     refetch: fetchHighScores,
     isAuthenticated: !!user,
+    authLoading,
   };
 };

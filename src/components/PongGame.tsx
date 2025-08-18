@@ -49,10 +49,9 @@ const PongGame = ({ onClose }: PongGameProps) => {
     submitScore,
     requestAnonymousScore,
     loading: scoresLoading,
-    isAuthenticated
+    isAuthenticated,
+    authLoading
   } = usePongHighScores();
-  
-  const { loading: authLoading } = useAuth();
 
   // Get current high score for display and comparison
   const currentHighScore = highScores.length > 0 ? highScores[0].score : 0;
@@ -80,55 +79,33 @@ const PongGame = ({ onClose }: PongGameProps) => {
     console.log('🎵 Mobile audio enable clicked - iPhone detected');
     
     try {
-      // iOS Safari requires synchronous AudioContext creation within user gesture
-      // Create AudioContext immediately within the button click event
-      const audioInitialized = await new Promise<boolean>((resolve) => {
-        // Force immediate AudioContext creation for iOS
-        const tempAudio = new Audio();
-        tempAudio.volume = 0;
-        tempAudio.play().catch(() => {});
-        
-        // Initialize audio synchronously within the user gesture
-        initializeAudio().then((result) => {
-          console.log('🎵 Synchronous audio init result:', result);
-          resolve(result);
-        }).catch((error) => {
-          console.error('🎵 Synchronous audio init failed:', error);
-          resolve(false);
-        });
-      });
-      
-      if (audioInitialized && audioManagerRef.current) {
-        console.log('🎵 Audio context created, resuming and starting music...');
-        
-        // Immediately resume AudioContext within the user gesture
-        if (audioManagerRef.current.audioContext?.state !== 'running') {
-          await audioManagerRef.current.audioContext?.resume();
-          console.log('🎵 AudioContext resumed, state:', audioManagerRef.current.audioContext?.state);
-        }
-        
-        // Set states immediately
-        setMobileAudioEnabled(true);
-        setAudioEnabled(true);
-        
-        // Start music immediately within the same user gesture
-        if (audioManagerRef.current.audioContext?.state === 'running') {
-          try {
-            if (gameRunning && !gameOver) {
-              await audioManagerRef.current.playMusic('main', true);
-            } else if (gameOver) {
-              await audioManagerRef.current.playMusic('gameover', false);
-            } else {
-              await audioManagerRef.current.playMusic('intro', false);
-            }
-            console.log('🎵 Music started successfully on iPhone');
-          } catch (musicError) {
-            console.error('🎵 Music start failed:', musicError);
-          }
-        }
-      } else {
-        console.warn('🎵 Audio initialization failed');
+      // iOS Safari requires AudioContext creation and immediate audio within user gesture
+      const audioManager = audioManagerRef.current;
+      if (!audioManager) {
+        console.error('🎵 Audio manager not available');
+        return;
       }
+
+      // Step 1: Create AudioContext synchronously within user gesture
+      const contextCreated = audioManager.initializeAudioContext();
+      if (!contextCreated) {
+        console.error('🎵 Failed to create AudioContext');
+        return;
+      }
+
+      console.log('🎵 AudioContext created successfully');
+
+      // Step 2: Initialize audio system asynchronously (this is safe after context creation)
+      await audioManager.initializeAudio();
+      console.log('🎵 Audio system initialized');
+
+      // Step 3: Start music immediately
+      await audioManager.playMusic('intro', false);
+      console.log('🎵 Music started successfully');
+      
+      // Set states immediately after successful initialization
+      setMobileAudioEnabled(true);
+      setAudioEnabled(true);
     } catch (error) {
       console.error('🎵 Mobile audio enable failed:', error);
     } finally {

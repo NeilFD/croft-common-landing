@@ -34,10 +34,41 @@ export class PongAudioManager {
       console.log('Creating AudioContext within user gesture...');
       this.audioContext = new AudioContext();
       console.log('AudioContext created, state:', this.audioContext.state);
+      
+      // Immediately play a minimal tone to satisfy iOS autoplay requirements
+      if (this.audioContext.state === 'running') {
+        this.playMinimalTone();
+      }
+      
       return true;
     } catch (error) {
       console.error('AudioContext creation failed:', error);
       return false;
+    }
+  }
+
+  // Play a minimal tone immediately within user gesture for iOS compatibility
+  private playMinimalTone(): void {
+    if (!this.audioContext) return;
+    
+    try {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+      
+      // Very quiet, very short tone
+      gainNode.gain.setValueAtTime(0.01, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.1);
+      
+      oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
+      
+      console.log('Minimal tone played for iOS compatibility');
+    } catch (error) {
+      console.error('Failed to play minimal tone:', error);
     }
   }
 
