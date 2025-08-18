@@ -72,24 +72,36 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
         return false;
       }
 
-      // Small delay to let AudioContext stabilize
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // For mobile: Additional checks and longer stabilization time
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const stabilizationTime = isMobile ? 300 : 100;
+      
+      // Wait for AudioContext to stabilize
+      await new Promise(resolve => setTimeout(resolve, stabilizationTime));
+
+      // Check if AudioContext is actually running
+      if (audioManagerRef.current.audioContext?.state === 'suspended') {
+        await audioManagerRef.current.audioContext.resume();
+        // Give it more time on mobile
+        await new Promise(resolve => setTimeout(resolve, isMobile ? 200 : 50));
+      }
 
       // Generate audio content asynchronously with retry logic
-      for (let attempt = 0; attempt < 3; attempt++) {
+      const maxAttempts = isMobile ? 5 : 3;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
         try {
           await audioManagerRef.current.initializeAudio();
-          console.log('Audio initialization successful');
+          console.log(`Audio initialization successful on attempt ${attempt + 1}`);
           return true;
         } catch (error) {
           console.warn(`Audio initialization attempt ${attempt + 1} failed:`, error);
-          if (attempt < 2) {
-            await new Promise(resolve => setTimeout(resolve, 200));
+          if (attempt < maxAttempts - 1) {
+            await new Promise(resolve => setTimeout(resolve, isMobile ? 500 : 200));
           }
         }
       }
       
-      console.error('Audio initialization failed after 3 attempts');
+      console.error(`Audio initialization failed after ${maxAttempts} attempts`);
       return false;
     } catch (error) {
       console.error('Audio initialization error:', error);
@@ -351,13 +363,23 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     
     // Only play music if audio was successfully initialized
     if (audioInitialized && audioManagerRef.current) {
-      // Small delay to ensure audio context is fully ready
+      // Detect mobile for different timing
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const initialDelay = isMobile ? 500 : 200;
+      
+      // Give more time on mobile for audio context to fully initialize
       setTimeout(() => {
-        audioManagerRef.current?.playMusic('intro', false);
-        setTimeout(() => {
-          audioManagerRef.current?.playMusic('main', true);
-        }, 3000); // 3 second intro
-      }, 200);
+        if (audioManagerRef.current?.audioContext?.state === 'running') {
+          audioManagerRef.current?.playMusic('intro', false);
+          setTimeout(() => {
+            if (audioManagerRef.current?.audioContext?.state === 'running') {
+              audioManagerRef.current?.playMusic('main', true);
+            }
+          }, 3000); // 3 second intro
+        } else {
+          console.warn('AudioContext not in running state, skipping music');
+        }
+      }, initialDelay);
     } else {
       console.warn('Audio not available, continuing without sound');
     }

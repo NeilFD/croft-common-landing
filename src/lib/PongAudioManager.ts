@@ -13,7 +13,7 @@ export interface ChiptuneTrack {
 }
 
 export class PongAudioManager {
-  private audioContext: AudioContext | null = null;
+  public audioContext: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private musicGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;

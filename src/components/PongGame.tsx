@@ -50,7 +50,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
   // Audio is now handled by the comprehensive chiptune system in PongAudioManager
 
-  const toggleAudio = () => {
+  const toggleAudio = async () => {
     const newMutedState = toggleMute();
     setAudioEnabled(!newMutedState);
   };
@@ -159,24 +159,36 @@ const PongGame = ({ onClose }: PongGameProps) => {
     setShowAnonymousModal(false);
   };
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     setGameStarted(true);
     setShowHighScores(false);
-    startGame();
+    
+    // For mobile: ensure audio is initialized on user interaction
+    try {
+      await startGame();
+    } catch (error) {
+      console.warn('Audio initialization failed, continuing without sound:', error);
+      // Continue with game even if audio fails
+    }
   };
 
   const handleShowHighScores = () => {
     setShowHighScores(true);
   };
 
-  const handlePlayAgain = () => {
+  const handlePlayAgain = async () => {
     resetGame();
     setGameStarted(true);
     setShowHighScores(false);
     setInitialHighScore(null); // Reset for new game session
     setShowNewHighScoreSet(false);
     setHasShownRecordCelebration(false); // Reset celebration flag
-    startGame();
+    
+    try {
+      await startGame();
+    } catch (error) {
+      console.warn('Audio initialization failed, continuing without sound:', error);
+    }
   };
 
   return (
