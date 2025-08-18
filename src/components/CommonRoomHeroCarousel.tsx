@@ -76,7 +76,7 @@ const CommonRoomHeroCarousel = () => {
 
       {/* Secret gesture cue - top right corner */}
       <div className="absolute top-8 right-8 z-20">
-        <div className="text-6xl opacity-50 text-background transition-opacity duration-300 hover:opacity-70 pointer-events-none">
+        <div className="text-6xl opacity-60 text-white transition-opacity duration-300 hover:opacity-80 pointer-events-none">
           ⑦
         </div>
       </div>
