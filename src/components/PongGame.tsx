@@ -76,7 +76,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
     if (audioInitializing) return;
     
     setAudioInitializing(true);
-    console.log('🔊 Mobile audio enable button clicked');
+    console.log('🔊 Mobile audio enable button clicked - starting iOS unlock sequence');
     
     try {
       const audioManager = audioManagerRef.current;
@@ -85,23 +85,32 @@ const PongGame = ({ onClose }: PongGameProps) => {
         return;
       }
 
-      // Step 1: Create AudioContext and immediately start oscillator-based intro music
+      // CRITICAL: Create AudioContext and start loud test audio immediately within gesture
       const contextCreated = audioManager.initializeAudioContext();
       if (!contextCreated) {
         console.error('🔊 Failed to create AudioContext');
         return;
       }
-      console.log('🔊 AudioContext created and immediate intro music started');
+      console.log('🔊 AudioContext created - iOS unlock audio should be playing');
 
-      // Step 2: Initialize full audio system in background (buffers)
-      audioManager.initializeAudio().catch(error => {
-        console.error('🔊 Background audio initialization failed:', error);
-      });
-      
-      // Step 3: Set states immediately after context creation (audio is already playing)
+      // Immediately set audio as enabled (unlock audio is already playing)
       setMobileAudioEnabled(true);
       setAudioEnabled(true);
-      console.log('🔊 Mobile audio enabled - oscillator intro music playing');
+      console.log('🔊 Mobile audio enabled - iOS unlock sequence started');
+      
+      // Provide immediate user feedback
+      setTimeout(() => {
+        console.log('🔊 Checking audio state after 500ms...');
+        const context = audioManager.audioContext;
+        if (context) {
+          console.log('🔊 AudioContext state:', context.state);
+          if (context.state !== 'running') {
+            console.warn('🔊 AudioContext not running - iOS may have blocked audio');
+          } else {
+            console.log('🔊 SUCCESS: AudioContext is running on iOS!');
+          }
+        }
+      }, 500);
       
     } catch (error) {
       console.error('🔊 Mobile audio enable failed:', error);

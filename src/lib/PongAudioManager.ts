@@ -31,21 +31,27 @@ export class PongAudioManager {
   // Pre-generated audio buffers
   private audioBuffers: Map<string, AudioBuffer> = new Map();
 
-  // Initialize AudioContext synchronously within user gesture and start immediate audio
+  // Initialize AudioContext synchronously within user gesture with immediate iOS-compatible audio
   initializeAudioContext(): boolean {
     try {
       console.log('🔊 Creating AudioContext within user gesture...');
       this.audioContext = new AudioContext();
       console.log('🔊 AudioContext created, state:', this.audioContext.state);
       
+      // Force AudioContext to resume immediately (critical for iOS)
+      if (this.audioContext.state === 'suspended') {
+        console.log('🔊 Force resuming AudioContext immediately...');
+        this.audioContext.resume();
+      }
+      
       // Immediately set up basic audio graph for iOS compatibility
       this.setupBasicAudioGraph();
       
-      // Immediately start continuous oscillator-based intro music
-      this.startImmediateIntroMusic();
+      // CRITICAL: Start loud, continuous test audio immediately within gesture
+      this.startIOSUnlockAudio();
       
       this.canPlayAudio = true;
-      console.log('🔊 Immediate intro music started, canPlayAudio set to true');
+      console.log('🔊 iOS unlock audio started, canPlayAudio set to true');
       
       return true;
     } catch (error) {
@@ -54,15 +60,15 @@ export class PongAudioManager {
     }
   }
 
-  // Set up basic audio graph immediately for iOS compatibility
+  // Set up iOS-optimized audio graph immediately for compatibility
   private setupBasicAudioGraph(): void {
     if (!this.audioContext) return;
 
     try {
-      // Create master gain node
+      // Create master gain node with higher initial gain for iOS
       this.masterGain = this.audioContext.createGain();
       this.masterGain.connect(this.audioContext.destination);
-      this.masterGain.gain.setValueAtTime(0.8, this.audioContext.currentTime);
+      this.masterGain.gain.setValueAtTime(1.0, this.audioContext.currentTime); // Higher for iOS
 
       // Create separate gain nodes for music and SFX
       this.musicGain = this.audioContext.createGain();
@@ -73,67 +79,128 @@ export class PongAudioManager {
       this.sfxGain.connect(this.masterGain);
       this.sfxGain.gain.setValueAtTime(this.sfxVolume, this.audioContext.currentTime);
 
-      // Create gain node specifically for oscillator-based intro
+      // Create dedicated iOS unlock audio chain with high gain
       this.oscillatorGain = this.audioContext.createGain();
-      this.oscillatorGain.connect(this.musicGain);
-      this.oscillatorGain.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+      this.oscillatorGain.connect(this.masterGain); // Direct to master for maximum volume
+      this.oscillatorGain.gain.setValueAtTime(0.8, this.audioContext.currentTime); // Much higher
 
-      console.log('🔊 Basic audio graph set up');
+      console.log('🔊 iOS-optimized audio graph set up with high gain');
     } catch (error) {
       console.error('🔊 Failed to set up basic audio graph:', error);
     }
   }
 
-  // Start continuous oscillator-based intro music immediately
-  private startImmediateIntroMusic(): void {
+  // Start loud iOS unlock audio with two-tone pattern that Safari recognizes
+  private startIOSUnlockAudio(): void {
     if (!this.audioContext || !this.oscillatorGain) return;
 
     try {
-      console.log('🔊 Starting immediate oscillator-based intro music...');
+      console.log('🔊 Starting iOS unlock audio (loud two-tone test)...');
       
-      // Create oscillator for immediate playback
+      // Create first oscillator for immediate loud test
       this.currentOscillator = this.audioContext.createOscillator();
       this.currentOscillator.connect(this.oscillatorGain);
       
-      // Start with a pleasant A note and modulate it
-      this.currentOscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
-      
-      // Create a simple ascending melody pattern over 3 seconds
       const currentTime = this.audioContext.currentTime;
-      const notes = [440, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880]; // A4 to A5 major scale
-      const noteDuration = 0.375; // 3/8 second per note = 3 seconds total
       
-      notes.forEach((freq, i) => {
-        const startTime = currentTime + (i * noteDuration);
-        this.currentOscillator!.frequency.setValueAtTime(freq, startTime);
+      // Two-tone pattern: Low-High-Low-High that iOS Safari recognizes better
+      const pattern = [
+        { freq: 220, start: 0.0, duration: 0.4 },      // Low A (400ms)
+        { freq: 880, start: 0.4, duration: 0.4 },      // High A (400ms)
+        { freq: 220, start: 0.8, duration: 0.4 },      // Low A (400ms)
+        { freq: 880, start: 1.2, duration: 0.8 },      // High A (800ms) - longer finish
+      ];
+      
+      pattern.forEach(({ freq, start }) => {
+        this.currentOscillator!.frequency.setValueAtTime(freq, currentTime + start);
       });
       
-      // Set up volume envelope for smooth fade in/out
-      this.oscillatorGain.gain.setValueAtTime(0, currentTime);
-      this.oscillatorGain.gain.linearRampToValueAtTime(0.4, currentTime + 0.1); // Quick fade in
-      this.oscillatorGain.gain.setValueAtTime(0.4, currentTime + 2.5); // Hold
-      this.oscillatorGain.gain.linearRampToValueAtTime(0, currentTime + 3.0); // Fade out
+      // High volume envelope - no fade, immediate full volume for iOS
+      this.oscillatorGain.gain.setValueAtTime(0.8, currentTime); // Immediate loud volume
+      this.oscillatorGain.gain.setValueAtTime(0.8, currentTime + 1.8); // Hold loud
+      this.oscillatorGain.gain.linearRampToValueAtTime(0.4, currentTime + 2.0); // Quick fade
       
-      this.currentOscillator.type = 'square'; // Classic chiptune sound
+      // Use square wave for maximum iOS compatibility
+      this.currentOscillator.type = 'square';
       this.currentOscillator.start(currentTime);
-      this.currentOscillator.stop(currentTime + 3.0);
+      this.currentOscillator.stop(currentTime + 2.0);
       
       this.isPlaying = true;
       this.currentTrackType = 'intro';
       
-      console.log('🔊 Immediate intro music started (3-second oscillator melody)');
+      console.log('🔊 iOS unlock audio started (2-second loud two-tone)');
+      console.log('🔊 AudioContext state after start:', this.audioContext.state);
       
-      // Set up transition to buffer-based music when ready
+      // Set up continuous playback for iOS compatibility
       this.currentOscillator.onended = () => {
-        console.log('🔊 Oscillator intro ended, ready for buffer transition');
+        console.log('🔊 iOS unlock audio ended, starting background music...');
         this.currentOscillator = null;
-        if (this.isInitialized) {
+        
+        // Start immediate backup music to prevent iOS from suspending context
+        this.startContinuousBackgroundMusic();
+        
+        // Initialize full audio buffers in background
+        if (!this.isInitialized) {
+          this.initializeAudio().catch(error => {
+            console.error('🔊 Background buffer initialization failed:', error);
+          });
+        }
+      };
+      
+      // Monitor AudioContext state changes
+      const stateChangeHandler = () => {
+        console.log('🔊 AudioContext state changed to:', this.audioContext?.state);
+      };
+      this.audioContext.addEventListener('statechange', stateChangeHandler);
+      
+    } catch (error) {
+      console.error('🔊 Failed to start iOS unlock audio:', error);
+    }
+  }
+
+  // Start simple continuous background music to keep iOS AudioContext alive
+  private startContinuousBackgroundMusic(): void {
+    if (!this.audioContext || !this.oscillatorGain) return;
+
+    try {
+      console.log('🔊 Starting continuous background music...');
+      
+      // Create new oscillator for continuous playback
+      this.currentOscillator = this.audioContext.createOscillator();
+      this.currentOscillator.connect(this.oscillatorGain);
+      
+      const currentTime = this.audioContext.currentTime;
+      
+      // Simple repeating melody to keep context alive
+      const melody = [440, 523.25, 659.25, 523.25]; // A-C-E-C pattern
+      const noteDuration = 0.6; // Slower tempo
+      
+      melody.forEach((freq, i) => {
+        const startTime = currentTime + (i * noteDuration);
+        this.currentOscillator!.frequency.setValueAtTime(freq, startTime);
+      });
+      
+      // Lower volume for background
+      this.oscillatorGain.gain.setValueAtTime(0.3, currentTime);
+      
+      this.currentOscillator.type = 'triangle'; // Softer sound
+      this.currentOscillator.start(currentTime);
+      this.currentOscillator.stop(currentTime + (melody.length * noteDuration));
+      
+      // Loop this music until buffers are ready
+      this.currentOscillator.onended = () => {
+        this.currentOscillator = null;
+        if (!this.isInitialized && this.audioContext) {
+          console.log('🔊 Looping background music...');
+          setTimeout(() => this.startContinuousBackgroundMusic(), 100);
+        } else if (this.isInitialized) {
+          console.log('🔊 Buffers ready, switching to main music...');
           this.playMusic('main', true);
         }
       };
       
     } catch (error) {
-      console.error('🔊 Failed to start immediate intro music:', error);
+      console.error('🔊 Failed to start continuous background music:', error);
     }
   }
 
