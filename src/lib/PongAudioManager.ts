@@ -33,7 +33,7 @@ export class PongAudioManager {
   // Pre-generated audio buffers (populated in background)
   private audioBuffers: Map<string, AudioBuffer> = new Map();
 
-  // PHASE 1: Bulletproof iOS Audio Unlock - ALL synchronous within user gesture
+  // BULLETPROOF iOS Audio Unlock - Synchronous resume with immediate audio
   initializeAudioContext(): boolean {
     if (this.audioState !== 'INACTIVE') {
       console.log('🔊 Audio already initializing/ready, state:', this.audioState);
@@ -41,52 +41,68 @@ export class PongAudioManager {
     }
 
     this.audioState = 'UNLOCKING';
-    console.log('🔊 iOS Safari DIRECT audio unlock starting...');
+    console.log('🔊 SYNCHRONOUS iOS audio unlock starting...');
     
     try {
-      // 1. Create AudioContext immediately - iOS requires this FIRST
+      // 1. Create AudioContext
       this.audioContext = new AudioContext();
-      console.log('🔊 AudioContext created, initial state:', this.audioContext.state);
+      console.log('🔊 AudioContext created, state:', this.audioContext.state);
       
-      // 2. iOS CRITICAL: Create and connect nodes BEFORE resume
+      // 2. Create master gain chain
       this.masterGain = this.audioContext.createGain();
       this.masterGain.connect(this.audioContext.destination);
       this.masterGain.gain.setValueAtTime(1.0, this.audioContext.currentTime);
 
-      // 3. Create oscillator and play IMMEDIATELY (iOS needs immediate audio)
+      // 3. CRITICAL: Resume AudioContext SYNCHRONOUSLY
+      if (this.audioContext.state === 'suspended') {
+        console.log('🔊 Resuming AudioContext...');
+        this.audioContext.resume();
+        
+        // Synchronous wait for AudioContext to be running
+        const startTime = Date.now();
+        while (this.audioContext.state === 'suspended' && Date.now() - startTime < 100) {
+          // Tight loop to wait for AudioContext to resume
+        }
+        
+        if (this.audioContext.state === 'suspended') {
+          console.error('🔊 AudioContext failed to resume within 100ms, state:', this.audioContext.state);
+          this.audioState = 'FAILED';
+          return false;
+        }
+      }
+      
+      console.log('🔊 AudioContext is running, state:', this.audioContext.state);
+
+      // 4. Play test tone ONLY after AudioContext is confirmed running
       const oscillator = this.audioContext.createOscillator();
       const gainNode = this.audioContext.createGain();
       
       oscillator.connect(gainNode);
       gainNode.connect(this.masterGain);
       
-      // VERY LOUD tone that iOS Safari definitely hears
-      oscillator.frequency.setValueAtTime(1000, this.audioContext.currentTime);
-      gainNode.gain.setValueAtTime(0.9, this.audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
+      gainNode.gain.setValueAtTime(0.8, this.audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
       
-      oscillator.type = 'square';
+      oscillator.type = 'sine';
       oscillator.start(this.audioContext.currentTime);
-      oscillator.stop(this.audioContext.currentTime + 1.0);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
       
-      console.log('🔊 LOUD iOS unlock tone playing NOW');
+      console.log('🔊 Test tone playing');
       
-      // 4. NOW resume AudioContext (after audio is queued)
-      if (this.audioContext.state === 'suspended') {
-        console.log('🔊 Resuming AudioContext...');
-        this.audioContext.resume();
-      }
-      
-      // 5. Set up full audio system
+      // 5. Set up audio system immediately
       this.setupFullAudioSystem();
       
-      // 6. Mark as ready
+      // 6. Start background music immediately
+      this.startSimpleBackgroundMusic();
+      
       this.audioState = 'READY';
-      console.log('🔊 iOS audio unlock SUCCESS');
+      console.log('🔊 SYNCHRONOUS audio unlock SUCCESS');
       
       return true;
       
     } catch (error) {
-      console.error('🔊 iOS audio unlock FAILED:', error);
+      console.error('🔊 SYNCHRONOUS audio unlock FAILED:', error);
       this.audioState = 'FAILED';
       return false;
     }
@@ -116,11 +132,8 @@ export class PongAudioManager {
 
       console.log('🔊 Full audio system ready');
       
-      // Start simple background music immediately
-      setTimeout(() => this.startSimpleBackgroundMusic(), 2000);
-      
-      // Generate complex buffers in background
-      setTimeout(() => this.generateAudioBuffersInBackground(), 3000);
+      // Generate complex buffers in background immediately
+      this.generateAudioBuffersInBackground();
       
     } catch (error) {
       console.error('🔊 Full audio system setup failed:', error);
@@ -214,11 +227,11 @@ export class PongAudioManager {
       this.currentOscillator.start(currentTime);
       this.currentOscillator.stop(currentTime + 2.0);
       
-      // Keep looping
+      // Keep looping immediately
       this.currentOscillator.onended = () => {
         this.currentOscillator = null;
         if (this.audioState === 'READY') {
-          setTimeout(() => this.startSimpleBackgroundMusic(), 100);
+          this.startSimpleBackgroundMusic();
         }
       };
       
