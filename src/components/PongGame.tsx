@@ -312,10 +312,14 @@ const PongGame = ({ onClose }: PongGameProps) => {
       
       {/* Mobile Audio Enable Button */}
       {isMobile && !mobileAudioEnabled && gameStarted && (
-        <div className="absolute top-28 left-1/2 transform -translate-x-1/2 pointer-events-auto z-40">
+        <div className="absolute top-28 left-1/2 transform -translate-x-1/2 pointer-events-auto z-[60]">
           <Button
-            onClick={handleMobileAudioEnable}
-            onTouchEnd={(e) => {
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleMobileAudioEnable();
+            }}
+            onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
               handleMobileAudioEnable();
@@ -323,9 +327,10 @@ const PongGame = ({ onClose }: PongGameProps) => {
             variant="outline"
             size="sm"
             disabled={audioInitializing}
-            className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none shadow-lg min-h-[44px]"
+            className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none shadow-lg min-h-[44px] relative"
             style={{
-              animation: audioInitializing ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+              animation: audioInitializing ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              zIndex: 9999
             }}
           >
             {audioInitializing ? '🔄 Loading...' : '🔊 Turn Audio On'}
