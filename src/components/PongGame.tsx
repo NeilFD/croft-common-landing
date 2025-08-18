@@ -111,12 +111,18 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
   // Handle touch movement for mobile paddle control
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    // Only prevent default if we're in game and touching the canvas area
+    // Only handle touches when game is actively running and touch is on canvas
     if (gameRunning && canvasRef.current) {
-      e.preventDefault();
       const rect = canvasRef.current.getBoundingClientRect();
-      const y = e.touches[0].clientY - rect.top;
-      updatePaddlePosition(y);
+      const touch = e.touches[0];
+      const touchX = touch.clientX - rect.left;
+      const touchY = touch.clientY - rect.top;
+      
+      // Only handle if touch is within canvas bounds
+      if (touchX >= 0 && touchX <= rect.width && touchY >= 0 && touchY <= rect.height) {
+        e.preventDefault();
+        updatePaddlePosition(touchY);
+      }
     }
   }, [updatePaddlePosition, gameRunning]);
 
@@ -300,7 +306,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
           maxWidth: '95vw', 
           maxHeight: '60vh',
           aspectRatio: '2/1',
-          pointerEvents: gameStarted && gameRunning ? 'auto' : 'none'
+          touchAction: gameRunning ? 'none' : 'auto'
         }}
       />
       
