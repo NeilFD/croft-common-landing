@@ -49,14 +49,35 @@ export const usePongHighScores = () => {
 
       let playerName = 'Anonymous';
       if (!profileError && profile) {
-        const firstName = profile.first_name || '';
-        const lastName = profile.last_name || '';
-        playerName = `${firstName} ${lastName}`.trim() || 'Anonymous';
+        const firstName = profile.first_name?.trim() || '';
+        const lastName = profile.last_name?.trim() || '';
+        
+        // Ensure we always include surname when available
+        if (firstName && lastName) {
+          playerName = `${firstName} ${lastName}`;
+        } else if (firstName) {
+          playerName = firstName;
+        } else if (lastName) {
+          playerName = lastName;
+        }
       }
 
       // Fallback to email if no profile name
       if (playerName === 'Anonymous' && user.email) {
         playerName = user.email.split('@')[0];
+      }
+
+      // Check for recent duplicate scores to prevent resurrection
+      const { data: recentScores } = await supabase
+        .from('pong_scores')
+        .select('id, score, created_at')
+        .eq('user_id', user.id)
+        .gte('created_at', new Date(Date.now() - 5000).toISOString()) // Last 5 seconds
+        .eq('score', score);
+
+      if (recentScores && recentScores.length > 0) {
+        console.log('Duplicate score detected, skipping submission');
+        return;
       }
 
       const { error } = await supabase
@@ -68,8 +89,12 @@ export const usePongHighScores = () => {
           game_duration: gameDuration || 0,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Score submission error:', error);
+        throw error;
+      }
       
+      console.log('Score submitted successfully:', { score, playerName });
       // Refresh high scores after submission
       await fetchHighScores();
     } catch (error) {

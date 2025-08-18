@@ -56,7 +56,8 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
         const data = buffer.getChannelData(0);
         
         for (let i = 0; i < length; i++) {
-          data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.1;
+          const envelope = Math.max(0, 1 - (i / length)); // Fade out envelope
+          data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.1 * envelope;
         }
         
         return buffer;
