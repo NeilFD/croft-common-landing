@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { X, Trophy, RotateCcw } from 'lucide-react';
+import { X, Trophy, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePongGame } from '@/hooks/usePongGame';
 import { usePongHighScores } from '@/hooks/usePongHighScores';
+import CroftLogo from './CroftLogo';
 
 interface PongGameProps {
   onClose: () => void;
@@ -12,16 +13,20 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [showHighScores, setShowHighScores] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
+  const audioRef = useRef<HTMLAudioElement>();
   
   const {
     gameState,
     score,
+    speedLevel,
     gameRunning,
     gameOver,
     startGame,
     pauseGame,
     resetGame,
-    updatePaddlePosition
+    updatePaddlePosition,
+    playSound
   } = usePongGame(canvasRef);
 
   const { 
@@ -29,6 +34,43 @@ const PongGame = ({ onClose }: PongGameProps) => {
     submitScore, 
     loading: scoresLoading 
   } = usePongHighScores();
+
+  // Initialize background music
+  useEffect(() => {
+    if (audioEnabled && gameStarted && gameRunning) {
+      // Create a simple background loop using Web Audio API
+      try {
+        const audioContext = new AudioContext();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+        oscillator.type = 'sine';
+        gainNode.gain.setValueAtTime(0.05, audioContext.currentTime);
+        
+        oscillator.start();
+        
+        // Clean up on component unmount or game stop
+        return () => {
+          try {
+            oscillator.stop();
+            audioContext.close();
+          } catch (e) {
+            // Ignore cleanup errors
+          }
+        };
+      } catch (e) {
+        console.warn('Background music initialization failed:', e);
+      }
+    }
+  }, [audioEnabled, gameStarted, gameRunning]);
+
+  const toggleAudio = () => {
+    setAudioEnabled(!audioEnabled);
+  };
 
   // Handle mouse movement for paddle control
   const handleMouseMove = useCallback((e: MouseEvent) => {
@@ -85,7 +127,14 @@ const PongGame = ({ onClose }: PongGameProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
+      {/* Header with branding */}
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white z-10">
+        <CroftLogo size="sm" className="mb-2 invert" />
+        <h1 className="text-xl font-mono tracking-wider">CROFT COMMON</h1>
+        <p className="text-xs opacity-70 font-mono">RETRO ARCADE</p>
+      </div>
+      
       <canvas
         ref={canvasRef}
         width={800}
@@ -96,20 +145,34 @@ const PongGame = ({ onClose }: PongGameProps) => {
       
       {/* UI Overlay */}
       <div className="absolute inset-0 pointer-events-none">
-        {/* Close button */}
-        <Button
-          onClick={onClose}
-          variant="ghost"
-          size="sm"
-          className="absolute top-4 right-4 text-white hover:bg-white/10 pointer-events-auto"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+        {/* Control buttons */}
+        <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto">
+          <Button
+            onClick={toggleAudio}
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/10"
+          >
+            {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+          </Button>
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white/10"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
 
-        {/* Score display */}
+        {/* Score and level display */}
         {gameStarted && (
-          <div className="absolute top-4 left-4 text-white font-mono text-2xl">
-            Score: {score}
+          <div className="absolute top-20 left-4 text-white font-mono space-y-1">
+            <div className="text-2xl">Score: {score}</div>
+            <div className="text-sm opacity-70">Speed Level: {speedLevel}</div>
+            {speedLevel > 1 && (
+              <div className="text-xs opacity-50">Next boost at {Math.ceil(score / 5) * 5} points</div>
+            )}
           </div>
         )}
 
@@ -127,7 +190,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
               <Button
                 onClick={handleShowHighScores}
                 variant="outline"
-                className="border-white text-white hover:bg-white/10 font-mono px-8 py-3 pointer-events-auto"
+                className="border-white text-black bg-white hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
               >
                 <Trophy className="h-4 w-4 mr-2" />
                 HIGH SCORES
@@ -141,17 +204,17 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
         {/* High scores screen */}
         {showHighScores && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-            <h2 className="text-3xl font-mono mb-8 tracking-wider">HIGH SCORES</h2>
-            <div className="bg-black/50 border border-white p-6 min-w-[300px]">
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-50">
+            <div className="bg-white text-black p-8 rounded-lg shadow-2xl border-4 border-black min-w-[400px]">
+              <h2 className="text-3xl font-mono mb-8 text-center tracking-wider">HIGH SCORES</h2>
               {scoresLoading ? (
                 <div className="text-center font-mono">Loading...</div>
               ) : (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {highScores.slice(0, 10).map((score, index) => (
-                    <div key={score.id} className="flex justify-between font-mono text-sm">
-                      <span>{index + 1}. {score.player_name}</span>
-                      <span>{score.score}</span>
+                    <div key={score.id} className="flex justify-between font-mono text-lg border-b border-gray-300 pb-2">
+                      <span className="font-bold">{index + 1}. {score.player_name}</span>
+                      <span className="font-bold">{score.score}</span>
                     </div>
                   ))}
                   {highScores.length === 0 && (
@@ -161,14 +224,13 @@ const PongGame = ({ onClose }: PongGameProps) => {
                   )}
                 </div>
               )}
+              <Button
+                onClick={() => setShowHighScores(false)}
+                className="w-full mt-6 bg-black text-white hover:bg-gray-800 font-mono px-8 py-3 pointer-events-auto"
+              >
+                BACK
+              </Button>
             </div>
-            <Button
-              onClick={() => setShowHighScores(false)}
-              variant="outline"
-              className="border-white text-white hover:bg-white/10 font-mono px-8 py-3 mt-6 pointer-events-auto"
-            >
-              BACK
-            </Button>
           </div>
         )}
 
@@ -188,7 +250,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
               <Button
                 onClick={handleShowHighScores}
                 variant="outline"
-                className="border-white text-white hover:bg-white/10 font-mono px-8 py-3 pointer-events-auto"
+                className="border-white text-black bg-white hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
               >
                 <Trophy className="h-4 w-4 mr-2" />
                 HIGH SCORES
