@@ -23,6 +23,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const [hasShownRecordCelebration, setHasShownRecordCelebration] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileAudioEnabled, setMobileAudioEnabled] = useState(false);
+  const [audioInitializing, setAudioInitializing] = useState(false);
   const audioRef = useRef<HTMLAudioElement>();
   
   const {
@@ -70,31 +71,55 @@ const PongGame = ({ onClose }: PongGameProps) => {
   };
 
   const handleMobileAudioEnable = async () => {
+    if (audioInitializing) return; // Prevent multiple attempts
+    
+    setAudioInitializing(true);
+    console.log('🎵 Mobile audio enable clicked, starting initialization...');
+    
     try {
       // Initialize audio on mobile when user explicitly enables it
       const audioInitialized = await initializeAudio();
+      console.log('🎵 Audio initialization result:', audioInitialized);
+      
       if (audioInitialized && audioManagerRef.current) {
+        console.log('🎵 Audio manager available, setting states...');
         setMobileAudioEnabled(true);
         setAudioEnabled(true);
         
-        // Resume AudioContext if suspended
+        // Force resume AudioContext if suspended
         if (audioManagerRef.current.audioContext?.state === 'suspended') {
+          console.log('🎵 AudioContext suspended, resuming...');
           await audioManagerRef.current.audioContext.resume();
+          console.log('🎵 AudioContext state after resume:', audioManagerRef.current.audioContext.state);
         }
         
-        // Start playing music based on game state
-        setTimeout(() => {
+        // Wait for a bit longer to ensure AudioContext is fully ready
+        setTimeout(async () => {
           if (audioManagerRef.current?.audioContext?.state === 'running') {
+            console.log('🎵 AudioContext running, starting music based on game state...');
+            console.log('🎵 Game state - running:', gameRunning, 'gameOver:', gameOver);
+            
             if (gameRunning && !gameOver) {
-              audioManagerRef.current?.playMusic('main', true);
+              console.log('🎵 Playing main music...');
+              await audioManagerRef.current.playMusic('main', true);
             } else if (gameOver) {
-              audioManagerRef.current?.playMusic('gameover', false);
+              console.log('🎵 Playing gameover music...');
+              await audioManagerRef.current.playMusic('gameover', false);
+            } else {
+              console.log('🎵 Playing intro music...');
+              await audioManagerRef.current.playMusic('intro', false);
             }
+          } else {
+            console.warn('🎵 AudioContext not running after initialization:', audioManagerRef.current?.audioContext?.state);
           }
-        }, 300);
+        }, 500);
+      } else {
+        console.warn('🎵 Audio initialization failed or audio manager not available');
       }
     } catch (error) {
-      console.warn('Mobile audio initialization failed:', error);
+      console.error('🎵 Mobile audio initialization failed:', error);
+    } finally {
+      setAudioInitializing(false);
     }
   };
 
@@ -146,16 +171,23 @@ const PongGame = ({ onClose }: PongGameProps) => {
       scoreSubmittedRef.current = true;
       playGameOverMusic();
       
-      // Add delay to ensure auth state is properly loaded
+      // Add longer delay to ensure auth state is properly loaded
       setTimeout(() => {
+        console.log('🏆 Checking score submission - isAuthenticated:', isAuthenticated, 'score:', score);
+        console.log('🏆 High scores loaded:', highScores.length, 'qualifying:', isQualifyingHighScore(score));
+        
         if (isAuthenticated) {
+          console.log('🏆 Submitting score for authenticated user');
           submitScore(score);
         } else if (isQualifyingHighScore(score)) {
           // Only show modal for scores that actually qualify as high scores
+          console.log('🏆 Showing anonymous modal for qualifying high score');
           setPendingScore(score);
           setShowAnonymousModal(true);
+        } else {
+          console.log('🏆 Score does not qualify for high score list');
         }
-      }, 100);
+      }, 500);
     }
     
     // Reset flags when game starts
@@ -286,13 +318,18 @@ const PongGame = ({ onClose }: PongGameProps) => {
               onClick={handleMobileAudioEnable}
               onTouchEnd={(e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 handleMobileAudioEnable();
               }}
               variant="outline"
               size="sm"
-              className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none animate-pulse shadow-lg"
+              disabled={audioInitializing}
+              className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none shadow-lg min-h-[44px]"
+              style={{
+                animation: audioInitializing ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+              }}
             >
-              🔊 Turn Audio On
+              {audioInitializing ? '🔄 Loading...' : '🔊 Turn Audio On'}
             </Button>
           </div>
         )}

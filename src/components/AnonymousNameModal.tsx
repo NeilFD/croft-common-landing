@@ -24,8 +24,8 @@ const AnonymousNameModal = ({ onSubmit, onCancel, score }: AnonymousNameModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center">
-      <div className="bg-white text-black p-8 rounded-lg shadow-2xl border-4 border-black min-w-[400px] max-w-[90vw]">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center touch-manipulation">
+      <div className="bg-white text-black p-8 rounded-lg shadow-2xl border-4 border-black min-w-[400px] max-w-[90vw] touch-manipulation select-none">
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
@@ -34,9 +34,13 @@ const AnonymousNameModal = ({ onSubmit, onCancel, score }: AnonymousNameModalPro
           </div>
           <Button
             onClick={onCancel}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              onCancel();
+            }}
             variant="ghost"
             size="sm"
-            className="text-black hover:bg-black/10"
+            className="text-black hover:bg-black/10 touch-manipulation select-none"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -65,15 +69,28 @@ const AnonymousNameModal = ({ onSubmit, onCancel, score }: AnonymousNameModalPro
             <Button
               type="submit"
               disabled={!name.trim() || isSubmitting}
-              className="flex-1 bg-black text-white hover:bg-gray-800 font-mono"
+              onClick={(e) => {
+                e.preventDefault();
+                handleSubmit(e);
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                if (!name.trim() || isSubmitting) return;
+                handleSubmit(e);
+              }}
+              className="flex-1 bg-black text-white hover:bg-gray-800 font-mono touch-manipulation select-none min-h-[48px] text-base"
             >
               {isSubmitting ? 'SAVING...' : 'SAVE SCORE'}
             </Button>
             <Button
               type="button"
               onClick={onCancel}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                onCancel();
+              }}
               variant="outline"
-              className="flex-1 border-black text-black hover:bg-black/10 font-mono"
+              className="flex-1 border-black text-black hover:bg-black/10 font-mono touch-manipulation select-none min-h-[48px] text-base"
             >
               SKIP
             </Button>
