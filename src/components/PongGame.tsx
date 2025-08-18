@@ -65,6 +65,34 @@ const PongGame = ({ onClose }: PongGameProps) => {
     checkMobile();
   }, []);
 
+  // iOS Lifecycle Management (Phase 5)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const audioManager = audioManagerRef.current;
+      if (audioManager) {
+        audioManager.handleVisibilityChange();
+      }
+    };
+
+    // Add document-level unlock listeners (Phase 1)
+    const handleDocumentTouch = () => {
+      if (isMobile && !mobileAudioEnabled) {
+        // Don't auto-unlock, require explicit button press
+        console.log('🔊 Document touch detected but waiting for explicit audio button');
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('pointerdown', handleDocumentTouch, { once: true, passive: true });
+    document.addEventListener('touchend', handleDocumentTouch, { once: true, passive: true });
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('pointerdown', handleDocumentTouch);
+      document.removeEventListener('touchend', handleDocumentTouch);
+    };
+  }, [isMobile, mobileAudioEnabled]);
+
   // Audio is now handled by the comprehensive chiptune system in PongAudioManager
 
   const toggleAudio = async () => {
@@ -365,7 +393,13 @@ const PongGame = ({ onClose }: PongGameProps) => {
               e.stopPropagation();
               e.nativeEvent.stopImmediatePropagation();
               if (navigator.vibrate) navigator.vibrate(30);
-              toggleAudio();
+              
+              // Check if we need to unlock audio first (iOS)
+              if (isMobile && !mobileAudioEnabled) {
+                handleMobileAudioEnable();
+              } else {
+                toggleAudio();
+              }
             }}
             variant="ghost"
             size="sm"

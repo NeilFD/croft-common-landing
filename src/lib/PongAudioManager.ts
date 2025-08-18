@@ -29,7 +29,7 @@ export class PongAudioManager {
   // Simplified audio state: INACTIVE | UNLOCKING | READY | FAILED
   private audioState: 'INACTIVE' | 'UNLOCKING' | 'READY' | 'FAILED' = 'INACTIVE';
 
-  // BULLETPROOF iOS Audio Unlock - SYNCHRONOUS ONLY
+  // iOS-Compliant Audio Unlock Pattern
   initializeAudioContext(): boolean {
     if (this.audioState !== 'INACTIVE') {
       console.log('🔊 Audio already initializing/ready, state:', this.audioState);
@@ -37,123 +37,80 @@ export class PongAudioManager {
     }
 
     this.audioState = 'UNLOCKING';
-    console.log('🔊 SYNCHRONOUS iOS audio unlock starting...');
+    console.log('🔊 iOS audio unlock starting...');
     
     try {
-      // 1. Create AudioContext
-      this.audioContext = new AudioContext();
+      // 1. Create AudioContext with iOS fallback
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) {
+        throw new Error('AudioContext not supported');
+      }
+      
+      this.audioContext = new AudioContextClass({ latencyHint: 'interactive' });
       console.log('🔊 AudioContext created, state:', this.audioContext.state);
       
       // 2. Create master gain chain IMMEDIATELY
       this.masterGain = this.audioContext.createGain();
+      this.musicGain = this.audioContext.createGain();
+      this.sfxGain = this.audioContext.createGain();
+      
+      // Connect gains
+      this.musicGain.connect(this.masterGain);
+      this.sfxGain.connect(this.masterGain);
       this.masterGain.connect(this.audioContext.destination);
-      this.masterGain.gain.setValueAtTime(1.0, this.audioContext.currentTime);
+      
+      // Set volumes
+      this.masterGain.gain.setValueAtTime(0.9, this.audioContext.currentTime);
+      this.musicGain.gain.setValueAtTime(0.7, this.audioContext.currentTime);
+      this.sfxGain.gain.setValueAtTime(1.0, this.audioContext.currentTime);
 
       // 3. CRITICAL: Resume AudioContext SYNCHRONOUSLY
-      if (this.audioContext.state === 'suspended') {
-        console.log('🔊 Resuming AudioContext...');
-        
-        // Call resume and handle the Promise properly
-        const resumePromise = this.audioContext.resume();
-        
-        // Synchronous wait for AudioContext to be running with better error handling
-        const startTime = Date.now();
-        const maxWaitTime = 200; // Increased to 200ms for iOS Safari
-        
-        while (this.audioContext.state === 'suspended' && Date.now() - startTime < maxWaitTime) {
-          // Tight polling loop - this is necessary for iOS Safari
-          // The Promise might resolve but state change could be delayed
-        }
-        
-        console.log('🔊 AudioContext state after wait:', this.audioContext.state, 'waited:', Date.now() - startTime, 'ms');
-        
-        if (this.audioContext.state === 'suspended') {
-          console.error('🔊 CRITICAL: AudioContext failed to resume within', maxWaitTime, 'ms, state:', this.audioContext.state);
-          console.error('🔊 This indicates iOS Safari audio unlock failed - gesture may not have been user-initiated');
-          this.audioState = 'FAILED';
-          return false;
-        }
-        
-        // Log the Promise for debugging (but don't await it)
-        resumePromise.then(() => {
-          console.log('🔊 AudioContext.resume() Promise resolved, final state:', this.audioContext?.state);
-        }).catch(error => {
-          console.error('🔊 AudioContext.resume() Promise rejected:', error);
-        });
-      }
+      this.audioContext.resume();
       
-      console.log('🔊 AudioContext is running, state:', this.audioContext.state);
-
-      // 4. Set up audio chains IMMEDIATELY
+      // 4. Create SILENT oscillator for warmup (per checklist)
+      const osc = this.audioContext.createOscillator();
+      const g = this.audioContext.createGain();
+      g.gain.value = 0; // SILENT
+      osc.connect(g);
+      g.connect(this.audioContext.destination);
+      osc.start(0);
+      osc.stop(this.audioContext.currentTime + 0.05);
+      
+      // 5. Set up remaining audio chains
       this.setupAudioChains();
-
-      // 5. Play test tone IMMEDIATELY after AudioContext is confirmed running
-      this.playTestTone();
       
-      // 6. Start background music IMMEDIATELY
+      // 6. Start background music
       this.startSimpleBackgroundMusic();
       
       this.audioState = 'READY';
       this.isInitialized = true;
-      console.log('🔊 SYNCHRONOUS audio unlock SUCCESS');
+      console.log('🔊 iOS audio unlock SUCCESS');
       
       return true;
       
     } catch (error) {
-      console.error('🔊 SYNCHRONOUS audio unlock FAILED:', error);
+      console.error('🔊 iOS audio unlock FAILED:', error);
       this.audioState = 'FAILED';
       return false;
     }
   }
 
-  // SYNCHRONOUS Audio Chain Setup
+  // Simplified Audio Chain Setup
   private setupAudioChains(): void {
     if (!this.audioContext || !this.masterGain) return;
 
     console.log('🔊 Setting up audio chains...');
     
-    // Music chain
-    this.musicGain = this.audioContext.createGain();
-    this.musicGain.connect(this.masterGain);
-    this.musicGain.gain.setValueAtTime(this.musicVolume, this.audioContext.currentTime);
-
-    // SFX chain
-    this.sfxGain = this.audioContext.createGain();
-    this.sfxGain.connect(this.masterGain);
-    this.sfxGain.gain.setValueAtTime(this.sfxVolume, this.audioContext.currentTime);
-
     // Oscillator gain for simple music
     this.oscillatorGain = this.audioContext.createGain();
-    this.oscillatorGain.connect(this.masterGain);
+    this.oscillatorGain.connect(this.musicGain);
     this.oscillatorGain.gain.setValueAtTime(0.3, this.audioContext.currentTime);
 
     console.log('🔊 Audio chains ready');
   }
 
-  // SYNCHRONOUS Test Tone
-  private playTestTone(): void {
-    if (!this.audioContext || !this.masterGain) return;
 
-    console.log('🔊 Playing test tone...');
-    
-    const oscillator = this.audioContext.createOscillator();
-    const gainNode = this.audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(this.masterGain);
-    
-    oscillator.frequency.setValueAtTime(800, this.audioContext.currentTime);
-    gainNode.gain.setValueAtTime(0.8, this.audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + 0.1);
-    
-    oscillator.type = 'sine';
-    oscillator.start(this.audioContext.currentTime);
-    oscillator.stop(this.audioContext.currentTime + 0.1);
-    
-    console.log('🔊 Test tone playing');
-  }
-
-  // SYNCHRONOUS Background Music
+  // Background Music
   private startSimpleBackgroundMusic(): void {
     if (!this.audioContext || !this.oscillatorGain || this.audioState !== 'READY') return;
 
@@ -182,7 +139,7 @@ export class PongAudioManager {
     this.currentOscillator.start(currentTime);
     this.currentOscillator.stop(currentTime + 2.0);
     
-    // Keep looping IMMEDIATELY
+    // Keep looping
     this.currentOscillator.onended = () => {
       this.currentOscillator = null;
       if (this.audioState === 'READY') {
@@ -479,6 +436,19 @@ export class PongAudioManager {
 
   playGameOverMusic(): void {
     this.playMusic('gameover', false);
+  }
+
+  // iOS Lifecycle Management (Phase 5)
+  handleVisibilityChange(): void {
+    if (!this.audioContext) return;
+    
+    if (document.hidden) {
+      console.log('🔊 Page hidden - suspending audio context');
+      this.audioContext.suspend();
+    } else if (this.audioState === 'READY') {
+      console.log('🔊 Page visible - resuming audio context');
+      this.audioContext.resume();
+    }
   }
 
   cleanup(): void {
