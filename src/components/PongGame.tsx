@@ -73,17 +73,25 @@ const PongGame = ({ onClose }: PongGameProps) => {
     try {
       // Initialize audio on mobile when user explicitly enables it
       const audioInitialized = await initializeAudio();
-      if (audioInitialized) {
+      if (audioInitialized && audioManagerRef.current) {
         setMobileAudioEnabled(true);
         setAudioEnabled(true);
-        // Start playing music if game is running
-        if (gameRunning && !gameOver) {
-          setTimeout(() => {
-            if (audioManagerRef.current?.audioContext?.state === 'running') {
-              audioManagerRef.current?.playMusic('main', true);
-            }
-          }, 200);
+        
+        // Resume AudioContext if suspended
+        if (audioManagerRef.current.audioContext?.state === 'suspended') {
+          await audioManagerRef.current.audioContext.resume();
         }
+        
+        // Start playing music based on game state
+        setTimeout(() => {
+          if (audioManagerRef.current?.audioContext?.state === 'running') {
+            if (gameRunning && !gameOver) {
+              audioManagerRef.current?.playMusic('main', true);
+            } else if (gameOver) {
+              audioManagerRef.current?.playMusic('gameover', false);
+            }
+          }
+        }, 300);
       }
     } catch (error) {
       console.warn('Mobile audio initialization failed:', error);
@@ -123,6 +131,13 @@ const PongGame = ({ onClose }: PongGameProps) => {
     };
   }, [handleMouseMove, handleTouchMove]);
 
+  // Helper function to check if score qualifies as high score
+  const isQualifyingHighScore = useCallback((score: number) => {
+    if (highScores.length < 10) return true; // Less than 10 scores, any score qualifies
+    const lowestHighScore = highScores[highScores.length - 1]?.score || 0;
+    return score > lowestHighScore;
+  }, [highScores]);
+
   // Handle game over - submit score only once
   const scoreSubmittedRef = useRef(false);
   
@@ -131,12 +146,16 @@ const PongGame = ({ onClose }: PongGameProps) => {
       scoreSubmittedRef.current = true;
       playGameOverMusic();
       
-      if (isAuthenticated) {
-        submitScore(score);
-      } else {
-        setPendingScore(score);
-        setShowAnonymousModal(true);
-      }
+      // Add delay to ensure auth state is properly loaded
+      setTimeout(() => {
+        if (isAuthenticated) {
+          submitScore(score);
+        } else if (isQualifyingHighScore(score)) {
+          // Only show modal for scores that actually qualify as high scores
+          setPendingScore(score);
+          setShowAnonymousModal(true);
+        }
+      }, 100);
     }
     
     // Reset flags when game starts
@@ -262,7 +281,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
       <div className="absolute inset-0 pointer-events-none">
         {/* Mobile Audio Enable Button */}
         {isMobile && !mobileAudioEnabled && gameStarted && (
-          <div className="absolute top-16 right-4 pointer-events-auto z-20">
+          <div className="absolute top-28 left-1/2 transform -translate-x-1/2 pointer-events-auto z-20">
             <Button
               onClick={handleMobileAudioEnable}
               onTouchEnd={(e) => {
@@ -271,7 +290,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
               }}
               variant="outline"
               size="sm"
-              className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-3 py-2 touch-manipulation select-none animate-pulse"
+              className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none animate-pulse shadow-lg"
             >
               🔊 Turn Audio On
             </Button>
