@@ -20,6 +20,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const [initialHighScore, setInitialHighScore] = useState<number | null>(null);
   const [showRecordCelebration, setShowRecordCelebration] = useState(false);
   const [showNewHighScoreSet, setShowNewHighScoreSet] = useState(false);
+  const [hasShownRecordCelebration, setHasShownRecordCelebration] = useState(false);
   const audioRef = useRef<HTMLAudioElement>();
   
   const {
@@ -105,6 +106,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
       scoreSubmittedRef.current = false;
       setShowRecordCelebration(false);
       setShowNewHighScoreSet(false);
+      setHasShownRecordCelebration(false);
       
       // Set the initial high score threshold for this game session
       if (initialHighScore === null && currentHighScore > 0) {
@@ -113,10 +115,11 @@ const PongGame = ({ onClose }: PongGameProps) => {
     }
   }, [gameOver, score, submitScore, gameRunning, isAuthenticated]);
 
-  // Check for high score beating during gameplay - only when beating the initial record
+  // Check for high score beating during gameplay - only once per game session
   useEffect(() => {
     if (gameStarted && gameRunning && !gameOver && score > 0 && initialHighScore !== null) {
-      if (score > initialHighScore && !showRecordCelebration) {
+      if (score > initialHighScore && !hasShownRecordCelebration) {
+        setHasShownRecordCelebration(true);
         setShowRecordCelebration(true);
         playSound('record_broken');
         
@@ -126,7 +129,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
         }, 3000);
       }
     }
-  }, [score, initialHighScore, showRecordCelebration, gameStarted, gameRunning, gameOver, playSound]);
+  }, [score, initialHighScore, hasShownRecordCelebration, gameStarted, gameRunning, gameOver, playSound]);
 
   // Show "New High Score Set!" celebration at game over if we beat the initial record
   useEffect(() => {
@@ -169,6 +172,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
     setShowHighScores(false);
     setInitialHighScore(null); // Reset for new game session
     setShowNewHighScoreSet(false);
+    setHasShownRecordCelebration(false); // Reset celebration flag
     startGame();
   };
 
