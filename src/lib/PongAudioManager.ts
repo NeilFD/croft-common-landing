@@ -72,9 +72,6 @@ export class PongAudioManager {
       this.audioState = 'READY';
       this.isInitialized = true;
 
-      // Start music now that state is READY
-      this.startSimpleBackgroundMusic();
-
       return true;
     } catch (e) {
       this.audioState = 'FAILED';
