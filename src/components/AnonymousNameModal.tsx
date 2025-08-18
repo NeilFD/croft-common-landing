@@ -24,8 +24,13 @@ const AnonymousNameModal = ({ onSubmit, onCancel, score }: AnonymousNameModalPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center touch-manipulation">
-      <div className="bg-white text-black p-8 rounded-lg shadow-2xl border-4 border-black min-w-[400px] max-w-[90vw] touch-manipulation select-none">
+    <div 
+      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center touch-manipulation"
+      onClick={(e) => e.target === e.currentTarget && onCancel()}
+    >
+      <div className="bg-white text-black p-8 rounded-lg shadow-2xl border-4 border-black min-w-[400px] max-w-[90vw] touch-manipulation select-none"
+           onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
           <div>
@@ -57,8 +62,12 @@ const AnonymousNameModal = ({ onSubmit, onCancel, score }: AnonymousNameModalPro
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
+              onClick={(e) => e.stopPropagation()}
+              onFocus={(e) => e.stopPropagation()}
               placeholder="Your name..."
-              className="mt-2 font-mono"
+              className="mt-2 font-mono touch-manipulation select-auto min-h-[48px] text-base"
               maxLength={30}
               required
               autoFocus

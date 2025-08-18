@@ -75,8 +75,14 @@ const PongGame = ({ onClose }: PongGameProps) => {
     
     setAudioInitializing(true);
     console.log('🎵 Mobile audio enable clicked, starting initialization...');
+    console.log('🎵 Current game state - running:', gameRunning, 'gameOver:', gameOver, 'gameStarted:', gameStarted);
     
     try {
+      // Force user interaction for iOS Safari
+      const tempAudio = new Audio();
+      tempAudio.volume = 0;
+      tempAudio.play().catch(() => {});
+      
       // Initialize audio on mobile when user explicitly enables it
       const audioInitialized = await initializeAudio();
       console.log('🎵 Audio initialization result:', audioInitialized);
@@ -91,28 +97,50 @@ const PongGame = ({ onClose }: PongGameProps) => {
           console.log('🎵 AudioContext suspended, resuming...');
           await audioManagerRef.current.audioContext.resume();
           console.log('🎵 AudioContext state after resume:', audioManagerRef.current.audioContext.state);
+          
+          // Wait for state change
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
         
-        // Wait for a bit longer to ensure AudioContext is fully ready
-        setTimeout(async () => {
+        // Wait for a bit longer to ensure AudioContext is fully ready, then try multiple times
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        const tryPlayMusic = async () => {
+          attempts++;
+          console.log(`🎵 Attempt ${attempts}/${maxAttempts} to play music...`);
+          
           if (audioManagerRef.current?.audioContext?.state === 'running') {
             console.log('🎵 AudioContext running, starting music based on game state...');
             console.log('🎵 Game state - running:', gameRunning, 'gameOver:', gameOver);
             
-            if (gameRunning && !gameOver) {
-              console.log('🎵 Playing main music...');
-              await audioManagerRef.current.playMusic('main', true);
-            } else if (gameOver) {
-              console.log('🎵 Playing gameover music...');
-              await audioManagerRef.current.playMusic('gameover', false);
-            } else {
-              console.log('🎵 Playing intro music...');
-              await audioManagerRef.current.playMusic('intro', false);
+            try {
+              if (gameRunning && !gameOver) {
+                console.log('🎵 Playing main music...');
+                await audioManagerRef.current.playMusic('main', true);
+              } else if (gameOver) {
+                console.log('🎵 Playing gameover music...');
+                await audioManagerRef.current.playMusic('gameover', false);
+              } else {
+                console.log('🎵 Playing intro music...');
+                await audioManagerRef.current.playMusic('intro', false);
+              }
+              console.log('🎵 Music playback initiated successfully');
+            } catch (musicError) {
+              console.error('🎵 Error playing music:', musicError);
+              if (attempts < maxAttempts) {
+                setTimeout(tryPlayMusic, 200);
+              }
             }
           } else {
-            console.warn('🎵 AudioContext not running after initialization:', audioManagerRef.current?.audioContext?.state);
+            console.warn('🎵 AudioContext not running, state:', audioManagerRef.current?.audioContext?.state);
+            if (attempts < maxAttempts) {
+              setTimeout(tryPlayMusic, 200);
+            }
           }
-        }, 500);
+        };
+        
+        setTimeout(tryPlayMusic, 300);
       } else {
         console.warn('🎵 Audio initialization failed or audio manager not available');
       }
