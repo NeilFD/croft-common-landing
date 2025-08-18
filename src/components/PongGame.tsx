@@ -65,6 +65,25 @@ const PongGame = ({ onClose }: PongGameProps) => {
     checkMobile();
   }, []);
 
+  // Add a native unlock fallback listener (once)
+  useEffect(() => {
+    const unlockOnce = () => {
+      if (!audioManagerRef.current) return;
+      audioManagerRef.current.initializeAudioContext();
+      window.removeEventListener('pointerdown', unlockOnce, true);
+      window.removeEventListener('click', unlockOnce, true);
+      window.removeEventListener('touchend', unlockOnce, true);
+    };
+    window.addEventListener('pointerdown', unlockOnce, true);
+    window.addEventListener('click', unlockOnce, true);
+    window.addEventListener('touchend', unlockOnce, true);
+    return () => {
+      window.removeEventListener('pointerdown', unlockOnce, true);
+      window.removeEventListener('click', unlockOnce, true);
+      window.removeEventListener('touchend', unlockOnce, true);
+    };
+  }, []);
+
   // iOS Lifecycle Management (Phase 5)
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -104,38 +123,24 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
   const handleMobileAudioEnable = () => {
     if (audioInitializing) return;
-    
-    // Immediate state update for visual feedback
-    setMobileAudioEnabled(true);
-    setAudioEnabled(true);
-    setAudioInitializing(true);
-    
-    // Vibration feedback for mobile
-    if (navigator.vibrate) {
-      navigator.vibrate(50);
-    }
-    
-    console.log('🔊 DIRECT iOS unlock - tap handler executing...');
-    
-    const audioManager = audioManagerRef.current;
-    if (!audioManager) {
-      console.error('🔊 No audio manager');
-      setAudioInitializing(false);
-      return;
-    }
 
-    // CRITICAL: Everything synchronous within user tap
-    const success = audioManager.initializeAudioContext();
-    
-    if (success) {
-      console.log('🔊 AUDIO WORKING - iOS unlock successful');
+    // 🔑 Unlock first, synchronously
+    const mgr = audioManagerRef.current;
+    if (!mgr) return;
+    const ok = mgr.initializeAudioContext();
+
+    // Then UI feedback
+    setAudioInitializing(true);
+    if (navigator.vibrate) navigator.vibrate(50);
+
+    if (ok) {
+      setMobileAudioEnabled(true);
+      setAudioEnabled(true);
     } else {
-      console.error('🔊 AUDIO FAILED - iOS unlock failed');
-      // Rollback on failure
       setMobileAudioEnabled(false);
       setAudioEnabled(false);
     }
-    
+
     setAudioInitializing(false);
   };
 

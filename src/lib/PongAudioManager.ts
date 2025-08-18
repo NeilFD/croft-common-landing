@@ -29,122 +29,100 @@ export class PongAudioManager {
   // Simplified audio state: INACTIVE | UNLOCKING | READY | FAILED
   private audioState: 'INACTIVE' | 'UNLOCKING' | 'READY' | 'FAILED' = 'INACTIVE';
 
-  // iOS-Compliant Audio Unlock Pattern
   initializeAudioContext(): boolean {
     if (this.audioState !== 'INACTIVE') {
-      console.log('🔊 Audio already initializing/ready, state:', this.audioState);
       return this.audioState === 'READY';
     }
 
     this.audioState = 'UNLOCKING';
-    console.log('🔊 iOS audio unlock starting...');
-    
+
     try {
-      // 1. Create AudioContext with iOS fallback
-      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioContextClass) {
-        throw new Error('AudioContext not supported');
-      }
-      
-      this.audioContext = new AudioContextClass({ latencyHint: 'interactive' });
-      console.log('🔊 AudioContext created, state:', this.audioContext.state);
-      
-      // 2. Create master gain chain IMMEDIATELY
+      const AC = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AC) throw new Error('AudioContext not supported');
+
+      this.audioContext = new AC({ latencyHint: 'interactive' });
+
+      // Build chain immediately
       this.masterGain = this.audioContext.createGain();
-      this.musicGain = this.audioContext.createGain();
-      this.sfxGain = this.audioContext.createGain();
-      
-      // Connect gains
+      this.musicGain  = this.audioContext.createGain();
+      this.sfxGain    = this.audioContext.createGain();
+
       this.musicGain.connect(this.masterGain);
       this.sfxGain.connect(this.masterGain);
       this.masterGain.connect(this.audioContext.destination);
-      
-      // Set volumes
+
       this.masterGain.gain.setValueAtTime(0.9, this.audioContext.currentTime);
       this.musicGain.gain.setValueAtTime(0.7, this.audioContext.currentTime);
       this.sfxGain.gain.setValueAtTime(1.0, this.audioContext.currentTime);
 
-      // 3. CRITICAL: Resume AudioContext SYNCHRONOUSLY
-      this.audioContext.resume();
-      
-      // 4. Create SILENT oscillator for warmup (per checklist)
+      // Resume synchronously (do not await)
+      try { this.audioContext.resume(); } catch {}
+
+      // Warmup: silent osc
       const osc = this.audioContext.createOscillator();
-      const g = this.audioContext.createGain();
-      g.gain.value = 0; // SILENT
-      osc.connect(g);
-      g.connect(this.audioContext.destination);
-      osc.start(0);
-      osc.stop(this.audioContext.currentTime + 0.05);
-      
-      // 5. Set up remaining audio chains
-      this.setupAudioChains();
-      
-      // 6. Start background music
-      this.startSimpleBackgroundMusic();
-      
+      const g   = this.audioContext.createGain();
+      g.gain.value = 0;
+      osc.connect(g); g.connect(this.audioContext.destination);
+      osc.start(0); osc.stop(this.audioContext.currentTime + 0.05);
+
+      // Ensure music path gain exists
+      this.setupAudioChains?.(); // must create this.oscillatorGain and connect to this.musicGain
+
+      // ✅ Set READY **before** starting music
       this.audioState = 'READY';
       this.isInitialized = true;
-      console.log('🔊 iOS audio unlock SUCCESS');
-      
+
+      // Start music now that state is READY
+      this.startSimpleBackgroundMusic();
+
       return true;
-      
-    } catch (error) {
-      console.error('🔊 iOS audio unlock FAILED:', error);
+    } catch (e) {
       this.audioState = 'FAILED';
       return false;
     }
   }
 
-  // Simplified Audio Chain Setup
   private setupAudioChains(): void {
-    if (!this.audioContext || !this.masterGain) return;
+    if (!this.audioContext) return;
 
-    console.log('🔊 Setting up audio chains...');
-    
-    // Oscillator gain for simple music
     this.oscillatorGain = this.audioContext.createGain();
     this.oscillatorGain.connect(this.musicGain);
-    this.oscillatorGain.gain.setValueAtTime(0.3, this.audioContext.currentTime);
-
-    console.log('🔊 Audio chains ready');
+    this.oscillatorGain.gain.setValueAtTime(0.0, this.audioContext.currentTime);
   }
 
 
-  // Background Music
   private startSimpleBackgroundMusic(): void {
-    if (!this.audioContext || !this.oscillatorGain || this.audioState !== 'READY') return;
+    // Relax guard: allow start when context + gain exist
+    if (!this.audioContext || !this.oscillatorGain) return;
 
-    console.log('🔊 Starting background music...');
-    
-    this.currentOscillator = this.audioContext.createOscillator();
+    const ctx = this.audioContext;
+    this.currentOscillator = ctx.createOscillator();
     this.currentOscillator.connect(this.oscillatorGain);
-    
-    const currentTime = this.audioContext.currentTime;
-    
-    // Simple repeating melody
+
+    const t = ctx.currentTime;
+
+    // Simple looped motif (2s)
     const melody = [
-      { freq: 329.63, time: 0.0 },   // E4
-      { freq: 392.00, time: 0.5 },   // G4
-      { freq: 440.00, time: 1.0 },   // A4
-      { freq: 329.63, time: 1.5 },   // E4
+      { freq: 329.63, time: 0.0 },
+      { freq: 392.00, time: 0.5 },
+      { freq: 440.00, time: 1.0 },
+      { freq: 329.63, time: 1.5 },
     ];
-    
-    melody.forEach(({ freq, time }) => {
-      this.currentOscillator!.frequency.setValueAtTime(freq, currentTime + time);
-    });
-    
-    this.oscillatorGain.gain.setValueAtTime(0.3, currentTime);
-    
+    for (const { freq, time } of melody) {
+      this.currentOscillator.frequency.setValueAtTime(freq, t + time);
+    }
+
+    this.oscillatorGain.gain.setValueAtTime(0.3, t);
     this.currentOscillator.type = 'triangle';
-    this.currentOscillator.start(currentTime);
-    this.currentOscillator.stop(currentTime + 2.0);
-    
-    // Keep looping
+
+    // Start slightly after now to avoid zero-time quirks on iOS
+    this.currentOscillator.start(t + 0.001);
+    this.currentOscillator.stop(t + 2.001);
+
     this.currentOscillator.onended = () => {
       this.currentOscillator = null;
-      if (this.audioState === 'READY') {
-        this.startSimpleBackgroundMusic();
-      }
+      // Keep playing as long as context exists
+      if (this.audioContext) this.startSimpleBackgroundMusic();
     };
   }
 
@@ -438,16 +416,10 @@ export class PongAudioManager {
     this.playMusic('gameover', false);
   }
 
-  // iOS Lifecycle Management (Phase 5)
   handleVisibilityChange(): void {
     if (!this.audioContext) return;
-    
-    if (document.hidden) {
-      console.log('🔊 Page hidden - suspending audio context');
-      this.audioContext.suspend();
-    } else if (this.audioState === 'READY') {
-      console.log('🔊 Page visible - resuming audio context');
-      this.audioContext.resume();
+    if (!document.hidden && this.audioContext.state !== 'running') {
+      try { this.audioContext.resume(); } catch {}
     }
   }
 
