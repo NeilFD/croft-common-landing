@@ -76,45 +76,27 @@ const PongGame = ({ onClose }: PongGameProps) => {
     if (audioInitializing) return;
     
     setAudioInitializing(true);
-    console.log('🔊 Mobile audio enable - ROBUST iOS unlock starting...');
+    console.log('🔊 DIRECT iOS unlock - tap handler executing...');
     
-    try {
-      const audioManager = audioManagerRef.current;
-      if (!audioManager) {
-        console.error('🔊 Audio manager not available');
-        setAudioInitializing(false);
-        return;
-      }
-
-      // ROBUST: All synchronous within user gesture - no async operations
-      const success = audioManager.initializeAudioContext();
-      
-      if (success) {
-        console.log('🔊 SUCCESS: Robust iOS audio unlock complete');
-        setMobileAudioEnabled(true);
-        setAudioEnabled(true);
-        
-        // Verify audio state immediately
-        const state = audioManager.getAudioState();
-        console.log('🔊 Audio state:', state);
-        
-        if (audioManager.audioContext) {
-          console.log('🔊 AudioContext state:', audioManager.audioContext.state);
-        }
-        
-      } else {
-        console.error('🔊 FAILED: iOS audio unlock failed');
-        // Provide user feedback for retry
-        setTimeout(() => {
-          alert('Audio initialization failed. Please try again or check your device\'s silent mode.');
-        }, 100);
-      }
-      
-    } catch (error) {
-      console.error('🔊 CRITICAL: Mobile audio enable crashed:', error);
-    } finally {
+    const audioManager = audioManagerRef.current;
+    if (!audioManager) {
+      console.error('🔊 No audio manager');
       setAudioInitializing(false);
+      return;
     }
+
+    // CRITICAL: Everything synchronous within user tap
+    const success = audioManager.initializeAudioContext();
+    
+    if (success) {
+      console.log('🔊 AUDIO WORKING - iOS unlock successful');
+      setMobileAudioEnabled(true);
+      setAudioEnabled(true);
+    } else {
+      console.error('🔊 AUDIO FAILED - iOS unlock failed');
+    }
+    
+    setAudioInitializing(false);
   };
 
   // Handle mouse movement for paddle control
