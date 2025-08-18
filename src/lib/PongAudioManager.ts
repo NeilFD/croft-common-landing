@@ -137,19 +137,19 @@ export class PongAudioManager {
     const notes: ChiptuneNote[] = [];
     const baseDuration = 0.125; // 16th notes at 132 BPM
     
-    // 60-second seamless loop with multiple layers
+    // Classic arcade-style melody with simple, catchy patterns
     const melodyPattern = [
-      // Phrase 1 (8 bars)
-      220, 246.94, 261.63, 329.63, 293.66, 261.63, 246.94, 220, // A-B-C-E-D-C-B-A
-      246.94, 261.63, 293.66, 349.23, 329.63, 293.66, 261.63, 246.94, // B-C-D-F-E-D-C-B
-      261.63, 293.66, 329.63, 392, 349.23, 329.63, 293.66, 261.63, // C-D-E-G-F-E-D-C
-      329.63, 392, 440, 523.25, 440, 392, 329.63, 293.66, // E-G-A-C5-A-G-E-D
+      // Phrase 1 - Simple ascending/descending arpeggios (classic arcade style)
+      220, 261.63, 329.63, 440, 329.63, 261.63, 220, 220, // A-C-E-A-E-C-A-A
+      246.94, 293.66, 369.99, 493.88, 369.99, 293.66, 246.94, 246.94, // B-D-F#-B-F#-D-B-B
+      261.63, 329.63, 392, 523.25, 392, 329.63, 261.63, 261.63, // C-E-G-C5-G-E-C-C
+      220, 261.63, 329.63, 440, 329.63, 261.63, 220, 174.61, // A-C-E-A-E-C-A-F (resolve down)
       
-      // Phrase 2 (8 bars) - variation
-      440, 392, 349.23, 329.63, 293.66, 329.63, 349.23, 392, // A-G-F-E-D-E-F-G
-      392, 349.23, 329.63, 293.66, 261.63, 293.66, 329.63, 349.23, // G-F-E-D-C-D-E-F
-      349.23, 329.63, 293.66, 261.63, 246.94, 261.63, 293.66, 329.63, // F-E-D-C-B-C-D-E
-      293.66, 261.63, 246.94, 220, 246.94, 261.63, 293.66, 220, // D-C-B-A-B-C-D-A
+      // Phrase 2 - More rhythmic, punchy (Pac-Man style)
+      220, 220, 261.63, 293.66, 329.63, 329.63, 293.66, 261.63, // A-A-C-D-E-E-D-C
+      246.94, 246.94, 293.66, 329.63, 369.99, 369.99, 329.63, 293.66, // B-B-D-E-F#-F#-E-D  
+      261.63, 261.63, 329.63, 392, 440, 440, 392, 329.63, // C-C-E-G-A-A-G-E
+      220, 246.94, 261.63, 220, 174.61, 220, 261.63, 220, // A-B-C-A-F-A-C-A (classic ending)
     ];
 
     // Create lead melody
@@ -171,24 +171,24 @@ export class PongAudioManager {
   }
 
   private generateMainLoopB(): ChiptuneTrack {
-    // Variation of main loop with different rhythm and octave jumps
+    // More energetic variation - faster tempo feeling with staccato notes
     const notes: ChiptuneNote[] = [];
     const baseDuration = 0.125;
     
     const melodyPattern = [
-      // More energetic variation with octave jumps
-      220, 440, 329.63, 659.25, 293.66, 587.33, 261.63, 523.25,
-      246.94, 493.88, 261.63, 523.25, 293.66, 587.33, 329.63, 659.25,
-      349.23, 698.46, 329.63, 659.25, 293.66, 587.33, 261.63, 523.25,
-      220, 440, 246.94, 493.88, 261.63, 523.25, 220, 440,
+      // Staccato variation - shorter notes, more space (classic arcade style)
+      220, 0, 261.63, 0, 329.63, 0, 440, 0, // A-pause-C-pause-E-pause-A-pause
+      392, 0, 329.63, 0, 261.63, 0, 220, 0, // G-pause-E-pause-C-pause-A-pause
+      246.94, 0, 293.66, 0, 369.99, 0, 493.88, 0, // B-pause-D-pause-F#-pause-B-pause
+      440, 0, 392, 0, 329.63, 0, 293.66, 0, // A-pause-G-pause-E-pause-D-pause
     ];
 
     melodyPattern.forEach((freq, i) => {
       notes.push({
-        frequency: freq,
-        duration: baseDuration * (i % 4 === 3 ? 4 : 2), // Longer notes every 4th
+        frequency: freq || 1, // Use 1Hz for pauses (effectively silent)
+        duration: baseDuration * 2, // 8th notes
         waveform: 'square',
-        volume: 0.6 + (i % 2) * 0.2 // Alternating volume for rhythm
+        volume: freq === 0 ? 0 : (0.7 + (i % 4) * 0.1) // Silent for pauses, varied volume for notes
       });
     });
 
@@ -354,6 +354,25 @@ export class PongAudioManager {
       gameOverData[i] = Math.sin(freq * 2 * Math.PI * t) * Math.exp(-t * 2) * 0.5;
     }
     this.audioBuffers.set('gameover', gameOverBuffer);
+
+    // Record broken sound - triumphant celebration
+    const recordBuffer = this.audioContext.createBuffer(1, sampleRate * 1.5, sampleRate);
+    const recordData = recordBuffer.getChannelData(0);
+    for (let i = 0; i < recordData.length; i++) {
+      const t = i / sampleRate;
+      const envelope = Math.exp(-t * 1.5); // Longer decay for celebration
+      // Triumphant chord progression: A major triad arpeggios
+      const freq1 = 440 * (1 + Math.sin(t * 4) * 0.1); // A with vibrato
+      const freq2 = 554.37 * (1 + Math.sin(t * 6) * 0.1); // C# with vibrato
+      const freq3 = 659.25 * (1 + Math.sin(t * 8) * 0.1); // E with vibrato
+      
+      const sample1 = Math.sign(Math.sin(2 * Math.PI * freq1 * t)) * 0.3;
+      const sample2 = Math.sign(Math.sin(2 * Math.PI * freq2 * t)) * 0.3;
+      const sample3 = Math.sign(Math.sin(2 * Math.PI * freq3 * t)) * 0.3;
+      
+      recordData[i] = (sample1 + sample2 + sample3) * envelope * 0.6;
+    }
+    this.audioBuffers.set('record_broken', recordBuffer);
 
     console.log('Sound effects generated:', Array.from(this.audioBuffers.keys()));
   }

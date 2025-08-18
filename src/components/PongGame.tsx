@@ -17,6 +17,8 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [showAnonymousModal, setShowAnonymousModal] = useState(false);
   const [pendingScore, setPendingScore] = useState<number | null>(null);
+  const [hasBeatenRecord, setHasBeatenRecord] = useState(false);
+  const [showRecordCelebration, setShowRecordCelebration] = useState(false);
   const audioRef = useRef<HTMLAudioElement>();
   
   const {
@@ -40,6 +42,9 @@ const PongGame = ({ onClose }: PongGameProps) => {
     loading: scoresLoading,
     isAuthenticated
   } = usePongHighScores();
+
+  // Get current high score for display and comparison
+  const currentHighScore = highScores.length > 0 ? highScores[0].score : 0;
 
   // Audio is now handled by the comprehensive chiptune system in PongAudioManager
 
@@ -97,8 +102,26 @@ const PongGame = ({ onClose }: PongGameProps) => {
     // Reset flag when game starts
     if (gameRunning && !gameOver) {
       scoreSubmittedRef.current = false;
+      setHasBeatenRecord(false);
+      setShowRecordCelebration(false);
     }
   }, [gameOver, score, submitScore, gameRunning, isAuthenticated]);
+
+  // Check for high score beating during gameplay
+  useEffect(() => {
+    if (gameStarted && gameRunning && !gameOver && score > 0 && currentHighScore > 0) {
+      if (score > currentHighScore && !hasBeatenRecord) {
+        setHasBeatenRecord(true);
+        setShowRecordCelebration(true);
+        playSound('record_broken');
+        
+        // Hide celebration after 3 seconds
+        setTimeout(() => {
+          setShowRecordCelebration(false);
+        }, 3000);
+      }
+    }
+  }, [score, currentHighScore, hasBeatenRecord, gameStarted, gameRunning, gameOver, playSound]);
 
   const handleAnonymousScoreSubmit = async (playerName: string) => {
     if (pendingScore !== null) {
@@ -171,12 +194,31 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
         {/* Score and level display */}
         {gameStarted && (
-          <div className="absolute top-20 left-4 text-white font-mono space-y-1">
+          <div className="absolute top-20 left-4 text-white font-mono space-y-2">
             <div className="text-2xl">Score: {score}</div>
+            <div className="text-lg opacity-90 border border-white/30 px-2 py-1 rounded bg-black/30">
+              High Score: {currentHighScore}
+            </div>
             <div className="text-sm opacity-70">Speed Level: {speedLevel}</div>
             {speedLevel > 1 && (
               <div className="text-xs opacity-50">Next boost at {Math.ceil(score / 5) * 5} points</div>
             )}
+          </div>
+        )}
+
+        {/* New Record Celebration */}
+        {showRecordCelebration && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
+            <div className="text-center animate-bounce">
+              <div className="text-6xl font-mono font-bold text-yellow-400 drop-shadow-lg animate-pulse">
+                NEW RECORD!
+              </div>
+              <div className="text-2xl font-mono text-white mt-2 opacity-90">
+                🏆 {score} Points! 🏆
+              </div>
+            </div>
+            {/* Screen flash effect */}
+            <div className="absolute inset-0 bg-yellow-400/20 animate-ping"></div>
           </div>
         )}
 
