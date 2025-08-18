@@ -135,7 +135,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
     const prevWebkitTouchCallout = (el.style as any).webkitTouchCallout;
     
-    el.style.touchAction = 'pan-y'; // Allow vertical scrolling but prevent horizontal pan
+    // Start with pan-y for normal scrolling
+    el.style.touchAction = 'pan-y';
     el.style.userSelect = 'none';
     (el.style as any).webkitUserSelect = 'none';
     (el.style as any).webkitTouchCallout = 'none';
@@ -145,6 +146,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       if (isInteractiveElement(e.target)) {
         return;
       }
+      // Switch to no touch restrictions when gesture starts
+      el.style.touchAction = 'none';
       e.preventDefault();
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
@@ -161,6 +164,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       if (isDrawing) {
         e.preventDefault();
         endGesture();
+        // Restore normal scrolling when gesture ends
+        el.style.touchAction = 'pan-y';
       }
     };
 
@@ -223,7 +228,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       style={{ 
-        touchAction: 'pan-y', // Allow vertical scrolling
+        touchAction: isDrawing ? 'none' : 'pan-y', // Dynamic touch action
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none'
