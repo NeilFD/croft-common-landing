@@ -1,18 +1,33 @@
+import { useState } from 'react';
 import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
+import PongGame from './PongGame';
 
 import { commonRoomHeroImages as fallbackCommonRoomImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
 import { commonRoomMenuData } from '@/data/menuData';
 import CroftLogo from './CroftLogo';
+import { useAuth } from '@/hooks/useAuth';
 
 const CommonRoomHeroCarousel = () => {
+  const [showPongGame, setShowPongGame] = useState(false);
+  const { user } = useAuth();
+  
   // Fetch CMS images with fallback to static images
   const { images: commonRoomImages, loading: imagesLoading } = useCMSImages(
     'common-room', 
     'common_room_hero', 
     { fallbackImages: fallbackCommonRoomImages }
   );
+
+  // Check if user is a subscriber by checking if they're authenticated
+  const canPlayGame = !!user;
+
+  const handleLogoClick = () => {
+    if (canPlayGame) {
+      setShowPongGame(true);
+    }
+  };
   
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -26,9 +41,24 @@ const CommonRoomHeroCarousel = () => {
 
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
-        <CroftLogo
-          className="w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
-        />
+        <div 
+          onClick={handleLogoClick}
+          className={`group ${canPlayGame ? 'cursor-pointer' : 'cursor-default'}`}
+          title={canPlayGame ? 'Click to play Pong!' : 'Sign in to play Pong'}
+        >
+          <CroftLogo
+            className={`w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert ${
+              canPlayGame ? 'hover:opacity-70 hover:scale-105' : 'opacity-20'
+            }`}
+          />
+          {canPlayGame && (
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="bg-black/80 text-white px-4 py-2 rounded-lg font-mono text-sm">
+                CLICK TO PLAY PONG
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Page Title Card Overlay */}
@@ -56,6 +86,11 @@ const CommonRoomHeroCarousel = () => {
 
       {/* Menu Button */}
       <MenuButton pageType="common-room" menuData={commonRoomMenuData} forceCafeAccent />
+
+      {/* Pong Game Modal */}
+      {showPongGame && (
+        <PongGame onClose={() => setShowPongGame(false)} />
+      )}
     </div>
   );
 };

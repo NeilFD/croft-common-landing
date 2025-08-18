@@ -916,6 +916,33 @@ export type Database = {
         }
         Relationships: []
       }
+      pong_scores: {
+        Row: {
+          created_at: string
+          game_duration: number
+          id: string
+          player_name: string
+          score: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_duration?: number
+          id?: string
+          player_name: string
+          score: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_duration?: number
+          id?: string
+          player_name?: string
+          score?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           birthday: string | null
