@@ -93,8 +93,13 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const el = containerRef.current as HTMLElement;
     const prevTouchAction = el.style.touchAction;
     const prevUserSelect = el.style.userSelect;
+    const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
+    const prevWebkitTouchCallout = (el.style as any).webkitTouchCallout;
+    
     el.style.touchAction = 'none';
     el.style.userSelect = 'none';
+    (el.style as any).webkitUserSelect = 'none';
+    (el.style as any).webkitTouchCallout = 'none';
 
     const ts = (e: TouchEvent) => {
       e.preventDefault();
@@ -138,6 +143,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     return () => {
       el.style.touchAction = prevTouchAction;
       el.style.userSelect = prevUserSelect;
+      (el.style as any).webkitUserSelect = prevWebkitUserSelect;
+      (el.style as any).webkitTouchCallout = prevWebkitTouchCallout;
       el.removeEventListener('touchstart', ts);
       el.removeEventListener('touchmove', tm);
       el.removeEventListener('touchend', te);
@@ -162,7 +169,12 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
-      style={{ touchAction: 'none' }}
+      style={{ 
+        touchAction: 'none',
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none'
+      }}
     />
   );
 };

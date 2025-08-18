@@ -49,21 +49,21 @@ const CommonRoomHeroCarousel = () => {
 
       {/* Secret gesture cue - only visible to authenticated users */}
       {canPlayGame && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center mt-12 z-10 pointer-events-none">
-          <div className="text-6xl opacity-20 text-background mb-4 transition-opacity duration-300 hover:opacity-40">
+        <div className="absolute inset-0 flex flex-col items-center justify-center mt-12 z-10">
+          <div className="text-6xl sm:text-7xl opacity-20 text-background mb-4 transition-opacity duration-300 hover:opacity-40 pointer-events-none">
             ⑦
           </div>
-          <div className="text-xs opacity-30 text-background font-mono tracking-wider">
+          <div className="text-xs sm:text-sm opacity-30 text-background font-mono tracking-wider pointer-events-none">
             DRAW THE SECRET SYMBOL
           </div>
         </div>
       )}
 
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10 pointer-events-none">
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-5 pointer-events-none">
         <div className="group">
           <CroftLogo
-            className="w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert"
+            className="w-[18rem] h-[18rem] sm:w-[22rem] sm:h-[22rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert"
           />
         </div>
       </div>
