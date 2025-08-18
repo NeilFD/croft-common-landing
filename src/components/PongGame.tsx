@@ -226,17 +226,17 @@ const PongGame = ({ onClose }: PongGameProps) => {
         {!gameStarted && !showHighScores && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
             <h1 className="text-4xl font-mono mb-8 tracking-wider">PONG</h1>
-            <div className="space-y-4">
+            <div className="flex flex-col items-center space-y-4 w-full max-w-xs">
               <Button
                 onClick={handleStartGame}
-                className="bg-white text-black hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
+                className="w-full bg-white text-black hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
               >
                 START GAME
               </Button>
               <Button
                 onClick={handleShowHighScores}
                 variant="outline"
-                className="border-white text-black bg-white hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
+                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
               >
                 <Trophy className="h-4 w-4 mr-2" />
                 HIGH SCORES
