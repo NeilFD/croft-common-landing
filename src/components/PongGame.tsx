@@ -299,7 +299,8 @@ const PongGame = ({ onClose }: PongGameProps) => {
         style={{ 
           maxWidth: '95vw', 
           maxHeight: '60vh',
-          aspectRatio: '2/1'
+          aspectRatio: '2/1',
+          pointerEvents: gameStarted && gameRunning ? 'auto' : 'none'
         }}
       />
       
