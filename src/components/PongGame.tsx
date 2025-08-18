@@ -3,6 +3,7 @@ import { X, Trophy, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { usePongGame } from '@/hooks/usePongGame';
 import { usePongHighScores } from '@/hooks/usePongHighScores';
+import { useAuth } from '@/hooks/useAuth';
 import CroftLogo from './CroftLogo';
 import AnonymousNameModal from './AnonymousNameModal';
 
@@ -50,6 +51,8 @@ const PongGame = ({ onClose }: PongGameProps) => {
     loading: scoresLoading,
     isAuthenticated
   } = usePongHighScores();
+  
+  const { loading: authLoading } = useAuth();
 
   // Get current high score for display and comparison
   const currentHighScore = highScores.length > 0 ? highScores[0].score : 0;
@@ -71,81 +74,63 @@ const PongGame = ({ onClose }: PongGameProps) => {
   };
 
   const handleMobileAudioEnable = async () => {
-    if (audioInitializing) return; // Prevent multiple attempts
+    if (audioInitializing) return;
     
     setAudioInitializing(true);
-    console.log('🎵 Mobile audio enable clicked, starting initialization...');
-    console.log('🎵 Current game state - running:', gameRunning, 'gameOver:', gameOver, 'gameStarted:', gameStarted);
+    console.log('🎵 Mobile audio enable clicked - iPhone detected');
     
     try {
-      // Force user interaction for iOS Safari
-      const tempAudio = new Audio();
-      tempAudio.volume = 0;
-      tempAudio.play().catch(() => {});
-      
-      // Initialize audio on mobile when user explicitly enables it
-      const audioInitialized = await initializeAudio();
-      console.log('🎵 Audio initialization result:', audioInitialized);
+      // iOS Safari requires synchronous AudioContext creation within user gesture
+      // Create AudioContext immediately within the button click event
+      const audioInitialized = await new Promise<boolean>((resolve) => {
+        // Force immediate AudioContext creation for iOS
+        const tempAudio = new Audio();
+        tempAudio.volume = 0;
+        tempAudio.play().catch(() => {});
+        
+        // Initialize audio synchronously within the user gesture
+        initializeAudio().then((result) => {
+          console.log('🎵 Synchronous audio init result:', result);
+          resolve(result);
+        }).catch((error) => {
+          console.error('🎵 Synchronous audio init failed:', error);
+          resolve(false);
+        });
+      });
       
       if (audioInitialized && audioManagerRef.current) {
-        console.log('🎵 Audio manager available, setting states...');
+        console.log('🎵 Audio context created, resuming and starting music...');
+        
+        // Immediately resume AudioContext within the user gesture
+        if (audioManagerRef.current.audioContext?.state !== 'running') {
+          await audioManagerRef.current.audioContext?.resume();
+          console.log('🎵 AudioContext resumed, state:', audioManagerRef.current.audioContext?.state);
+        }
+        
+        // Set states immediately
         setMobileAudioEnabled(true);
         setAudioEnabled(true);
         
-        // Force resume AudioContext if suspended
-        if (audioManagerRef.current.audioContext?.state === 'suspended') {
-          console.log('🎵 AudioContext suspended, resuming...');
-          await audioManagerRef.current.audioContext.resume();
-          console.log('🎵 AudioContext state after resume:', audioManagerRef.current.audioContext.state);
-          
-          // Wait for state change
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-        
-        // Wait for a bit longer to ensure AudioContext is fully ready, then try multiple times
-        let attempts = 0;
-        const maxAttempts = 3;
-        
-        const tryPlayMusic = async () => {
-          attempts++;
-          console.log(`🎵 Attempt ${attempts}/${maxAttempts} to play music...`);
-          
-          if (audioManagerRef.current?.audioContext?.state === 'running') {
-            console.log('🎵 AudioContext running, starting music based on game state...');
-            console.log('🎵 Game state - running:', gameRunning, 'gameOver:', gameOver);
-            
-            try {
-              if (gameRunning && !gameOver) {
-                console.log('🎵 Playing main music...');
-                await audioManagerRef.current.playMusic('main', true);
-              } else if (gameOver) {
-                console.log('🎵 Playing gameover music...');
-                await audioManagerRef.current.playMusic('gameover', false);
-              } else {
-                console.log('🎵 Playing intro music...');
-                await audioManagerRef.current.playMusic('intro', false);
-              }
-              console.log('🎵 Music playback initiated successfully');
-            } catch (musicError) {
-              console.error('🎵 Error playing music:', musicError);
-              if (attempts < maxAttempts) {
-                setTimeout(tryPlayMusic, 200);
-              }
+        // Start music immediately within the same user gesture
+        if (audioManagerRef.current.audioContext?.state === 'running') {
+          try {
+            if (gameRunning && !gameOver) {
+              await audioManagerRef.current.playMusic('main', true);
+            } else if (gameOver) {
+              await audioManagerRef.current.playMusic('gameover', false);
+            } else {
+              await audioManagerRef.current.playMusic('intro', false);
             }
-          } else {
-            console.warn('🎵 AudioContext not running, state:', audioManagerRef.current?.audioContext?.state);
-            if (attempts < maxAttempts) {
-              setTimeout(tryPlayMusic, 200);
-            }
+            console.log('🎵 Music started successfully on iPhone');
+          } catch (musicError) {
+            console.error('🎵 Music start failed:', musicError);
           }
-        };
-        
-        setTimeout(tryPlayMusic, 300);
+        }
       } else {
-        console.warn('🎵 Audio initialization failed or audio manager not available');
+        console.warn('🎵 Audio initialization failed');
       }
     } catch (error) {
-      console.error('🎵 Mobile audio initialization failed:', error);
+      console.error('🎵 Mobile audio enable failed:', error);
     } finally {
       setAudioInitializing(false);
     }
@@ -199,23 +184,32 @@ const PongGame = ({ onClose }: PongGameProps) => {
       scoreSubmittedRef.current = true;
       playGameOverMusic();
       
-      // Add longer delay to ensure auth state is properly loaded
-      setTimeout(() => {
-        console.log('🏆 Checking score submission - isAuthenticated:', isAuthenticated, 'score:', score);
-        console.log('🏆 High scores loaded:', highScores.length, 'qualifying:', isQualifyingHighScore(score));
+      // Wait for auth state to fully load, then check submission logic
+      const checkAuthAndSubmit = () => {
+        console.log('🏆 Auth state - loading:', authLoading, 'isAuthenticated:', isAuthenticated);
+        console.log('🏆 Score submission check - score:', score, 'qualifying:', isQualifyingHighScore(score));
+        
+        if (authLoading) {
+          // Auth still loading, wait longer
+          console.log('🏆 Auth still loading, waiting...');
+          setTimeout(checkAuthAndSubmit, 200);
+          return;
+        }
         
         if (isAuthenticated) {
           console.log('🏆 Submitting score for authenticated user');
           submitScore(score);
         } else if (isQualifyingHighScore(score)) {
-          // Only show modal for scores that actually qualify as high scores
-          console.log('🏆 Showing anonymous modal for qualifying high score');
+          // Only show modal for unauthenticated users with qualifying high scores
+          console.log('🏆 Showing anonymous modal - user not authenticated and score qualifies');
           setPendingScore(score);
           setShowAnonymousModal(true);
         } else {
-          console.log('🏆 Score does not qualify for high score list');
+          console.log('🏆 Score does not qualify for high score list or user is authenticated');
         }
-      }, 500);
+      };
+      
+      setTimeout(checkAuthAndSubmit, 300);
     }
     
     // Reset flags when game starts
@@ -230,7 +224,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
         setInitialHighScore(currentHighScore);
       }
     }
-  }, [gameOver, score, submitScore, gameRunning, isAuthenticated]);
+  }, [gameOver, score, submitScore, gameRunning, isAuthenticated, authLoading, isQualifyingHighScore, playGameOverMusic]);
 
   // Check for high score beating during gameplay - only once per game session
   useEffect(() => {

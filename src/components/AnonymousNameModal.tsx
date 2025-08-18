@@ -55,22 +55,42 @@ const AnonymousNameModal = ({ onSubmit, onCancel, score }: AnonymousNameModalPro
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label htmlFor="playerName" className="text-sm font-mono uppercase tracking-wider">
-              Enter Your Name for High Score
+              Enter Your Name for New High Score
             </Label>
             <Input
               id="playerName"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onTouchStart={(e) => e.stopPropagation()}
-              onTouchEnd={(e) => e.stopPropagation()}
-              onClick={(e) => e.stopPropagation()}
-              onFocus={(e) => e.stopPropagation()}
+              onTouchStart={(e) => {
+                e.stopPropagation();
+                // Force focus on iOS
+                e.currentTarget.focus();
+              }}
+              onTouchEnd={(e) => {
+                e.stopPropagation();
+                e.currentTarget.focus();
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.currentTarget.focus();
+              }}
+              onFocus={(e) => {
+                e.stopPropagation();
+                console.log('Input focused on mobile');
+              }}
               placeholder="Your name..."
-              className="mt-2 font-mono touch-manipulation select-auto min-h-[48px] text-base"
+              className="mt-2 font-mono touch-manipulation select-text min-h-[52px] text-base border-2 border-black focus:border-black focus:ring-2 focus:ring-black/20"
               maxLength={30}
               required
               autoFocus
+              autoComplete="off"
+              readOnly={false}
+              style={{ 
+                WebkitUserSelect: 'text',
+                WebkitTouchCallout: 'default',
+                WebkitTapHighlightColor: 'rgba(0,0,0,0.1)'
+              }}
             />
           </div>
           
