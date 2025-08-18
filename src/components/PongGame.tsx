@@ -20,7 +20,6 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const audioRef = useRef<HTMLAudioElement>();
   
   const {
-    gameState,
     score,
     speedLevel,
     gameRunning,
@@ -29,7 +28,9 @@ const PongGame = ({ onClose }: PongGameProps) => {
     pauseGame,
     resetGame,
     updatePaddlePosition,
-    playSound
+    playSound,
+    toggleMute,
+    playGameOverMusic
   } = usePongGame(canvasRef);
 
   const { 
@@ -40,78 +41,11 @@ const PongGame = ({ onClose }: PongGameProps) => {
     isAuthenticated
   } = usePongHighScores();
 
-  // Initialize background music with retro melody
-  useEffect(() => {
-    if (audioEnabled && gameStarted && gameRunning) {
-      try {
-        const audioContext = new AudioContext();
-        const masterGain = audioContext.createGain();
-        masterGain.connect(audioContext.destination);
-        masterGain.gain.setValueAtTime(0.03, audioContext.currentTime);
-
-        // Create a retro melody sequence
-        const melody = [
-          { freq: 330, duration: 0.5 }, // E4
-          { freq: 370, duration: 0.5 }, // F#4
-          { freq: 415, duration: 0.5 }, // G#4
-          { freq: 330, duration: 0.5 }, // E4
-          { freq: 277, duration: 0.5 }, // C#4
-          { freq: 311, duration: 0.5 }, // D#4
-          { freq: 277, duration: 1.0 }, // C#4 (longer)
-          { freq: 247, duration: 1.0 }, // B3 (longer)
-        ];
-
-        let currentTime = audioContext.currentTime;
-        const totalDuration = melody.reduce((sum, note) => sum + note.duration, 0);
-
-        const playMelody = () => {
-          melody.forEach((note) => {
-            // Main oscillator
-            const osc = audioContext.createOscillator();
-            const noteGain = audioContext.createGain();
-            
-            osc.connect(noteGain);
-            noteGain.connect(masterGain);
-            
-            osc.frequency.setValueAtTime(note.freq, currentTime);
-            osc.type = 'square';
-            
-            // Envelope for each note
-            noteGain.gain.setValueAtTime(0, currentTime);
-            noteGain.gain.linearRampToValueAtTime(0.8, currentTime + 0.05);
-            noteGain.gain.exponentialRampToValueAtTime(0.1, currentTime + note.duration - 0.05);
-            noteGain.gain.linearRampToValueAtTime(0, currentTime + note.duration);
-            
-            osc.start(currentTime);
-            osc.stop(currentTime + note.duration);
-            
-            currentTime += note.duration;
-          });
-        };
-
-        // Play melody and set up loop
-        playMelody();
-        const loopInterval = setInterval(() => {
-          currentTime = audioContext.currentTime;
-          playMelody();
-        }, totalDuration * 1000);
-
-        return () => {
-          clearInterval(loopInterval);
-          try {
-            audioContext.close();
-          } catch (e) {
-            // Ignore cleanup errors
-          }
-        };
-      } catch (e) {
-        console.warn('Background music initialization failed:', e);
-      }
-    }
-  }, [audioEnabled, gameStarted, gameRunning]);
+  // Audio is now handled by the comprehensive chiptune system in PongAudioManager
 
   const toggleAudio = () => {
-    setAudioEnabled(!audioEnabled);
+    const newMutedState = toggleMute();
+    setAudioEnabled(!newMutedState);
   };
 
   // Handle mouse movement for paddle control
@@ -150,12 +84,11 @@ const PongGame = ({ onClose }: PongGameProps) => {
   useEffect(() => {
     if (gameOver && score > 0 && !scoreSubmittedRef.current) {
       scoreSubmittedRef.current = true;
+      playGameOverMusic();
       
       if (isAuthenticated) {
-        // Authenticated user - submit directly
         submitScore(score);
       } else {
-        // Anonymous user - show name input modal
         setPendingScore(score);
         setShowAnonymousModal(true);
       }

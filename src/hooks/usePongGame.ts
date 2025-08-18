@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import type { PongAudioManager } from '../lib/PongAudioManager';
 
 interface GameState {
   ball: {
@@ -40,47 +41,21 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
   const animationFrameRef = useRef<number>();
   const gameStateRef = useRef<GameState>();
   const startTimeRef = useRef<number>();
-  const audioContextRef = useRef<AudioContext>();
-  const soundEffectsRef = useRef<{ [key: string]: AudioBuffer }>({});
+  const audioManagerRef = useRef<PongAudioManager>();
 
-  // Initialize audio context and sound effects
+  // Initialize comprehensive chiptune audio system
   const initializeAudio = useCallback(async () => {
     try {
-      audioContextRef.current = new AudioContext();
-      
-      // Create simple sound effects using oscillators
-      const createBeep = (frequency: number, duration: number) => {
-        const sampleRate = audioContextRef.current!.sampleRate;
-        const length = sampleRate * duration;
-        const buffer = audioContextRef.current!.createBuffer(1, length, sampleRate);
-        const data = buffer.getChannelData(0);
-        
-        for (let i = 0; i < length; i++) {
-          const envelope = Math.max(0, 1 - (i / length)); // Fade out envelope
-          data[i] = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.1 * envelope;
-        }
-        
-        return buffer;
-      };
-      
-      soundEffectsRef.current = {
-        paddle: createBeep(440, 0.1),
-        score: createBeep(660, 0.2),
-        speedUp: createBeep(880, 0.3),
-        gameOver: createBeep(220, 0.5)
-      };
+      const { PongAudioManager } = await import('../lib/PongAudioManager');
+      audioManagerRef.current = new PongAudioManager();
+      await audioManagerRef.current.initialize();
     } catch (error) {
       console.warn('Audio initialization failed:', error);
     }
   }, []);
 
   const playSound = useCallback((soundName: string) => {
-    if (!audioContextRef.current || !soundEffectsRef.current[soundName]) return;
-    
-    const source = audioContextRef.current.createBufferSource();
-    source.buffer = soundEffectsRef.current[soundName];
-    source.connect(audioContextRef.current.destination);
-    source.start();
+    audioManagerRef.current?.playSoundEffect(soundName);
   }, []);
 
   const initializeGame = useCallback(() => {
@@ -188,6 +163,11 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       
       setSpeedLevel(state.speedLevel);
       playSound('speedUp');
+      
+      // Switch to B-section music variation occasionally
+      if (state.speedLevel % 3 === 0) {
+        audioManagerRef.current?.switchMainLoop();
+      }
     }
 
     // Move ball
@@ -256,6 +236,7 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     if (state.ball.x < 0) {
       setGameOver(true);
       setGameRunning(false);
+      audioManagerRef.current?.playMusic('gameover', false);
       playSound('gameOver');
     }
 
@@ -277,30 +258,39 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
   }, [gameRunning, updateGame, draw]);
 
   const startGame = useCallback(() => {
-    if (!gameStateRef.current) {
-      initializeGame();
-    }
+    if (!canvasRef.current) return;
+    
+    initializeGame();
     setGameRunning(true);
     setGameOver(false);
-    if (!startTimeRef.current) {
-      startTimeRef.current = Date.now();
-      initializeAudio();
-    }
-  }, [initializeGame, initializeAudio]);
+    setScore(0);
+    startTimeRef.current = Date.now();
+    
+    // Initialize audio and play intro then transition to main loop
+    initializeAudio().then(() => {
+      audioManagerRef.current?.playMusic('intro', false);
+      setTimeout(() => {
+        audioManagerRef.current?.playMusic('main', true);
+      }, 3000); // 3 second intro
+    });
+    
+    gameLoop();
+  }, [canvasRef, initializeGame, gameLoop, initializeAudio]);
 
   const pauseGame = useCallback(() => {
     setGameRunning(false);
+    audioManagerRef.current?.stopMusic();
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
   }, []);
 
   const resetGame = useCallback(() => {
-    setScore(0);
     setGameRunning(false);
     setGameOver(false);
+    setScore(0);
     setSpeedLevel(1);
-    startTimeRef.current = undefined;
+    audioManagerRef.current?.stopMusic();
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
     }
@@ -323,6 +313,31 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     state.playerPaddle.y = newY;
   }, []);
 
+  // Additional audio controls
+  const setMusicVolume = useCallback((volume: number) => {
+    audioManagerRef.current?.setMusicVolume(volume);
+  }, []);
+
+  const setSFXVolume = useCallback((volume: number) => {
+    audioManagerRef.current?.setSFXVolume(volume);
+  }, []);
+
+  const toggleMute = useCallback(() => {
+    return audioManagerRef.current?.toggleMute() || false;
+  }, []);
+
+  const switchMusicLoop = useCallback(() => {
+    audioManagerRef.current?.switchMainLoop();
+  }, []);
+
+  const playVictoryMusic = useCallback(() => {
+    audioManagerRef.current?.playMusic('victory', false);
+  }, []);
+
+  const playGameOverMusic = useCallback(() => {
+    audioManagerRef.current?.playMusic('gameover', false);
+  }, []);
+
   // Start game loop when game is running
   useEffect(() => {
     if (gameRunning) {
@@ -342,8 +357,17 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     draw();
   }, [initializeGame, draw]);
 
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      audioManagerRef.current?.cleanup();
+    };
+  }, []);
+
   return {
-    gameState: gameStateRef.current,
     score,
     speedLevel,
     gameRunning,
@@ -353,5 +377,11 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     resetGame,
     updatePaddlePosition,
     playSound,
+    setMusicVolume,
+    setSFXVolume,
+    toggleMute,
+    switchMusicLoop,
+    playVictoryMusic,
+    playGameOverMusic,
   };
 };
