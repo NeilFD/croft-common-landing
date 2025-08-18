@@ -28,6 +28,29 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     endGesture
   } = useGestureDetection(handleGestureSuccess);
 
+  const isInteractiveElement = useCallback((target: EventTarget | null): boolean => {
+    if (!target) return false;
+    const element = target as HTMLElement;
+    
+    // Check if target or any parent is interactive
+    let current = element;
+    while (current && current !== document.body) {
+      const tagName = current.tagName.toLowerCase();
+      const role = current.getAttribute('role');
+      const isButton = tagName === 'button' || role === 'button';
+      const isLink = tagName === 'a';
+      const isInput = ['input', 'textarea', 'select'].includes(tagName);
+      const hasPointerEvents = getComputedStyle(current).pointerEvents !== 'none';
+      const isClickable = current.onclick !== null || current.getAttribute('onclick');
+      
+      if ((isButton || isLink || isInput || isClickable) && hasPointerEvents) {
+        return true;
+      }
+      current = current.parentElement as HTMLElement;
+    }
+    return false;
+  }, []);
+
   const getEventPosition = useCallback((event: React.TouchEvent | React.MouseEvent | TouchEvent | MouseEvent) => {
     const container = containerRef?.current || overlayRef.current;
     const rect = container?.getBoundingClientRect();
@@ -51,29 +74,43 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
 
   // Touch events (mobile)
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
+    // Allow interactive elements to function normally
+    if (isInteractiveElement(event.target)) {
+      return;
+    }
+    
     event.preventDefault();
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
-  }, [getEventPosition, startGesture]);
+  }, [getEventPosition, startGesture, isInteractiveElement]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent) => {
-    event.preventDefault();
-    if (!isDrawing) return;
-    const { x, y } = getEventPosition(event);
-    addPoint(x, y);
+    // Only prevent default if we're actively drawing a gesture
+    if (isDrawing) {
+      event.preventDefault();
+      const { x, y } = getEventPosition(event);
+      addPoint(x, y);
+    }
   }, [getEventPosition, addPoint, isDrawing]);
 
   const handleTouchEnd = useCallback((event: React.TouchEvent) => {
-    event.preventDefault();
-    endGesture();
-  }, [endGesture]);
+    if (isDrawing) {
+      event.preventDefault();
+      endGesture();
+    }
+  }, [endGesture, isDrawing]);
 
   // Mouse events (desktop)
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    // Allow interactive elements to function normally
+    if (isInteractiveElement(event.target)) {
+      return;
+    }
+    
     event.preventDefault();
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
-  }, [getEventPosition, startGesture]);
+  }, [getEventPosition, startGesture, isInteractiveElement]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     if (!isDrawing) return;
@@ -83,9 +120,11 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   }, [getEventPosition, addPoint, isDrawing]);
 
   const handleMouseUp = useCallback((event: React.MouseEvent) => {
-    event.preventDefault();
-    endGesture();
-  }, [endGesture]);
+    if (isDrawing) {
+      event.preventDefault();
+      endGesture();
+    }
+  }, [endGesture, isDrawing]);
 
   // Attach listeners to provided container instead of overlay
   useEffect(() => {
@@ -96,28 +135,40 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
     const prevWebkitTouchCallout = (el.style as any).webkitTouchCallout;
     
-    el.style.touchAction = 'none';
+    el.style.touchAction = 'pan-y'; // Allow vertical scrolling but prevent horizontal pan
     el.style.userSelect = 'none';
     (el.style as any).webkitUserSelect = 'none';
     (el.style as any).webkitTouchCallout = 'none';
 
     const ts = (e: TouchEvent) => {
+      // Allow interactive elements to function normally
+      if (isInteractiveElement(e.target)) {
+        return;
+      }
       e.preventDefault();
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
     const tm = (e: TouchEvent) => {
-      e.preventDefault();
-      if (!isDrawing) return;
-      const { x, y } = getEventPosition(e);
-      addPoint(x, y);
+      // Only prevent default if we're actively drawing a gesture
+      if (isDrawing) {
+        e.preventDefault();
+        const { x, y } = getEventPosition(e);
+        addPoint(x, y);
+      }
     };
     const te = (e: TouchEvent) => {
-      e.preventDefault();
-      endGesture();
+      if (isDrawing) {
+        e.preventDefault();
+        endGesture();
+      }
     };
 
     const md = (e: MouseEvent) => {
+      // Allow interactive elements to function normally
+      if (isInteractiveElement(e.target)) {
+        return;
+      }
       e.preventDefault();
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
@@ -129,8 +180,10 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       addPoint(x, y);
     };
     const mu = (e: MouseEvent) => {
-      e.preventDefault();
-      endGesture();
+      if (isDrawing) {
+        e.preventDefault();
+        endGesture();
+      }
     };
 
     el.addEventListener('touchstart', ts, { passive: false });
@@ -152,7 +205,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       el.removeEventListener('mousemove', mm);
       el.removeEventListener('mouseup', mu);
     };
-  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isDrawing]);
+  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isDrawing, isInteractiveElement]);
 
   // If containerRef is provided, don't render overlay - gesture detection happens on the container
   if (containerRef) {
@@ -170,7 +223,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       style={{ 
-        touchAction: 'none',
+        touchAction: 'pan-y', // Allow vertical scrolling
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none'
