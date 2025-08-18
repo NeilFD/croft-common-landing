@@ -24,14 +24,9 @@ const CommonRoomHeroCarousel = () => {
     { fallbackImages: fallbackCommonRoomImages }
   );
 
-  // Check if user is a subscriber by checking if they're authenticated
-  const canPlayGame = !!user;
-
-  // Handle gesture completion to trigger Pong game
+  // Handle gesture completion to trigger Pong game - now available to all users
   const handleGestureComplete = () => {
-    if (canPlayGame) {
-      setShowPongGame(true);
-    }
+    setShowPongGame(true);
   };
 
   // Initialize gesture detection
@@ -47,17 +42,15 @@ const CommonRoomHeroCarousel = () => {
         }}
       />
 
-      {/* Secret gesture cue - only visible to authenticated users */}
-      {canPlayGame && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center mt-12 z-10">
-          <div className="text-6xl sm:text-7xl opacity-20 text-background mb-4 transition-opacity duration-300 hover:opacity-40 pointer-events-none">
-            ⑦
-          </div>
-          <div className="text-xs sm:text-sm opacity-30 text-background font-mono tracking-wider pointer-events-none">
-            DRAW THE SECRET SYMBOL
-          </div>
+      {/* Secret gesture cue - visible to all users who reach this page */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center mt-12 z-10">
+        <div className="text-6xl sm:text-7xl opacity-20 text-background mb-4 transition-opacity duration-300 hover:opacity-40 pointer-events-none">
+          ⑦
         </div>
-      )}
+        <div className="text-xs sm:text-sm opacity-30 text-background font-mono tracking-wider pointer-events-none">
+          DRAW THE SECRET SYMBOL
+        </div>
+      </div>
 
       {/* Fixed watermark overlay */}
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-5 pointer-events-none">

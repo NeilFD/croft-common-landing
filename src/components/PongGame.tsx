@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { usePongGame } from '@/hooks/usePongGame';
 import { usePongHighScores } from '@/hooks/usePongHighScores';
 import CroftLogo from './CroftLogo';
+import AnonymousNameModal from './AnonymousNameModal';
 
 interface PongGameProps {
   onClose: () => void;
@@ -14,6 +15,8 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const [showHighScores, setShowHighScores] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
+  const [showAnonymousModal, setShowAnonymousModal] = useState(false);
+  const [pendingScore, setPendingScore] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement>();
   
   const {
@@ -31,8 +34,10 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
   const { 
     highScores, 
-    submitScore, 
-    loading: scoresLoading 
+    submitScore,
+    requestAnonymousScore,
+    loading: scoresLoading,
+    isAuthenticated
   } = usePongHighScores();
 
   // Initialize background music with retro melody
@@ -145,14 +150,35 @@ const PongGame = ({ onClose }: PongGameProps) => {
   useEffect(() => {
     if (gameOver && score > 0 && !scoreSubmittedRef.current) {
       scoreSubmittedRef.current = true;
-      submitScore(score);
+      
+      if (isAuthenticated) {
+        // Authenticated user - submit directly
+        submitScore(score);
+      } else {
+        // Anonymous user - show name input modal
+        setPendingScore(score);
+        setShowAnonymousModal(true);
+      }
     }
     
     // Reset flag when game starts
     if (gameRunning && !gameOver) {
       scoreSubmittedRef.current = false;
     }
-  }, [gameOver, score, submitScore, gameRunning]);
+  }, [gameOver, score, submitScore, gameRunning, isAuthenticated]);
+
+  const handleAnonymousScoreSubmit = async (playerName: string) => {
+    if (pendingScore !== null) {
+      await requestAnonymousScore(pendingScore, playerName);
+      setPendingScore(null);
+      setShowAnonymousModal(false);
+    }
+  };
+
+  const handleAnonymousScoreCancel = () => {
+    setPendingScore(null);
+    setShowAnonymousModal(false);
+  };
 
   const handleStartGame = () => {
     setGameStarted(true);
@@ -280,7 +306,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
         )}
 
         {/* Game over screen */}
-        {gameOver && gameStarted && (
+        {gameOver && gameStarted && !showAnonymousModal && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/80">
             <h2 className="text-3xl font-mono mb-4 tracking-wider">GAME OVER</h2>
             <p className="text-xl font-mono mb-8">Final Score: {score}</p>
@@ -319,6 +345,15 @@ const PongGame = ({ onClose }: PongGameProps) => {
           </div>
         )}
       </div>
+
+      {/* Anonymous name input modal */}
+      {showAnonymousModal && pendingScore !== null && (
+        <AnonymousNameModal
+          score={pendingScore}
+          onSubmit={handleAnonymousScoreSubmit}
+          onCancel={handleAnonymousScoreCancel}
+        />
+      )}
     </div>
   );
 };

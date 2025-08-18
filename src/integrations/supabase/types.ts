@@ -923,7 +923,7 @@ export type Database = {
           id: string
           player_name: string
           score: number
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -931,7 +931,7 @@ export type Database = {
           id?: string
           player_name: string
           score: number
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -939,7 +939,7 @@ export type Database = {
           id?: string
           player_name?: string
           score?: number
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
