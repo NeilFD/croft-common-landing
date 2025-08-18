@@ -303,33 +303,31 @@ const PongGame = ({ onClose }: PongGameProps) => {
         }}
       />
       
-      {/* UI Overlay */}
-      <div className="absolute inset-0 pointer-events-none">
-        {/* Mobile Audio Enable Button */}
-        {isMobile && !mobileAudioEnabled && gameStarted && (
-          <div className="absolute top-28 left-1/2 transform -translate-x-1/2 pointer-events-auto z-20">
-            <Button
-              onClick={handleMobileAudioEnable}
-              onTouchEnd={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleMobileAudioEnable();
-              }}
-              variant="outline"
-              size="sm"
-              disabled={audioInitializing}
-              className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none shadow-lg min-h-[44px]"
-              style={{
-                animation: audioInitializing ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-              }}
-            >
-              {audioInitializing ? '🔄 Loading...' : '🔊 Turn Audio On'}
-            </Button>
-          </div>
-        )}
+      {/* Mobile Audio Enable Button */}
+      {isMobile && !mobileAudioEnabled && gameStarted && (
+        <div className="absolute top-28 left-1/2 transform -translate-x-1/2 pointer-events-auto z-40">
+          <Button
+            onClick={handleMobileAudioEnable}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleMobileAudioEnable();
+            }}
+            variant="outline"
+            size="sm"
+            disabled={audioInitializing}
+            className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none shadow-lg min-h-[44px]"
+            style={{
+              animation: audioInitializing ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+            }}
+          >
+            {audioInitializing ? '🔄 Loading...' : '🔊 Turn Audio On'}
+          </Button>
+        </div>
+      )}
 
-        {/* Control buttons */}
-        <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto z-30">
+      {/* Control buttons - moved outside pointer-events-none container */}
+      <div className="absolute top-4 right-4 flex gap-2 z-50">
           <Button
             onTouchStart={(e) => {
               console.log('🔊 Audio button touchstart');
@@ -382,8 +380,10 @@ const PongGame = ({ onClose }: PongGameProps) => {
           >
             <X className="h-4 w-4" />
           </Button>
-        </div>
+      </div>
 
+      {/* UI Overlay */}
+      <div className="absolute inset-0 pointer-events-none">
         {/* Score and level display */}
         {gameStarted && (
           <div className="absolute top-16 sm:top-20 left-2 sm:left-4 text-white font-mono space-y-1 sm:space-y-2">
