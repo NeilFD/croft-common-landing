@@ -440,6 +440,20 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     audioManagerRef.current?.switchMainLoop();
   }, []);
 
+  const startGameSilent = useCallback(() => {
+    if (!canvasRef.current) return;
+    
+    console.log('Starting game silently (no audio)...');
+    
+    initializeGame();
+    setGameRunning(true);
+    setGameOver(false);
+    setScore(0);
+    startTimeRef.current = Date.now();
+    
+    gameLoop();
+  }, [canvasRef, initializeGame, gameLoop]);
+
   const playVictoryMusic = useCallback(() => {
     audioManagerRef.current?.playMusic('victory', false);
   }, []);
@@ -484,6 +498,7 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     gameRunning,
     gameOver,
     startGame,
+    startGameSilent,
     pauseGame,
     resetGame,
     updatePaddlePosition,
@@ -494,5 +509,7 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     switchMusicLoop,
     playVictoryMusic,
     playGameOverMusic,
+    initializeAudio,
+    audioManagerRef,
   };
 };

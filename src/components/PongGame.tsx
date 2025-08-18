@@ -21,6 +21,8 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const [showRecordCelebration, setShowRecordCelebration] = useState(false);
   const [showNewHighScoreSet, setShowNewHighScoreSet] = useState(false);
   const [hasShownRecordCelebration, setHasShownRecordCelebration] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileAudioEnabled, setMobileAudioEnabled] = useState(false);
   const audioRef = useRef<HTMLAudioElement>();
   
   const {
@@ -34,7 +36,10 @@ const PongGame = ({ onClose }: PongGameProps) => {
     updatePaddlePosition,
     playSound,
     toggleMute,
-    playGameOverMusic
+    playGameOverMusic,
+    startGameSilent,
+    initializeAudio,
+    audioManagerRef
   } = usePongGame(canvasRef);
 
   const { 
@@ -48,11 +53,41 @@ const PongGame = ({ onClose }: PongGameProps) => {
   // Get current high score for display and comparison
   const currentHighScore = highScores.length > 0 ? highScores[0].score : 0;
 
+  // Detect mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(isMobileDevice);
+    };
+    checkMobile();
+  }, []);
+
   // Audio is now handled by the comprehensive chiptune system in PongAudioManager
 
   const toggleAudio = async () => {
     const newMutedState = toggleMute();
     setAudioEnabled(!newMutedState);
+  };
+
+  const handleMobileAudioEnable = async () => {
+    try {
+      // Initialize audio on mobile when user explicitly enables it
+      const audioInitialized = await initializeAudio();
+      if (audioInitialized) {
+        setMobileAudioEnabled(true);
+        setAudioEnabled(true);
+        // Start playing music if game is running
+        if (gameRunning && !gameOver) {
+          setTimeout(() => {
+            if (audioManagerRef.current?.audioContext?.state === 'running') {
+              audioManagerRef.current?.playMusic('main', true);
+            }
+          }, 200);
+        }
+      }
+    } catch (error) {
+      console.warn('Mobile audio initialization failed:', error);
+    }
   };
 
   // Handle mouse movement for paddle control
@@ -163,12 +198,18 @@ const PongGame = ({ onClose }: PongGameProps) => {
     setGameStarted(true);
     setShowHighScores(false);
     
-    // For mobile: ensure audio is initialized on user interaction
+    // For desktop: initialize audio automatically
+    // For mobile: only if user has enabled audio
     try {
-      await startGame();
+      if (!isMobile || mobileAudioEnabled) {
+        await startGame();
+      } else {
+        // Start game without audio on mobile
+        startGameSilent();
+      }
     } catch (error) {
-      console.warn('Audio initialization failed, continuing without sound:', error);
-      // Continue with game even if audio fails
+      console.warn('Game start failed:', error);
+      startGameSilent();
     }
   };
 
@@ -185,9 +226,14 @@ const PongGame = ({ onClose }: PongGameProps) => {
     setHasShownRecordCelebration(false); // Reset celebration flag
     
     try {
-      await startGame();
+      if (!isMobile || mobileAudioEnabled) {
+        await startGame();
+      } else {
+        startGameSilent();
+      }
     } catch (error) {
-      console.warn('Audio initialization failed, continuing without sound:', error);
+      console.warn('Game restart failed:', error);
+      startGameSilent();
     }
   };
 
@@ -214,6 +260,24 @@ const PongGame = ({ onClose }: PongGameProps) => {
       
       {/* UI Overlay */}
       <div className="absolute inset-0 pointer-events-none">
+        {/* Mobile Audio Enable Button */}
+        {isMobile && !mobileAudioEnabled && gameStarted && (
+          <div className="absolute top-16 right-4 pointer-events-auto z-20">
+            <Button
+              onClick={handleMobileAudioEnable}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleMobileAudioEnable();
+              }}
+              variant="outline"
+              size="sm"
+              className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-3 py-2 touch-manipulation select-none animate-pulse"
+            >
+              🔊 Turn Audio On
+            </Button>
+          </div>
+        )}
+
         {/* Control buttons */}
         <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto z-20">
           <Button
