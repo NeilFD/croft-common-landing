@@ -29,7 +29,7 @@ export class PongAudioManager {
   // Simplified audio state: INACTIVE | UNLOCKING | READY | FAILED
   private audioState: 'INACTIVE' | 'UNLOCKING' | 'READY' | 'FAILED' = 'INACTIVE';
 
-  initializeAudioContext(startBackgroundMusic: boolean = false): boolean {
+  initializeAudioContext(): boolean {
     if (this.audioState !== 'INACTIVE') {
       return this.audioState === 'READY';
     }
@@ -71,11 +71,6 @@ export class PongAudioManager {
       // ✅ Set READY **before** starting music
       this.audioState = 'READY';
       this.isInitialized = true;
-
-      // Start simple background music if requested (for mobile unlock)
-      if (startBackgroundMusic) {
-        this.startSimpleBackgroundMusic();
-      }
 
       return true;
     } catch (e) {
@@ -230,7 +225,7 @@ export class PongAudioManager {
 
     console.log('🔊 Playing music:', trackType, 'loop:', loop);
     
-    // Stop any current music (including simple background)
+    // Stop any current music
     this.stopMusic();
     
     this.currentOscillator = this.audioContext.createOscillator();

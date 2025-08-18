@@ -4,7 +4,6 @@ import GestureOverlay from '@/components/GestureOverlay';
 import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import useGestureDetection from '@/hooks/useGestureDetection';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
@@ -22,9 +21,6 @@ const CommonRoom = () => {
     // Silent-first biometric attempt; UI shows only if needed
     start();
   };
-
-  // Initialize gesture detection using the seven gesture hook
-  const gestureState = useGestureDetection(handleGestureComplete);
 
   useEffect(() => {
     if (allowed) {
@@ -69,8 +65,6 @@ const CommonRoom = () => {
         </div>
       </main>
       {!isCMSMode && <Footer />}
-      
-      {/* Gesture Detection */}
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
       <BiometricUnlockModal
         isOpen={bioOpen}

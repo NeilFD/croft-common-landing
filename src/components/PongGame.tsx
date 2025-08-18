@@ -124,10 +124,10 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const handleMobileAudioEnable = () => {
     if (audioInitializing) return;
 
-    // 🔑 Unlock first, synchronously, and start simple background music
+    // 🔑 Unlock first, synchronously
     const mgr = audioManagerRef.current;
     if (!mgr) return;
-    const ok = mgr.initializeAudioContext(true); // Pass true to start background music
+    const ok = mgr.initializeAudioContext();
 
     // Then UI feedback
     setAudioInitializing(true);
