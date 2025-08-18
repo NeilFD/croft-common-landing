@@ -18,26 +18,34 @@ export class PongAudioManager {
   private musicGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
   private currentMusic: AudioBufferSourceNode | null = null;
+  private currentOscillator: OscillatorNode | null = null;
+  private oscillatorGain: GainNode | null = null;
   private isPlaying = false;
   private isLooping = false;
   private musicVolume = 0.3;
   private sfxVolume = 0.7;
   private currentTrackType: 'intro' | 'main' | 'victory' | 'gameover' | null = null;
   private isInitialized = false;
+  private canPlayAudio = false;
 
   // Pre-generated audio buffers
   private audioBuffers: Map<string, AudioBuffer> = new Map();
 
-  // Initialize AudioContext synchronously within user gesture
+  // Initialize AudioContext synchronously within user gesture and start immediate audio
   initializeAudioContext(): boolean {
     try {
       console.log('🔊 Creating AudioContext within user gesture...');
       this.audioContext = new AudioContext();
       console.log('🔊 AudioContext created, state:', this.audioContext.state);
       
-      // Immediately play a minimal tone to satisfy iOS autoplay requirements
-      this.playMinimalTone();
-      console.log('🔊 Minimal tone played for iOS compatibility');
+      // Immediately set up basic audio graph for iOS compatibility
+      this.setupBasicAudioGraph();
+      
+      // Immediately start continuous oscillator-based intro music
+      this.startImmediateIntroMusic();
+      
+      this.canPlayAudio = true;
+      console.log('🔊 Immediate intro music started, canPlayAudio set to true');
       
       return true;
     } catch (error) {
@@ -46,29 +54,86 @@ export class PongAudioManager {
     }
   }
 
-  // Play a minimal tone immediately within user gesture for iOS compatibility
-  private playMinimalTone(): void {
+  // Set up basic audio graph immediately for iOS compatibility
+  private setupBasicAudioGraph(): void {
     if (!this.audioContext) return;
-    
+
     try {
-      const oscillator = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
-      
-      // Louder, longer tone for reliable iOS audio unlock
-      gainNode.gain.setValueAtTime(0.4, this.audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 0.8);
-      
-      // Use 440Hz A note - more audible and reliable
-      oscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
-      oscillator.start(this.audioContext.currentTime);
-      oscillator.stop(this.audioContext.currentTime + 0.8);
-      
-      console.log('🔊 iOS unlock tone played (440Hz, 0.8s, volume 0.4)');
+      // Create master gain node
+      this.masterGain = this.audioContext.createGain();
+      this.masterGain.connect(this.audioContext.destination);
+      this.masterGain.gain.setValueAtTime(0.8, this.audioContext.currentTime);
+
+      // Create separate gain nodes for music and SFX
+      this.musicGain = this.audioContext.createGain();
+      this.musicGain.connect(this.masterGain);
+      this.musicGain.gain.setValueAtTime(this.musicVolume, this.audioContext.currentTime);
+
+      this.sfxGain = this.audioContext.createGain();
+      this.sfxGain.connect(this.masterGain);
+      this.sfxGain.gain.setValueAtTime(this.sfxVolume, this.audioContext.currentTime);
+
+      // Create gain node specifically for oscillator-based intro
+      this.oscillatorGain = this.audioContext.createGain();
+      this.oscillatorGain.connect(this.musicGain);
+      this.oscillatorGain.gain.setValueAtTime(0.4, this.audioContext.currentTime);
+
+      console.log('🔊 Basic audio graph set up');
     } catch (error) {
-      console.error('🔊 Failed to play minimal tone:', error);
+      console.error('🔊 Failed to set up basic audio graph:', error);
+    }
+  }
+
+  // Start continuous oscillator-based intro music immediately
+  private startImmediateIntroMusic(): void {
+    if (!this.audioContext || !this.oscillatorGain) return;
+
+    try {
+      console.log('🔊 Starting immediate oscillator-based intro music...');
+      
+      // Create oscillator for immediate playback
+      this.currentOscillator = this.audioContext.createOscillator();
+      this.currentOscillator.connect(this.oscillatorGain);
+      
+      // Start with a pleasant A note and modulate it
+      this.currentOscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+      
+      // Create a simple ascending melody pattern over 3 seconds
+      const currentTime = this.audioContext.currentTime;
+      const notes = [440, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880]; // A4 to A5 major scale
+      const noteDuration = 0.375; // 3/8 second per note = 3 seconds total
+      
+      notes.forEach((freq, i) => {
+        const startTime = currentTime + (i * noteDuration);
+        this.currentOscillator!.frequency.setValueAtTime(freq, startTime);
+      });
+      
+      // Set up volume envelope for smooth fade in/out
+      this.oscillatorGain.gain.setValueAtTime(0, currentTime);
+      this.oscillatorGain.gain.linearRampToValueAtTime(0.4, currentTime + 0.1); // Quick fade in
+      this.oscillatorGain.gain.setValueAtTime(0.4, currentTime + 2.5); // Hold
+      this.oscillatorGain.gain.linearRampToValueAtTime(0, currentTime + 3.0); // Fade out
+      
+      this.currentOscillator.type = 'square'; // Classic chiptune sound
+      this.currentOscillator.start(currentTime);
+      this.currentOscillator.stop(currentTime + 3.0);
+      
+      this.isPlaying = true;
+      this.currentTrackType = 'intro';
+      
+      console.log('🔊 Immediate intro music started (3-second oscillator melody)');
+      
+      // Set up transition to buffer-based music when ready
+      this.currentOscillator.onended = () => {
+        console.log('🔊 Oscillator intro ended, ready for buffer transition');
+        this.currentOscillator = null;
+        if (this.isInitialized) {
+          this.playMusic('main', true);
+        }
+      };
+      
+    } catch (error) {
+      console.error('🔊 Failed to start immediate intro music:', error);
     }
   }
 
@@ -80,44 +145,35 @@ export class PongAudioManager {
     }
 
     try {
-      console.log('Setting up audio system...');
+      console.log('🔊 Setting up full audio system...');
       
       // Resume AudioContext if suspended
       if (this.audioContext.state === 'suspended') {
-        console.log('Resuming AudioContext...');
+        console.log('🔊 Resuming AudioContext...');
         await this.audioContext.resume();
-        console.log('AudioContext resumed, state:', this.audioContext.state);
+        console.log('🔊 AudioContext resumed, state:', this.audioContext.state);
       }
       
-      await this.setupAudioGraph();
+      // Generate all audio buffers in background
       await this.generateAllAudio();
       this.isInitialized = true;
-      console.log('Audio system fully initialized');
+      console.log('🔊 Full audio system initialized with buffers');
+      
+      // If intro oscillator has finished, start main music immediately
+      if (!this.currentOscillator && !this.currentMusic) {
+        console.log('🔊 Starting main music as backup...');
+        this.playMusic('main', true);
+      }
+      
     } catch (error) {
-      console.error('Audio initialization failed:', error);
+      console.error('🔊 Audio initialization failed:', error);
     }
-  }
-
-  private async setupAudioGraph(): Promise<void> {
-    if (!this.audioContext) return;
-
-    // Create master gain node
-    this.masterGain = this.audioContext.createGain();
-    this.masterGain.connect(this.audioContext.destination);
-    this.masterGain.gain.setValueAtTime(0.8, this.audioContext.currentTime); // -16 LUFS target
-
-    // Create separate gain nodes for music and SFX
-    this.musicGain = this.audioContext.createGain();
-    this.musicGain.connect(this.masterGain);
-    this.musicGain.gain.setValueAtTime(this.musicVolume, this.audioContext.currentTime);
-
-    this.sfxGain = this.audioContext.createGain();
-    this.sfxGain.connect(this.masterGain);
-    this.sfxGain.gain.setValueAtTime(this.sfxVolume, this.audioContext.currentTime);
   }
 
   private async generateAllAudio(): Promise<void> {
     if (!this.audioContext) return;
+
+    console.log('🔊 Generating audio buffers...');
 
     // Generate intro track (2-4s, non-looping)
     const introTrack = this.generateIntroTrack();
@@ -141,6 +197,8 @@ export class PongAudioManager {
 
     // Generate SFX
     await this.generateSoundEffects();
+    
+    console.log('🔊 All audio buffers generated:', Array.from(this.audioBuffers.keys()));
   }
 
   private generateIntroTrack(): ChiptuneTrack {
@@ -340,7 +398,7 @@ export class PongAudioManager {
   private async generateSoundEffects(): Promise<void> {
     if (!this.audioContext) return;
 
-    console.log('Generating sound effects...');
+    console.log('🔊 Generating sound effects...');
     const sampleRate = this.audioContext.sampleRate;
 
     // Paddle hit sound - chiptune blip
@@ -405,46 +463,98 @@ export class PongAudioManager {
     }
     this.audioBuffers.set('record_broken', recordBuffer);
 
-    console.log('Sound effects generated:', Array.from(this.audioBuffers.keys()));
+    console.log('🔊 Sound effects generated:', Array.from(this.audioBuffers.keys()));
   }
 
   async playMusic(trackType: 'intro' | 'main' | 'victory' | 'gameover', loop = false): Promise<void> {
-    if (!this.audioContext || !this.musicGain || !this.isInitialized) {
-      console.warn('Audio system not ready. Context:', !!this.audioContext, 'Gain:', !!this.musicGain, 'Initialized:', this.isInitialized);
+    // If we can play audio but not yet initialized, allow oscillator fallback
+    if (!this.audioContext || !this.musicGain) {
+      console.warn('🔊 Audio system not ready. Context:', !!this.audioContext, 'Gain:', !!this.musicGain);
+      return;
+    }
+
+    if (!this.canPlayAudio) {
+      console.warn('🔊 Cannot play audio yet - user gesture required');
       return;
     }
 
     // Resume AudioContext if suspended
     if (this.audioContext.state === 'suspended') {
-      console.log('Resuming AudioContext for music playback...');
+      console.log('🔊 Resuming AudioContext for music playback...');
       await this.audioContext.resume();
-      console.log('AudioContext state after resume:', this.audioContext.state);
+      console.log('🔊 AudioContext state after resume:', this.audioContext.state);
     }
 
     this.stopMusic();
 
-    const bufferKey = trackType === 'main' ? 'main_loop_a' : trackType;
-    const buffer = this.audioBuffers.get(bufferKey);
-    if (!buffer) {
-      console.warn(`Music track not found: ${trackType}. Available tracks:`, Array.from(this.audioBuffers.keys()));
-      return;
+    // If buffers are ready, use them
+    if (this.isInitialized) {
+      const bufferKey = trackType === 'main' ? 'main_loop_a' : trackType;
+      const buffer = this.audioBuffers.get(bufferKey);
+      if (buffer) {
+        console.log(`🔊 Playing buffered music: ${trackType}, loop: ${loop}`);
+        this.currentMusic = this.audioContext.createBufferSource();
+        this.currentMusic.buffer = buffer;
+        this.currentMusic.connect(this.musicGain);
+        this.currentMusic.loop = loop;
+        
+        if (loop && (trackType === 'main')) {
+          this.currentMusic.loopStart = 0;
+          this.currentMusic.loopEnd = buffer.duration;
+        }
+
+        this.currentMusic.start();
+        this.isPlaying = true;
+        this.isLooping = loop;
+        this.currentTrackType = trackType;
+        return;
+      }
     }
 
-    console.log(`Playing music: ${trackType}, loop: ${loop}`);
-    this.currentMusic = this.audioContext.createBufferSource();
-    this.currentMusic.buffer = buffer;
-    this.currentMusic.connect(this.musicGain);
-    this.currentMusic.loop = loop;
-    
-    if (loop && (trackType === 'main')) {
-      this.currentMusic.loopStart = 0;
-      this.currentMusic.loopEnd = buffer.duration;
+    // Fallback: use simple oscillator if buffers not ready
+    if (trackType === 'main' && loop) {
+      console.log('🔊 Using oscillator fallback for main music');
+      this.playOscillatorFallback();
     }
+  }
 
-    this.currentMusic.start();
-    this.isPlaying = true;
-    this.isLooping = loop;
-    this.currentTrackType = trackType;
+  private playOscillatorFallback(): void {
+    if (!this.audioContext || !this.oscillatorGain) return;
+
+    try {
+      this.currentOscillator = this.audioContext.createOscillator();
+      this.currentOscillator.connect(this.oscillatorGain);
+      
+      // Simple looping melody
+      this.currentOscillator.frequency.setValueAtTime(440, this.audioContext.currentTime);
+      
+      // Create a 4-second looping pattern
+      const currentTime = this.audioContext.currentTime;
+      const loopPattern = [440, 493.88, 523.25, 587.33]; // A4, B4, C5, D5
+      const noteDuration = 1.0; // 1 second per note
+      
+      const scheduleLoop = (startTime: number) => {
+        loopPattern.forEach((freq, i) => {
+          this.currentOscillator!.frequency.setValueAtTime(freq, startTime + (i * noteDuration));
+        });
+      };
+      
+      // Schedule multiple loops
+      for (let i = 0; i < 10; i++) {
+        scheduleLoop(currentTime + (i * 4));
+      }
+      
+      this.currentOscillator.type = 'square';
+      this.currentOscillator.start(currentTime);
+      
+      this.isPlaying = true;
+      this.isLooping = true;
+      this.currentTrackType = 'main';
+      
+      console.log('🔊 Oscillator fallback music started');
+    } catch (error) {
+      console.error('🔊 Failed to start oscillator fallback:', error);
+    }
   }
 
   stopMusic(): void {
@@ -456,34 +566,99 @@ export class PongAudioManager {
       }
       this.currentMusic = null;
     }
+    
+    if (this.currentOscillator) {
+      try {
+        this.currentOscillator.stop();
+      } catch (e) {
+        // Ignore errors from stopping already stopped sources
+      }
+      this.currentOscillator = null;
+    }
+    
     this.isPlaying = false;
     this.isLooping = false;
     this.currentTrackType = null;
   }
 
   async playSoundEffect(effectName: string): Promise<void> {
-    if (!this.audioContext || !this.sfxGain || !this.isInitialized) {
-      console.warn('Audio system not ready for sound effects. Context:', !!this.audioContext, 'Gain:', !!this.sfxGain, 'Initialized:', this.isInitialized);
+    if (!this.audioContext || !this.sfxGain) {
+      console.warn('🔊 Audio system not ready for sound effects. Context:', !!this.audioContext, 'Gain:', !!this.sfxGain);
+      return;
+    }
+
+    if (!this.canPlayAudio) {
+      console.warn('🔊 Cannot play sound effects yet - user gesture required');
       return;
     }
 
     // Resume AudioContext if suspended
     if (this.audioContext.state === 'suspended') {
-      console.log('Resuming AudioContext for sound effect...');
+      console.log('🔊 Resuming AudioContext for sound effect...');
       await this.audioContext.resume();
     }
 
-    const buffer = this.audioBuffers.get(effectName);
-    if (!buffer) {
-      console.warn(`Sound effect not found: ${effectName}. Available effects:`, Array.from(this.audioBuffers.keys()));
-      return;
+    // If buffers are ready, use them
+    if (this.isInitialized) {
+      const buffer = this.audioBuffers.get(effectName);
+      if (buffer) {
+        console.log(`🔊 Playing sound effect: ${effectName}`);
+        const source = this.audioContext.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.sfxGain);
+        source.start();
+        return;
+      }
     }
 
-    console.log(`Playing sound effect: ${effectName}`);
-    const source = this.audioContext.createBufferSource();
-    source.buffer = buffer;
-    source.connect(this.sfxGain);
-    source.start();
+    // Fallback: immediate oscillator-based sound effect
+    console.log(`🔊 Playing oscillator fallback for: ${effectName}`);
+    this.playOscillatorSoundEffect(effectName);
+  }
+
+  private playOscillatorSoundEffect(effectName: string): void {
+    if (!this.audioContext || !this.sfxGain) return;
+
+    try {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(this.sfxGain);
+      
+      const currentTime = this.audioContext.currentTime;
+      
+      switch (effectName) {
+        case 'paddle':
+          oscillator.frequency.setValueAtTime(440, currentTime);
+          gainNode.gain.setValueAtTime(0.5, currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.1);
+          oscillator.type = 'square';
+          oscillator.start(currentTime);
+          oscillator.stop(currentTime + 0.1);
+          break;
+          
+        case 'score':
+          oscillator.frequency.setValueAtTime(440, currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(880, currentTime + 0.3);
+          gainNode.gain.setValueAtTime(0.6, currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.3);
+          oscillator.type = 'square';
+          oscillator.start(currentTime);
+          oscillator.stop(currentTime + 0.3);
+          break;
+          
+        default:
+          oscillator.frequency.setValueAtTime(330, currentTime);
+          gainNode.gain.setValueAtTime(0.4, currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.2);
+          oscillator.type = 'square';
+          oscillator.start(currentTime);
+          oscillator.stop(currentTime + 0.2);
+      }
+    } catch (error) {
+      console.error('🔊 Failed to play oscillator sound effect:', error);
+    }
   }
 
   setMusicVolume(volume: number): void {
@@ -513,24 +688,27 @@ export class PongAudioManager {
   switchMainLoop(): void {
     if (!this.isPlaying || this.currentTrackType !== 'main') return;
 
-    const currentBuffer = this.currentMusic?.buffer;
-    const currentLoopA = this.audioBuffers.get('main_loop_a');
-    const newBuffer = currentBuffer === currentLoopA ? 
-      this.audioBuffers.get('main_loop_b') : 
-      this.audioBuffers.get('main_loop_a');
+    // Only switch if using buffered music
+    if (this.currentMusic && this.isInitialized) {
+      const currentBuffer = this.currentMusic.buffer;
+      const currentLoopA = this.audioBuffers.get('main_loop_a');
+      const newBuffer = currentBuffer === currentLoopA ? 
+        this.audioBuffers.get('main_loop_b') : 
+        this.audioBuffers.get('main_loop_a');
 
-    if (newBuffer && this.audioContext && this.musicGain) {
-      this.stopMusic();
-      this.currentMusic = this.audioContext.createBufferSource();
-      this.currentMusic.buffer = newBuffer;
-      this.currentMusic.connect(this.musicGain);
-      this.currentMusic.loop = true;
-      this.currentMusic.loopStart = 0;
-      this.currentMusic.loopEnd = newBuffer.duration;
-      this.currentMusic.start();
-      this.isPlaying = true;
-      this.isLooping = true;
-      this.currentTrackType = 'main';
+      if (newBuffer && this.audioContext && this.musicGain) {
+        this.stopMusic();
+        this.currentMusic = this.audioContext.createBufferSource();
+        this.currentMusic.buffer = newBuffer;
+        this.currentMusic.connect(this.musicGain);
+        this.currentMusic.loop = true;
+        this.currentMusic.loopStart = 0;
+        this.currentMusic.loopEnd = newBuffer.duration;
+        this.currentMusic.start();
+        this.isPlaying = true;
+        this.isLooping = true;
+        this.currentTrackType = 'main';
+      }
     }
   }
 
@@ -541,5 +719,7 @@ export class PongAudioManager {
       this.audioContext = null;
     }
     this.audioBuffers.clear();
+    this.canPlayAudio = false;
+    this.isInitialized = false;
   }
 }

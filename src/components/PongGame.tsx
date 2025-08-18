@@ -85,30 +85,23 @@ const PongGame = ({ onClose }: PongGameProps) => {
         return;
       }
 
-      // Step 1: Create AudioContext synchronously within user gesture
+      // Step 1: Create AudioContext and immediately start oscillator-based intro music
       const contextCreated = audioManager.initializeAudioContext();
       if (!contextCreated) {
         console.error('🔊 Failed to create AudioContext');
         return;
       }
-      console.log('🔊 AudioContext created successfully');
+      console.log('🔊 AudioContext created and immediate intro music started');
 
-      // Step 2: Wait briefly for iOS unlock tone to process
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Step 2: Initialize full audio system in background (buffers)
+      audioManager.initializeAudio().catch(error => {
+        console.error('🔊 Background audio initialization failed:', error);
+      });
       
-      // Step 3: Initialize audio system asynchronously
-      await audioManager.initializeAudio();
-      console.log('🔊 Audio system initialized');
-
-      // Step 4: Test with immediate sound effect and start music
-      audioManager.playSoundEffect('paddle');
-      audioManager.playMusic('intro', false);
-      console.log('🔊 Test sound and intro music started');
-      
-      // Step 5: Set states after successful initialization
+      // Step 3: Set states immediately after context creation (audio is already playing)
       setMobileAudioEnabled(true);
       setAudioEnabled(true);
-      console.log('🔊 Mobile audio enabled successfully');
+      console.log('🔊 Mobile audio enabled - oscillator intro music playing');
       
     } catch (error) {
       console.error('🔊 Mobile audio enable failed:', error);
