@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 import PongGame from './PongGame';
+import GestureOverlay from './GestureOverlay';
+import GestureTrail from './GestureTrail';
+import useGestureDetection from '@/hooks/useGestureDetection';
 
 import { commonRoomHeroImages as fallbackCommonRoomImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
@@ -11,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 const CommonRoomHeroCarousel = () => {
   const [showPongGame, setShowPongGame] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   
   // Fetch CMS images with fallback to static images
@@ -23,14 +27,18 @@ const CommonRoomHeroCarousel = () => {
   // Check if user is a subscriber by checking if they're authenticated
   const canPlayGame = !!user;
 
-  const handleLogoClick = () => {
+  // Handle gesture completion to trigger Pong game
+  const handleGestureComplete = () => {
     if (canPlayGame) {
       setShowPongGame(true);
     }
   };
+
+  // Initialize gesture detection
+  const gestureState = useGestureDetection(handleGestureComplete);
   
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div ref={containerRef} className="relative min-h-screen overflow-hidden">
       {/* Single Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -39,27 +47,36 @@ const CommonRoomHeroCarousel = () => {
         }}
       />
 
+      {/* Secret gesture cue - only visible to authenticated users */}
+      {canPlayGame && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center mt-12 z-10 pointer-events-none">
+          <div className="text-6xl opacity-20 text-background mb-4 transition-opacity duration-300 hover:opacity-40">
+            ⑦
+          </div>
+          <div className="text-xs opacity-30 text-background font-mono tracking-wider">
+            DRAW THE SECRET SYMBOL
+          </div>
+        </div>
+      )}
+
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
-        <div 
-          onClick={handleLogoClick}
-          className={`group ${canPlayGame ? 'cursor-pointer' : 'cursor-default'}`}
-          title={canPlayGame ? 'Click to play Pong!' : 'Sign in to play Pong'}
-        >
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10 pointer-events-none">
+        <div className="group">
           <CroftLogo
-            className={`w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert ${
-              canPlayGame ? 'hover:opacity-70 hover:scale-105' : 'opacity-20'
-            }`}
+            className="w-[22rem] h-[22rem] sm:w-[24rem] sm:h-[24rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert"
           />
-          {canPlayGame && (
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="bg-black/80 text-white px-4 py-2 rounded-lg font-mono text-sm">
-                CLICK TO PLAY PONG
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* Gesture Detection */}
+      <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
+      
+      {/* Visual feedback for gesture drawing */}
+      <GestureTrail 
+        points={gestureState.points} 
+        isComplete={gestureState.isComplete} 
+        isDrawing={gestureState.isDrawing} 
+      />
 
       {/* Page Title Card Overlay */}
       <div className="absolute top-28 left-4 md:left-[106px] z-20">
