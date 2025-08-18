@@ -1,7 +1,6 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import GestureOverlay from '@/components/GestureOverlay';
-import GestureTrail from '@/components/GestureTrail';
 import { Toaster } from '@/components/ui/toaster';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
@@ -73,13 +72,6 @@ const CommonRoom = () => {
       
       {/* Gesture Detection */}
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
-      
-      {/* Visual feedback for gesture drawing */}
-      <GestureTrail 
-        points={gestureState.points} 
-        isComplete={gestureState.isComplete} 
-        isDrawing={gestureState.isDrawing} 
-      />
       <BiometricUnlockModal
         isOpen={bioOpen}
         onClose={() => { reset(); }}

@@ -3,7 +3,6 @@ import MenuButton from './MenuButton';
 import BookFloatingButton from './BookFloatingButton';
 import PongGame from './PongGame';
 import GestureOverlay from './GestureOverlay';
-import GestureTrail from './GestureTrail';
 import useGestureDetection from '@/hooks/useGestureDetection';
 
 import { commonRoomHeroImages as fallbackCommonRoomImages } from '@/data/heroImages';
@@ -54,13 +53,6 @@ const CommonRoomHeroCarousel = () => {
 
       {/* Gesture Detection */}
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
-      
-      {/* Visual feedback for gesture drawing */}
-      <GestureTrail 
-        points={gestureState.points} 
-        isComplete={gestureState.isComplete} 
-        isDrawing={gestureState.isDrawing} 
-      />
 
       {/* Page Title Card Overlay with Secret Cue */}
       <div className="absolute top-28 left-4 md:left-[106px] z-20 flex items-center gap-4">
