@@ -177,31 +177,36 @@ const PongGame = ({ onClose }: PongGameProps) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center">
+    <div className="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center overflow-hidden">
       {/* Header with branding */}
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white z-10">
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-white z-10 px-4">
         <CroftLogo size="sm" className="mb-2 invert" />
-        <h1 className="text-xl font-mono tracking-wider">CROFT COMMON</h1>
-        <p className="text-xs opacity-70 font-mono">RETRO ARCADE</p>
+        <h1 className="text-lg sm:text-xl font-mono tracking-wider text-center">CROFT COMMON</h1>
+        <p className="text-xs opacity-70 font-mono text-center">RETRO ARCADE</p>
       </div>
       
       <canvas
         ref={canvasRef}
         width={800}
         height={400}
-        className="border border-white"
-        style={{ maxWidth: '90vw', maxHeight: '70vh' }}
+        className="border border-white touch-none"
+        style={{ 
+          maxWidth: '95vw', 
+          maxHeight: '60vh',
+          aspectRatio: '2/1'
+        }}
       />
       
       {/* UI Overlay */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none touch-none">
         {/* Control buttons */}
         <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto">
           <Button
             onClick={toggleAudio}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 touch-manipulation"
+            aria-label="Toggle audio"
           >
             {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
@@ -209,7 +214,8 @@ const PongGame = ({ onClose }: PongGameProps) => {
             onClick={onClose}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10"
+            className="text-white hover:bg-white/10 touch-manipulation"
+            aria-label="Close game"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -217,12 +223,12 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
         {/* Score and level display */}
         {gameStarted && (
-          <div className="absolute top-20 left-4 text-white font-mono space-y-2">
-            <div className="text-2xl">Score: {score}</div>
-            <div className="text-lg opacity-90 border border-white/30 px-2 py-1 rounded bg-black/30">
+          <div className="absolute top-16 sm:top-20 left-2 sm:left-4 text-white font-mono space-y-1 sm:space-y-2">
+            <div className="text-xl sm:text-2xl">Score: {score}</div>
+            <div className="text-sm sm:text-lg opacity-90 border border-white/30 px-1 sm:px-2 py-1 rounded bg-black/30">
               High Score: {currentHighScore}
             </div>
-            <div className="text-sm opacity-70">Speed Level: {speedLevel}</div>
+            <div className="text-xs sm:text-sm opacity-70">Speed Level: {speedLevel}</div>
             {speedLevel > 1 && (
               <div className="text-xs opacity-50">Next boost at {Math.ceil(score / 5) * 5} points</div>
             )}
@@ -266,41 +272,42 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
         {/* Start screen */}
         {!gameStarted && !showHighScores && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-            <h1 className="text-4xl font-mono mb-8 tracking-wider">PONG</h1>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4">
+            <h1 className="text-3xl sm:text-4xl font-mono mb-6 sm:mb-8 tracking-wider">PONG</h1>
             <div className="flex flex-col items-center space-y-4 w-full max-w-xs">
               <Button
                 onClick={handleStartGame}
-                className="w-full bg-white text-black hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
+                className="w-full bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
               >
                 START GAME
               </Button>
               <Button
                 onClick={handleShowHighScores}
                 variant="outline"
-                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
+                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
               >
                 <Trophy className="h-4 w-4 mr-2" />
                 HIGH SCORES
               </Button>
             </div>
-            <p className="text-sm mt-8 opacity-70 font-mono">
-              Move your mouse to control the left paddle
+            <p className="text-xs sm:text-sm mt-6 sm:mt-8 opacity-70 font-mono text-center">
+              <span className="hidden sm:inline">Move your mouse to control the left paddle</span>
+              <span className="sm:hidden">Touch and drag to control the left paddle</span>
             </p>
           </div>
         )}
 
         {/* High scores screen */}
         {showHighScores && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-50">
-            <div className="bg-white text-black p-8 rounded-lg shadow-2xl border-4 border-black min-w-[400px]">
-              <h2 className="text-3xl font-mono mb-8 text-center tracking-wider">HIGH SCORES</h2>
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-50 px-4">
+            <div className="bg-white text-black p-4 sm:p-8 rounded-lg shadow-2xl border-4 border-black w-full max-w-md sm:min-w-[400px]">
+              <h2 className="text-2xl sm:text-3xl font-mono mb-6 sm:mb-8 text-center tracking-wider">HIGH SCORES</h2>
               {scoresLoading ? (
                 <div className="text-center font-mono">Loading...</div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {highScores.slice(0, 10).map((score, index) => (
-                    <div key={score.id} className="flex justify-between font-mono text-lg border-b border-gray-300 pb-2">
+                    <div key={score.id} className="flex justify-between font-mono text-sm sm:text-lg border-b border-gray-300 pb-1 sm:pb-2">
                       <span className="font-bold">{index + 1}. {score.player_name}</span>
                       <span className="font-bold">{score.score}</span>
                     </div>
@@ -314,7 +321,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
               )}
               <Button
                 onClick={() => setShowHighScores(false)}
-                className="w-full mt-6 bg-black text-white hover:bg-gray-800 font-mono px-8 py-3 pointer-events-auto"
+                className="w-full mt-4 sm:mt-6 bg-black text-white hover:bg-gray-800 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
               >
                 BACK
               </Button>
@@ -324,13 +331,13 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
         {/* Game over screen */}
         {gameOver && gameStarted && !showAnonymousModal && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/80">
-            <h2 className="text-3xl font-mono mb-4 tracking-wider">GAME OVER</h2>
-            <p className="text-xl font-mono mb-8">Final Score: {score}</p>
-            <div className="space-y-4">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/80 px-4">
+            <h2 className="text-2xl sm:text-3xl font-mono mb-4 tracking-wider text-center">GAME OVER</h2>
+            <p className="text-lg sm:text-xl font-mono mb-6 sm:mb-8 text-center">Final Score: {score}</p>
+            <div className="space-y-4 w-full max-w-xs">
               <Button
                 onClick={handlePlayAgain}
-                className="bg-white text-black hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
+                className="w-full bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 PLAY AGAIN
@@ -338,7 +345,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
               <Button
                 onClick={handleShowHighScores}
                 variant="outline"
-                className="border-white text-black bg-white hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
+                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
               >
                 <Trophy className="h-4 w-4 mr-2" />
                 HIGH SCORES
@@ -349,12 +356,12 @@ const PongGame = ({ onClose }: PongGameProps) => {
 
         {/* Pause overlay */}
         {!gameRunning && gameStarted && !gameOver && (
-          <div className="absolute inset-0 flex items-center justify-center text-white bg-black/50">
+          <div className="absolute inset-0 flex items-center justify-center text-white bg-black/50 px-4">
             <div className="text-center">
-              <p className="text-2xl font-mono mb-4">PAUSED</p>
+              <p className="text-xl sm:text-2xl font-mono mb-4">PAUSED</p>
               <Button
                 onClick={startGame}
-                className="bg-white text-black hover:bg-white/90 font-mono px-8 py-3 pointer-events-auto"
+                className="bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
               >
                 RESUME
               </Button>
