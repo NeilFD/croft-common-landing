@@ -428,6 +428,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
             {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
           <Button
+            onClick={onClose}
             onTouchStart={(e) => {
               console.log('🔊 Close button touchstart');
               e.preventDefault();
