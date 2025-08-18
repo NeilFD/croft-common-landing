@@ -63,21 +63,24 @@ const PongGame = ({ onClose }: PongGameProps) => {
     updatePaddlePosition(y);
   }, [updatePaddlePosition]);
 
-  // Handle touch movement for mobile
+  // Handle touch movement for mobile paddle control
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    e.preventDefault();
-    if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const y = e.touches[0].clientY - rect.top;
-    updatePaddlePosition(y);
-  }, [updatePaddlePosition]);
+    // Only prevent default if we're in game and touching the canvas area
+    if (gameRunning && canvasRef.current) {
+      e.preventDefault();
+      const rect = canvasRef.current.getBoundingClientRect();
+      const y = e.touches[0].clientY - rect.top;
+      updatePaddlePosition(y);
+    }
+  }, [updatePaddlePosition, gameRunning]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
+    // Add passive: false to allow preventDefault when needed
     canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
     
     return () => {
       canvas.removeEventListener('mousemove', handleMouseMove);
@@ -189,7 +192,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
         ref={canvasRef}
         width={800}
         height={400}
-        className="border border-white touch-none"
+        className="border border-white"
         style={{ 
           maxWidth: '95vw', 
           maxHeight: '60vh',
@@ -198,23 +201,31 @@ const PongGame = ({ onClose }: PongGameProps) => {
       />
       
       {/* UI Overlay */}
-      <div className="absolute inset-0 pointer-events-none touch-none">
+      <div className="absolute inset-0 pointer-events-none">
         {/* Control buttons */}
-        <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto">
+        <div className="absolute top-4 right-4 flex gap-2 pointer-events-auto z-20">
           <Button
             onClick={toggleAudio}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              toggleAudio();
+            }}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10 touch-manipulation"
+            className="text-white hover:bg-white/10 touch-manipulation select-none"
             aria-label="Toggle audio"
           >
             {audioEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
           </Button>
           <Button
             onClick={onClose}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              onClose();
+            }}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10 touch-manipulation"
+            className="text-white hover:bg-white/10 touch-manipulation select-none"
             aria-label="Close game"
           >
             <X className="h-4 w-4" />
@@ -277,14 +288,22 @@ const PongGame = ({ onClose }: PongGameProps) => {
             <div className="flex flex-col items-center space-y-4 w-full max-w-xs">
               <Button
                 onClick={handleStartGame}
-                className="w-full bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handleStartGame();
+                }}
+                className="w-full bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base select-none"
               >
                 START GAME
               </Button>
               <Button
                 onClick={handleShowHighScores}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handleShowHighScores();
+                }}
                 variant="outline"
-                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
+                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base select-none"
               >
                 <Trophy className="h-4 w-4 mr-2" />
                 HIGH SCORES
@@ -321,7 +340,11 @@ const PongGame = ({ onClose }: PongGameProps) => {
               )}
               <Button
                 onClick={() => setShowHighScores(false)}
-                className="w-full mt-4 sm:mt-6 bg-black text-white hover:bg-gray-800 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setShowHighScores(false);
+                }}
+                className="w-full mt-4 sm:mt-6 bg-black text-white hover:bg-gray-800 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base select-none"
               >
                 BACK
               </Button>
@@ -337,15 +360,23 @@ const PongGame = ({ onClose }: PongGameProps) => {
             <div className="space-y-4 w-full max-w-xs">
               <Button
                 onClick={handlePlayAgain}
-                className="w-full bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handlePlayAgain();
+                }}
+                className="w-full bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base select-none"
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 PLAY AGAIN
               </Button>
               <Button
                 onClick={handleShowHighScores}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handleShowHighScores();
+                }}
                 variant="outline"
-                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
+                className="w-full border-white text-black bg-white hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base select-none"
               >
                 <Trophy className="h-4 w-4 mr-2" />
                 HIGH SCORES
@@ -361,7 +392,11 @@ const PongGame = ({ onClose }: PongGameProps) => {
               <p className="text-xl sm:text-2xl font-mono mb-4">PAUSED</p>
               <Button
                 onClick={startGame}
-                className="bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base"
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  startGame();
+                }}
+                className="bg-white text-black hover:bg-white/90 font-mono px-6 sm:px-8 py-3 pointer-events-auto touch-manipulation text-sm sm:text-base select-none"
               >
                 RESUME
               </Button>
