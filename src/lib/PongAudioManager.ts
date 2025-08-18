@@ -29,11 +29,21 @@ export class PongAudioManager {
 
   async initialize(): Promise<void> {
     try {
+      console.log('Initializing PongAudioManager...');
       this.audioContext = new AudioContext();
+      
+      // Resume AudioContext if suspended (required for user interaction)
+      if (this.audioContext.state === 'suspended') {
+        console.log('AudioContext suspended, attempting to resume...');
+        await this.audioContext.resume();
+      }
+      
+      console.log('AudioContext state:', this.audioContext.state);
       await this.setupAudioGraph();
       await this.generateAllAudio();
+      console.log('Audio initialization complete');
     } catch (error) {
-      console.warn('Audio initialization failed:', error);
+      console.error('Audio initialization failed:', error);
     }
   }
 
@@ -279,6 +289,7 @@ export class PongAudioManager {
   private async generateSoundEffects(): Promise<void> {
     if (!this.audioContext) return;
 
+    console.log('Generating sound effects...');
     const sampleRate = this.audioContext.sampleRate;
 
     // Paddle hit sound - chiptune blip
@@ -313,17 +324,42 @@ export class PongAudioManager {
       speedData[i] = Math.sign(Math.sin(2 * Math.PI * freq * t)) * envelope * 0.5;
     }
     this.audioBuffers.set('speedUp', speedBuffer);
+
+    // Game over sound (descending dramatic tone)
+    const gameOverBuffer = this.audioContext.createBuffer(1, sampleRate * 1.0, sampleRate);
+    const gameOverData = gameOverBuffer.getChannelData(0);
+    for (let i = 0; i < gameOverData.length; i++) {
+      const t = i / sampleRate;
+      const freq = 440 - (t * 200); // Descending from 440Hz to 240Hz
+      gameOverData[i] = Math.sin(freq * 2 * Math.PI * t) * Math.exp(-t * 2) * 0.5;
+    }
+    this.audioBuffers.set('gameover', gameOverBuffer);
+
+    console.log('Sound effects generated:', Array.from(this.audioBuffers.keys()));
   }
 
-  playMusic(trackType: 'intro' | 'main' | 'victory' | 'gameover', loop = false): void {
-    if (!this.audioContext || !this.musicGain) return;
+  async playMusic(trackType: 'intro' | 'main' | 'victory' | 'gameover', loop = false): Promise<void> {
+    if (!this.audioContext || !this.musicGain) {
+      console.warn('AudioContext or musicGain not available');
+      return;
+    }
+
+    // Resume AudioContext if suspended
+    if (this.audioContext.state === 'suspended') {
+      console.log('Resuming AudioContext for music playback...');
+      await this.audioContext.resume();
+    }
 
     this.stopMusic();
 
     const bufferKey = trackType === 'main' ? 'main_loop_a' : trackType;
     const buffer = this.audioBuffers.get(bufferKey);
-    if (!buffer) return;
+    if (!buffer) {
+      console.warn(`Music track not found: ${trackType}. Available tracks:`, Array.from(this.audioBuffers.keys()));
+      return;
+    }
 
+    console.log(`Playing music: ${trackType}, loop: ${loop}`);
     this.currentMusic = this.audioContext.createBufferSource();
     this.currentMusic.buffer = buffer;
     this.currentMusic.connect(this.musicGain);
@@ -354,12 +390,25 @@ export class PongAudioManager {
     this.currentTrackType = null;
   }
 
-  playSoundEffect(effectName: string): void {
-    if (!this.audioContext || !this.sfxGain) return;
+  async playSoundEffect(effectName: string): Promise<void> {
+    if (!this.audioContext || !this.sfxGain) {
+      console.warn('AudioContext or sfxGain not available');
+      return;
+    }
+
+    // Resume AudioContext if suspended
+    if (this.audioContext.state === 'suspended') {
+      console.log('Resuming AudioContext for sound effect...');
+      await this.audioContext.resume();
+    }
 
     const buffer = this.audioBuffers.get(effectName);
-    if (!buffer) return;
+    if (!buffer) {
+      console.warn(`Sound effect not found: ${effectName}. Available effects:`, Array.from(this.audioBuffers.keys()));
+      return;
+    }
 
+    console.log(`Playing sound effect: ${effectName}`);
     const source = this.audioContext.createBufferSource();
     source.buffer = buffer;
     source.connect(this.sfxGain);

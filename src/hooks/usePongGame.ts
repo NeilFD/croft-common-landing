@@ -237,7 +237,7 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       setGameOver(true);
       setGameRunning(false);
       audioManagerRef.current?.playMusic('gameover', false);
-      playSound('gameOver');
+      playSound('gameover');
     }
 
     // Reset ball if it goes off right side (AI misses)
