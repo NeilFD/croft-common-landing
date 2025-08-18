@@ -219,6 +219,75 @@ export class PongAudioManager {
     }
   }
 
+  // Music sequence management
+  private musicSequencePhase: 'simple' | 'intro' | 'main' | 'stopped' = 'stopped';
+  private sequenceTimeoutId: number | null = null;
+
+  // Start the complete music sequence: simple → intro → main
+  startMusicSequence(): void {
+    if (!this.audioContext || this.audioState !== 'READY') return;
+    
+    console.log('🔊 Starting music sequence');
+    this.musicSequencePhase = 'simple';
+    
+    // Clear any existing sequence
+    this.stopMusicSequence();
+    
+    // Start with simple background music
+    this.startSimpleBackgroundMusic();
+    
+    // After 3 seconds, transition to intro
+    this.sequenceTimeoutId = window.setTimeout(() => {
+      this.transitionToIntro();
+    }, 3000);
+  }
+
+  private transitionToIntro(): void {
+    if (!this.audioContext || this.audioState !== 'READY') return;
+    
+    console.log('🔊 Transitioning to intro music');
+    this.musicSequencePhase = 'intro';
+    
+    // Stop simple music and play intro
+    this.stopSimpleMusic();
+    this.playMusic('intro', false);
+    
+    // After intro finishes (1 second), start main loop
+    this.sequenceTimeoutId = window.setTimeout(() => {
+      this.transitionToMainLoop();
+    }, 1500);
+  }
+
+  private transitionToMainLoop(): void {
+    if (!this.audioContext || this.audioState !== 'READY') return;
+    
+    console.log('🔊 Transitioning to main music loop');
+    this.musicSequencePhase = 'main';
+    
+    // Stop any current music and start main loop
+    this.stopMusic();
+    this.playMusic('main', true);
+  }
+
+  private stopMusicSequence(): void {
+    if (this.sequenceTimeoutId) {
+      clearTimeout(this.sequenceTimeoutId);
+      this.sequenceTimeoutId = null;
+    }
+    this.musicSequencePhase = 'stopped';
+  }
+
+  private stopSimpleMusic(): void {
+    if (this.currentOscillator) {
+      try {
+        this.currentOscillator.stop();
+      } catch (e) {
+        // Oscillator may already be stopped
+      }
+      this.currentOscillator = null;
+    }
+  }
+
   // SYNCHRONOUS Music - Only Oscillators
   playMusic(trackType: 'intro' | 'main' | 'victory' | 'gameover', loop: boolean = false): void {
     if (!this.audioContext || !this.oscillatorGain || this.audioState !== 'READY') return;
@@ -367,6 +436,7 @@ export class PongAudioManager {
     }
     
     this.currentTrackType = null;
+    this.stopMusicSequence();
   }
 
   setMusicVolume(volume: number): void {
@@ -428,6 +498,7 @@ export class PongAudioManager {
     this.audioState = 'INACTIVE';
     
     this.stopMusic();
+    this.stopMusicSequence();
     
     if (this.audioContext) {
       try {

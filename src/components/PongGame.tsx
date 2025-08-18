@@ -136,6 +136,12 @@ const PongGame = ({ onClose }: PongGameProps) => {
     if (ok) {
       setMobileAudioEnabled(true);
       setAudioEnabled(true);
+      
+      // Start music sequence if game is already running
+      if (gameRunning && mgr.isAudioReady()) {
+        console.log('🔊 Starting music sequence for running game');
+        mgr.startMusicSequence();
+      }
     } else {
       setMobileAudioEnabled(false);
       setAudioEnabled(false);

@@ -358,12 +358,8 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       // Give more time on mobile for audio context to fully initialize
       setTimeout(() => {
         if (audioManagerRef.current?.audioContext?.state === 'running') {
-          audioManagerRef.current?.playMusic('intro', false);
-          setTimeout(() => {
-            if (audioManagerRef.current?.audioContext?.state === 'running') {
-              audioManagerRef.current?.playMusic('main', true);
-            }
-          }, 3000); // 3 second intro
+          console.log('🔊 Starting music sequence from game start');
+          audioManagerRef.current?.startMusicSequence();
         } else {
           console.warn('AudioContext not in running state, skipping music');
         }
