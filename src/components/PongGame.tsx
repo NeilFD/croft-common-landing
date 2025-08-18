@@ -77,7 +77,16 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const handleMobileAudioEnable = () => {
     if (audioInitializing) return;
     
+    // Immediate state update for visual feedback
+    setMobileAudioEnabled(true);
+    setAudioEnabled(true);
     setAudioInitializing(true);
+    
+    // Vibration feedback for mobile
+    if (navigator.vibrate) {
+      navigator.vibrate(50);
+    }
+    
     console.log('🔊 DIRECT iOS unlock - tap handler executing...');
     
     const audioManager = audioManagerRef.current;
@@ -92,10 +101,11 @@ const PongGame = ({ onClose }: PongGameProps) => {
     
     if (success) {
       console.log('🔊 AUDIO WORKING - iOS unlock successful');
-      setMobileAudioEnabled(true);
-      setAudioEnabled(true);
     } else {
       console.error('🔊 AUDIO FAILED - iOS unlock failed');
+      // Rollback on failure
+      setMobileAudioEnabled(false);
+      setAudioEnabled(false);
     }
     
     setAudioInitializing(false);
@@ -130,15 +140,17 @@ const PongGame = ({ onClose }: PongGameProps) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    // Add passive: false to allow preventDefault when needed
-    canvas.addEventListener('mousemove', handleMouseMove);
-    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    // Only attach touch listeners when game is running
+    if (gameRunning) {
+      canvas.addEventListener('mousemove', handleMouseMove);
+      canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+    }
     
     return () => {
       canvas.removeEventListener('mousemove', handleMouseMove);
       canvas.removeEventListener('touchmove', handleTouchMove);
     };
-  }, [handleMouseMove, handleTouchMove]);
+  }, [handleMouseMove, handleTouchMove, gameRunning]);
 
   // Helper function to check if score qualifies as high score
   const isQualifyingHighScore = useCallback((score: number) => {
@@ -310,57 +322,72 @@ const PongGame = ({ onClose }: PongGameProps) => {
         }}
       />
       
-      {/* Mobile Audio Enable Button */}
+      {/* Mobile Audio Enable Button - Fixed positioning outside all containers */}
       {isMobile && !mobileAudioEnabled && gameStarted && (
-        <div className="absolute top-28 left-1/2 transform -translate-x-1/2 pointer-events-auto z-[60]">
+        <div 
+          className="fixed top-28 left-1/2 transform -translate-x-1/2 z-[9999] pointer-events-auto"
+          style={{
+            position: 'fixed',
+            zIndex: 99999,
+            pointerEvents: 'auto'
+          }}
+        >
           <Button
             onTouchStart={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              handleMobileAudioEnable();
-            }}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              console.log('🔊 Mobile audio button TOUCHED');
               handleMobileAudioEnable();
             }}
             variant="outline"
             size="sm"
             disabled={audioInitializing}
-            className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none shadow-lg min-h-[44px] relative"
+            className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-300 font-mono text-xs px-4 py-2 touch-manipulation select-none shadow-2xl min-h-[44px] min-w-[120px] active:bg-yellow-500 transition-colors duration-100"
             style={{
               animation: audioInitializing ? 'none' : 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-              zIndex: 9999
+              zIndex: 99999,
+              pointerEvents: 'auto',
+              touchAction: 'manipulation',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+              WebkitTouchCallout: 'none',
+              position: 'relative'
             }}
           >
-            {audioInitializing ? '🔄 Loading...' : '🔊 Turn Audio On'}
+            {audioInitializing ? '🔄 Loading...' : (mobileAudioEnabled ? '✅ Audio On' : '🔊 Turn Audio On')}
           </Button>
         </div>
       )}
 
-      {/* Control buttons - moved outside pointer-events-none container */}
-      <div className="absolute top-4 right-4 flex gap-2 z-50">
+      {/* Control buttons - Fixed positioning with higher z-index */}
+      <div 
+        className="fixed top-4 right-4 flex gap-2 z-[9998] pointer-events-auto"
+        style={{
+          position: 'fixed',
+          zIndex: 99998,
+          pointerEvents: 'auto'
+        }}
+      >
           <Button
             onTouchStart={(e) => {
               console.log('🔊 Audio button touchstart');
               e.preventDefault();
               e.stopPropagation();
-              toggleAudio();
-            }}
-            onClick={(e) => {
-              console.log('🔊 Audio button click');
-              e.preventDefault();
-              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              if (navigator.vibrate) navigator.vibrate(30);
               toggleAudio();
             }}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10 bg-white/5 min-w-[44px] min-h-[44px] pointer-events-auto"
+            className="text-white hover:bg-white/10 bg-white/5 min-w-[44px] min-h-[44px] pointer-events-auto active:bg-white/20 transition-colors duration-100"
             style={{ 
               touchAction: 'manipulation',
               userSelect: 'none',
               WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none'
+              WebkitTouchCallout: 'none',
+              zIndex: 99998,
+              pointerEvents: 'auto'
             }}
             aria-label="Toggle audio"
           >
@@ -371,22 +398,20 @@ const PongGame = ({ onClose }: PongGameProps) => {
               console.log('🔊 Close button touchstart');
               e.preventDefault();
               e.stopPropagation();
-              onClose();
-            }}
-            onClick={(e) => {
-              console.log('🔊 Close button click');
-              e.preventDefault();
-              e.stopPropagation();
+              e.nativeEvent.stopImmediatePropagation();
+              if (navigator.vibrate) navigator.vibrate(30);
               onClose();
             }}
             variant="ghost"
             size="sm"
-            className="text-white hover:bg-white/10 bg-white/5 min-w-[44px] min-h-[44px] pointer-events-auto"
+            className="text-white hover:bg-white/10 bg-white/5 min-w-[44px] min-h-[44px] pointer-events-auto active:bg-white/20 transition-colors duration-100"
             style={{ 
               touchAction: 'manipulation',
               userSelect: 'none',
               WebkitUserSelect: 'none',
-              WebkitTouchCallout: 'none'
+              WebkitTouchCallout: 'none',
+              zIndex: 99998,
+              pointerEvents: 'auto'
             }}
             aria-label="Close game"
           >
