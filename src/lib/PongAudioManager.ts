@@ -52,19 +52,34 @@ export class PongAudioManager {
       // 3. CRITICAL: Resume AudioContext SYNCHRONOUSLY
       if (this.audioContext.state === 'suspended') {
         console.log('🔊 Resuming AudioContext...');
-        this.audioContext.resume();
         
-        // Synchronous wait for AudioContext to be running
+        // Call resume and handle the Promise properly
+        const resumePromise = this.audioContext.resume();
+        
+        // Synchronous wait for AudioContext to be running with better error handling
         const startTime = Date.now();
-        while (this.audioContext.state === 'suspended' && Date.now() - startTime < 100) {
-          // Tight loop to wait for AudioContext to resume
+        const maxWaitTime = 200; // Increased to 200ms for iOS Safari
+        
+        while (this.audioContext.state === 'suspended' && Date.now() - startTime < maxWaitTime) {
+          // Tight polling loop - this is necessary for iOS Safari
+          // The Promise might resolve but state change could be delayed
         }
         
+        console.log('🔊 AudioContext state after wait:', this.audioContext.state, 'waited:', Date.now() - startTime, 'ms');
+        
         if (this.audioContext.state === 'suspended') {
-          console.error('🔊 AudioContext failed to resume within 100ms, state:', this.audioContext.state);
+          console.error('🔊 CRITICAL: AudioContext failed to resume within', maxWaitTime, 'ms, state:', this.audioContext.state);
+          console.error('🔊 This indicates iOS Safari audio unlock failed - gesture may not have been user-initiated');
           this.audioState = 'FAILED';
           return false;
         }
+        
+        // Log the Promise for debugging (but don't await it)
+        resumePromise.then(() => {
+          console.log('🔊 AudioContext.resume() Promise resolved, final state:', this.audioContext?.state);
+        }).catch(error => {
+          console.error('🔊 AudioContext.resume() Promise rejected:', error);
+        });
       }
       
       console.log('🔊 AudioContext is running, state:', this.audioContext.state);
