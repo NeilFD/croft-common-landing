@@ -17,8 +17,9 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [showAnonymousModal, setShowAnonymousModal] = useState(false);
   const [pendingScore, setPendingScore] = useState<number | null>(null);
-  const [hasBeatenRecord, setHasBeatenRecord] = useState(false);
+  const [initialHighScore, setInitialHighScore] = useState<number | null>(null);
   const [showRecordCelebration, setShowRecordCelebration] = useState(false);
+  const [showNewHighScoreSet, setShowNewHighScoreSet] = useState(false);
   const audioRef = useRef<HTMLAudioElement>();
   
   const {
@@ -99,19 +100,23 @@ const PongGame = ({ onClose }: PongGameProps) => {
       }
     }
     
-    // Reset flag when game starts
+    // Reset flags when game starts
     if (gameRunning && !gameOver) {
       scoreSubmittedRef.current = false;
-      setHasBeatenRecord(false);
       setShowRecordCelebration(false);
+      setShowNewHighScoreSet(false);
+      
+      // Set the initial high score threshold for this game session
+      if (initialHighScore === null && currentHighScore > 0) {
+        setInitialHighScore(currentHighScore);
+      }
     }
   }, [gameOver, score, submitScore, gameRunning, isAuthenticated]);
 
-  // Check for high score beating during gameplay
+  // Check for high score beating during gameplay - only when beating the initial record
   useEffect(() => {
-    if (gameStarted && gameRunning && !gameOver && score > 0 && currentHighScore > 0) {
-      if (score > currentHighScore && !hasBeatenRecord) {
-        setHasBeatenRecord(true);
+    if (gameStarted && gameRunning && !gameOver && score > 0 && initialHighScore !== null) {
+      if (score > initialHighScore && !showRecordCelebration) {
         setShowRecordCelebration(true);
         playSound('record_broken');
         
@@ -121,7 +126,19 @@ const PongGame = ({ onClose }: PongGameProps) => {
         }, 3000);
       }
     }
-  }, [score, currentHighScore, hasBeatenRecord, gameStarted, gameRunning, gameOver, playSound]);
+  }, [score, initialHighScore, showRecordCelebration, gameStarted, gameRunning, gameOver, playSound]);
+
+  // Show "New High Score Set!" celebration at game over if we beat the initial record
+  useEffect(() => {
+    if (gameOver && score > 0 && initialHighScore !== null && score > initialHighScore) {
+      setShowNewHighScoreSet(true);
+      
+      // Hide celebration after 4 seconds
+      setTimeout(() => {
+        setShowNewHighScoreSet(false);
+      }, 4000);
+    }
+  }, [gameOver, score, initialHighScore]);
 
   const handleAnonymousScoreSubmit = async (playerName: string) => {
     if (pendingScore !== null) {
@@ -150,6 +167,8 @@ const PongGame = ({ onClose }: PongGameProps) => {
     resetGame();
     setGameStarted(true);
     setShowHighScores(false);
+    setInitialHighScore(null); // Reset for new game session
+    setShowNewHighScoreSet(false);
     startGame();
   };
 
@@ -206,7 +225,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
           </div>
         )}
 
-        {/* New Record Celebration */}
+        {/* New Record Celebration - During gameplay */}
         {showRecordCelebration && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-50">
             <div className="text-center animate-bounce">
@@ -219,6 +238,25 @@ const PongGame = ({ onClose }: PongGameProps) => {
             </div>
             {/* Screen flash effect */}
             <div className="absolute inset-0 bg-yellow-400/20 animate-ping"></div>
+          </div>
+        )}
+
+        {/* New High Score Set Celebration - At game over */}
+        {showNewHighScoreSet && gameOver && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
+            <div className="text-center animate-pulse">
+              <div className="text-5xl font-mono font-bold text-green-400 drop-shadow-lg">
+                NEW HIGH SCORE SET!
+              </div>
+              <div className="text-3xl font-mono text-white mt-4 opacity-90">
+                🎉 {score} Points! 🎉
+              </div>
+              <div className="text-lg font-mono text-white mt-2 opacity-70">
+                Congratulations!
+              </div>
+            </div>
+            {/* Confetti effect */}
+            <div className="absolute inset-0 bg-green-400/10 animate-pulse"></div>
           </div>
         )}
 

@@ -55,24 +55,46 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
 
   // Initialize AudioContext within user gesture and then generate audio
   const initializeAudio = useCallback(async () => {
-    if (!audioManagerRef.current) {
-      await prepareAudio();
-    }
-    
-    if (!audioManagerRef.current) {
-      console.error('Failed to create audio manager');
-      return;
-    }
+    try {
+      if (!audioManagerRef.current) {
+        await prepareAudio();
+      }
+      
+      if (!audioManagerRef.current) {
+        console.error('Failed to create audio manager');
+        return false;
+      }
 
-    // Create AudioContext synchronously within user gesture
-    const success = audioManagerRef.current.initializeAudioContext();
-    if (!success) {
-      console.error('Failed to create AudioContext');
-      return;
-    }
+      // Create AudioContext synchronously within user gesture
+      const success = audioManagerRef.current.initializeAudioContext();
+      if (!success) {
+        console.error('Failed to create AudioContext');
+        return false;
+      }
 
-    // Generate audio content asynchronously
-    await audioManagerRef.current.initializeAudio();
+      // Small delay to let AudioContext stabilize
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Generate audio content asynchronously with retry logic
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          await audioManagerRef.current.initializeAudio();
+          console.log('Audio initialization successful');
+          return true;
+        } catch (error) {
+          console.warn(`Audio initialization attempt ${attempt + 1} failed:`, error);
+          if (attempt < 2) {
+            await new Promise(resolve => setTimeout(resolve, 200));
+          }
+        }
+      }
+      
+      console.error('Audio initialization failed after 3 attempts');
+      return false;
+    } catch (error) {
+      console.error('Audio initialization error:', error);
+      return false;
+    }
   }, [prepareAudio]);
 
   const playSound = useCallback((soundName: string) => {
@@ -195,9 +217,19 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     state.ball.x += state.ball.dx;
     state.ball.y += state.ball.dy;
 
-    // Ball collision with top/bottom walls
+    // Ball collision with top/bottom walls with minimum angle enforcement
     if (state.ball.y - state.ball.radius <= 0 || state.ball.y + state.ball.radius >= state.canvas.height) {
       state.ball.dy = -state.ball.dy;
+      
+      // Enforce minimum angle to prevent horizontal tracking
+      const minVerticalSpeed = 1.5;
+      if (Math.abs(state.ball.dy) < minVerticalSpeed) {
+        state.ball.dy = state.ball.dy > 0 ? minVerticalSpeed : -minVerticalSpeed;
+      }
+      
+      // Add slight randomization to prevent perfect tracking
+      state.ball.dy += (Math.random() - 0.5) * 0.5;
+      
       playSound('paddle');
     }
 
@@ -213,6 +245,15 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       const paddleCenter = state.playerPaddle.y + state.playerPaddle.height / 2;
       const hitPosition = (state.ball.y - paddleCenter) / (state.playerPaddle.height / 2);
       state.ball.dy = hitPosition * 4 + (Math.random() - 0.5) * 2;
+      
+      // Enforce minimum and maximum angles to prevent extreme trajectories
+      const maxVerticalSpeed = 6;
+      const minVerticalSpeed = 1;
+      if (Math.abs(state.ball.dy) > maxVerticalSpeed) {
+        state.ball.dy = state.ball.dy > 0 ? maxVerticalSpeed : -maxVerticalSpeed;
+      } else if (Math.abs(state.ball.dy) < minVerticalSpeed) {
+        state.ball.dy = state.ball.dy > 0 ? minVerticalSpeed : -minVerticalSpeed;
+      }
       
       setScore(prev => {
         const newScore = prev + 1;
@@ -233,6 +274,16 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       const paddleCenter = state.aiPaddle.y + state.aiPaddle.height / 2;
       const hitPosition = (state.ball.y - paddleCenter) / (state.aiPaddle.height / 2);
       state.ball.dy = hitPosition * 4 + (Math.random() - 0.5) * 2;
+      
+      // Enforce minimum and maximum angles to prevent extreme trajectories
+      const maxVerticalSpeed = 6;
+      const minVerticalSpeed = 1;
+      if (Math.abs(state.ball.dy) > maxVerticalSpeed) {
+        state.ball.dy = state.ball.dy > 0 ? maxVerticalSpeed : -maxVerticalSpeed;
+      } else if (Math.abs(state.ball.dy) < minVerticalSpeed) {
+        state.ball.dy = state.ball.dy > 0 ? minVerticalSpeed : -minVerticalSpeed;
+      }
+      
       playSound('paddle');
     }
 
@@ -266,7 +317,13 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
       state.ball.x = state.canvas.width / 2;
       state.ball.y = state.canvas.height / 2;
       state.ball.dx = -Math.abs(state.ball.currentSpeed);
-      state.ball.dy = (Math.random() - 0.5) * 6;
+      
+      // Ensure proper angle with minimum vertical speed
+      const randomAngle = (Math.random() - 0.5) * 6;
+      const minVerticalSpeed = 2;
+      state.ball.dy = Math.abs(randomAngle) < minVerticalSpeed 
+        ? (randomAngle > 0 ? minVerticalSpeed : -minVerticalSpeed)
+        : randomAngle;
     }
   }, [score, playSound]);
 
@@ -283,8 +340,8 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     
     console.log('Starting game and initializing audio...');
     
-    // Initialize audio SYNCHRONOUSLY within user gesture
-    await initializeAudio();
+    // Initialize audio SYNCHRONOUSLY within user gesture with error handling
+    const audioInitialized = await initializeAudio();
     
     initializeGame();
     setGameRunning(true);
@@ -292,11 +349,18 @@ export const usePongGame = (canvasRef: React.RefObject<HTMLCanvasElement>) => {
     setScore(0);
     startTimeRef.current = Date.now();
     
-    // Play intro immediately, then transition to main loop
-    audioManagerRef.current?.playMusic('intro', false);
-    setTimeout(() => {
-      audioManagerRef.current?.playMusic('main', true);
-    }, 3000); // 3 second intro
+    // Only play music if audio was successfully initialized
+    if (audioInitialized && audioManagerRef.current) {
+      // Small delay to ensure audio context is fully ready
+      setTimeout(() => {
+        audioManagerRef.current?.playMusic('intro', false);
+        setTimeout(() => {
+          audioManagerRef.current?.playMusic('main', true);
+        }, 3000); // 3 second intro
+      }, 200);
+    } else {
+      console.warn('Audio not available, continuing without sound');
+    }
     
     gameLoop();
   }, [canvasRef, initializeGame, gameLoop, initializeAudio]);
