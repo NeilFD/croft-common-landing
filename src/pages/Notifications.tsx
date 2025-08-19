@@ -103,7 +103,7 @@ export default function Notifications() {
     <NotificationsPageLayout>
       <PersonalizedMessageBox firstName={firstName}>
         <p>
-          Push notifications could be a very cool way to spread some info and offers
+          Pop down to Croft Common to soak up the Membership benefits in the sun tomorrow
         </p>
         <p className="mt-8 text-right font-industrial text-base">
           - Croft Common
