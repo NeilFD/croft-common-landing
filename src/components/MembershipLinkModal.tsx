@@ -72,14 +72,20 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
         return;
       }
 
-      if (data?.success) {
+      if (data?.ok) {
         setStep('success');
         onSuccess(email);
         toast.success('Membership verified successfully!');
+        // Auto-close modal after a brief delay
+        setTimeout(() => {
+          handleClose();
+        }, 2000);
       } else {
         const errorMsg = data?.error || 'Invalid verification code';
         if (errorMsg.includes('expired')) {
           setError('Verification code has expired. Please request a new one.');
+        } else if (errorMsg.includes('already_used') || errorMsg.includes('consumed')) {
+          setError('This code has already been used. Please request a new one.');
         } else if (errorMsg.includes('invalid')) {
           setError('Invalid verification code. Please check and try again.');
         } else {
