@@ -1,10 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import CroftLogo from '@/components/CroftLogo';
-import { supabase } from '@/integrations/supabase/client';
-import { getStoredUserHandle } from '@/lib/biometricAuth';
 
 interface MembershipLinkModalProps {
   open: boolean;
@@ -13,142 +9,51 @@ interface MembershipLinkModalProps {
 }
 
 const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose, onSuccess }) => {
-  const [step, setStep] = useState<'email' | 'code'>('email');
-  const [email, setEmail] = useState('');
-  const [code, setCode] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const userHandle = useMemo(() => getStoredUserHandle(), [open]);
-
-  const startLink = async () => {
-    setError(null);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('Please enter a valid email.');
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase.functions.invoke('start-membership-link', {
-      body: { userHandle: userHandle || null, email: email.trim().toLowerCase() }
-    });
-    setLoading(false);
-    if (error) {
-      const msg = String((error as any)?.message ?? '');
-      if (msg.includes('not_subscribed')) setError('That email is not an active subscriber.');
-      else if (msg.includes('invalid_email')) setError('Please enter a valid email.');
-      else setError('Could not send code. Please try again.');
-      return;
-    }
-    if ((data as any)?.error === 'not_subscribed') {
-      setError('That email is not an active subscriber.');
-      return;
-    }
-    setStep('code');
-  };
-
-  const verifyLink = async () => {
-    setError(null);
-    if (code.trim().length < 4) {
-      setError('Enter the 6‑digit code from your email.');
-      return;
-    }
-    setLoading(true);
-    const { data, error } = await supabase.functions.invoke('verify-membership-link', {
-      body: { userHandle: userHandle || null, email: email.trim().toLowerCase(), code: code.trim() }
-    });
-    setLoading(false);
-    if (error || (data as any)?.error) {
-      setError('Invalid or expired code. Please try again.');
-      return;
-    }
-    onSuccess(email.trim().toLowerCase());
-  };
-
-  const reset = () => {
-    setStep('email');
-    setEmail('');
-    setCode('');
-    setError(null);
-  };
+  console.log('🔴 MembershipLinkModal RENDER - open:', open);
+  console.log('🔴 MembershipLinkModal props:', { open, onClose, onSuccess });
+  
+  if (open) {
+    console.log('🟢 Modal should be VISIBLE now!');
+  } else {
+    console.log('🔴 Modal should be HIDDEN');
+  }
 
   return (
     <Dialog open={open} onOpenChange={(v) => { 
-      if (!v) { reset(); onClose(); } 
+      if (!v) { 
+        console.log('🔴 Dialog onOpenChange called with false - closing modal');
+        onClose(); 
+      } 
     }}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent 
+        className="sm:max-w-[425px] bg-red-500 border-8 border-yellow-400 shadow-2xl" 
+        style={{ zIndex: 9999 }}
+      >
         <DialogHeader>
-          <div className="flex items-center gap-3 mb-4">
-            <CroftLogo size="sm" />
-            <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
-          </div>
-          <DialogTitle className="font-brutalist text-foreground text-xl tracking-wider">
-            Link your membership
+          <DialogTitle className="text-white text-2xl font-bold">
+            🚨 DEBUG MODAL WORKS! 🚨
           </DialogTitle>
-          <DialogDescription className="font-industrial text-muted-foreground">
-            {step === 'email' 
-              ? 'Enter your subscription email to link your membership to this device.'
-              : 'Enter the 6-digit code we sent to your email.'
-            }
+          <DialogDescription className="text-yellow-200 text-lg">
+            If you can see this, the modal is rendering correctly!
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {step === 'email' ? (
-            <>
-              <Input
-                type="email"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                disabled={loading}
-              />
-              {error && <p className="font-industrial text-destructive text-sm">{error}</p>}
-              <div className="flex gap-3">
-                <Button 
-                  className="flex-1" 
-                  onClick={startLink} 
-                  disabled={loading}
-                >
-                  {loading ? 'Sending…' : 'Send code'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => { reset(); onClose(); }} 
-                  disabled={loading}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </>
-          ) : (
-            <>
-              <Input
-                type="text"
-                placeholder="123456"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                disabled={loading}
-                maxLength={6}
-              />
-              {error && <p className="font-industrial text-destructive text-sm">{error}</p>}
-              <div className="flex gap-3">
-                <Button 
-                  className="flex-1" 
-                  onClick={verifyLink} 
-                  disabled={loading}
-                >
-                  {loading ? 'Verifying…' : 'Verify'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setStep('email')} 
-                  disabled={loading}
-                >
-                  Back
-                </Button>
-              </div>
-            </>
-          )}
+        <div className="space-y-4 p-4 bg-blue-600 rounded">
+          <p className="text-white text-xl font-bold">
+            MEMBER LOGIN MODAL IS WORKING!
+          </p>
+          <p className="text-yellow-200">
+            Open state: {open ? 'TRUE' : 'FALSE'}
+          </p>
+          <Button 
+            onClick={() => {
+              console.log('🟢 Close button clicked');
+              onClose();
+            }}
+            className="w-full bg-green-500 hover:bg-green-600 text-white text-lg font-bold p-4"
+          >
+            CLOSE MODAL
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
