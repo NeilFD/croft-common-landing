@@ -12,6 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
+import MembershipLinkModal from '@/components/MembershipLinkModal';
+import { UnauthorizedModal } from '@/components/UnauthorizedModal';
+import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { isBioRecentlyOk, markBioSuccess } from '@/hooks/useRecentBiometric';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
 interface LoyaltyCardModalProps {
@@ -22,7 +25,6 @@ interface LoyaltyCardModalProps {
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
   const [authOpen, setAuthOpen] = useState(false);
-  const [bioOpen, setBioOpen] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
@@ -30,6 +32,9 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const [readOnly, setReadOnly] = useState(false);
   const [publicCard, setPublicCard] = useState<any | null>(null);
   const [publicEntries, setPublicEntries] = useState<any[]>([]);
+  
+  // Use unified membership gate system
+  const membershipGate = useMembershipGate();
 
   const {
     loading,
@@ -43,60 +48,65 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     addEntry,
   } = useLoyalty(user);
 
-// Gate modal behind auth on open, but allow read-only via passkey-linked membership
+// Handle modal open/close and membership gating
 useEffect(() => {
-  let active = true;
-  const run = async () => {
-    if (!open) {
-      setAuthOpen(false);
-      setBioOpen(false);
-      setShowCard(false);
-      setReadOnly(false);
-      setPublicCard(null);
-      setPublicEntries([]);
-      return;
-    }
+  if (!open) {
+    setAuthOpen(false);
+    setShowCard(false);
+    setReadOnly(false);
+    setPublicCard(null);
+    setPublicEntries([]);
+    membershipGate.reset();
+    return;
+  }
 
-    if (user) {
-      setShowCard(true);
-      setReadOnly(false);
-      return;
-    }
+  if (user) {
+    // Signed in user - show card immediately
+    setShowCard(true);
+    setReadOnly(false);
+    return;
+  }
 
-    // No user: try silent passkey-linked check to show read-only card
-    const handle = getStoredUserHandle();
-    if (!handle) {
-      setBioOpen(true);
-      setShowCard(false);
-      return;
-    }
-    try {
-      const { data, error } = await supabase.functions.invoke('loyalty-get-active-card', { body: { userHandle: handle } });
-      if (!active) return;
-      if (error) throw error;
-      const res: any = data;
-      if (res?.linked && res?.userHasAccount && res?.hasCard) {
-        setPublicCard(res.card);
-        setPublicEntries(res.entries || []);
-        setReadOnly(true);
-        setShowCard(true);
-        setBioOpen(false);
-        setAuthOpen(false);
-        toast({ title: 'Access granted via passkey', description: 'Viewing your loyalty card. Sign in to save punches.' });
-      } else {
-        // Not linked or no card — fall back to current flow
-        setBioOpen(true);
+  // No user - use membership gate for access control
+  membershipGate.start();
+}, [open, user]);
+
+// Handle membership gate results
+useEffect(() => {
+  if (!open) return;
+  
+  if (membershipGate.allowed && !user) {
+    // Member access granted but not signed in - try to get read-only card
+    const fetchReadOnlyCard = async () => {
+      const handle = getStoredUserHandle();
+      if (!handle) return;
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('loyalty-get-active-card', { 
+          body: { userHandle: handle } 
+        });
+        
+        if (error) throw error;
+        const res: any = data;
+        
+        if (res?.linked && res?.userHasAccount && res?.hasCard) {
+          setPublicCard(res.card);
+          setPublicEntries(res.entries || []);
+          setReadOnly(true);
+          setShowCard(true);
+          toast({ title: 'Access granted via passkey', description: 'Viewing your loyalty card. Sign in to save punches.' });
+        } else {
+          setShowCard(false);
+        }
+      } catch (e) {
+        console.warn('loyalty-get-active-card failed', e);
         setShowCard(false);
       }
-    } catch (e) {
-      console.warn('loyalty-get-active-card failed', e);
-      setBioOpen(true);
-      setShowCard(false);
-    }
-  };
-  run();
-  return () => { active = false; };
-}, [open, user]);
+    };
+    
+    fetchReadOnlyCard();
+  }
+}, [membershipGate.allowed, open, user]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
@@ -207,8 +217,46 @@ const title = (user ? isLucky7 : (publicCard?.card_type === 'lucky7')) ? 'Lucky 
     }
   };
 
+  const handleCloseAll = () => {
+    membershipGate.reset();
+    onClose();
+  };
+
   return (
     <>
+      {/* Show unauthorized modal when not allowed and not in auth flows */}
+      <UnauthorizedModal
+        open={open && !membershipGate.allowed && !membershipGate.bioOpen && !membershipGate.linkOpen && !membershipGate.authOpen && !showCard}
+        onClose={onClose}
+        title="Loyalty Card Access"
+        description="Your coffee loyalty card is a member exclusive feature."
+      />
+
+      {/* Membership gate modals */}
+      <BiometricUnlockModal
+        isOpen={membershipGate.bioOpen}
+        onClose={handleCloseAll}
+        onSuccess={membershipGate.handleBioSuccess}
+        onFallback={membershipGate.handleBioFallback}
+        title="Loyalty Card Access"
+        description="Use Face ID / Passkey to access your loyalty card."
+      />
+
+      <MembershipLinkModal
+        open={membershipGate.linkOpen}
+        onClose={handleCloseAll}
+        onSuccess={membershipGate.handleLinkSuccess}
+      />
+
+      <AuthModal
+        isOpen={membershipGate.authOpen}
+        onClose={handleCloseAll}
+        onSuccess={membershipGate.handleAuthSuccess}
+        requireAllowedDomain={false}
+        title="Create Account"
+        description="Join Croft Common to unlock your loyalty card and other member features."
+      />
+
       <Dialog open={open && showCard} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[620px]">
           <DialogHeader>
@@ -372,30 +420,22 @@ return (
         </DialogContent>
       </Dialog>
 
-<BiometricUnlockModal
-  isOpen={bioOpen}
-  onClose={() => setBioOpen(false)}
-  onSuccess={() => { setBioOpen(false); setAuthOpen(true); }}
-  onFallback={() => { setBioOpen(false); setAuthOpen(true); }}
-  title="Sign in faster next time"
-  description="Save a passkey (Face ID / device biometrics) for quick unlock of secret perks."
-/>
-
-<AuthModal
-  isOpen={authOpen}
-  onClose={() => setAuthOpen(false)}
-  onSuccess={() => {
-    setAuthOpen(false);
-    setShowCard(true);
-    setReadOnly(false);
-    setPublicCard(null);
-    setPublicEntries([]);
-    toast({ title: 'Signed in', description: 'Your loyalty card is ready.' });
-  }}
-  requireAllowedDomain={false}
-  title="Sign in to start your loyalty card"
-  description="Enter your email and we'll send you a magic link to save your punches."
-/>
+      {/* Direct auth modal for signed-in users who want to start using the card */}
+      <AuthModal
+        isOpen={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onSuccess={() => {
+          setAuthOpen(false);
+          setShowCard(true);
+          setReadOnly(false);
+          setPublicCard(null);
+          setPublicEntries([]);
+          toast({ title: 'Signed in', description: 'Your loyalty card is ready.' });
+        }}
+        requireAllowedDomain={false}
+        title="Sign in to start your loyalty card"
+        description="Enter your email and we'll send you a magic link to save your punches."
+      />
     </>
   );
 };

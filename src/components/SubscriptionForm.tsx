@@ -128,7 +128,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
   const isHomepage = variant === 'homepage';
 
   return (
-    <div className={className}>
+    <div className={className} data-subscription-form>
       <div className="text-center mb-8">
         <CMSText
           page="global"

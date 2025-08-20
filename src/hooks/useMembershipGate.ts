@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStoredUserHandle } from "@/lib/biometricAuth";
 import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/useRecentBiometric";
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
+import { useMembershipAuth } from "@/hooks/useMembershipAuth";
 import { toast } from "sonner";
 
 interface UseMembershipGate {
@@ -20,6 +21,7 @@ interface UseMembershipGate {
 }
 
 export function useMembershipGate(): UseMembershipGate {
+  const { isMember } = useMembershipAuth();
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -37,8 +39,16 @@ export function useMembershipGate(): UseMembershipGate {
     setChecking(false);
   }, []);
 
-  // Start gate: prefer silent server check using stored passkey handle. No TTL bypass.
+  // Start gate: Check global membership first, then fallback to gate flow
   const start = useCallback(() => {
+    // If already a verified member globally, allow immediate access
+    if (isMember) {
+      console.debug('[gate] allowing access via global membership');
+      setAllowed(true);
+      toast.success('Member access granted');
+      return;
+    }
+
     const now = Date.now();
     if (inFlightRef.current) {
       console.debug('[gate] start skipped: in-flight');
@@ -106,7 +116,7 @@ export function useMembershipGate(): UseMembershipGate {
         inFlightRef.current = false;
       }
     })();
-  }, []);
+  }, [isMember]);
 
   const handleBioSuccess = useCallback(async () => {
     // After a successful fresh biometric, check if this device's passkey is linked to an active subscriber

@@ -16,14 +16,21 @@ export const MemberLoginModal = () => {
 
   return (
     <>
-      <Dialog open={loginOpen && !bioOpen && !linkOpen} onOpenChange={closeMemberLogin}>
+      <Dialog open={loginOpen} onOpenChange={closeMemberLogin}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Member Access</DialogTitle>
             <DialogDescription>
-              Verifying your membership credentials...
+              {bioOpen ? 'Use Face ID / Passkey to verify your membership.' : 
+               linkOpen ? 'Verify your membership via email link.' :
+               'Verifying your membership credentials...'}
             </DialogDescription>
           </DialogHeader>
+          {!bioOpen && !linkOpen && (
+            <div className="py-4 text-center text-muted-foreground">
+              Checking membership status...
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
