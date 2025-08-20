@@ -29,8 +29,6 @@ export function useMembershipAuth(): UseMembershipAuth {
 
   // Check if current user is a verified member
   const checkMembershipStatus = useCallback(async (): Promise<boolean> => {
-    if (!user) return false;
-    
     setLoading(true);
     try {
       const userHandle = getStoredUserHandle();
@@ -50,15 +48,11 @@ export function useMembershipAuth(): UseMembershipAuth {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
-  // Check membership status when user changes
+  // Check membership status when component mounts or when user changes
   useEffect(() => {
-    if (user) {
-      checkMembershipStatus();
-    } else {
-      setIsMember(false);
-    }
+    checkMembershipStatus();
   }, [user, checkMembershipStatus]);
 
   const showMemberLogin = useCallback(() => {
@@ -140,10 +134,12 @@ export function useMembershipAuth(): UseMembershipAuth {
   }, [closeMemberLogin]);
 
   const signOutMember = useCallback(async () => {
-    await signOut();
+    if (user) {
+      await signOut();
+    }
     setIsMember(false);
     toast.message('Signed out successfully');
-  }, [signOut]);
+  }, [signOut, user]);
 
   return {
     isMember,
