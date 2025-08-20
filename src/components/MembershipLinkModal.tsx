@@ -15,8 +15,9 @@ interface MembershipLinkModalProps {
 
 const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose, onSuccess }) => {
   const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState<'input' | 'sent' | 'success'>('input');
+  const [step, setStep] = useState<'input' | 'sent' | 'code' | 'success'>('input');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,9 +37,9 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
         return;
       }
 
-      if (data?.success) {
-        setStep('sent');
-        toast.success('Verification email sent! Please check your inbox.');
+      if (data?.ok) {
+        setStep('code');
+        toast.success('Verification code sent! Please check your inbox.');
       } else {
         setError(data?.error || 'Email not found in our membership records');
       }
@@ -50,8 +51,52 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
     }
   };
 
+  const handleCodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const { data, error } = await supabase.functions.invoke('verify-membership-link', {
+        body: { 
+          email: email.trim(),
+          code: code.trim(),
+          userHandle: `user_${Date.now()}` // Generate a unique handle
+        }
+      });
+
+      if (error) {
+        setError(error.message || 'Failed to verify code');
+        return;
+      }
+
+      if (data?.success) {
+        setStep('success');
+        onSuccess(email);
+        toast.success('Membership verified successfully!');
+      } else {
+        const errorMsg = data?.error || 'Invalid verification code';
+        if (errorMsg.includes('expired')) {
+          setError('Verification code has expired. Please request a new one.');
+        } else if (errorMsg.includes('invalid')) {
+          setError('Invalid verification code. Please check and try again.');
+        } else {
+          setError(errorMsg);
+        }
+      }
+    } catch (err) {
+      setError('Network error. Please try again.');
+      console.error('Code verification error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleClose = () => {
     setEmail('');
+    setCode('');
     setStep('input');
     setError('');
     onClose();
@@ -107,12 +152,93 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
                   ) : (
                     <>
                       <Mail className="h-4 w-4 mr-2" />
-                      Send Verification
+                      Send Code
                     </>
                   )}
                 </Button>
               </div>
             </form>
+          </div>
+        );
+
+      case 'code':
+        return (
+          <div className="space-y-4">
+            <div className="text-center mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+              <p className="text-sm text-[hsl(var(--charcoal-light))]">
+                We've sent a 6-digit code to <strong>{email}</strong>
+              </p>
+            </div>
+            <form onSubmit={handleCodeSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="code" className="text-[hsl(var(--charcoal))] font-industrial">
+                  Verification Code
+                </Label>
+                <Input
+                  id="code"
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="Enter 6-digit code"
+                  className="border-[hsl(var(--sage-green))] focus:border-[hsl(var(--accent-sage-green))] text-center text-lg tracking-widest"
+                  maxLength={6}
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setStep('input')}
+                  className="flex-1"
+                >
+                  Back
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={loading || code.length !== 6}
+                  className="flex-1 bg-[hsl(var(--sage-green))] hover:bg-[hsl(var(--accent-sage-green))] text-white"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Verifying...
+                    </>
+                  ) : (
+                    'Verify Code'
+                  )}
+                </Button>
+              </div>
+            </form>
+          </div>
+        );
+
+      case 'success':
+        return (
+          <div className="space-y-4 text-center">
+            <div className="flex justify-center">
+              <CheckCircle className="h-12 w-12 text-green-600" />
+            </div>
+            <div>
+              <h3 className="font-industrial text-lg text-[hsl(var(--charcoal))] mb-2">
+                Membership Verified!
+              </h3>
+              <p className="text-sm text-[hsl(var(--charcoal-light))] mb-4">
+                Welcome back! Your membership has been successfully verified.
+              </p>
+            </div>
+            <Button onClick={handleClose} className="w-full">
+              Continue
+            </Button>
           </div>
         );
 
@@ -124,14 +250,14 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
             </div>
             <div>
               <h3 className="font-industrial text-lg text-[hsl(var(--charcoal))] mb-2">
-                Verification Email Sent!
+                Verification Code Sent!
               </h3>
               <p className="text-sm text-[hsl(var(--charcoal-light))] mb-4">
-                We've sent a verification link to <strong>{email}</strong>. 
-                Please check your inbox and click the link to verify your membership.
+                We've sent a 6-digit code to <strong>{email}</strong>. 
+                Please check your inbox and enter the code below.
               </p>
               <p className="text-xs text-[hsl(var(--charcoal-light))]">
-                The verification link will expire in 10 minutes.
+                The code will expire in 10 minutes.
               </p>
             </div>
             <Button onClick={handleClose} className="w-full">
@@ -154,8 +280,12 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
           </DialogTitle>
           <DialogDescription className="text-[hsl(var(--charcoal-light))]">
             {step === 'input' 
-              ? 'Enter your membership email to verify access to member features.'
-              : 'Check your email for the verification link.'
+              ? 'Enter your membership email to receive a verification code.'
+              : step === 'code'
+              ? 'Enter the 6-digit code sent to your email.'
+              : step === 'success'
+              ? 'Your membership has been verified successfully.'
+              : 'Check your email for the verification code.'
             }
           </DialogDescription>
         </DialogHeader>
