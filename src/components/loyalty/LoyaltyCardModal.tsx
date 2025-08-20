@@ -50,11 +50,10 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     addEntry,
   } = useLoyalty(user);
 
-// Handle modal open/close and membership gating
+// Single unified effect to handle all modal state logic
 useEffect(() => {
-  console.debug('[LoyaltyCardModal] useEffect triggered', { open, user: !!user, isMobile, allowed: membershipGate.allowed });
-  
   if (!open) {
+    // Reset all state when modal closes
     setAuthOpen(false);
     setShowCard(false);
     setReadOnly(false);
@@ -65,30 +64,33 @@ useEffect(() => {
   }
 
   if (user) {
-    // Authenticated user - show card immediately and exit early
-    console.debug('[LoyaltyCardModal] Authenticated user - showing card immediately');
-    setShowCard(true);
-    setReadOnly(false);
-    setPublicCard(null);
-    setPublicEntries([]);
+    // Authenticated user - show card with mobile-friendly timing
+    const showAuthenticatedCard = () => {
+      setShowCard(true);
+      setReadOnly(false);
+      setPublicCard(null);
+      setPublicEntries([]);
+    };
+    
+    // Add small delay for mobile to ensure smooth rendering
+    if (isMobile) {
+      const timer = setTimeout(showAuthenticatedCard, 50);
+      return () => clearTimeout(timer);
+    } else {
+      showAuthenticatedCard();
+    }
     return;
   }
 
-  // Guest user - start membership gate flow
-  console.debug('[LoyaltyCardModal] Guest user - starting membership gate');
+  // Guest user flow - initialize membership gate and handle guest access
   membershipGate.start();
-}, [open, user]);
-
-// Separate effect for handling guest access when membership gate allows
-useEffect(() => {
-  if (!open || user || !membershipGate.allowed) return;
   
-  console.debug('[LoyaltyCardModal] Guest access allowed - fetching read-only card');
-  
-  const fetchReadOnlyCard = async () => {
+  const handleGuestFlow = async () => {
+    // Wait for membership gate to process
+    if (!membershipGate.allowed) return;
+    
     const handle = getStoredUserHandle();
     if (!handle) {
-      console.debug('[LoyaltyCardModal] No stored handle for guest access');
       setShowCard(false);
       return;
     }
@@ -102,25 +104,30 @@ useEffect(() => {
       const res: any = data;
       
       if (res?.linked && res?.userHasAccount && res?.hasCard) {
-        console.debug('[LoyaltyCardModal] Guest card loaded successfully');
         setPublicCard(res.card);
         setPublicEntries(res.entries || []);
         setReadOnly(true);
         setShowCard(true);
         toast({ title: 'Access granted via passkey', description: 'Viewing your loyalty card. Sign in to save punches.' });
       } else {
-        console.debug('[LoyaltyCardModal] No guest card available');
         setShowCard(false);
       }
     } catch (e) {
-      console.warn('[LoyaltyCardModal] loyalty-get-active-card failed', e);
+      console.warn('loyalty-get-active-card failed', e);
       setShowCard(false);
     }
   };
   
-  // Add small delay for mobile to prevent race conditions
-  const delay = isMobile ? 100 : 0;
-  const timer = setTimeout(fetchReadOnlyCard, delay);
+  // Check for guest access with proper timing
+  const checkGuestAccess = () => {
+    if (membershipGate.allowed) {
+      handleGuestFlow();
+    }
+  };
+  
+  // Use longer delay for guest flow to ensure membership gate fully processes
+  const delay = isMobile ? 200 : 150;
+  const timer = setTimeout(checkGuestAccess, delay);
   return () => clearTimeout(timer);
 }, [open, user, membershipGate.allowed, isMobile]);
 
