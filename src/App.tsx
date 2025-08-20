@@ -43,6 +43,7 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
 import { BannerNotification } from "@/components/BannerNotification";
 import { useBannerNotification } from "@/contexts/BannerNotificationContext";
+import { MembershipAuthProvider } from "@/contexts/MembershipAuthContext";
 
 const queryClient = new QueryClient();
 
@@ -119,6 +120,7 @@ const App = () => (
       <TooltipProvider>
         <BannerNotificationProvider>
           <NudgeNotificationProvider>
+            <MembershipAuthProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -164,6 +166,7 @@ const App = () => (
             </Routes>
           </TransitionProvider>
         </BrowserRouter>
+            </MembershipAuthProvider>
           </NudgeNotificationProvider>
         </BannerNotificationProvider>
       </TooltipProvider>
