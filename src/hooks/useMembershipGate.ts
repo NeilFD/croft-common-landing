@@ -92,7 +92,7 @@ export function useMembershipGate(): UseMembershipGate {
             setLinkOpen(false);
             setBioOpen(false);
             markBioLongSuccess();
-            toast.success('Croft Common Membership access granted via secure Face ID/Passkey');
+            // Remove the success toast that was causing mobile flashing
             return;
           } else {
             setLinkOpen(true);

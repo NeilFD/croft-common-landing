@@ -50,21 +50,24 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     addEntry,
   } = useLoyalty(user);
 
-// Single unified effect to handle all modal state logic
+// Completely separate authenticated and guest flows
 useEffect(() => {
   if (!open) {
-    // Reset all state when modal closes
+    // Reset all state when modal closes  
     setAuthOpen(false);
-    setShowCard(false);
+    setShowCard(!!user); // Keep showCard true for authenticated users
     setReadOnly(false);
     setPublicCard(null);
     setPublicEntries([]);
-    membershipGate.reset();
+    // Only reset membership gate for guest users
+    if (!user) {
+      membershipGate.reset();
+    }
     return;
   }
 
   if (user) {
-    // Authenticated user - show card immediately, no membership gate needed
+    // Authenticated user path - completely bypass membership gate
     setShowCard(true);
     setReadOnly(false);
     setPublicCard(null);
@@ -72,9 +75,9 @@ useEffect(() => {
     return;
   }
 
-  // Guest user flow - initialize membership gate and handle guest access
+  // Guest user path - only guests use membership gate
   membershipGate.start();
-}, [open, user]); // Removed isMobile dependency to prevent mobile-specific re-renders
+}, [open, user]);
 
 // Separate effect to handle guest access after membership gate allows
 useEffect(() => {
@@ -223,7 +226,10 @@ const title = (user ? isLucky7 : (publicCard?.card_type === 'lucky7')) ? 'Lucky 
   };
 
   const handleCloseAll = () => {
-    membershipGate.reset();
+    // Only reset membership gate if user is not authenticated
+    if (!user) {
+      membershipGate.reset();
+    }
     onClose();
   };
 
