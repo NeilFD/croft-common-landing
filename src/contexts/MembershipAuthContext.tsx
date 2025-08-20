@@ -5,6 +5,7 @@ import { getStoredUserHandle } from '@/lib/biometricAuth';
 import { markBioLongSuccess, isBioLongExpired } from '@/hooks/useRecentBiometric';
 import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { toast } from 'sonner';
+import { isPWA, isIOSPWA, logPWAContext, storePWAAuthState, retrievePWAAuthState, clearPWAAuthState } from '@/lib/pwaUtils';
 
 interface MembershipAuthContextType {
   isMember: boolean;
@@ -28,6 +29,16 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
+
+  // Initialize PWA state on mount
+  useEffect(() => {
+    const pwaState = retrievePWAAuthState();
+    if (pwaState?.isMember) {
+      setIsMember(true);
+      console.log('🏠 [PWA-Init] Restored member state from localStorage');
+    }
+    logPWAContext('Init');
+  }, []);
 
   // Check if current user is a verified member
   const checkMembershipStatus = useCallback(async (): Promise<boolean> => {
@@ -101,11 +112,19 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
 
   const showMemberLogin = useCallback(() => {
     console.log('🔑 showMemberLogin called');
+    const { pwaStatus, iosPWA } = logPWAContext('MemberLogin');
     const userHandle = getStoredUserHandle();
     const bioExpired = isBioLongExpired();
     
     console.log('🔑 userHandle:', userHandle);
     console.log('🔑 bioExpired:', bioExpired);
+    
+    // Skip biometric authentication in iOS PWA to prevent Safari redirects
+    if (iosPWA || (pwaStatus && !userHandle)) {
+      console.log('🔑 PWA detected - skipping biometric, going straight to email flow');
+      setLinkOpen(true);
+      return;
+    }
     
     // If we have a stored user handle and biometric isn't expired, try biometric first
     if (userHandle && !bioExpired) {
@@ -148,9 +167,13 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
         markBioLongSuccess();
         closeMemberLogin();
         
+        // Store PWA auth state for persistence
+        storePWAAuthState(true, userHandle);
+        
         // Get user's first name for personalized greeting
         const firstName = data?.first_name || data?.profile?.first_name || 'Member';
         toast.success(`Welcome back, ${firstName}!`);
+        console.log('🔑 Bio success - member authenticated');
       } else {
         setBioOpen(false);
         setLinkOpen(true);
@@ -173,21 +196,27 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
     markBioLongSuccess();
     closeMemberLogin();
     
+    // Store PWA auth state for persistence
+    storePWAAuthState(true);
+    
     // Personalized welcome message
     const name = firstName || 'Member';
     toast.success(`Welcome to Croft Common, ${name}!`);
+    console.log('🔑 Link success - member authenticated via email');
     
-    // Try to create passkey for next time
-    setTimeout(async () => {
-      try {
-        const existing = getStoredUserHandle();
-        if (!existing) {
-          await ensureBiometricUnlockSerialized('Member');
+    // Try to create passkey for next time, but not in iOS PWA to avoid redirect
+    if (!isIOSPWA()) {
+      setTimeout(async () => {
+        try {
+          const existing = getStoredUserHandle();
+          if (!existing) {
+            await ensureBiometricUnlockSerialized('Member');
+          }
+        } catch (e) {
+          console.debug('Post-link passkey creation failed', e);
         }
-      } catch (e) {
-        console.debug('Post-link passkey creation failed', e);
-      }
-    }, 1000);
+      }, 1000);
+    }
   }, [closeMemberLogin]);
 
   const signOutMember = useCallback(async () => {
@@ -195,7 +224,9 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
       await signOut();
     }
     setIsMember(false);
+    clearPWAAuthState();
     toast.message('Signed out successfully');
+    console.log('🔑 Member signed out');
   }, [signOut, user]);
 
   const value = {

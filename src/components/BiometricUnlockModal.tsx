@@ -5,6 +5,7 @@ import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '@/lib/bio
 import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { Button } from '@/components/ui/button';
 import { markBioSuccess } from '@/hooks/useRecentBiometric';
+import { isIOSPWA, logPWAContext } from '@/lib/pwaUtils';
 
 // Global lock to prevent overlapping OS biometric prompts across modals
 let bioPromptActive = false;
@@ -74,6 +75,17 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
 
   const handleUnlock = async () => {
     if (inFlightRef.current || bioPromptActive) return;
+    
+    // Log PWA context for debugging
+    logPWAContext('BiometricUnlock');
+    
+    // In iOS PWA, immediately fallback to avoid Safari redirect
+    if (isIOSPWA() && onFallback) {
+      console.log('🔑 iOS PWA detected - falling back to email to prevent Safari redirect');
+      onFallback();
+      return;
+    }
+    
     inFlightRef.current = true;
     bioPromptActive = true;
     setLoading(true);
