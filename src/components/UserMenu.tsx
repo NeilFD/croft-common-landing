@@ -14,8 +14,6 @@ export const UserMenu = () => {
   // Fetch member profile when user is authenticated
   useEffect(() => {
     const fetchMemberProfile = async () => {
-      console.debug('[UserMenu] Fetching profile for user:', { user: !!user, isMember, userId: user?.id });
-      
       if (!user || !isMember) {
         setMemberName('');
         return;
@@ -28,12 +26,9 @@ export const UserMenu = () => {
           .eq('user_id', user.id)
           .single();
 
-        console.debug('[UserMenu] Profile fetch result:', { data, error });
-
         if (data && !error) {
           const name = [data.first_name, data.last_name].filter(Boolean).join(' ');
           setMemberName(name);
-          console.debug('[UserMenu] Set member name:', name);
         }
       } catch (error) {
         console.debug('Profile fetch failed:', error);

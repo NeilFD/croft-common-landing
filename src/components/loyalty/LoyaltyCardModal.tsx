@@ -27,7 +27,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [authOpen, setAuthOpen] = useState(false);
-  const [showCard, setShowCard] = useState(false);
+  const [showCard, setShowCard] = useState(!!user); // Initialize to true for authenticated users
   const [completedCount, setCompletedCount] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const prevPunchesRef = useRef(0);
@@ -52,8 +52,6 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
 
 // Single unified effect to handle all modal state logic
 useEffect(() => {
-  console.debug('[LoyaltyCard] Effect triggered:', { open, user: !!user, userEmail: user?.email });
-  
   if (!open) {
     // Reset all state when modal closes
     setAuthOpen(false);
@@ -67,7 +65,6 @@ useEffect(() => {
 
   if (user) {
     // Authenticated user - show card immediately, no membership gate needed
-    console.debug('[LoyaltyCard] Authenticated user - showing card directly');
     setShowCard(true);
     setReadOnly(false);
     setPublicCard(null);
@@ -76,15 +73,12 @@ useEffect(() => {
   }
 
   // Guest user flow - initialize membership gate and handle guest access
-  console.debug('[LoyaltyCard] Guest user - starting membership gate');
   membershipGate.start();
-}, [open, user, isMobile]);
+}, [open, user]); // Removed isMobile dependency to prevent mobile-specific re-renders
 
 // Separate effect to handle guest access after membership gate allows
 useEffect(() => {
   if (!open || user || !membershipGate.allowed) return;
-  
-  console.debug('[LoyaltyCard] Guest access granted - fetching card');
   
   const handleGuestFlow = async () => {
     const handle = getStoredUserHandle();
@@ -233,14 +227,8 @@ const title = (user ? isLucky7 : (publicCard?.card_type === 'lucky7')) ? 'Lucky 
     onClose();
   };
 
+  // Explicit check to never show UnauthorizedModal for authenticated users
   const shouldShowUnauthorized = open && !user && !membershipGate.allowed && !membershipGate.bioOpen && !membershipGate.linkOpen && !membershipGate.authOpen && !showCard;
-  console.debug('[LoyaltyCard] Render state:', { 
-    open, 
-    user: !!user, 
-    showCard, 
-    shouldShowUnauthorized,
-    'membershipGate.allowed': membershipGate.allowed 
-  });
 
   return (
     <>
