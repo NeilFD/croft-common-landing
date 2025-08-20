@@ -56,15 +56,19 @@ export function useMembershipAuth(): UseMembershipAuth {
   }, [user, checkMembershipStatus]);
 
   const showMemberLogin = useCallback(() => {
+    console.log('🔑 showMemberLogin called');
     const userHandle = getStoredUserHandle();
-    if (userHandle && !isBioLongExpired()) {
-      // Try biometric first if we have stored credentials
-      setBioOpen(true);
-    } else {
-      // Otherwise show link flow
-      setLinkOpen(true);
-    }
-  }, []);
+    const bioExpired = isBioLongExpired();
+    
+    console.log('🔑 userHandle:', userHandle);
+    console.log('🔑 bioExpired:', bioExpired);
+    console.log('🔑 current bioOpen:', bioOpen);
+    console.log('🔑 current linkOpen:', linkOpen);
+    
+    // Temporarily always show link modal for debugging
+    console.log('🔑 Setting linkOpen to true');
+    setLinkOpen(true);
+  }, [bioOpen, linkOpen]);
 
   const closeMemberLogin = useCallback(() => {
     setBioOpen(false);
