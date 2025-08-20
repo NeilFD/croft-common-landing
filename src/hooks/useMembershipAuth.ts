@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 interface UseMembershipAuth {
   isMember: boolean;
   loading: boolean;
-  loginOpen: boolean;
   bioOpen: boolean;
   linkOpen: boolean;
   showMemberLogin: () => void;
@@ -25,7 +24,6 @@ export function useMembershipAuth(): UseMembershipAuth {
   const { user, signOut } = useAuth();
   const [isMember, setIsMember] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
 
@@ -72,11 +70,9 @@ export function useMembershipAuth(): UseMembershipAuth {
       // Otherwise show link flow
       setLinkOpen(true);
     }
-    setLoginOpen(true);
   }, []);
 
   const closeMemberLogin = useCallback(() => {
-    setLoginOpen(false);
     setBioOpen(false);
     setLinkOpen(false);
   }, []);
@@ -152,7 +148,6 @@ export function useMembershipAuth(): UseMembershipAuth {
   return {
     isMember,
     loading,
-    loginOpen,
     bioOpen,
     linkOpen,
     showMemberLogin,
