@@ -50,21 +50,14 @@ export function useMembershipAuth(): UseMembershipAuth {
     }
   }, []);
 
-  // Check membership status when component mounts or when user changes
-  useEffect(() => {
-    checkMembershipStatus();
-  }, [user, checkMembershipStatus]);
+  // TEMPORARILY DISABLED: Check membership status when component mounts or when user changes
+  // useEffect(() => {
+  //   checkMembershipStatus();
+  // }, [user, checkMembershipStatus]);
 
   const showMemberLogin = useCallback(() => {
-    console.log('🔑 showMemberLogin called');
-    const userHandle = getStoredUserHandle();
-    const bioExpired = isBioLongExpired();
-    
-    console.log('🔑 userHandle:', userHandle);
-    console.log('🔑 bioExpired:', bioExpired);
-    
-    // Temporarily always show link modal for debugging
-    console.log('🔑 Setting linkOpen to true');
+    console.log('🔑 showMemberLogin called - SIMPLIFIED VERSION');
+    console.log('🔑 Setting linkOpen to true immediately');
     setLinkOpen(true);
   }, []);
 
