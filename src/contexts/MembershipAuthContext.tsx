@@ -1,8 +1,8 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
-import { markBioLongSuccess } from '@/hooks/useRecentBiometric';
+import { markBioLongSuccess, isBioLongExpired } from '@/hooks/useRecentBiometric';
 import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { toast } from 'sonner';
 
@@ -52,10 +52,66 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Handle verification token from URL (when users click email link)
+  useEffect(() => {
+    const handleVerificationToken = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('membershipToken');
+      
+      if (token) {
+        try {
+          const { data, error } = await supabase.functions.invoke('verify-membership-link', {
+            body: { token }
+          });
+          
+          if (!error && data?.success) {
+            setIsMember(true);
+            markBioLongSuccess();
+            toast.success('Membership verified! Welcome to Croft Common.');
+            
+            // Clean up URL
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.delete('membershipToken');
+            window.history.replaceState({}, '', newUrl.toString());
+            
+            // Try to create passkey for future use
+            setTimeout(async () => {
+              try {
+                const existing = getStoredUserHandle();
+                if (!existing) {
+                  await ensureBiometricUnlockSerialized('Member');
+                }
+              } catch (e) {
+                console.debug('Post-verification passkey creation failed', e);
+              }
+            }, 2000);
+          }
+        } catch (err) {
+          console.error('Token verification failed:', err);
+          toast.error('Verification link expired or invalid');
+        }
+      }
+    };
+
+    handleVerificationToken();
+  }, []);
+
   const showMemberLogin = useCallback(() => {
-    console.log('🔑 showMemberLogin called - CONTEXT VERSION');
-    console.log('🔑 Setting linkOpen to true immediately');
-    setLinkOpen(true);
+    console.log('🔑 showMemberLogin called');
+    const userHandle = getStoredUserHandle();
+    const bioExpired = isBioLongExpired();
+    
+    console.log('🔑 userHandle:', userHandle);
+    console.log('🔑 bioExpired:', bioExpired);
+    
+    // If we have a stored user handle and biometric isn't expired, try biometric first
+    if (userHandle && !bioExpired) {
+      console.log('🔑 Opening biometric modal');
+      setBioOpen(true);
+    } else {
+      console.log('🔑 Opening link modal');
+      setLinkOpen(true);
+    }
   }, []);
 
   const closeMemberLogin = useCallback(() => {
