@@ -12,8 +12,8 @@ export const UserMenu = () => {
     await signOutMember();
   };
 
-  // Show Member Login button if no user
-  if (!user) {
+  // Show Member Login button if not a member
+  if (!isMember) {
     return (
       <Button
         variant="frameNeutral"
