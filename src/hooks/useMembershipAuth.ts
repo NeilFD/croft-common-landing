@@ -62,13 +62,11 @@ export function useMembershipAuth(): UseMembershipAuth {
     
     console.log('🔑 userHandle:', userHandle);
     console.log('🔑 bioExpired:', bioExpired);
-    console.log('🔑 current bioOpen:', bioOpen);
-    console.log('🔑 current linkOpen:', linkOpen);
     
     // Temporarily always show link modal for debugging
     console.log('🔑 Setting linkOpen to true');
     setLinkOpen(true);
-  }, [bioOpen, linkOpen]);
+  }, []);
 
   const closeMemberLogin = useCallback(() => {
     setBioOpen(false);

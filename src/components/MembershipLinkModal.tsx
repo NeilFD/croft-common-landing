@@ -13,6 +13,8 @@ interface MembershipLinkModalProps {
 }
 
 const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose, onSuccess }) => {
+  console.log('🔗 MembershipLinkModal rendered with open:', open);
+  
   const [step, setStep] = useState<'email' | 'code'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
