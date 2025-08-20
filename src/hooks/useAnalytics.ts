@@ -69,10 +69,7 @@ export const useAnalytics = () => {
           onConflict: 'session_id'
         });
       } catch (error) {
-        // Silently handle RLS policy violations for non-admin users
-        if (!error.message?.includes('new row violates row-level security')) {
-          console.error('Analytics: Failed to initialize session:', error);
-        }
+        console.error('Analytics: Failed to initialize session:', error);
       }
     };
 
@@ -90,46 +87,34 @@ export const useAnalytics = () => {
         if (lastPagePath.current && lastPagePath.current !== currentPath) {
           const timeSpent = Math.round((currentTime - pageStartTime.current) / 1000);
           
-          try {
-            await supabase.from('page_views').update({
-              time_spent_seconds: timeSpent,
-              scroll_depth_percent: maxScrollDepth.current,
-              is_bounce: timeSpent < 5 // Consider less than 5 seconds a bounce
-            }).eq('session_id', sessionId)
-              .eq('page_path', lastPagePath.current)
-              .order('viewed_at', { ascending: false })
-              .limit(1);
-          } catch (error) {
-            // Silently handle RLS policy violations for non-admin users
-          }
+          await supabase.from('page_views').update({
+            time_spent_seconds: timeSpent,
+            scroll_depth_percent: maxScrollDepth.current,
+            is_bounce: timeSpent < 5 // Consider less than 5 seconds a bounce
+          }).eq('session_id', sessionId)
+            .eq('page_path', lastPagePath.current)
+            .order('viewed_at', { ascending: false })
+            .limit(1);
           
-          try {
-            // Track user journey
-            await supabase.from('user_journeys').insert({
-              session_id: sessionId,
-              user_id: user?.id || null,
-              from_page: lastPagePath.current,
-              to_page: currentPath,
-              transition_type: 'navigation'
-            });
-          } catch (error) {
-            // Silently handle RLS policy violations for non-admin users
-          }
-        }
-        
-        try {
-          // Track new page view
-          await supabase.from('page_views').insert({
+          // Track user journey
+          await supabase.from('user_journeys').insert({
             session_id: sessionId,
             user_id: user?.id || null,
-            page_path: currentPath,
-            page_title: document.title,
-            referrer: lastPagePath.current || document.referrer || null,
-            viewed_at: new Date().toISOString()
+            from_page: lastPagePath.current,
+            to_page: currentPath,
+            transition_type: 'navigation'
           });
-        } catch (error) {
-          // Silently handle RLS policy violations for non-admin users
         }
+        
+        // Track new page view
+        await supabase.from('page_views').insert({
+          session_id: sessionId,
+          user_id: user?.id || null,
+          page_path: currentPath,
+          page_title: document.title,
+          referrer: lastPagePath.current || document.referrer || null,
+          viewed_at: new Date().toISOString()
+        });
         
         // Reset tracking variables
         pageStartTime.current = currentTime;
@@ -137,7 +122,7 @@ export const useAnalytics = () => {
         maxScrollDepth.current = 0;
         
       } catch (error) {
-        // Silently handle any other errors
+        console.error('Analytics: Failed to track page view:', error);
       }
     };
 
@@ -184,7 +169,7 @@ export const useAnalytics = () => {
         additional_data: additionalData || null
       });
     } catch (error) {
-      // Silently handle RLS policy violations for non-admin users
+      console.error('Analytics: Failed to track interaction:', error);
     }
   }, [sessionId, user, location.pathname]);
 
@@ -228,16 +213,12 @@ export const useAnalytics = () => {
           scrollDepth: maxScrollDepth.current
         }));
         
-        try {
-          // Update session end time
-          await supabase.from('user_sessions').update({
-            ended_at: new Date().toISOString()
-          }).eq('session_id', sessionId);
-        } catch (error) {
-          // Silently handle RLS policy violations for non-admin users
-        }
+        // Update session end time
+        await supabase.from('user_sessions').update({
+          ended_at: new Date().toISOString()
+        }).eq('session_id', sessionId);
       } catch (error) {
-        // Silently handle any other errors
+        console.error('Analytics: Failed to cleanup session:', error);
       }
     };
 
