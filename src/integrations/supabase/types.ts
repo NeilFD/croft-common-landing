@@ -877,6 +877,48 @@ export type Database = {
           },
         ]
       }
+      page_views: {
+        Row: {
+          created_at: string
+          id: string
+          is_bounce: boolean | null
+          page_path: string
+          page_title: string | null
+          referrer: string | null
+          scroll_depth_percent: number | null
+          session_id: string
+          time_spent_seconds: number | null
+          user_id: string | null
+          viewed_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_bounce?: boolean | null
+          page_path: string
+          page_title?: string | null
+          referrer?: string | null
+          scroll_depth_percent?: number | null
+          session_id: string
+          time_spent_seconds?: number | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_bounce?: boolean | null
+          page_path?: string
+          page_title?: string | null
+          referrer?: string | null
+          scroll_depth_percent?: number | null
+          session_id?: string
+          time_spent_seconds?: number | null
+          user_id?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
       pending_banners: {
         Row: {
           banner_message: string | null
@@ -1131,6 +1173,132 @@ export type Database = {
           subscription_date?: string
           unsubscribe_token?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_interactions: {
+        Row: {
+          additional_data: Json | null
+          coordinates: Json | null
+          created_at: string
+          element_class: string | null
+          element_id: string | null
+          element_text: string | null
+          id: string
+          interaction_type: string
+          occurred_at: string
+          page_path: string
+          session_id: string
+          user_id: string | null
+        }
+        Insert: {
+          additional_data?: Json | null
+          coordinates?: Json | null
+          created_at?: string
+          element_class?: string | null
+          element_id?: string | null
+          element_text?: string | null
+          id?: string
+          interaction_type: string
+          occurred_at?: string
+          page_path: string
+          session_id: string
+          user_id?: string | null
+        }
+        Update: {
+          additional_data?: Json | null
+          coordinates?: Json | null
+          created_at?: string
+          element_class?: string | null
+          element_id?: string | null
+          element_text?: string | null
+          id?: string
+          interaction_type?: string
+          occurred_at?: string
+          page_path?: string
+          session_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_journeys: {
+        Row: {
+          created_at: string
+          from_page: string | null
+          id: string
+          occurred_at: string
+          session_id: string
+          to_page: string
+          transition_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          from_page?: string | null
+          id?: string
+          occurred_at?: string
+          session_id: string
+          to_page: string
+          transition_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          from_page?: string | null
+          id?: string
+          occurred_at?: string
+          session_id?: string
+          to_page?: string
+          transition_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_sessions: {
+        Row: {
+          browser: string | null
+          created_at: string
+          device_type: string | null
+          ended_at: string | null
+          id: string
+          ip_address: unknown | null
+          is_authenticated: boolean | null
+          os: string | null
+          referrer: string | null
+          session_id: string
+          started_at: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_authenticated?: boolean | null
+          os?: string | null
+          referrer?: string | null
+          session_id: string
+          started_at?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          browser?: string | null
+          created_at?: string
+          device_type?: string | null
+          ended_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          is_authenticated?: boolean | null
+          os?: string | null
+          referrer?: string | null
+          session_id?: string
+          started_at?: string
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

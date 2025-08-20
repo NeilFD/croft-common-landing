@@ -39,6 +39,7 @@ import CMSVisual from "./pages/CMSVisual";
 import Notifications from "./pages/Notifications";
 import RouteImagePreloader from '@/components/RouteImagePreloader';
 import BrandAssetPreloader from '@/components/BrandAssetPreloader';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
 import { BannerNotification } from "@/components/BannerNotification";
 import { useBannerNotification } from "@/contexts/BannerNotificationContext";
@@ -62,6 +63,8 @@ const BannerOverlay = () => {
 const NotificationHandlers = () => {
   // Handle notification deep links universally
   useNotificationHandler();
+  // Initialize passive analytics tracking
+  useAnalytics();
   
   return null;
 };

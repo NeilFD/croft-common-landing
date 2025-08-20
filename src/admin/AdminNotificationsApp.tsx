@@ -15,6 +15,7 @@ import { AuthModal } from "@/components/AuthModal";
 import CroftLogo from "@/components/CroftLogo";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OptInAnalytics } from "./components/OptInAnalytics";
+import { UserAnalytics } from "./components/UserAnalytics";
 
 type NotificationRow = {
   id: string;
@@ -127,7 +128,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
   const [archivedFilter, setArchivedFilter] = useState<'all' | 'active' | 'archived'>('active');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'queued' | 'sent'>('all');
-  const [rightTab, setRightTab] = useState<'history' | 'analytics'>('history');
+  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics'>('history');
 
   const queryClient = useQueryClient();
 
@@ -323,11 +324,15 @@ export const AdminNotificationsApp: React.FC = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <CardTitle>{rightTab === 'history' ? 'History' : 'Analytics'}</CardTitle>
-                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics')}>
+                <CardTitle>
+                  {rightTab === 'history' ? 'History' : 
+                   rightTab === 'analytics' ? 'Opt-in Analytics' : 'User Analytics'}
+                </CardTitle>
+                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics')}>
                   <TabsList>
                     <TabsTrigger value="history">History</TabsTrigger>
                     <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
+                    <TabsTrigger value="user-analytics">User Analytics</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -367,8 +372,10 @@ export const AdminNotificationsApp: React.FC = () => {
                   archivedFilter={archivedFilter}
                   statusFilter={statusFilter}
                 />
-              ) : (
+              ) : rightTab === 'analytics' ? (
                 <OptInAnalytics embedded />
+              ) : (
+                <UserAnalytics />
               )}
             </CardContent>
           </Card>
