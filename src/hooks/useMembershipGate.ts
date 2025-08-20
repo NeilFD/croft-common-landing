@@ -45,7 +45,6 @@ export function useMembershipGate(): UseMembershipGate {
     if (isMember) {
       console.debug('[gate] allowing access via global membership');
       setAllowed(true);
-      toast.success('Member access granted');
       return;
     }
 

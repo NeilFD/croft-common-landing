@@ -64,7 +64,8 @@ useEffect(() => {
   }
 
   if (user) {
-    // Authenticated user - show card with mobile-friendly timing
+    // Authenticated user - show card immediately, no membership gate needed
+    console.debug('[LoyaltyCard] Authenticated user - showing card directly');
     const showAuthenticatedCard = () => {
       setShowCard(true);
       setReadOnly(false);
@@ -83,12 +84,17 @@ useEffect(() => {
   }
 
   // Guest user flow - initialize membership gate and handle guest access
+  console.debug('[LoyaltyCard] Guest user - starting membership gate');
   membershipGate.start();
+}, [open, user, isMobile]);
+
+// Separate effect to handle guest access after membership gate allows
+useEffect(() => {
+  if (!open || user || !membershipGate.allowed) return;
+  
+  console.debug('[LoyaltyCard] Guest access granted - fetching card');
   
   const handleGuestFlow = async () => {
-    // Wait for membership gate to process
-    if (!membershipGate.allowed) return;
-    
     const handle = getStoredUserHandle();
     if (!handle) {
       setShowCard(false);
@@ -108,7 +114,7 @@ useEffect(() => {
         setPublicEntries(res.entries || []);
         setReadOnly(true);
         setShowCard(true);
-        toast({ title: 'Access granted via passkey', description: 'Viewing your loyalty card. Sign in to save punches.' });
+        toast({ title: 'Successful Member Access granted', description: 'Viewing your loyalty card. Sign in to save punches.' });
       } else {
         setShowCard(false);
       }
@@ -118,18 +124,8 @@ useEffect(() => {
     }
   };
   
-  // Check for guest access with proper timing
-  const checkGuestAccess = () => {
-    if (membershipGate.allowed) {
-      handleGuestFlow();
-    }
-  };
-  
-  // Use longer delay for guest flow to ensure membership gate fully processes
-  const delay = isMobile ? 200 : 150;
-  const timer = setTimeout(checkGuestAccess, delay);
-  return () => clearTimeout(timer);
-}, [open, user, membershipGate.allowed, isMobile]);
+  handleGuestFlow();
+}, [open, user, membershipGate.allowed]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
