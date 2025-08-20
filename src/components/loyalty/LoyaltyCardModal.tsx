@@ -17,6 +17,7 @@ import { UnauthorizedModal } from '@/components/UnauthorizedModal';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { isBioRecentlyOk, markBioSuccess } from '@/hooks/useRecentBiometric';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;
@@ -24,6 +25,7 @@ interface LoyaltyCardModalProps {
 
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [authOpen, setAuthOpen] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
@@ -50,6 +52,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
 
 // Handle modal open/close and membership gating
 useEffect(() => {
+  console.debug('[LoyaltyCardModal] useEffect triggered', { open, user: !!user, isMobile, allowed: membershipGate.allowed });
+  
   if (!open) {
     setAuthOpen(false);
     setShowCard(false);
@@ -61,46 +65,64 @@ useEffect(() => {
   }
 
   if (user) {
-    // Signed in user - show card immediately
+    // Authenticated user - show card immediately and exit early
+    console.debug('[LoyaltyCardModal] Authenticated user - showing card immediately');
     setShowCard(true);
     setReadOnly(false);
+    setPublicCard(null);
+    setPublicEntries([]);
     return;
   }
 
-  // No user - start membership gate and fetch read-only card if allowed
+  // Guest user - start membership gate flow
+  console.debug('[LoyaltyCardModal] Guest user - starting membership gate');
   membershipGate.start();
+}, [open, user]);
+
+// Separate effect for handling guest access when membership gate allows
+useEffect(() => {
+  if (!open || user || !membershipGate.allowed) return;
   
-  if (membershipGate.allowed) {
-    const fetchReadOnlyCard = async () => {
-      const handle = getStoredUserHandle();
-      if (!handle) return;
+  console.debug('[LoyaltyCardModal] Guest access allowed - fetching read-only card');
+  
+  const fetchReadOnlyCard = async () => {
+    const handle = getStoredUserHandle();
+    if (!handle) {
+      console.debug('[LoyaltyCardModal] No stored handle for guest access');
+      setShowCard(false);
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('loyalty-get-active-card', { 
+        body: { userHandle: handle } 
+      });
       
-      try {
-        const { data, error } = await supabase.functions.invoke('loyalty-get-active-card', { 
-          body: { userHandle: handle } 
-        });
-        
-        if (error) throw error;
-        const res: any = data;
-        
-        if (res?.linked && res?.userHasAccount && res?.hasCard) {
-          setPublicCard(res.card);
-          setPublicEntries(res.entries || []);
-          setReadOnly(true);
-          setShowCard(true);
-          toast({ title: 'Access granted via passkey', description: 'Viewing your loyalty card. Sign in to save punches.' });
-        } else {
-          setShowCard(false);
-        }
-      } catch (e) {
-        console.warn('loyalty-get-active-card failed', e);
+      if (error) throw error;
+      const res: any = data;
+      
+      if (res?.linked && res?.userHasAccount && res?.hasCard) {
+        console.debug('[LoyaltyCardModal] Guest card loaded successfully');
+        setPublicCard(res.card);
+        setPublicEntries(res.entries || []);
+        setReadOnly(true);
+        setShowCard(true);
+        toast({ title: 'Access granted via passkey', description: 'Viewing your loyalty card. Sign in to save punches.' });
+      } else {
+        console.debug('[LoyaltyCardModal] No guest card available');
         setShowCard(false);
       }
-    };
-    
-    fetchReadOnlyCard();
-  }
-}, [open, user, membershipGate.allowed]);
+    } catch (e) {
+      console.warn('[LoyaltyCardModal] loyalty-get-active-card failed', e);
+      setShowCard(false);
+    }
+  };
+  
+  // Add small delay for mobile to prevent race conditions
+  const delay = isMobile ? 100 : 0;
+  const timer = setTimeout(fetchReadOnlyCard, delay);
+  return () => clearTimeout(timer);
+}, [open, user, membershipGate.allowed, isMobile]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
