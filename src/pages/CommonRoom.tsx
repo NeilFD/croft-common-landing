@@ -36,19 +36,19 @@ const CommonRoom = () => {
   };
 
   useEffect(() => {
-    // Wait for any active transitions to complete before navigating
-    if ((allowed || isMember) && !isTransitioning) {
-      console.debug('[CommonRoom] Navigating to main - allowed:', allowed, 'isMember:', isMember, 'isTransitioning:', isTransitioning);
+    // Navigate to main only after successful authentication through membership gate
+    if (allowed && !isTransitioning) {
+      console.debug('[CommonRoom] Navigating to main after successful auth - allowed:', allowed);
       reset();
       // Add small delay for mobile to ensure smooth transition
       const timer = setTimeout(() => {
         navigate('/common-room/main');
       }, 100);
       return () => clearTimeout(timer);
-    } else if ((allowed || isMember) && isTransitioning) {
+    } else if (allowed && isTransitioning) {
       console.debug('[CommonRoom] Waiting for transition to complete before navigating');
     }
-  }, [allowed, isMember, navigate, reset, isTransitioning]);
+  }, [allowed, navigate, reset, isTransitioning]);
   return (
     <div className="min-h-screen bg-white">
       {!isCMSMode && <Navigation />}
