@@ -16,7 +16,7 @@ interface MembershipAuthContextType {
   signOutMember: () => Promise<void>;
   handleBioSuccess: () => Promise<void>;
   handleBioFallback: () => void;
-  handleLinkSuccess: (email: string) => void;
+  handleLinkSuccess: (email: string, firstName?: string) => void;
   checkMembershipStatus: () => Promise<boolean>;
 }
 
@@ -67,7 +67,10 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
           if (!error && data?.success) {
             setIsMember(true);
             markBioLongSuccess();
-            toast.success('Membership verified! Welcome to Croft Common.');
+            
+            // Personalized welcome message
+            const firstName = data?.first_name || data?.profile?.first_name || 'Member';
+            toast.success(`Welcome to Croft Common, ${firstName}!`);
             
             // Clean up URL
             const newUrl = new URL(window.location.href);
@@ -144,7 +147,10 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
         setIsMember(true);
         markBioLongSuccess();
         closeMemberLogin();
-        toast.success('Welcome back, Member!');
+        
+        // Get user's first name for personalized greeting
+        const firstName = data?.first_name || data?.profile?.first_name || 'Member';
+        toast.success(`Welcome back, ${firstName}!`);
       } else {
         setBioOpen(false);
         setLinkOpen(true);
@@ -162,11 +168,14 @@ export function MembershipAuthProvider({ children }: { children: ReactNode }) {
     setLinkOpen(true);
   }, []);
 
-  const handleLinkSuccess = useCallback(async (email: string) => {
+  const handleLinkSuccess = useCallback(async (email: string, firstName?: string) => {
     setIsMember(true);
     markBioLongSuccess();
     closeMemberLogin();
-    toast.success('Membership verified! Welcome to Croft Common.');
+    
+    // Personalized welcome message
+    const name = firstName || 'Member';
+    toast.success(`Welcome to Croft Common, ${name}!`);
     
     // Try to create passkey for next time
     setTimeout(async () => {
