@@ -17,16 +17,17 @@ serve(async (req) => {
 
   try {
     const { userHandle, email, code } = await req.json();
-    if (!userHandle || !email || !code) {
+    if (!email || !code) {
       return new Response(JSON.stringify({ error: 'missing_params' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
     const normEmail = String(email).trim().toLowerCase();
 
     const nowIso = new Date().toISOString();
+    
+    // Find code by email and code first
     const { data: codeRow, error: codeErr } = await supabase
       .from('membership_codes')
-      .select('id')
-      .eq('user_handle', userHandle)
+      .select('id, user_handle')
       .eq('email', normEmail)
       .eq('code', String(code))
       .eq('consumed', false)
@@ -45,12 +46,15 @@ serve(async (req) => {
       .eq('id', codeRow.id);
     if (updErr) throw updErr;
 
+    // Use the userHandle from the request or from the stored code row
+    const finalUserHandle = userHandle || codeRow.user_handle;
+    
     const { error: upsertErr } = await supabase
       .from('membership_links')
-      .upsert({ user_handle: userHandle, email: normEmail, is_verified: true, verified_at: new Date().toISOString() }, { onConflict: 'user_handle' });
+      .upsert({ user_handle: finalUserHandle, email: normEmail, is_verified: true, verified_at: new Date().toISOString() }, { onConflict: 'user_handle' });
     if (upsertErr) throw upsertErr;
 
-    return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ ok: true, userHandle: finalUserHandle }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (e) {
     console.error('verify-membership-link error', e);
     return new Response(JSON.stringify({ error: 'server_error' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

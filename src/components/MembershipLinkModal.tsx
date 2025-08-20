@@ -23,17 +23,13 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
 
   const startLink = async () => {
     setError(null);
-    if (!userHandle) {
-      setError('No device passkey found. Please try Face ID again.');
-      return;
-    }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError('Please enter a valid email.');
       return;
     }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke('start-membership-link', {
-      body: { userHandle, email: email.trim().toLowerCase() }
+      body: { userHandle: userHandle || null, email: email.trim().toLowerCase() }
     });
     setLoading(false);
     if (error) {
@@ -52,17 +48,13 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
 
   const verifyLink = async () => {
     setError(null);
-    if (!userHandle) {
-      setError('No device passkey found. Please try Face ID again.');
-      return;
-    }
     if (code.trim().length < 4) {
       setError('Enter the 6‑digit code from your email.');
       return;
     }
     setLoading(true);
     const { data, error } = await supabase.functions.invoke('verify-membership-link', {
-      body: { userHandle, email: email.trim().toLowerCase(), code: code.trim() }
+      body: { userHandle: userHandle || null, email: email.trim().toLowerCase(), code: code.trim() }
     });
     setLoading(false);
     if (error || (data as any)?.error) {
