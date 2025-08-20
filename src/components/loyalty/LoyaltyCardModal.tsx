@@ -243,9 +243,9 @@ const title = (user ? isLucky7 : (publicCard?.card_type === 'lucky7')) ? 'Lucky 
 
   return (
     <>
-      {/* Show unauthorized modal when not allowed and not in auth flows */}
+      {/* Show unauthorized modal only for guest users when not allowed and not in auth flows */}
       <UnauthorizedModal
-        open={open && !membershipGate.allowed && !membershipGate.bioOpen && !membershipGate.linkOpen && !membershipGate.authOpen && !showCard}
+        open={open && !user && !membershipGate.allowed && !membershipGate.bioOpen && !membershipGate.linkOpen && !membershipGate.authOpen && !showCard}
         onClose={onClose}
         title="Loyalty Card Access"
         description="Your coffee loyalty card is a member exclusive feature."
