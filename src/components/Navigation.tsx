@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTransition } from '@/contexts/TransitionContext';
 import { preloadImages } from '@/hooks/useImagePreloader';
 import { UserMenu } from './UserMenu';
+import { MemberLoginModal } from './MemberLoginModal';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getRoutePreview } from '@/data/routeHeroMap';
@@ -141,10 +142,15 @@ const Navigation = () => {
           <UserMenu />
         </div>
         
+        {/* Mobile Navigation - Show UserMenu */}
+        <div className="md:hidden">
+          <UserMenu />
+        </div>
+        
         {/* Mobile menu button */}
         <button 
           onClick={toggleMobileMenu}
-          className="md:hidden font-industrial text-sm text-foreground p-2 hover:scale-105 transition-transform duration-200"
+          className="md:hidden font-industrial text-sm text-foreground p-2 hover:scale-105 transition-transform duration-200 ml-2"
           aria-label="Toggle mobile menu"
         >
           {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -178,6 +184,8 @@ const Navigation = () => {
 
         </div>
       </div>
+      
+      <MemberLoginModal />
     </nav>
   );
 };

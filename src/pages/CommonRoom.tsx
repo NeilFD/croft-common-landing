@@ -8,26 +8,34 @@ import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
+import { useMembershipAuth } from '@/hooks/useMembershipAuth';
 import { BRAND_LOGO } from '@/data/brand';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
   const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
+  const { isMember } = useMembershipAuth();
   const { isCMSMode } = useCMSMode();
 
   const handleGestureComplete = () => {
-    // Silent-first biometric attempt; UI shows only if needed
+    // Check if already authenticated as member first
+    if (isMember) {
+      navigate('/common-room/main');
+      return;
+    }
+    // Otherwise start membership gate flow
     start();
   };
 
   useEffect(() => {
-    if (allowed) {
+    if (allowed || isMember) {
       reset();
       navigate('/common-room/main');
     }
-  }, [allowed, navigate, reset]);
+  }, [allowed, isMember, navigate, reset]);
   return (
     <div className="min-h-screen bg-white">
       {!isCMSMode && <Navigation />}
