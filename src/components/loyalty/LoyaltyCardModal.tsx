@@ -52,6 +52,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
 
 // Single unified effect to handle all modal state logic
 useEffect(() => {
+  console.debug('[LoyaltyCard] Effect triggered:', { open, user: !!user, userEmail: user?.email });
+  
   if (!open) {
     // Reset all state when modal closes
     setAuthOpen(false);
@@ -66,20 +68,10 @@ useEffect(() => {
   if (user) {
     // Authenticated user - show card immediately, no membership gate needed
     console.debug('[LoyaltyCard] Authenticated user - showing card directly');
-    const showAuthenticatedCard = () => {
-      setShowCard(true);
-      setReadOnly(false);
-      setPublicCard(null);
-      setPublicEntries([]);
-    };
-    
-    // Add small delay for mobile to ensure smooth rendering
-    if (isMobile) {
-      const timer = setTimeout(showAuthenticatedCard, 50);
-      return () => clearTimeout(timer);
-    } else {
-      showAuthenticatedCard();
-    }
+    setShowCard(true);
+    setReadOnly(false);
+    setPublicCard(null);
+    setPublicEntries([]);
     return;
   }
 
@@ -241,11 +233,20 @@ const title = (user ? isLucky7 : (publicCard?.card_type === 'lucky7')) ? 'Lucky 
     onClose();
   };
 
+  const shouldShowUnauthorized = open && !user && !membershipGate.allowed && !membershipGate.bioOpen && !membershipGate.linkOpen && !membershipGate.authOpen && !showCard;
+  console.debug('[LoyaltyCard] Render state:', { 
+    open, 
+    user: !!user, 
+    showCard, 
+    shouldShowUnauthorized,
+    'membershipGate.allowed': membershipGate.allowed 
+  });
+
   return (
     <>
       {/* Show unauthorized modal only for guest users when not allowed and not in auth flows */}
       <UnauthorizedModal
-        open={open && !user && !membershipGate.allowed && !membershipGate.bioOpen && !membershipGate.linkOpen && !membershipGate.authOpen && !showCard}
+        open={shouldShowUnauthorized}
         onClose={onClose}
         title="Loyalty Card Access"
         description="Your coffee loyalty card is a member exclusive feature."
