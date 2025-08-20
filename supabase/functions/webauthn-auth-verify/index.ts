@@ -32,6 +32,7 @@ serve(async (req) => {
 
   try {
     const { userHandle, authResp, rpId, origin } = await req.json();
+    console.log('webauthn-auth-verify received:', { userHandle, authRespId: authResp?.id || authResp?.rawId, rpId, origin });
     if (!userHandle || !authResp) throw new Error('Missing userHandle or authResp');
 
     const url = new URL(req.url);
@@ -58,6 +59,9 @@ serve(async (req) => {
       .eq('user_handle', userHandle)
       .eq('rp_id', expectedRPID);
     if (credErr) throw credErr;
+    
+    console.log('webauthn-auth-verify credentials found:', credRows?.length, 'for user:', userHandle, 'rpId:', expectedRPID);
+    console.log('webauthn-auth-verify credential IDs:', credRows?.map(c => ({ id: c.credential_id, length: c.credential_id?.length })));
 
     const credMap = new Map<string, any>();
     for (const c of credRows ?? []) credMap.set(c.credential_id, c);
@@ -65,8 +69,13 @@ serve(async (req) => {
     // SimpleWebAuthn expects an authenticator object
     const authenticator = (() => {
       const rawIdB64u: string = authResp.rawId || authResp.id;
+      console.log('webauthn-auth-verify looking for credential ID:', rawIdB64u);
+      console.log('webauthn-auth-verify available credential IDs:', Array.from(credMap.keys()));
       const row = credMap.get(rawIdB64u);
-      if (!row) return null;
+      if (!row) {
+        console.log('webauthn-auth-verify no matching credential found');
+        return null;
+      }
       return {
         credentialID: base64urlToUint8Array(row.credential_id),
         credentialPublicKey: base64urlToUint8Array(row.public_key),
