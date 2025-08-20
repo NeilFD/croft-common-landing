@@ -67,16 +67,10 @@ useEffect(() => {
     return;
   }
 
-  // No user - use membership gate for access control
+  // No user - start membership gate and fetch read-only card if allowed
   membershipGate.start();
-}, [open, user]);
-
-// Handle membership gate results
-useEffect(() => {
-  if (!open) return;
   
-  if (membershipGate.allowed && !user) {
-    // Member access granted but not signed in - try to get read-only card
+  if (membershipGate.allowed) {
     const fetchReadOnlyCard = async () => {
       const handle = getStoredUserHandle();
       if (!handle) return;
@@ -106,7 +100,7 @@ useEffect(() => {
     
     fetchReadOnlyCard();
   }
-}, [membershipGate.allowed, open, user]);
+}, [open, user, membershipGate.allowed]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
