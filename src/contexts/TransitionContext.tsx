@@ -50,14 +50,14 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const STROBE_DURATION_MS = 500; // single short strobe window
   const LOGO_DISPLAY_MS = 900; // show logo long enough to see
 
-  // Soft transition timing
+  // Soft transition timing (mobile-friendly)
   const SOFT_LOGO_INTRO_MS = 900; // show logo long enough to see
   const SOFT_FADE_TO_IMAGE_MS = 1400; // crossfade duration to image (unused now)
   const SOFT_EXTRA_HOLD_MS = 200; // hold before hiding overlay
 
-  // Overlay/reveal timing
+  // Overlay/reveal timing (mobile-optimized)
   const OVERLAY_FADE_OUT_MS = 600; // smoother fade-out of overlay
-  const REVEAL_AFTER_NAV_MS = 200; // wait a beat after navigation before reveal
+  const REVEAL_AFTER_NAV_MS = 300; // longer wait on mobile for navigation completion
 
   const TEXTURE_URL = '/lovable-uploads/d1fb9178-8f7e-47fb-a8ac-71350264d76f.png';
 

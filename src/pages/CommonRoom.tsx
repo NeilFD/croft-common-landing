@@ -12,6 +12,7 @@ import { useMembershipAuth } from '@/hooks/useMembershipAuth';
 import { BRAND_LOGO } from '@/data/brand';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+import { useTransition } from '@/contexts/TransitionContext';
 
 const CommonRoom = () => {
   const navigate = useNavigate();
@@ -19,11 +20,15 @@ const CommonRoom = () => {
   const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
   const { isMember } = useMembershipAuth();
   const { isCMSMode } = useCMSMode();
+  const { isTransitioning } = useTransition();
 
   const handleGestureComplete = () => {
     // Check if already authenticated as member first
-    if (isMember) {
-      navigate('/common-room/main');
+    if (isMember && !isTransitioning) {
+      // Add delay for mobile compatibility
+      setTimeout(() => {
+        navigate('/common-room/main');
+      }, 100);
       return;
     }
     // Otherwise start membership gate flow
@@ -31,11 +36,19 @@ const CommonRoom = () => {
   };
 
   useEffect(() => {
-    if (allowed || isMember) {
+    // Wait for any active transitions to complete before navigating
+    if ((allowed || isMember) && !isTransitioning) {
+      console.debug('[CommonRoom] Navigating to main - allowed:', allowed, 'isMember:', isMember, 'isTransitioning:', isTransitioning);
       reset();
-      navigate('/common-room/main');
+      // Add small delay for mobile to ensure smooth transition
+      const timer = setTimeout(() => {
+        navigate('/common-room/main');
+      }, 100);
+      return () => clearTimeout(timer);
+    } else if ((allowed || isMember) && isTransitioning) {
+      console.debug('[CommonRoom] Waiting for transition to complete before navigating');
     }
-  }, [allowed, isMember, navigate, reset]);
+  }, [allowed, isMember, navigate, reset, isTransitioning]);
   return (
     <div className="min-h-screen bg-white">
       {!isCMSMode && <Navigation />}
