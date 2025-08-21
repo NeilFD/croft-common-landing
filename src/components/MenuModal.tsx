@@ -13,6 +13,7 @@ import CommonMembershipModal from '@/components/CommonMembershipModal';
 import { toast } from '@/hooks/use-toast';
 import SecretCinemaModal from '@/components/SecretCinemaModal';
 import SecretLuckySevenModal from './SecretLuckySevenModal';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ interface MenuModalProps {
 
 const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [showSecret, setShowSecret] = useState(false);
   const [showMembership, setShowMembership] = useState(false);
   
@@ -330,7 +332,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           onClose={() => setShowSecret(false)}
         />
       )}
-      {pageType === 'cafe' && (
+      {pageType === 'cafe' && !authLoading && !user && (
         <LoyaltyCardModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
