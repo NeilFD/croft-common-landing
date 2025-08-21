@@ -84,26 +84,16 @@ serve(async (req) => {
       throw new Error('No existing link found and no email provided');
     }
 
-    // Create an admin session for the verified user
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-      user_id: userId,
-      session: {
-        expires_in: 3600 // 1 hour
-      }
-    });
+    // Return user info for frontend session handling
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+    if (userError) throw userError;
 
-    if (sessionError) {
-      console.error('Failed to create admin session:', sessionError);
-      throw sessionError;
-    }
-
-    console.log('Successfully created session for WebAuthn user:', userId);
+    console.log('Successfully prepared user data for frontend session:', userId);
 
     return new Response(JSON.stringify({
       success: true,
       userId: userId,
-      session: sessionData.session,
-      verified: true
+      email: userData.user.email
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

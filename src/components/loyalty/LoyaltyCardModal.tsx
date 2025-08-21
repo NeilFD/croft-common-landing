@@ -4,12 +4,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import LoyaltyBox from './LoyaltyBox';
 import { useAuth } from '@/hooks/useAuth';
-import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { toast } from '@/hooks/use-toast';
 import { AuthModal } from '@/components/AuthModal';
-import BiometricUnlockModal from '@/components/BiometricUnlockModal';
-import MembershipLinkModal from '@/components/MembershipLinkModal';
 import CroftLogo from '@/components/CroftLogo';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -20,7 +17,7 @@ interface LoyaltyCardModalProps {
 
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
-  const membershipGate = useMembershipGate();
+  const [authOpen, setAuthOpen] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
@@ -37,42 +34,23 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     addEntry,
   } = useLoyalty(user);
 
-// Use membership gate flow: start gate when modal opens, show card when allowed
+// Simplified flow: authenticated users see card, unauthenticated see auth modal
 useEffect(() => {
-  console.log('[LoyaltyCardModal] modal open state changed:', { open });
-  
   if (!open) {
-    membershipGate.reset();
+    setAuthOpen(false);
     setShowCard(false);
     return;
   }
 
-  // Start the membership gate process (Face ID/Passkey flow)
-  console.log('[LoyaltyCardModal] starting membership gate...');
-  membershipGate.start();
-}, [open]);
-
-// Show loyalty card when user is authenticated
-useEffect(() => {
-  console.log('[LoyaltyCardModal] auth state change:', { 
-    user: !!user,
-    membershipGate: {
-      allowed: membershipGate.allowed, 
-      checking: membershipGate.checking,
-      bioOpen: membershipGate.bioOpen,
-      linkOpen: membershipGate.linkOpen,
-      authOpen: membershipGate.authOpen
-    }
-  });
-  
-  if (user && membershipGate.allowed) {
-    console.log('[LoyaltyCardModal] setting showCard to true');
+  if (user) {
     setShowCard(true);
-  } else {
-    console.log('[LoyaltyCardModal] setting showCard to false');
-    setShowCard(false);
+    return;
   }
-}, [user, membershipGate.allowed, membershipGate.checking, membershipGate.bioOpen, membershipGate.linkOpen, membershipGate.authOpen]);
+
+  // No user: show auth modal
+  setAuthOpen(true);
+  setShowCard(false);
+}, [open, user]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
@@ -142,8 +120,8 @@ const filledMap = useMemo(() => {
 }, [user, entries]);
 
 const handleSelect = (index: number) => async (file: File) => {
-  if (!membershipGate.allowed || !user) {
-    // This shouldn't happen as the UI is disabled, but just in case
+  if (!user) {
+    setAuthOpen(true);
     return;
   }
 
@@ -169,17 +147,17 @@ const subtitle = useMemo(() => {
 
 const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
 
-  // When dialog closes, reset membership gate and close
+  // When dialog closes, reset any auth modal
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
-      membershipGate.reset();
+      setAuthOpen(false);
       onClose();
     }
   };
 
   return (
     <>
-      <Dialog open={open && showCard && !!user} onOpenChange={handleOpenChange}>
+      <Dialog open={open && showCard} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[620px]">
           <DialogHeader>
             <DialogTitle className="font-brutalist tracking-wider flex items-center gap-2">
@@ -214,9 +192,9 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
               <AlertDescription>Seven free coffees — snap each one to claim. Let’s go!</AlertDescription>
             </Alert>
           )}
-          {membershipGate.checking && (
-            <div className="mb-4 text-sm text-foreground/70">
-              Checking membership access...
+          {!user && (
+            <div className="mb-4">
+              <Button onClick={() => setAuthOpen(true)}>Sign in to start</Button>
             </div>
           )}
 
@@ -227,9 +205,9 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
     const filled = !!filledMap[idx];
     const img = filledMap[idx]?.url;
 
-                    const disabled = loyaltyLoading || creatingNext || (!membershipGate.allowed);
+    const disabled = loyaltyLoading || creatingNext || (!user);
 
-                    return (
+    return (
       <LoyaltyBox
         key={idx}
         index={idx}
@@ -248,8 +226,8 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
                   const filled = !!filledMap[idx];
                   const img = filledMap[idx]?.url;
 
-const disabledRegular = membershipGate.allowed && isRegular ? (idx === 7 ? (Object.keys(filledMap).filter(k=>filledMap[Number(k)]?.kind==='punch').length < 6) : false) : false;
-const disabled = loyaltyLoading || creatingNext || (!membershipGate.allowed) || disabledRegular;
+const disabledRegular = user && isRegular ? (idx === 7 ? (Object.keys(filledMap).filter(k=>filledMap[Number(k)]?.kind==='punch').length < 6) : false) : false;
+const disabled = loyaltyLoading || creatingNext || (!user) || disabledRegular;
 
 return (
   <div className="flex flex-col items-center gap-1">
@@ -276,7 +254,7 @@ return (
         const filled = !!filledMap[idx];
         const img = filledMap[idx]?.url;
 
-        const disabled = loyaltyLoading || creatingNext || (!membershipGate.allowed);
+        const disabled = loyaltyLoading || creatingNext || (!user);
 
         return (
           <LoyaltyBox
@@ -297,7 +275,7 @@ return (
         const filled = !!filledMap[idx];
         const img = filledMap[idx]?.url;
 
-        const disabled = loyaltyLoading || creatingNext || (!membershipGate.allowed);
+        const disabled = loyaltyLoading || creatingNext || (!user);
 
         return (
           <div className="flex flex-col items-center gap-1">
@@ -339,31 +317,22 @@ return (
       </Dialog>
 
 
-      {/* Membership gate modals */}
-      <BiometricUnlockModal
-        isOpen={membershipGate.bioOpen}
-        onSuccess={membershipGate.handleBioSuccess}
-        onFallback={membershipGate.handleBioFallback}
-        onClose={() => membershipGate.reset()}
-        title="Access Your Loyalty Card"
-        description="Use Face ID or Touch ID to securely access your coffee loyalty card"
-      />
-
-      <MembershipLinkModal
-        open={membershipGate.linkOpen}
-        onClose={() => membershipGate.reset()}
-        onSuccess={membershipGate.handleLinkSuccess}
-      />
-
-      <AuthModal
-        isOpen={membershipGate.authOpen}
-        onClose={() => membershipGate.reset()}
-        onSuccess={membershipGate.handleAuthSuccess}
-        requireAllowedDomain={false}
-        title="Sign in to access your loyalty card"
-        description="Enter your email and we'll send you a 6-digit code to access your coffee loyalty card."
-        prefilledEmail={membershipGate.authEmail || undefined}
-      />
+<AuthModal
+  isOpen={authOpen}
+  onClose={() => setAuthOpen(false)}
+  onSuccess={() => {
+    setAuthOpen(false);
+    setShowCard(true);
+    toast({ title: 'Signed in', description: 'Your loyalty card is ready.' });
+  }}
+  requireAllowedDomain={false}
+  title="Sign in to start your loyalty card"
+  description="Enter your email and we'll send you a magic link to save your punches."
+  redirectUrl={`${window.location.origin}/`}
+  toastTitle="Magic link sent!"
+  toastDescription="Check your email and click the magic link to access your loyalty card."
+  emailSentInstructions="Click the magic link to access your loyalty card and start saving punches."
+/>
     </>
   );
 };

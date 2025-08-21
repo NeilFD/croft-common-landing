@@ -5,12 +5,10 @@ import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/us
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
 import { toast } from "sonner";
 
-
 interface UseMembershipGate {
   bioOpen: boolean;
   linkOpen: boolean;
   authOpen: boolean;
-  authEmail: string | null;
   allowed: boolean;
   checking: boolean;
   start: () => void;
@@ -25,7 +23,6 @@ export function useMembershipGate(): UseMembershipGate {
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
-  const [authEmail, setAuthEmail] = useState<string | null>(null);
   const [allowed, setAllowed] = useState(false);
   const [checking, setChecking] = useState(false);
   const inFlightRef = useRef(false);
@@ -36,7 +33,6 @@ export function useMembershipGate(): UseMembershipGate {
     setBioOpen(false);
     setLinkOpen(false);
     setAuthOpen(false);
-    setAuthEmail(null);
     setAllowed(false);
     setChecking(false);
   }, []);
@@ -83,10 +79,11 @@ export function useMembershipGate(): UseMembershipGate {
           const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
           console.debug('[gate] silent check result', { isLinked, data: d });
           if (isLinked) {
-            // Face ID verified membership, now require Email OTP for authentication
+            setAllowed(true);
+            setLinkOpen(false);
             setBioOpen(false);
-            setAuthEmail(d.email);
-            setAuthOpen(true);
+            markBioLongSuccess();
+            toast.success('Croft Common Membership access granted via secure Face ID/Passkey');
             return;
           } else {
             setLinkOpen(true);
@@ -137,10 +134,10 @@ export function useMembershipGate(): UseMembershipGate {
       const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
       console.debug('[gate] check-membership result', { isLinked, data: d });
       if (isLinked) {
-        // Face ID verified membership, now require Email OTP for authentication
+        setAllowed(true);
         setBioOpen(false);
-        setAuthEmail(d.email);
-        setAuthOpen(true);
+        setLinkOpen(false);
+        markBioLongSuccess();
       } else {
         setBioOpen(false);
         setLinkOpen(true);
@@ -212,7 +209,6 @@ export function useMembershipGate(): UseMembershipGate {
     bioOpen,
     linkOpen,
     authOpen,
-    authEmail,
     allowed,
     checking,
     start,
