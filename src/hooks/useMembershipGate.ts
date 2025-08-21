@@ -27,37 +27,28 @@ const createSupabaseSession = async (userHandle: string, email?: string) => {
       return false;
     }
     
-    console.log('[gate] WebAuthn verification successful for user:', data.email);
+    console.log('[gate] WebAuthn verification successful, setting session');
     
-    // Now create client-side session using the verified email
-    if (data.email) {
-      // Use signInWithOtp with a magic link approach for seamless authentication
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        email: data.email,
-        options: {
-          shouldCreateUser: false, // User already exists from WebAuthn verification
-          data: {
-            webauthn_verified: true,
-            user_handle: userHandle
-          }
-        }
+    // Use the session data from the edge function
+    if (data.session) {
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token
       });
       
-      if (authError) {
-        console.error('[gate] failed to create auth session:', authError);
-        // Don't show error to user - this is expected behavior for existing flow
-        console.log('[gate] proceeding without full session (access still granted)');
-        toast.success('Access granted');
-        return true;
+      if (sessionError) {
+        console.error('[gate] failed to set session:', sessionError);
+        toast.error('Failed to establish session');
+        return false;
       }
       
-      console.log('[gate] supabase session creation initiated');
+      console.log('[gate] supabase session established successfully');
       toast.success('Signed in successfully');
       return true;
     } else {
-      console.warn('[gate] no email returned from verification');
-      toast.success('Access granted');
-      return true;
+      console.error('[gate] no session data returned from verification');
+      toast.error('Session creation failed');
+      return false;
     }
   } catch (e) {
     console.error('[gate] webauthn verification exception:', e);
