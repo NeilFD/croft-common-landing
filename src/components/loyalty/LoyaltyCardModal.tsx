@@ -35,24 +35,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const [publicCard, setPublicCard] = useState<any | null>(null);
   const [publicEntries, setPublicEntries] = useState<any[]>([]);
   
-  // Only use membership gate for guest users - create no-op for authenticated users
-  const membershipGateReal = useMembershipGate();
-  const membershipGateNoOp = useMemo(() => ({
-    bioOpen: false,
-    linkOpen: false,
-    authOpen: false,
-    allowed: false,
-    checking: false,
-    start: () => {},
-    reset: () => {},
-    handleBioSuccess: () => {},
-    handleBioFallback: () => {},
-    handleLinkSuccess: () => {},
-    handleAuthSuccess: () => {}
-  }), []);
-  
-  // Use real gate for guest users, no-op for authenticated users
-  const membershipGate = (!authLoading && user) ? membershipGateNoOp : membershipGateReal;
+  // Hook now handles authenticated users internally
+  const membershipGate = useMembershipGate();
 
   const {
     loading,

@@ -24,6 +24,24 @@ interface UseMembershipGate {
 export function useMembershipGate(): UseMembershipGate {
   const { isMember } = useMembershipAuth();
   const { user, loading: authLoading } = useAuth();
+  
+  // Return no-op implementation for authenticated users
+  if (!authLoading && user) {
+    return {
+      bioOpen: false,
+      linkOpen: false,
+      authOpen: false,
+      allowed: false,
+      checking: false,
+      start: () => {},
+      reset: () => {},
+      handleBioSuccess: async () => {},
+      handleBioFallback: () => {},
+      handleLinkSuccess: () => {},
+      handleAuthSuccess: () => {}
+    };
+  }
+  
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
