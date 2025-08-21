@@ -63,8 +63,8 @@ const effectiveRpId = normalizeRpId(hostForRp);
       attestationType: 'none',
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
-        residentKey: 'preferred',
-        userVerification: 'preferred', // iOS-friendly: preferred instead of required
+        residentKey: 'required',
+        userVerification: 'required', // Force Face ID/Touch ID
       },
       extensions: {
         credProps: true, // Help iOS understand credential properties

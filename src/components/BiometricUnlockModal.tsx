@@ -80,32 +80,16 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     setError(null);
     
     try {
-      // Check if this is a completely new user
-      const existingHandle = getStoredUserHandle();
-      console.debug('[biometric] Modal - existing handle:', existingHandle);
-      
-      if (!existingHandle) {
-        console.debug('[biometric] Modal - NEW USER detected, going directly to registration');
-        const regResult = await registerPasskeyDetailed('Member');
-        if (regResult.ok) {
-          markBioSuccess();
-          onSuccess();
-          return;
-        }
-        setError(messageFor(regResult.errorCode, regResult.error));
-        return;
-      }
-      
-      console.debug('[biometric] Modal - EXISTING USER, attempting full flow');
-      const res = await ensureBiometricUnlockDetailed('Member');
-      if (res.ok) {
+      // Force direct registration - NO authentication attempts to avoid iOS selection dialog
+      console.debug('[biometric] Modal - going directly to Face ID registration');
+      const regResult = await registerPasskeyDetailed('Member');
+      if (regResult.ok) {
         markBioSuccess();
         onSuccess();
         return;
       }
-      console.debug('[biometric] Biometric unlock failed', res);
-      setError(messageFor(res.errorCode, res.error));
-      if (res.errorCode === 'unsupported' && onFallback) {
+      setError(messageFor(regResult.errorCode, regResult.error));
+      if (regResult.errorCode === 'unsupported' && onFallback) {
         onFallback();
       }
     } finally {

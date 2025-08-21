@@ -433,23 +433,15 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
     return { ok: false, stage: 'unsupported', errorCode: 'platform_unavailable', error: 'No built‑in authenticator available on this device' };
   }
 
-  // Check what we actually have stored
+  // ALWAYS go directly to registration for new users - no auth attempts
   const handle = getStoredUserHandle();
-  const hasCredentials = hasStoredCredentials();
   
-  console.log('[biometricAuth] DEBUG - handle:', handle);
-  console.log('[biometricAuth] DEBUG - hasCredentials:', hasCredentials);
-  console.log('[biometricAuth] DEBUG - localStorage HAS_CREDENTIALS_KEY:', localStorage.getItem(HAS_CREDENTIALS_KEY));
-  console.log('[biometricAuth] DEBUG - localStorage USER_HANDLE_KEY:', localStorage.getItem(USER_HANDLE_KEY));
-  
-  // For completely new users (no handle AND no credentials flag), skip auth entirely
-  if (!handle || !hasCredentials) {
-    console.log('[biometricAuth] NEW USER DETECTED - skipping all auth attempts, going directly to registration');
+  if (!handle) {
+    console.log('[biometricAuth] NO HANDLE - new user, going directly to Face ID registration');
     
-    // Clear any stale data to be absolutely sure
+    // Clear everything to be absolutely sure
     try {
-      localStorage.removeItem(USER_HANDLE_KEY);
-      localStorage.removeItem(HAS_CREDENTIALS_KEY);
+      localStorage.clear();
     } catch {}
     
     const regResult = await registerPasskeyDetailed(displayName);
