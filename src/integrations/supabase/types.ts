@@ -1430,6 +1430,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      clear_webauthn_data_for_handle: {
+        Args: { user_handle_input: string }
+        Returns: undefined
+      }
       create_cinema_booking: {
         Args: {
           _email: string

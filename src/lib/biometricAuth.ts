@@ -92,6 +92,9 @@ export async function authenticatePasskey(): Promise<{ ok: boolean; error?: stri
 // ---- Enhanced helpers & detailed flows ----
 export type BioResult = { 
   ok: boolean; 
+  success?: boolean;
+  code?: string;
+  message?: string;
   errorCode?: string; 
   error?: string; 
   userHandle?: string; 
@@ -171,6 +174,18 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
   try {
     const existing = getStoredUserHandle();
     const { rpId, origin } = getRpParams();
+
+    // For app reinstalls, clear any existing WebAuthn data to force fresh registration
+    if (existing) {
+      try {
+        console.debug('[biometricAuth] Clearing existing WebAuthn data for fresh registration');
+        await supabase.functions.invoke('clear-webauthn-data', {
+          body: { userHandle: existing }
+        });
+      } catch (clearError) {
+        console.warn('[biometricAuth] Failed to clear existing data, continuing:', clearError);
+      }
+    }
     const { data: optRes, error: optErr } = await supabase.functions.invoke('webauthn-register-options', {
       body: { userHandle: existing ?? undefined, displayName, rpId, origin }
     });
@@ -427,62 +442,37 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
     return { ok: false, stage: 'unsupported', errorCode: 'platform_unavailable', error: 'No built‑in authenticator available on this device' };
   }
 
-  // ALWAYS go directly to registration for new users - no auth attempts
-  const handle = getStoredUserHandle();
+  // For app reinstalls, always start with fresh registration 
+  // This handles cases where the user deleted the app and reinstalled it
+  console.log('[biometricAuth] Starting fresh registration flow for app reinstall scenario');
   
-  if (!handle) {
-    console.log('[biometricAuth] NO HANDLE - new user, going directly to Face ID registration');
-    
-    // Clear everything to be absolutely sure
-    try {
-      localStorage.clear();
-    } catch {}
-    
-    const regResult = await registerPasskeyDetailed(displayName);
-    
-    if (regResult.ok) {
-      console.log('[biometricAuth] Registration successful');
-      return { ok: true, stage: 'register', userHandle: regResult.userHandle, requiresLinking: regResult.requiresLinking };
-    }
-    
-    console.log('[biometricAuth] Registration failed:', regResult);
-    return { ok: false, stage: 'register', errorCode: regResult.errorCode, error: regResult.error };
+  const regResult = await registerPasskeyDetailed(displayName);
+  
+  if (regResult.ok) {
+    console.log('[biometricAuth] Registration successful');
+    return { ok: true, stage: 'register', userHandle: regResult.userHandle, requiresLinking: regResult.requiresLinking };
   }
   
-  console.log('[biometricAuth] EXISTING USER - found stored credentials, proceeding with authentication');
-
-  // Try authentication for users with stored credentials
-  console.log('[biometricAuth] Attempting authentication...');
-  const authResult = await authenticatePasskeyDetailed();
-  
-  if (authResult.ok && authResult.hasExistingLink) {
-    console.log('[biometricAuth] Authentication successful with existing link');
-    // Create session for existing user
-    const sessionResult = await createSupabaseSession(authResult.userHandle!);
-    if (sessionResult.ok) {
-      return { ok: true, stage: 'authenticate', session: sessionResult.session };
-    }
-    // If session creation fails, still return success but without session
-    return { ok: true, stage: 'authenticate' };
-  } else if (authResult.ok && !authResult.hasExistingLink) {
-    console.log('[biometricAuth] Authentication successful but no existing link - need email');
-    return { ok: true, stage: 'authenticate', userHandle: authResult.userHandle };
-  }
-
-  // If authentication failed due to no credentials, try registration
-  if (authResult.errorCode === 'no_credentials' || authResult.errorCode === 'unknown_credential') {
-    console.log('[biometricAuth] No credentials found, attempting registration...');
-    const regResult = await registerPasskeyDetailed(displayName);
+  // If registration failed due to existing credentials, try authentication as fallback
+  if (regResult.errorCode === 'verification_failed' || regResult.errorCode === 'unknown') {
+    console.log('[biometricAuth] Registration failed, trying authentication as fallback');
+    const authResult = await authenticatePasskeyDetailed();
     
-    if (regResult.ok) {
-      console.log('[biometricAuth] Registration successful');
-      return { ok: true, stage: 'register', userHandle: regResult.userHandle, requiresLinking: regResult.requiresLinking };
+    if (authResult.ok && authResult.hasExistingLink) {
+      console.log('[biometricAuth] Authentication successful with existing link');
+      const sessionResult = await createSupabaseSession(authResult.userHandle!);
+      if (sessionResult.ok) {
+        return { ok: true, stage: 'authenticate', session: sessionResult.session };
+      }
+      return { ok: true, stage: 'authenticate' };
+    } else if (authResult.ok && !authResult.hasExistingLink) {
+      console.log('[biometricAuth] Authentication successful but no existing link - need email');
+      return { ok: true, stage: 'authenticate', userHandle: authResult.userHandle };
     }
-    
-    return { ok: false, stage: 'register', errorCode: regResult.errorCode, error: regResult.error };
   }
   
-  return { ok: false, stage: 'authenticate', errorCode: authResult.errorCode, error: authResult.error };
+  console.log('[biometricAuth] Both registration and authentication failed:', regResult);
+  return { ok: false, stage: 'register', errorCode: regResult.errorCode, error: regResult.error };
 }
 
 // Add export for the session creation function
