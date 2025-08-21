@@ -5,57 +5,6 @@ import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/us
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
 import { toast } from "sonner";
 
-// Helper function to authenticate user after successful Face ID verification
-const createSupabaseSession = async (userHandle: string, email?: string) => {
-  try {
-    console.log('[gate] verifying WebAuthn for userHandle:', userHandle);
-    const { data, error } = await supabase.functions.invoke('webauthn-create-session', {
-      body: { userHandle, email }
-    });
-    
-    console.log('[gate] webauthn-create-session response:', { data, error });
-    
-    if (error) {
-      console.error('[gate] webauthn verification error:', error);
-      toast.error('Failed to verify authentication');
-      return false;
-    }
-    
-    if (!data?.success || !data?.verified) {
-      console.error('[gate] webauthn verification failed:', data);
-      toast.error('Authentication verification failed');
-      return false;
-    }
-    
-    console.log('[gate] WebAuthn verification successful, setting session');
-    
-    // Use the session data from the edge function
-    if (data.session) {
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token: data.session.access_token,
-        refresh_token: data.session.refresh_token
-      });
-      
-      if (sessionError) {
-        console.error('[gate] failed to set session:', sessionError);
-        toast.error('Failed to establish session');
-        return false;
-      }
-      
-      console.log('[gate] supabase session established successfully');
-      toast.success('Signed in successfully');
-      return true;
-    } else {
-      console.error('[gate] no session data returned from verification');
-      toast.error('Session creation failed');
-      return false;
-    }
-  } catch (e) {
-    console.error('[gate] webauthn verification exception:', e);
-    toast.error('Authentication error');
-    return false;
-  }
-};
 
 interface UseMembershipGate {
   bioOpen: boolean;
@@ -134,13 +83,10 @@ export function useMembershipGate(): UseMembershipGate {
           const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
           console.debug('[gate] silent check result', { isLinked, data: d });
           if (isLinked) {
-            // Create Supabase session for authenticated user with email from membership check
-            await createSupabaseSession(userHandle, d.email);
-            setAllowed(true);
-            setLinkOpen(false);
+            // Face ID verified membership, now require Email OTP for authentication
             setBioOpen(false);
-            markBioLongSuccess();
-            toast.success('Croft Common Membership access granted via secure Face ID/Passkey');
+            setAuthEmail(d.email);
+            setAuthOpen(true);
             return;
           } else {
             setLinkOpen(true);
@@ -191,12 +137,10 @@ export function useMembershipGate(): UseMembershipGate {
       const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
       console.debug('[gate] check-membership result', { isLinked, data: d });
       if (isLinked) {
-        // Create Supabase session for authenticated user with email from membership check
-        await createSupabaseSession(userHandle, d.email);
-        setAllowed(true);
+        // Face ID verified membership, now require Email OTP for authentication
         setBioOpen(false);
-        setLinkOpen(false);
-        markBioLongSuccess();
+        setAuthEmail(d.email);
+        setAuthOpen(true);
       } else {
         setBioOpen(false);
         setLinkOpen(true);
@@ -212,20 +156,6 @@ export function useMembershipGate(): UseMembershipGate {
   const handleBioFallback = useCallback(() => {
     console.debug('[gate] bio fallback -> authOpen');
     setBioOpen(false);
-    // Get the email from WebAuthn verification for prefilling
-    const userHandle = getStoredUserHandle();
-    if (userHandle) {
-      // Try to get email from the most recent verification
-      supabase.functions.invoke('webauthn-create-session', {
-        body: { userHandle }
-      }).then(({ data }) => {
-        if (data?.email) {
-          setAuthEmail(data.email);
-        }
-      }).catch(() => {
-        // Ignore errors, just proceed without prefilled email
-      });
-    }
     setAuthOpen(true);
   }, []);
 

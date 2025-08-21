@@ -52,24 +52,27 @@ useEffect(() => {
   membershipGate.start();
 }, [open]);
 
-// Show loyalty card when membership gate allows access
+// Show loyalty card when user is authenticated
 useEffect(() => {
-  console.log('[LoyaltyCardModal] membership gate state change:', { 
-    allowed: membershipGate.allowed, 
-    checking: membershipGate.checking,
-    bioOpen: membershipGate.bioOpen,
-    linkOpen: membershipGate.linkOpen,
-    authOpen: membershipGate.authOpen 
+  console.log('[LoyaltyCardModal] auth state change:', { 
+    user: !!user,
+    membershipGate: {
+      allowed: membershipGate.allowed, 
+      checking: membershipGate.checking,
+      bioOpen: membershipGate.bioOpen,
+      linkOpen: membershipGate.linkOpen,
+      authOpen: membershipGate.authOpen
+    }
   });
   
-  if (membershipGate.allowed) {
+  if (user && membershipGate.allowed) {
     console.log('[LoyaltyCardModal] setting showCard to true');
     setShowCard(true);
   } else {
     console.log('[LoyaltyCardModal] setting showCard to false');
     setShowCard(false);
   }
-}, [membershipGate.allowed, membershipGate.checking, membershipGate.bioOpen, membershipGate.linkOpen, membershipGate.authOpen]);
+}, [user, membershipGate.allowed, membershipGate.checking, membershipGate.bioOpen, membershipGate.linkOpen, membershipGate.authOpen]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
@@ -176,7 +179,7 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
 
   return (
     <>
-      <Dialog open={open && showCard} onOpenChange={handleOpenChange}>
+      <Dialog open={open && showCard && !!user} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-[620px]">
           <DialogHeader>
             <DialogTitle className="font-brutalist tracking-wider flex items-center gap-2">
@@ -214,11 +217,6 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
           {membershipGate.checking && (
             <div className="mb-4 text-sm text-foreground/70">
               Checking membership access...
-            </div>
-          )}
-          {membershipGate.allowed && !user && (
-            <div className="mb-4 text-sm text-foreground/70">
-              Loading your loyalty card...
             </div>
           )}
 
