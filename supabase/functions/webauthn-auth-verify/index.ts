@@ -32,12 +32,25 @@ serve(async (req) => {
 
   try {
     const { userHandle, authResp, rpId, origin } = await req.json();
+    console.log('[webauthn-auth-verify] Request received:', {
+      userHandle,
+      rpId,
+      origin,
+      authRespKeys: authResp ? Object.keys(authResp) : 'null'
+    });
+    
     if (!userHandle || !authResp) throw new Error('Missing userHandle or authResp');
 
     const url = new URL(req.url);
     const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
     const hostForRp = rpId ?? new URL(expectedOrigin).hostname;
     const expectedRPID = normalizeRpId(hostForRp);
+
+    console.log('[webauthn-auth-verify] Verification params:', {
+      expectedOrigin,
+      expectedRPID,
+      requestOrigin: req.headers.get('origin')
+    });
 
     // Load latest auth challenge
     const { data: challenges, error: chErr } = await supabase
@@ -47,9 +60,18 @@ serve(async (req) => {
       .eq('type', 'authentication')
       .order('created_at', { ascending: false })
       .limit(1);
-    if (chErr) throw chErr;
+    if (chErr) {
+      console.error('[webauthn-auth-verify] Challenge query error:', chErr);
+      throw chErr;
+    }
+    
     const challenge = challenges?.[0]?.challenge;
-    if (!challenge) return new Response(JSON.stringify({ error: 'no_challenge' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    console.log('[webauthn-auth-verify] Challenge found:', !!challenge, challenges?.[0]?.created_at);
+    
+    if (!challenge) {
+      console.error('[webauthn-auth-verify] No challenge found for userHandle:', userHandle);
+      return new Response(JSON.stringify({ error: 'no_challenge' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     // Get authenticator data scoped to this RP ID
     const { data: credRows, error: credErr } = await supabase
@@ -57,7 +79,12 @@ serve(async (req) => {
       .select('*')
       .eq('user_handle', userHandle)
       .eq('rp_id', expectedRPID);
-    if (credErr) throw credErr;
+    if (credErr) {
+      console.error('[webauthn-auth-verify] Credential query error:', credErr);
+      throw credErr;
+    }
+
+    console.log('[webauthn-auth-verify] Credentials found:', credRows?.length || 0);
 
     const credMap = new Map<string, any>();
     for (const c of credRows ?? []) credMap.set(c.credential_id, c);
@@ -76,8 +103,11 @@ serve(async (req) => {
     })();
 
     if (!authenticator) {
+      console.error('[webauthn-auth-verify] Unknown credential:', authResp.rawId || authResp.id);
       return new Response(JSON.stringify({ error: 'unknown_credential' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
+
+    console.log('[webauthn-auth-verify] Starting verification with authenticator');
 
     const verification = await verifyAuthenticationResponse({
       response: authResp,
@@ -87,8 +117,20 @@ serve(async (req) => {
       authenticator,
     });
 
+    console.log('[webauthn-auth-verify] Verification result:', {
+      verified: verification.verified,
+      hasAuthenticationInfo: !!verification.authenticationInfo
+    });
+
     if (!verification.verified || !verification.authenticationInfo) {
-      return new Response(JSON.stringify({ verified: false }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      console.error('[webauthn-auth-verify] Verification failed:', {
+        verified: verification.verified,
+        hasAuthenticationInfo: !!verification.authenticationInfo
+      });
+      return new Response(JSON.stringify({ 
+        verified: false,
+        error: 'Authentication verification failed'
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const { newCounter } = verification.authenticationInfo;

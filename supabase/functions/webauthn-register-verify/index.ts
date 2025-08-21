@@ -28,12 +28,25 @@ serve(async (req) => {
 
   try {
     const { userHandle, attResp, rpId, origin } = await req.json();
+    console.log('[webauthn-register-verify] Request received:', {
+      userHandle,
+      rpId,
+      origin,
+      attRespKeys: attResp ? Object.keys(attResp) : 'null'
+    });
+    
     if (!userHandle || !attResp) throw new Error('Missing userHandle or attResp');
 
     const url = new URL(req.url);
     const expectedOrigin = origin ?? req.headers.get('origin') ?? `${url.protocol}//${url.host}`;
     const hostForRp = rpId ?? new URL(expectedOrigin).hostname;
     const expectedRPID = normalizeRpId(hostForRp);
+
+    console.log('[webauthn-register-verify] Verification params:', {
+      expectedOrigin,
+      expectedRPID,
+      requestOrigin: req.headers.get('origin')
+    });
 
     // Load latest registration challenge
     const { data: challenges, error: chErr } = await supabase
@@ -43,9 +56,25 @@ serve(async (req) => {
       .eq('type', 'registration')
       .order('created_at', { ascending: false })
       .limit(1);
-    if (chErr) throw chErr;
+    if (chErr) {
+      console.error('[webauthn-register-verify] Challenge query error:', chErr);
+      throw chErr;
+    }
+    
     const challenge = challenges?.[0]?.challenge;
-    if (!challenge) return new Response(JSON.stringify({ error: 'no_challenge' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    console.log('[webauthn-register-verify] Challenge found:', !!challenge, challenges?.[0]?.created_at);
+    
+    if (!challenge) {
+      console.error('[webauthn-register-verify] No challenge found for userHandle:', userHandle);
+      return new Response(JSON.stringify({ error: 'no_challenge' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    console.log('[webauthn-register-verify] Starting verification with:', {
+      hasResponse: !!attResp,
+      challengeLength: challenge.length,
+      expectedOrigin,
+      expectedRPID
+    });
 
     const verification = await verifyRegistrationResponse({
       response: attResp,
@@ -54,8 +83,22 @@ serve(async (req) => {
       expectedRPID,
     });
 
+    console.log('[webauthn-register-verify] Verification result:', {
+      verified: verification.verified,
+      hasRegistrationInfo: !!verification.registrationInfo
+    });
+
     if (!verification.verified || !verification.registrationInfo) {
-      return new Response(JSON.stringify({ verified: false }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      console.error('[webauthn-register-verify] Verification failed:', {
+        verified: verification.verified,
+        hasRegistrationInfo: !!verification.registrationInfo,
+        verificationError: verification.verificationError
+      });
+      return new Response(JSON.stringify({ 
+        verified: false, 
+        error: verification.verificationError || 'Verification failed',
+        details: { verified: verification.verified, hasRegistrationInfo: !!verification.registrationInfo }
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const { credentialID, credentialPublicKey, counter, credentialDeviceType, credentialBackedUp, credentialTransports } = verification.registrationInfo;

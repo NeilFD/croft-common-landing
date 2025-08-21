@@ -97,6 +97,7 @@ export type BioResult = {
   userHandle?: string; 
   requiresLinking?: boolean; 
   hasExistingLink?: boolean; 
+  details?: any; 
 };
 
 function mapWebAuthnError(err: unknown): { code: string; message: string } {
@@ -212,8 +213,17 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
     });
     const verifyData = await verifyResp.json();
 
+    console.log('[biometricAuth] Verification response:', verifyData);
+
     if (!verifyData.verified) {
-      return { ok: false, errorCode: 'verification_failed', error: 'Verification failed' };
+      const errorMsg = verifyData.error || 'Verification failed';
+      console.error('[biometricAuth] Verification failed:', verifyData);
+      return { 
+        ok: false, 
+        errorCode: 'verification_failed', 
+        error: errorMsg,
+        details: verifyData.details 
+      };
     }
 
     console.log('[biometricAuth] Registration successful:', verifyData.userHandle);
