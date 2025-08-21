@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -208,14 +207,13 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
     <>
       <AuthModal
         isOpen={emailModalOpen}
-        onClose={() => setEmailModalOpen(false)}
+        onClose={() => {
+          setEmailModalOpen(false);
+          onClose();
+        }}
         onSuccess={() => {
           setEmailModalOpen(false);
           toast({ title: 'Signed in', description: 'You can now reserve your tickets.' });
-        }}
-        onCancel={() => {
-          setEmailModalOpen(false);
-          onClose();
         }}
         title="Sign in to reserve Secret 7 Cinema Tickets"
         description="We'll email you a 6-digit code to verify your identity."
