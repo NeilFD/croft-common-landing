@@ -1,3 +1,4 @@
+
 import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,9 +8,6 @@ import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/AuthModal';
-import BiometricUnlockModal from '@/components/BiometricUnlockModal';
-import MembershipLinkModal from '@/components/MembershipLinkModal';
-import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { format } from 'date-fns';
 
 type CinemaStatus = {
@@ -34,7 +32,6 @@ interface SecretCinemaModalProps {
 
 const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   const { user } = useAuth();
-  const membershipGate = useMembershipGate();
 
   const [status, setStatus] = useState<CinemaStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -42,6 +39,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   const [quantity, setQuantity] = useState<1 | 2>(1);
   const [primaryName, setPrimaryName] = useState('');
   const [guestName, setGuestName] = useState('');
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
 
   const [confirmation, setConfirmation] = useState<{
     ticketNumbers: number[];
@@ -78,16 +76,10 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   };
 
   useEffect(() => {
-    if (!open) {
-      membershipGate.reset();
-      return;
-    }
-    
-    setConfirmation(null);
-    loadStatus();
-    
-    if (!user) {
-      membershipGate.start();
+    if (open) {
+      setConfirmation(null);
+      loadStatus();
+      if (!user) setEmailModalOpen(true);
     }
   }, [open, user]);
 
@@ -101,7 +93,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
 
   const handleBook = async () => {
     if (!user) {
-      membershipGate.start();
+      setEmailModalOpen(true);
       return;
     }
     if (!primaryName.trim()) {
@@ -143,7 +135,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       const release_id: string = row?.release_id;
 
       setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id });
-      toast({ title: 'Booking confirmed', description: `You've got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
+      toast({ title: 'Booking confirmed', description: `You’ve got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
 
       // Send confirmation email (best-effort with explicit error handling)
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-cinema-ticket-email', {
@@ -182,12 +174,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
     setGuestName('');
     setQuantity(1);
     setConfirmation(null);
-    membershipGate.reset();
     onClose();
-  };
-
-  const handleCloseAll = () => {
-    resetAndClose();
   };
 
   const resendEmail = async () => {
@@ -219,32 +206,25 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
 
   return (
     <>
-      {/* Membership gate modals */}
-      <BiometricUnlockModal
-        isOpen={membershipGate.bioOpen}
-        onClose={handleCloseAll}
-        onSuccess={membershipGate.handleBioSuccess}
-        onFallback={membershipGate.handleBioFallback}
-        title="Secret Cinema Access"
-        description="Use Face ID / Passkey to access secret cinema tickets."
-      />
-
-      <MembershipLinkModal
-        open={membershipGate.linkOpen}
-        onClose={handleCloseAll}
-        onSuccess={membershipGate.handleLinkSuccess}
-      />
-
+      {/* Auth modal for verified members via magic link */}
       <AuthModal
-        isOpen={membershipGate.authOpen}
-        onClose={handleCloseAll}
-        onSuccess={membershipGate.handleAuthSuccess}
+        isOpen={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        onSuccess={() => {
+          setEmailModalOpen(false);
+          toast({ title: 'Signed in', description: 'You can now reserve your tickets.' });
+        }}
+        onMagicLinkSent={() => {
+          // Close both the auth modal and the cinema modal, returning to the main Hall menu
+          setEmailModalOpen(false);
+          onClose();
+        }}
         requireAllowedDomain={false}
         title="Sign in to reserve Secret 7 Cinema Tickets"
-        description="We'll email you a magic link to sign in."
+        description="We’ll email you a magic link to sign in."
       />
 
-      <Dialog open={open && (!!user || membershipGate.allowed)} onOpenChange={resetAndClose}>
+      <Dialog open={open} onOpenChange={resetAndClose}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="font-brutalist tracking-wide">
@@ -300,7 +280,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                   Ticket{confirmation.ticketNumbers.length > 1 ? 's' : ''}: #{confirmation.ticketNumbers.join(', ')}
                 </div>
                 <div className="text-steel text-sm mt-2">
-                  We've emailed your confirmation. See you at {doorsTime} for doors — screening starts at {screeningTime}.
+                  We’ve emailed your confirmation. See you at {doorsTime} for doors — screening starts at {screeningTime}.
                 </div>
               </div>
               <div className="flex justify-between">

@@ -24,7 +24,7 @@ serve(async (req) => {
 
   try {
     const { userHandle, email } = await req.json();
-    if (!email) {
+    if (!userHandle || !email) {
       return new Response(JSON.stringify({ error: 'missing_params' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
@@ -48,13 +48,10 @@ serve(async (req) => {
 
     // Create one-time code
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Generate session ID for new users without passkey
-    const sessionId = userHandle || crypto.randomUUID();
 
     const { error: insErr } = await supabase
       .from('membership_codes')
-      .insert({ user_handle: sessionId, email: normEmail, code });
+      .insert({ user_handle: userHandle, email: normEmail, code });
 
     if (insErr) throw insErr;
 

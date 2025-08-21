@@ -165,27 +165,22 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
 export async function authenticatePasskeyDetailed(): Promise<BioResult> {
   try {
     const handle = getStoredUserHandle();
-    console.log('[DEBUG] authenticatePasskeyDetailed starting with handle:', handle);
     if (!handle) return { ok: false, errorCode: 'no_user_handle', error: 'No saved passkey user found' };
 
     const { rpId, origin } = getRpParams();
     const preferDiscoverable = isApplePlatform() || isRecentlyRegistered();
     const ua = navigator.userAgent;
-    console.log('[DEBUG] WebAuthn params:', { rpId, origin, preferDiscoverable, ua });
     console.debug('[webauthn] auth start', { rpId, preferDiscoverable, ua });
 
     let authResp: any | null = null;
 
     if (preferDiscoverable) {
       // 1) Try discoverable first so Safari/iOS can surface the right passkey
-      console.log('[DEBUG] Trying discoverable auth options');
       const { data: discData, error: discErr } = await supabase.functions.invoke('webauthn-auth-options', {
         body: { userHandle: handle, rpId, origin, discoverable: true }
       });
-      console.log('[DEBUG] Discoverable auth options result:', { discData, discErr });
       if (discErr) {
         const msg = String((discErr as any)?.message ?? '');
-        console.log('[DEBUG] Discoverable options error:', msg);
         console.debug('[webauthn] discoverable options error', msg);
       } else if ((discData as any)?.error === 'no_credentials') {
         return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
@@ -202,15 +197,12 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
 
       // 2) If discoverable failed, fall back to allowCredentials list
       if (!authResp) {
-        console.log('[DEBUG] Discoverable failed, trying allowCredentials fallback');
         const { data: optRes, error: optErr } = await supabase.functions.invoke('webauthn-auth-options', {
           body: { userHandle: handle, rpId, origin }
         });
-        console.log('[DEBUG] AllowCredentials auth options result:', { optRes, optErr });
         if (optErr) {
           const msg = String((optErr as any)?.message ?? '');
           const lower = msg.toLowerCase();
-          console.log('[DEBUG] AllowCredentials options error:', msg);
           if (lower.includes('missing userhandle')) {
             return { ok: false, errorCode: 'no_user_handle', error: msg };
           }

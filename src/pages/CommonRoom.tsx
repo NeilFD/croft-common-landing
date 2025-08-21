@@ -8,47 +8,26 @@ import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
-import { useMembershipAuth } from '@/hooks/useMembershipAuth';
 import { BRAND_LOGO } from '@/data/brand';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
-import { useTransition } from '@/contexts/TransitionContext';
-
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
   const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
-  const { isMember } = useMembershipAuth();
   const { isCMSMode } = useCMSMode();
-  const { isTransitioning } = useTransition();
 
   const handleGestureComplete = () => {
-    // Check if already authenticated as member first
-    if (isMember && !isTransitioning) {
-      // Add delay for mobile compatibility
-      setTimeout(() => {
-        navigate('/common-room/main');
-      }, 100);
-      return;
-    }
-    // Otherwise start membership gate flow
+    // Silent-first biometric attempt; UI shows only if needed
     start();
   };
 
   useEffect(() => {
-    // Navigate to main only after successful authentication through membership gate
-    if (allowed && !isTransitioning) {
-      console.debug('[CommonRoom] Navigating to main after successful auth - allowed:', allowed);
+    if (allowed) {
       reset();
-      // Add small delay for mobile to ensure smooth transition
-      const timer = setTimeout(() => {
-        navigate('/common-room/main');
-      }, 100);
-      return () => clearTimeout(timer);
-    } else if (allowed && isTransitioning) {
-      console.debug('[CommonRoom] Waiting for transition to complete before navigating');
+      navigate('/common-room/main');
     }
-  }, [allowed, navigate, reset, isTransitioning]);
+  }, [allowed, navigate, reset]);
   return (
     <div className="min-h-screen bg-white">
       {!isCMSMode && <Navigation />}

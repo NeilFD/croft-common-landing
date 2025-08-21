@@ -1402,10 +1402,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_expired_webauthn_challenges: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       create_cinema_booking: {
         Args: {
           _email: string

@@ -13,7 +13,6 @@ import CommonMembershipModal from '@/components/CommonMembershipModal';
 import { toast } from '@/hooks/use-toast';
 import SecretCinemaModal from '@/components/SecretCinemaModal';
 import SecretLuckySevenModal from './SecretLuckySevenModal';
-import { useAuth } from '@/hooks/useAuth';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -24,7 +23,6 @@ interface MenuModalProps {
 
 const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const navigate = useNavigate();
-  const { user, loading: authLoading } = useAuth();
   const [showSecret, setShowSecret] = useState(false);
   const [showMembership, setShowMembership] = useState(false);
   
@@ -313,20 +311,20 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       </div>
 
       {/* Secret modal overlays */}
-      {pageType === 'cocktails' && !authLoading && !user && (
+      {pageType === 'cocktails' && (
         <SecretLuckySevenModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
         />
       )}
-      {pageType === 'beer' && !authLoading && !user && (
+      {pageType === 'beer' && (
         <SecretBeerModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
           secretWord={secretWord}
         />
       )}
-      {pageType === 'kitchens' && !authLoading && !user && (
+      {pageType === 'kitchens' && (
         <SecretKitchensModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
@@ -336,8 +334,6 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         <LoyaltyCardModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
-          user={user}
-          authLoading={authLoading}
         />
       )}
       {pageType === 'common-room' && (
@@ -346,7 +342,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           onClose={() => setShowMembership(false)}
         />
       )}
-      {pageType === 'hall' && !authLoading && !user && (
+      {pageType === 'hall' && (
         <SecretCinemaModal
           open={showSecret}
           onClose={() => setShowSecret(false)}

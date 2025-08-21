@@ -3,8 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { getStoredUserHandle } from "@/lib/biometricAuth";
 import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/useRecentBiometric";
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
-import { useMembershipAuth } from "@/hooks/useMembershipAuth";
-import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface UseMembershipGate {
@@ -22,26 +20,6 @@ interface UseMembershipGate {
 }
 
 export function useMembershipGate(): UseMembershipGate {
-  const { isMember } = useMembershipAuth();
-  const { user, loading: authLoading } = useAuth();
-  
-  // Return no-op implementation for authenticated users
-  if (!authLoading && user) {
-    return {
-      bioOpen: false,
-      linkOpen: false,
-      authOpen: false,
-      allowed: false,
-      checking: false,
-      start: () => {},
-      reset: () => {},
-      handleBioSuccess: async () => {},
-      handleBioFallback: () => {},
-      handleLinkSuccess: () => {},
-      handleAuthSuccess: () => {}
-    };
-  }
-  
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -59,27 +37,8 @@ export function useMembershipGate(): UseMembershipGate {
     setChecking(false);
   }, []);
 
-  // Start gate: Check global membership first, then fallback to gate flow
+  // Start gate: prefer silent server check using stored passkey handle. No TTL bypass.
   const start = useCallback(() => {
-    // Don't start gate for authenticated users - they have direct access
-    if (user) {
-      console.debug('[gate] skipping - user is authenticated');
-      return;
-    }
-    
-    // Don't start if auth is still loading
-    if (authLoading) {
-      console.debug('[gate] skipping - auth still loading');
-      return;
-    }
-
-    // If already a verified member globally (and not authenticated), allow immediate access
-    if (isMember) {
-      console.debug('[gate] allowing access via global membership');
-      setAllowed(true);
-      return;
-    }
-
     const now = Date.now();
     if (inFlightRef.current) {
       console.debug('[gate] start skipped: in-flight');
@@ -124,7 +83,7 @@ export function useMembershipGate(): UseMembershipGate {
             setLinkOpen(false);
             setBioOpen(false);
             markBioLongSuccess();
-            // Remove the success toast that was causing mobile flashing
+            toast.success('Croft Common Membership access granted via secure Face ID/Passkey');
             return;
           } else {
             setLinkOpen(true);
@@ -147,7 +106,7 @@ export function useMembershipGate(): UseMembershipGate {
         inFlightRef.current = false;
       }
     })();
-  }, [isMember, user, authLoading]);
+  }, []);
 
   const handleBioSuccess = useCallback(async () => {
     // After a successful fresh biometric, check if this device's passkey is linked to an active subscriber
