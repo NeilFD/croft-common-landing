@@ -131,8 +131,8 @@ export function useMembershipGate(): UseMembershipGate {
           const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
           console.debug('[gate] silent check result', { isLinked, data: d });
           if (isLinked) {
-            // Create Supabase session for authenticated user
-            await createSupabaseSession(userHandle);
+            // Create Supabase session for authenticated user with email from membership check
+            await createSupabaseSession(userHandle, d.email);
             setAllowed(true);
             setLinkOpen(false);
             setBioOpen(false);
@@ -188,8 +188,8 @@ export function useMembershipGate(): UseMembershipGate {
       const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
       console.debug('[gate] check-membership result', { isLinked, data: d });
       if (isLinked) {
-        // Create Supabase session for authenticated user
-        await createSupabaseSession(userHandle);
+        // Create Supabase session for authenticated user with email from membership check
+        await createSupabaseSession(userHandle, d.email);
         setAllowed(true);
         setBioOpen(false);
         setLinkOpen(false);
