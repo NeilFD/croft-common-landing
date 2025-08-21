@@ -313,20 +313,20 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       </div>
 
       {/* Secret modal overlays */}
-      {pageType === 'cocktails' && (
+      {pageType === 'cocktails' && !authLoading && !user && (
         <SecretLuckySevenModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
         />
       )}
-      {pageType === 'beer' && (
+      {pageType === 'beer' && !authLoading && !user && (
         <SecretBeerModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
           secretWord={secretWord}
         />
       )}
-      {pageType === 'kitchens' && (
+      {pageType === 'kitchens' && !authLoading && !user && (
         <SecretKitchensModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
@@ -344,7 +344,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           onClose={() => setShowMembership(false)}
         />
       )}
-      {pageType === 'hall' && (
+      {pageType === 'hall' && !authLoading && !user && (
         <SecretCinemaModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
