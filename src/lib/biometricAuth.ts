@@ -438,7 +438,7 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
   const hasCredentials = hasStoredCredentials();
   
   if (!handle || !hasCredentials) {
-    console.log('[biometricAuth] No stored credentials found, skipping auth and going to registration');
+    console.log('[biometricAuth] No stored credentials found, skipping auth and going directly to registration');
     const regResult = await registerPasskeyDetailed(displayName);
     
     if (regResult.ok) {
@@ -449,6 +449,8 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
     console.log('[biometricAuth] Registration failed:', regResult);
     return { ok: false, stage: 'register', errorCode: regResult.errorCode, error: regResult.error };
   }
+  
+  console.log('[biometricAuth] Found stored credentials, proceeding with authentication');
 
   // Try authentication for users with stored credentials
   console.log('[biometricAuth] Attempting authentication...');
