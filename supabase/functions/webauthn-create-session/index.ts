@@ -88,27 +88,14 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
     if (userError) throw userError;
 
-    // Generate a magic link to get session tokens
-    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: userData.user.email
-    });
+    console.log('Successfully verified WebAuthn user:', userId);
 
-    if (linkError) {
-      console.error('Failed to generate magic link:', linkError);
-      throw linkError;
-    }
-
-    console.log('Successfully generated session tokens for user:', userId);
-
+    // Return verification success - let client handle session creation
     return new Response(JSON.stringify({
       success: true,
       userId: userId,
       email: userData.user.email,
-      session: {
-        access_token: linkData.properties.access_token,
-        refresh_token: linkData.properties.refresh_token
-      }
+      verified: true
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
