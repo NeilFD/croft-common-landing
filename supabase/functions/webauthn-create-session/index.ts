@@ -84,27 +84,30 @@ serve(async (req) => {
       throw new Error('No existing link found and no email provided');
     }
 
-    // Get user data first
+    // Get user data
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
     if (userError) throw userError;
 
-    // Generate a session using generateAccessToken
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateAccessToken(userId);
+    // Generate a magic link to get session tokens
+    const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: userData.user.email
+    });
 
-    if (sessionError) {
-      console.error('Failed to generate access token:', sessionError);
-      throw sessionError;
+    if (linkError) {
+      console.error('Failed to generate magic link:', linkError);
+      throw linkError;
     }
 
-    console.log('Successfully created session for user:', userId);
+    console.log('Successfully generated session tokens for user:', userId);
 
     return new Response(JSON.stringify({
       success: true,
       userId: userId,
       email: userData.user.email,
       session: {
-        access_token: sessionData.session.access_token,
-        refresh_token: sessionData.session.refresh_token
+        access_token: linkData.properties.access_token,
+        refresh_token: linkData.properties.refresh_token
       }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
