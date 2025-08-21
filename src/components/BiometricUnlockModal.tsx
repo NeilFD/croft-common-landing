@@ -78,9 +78,25 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     bioPromptActive = true;
     setLoading(true);
     setError(null);
+    
     try {
-      // Use the enhanced flow that skips auth for new users (iOS optimization)
-      console.debug('[biometric] Attempting biometric unlock with smart flow');
+      // Check if this is a completely new user
+      const existingHandle = getStoredUserHandle();
+      console.debug('[biometric] Modal - existing handle:', existingHandle);
+      
+      if (!existingHandle) {
+        console.debug('[biometric] Modal - NEW USER detected, going directly to registration');
+        const regResult = await registerPasskeyDetailed('Member');
+        if (regResult.ok) {
+          markBioSuccess();
+          onSuccess();
+          return;
+        }
+        setError(messageFor(regResult.errorCode, regResult.error));
+        return;
+      }
+      
+      console.debug('[biometric] Modal - EXISTING USER, attempting full flow');
       const res = await ensureBiometricUnlockDetailed('Member');
       if (res.ok) {
         markBioSuccess();

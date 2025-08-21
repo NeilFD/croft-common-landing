@@ -433,12 +433,25 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
     return { ok: false, stage: 'unsupported', errorCode: 'platform_unavailable', error: 'No built‑in authenticator available on this device' };
   }
 
-  // Skip authentication if we don't have stored credentials (iOS optimization)
+  // Check what we actually have stored
   const handle = getStoredUserHandle();
   const hasCredentials = hasStoredCredentials();
   
+  console.log('[biometricAuth] DEBUG - handle:', handle);
+  console.log('[biometricAuth] DEBUG - hasCredentials:', hasCredentials);
+  console.log('[biometricAuth] DEBUG - localStorage HAS_CREDENTIALS_KEY:', localStorage.getItem(HAS_CREDENTIALS_KEY));
+  console.log('[biometricAuth] DEBUG - localStorage USER_HANDLE_KEY:', localStorage.getItem(USER_HANDLE_KEY));
+  
+  // For completely new users (no handle AND no credentials flag), skip auth entirely
   if (!handle || !hasCredentials) {
-    console.log('[biometricAuth] No stored credentials found, skipping auth and going directly to registration');
+    console.log('[biometricAuth] NEW USER DETECTED - skipping all auth attempts, going directly to registration');
+    
+    // Clear any stale data to be absolutely sure
+    try {
+      localStorage.removeItem(USER_HANDLE_KEY);
+      localStorage.removeItem(HAS_CREDENTIALS_KEY);
+    } catch {}
+    
     const regResult = await registerPasskeyDetailed(displayName);
     
     if (regResult.ok) {
@@ -450,7 +463,7 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
     return { ok: false, stage: 'register', errorCode: regResult.errorCode, error: regResult.error };
   }
   
-  console.log('[biometricAuth] Found stored credentials, proceeding with authentication');
+  console.log('[biometricAuth] EXISTING USER - found stored credentials, proceeding with authentication');
 
   // Try authentication for users with stored credentials
   console.log('[biometricAuth] Attempting authentication...');
