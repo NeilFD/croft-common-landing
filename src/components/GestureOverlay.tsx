@@ -56,6 +56,27 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const interactiveElements = ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'];
     const element = target as HTMLElement;
     
+    // Check if element is inside a modal/dialog (has data-radix-* attributes or high z-index)
+    let checkElement: HTMLElement | null = element;
+    while (checkElement) {
+      // Check for Radix UI dialog/modal attributes
+      if (checkElement.hasAttribute('data-radix-dialog-content') || 
+          checkElement.hasAttribute('data-radix-dialog-overlay') ||
+          checkElement.getAttribute('role') === 'dialog' ||
+          checkElement.getAttribute('role') === 'alertdialog') {
+        return true;
+      }
+      
+      // Check if element has high z-index indicating it's a modal
+      const computedStyle = window.getComputedStyle(checkElement);
+      const zIndex = parseInt(computedStyle.zIndex);
+      if (!isNaN(zIndex) && zIndex >= 50) {
+        return true;
+      }
+      
+      checkElement = checkElement.parentElement;
+    }
+    
     // Check if element is a button or link
     if (interactiveElements.includes(element.tagName)) return true;
     
