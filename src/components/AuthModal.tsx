@@ -94,8 +94,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false,
-          emailRedirectTo: undefined // Force OTP mode, not magic link
+          shouldCreateUser: true, // Allow user creation for OTP flow
+          data: {}, // Empty metadata to prevent welcome emails
         }
       });
 
