@@ -157,13 +157,6 @@ async function createSupabaseSession(userHandle: string, email?: string): Promis
       return { ok: false, error: result.error };
     }
     
-    // Navigate to the session URL to establish the session
-    if (result.sessionUrl) {
-      console.log('[biometricAuth] Redirecting to establish session');
-      window.location.href = result.sessionUrl;
-      return { ok: true };
-    }
-    
     console.log('[biometricAuth] Session setup completed');
     return { ok: true };
     

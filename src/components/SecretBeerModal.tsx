@@ -33,6 +33,7 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock Secret Beer"
+        email=""
         description="Use Face ID / Passkey to access."
       />
       <MembershipLinkModal

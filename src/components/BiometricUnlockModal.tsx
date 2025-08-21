@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import CroftLogo from '@/components/CroftLogo';
-import { isPlatformAuthenticatorAvailable, isWebAuthnSupported, getStoredUserHandle, registerPasskeyDetailed, ensureBiometricUnlockDetailed } from '@/lib/biometricAuth';
+import { isPlatformAuthenticatorAvailable, isWebAuthnSupported, getStoredUserHandle, registerPasskeyDetailed, ensureBiometricUnlockDetailed, createSupabaseSession } from '@/lib/biometricAuth';
 import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { Button } from '@/components/ui/button';
 import { markBioSuccess } from '@/hooks/useRecentBiometric';
@@ -16,9 +16,10 @@ interface BiometricUnlockModalProps {
   title?: string;
   description?: string;
   onFallback?: () => void;
+  email?: string;
 }
 
-const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onClose, onSuccess, title = 'Unlock with Face ID / Passkey', description = 'Use your device biometrics to unlock.', onFallback }) => {
+const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onClose, onSuccess, title = 'Unlock with Face ID / Passkey', description = 'Use your device biometrics to unlock.', onFallback, email }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [supported, setSupported] = useState<boolean | null>(null);
@@ -84,6 +85,19 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
       console.debug('[biometric] Modal - going directly to Face ID registration');
       const regResult = await registerPasskeyDetailed('Member');
       if (regResult.ok) {
+        // After successful registration, create session if linking is required
+        if (regResult.requiresLinking && email) {
+          console.debug('[biometric] Creating session for new registration with email');
+          const sessionResult = await createSupabaseSession(regResult.userHandle!, email);
+          if (sessionResult.ok) {
+            markBioSuccess();
+            onSuccess();
+            return;
+          }
+          // If session creation fails, show error but don't fail completely
+          console.warn('[biometric] Session creation failed but registration succeeded');
+        }
+        
         markBioSuccess();
         onSuccess();
         return;

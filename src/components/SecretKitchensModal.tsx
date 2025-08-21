@@ -106,6 +106,7 @@ React.useEffect(() => {
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock Common Cook Book"
+        email=""
         description="Use Face ID / Passkey to access."
       />
       <MembershipLinkModal

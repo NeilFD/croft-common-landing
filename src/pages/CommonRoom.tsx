@@ -72,6 +72,7 @@ const CommonRoom = () => {
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock The Common Room"
+        email=""
         description="Use Face ID / Passkey to sign in."
       />
       <MembershipLinkModal

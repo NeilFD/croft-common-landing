@@ -33,6 +33,7 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
         onSuccess={handleBioSuccess}
         onFallback={handleBioFallback}
         title="Unlock Lucky No 7"
+        email=""
         description="Use Face ID / Passkey to access."
       />
       <MembershipLinkModal
