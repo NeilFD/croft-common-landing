@@ -76,7 +76,14 @@ export async function authenticatePasskey(): Promise<{ ok: boolean; error?: stri
 }
 
 // ---- Enhanced helpers & detailed flows ----
-export type BioResult = { ok: boolean; errorCode?: string; error?: string };
+export type BioResult = { 
+  ok: boolean; 
+  errorCode?: string; 
+  error?: string; 
+  userHandle?: string; 
+  requiresLinking?: boolean; 
+  hasExistingLink?: boolean; 
+};
 
 function mapWebAuthnError(err: unknown): { code: string; message: string } {
   const e = err as any;
@@ -115,6 +122,36 @@ export async function isPlatformAuthenticatorAvailable(): Promise<boolean> {
   }
 }
 
+// Helper to create Supabase session after WebAuthn success
+async function createSupabaseSession(userHandle: string, email?: string): Promise<{ ok: boolean; session?: any; error?: string }> {
+  try {
+    console.log('[biometricAuth] Creating Supabase session for userHandle:', userHandle);
+    
+    const response = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-create-session`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
+      },
+      body: JSON.stringify({ userHandle, email })
+    });
+    
+    const result = await response.json();
+    
+    if (!result.success) {
+      console.error('[biometricAuth] Session creation failed:', result.error);
+      return { ok: false, error: result.error };
+    }
+    
+    console.log('[biometricAuth] Session created successfully');
+    return { ok: true, session: result.session };
+    
+  } catch (error) {
+    console.error('[biometricAuth] Session creation error:', error);
+    return { ok: false, error: String(error) };
+  }
+}
+
 export async function registerPasskeyDetailed(displayName?: string): Promise<BioResult> {
   try {
     const existing = getStoredUserHandle();
@@ -146,15 +183,35 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
       return { ok: false, errorCode: mapped.code, error: mapped.message };
     }
 
-    const { error: verErr } = await supabase.functions.invoke('webauthn-register-verify', {
-      body: { userHandle: userHandle ?? existing, attResp, rpId, origin }
+    const verifyResp = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-register-verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
+      },
+      body: JSON.stringify({
+        userHandle: userHandle ?? existing,
+        attResp,
+        rpId,
+        origin
+      })
     });
-    if (verErr) return { ok: false, errorCode: 'server', error: verErr.message };
+    const verifyData = await verifyResp.json();
 
-    // Mark very recent registration to bias discoverable auth on next attempts
+    if (!verifyData.verified) {
+      return { ok: false, errorCode: 'verification_failed', error: 'Verification failed' };
+    }
+
+    console.log('[biometricAuth] Registration successful:', verifyData.userHandle);
+    setStoredUserHandle(verifyData.userHandle);
     markRecentRegistration();
-
-    return { ok: true };
+    
+    // Return success with requiresLinking flag - session creation will be handled by caller
+    return { 
+      ok: true, 
+      userHandle: verifyData.userHandle,
+      requiresLinking: verifyData.requiresLinking 
+    };
   } catch (err) {
     const mapped = mapWebAuthnError(err);
     console.error('[webauthn] register unexpected error', err);
@@ -275,12 +332,29 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
     }
 
     // Verify if we obtained an assertion
-    const { error: verErr } = await supabase.functions.invoke('webauthn-auth-verify', {
-      body: { userHandle: handle, authResp, rpId, origin }
+    const verifyResp = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-auth-verify`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
+      },
+      body: JSON.stringify({ userHandle: handle, authResp, rpId, origin })
     });
-    if (verErr) return { ok: false, errorCode: 'server', error: verErr.message };
+    const authData = await verifyResp.json();
 
-    return { ok: true };
+    if (!authData.verified) {
+      return { ok: false, errorCode: 'verification_failed', error: 'Authentication verification failed' };
+    }
+
+    console.log('[biometricAuth] Authentication successful');
+    markRecentRegistration();
+    
+    // Return success with user handle and linking status
+    return { 
+      ok: true,
+      userHandle: authData.userHandle,
+      hasExistingLink: authData.hasExistingLink
+    };
   } catch (err) {
     const mapped = mapWebAuthnError(err);
     console.error('[webauthn] auth unexpected error', err);
@@ -308,7 +382,16 @@ export async function ensureBiometricUnlock(displayName?: string): Promise<boole
   }
 }
 
-export async function ensureBiometricUnlockDetailed(displayName?: string): Promise<{ ok: boolean; stage: 'authenticate' | 'register' | 'unsupported'; errorCode?: string; error?: string }> {
+// Enhanced version that includes session creation
+export async function ensureBiometricUnlockDetailed(displayName?: string): Promise<{ 
+  ok: boolean; 
+  stage: 'authenticate' | 'register' | 'unsupported'; 
+  errorCode?: string; 
+  error?: string; 
+  session?: any; 
+  userHandle?: string; 
+  requiresLinking?: boolean; 
+}> {
   if (!isWebAuthnSupported()) {
     return { ok: false, stage: 'unsupported', errorCode: 'unsupported', error: 'Passkeys not supported in this browser' };
   }
@@ -316,14 +399,39 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
     return { ok: false, stage: 'unsupported', errorCode: 'platform_unavailable', error: 'No built‑in authenticator available on this device' };
   }
 
-  const auth = await authenticatePasskeyDetailed();
-  if (auth.ok) return { ok: true, stage: 'authenticate' };
-
-  if (auth.errorCode === 'no_user_handle' || auth.errorCode === 'no_credentials' || auth.errorCode === 'auth_options_failed' || auth.errorCode === 'not_allowed') {
-    const reg = await registerPasskeyDetailed(displayName);
-    if (reg.ok) return { ok: true, stage: 'register' };
-    return { ok: false, stage: 'register', errorCode: reg.errorCode, error: reg.error };
+  // Try authentication first
+  console.log('[biometricAuth] Attempting authentication...');
+  const authResult = await authenticatePasskeyDetailed();
+  
+  if (authResult.ok && authResult.hasExistingLink) {
+    console.log('[biometricAuth] Authentication successful with existing link');
+    // Create session for existing user
+    const sessionResult = await createSupabaseSession(authResult.userHandle!);
+    if (sessionResult.ok) {
+      return { ok: true, stage: 'authenticate', session: sessionResult.session };
+    }
+    // If session creation fails, still return success but without session
+    return { ok: true, stage: 'authenticate' };
+  } else if (authResult.ok && !authResult.hasExistingLink) {
+    console.log('[biometricAuth] Authentication successful but no existing link - need email');
+    return { ok: true, stage: 'authenticate', userHandle: authResult.userHandle };
   }
 
-  return { ok: false, stage: 'authenticate', errorCode: auth.errorCode, error: auth.error };
+  // If authentication failed due to no credentials, try registration
+  if (authResult.errorCode === 'no_credentials' || authResult.errorCode === 'unknown_credential') {
+    console.log('[biometricAuth] No credentials found, attempting registration...');
+    const regResult = await registerPasskeyDetailed(displayName);
+    
+    if (regResult.ok) {
+      console.log('[biometricAuth] Registration successful');
+      return { ok: true, stage: 'register', userHandle: regResult.userHandle, requiresLinking: regResult.requiresLinking };
+    }
+    
+    return { ok: false, stage: 'register', errorCode: regResult.errorCode, error: regResult.error };
+  }
+  
+  return { ok: false, stage: 'authenticate', errorCode: authResult.errorCode, error: authResult.error };
 }
+
+// Add export for the session creation function
+export { createSupabaseSession };

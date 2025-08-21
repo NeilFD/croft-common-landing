@@ -2,6 +2,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import LoyaltyBox from './LoyaltyBox';
 import { useAuth } from '@/hooks/useAuth';
 import { useLoyalty } from '@/hooks/useLoyalty';
@@ -10,7 +12,8 @@ import { AuthModal } from '@/components/AuthModal';
 import CroftLogo from '@/components/CroftLogo';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import BiometricUnlockModal from '@/components/BiometricUnlockModal';
+import { ensureBiometricUnlockDetailed, createSupabaseSession } from '@/lib/biometricAuth';
+import { supabase } from '@/integrations/supabase/client';
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;
@@ -23,10 +26,16 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const [showCard, setShowCard] = useState(false);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
+  const [needsEmailLinking, setNeedsEmailLinking] = useState(false);
+  const [userHandle, setUserHandle] = useState<string | null>(null);
+  const [emailInput, setEmailInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inFlightRef = useRef(false);
   const prevPunchesRef = useRef(0);
 
   const {
-    loading,
+    loading: loyaltyLoading,
     card,
     entries,
     rewardsDone,
@@ -36,12 +45,107 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     addEntry,
   } = useLoyalty(user);
 
+  const handleUnlock = async () => {
+    if (inFlightRef.current) return;
+    
+    setLoading(true);
+    setError(null);
+    inFlightRef.current = true;
+    
+    try {
+      console.log('[LoyaltyCardModal] Starting biometric unlock...');
+      
+      const result = await ensureBiometricUnlockDetailed('Croft Common Member');
+      console.log('[LoyaltyCardModal] Biometric result:', result);
+      
+      if (result.ok && result.session) {
+        // We have both successful biometric auth AND a session
+        console.log('[LoyaltyCardModal] Got session, setting auth state...');
+        
+        // Set the session in Supabase
+        const { error: sessionError } = await supabase.auth.setSession(result.session);
+        if (sessionError) {
+          console.error('[LoyaltyCardModal] Session error:', sessionError);
+          setError('Failed to establish session');
+          return;
+        }
+        
+        console.log('[LoyaltyCardModal] Session set successfully');
+        setBioOpen(false);
+        setShowCard(true);
+        toast({ title: 'Signed in with Face ID', description: 'Your loyalty card is ready.' });
+        
+      } else if (result.ok && (result.userHandle || result.requiresLinking)) {
+        // Biometric success but needs email linking - show email form
+        console.log('[LoyaltyCardModal] Biometric success but needs email linking');
+        setNeedsEmailLinking(true);
+        setUserHandle(result.userHandle || null);
+        
+      } else if (result.errorCode === 'unsupported') {
+        console.log('[LoyaltyCardModal] Biometric unsupported, showing fallback');
+        setBioOpen(false);
+        setAuthOpen(true);
+        
+      } else {
+        console.error('[LoyaltyCardModal] Biometric failed:', result.error);
+        setError(result.error || 'Biometric authentication failed');
+      }
+      
+    } catch (error) {
+      console.error('[LoyaltyCardModal] Unexpected error:', error);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+      inFlightRef.current = false;
+    }
+  };
+
+  const handleEmailLinking = async () => {
+    if (!emailInput.trim() || !userHandle) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      console.log('[LoyaltyCardModal] Creating session with email linking...');
+      
+      const sessionResult = await createSupabaseSession(userHandle, emailInput.trim());
+      
+      if (sessionResult.ok && sessionResult.session) {
+        // Set the session in Supabase
+        const { error: sessionError } = await supabase.auth.setSession(sessionResult.session);
+        if (sessionError) {
+          console.error('[LoyaltyCardModal] Session error:', sessionError);
+          setError('Failed to establish session');
+          return;
+        }
+        
+        console.log('[LoyaltyCardModal] Session set successfully with email linking');
+        setNeedsEmailLinking(false);
+        setBioOpen(false);
+        setShowCard(true);
+        toast({ title: 'Signed in with Face ID', description: 'Your loyalty card is ready.' });
+        
+      } else {
+        setError(sessionResult.error || 'Failed to create session');
+      }
+      
+    } catch (error) {
+      console.error('[LoyaltyCardModal] Email linking error:', error);
+      setError('An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 // Simplified flow: authenticated users see card, unauthenticated see auth choice
 useEffect(() => {
   if (!open) {
     setAuthOpen(false);
     setBioOpen(false);
     setShowCard(false);
+    setNeedsEmailLinking(false);
+    setError(null);
     return;
   }
 
@@ -208,7 +312,7 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
     const filled = !!filledMap[idx];
     const img = filledMap[idx]?.url;
 
-    const disabled = loading || creatingNext || (!user);
+    const disabled = loyaltyLoading || creatingNext || (!user);
 
     return (
       <LoyaltyBox
@@ -230,7 +334,7 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
                   const img = filledMap[idx]?.url;
 
 const disabledRegular = user && isRegular ? (idx === 7 ? (Object.keys(filledMap).filter(k=>filledMap[Number(k)]?.kind==='punch').length < 6) : false) : false;
-const disabled = loading || creatingNext || (!user) || disabledRegular;
+const disabled = loyaltyLoading || creatingNext || (!user) || disabledRegular;
 
 return (
   <div className="flex flex-col items-center gap-1">
@@ -257,7 +361,7 @@ return (
         const filled = !!filledMap[idx];
         const img = filledMap[idx]?.url;
 
-        const disabled = loading || creatingNext || (!user);
+        const disabled = loyaltyLoading || creatingNext || (!user);
 
         return (
           <LoyaltyBox
@@ -278,7 +382,7 @@ return (
         const filled = !!filledMap[idx];
         const img = filledMap[idx]?.url;
 
-        const disabled = loading || creatingNext || (!user);
+        const disabled = loyaltyLoading || creatingNext || (!user);
 
         return (
           <div className="flex flex-col items-center gap-1">
@@ -319,14 +423,96 @@ return (
         </DialogContent>
       </Dialog>
 
-<BiometricUnlockModal
-  isOpen={bioOpen}
-  onClose={() => setBioOpen(false)}
-  onSuccess={() => { setBioOpen(false); setAuthOpen(true); }}
-  onFallback={() => { setBioOpen(false); setAuthOpen(true); }}
-  title="Sign in faster next time"
-  description="Save a passkey (Face ID / device biometrics) for quick unlock of secret perks."
-/>
+<Dialog open={open && (bioOpen || needsEmailLinking)} onOpenChange={() => {
+        setBioOpen(false);
+        setNeedsEmailLinking(false);
+        onClose();
+      }}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="font-brutalist tracking-wider flex items-center gap-2">
+              <CroftLogo size="sm" />
+              <span>Croft Common</span>
+            </DialogTitle>
+            <DialogDescription>
+              {needsEmailLinking 
+                ? "Almost done! Link your email to complete setup."
+                : "Sign in faster with Face ID or device biometrics for instant access to secret perks."
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          {needsEmailLinking ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+              
+              {error && (
+                <Alert className="border-destructive/50 text-destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleEmailLinking}
+                  disabled={loading || !emailInput.trim()}
+                  className="flex-1"
+                >
+                  {loading ? 'Linking...' : 'Complete Setup'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setBioOpen(false);
+                    setAuthOpen(true);
+                  }}
+                  disabled={loading}
+                >
+                  Use Email Instead
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {error && (
+                <Alert className="border-destructive/50 text-destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleUnlock}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  {loading ? 'Setting up...' : 'Set up Face ID'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setBioOpen(false);
+                    setAuthOpen(true);
+                  }}
+                  disabled={loading}
+                >
+                  Use Email Instead
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
 <AuthModal
   isOpen={authOpen}

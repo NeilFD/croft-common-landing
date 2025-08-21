@@ -1379,6 +1379,30 @@ export type Database = {
           },
         ]
       }
+      webauthn_user_links: {
+        Row: {
+          created_at: string
+          id: string
+          last_used_at: string | null
+          user_handle: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          user_handle: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_used_at?: string | null
+          user_handle?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       webauthn_users: {
         Row: {
           created_at: string
@@ -1402,6 +1426,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_webauthn_challenges: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_cinema_booking: {
         Args: {
           _email: string

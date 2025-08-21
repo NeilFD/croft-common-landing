@@ -81,7 +81,11 @@ serve(async (req) => {
     // Cleanup old challenges
     await supabase.from('webauthn_challenges').delete().eq('user_handle', userHandle).eq('type', 'registration');
 
-    return new Response(JSON.stringify({ verified: true, userHandle }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ 
+      verified: true, 
+      userHandle,
+      requiresLinking: true // Signal that frontend should create session
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('webauthn-register-verify error', error);
     return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

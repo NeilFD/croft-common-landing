@@ -103,7 +103,20 @@ serve(async (req) => {
     // Cleanup old challenges
     await supabase.from('webauthn_challenges').delete().eq('user_handle', userHandle).eq('type', 'authentication');
 
-    return new Response(JSON.stringify({ verified: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    // Check if this userHandle is already linked to a Supabase user
+    const { data: linkData } = await supabase
+      .from('webauthn_user_links')
+      .select('user_id')
+      .eq('user_handle', userHandle)
+      .single();
+
+    const hasExistingLink = !!linkData;
+
+    return new Response(JSON.stringify({ 
+      verified: true,
+      userHandle,
+      hasExistingLink 
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('webauthn-auth-verify error', error);
     return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
