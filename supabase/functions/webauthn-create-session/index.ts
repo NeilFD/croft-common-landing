@@ -84,42 +84,16 @@ serve(async (req) => {
       throw new Error('No existing link found and no email provided');
     }
 
-    // Generate a session for this user
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: email || 'placeholder@example.com', // We need an email for the API, but we'll override
-      options: {
-        redirectTo: `${new URL(req.url).origin}/`
-      }
-    });
+    // Get user info for frontend session creation
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+    if (userError) throw userError;
 
-    if (sessionError) throw sessionError;
-
-    // Extract the access token and refresh token from the generated link
-    // The link format is: {redirectTo}#access_token=...&expires_in=...&refresh_token=...&token_type=bearer
-    const url = new URL(sessionData.properties.action_link);
-    const fragment = url.hash.substring(1); // Remove the '#'
-    const params = new URLSearchParams(fragment);
-    
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-    const expiresIn = params.get('expires_in');
-
-    if (!accessToken || !refreshToken) {
-      throw new Error('Failed to extract tokens from generated link');
-    }
-
-    console.log('Successfully created session for user:', userId);
+    console.log('Successfully prepared user data for session creation:', userId);
 
     return new Response(JSON.stringify({
       success: true,
-      session: {
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        expires_in: parseInt(expiresIn || '3600'),
-        token_type: 'bearer',
-        user: { id: userId }
-      }
+      userId: userId,
+      email: userData.user.email
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

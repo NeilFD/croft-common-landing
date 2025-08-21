@@ -153,12 +153,28 @@ async function createSupabaseSession(userHandle: string, email?: string): Promis
     const result = await response.json();
     
     if (!result.success) {
-      console.error('[biometricAuth] Session creation failed:', result.error);
+      console.error('[biometricAuth] User lookup failed:', result.error);
       return { ok: false, error: result.error };
     }
     
-    console.log('[biometricAuth] Session created successfully');
-    return { ok: true, session: result.session };
+    // Create session using OTP magic link
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email: result.email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: window.location.origin
+      }
+    });
+    
+    if (error) {
+      console.error('[biometricAuth] Session creation failed:', error);
+      return { ok: false, error: error.message };
+    }
+    
+    // For OTP, we need to wait for the session to be established
+    // The session will be set when the user clicks the magic link or through the auth state change
+    console.log('[biometricAuth] Session setup initiated for:', result.email);
+    return { ok: true, session: data };
     
   } catch (error) {
     console.error('[biometricAuth] Session creation error:', error);
