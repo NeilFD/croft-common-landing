@@ -363,11 +363,8 @@ return (
         onSuccess={membershipGate.handleAuthSuccess}
         requireAllowedDomain={false}
         title="Sign in to access your loyalty card"
-        description="Enter your email and we'll send you a magic link to access your coffee loyalty card."
-        redirectUrl={`${window.location.origin}/`}
-        toastTitle="Magic link sent!"
-        toastDescription="Check your email and click the magic link to access your loyalty card."
-        emailSentInstructions="Click the magic link to access your loyalty card and start saving punches."
+        description="Enter your email and we'll send you a 6-digit code to access your coffee loyalty card."
+        prefilledEmail={membershipGate.authEmail || undefined}
       />
     </>
   );

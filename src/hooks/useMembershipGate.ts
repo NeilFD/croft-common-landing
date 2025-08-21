@@ -61,6 +61,7 @@ interface UseMembershipGate {
   bioOpen: boolean;
   linkOpen: boolean;
   authOpen: boolean;
+  authEmail: string | null;
   allowed: boolean;
   checking: boolean;
   start: () => void;
@@ -75,6 +76,7 @@ export function useMembershipGate(): UseMembershipGate {
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
+  const [authEmail, setAuthEmail] = useState<string | null>(null);
   const [allowed, setAllowed] = useState(false);
   const [checking, setChecking] = useState(false);
   const inFlightRef = useRef(false);
@@ -85,6 +87,7 @@ export function useMembershipGate(): UseMembershipGate {
     setBioOpen(false);
     setLinkOpen(false);
     setAuthOpen(false);
+    setAuthEmail(null);
     setAllowed(false);
     setChecking(false);
   }, []);
@@ -209,6 +212,20 @@ export function useMembershipGate(): UseMembershipGate {
   const handleBioFallback = useCallback(() => {
     console.debug('[gate] bio fallback -> authOpen');
     setBioOpen(false);
+    // Get the email from WebAuthn verification for prefilling
+    const userHandle = getStoredUserHandle();
+    if (userHandle) {
+      // Try to get email from the most recent verification
+      supabase.functions.invoke('webauthn-create-session', {
+        body: { userHandle }
+      }).then(({ data }) => {
+        if (data?.email) {
+          setAuthEmail(data.email);
+        }
+      }).catch(() => {
+        // Ignore errors, just proceed without prefilled email
+      });
+    }
     setAuthOpen(true);
   }, []);
 
@@ -265,6 +282,7 @@ export function useMembershipGate(): UseMembershipGate {
     bioOpen,
     linkOpen,
     authOpen,
+    authEmail,
     allowed,
     checking,
     start,

@@ -214,7 +214,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           setEmailModalOpen(false);
           toast({ title: 'Signed in', description: 'You can now reserve your tickets.' });
         }}
-        onMagicLinkSent={() => {
+        
           // Close both the auth modal and the cinema modal, returning to the main Hall menu
           setEmailModalOpen(false);
           onClose();

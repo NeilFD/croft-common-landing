@@ -107,9 +107,6 @@ const CMSLogin = () => {
         requireAllowedDomain={true}
         title="CMS Access"
         description="Enter your email to access the content management system"
-        emailSentTitle="Check Your Email"
-        emailSentDescription="We've sent you a secure login link to access the CMS"
-        redirectUrl={`${window.location.origin}/cms/login`}
       />
     </div>
   );

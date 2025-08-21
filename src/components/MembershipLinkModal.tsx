@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { OTPInput } from '@/components/ui/otp-input';
 import CroftLogo from '@/components/CroftLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
@@ -113,15 +114,13 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
             <>
               <h2 className="font-brutalist text-foreground text-xl tracking-wider">Enter your code</h2>
               <p className="font-industrial text-foreground/80">We sent a 6‑digit code to {email}.</p>
-              <Input
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="123456"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                disabled={loading}
-                maxLength={6}
-              />
+              <div className="flex justify-center">
+                <OTPInput
+                  value={code}
+                  onChange={setCode}
+                  disabled={loading}
+                />
+              </div>
               {error && <p className="font-industrial text-destructive text-sm">{error}</p>}
               <div className="flex gap-3 pt-2">
                 <Button className="flex-1" onClick={verifyLink} disabled={loading}>
