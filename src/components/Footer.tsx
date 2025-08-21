@@ -164,8 +164,9 @@ const Footer = ({
             section="footer"
             contentKey="common_good_title"
             fallback="The Common Good"
-            className="font-industrial text-sm uppercase tracking-wide text-background/80 mb-2"
+            className="font-industrial text-sm uppercase tracking-wide text-background/80 mb-2 hover:text-background transition-colors duration-200 cursor-pointer"
             as="div"
+            href="/common-good"
           />
           <div className="inline-block px-4 py-2 border-2 border-background rounded-full font-brutalist text-4xl md:text-5xl text-background transition-colors duration-200">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : "—"}</div>
         </div>
