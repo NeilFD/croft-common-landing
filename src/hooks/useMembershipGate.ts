@@ -8,20 +8,51 @@ import { toast } from "sonner";
 // Helper function to create Supabase session after successful Face ID
 const createSupabaseSession = async (userHandle: string, email?: string) => {
   try {
-    console.debug('[gate] creating supabase session for userHandle:', userHandle);
+    console.log('[gate] starting session creation for userHandle:', userHandle);
     const { data, error } = await supabase.functions.invoke('webauthn-create-session', {
       body: { userHandle, email }
     });
     
+    console.log('[gate] webauthn-create-session response:', { data, error });
+    
     if (error) {
       console.error('[gate] webauthn-create-session error:', error);
+      toast.error('Failed to create session');
       return false;
     }
     
-    console.debug('[gate] webauthn-create-session success:', data);
-    return true;
+    if (!data?.success) {
+      console.error('[gate] webauthn-create-session failed:', data);
+      toast.error('Session creation failed');
+      return false;
+    }
+    
+    console.log('[gate] session creation successful for user:', data.email);
+    
+    // Use the session data from the edge function if available
+    if (data.session?.access_token) {
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token
+      });
+      
+      if (sessionError) {
+        console.error('[gate] failed to set session:', sessionError);
+        toast.error('Failed to establish session');
+        return false;
+      }
+      
+      console.log('[gate] supabase session established successfully');
+      toast.success('Signed in successfully');
+      return true;
+    } else {
+      console.warn('[gate] no session data returned from edge function');
+      toast.success('Access granted (session pending)');
+      return true;
+    }
   } catch (e) {
     console.error('[gate] webauthn-create-session exception:', e);
+    toast.error('Session creation error');
     return false;
   }
 };

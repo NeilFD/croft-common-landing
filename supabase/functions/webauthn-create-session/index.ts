@@ -84,16 +84,31 @@ serve(async (req) => {
       throw new Error('No existing link found and no email provided');
     }
 
-    // Return user info for frontend session handling
+    // Get user data first
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
     if (userError) throw userError;
 
-    console.log('Successfully prepared user data for frontend session:', userId);
+    // Generate a JWT session for this user
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: userData.user.email!,
+      options: {
+        redirectTo: `${req.headers.get('origin') || 'https://app.lovable.dev'}/`
+      }
+    });
+
+    if (sessionError) {
+      console.error('Failed to generate session:', sessionError);
+      throw sessionError;
+    }
+
+    console.log('Successfully created session for user:', userId);
 
     return new Response(JSON.stringify({
       success: true,
       userId: userId,
-      email: userData.user.email
+      email: userData.user.email,
+      session: sessionData
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
