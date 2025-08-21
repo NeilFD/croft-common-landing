@@ -18,6 +18,9 @@ interface AuthModalProps {
   emailSentTitle?: string;
   emailSentDescription?: ReactNode;
   redirectUrl?: string;
+  toastTitle?: string;
+  toastDescription?: string;
+  emailSentInstructions?: string;
 }
 
 const validateEmailDomain = async (email: string): Promise<boolean> => {
@@ -33,7 +36,7 @@ const validateEmailDomain = async (email: string): Promise<boolean> => {
   return data;
 };
 
-export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent, emailSentTitle, emailSentDescription, redirectUrl }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent, emailSentTitle, emailSentDescription, redirectUrl, toastTitle, toastDescription, emailSentInstructions }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -143,8 +146,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
     setLoading(true);
 
-    // Use provided redirectUrl or construct default based on current domain
-    const magicLinkRedirectUrl = redirectUrl || `${window.location.origin}/cms/login`;
+    // Use provided redirectUrl or construct default based on current page
+    const magicLinkRedirectUrl = redirectUrl || `${window.location.origin}${window.location.pathname}`;
     
     console.log('🔐 Sending magic link with redirect URL:', magicLinkRedirectUrl);
 
@@ -181,8 +184,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
             setEmailSent(true);
           }
           toast({
-            title: "Magic link sent!",
-            description: "Click the magic link and follow the page to reserve tickets.",
+            title: toastTitle || "Magic link sent!",
+            description: toastDescription || "Check your email and click the magic link to continue.",
           });
         }
     } catch (error) {
@@ -256,11 +259,11 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
                     <p>In this new window, complete the secret gesture again and the event creation form will open for you.</p>
                     <p>Complete the form and save.</p>
                   </>
-                ) : (
-                  <>
-                    <p>Click the magic link and follow the page to reserve tickets.</p>
-                  </>
-                )}
+                 ) : (
+                   <>
+                     <p>{emailSentInstructions || "Click the magic link to continue."}</p>
+                   </>
+                 )}
               </>
             )}
           </DialogDescription>

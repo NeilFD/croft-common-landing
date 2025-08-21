@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import CroftLogo from '@/components/CroftLogo';
-import { isPlatformAuthenticatorAvailable, isWebAuthnSupported } from '@/lib/biometricAuth';
+import { isPlatformAuthenticatorAvailable, isWebAuthnSupported, getStoredUserHandle, registerPasskeyDetailed } from '@/lib/biometricAuth';
 import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { Button } from '@/components/ui/button';
 import { markBioSuccess } from '@/hooks/useRecentBiometric';
@@ -79,18 +79,37 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     setLoading(true);
     setError(null);
     try {
-      const res = await ensureBiometricUnlockSerialized('Member');
-      if (res.ok) {
-        // Mark recent success for smooth cross-feature UX
-        markBioSuccess();
-        onSuccess();
-        return;
-      }
-      console.debug('[webauthn] ensureBiometricUnlockDetailed result', res);
-      setError(messageFor(res.errorCode, res.error));
-      if (res.stage === 'unsupported' && onFallback) {
-        // Offer fallback path immediately in unsupported environments
-        onFallback();
+      // Check if this is first-time setup (no stored handle)
+      const existingHandle = getStoredUserHandle();
+      
+      if (!existingHandle) {
+        // First-time setup: directly attempt registration for smoother UX
+        console.debug('[biometric] First-time setup, attempting direct registration');
+        const res = await registerPasskeyDetailed('Member');
+        if (res.ok) {
+          markBioSuccess();
+          onSuccess();
+          return;
+        }
+        console.debug('[biometric] Direct registration failed', res);
+        setError(messageFor(res.errorCode, res.error));
+        if (res.errorCode === 'unsupported' && onFallback) {
+          onFallback();
+        }
+      } else {
+        // Existing user: use normal auth flow
+        console.debug('[biometric] Existing user, using normal auth flow');
+        const res = await ensureBiometricUnlockSerialized('Member');
+        if (res.ok) {
+          markBioSuccess();
+          onSuccess();
+          return;
+        }
+        console.debug('[biometric] ensureBiometricUnlockDetailed result', res);
+        setError(messageFor(res.errorCode, res.error));
+        if (res.stage === 'unsupported' && onFallback) {
+          onFallback();
+        }
       }
     } finally {
       setLoading(false);

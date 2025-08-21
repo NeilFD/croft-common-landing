@@ -395,6 +395,10 @@ return (
   requireAllowedDomain={false}
   title="Sign in to start your loyalty card"
   description="Enter your email and we'll send you a magic link to save your punches."
+  redirectUrl={`${window.location.origin}/`}
+  toastTitle="Magic link sent!"
+  toastDescription="Check your email and click the magic link to access your loyalty card."
+  emailSentInstructions="Click the magic link to access your loyalty card and start saving punches."
 />
     </>
   );
