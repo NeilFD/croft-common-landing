@@ -2,10 +2,24 @@ import { startRegistration, startAuthentication } from '@simplewebauthn/browser'
 import { supabase } from '@/integrations/supabase/client';
 
 const USER_HANDLE_KEY = 'biometric_user_handle';
+const HAS_CREDENTIALS_KEY = 'has_webauthn_credentials';
 
 function getRpParams() {
   const host = window.location.hostname.replace(/^www\./, '');
   return { rpId: host, origin: window.location.origin };
+}
+
+// Track credential existence in localStorage
+function markHasCredentials() {
+  try { localStorage.setItem(HAS_CREDENTIALS_KEY, 'true'); } catch {}
+}
+
+function clearHasCredentials() {
+  try { localStorage.removeItem(HAS_CREDENTIALS_KEY); } catch {}
+}
+
+function hasStoredCredentials(): boolean {
+  try { return localStorage.getItem(HAS_CREDENTIALS_KEY) === 'true'; } catch { return false; }
 }
 
 // Recent registration grace period to bias discoverable auth (per-tab)
@@ -205,6 +219,7 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
     console.log('[biometricAuth] Registration successful:', verifyData.userHandle);
     setStoredUserHandle(verifyData.userHandle);
     markRecentRegistration();
+    markHasCredentials();
     
     // Return success with requiresLinking flag - session creation will be handled by caller
     return { 
@@ -266,6 +281,7 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
           return { ok: false, errorCode: 'auth_options_failed', error: msg };
         }
         if ((optRes as any)?.error === 'no_credentials') {
+          clearHasCredentials();
           return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
         }
         const { options } = optRes as any;
@@ -292,9 +308,10 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
         }
         return { ok: false, errorCode: 'auth_options_failed', error: msg };
       }
-      if ((optRes as any)?.error === 'no_credentials') {
-        return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
-      }
+        if ((optRes as any)?.error === 'no_credentials') {
+          clearHasCredentials();
+          return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
+        }
 
       const { options } = optRes as any;
       const allowPresent = Array.isArray((options as any)?.allowCredentials) && (options as any).allowCredentials.length > 0;
@@ -316,6 +333,7 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
             return { ok: false, errorCode: 'auth_options_failed', error: String(optErr2.message) };
           }
           if ((optRes2 as any)?.error === 'no_credentials') {
+            clearHasCredentials();
             return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
           }
           try {
@@ -399,7 +417,24 @@ export async function ensureBiometricUnlockDetailed(displayName?: string): Promi
     return { ok: false, stage: 'unsupported', errorCode: 'platform_unavailable', error: 'No built‑in authenticator available on this device' };
   }
 
-  // Try authentication first
+  // Skip authentication if we don't have stored credentials (iOS optimization)
+  const handle = getStoredUserHandle();
+  const hasCredentials = hasStoredCredentials();
+  
+  if (!handle || !hasCredentials) {
+    console.log('[biometricAuth] No stored credentials found, skipping auth and going to registration');
+    const regResult = await registerPasskeyDetailed(displayName);
+    
+    if (regResult.ok) {
+      console.log('[biometricAuth] Registration successful');
+      return { ok: true, stage: 'register', userHandle: regResult.userHandle, requiresLinking: regResult.requiresLinking };
+    }
+    
+    console.log('[biometricAuth] Registration failed:', regResult);
+    return { ok: false, stage: 'register', errorCode: regResult.errorCode, error: regResult.error };
+  }
+
+  // Try authentication for users with stored credentials
   console.log('[biometricAuth] Attempting authentication...');
   const authResult = await authenticatePasskeyDetailed();
   

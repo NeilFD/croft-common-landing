@@ -65,7 +65,10 @@ const effectiveRpId = normalizeRpId(hostForRp);
         authenticatorAttachment: 'platform',
         residentKey: 'required',
         requireResidentKey: false,
-        userVerification: 'required',
+        userVerification: 'preferred', // iOS-friendly: preferred instead of required
+      },
+      extensions: {
+        credProps: true, // Help iOS understand credential properties
       },
       excludeCredentials,
     });

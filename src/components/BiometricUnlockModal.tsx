@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import CroftLogo from '@/components/CroftLogo';
-import { isPlatformAuthenticatorAvailable, isWebAuthnSupported, getStoredUserHandle, registerPasskeyDetailed } from '@/lib/biometricAuth';
+import { isPlatformAuthenticatorAvailable, isWebAuthnSupported, getStoredUserHandle, registerPasskeyDetailed, ensureBiometricUnlockDetailed } from '@/lib/biometricAuth';
 import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { Button } from '@/components/ui/button';
 import { markBioSuccess } from '@/hooks/useRecentBiometric';
@@ -79,15 +79,15 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     setLoading(true);
     setError(null);
     try {
-      // Always go straight to registration for new users to avoid iOS dialog
-      console.debug('[biometric] Attempting direct passkey registration');
-      const res = await registerPasskeyDetailed('Member');
+      // Use the enhanced flow that skips auth for new users (iOS optimization)
+      console.debug('[biometric] Attempting biometric unlock with smart flow');
+      const res = await ensureBiometricUnlockDetailed('Member');
       if (res.ok) {
         markBioSuccess();
         onSuccess();
         return;
       }
-      console.debug('[biometric] Passkey registration failed', res);
+      console.debug('[biometric] Biometric unlock failed', res);
       setError(messageFor(res.errorCode, res.error));
       if (res.errorCode === 'unsupported' && onFallback) {
         onFallback();
