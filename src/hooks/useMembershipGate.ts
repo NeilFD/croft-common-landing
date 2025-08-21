@@ -4,6 +4,7 @@ import { getStoredUserHandle } from "@/lib/biometricAuth";
 import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/useRecentBiometric";
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
 import { useMembershipAuth } from "@/hooks/useMembershipAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface UseMembershipGate {
@@ -22,6 +23,7 @@ interface UseMembershipGate {
 
 export function useMembershipGate(): UseMembershipGate {
   const { isMember } = useMembershipAuth();
+  const { user, loading: authLoading } = useAuth();
   const [bioOpen, setBioOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [authOpen, setAuthOpen] = useState(false);
@@ -41,7 +43,19 @@ export function useMembershipGate(): UseMembershipGate {
 
   // Start gate: Check global membership first, then fallback to gate flow
   const start = useCallback(() => {
-    // If already a verified member globally, allow immediate access
+    // Don't start gate for authenticated users - they have direct access
+    if (user) {
+      console.debug('[gate] skipping - user is authenticated');
+      return;
+    }
+    
+    // Don't start if auth is still loading
+    if (authLoading) {
+      console.debug('[gate] skipping - auth still loading');
+      return;
+    }
+
+    // If already a verified member globally (and not authenticated), allow immediate access
     if (isMember) {
       console.debug('[gate] allowing access via global membership');
       setAllowed(true);
@@ -115,7 +129,7 @@ export function useMembershipGate(): UseMembershipGate {
         inFlightRef.current = false;
       }
     })();
-  }, [isMember]);
+  }, [isMember, user, authLoading]);
 
   const handleBioSuccess = useCallback(async () => {
     // After a successful fresh biometric, check if this device's passkey is linked to an active subscriber

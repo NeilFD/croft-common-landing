@@ -35,23 +35,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const [publicCard, setPublicCard] = useState<any | null>(null);
   const [publicEntries, setPublicEntries] = useState<any[]>([]);
   
-  // Conditionally use membership gate only for guest users (after auth loading completes)
-  const membershipGateReal = useMembershipGate();
-  const membershipGateMock = {
-    bioOpen: false,
-    linkOpen: false,
-    authOpen: false,
-    allowed: false,
-    checking: false,
-    start: () => {},
-    reset: () => {},
-    handleBioSuccess: () => {},
-    handleBioFallback: () => {},
-    handleLinkSuccess: () => {},
-    handleAuthSuccess: () => {}
-  };
-  // Wait for auth to load, then determine which gate to use
-  const membershipGate = (authLoading || user) ? membershipGateMock : membershipGateReal;
+  // Always call the hook but pass auth state via context
+  const membershipGate = useMembershipGate();
 
   const {
     loading,
