@@ -39,6 +39,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
 
 // Use membership gate flow: start gate when modal opens, show card when allowed
 useEffect(() => {
+  console.log('[LoyaltyCardModal] modal open state changed:', { open });
+  
   if (!open) {
     membershipGate.reset();
     setShowCard(false);
@@ -46,17 +48,28 @@ useEffect(() => {
   }
 
   // Start the membership gate process (Face ID/Passkey flow)
+  console.log('[LoyaltyCardModal] starting membership gate...');
   membershipGate.start();
 }, [open]);
 
 // Show loyalty card when membership gate allows access
 useEffect(() => {
+  console.log('[LoyaltyCardModal] membership gate state change:', { 
+    allowed: membershipGate.allowed, 
+    checking: membershipGate.checking,
+    bioOpen: membershipGate.bioOpen,
+    linkOpen: membershipGate.linkOpen,
+    authOpen: membershipGate.authOpen 
+  });
+  
   if (membershipGate.allowed) {
+    console.log('[LoyaltyCardModal] setting showCard to true');
     setShowCard(true);
   } else {
+    console.log('[LoyaltyCardModal] setting showCard to false');
     setShowCard(false);
   }
-}, [membershipGate.allowed]);
+}, [membershipGate.allowed, membershipGate.checking, membershipGate.bioOpen, membershipGate.linkOpen, membershipGate.authOpen]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {

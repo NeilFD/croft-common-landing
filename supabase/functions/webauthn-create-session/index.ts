@@ -88,17 +88,13 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
     if (userError) throw userError;
 
-    // Generate a JWT session for this user
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
-      type: 'magiclink',
-      email: userData.user.email!,
-      options: {
-        redirectTo: `${req.headers.get('origin') || 'https://app.lovable.dev'}/`
-      }
+    // Generate a proper session for this user instead of a magic link
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+      userId: userId
     });
 
     if (sessionError) {
-      console.error('Failed to generate session:', sessionError);
+      console.error('Failed to create session:', sessionError);
       throw sessionError;
     }
 
@@ -108,7 +104,10 @@ serve(async (req) => {
       success: true,
       userId: userId,
       email: userData.user.email,
-      session: sessionData
+      session: {
+        access_token: sessionData.session.access_token,
+        refresh_token: sessionData.session.refresh_token
+      }
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
