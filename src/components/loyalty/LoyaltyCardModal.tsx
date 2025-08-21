@@ -51,12 +51,12 @@ useEffect(() => {
 
 // Show loyalty card when membership gate allows access
 useEffect(() => {
-  if (membershipGate.allowed && user) {
+  if (membershipGate.allowed) {
     setShowCard(true);
   } else {
     setShowCard(false);
   }
-}, [membershipGate.allowed, user]);
+}, [membershipGate.allowed]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
