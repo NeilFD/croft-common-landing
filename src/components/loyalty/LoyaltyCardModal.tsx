@@ -35,8 +35,22 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const [publicCard, setPublicCard] = useState<any | null>(null);
   const [publicEntries, setPublicEntries] = useState<any[]>([]);
   
-  // Use unified membership gate system
-  const membershipGate = useMembershipGate();
+  // Conditionally use membership gate only for guest users
+  const membershipGateReal = useMembershipGate();
+  const membershipGateMock = {
+    bioOpen: false,
+    linkOpen: false,
+    authOpen: false,
+    allowed: false,
+    checking: false,
+    start: () => {},
+    reset: () => {},
+    handleBioSuccess: () => {},
+    handleBioFallback: () => {},
+    handleLinkSuccess: () => {},
+    handleAuthSuccess: () => {}
+  };
+  const membershipGate = user ? membershipGateMock : membershipGateReal;
 
   const {
     loading,
