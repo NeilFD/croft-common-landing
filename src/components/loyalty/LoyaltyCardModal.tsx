@@ -24,7 +24,7 @@ interface LoyaltyCardModalProps {
 }
 
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const isMobile = useIsMobile();
   const [authOpen, setAuthOpen] = useState(false);
   const [showCard, setShowCard] = useState(!!user); // Initialize to true for authenticated users
@@ -35,7 +35,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const [publicCard, setPublicCard] = useState<any | null>(null);
   const [publicEntries, setPublicEntries] = useState<any[]>([]);
   
-  // Conditionally use membership gate only for guest users
+  // Conditionally use membership gate only for guest users (after auth loading completes)
   const membershipGateReal = useMembershipGate();
   const membershipGateMock = {
     bioOpen: false,
@@ -50,7 +50,8 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     handleLinkSuccess: () => {},
     handleAuthSuccess: () => {}
   };
-  const membershipGate = user ? membershipGateMock : membershipGateReal;
+  // Wait for auth to load, then determine which gate to use
+  const membershipGate = (authLoading || user) ? membershipGateMock : membershipGateReal;
 
   const {
     loading,
@@ -64,8 +65,11 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     addEntry,
   } = useLoyalty(user);
 
-// Completely separate authenticated and guest flows
+// Completely separate authenticated and guest flows - but wait for auth to load
 useEffect(() => {
+  // Don't do anything until auth loading is complete
+  if (authLoading) return;
+  
   if (!open) {
     // Reset all state when modal closes  
     setAuthOpen(false);
@@ -89,9 +93,9 @@ useEffect(() => {
     return;
   }
 
-  // Guest user path - only guests use membership gate
+  // Guest user path - only guests use membership gate (and only after auth loading is done)
   membershipGate.start();
-}, [open, user]);
+}, [open, user, authLoading]);
 
 // Separate effect to handle guest access after membership gate allows
 useEffect(() => {
