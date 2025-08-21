@@ -49,14 +49,14 @@ useEffect(() => {
   membershipGate.start();
 }, [open]);
 
-// Show loyalty card when membership gate allows access AND user is available
+// Show loyalty card when membership gate allows access
 useEffect(() => {
-  if (membershipGate.allowed && user) {
+  if (membershipGate.allowed) {
     setShowCard(true);
   } else {
     setShowCard(false);
   }
-}, [membershipGate.allowed, user]);
+}, [membershipGate.allowed]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
@@ -204,9 +204,23 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
             </div>
           )}
           {membershipGate.allowed && !user && (
-            <div className="mb-4 text-sm text-foreground/70">
-              Loading your loyalty card...
-            </div>
+            <Alert className="mb-4">
+              <AlertTitle>Sign In Required</AlertTitle>
+              <AlertDescription>
+                Access granted! To view your loyalty card and upload receipts, please sign in with your email.
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-2"
+                  onClick={() => {
+                    membershipGate.reset();
+                    setShowCard(false);
+                  }}
+                >
+                  Sign In
+                </Button>
+              </AlertDescription>
+            </Alert>
           )}
 
 {user && isRegular ? (
