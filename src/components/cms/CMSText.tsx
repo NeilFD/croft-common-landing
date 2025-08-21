@@ -1,5 +1,6 @@
 import { ReactNode, useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { Link } from 'react-router-dom';
 import { useCMSContent } from '@/hooks/useCMSContent';
 import { useEditMode } from '@/contexts/EditModeContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +19,7 @@ interface CMSTextProps {
   fallback: string;
   className?: string;
   as?: 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'div' | 'a' | 'button';
+  href?: string;
   children?: ReactNode;
 }
 
@@ -27,7 +29,8 @@ export const CMSText = ({
   contentKey,
   fallback,
   className = '',
-  as: Component = 'div'
+  as: Component = 'div',
+  href
 }: CMSTextProps) => {
   const { isEditMode, incrementPendingChanges, decrementPendingChanges } = useEditMode();
   const { content, loading, error, refreshContent } = useCMSContent(page, section, contentKey, isEditMode);
@@ -585,17 +588,32 @@ export const CMSText = ({
 
   return (
     <>
-      <Component 
-        ref={originalElementRef}
-        className={`${className} ${getPositioningClasses()} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
-        onClick={handleEdit}
-        title={isEditMode ? 'Click to edit (CMS)' : undefined}
-      >
-        {displayText}
-        {isEditMode && (
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-60" />
-        )}
-      </Component>
+      {href ? (
+        <Link 
+          to={href}
+          ref={originalElementRef}
+          className={`${className} ${getPositioningClasses()} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
+          onClick={isEditMode ? handleEdit : undefined}
+          title={isEditMode ? 'Click to edit (CMS)' : undefined}
+        >
+          {displayText}
+          {isEditMode && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-60" />
+          )}
+        </Link>
+      ) : (
+        <Component 
+          ref={originalElementRef}
+          className={`${className} ${getPositioningClasses()} ${isEditMode ? 'cursor-pointer hover:bg-accent/20 transition-colors duration-200 rounded px-1 border-2 border-transparent hover:border-accent/30 relative' : ''}`}
+          onClick={handleEdit}
+          title={isEditMode ? 'Click to edit (CMS)' : undefined}
+        >
+          {displayText}
+          {isEditMode && (
+            <span className="absolute -top-1 -right-1 w-2 h-2 bg-accent rounded-full opacity-60" />
+          )}
+        </Component>
+      )}
       
       {/* Render editing interface via portal */}
       {renderEditingInterface()}
