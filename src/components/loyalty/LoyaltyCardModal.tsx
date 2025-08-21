@@ -204,23 +204,9 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
             </div>
           )}
           {membershipGate.allowed && !user && (
-            <Alert className="mb-4">
-              <AlertTitle>Sign In Required</AlertTitle>
-              <AlertDescription>
-                Access granted! To view your loyalty card and upload receipts, please sign in with your email.
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-2"
-                  onClick={() => {
-                    membershipGate.reset();
-                    setShowCard(false);
-                  }}
-                >
-                  Sign In
-                </Button>
-              </AlertDescription>
-            </Alert>
+            <div className="mb-4 text-sm text-foreground/70">
+              Loading your loyalty card...
+            </div>
           )}
 
 {user && isRegular ? (

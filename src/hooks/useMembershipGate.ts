@@ -5,6 +5,27 @@ import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/us
 import { ensureBiometricUnlockSerialized } from "@/lib/webauthnOrchestrator";
 import { toast } from "sonner";
 
+// Helper function to create Supabase session after successful Face ID
+const createSupabaseSession = async (userHandle: string, email?: string) => {
+  try {
+    console.debug('[gate] creating supabase session for userHandle:', userHandle);
+    const { data, error } = await supabase.functions.invoke('webauthn-create-session', {
+      body: { userHandle, email }
+    });
+    
+    if (error) {
+      console.error('[gate] webauthn-create-session error:', error);
+      return false;
+    }
+    
+    console.debug('[gate] webauthn-create-session success:', data);
+    return true;
+  } catch (e) {
+    console.error('[gate] webauthn-create-session exception:', e);
+    return false;
+  }
+};
+
 interface UseMembershipGate {
   bioOpen: boolean;
   linkOpen: boolean;
@@ -79,6 +100,8 @@ export function useMembershipGate(): UseMembershipGate {
           const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
           console.debug('[gate] silent check result', { isLinked, data: d });
           if (isLinked) {
+            // Create Supabase session for authenticated user
+            await createSupabaseSession(userHandle);
             setAllowed(true);
             setLinkOpen(false);
             setBioOpen(false);
@@ -134,6 +157,8 @@ export function useMembershipGate(): UseMembershipGate {
       const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
       console.debug('[gate] check-membership result', { isLinked, data: d });
       if (isLinked) {
+        // Create Supabase session for authenticated user
+        await createSupabaseSession(userHandle);
         setAllowed(true);
         setBioOpen(false);
         setLinkOpen(false);
