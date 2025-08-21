@@ -135,7 +135,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       const release_id: string = row?.release_id;
 
       setConfirmation({ ticketNumbers: ticket_numbers, releaseId: release_id });
-      toast({ title: 'Booking confirmed', description: `You’ve got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
+      toast({ title: 'Booking confirmed', description: `You've got ticket${ticket_numbers.length > 1 ? 's' : ''} #${ticket_numbers.join(', ')}` });
 
       // Send confirmation email (best-effort with explicit error handling)
       const { data: emailResult, error: emailError } = await supabase.functions.invoke('send-cinema-ticket-email', {
@@ -206,7 +206,6 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
 
   return (
     <>
-      {/* Auth modal for verified members via magic link */}
       <AuthModal
         isOpen={emailModalOpen}
         onClose={() => setEmailModalOpen(false)}
@@ -214,14 +213,12 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           setEmailModalOpen(false);
           toast({ title: 'Signed in', description: 'You can now reserve your tickets.' });
         }}
-        
-          // Close both the auth modal and the cinema modal, returning to the main Hall menu
+        onCancel={() => {
           setEmailModalOpen(false);
           onClose();
         }}
-        requireAllowedDomain={false}
         title="Sign in to reserve Secret 7 Cinema Tickets"
-        description="We’ll email you a magic link to sign in."
+        description="We'll email you a 6-digit code to verify your identity."
       />
 
       <Dialog open={open} onOpenChange={resetAndClose}>
@@ -280,7 +277,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                   Ticket{confirmation.ticketNumbers.length > 1 ? 's' : ''}: #{confirmation.ticketNumbers.join(', ')}
                 </div>
                 <div className="text-steel text-sm mt-2">
-                  We’ve emailed your confirmation. See you at {doorsTime} for doors — screening starts at {screeningTime}.
+                  We've emailed your confirmation. See you at {doorsTime} for doors — screening starts at {screeningTime}.
                 </div>
               </div>
               <div className="flex justify-between">
