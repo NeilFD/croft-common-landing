@@ -6,7 +6,7 @@ import LoyaltyBox from './LoyaltyBox';
 import { useAuth } from '@/hooks/useAuth';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { toast } from '@/hooks/use-toast';
-import { AuthModal } from '@/components/AuthModal';
+import { OtpAuthModal } from '@/components/OtpAuthModal';
 import CroftLogo from '@/components/CroftLogo';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -317,7 +317,7 @@ return (
       </Dialog>
 
 
-<AuthModal
+<OtpAuthModal
   isOpen={authOpen}
   onClose={() => setAuthOpen(false)}
   onSuccess={() => {
@@ -325,13 +325,8 @@ return (
     setShowCard(true);
     toast({ title: 'Signed in', description: 'Your loyalty card is ready.' });
   }}
-  requireAllowedDomain={false}
   title="Sign in to start your loyalty card"
-  description="Enter your email and we'll send you a magic link to save your punches."
-  redirectUrl={`${window.location.origin}/`}
-  toastTitle="Magic link sent!"
-  toastDescription="Check your email and click the magic link to access your loyalty card."
-  emailSentInstructions="Click the magic link to access your loyalty card and start saving punches."
+  description="Enter your email and we'll send you a 6-digit code to access your loyalty card."
 />
     </>
   );
