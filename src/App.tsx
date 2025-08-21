@@ -39,6 +39,7 @@ import CMSVisual from "./pages/CMSVisual";
 import Notifications from "./pages/Notifications";
 import RouteImagePreloader from '@/components/RouteImagePreloader';
 import BrandAssetPreloader from '@/components/BrandAssetPreloader';
+import ScrollToTop from '@/components/ScrollToTop';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
 import { BannerNotification } from "@/components/BannerNotification";
@@ -122,6 +123,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+           <ScrollToTop />
            <NotificationHandlers />
            <NudgeHandlers />
            <LowercasePathGuard />
