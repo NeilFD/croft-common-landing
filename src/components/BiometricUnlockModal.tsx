@@ -79,37 +79,18 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     setLoading(true);
     setError(null);
     try {
-      // Check if this is first-time setup (no stored handle)
-      const existingHandle = getStoredUserHandle();
-      
-      if (!existingHandle) {
-        // First-time setup: directly attempt registration for smoother UX
-        console.debug('[biometric] First-time setup, attempting direct registration');
-        const res = await registerPasskeyDetailed('Member');
-        if (res.ok) {
-          markBioSuccess();
-          onSuccess();
-          return;
-        }
-        console.debug('[biometric] Direct registration failed', res);
-        setError(messageFor(res.errorCode, res.error));
-        if (res.errorCode === 'unsupported' && onFallback) {
-          onFallback();
-        }
-      } else {
-        // Existing user: use normal auth flow
-        console.debug('[biometric] Existing user, using normal auth flow');
-        const res = await ensureBiometricUnlockSerialized('Member');
-        if (res.ok) {
-          markBioSuccess();
-          onSuccess();
-          return;
-        }
-        console.debug('[biometric] ensureBiometricUnlockDetailed result', res);
-        setError(messageFor(res.errorCode, res.error));
-        if (res.stage === 'unsupported' && onFallback) {
-          onFallback();
-        }
+      // Always go straight to registration for new users to avoid iOS dialog
+      console.debug('[biometric] Attempting direct passkey registration');
+      const res = await registerPasskeyDetailed('Member');
+      if (res.ok) {
+        markBioSuccess();
+        onSuccess();
+        return;
+      }
+      console.debug('[biometric] Passkey registration failed', res);
+      setError(messageFor(res.errorCode, res.error));
+      if (res.errorCode === 'unsupported' && onFallback) {
+        onFallback();
       }
     } finally {
       setLoading(false);
