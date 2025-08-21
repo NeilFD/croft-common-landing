@@ -332,10 +332,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           onClose={() => setShowSecret(false)}
         />
       )}
-      {pageType === 'cafe' && !authLoading && !user && (
+      {pageType === 'cafe' && (
         <LoyaltyCardModal
           open={showSecret}
           onClose={() => setShowSecret(false)}
+          user={user}
+          authLoading={authLoading}
         />
       )}
       {pageType === 'common-room' && (

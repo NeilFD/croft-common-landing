@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import LoyaltyBox from './LoyaltyBox';
-import { useAuth } from '@/hooks/useAuth';
 import { useLoyalty } from '@/hooks/useLoyalty';
 import { toast } from '@/hooks/use-toast';
 import { AuthModal } from '@/components/AuthModal';
@@ -15,19 +14,21 @@ import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { UnauthorizedModal } from '@/components/UnauthorizedModal';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
-import { isBioRecentlyOk, markBioSuccess } from '@/hooks/useRecentBiometric';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
 import { useIsMobile } from '@/hooks/use-mobile';
+import type { User } from '@supabase/supabase-js';
+
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;
+  user: User | null;
+  authLoading: boolean;
 }
 
-const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
-  const { user, loading: authLoading } = useAuth();
+const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose, user, authLoading }) => {
   const isMobile = useIsMobile();
   const [authOpen, setAuthOpen] = useState(false);
-  const [showCard, setShowCard] = useState(!!user); // Initialize to true for authenticated users
+  const [showCard, setShowCard] = useState(!!user);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
   const [unlocked, setUnlocked] = useState(false);
   const prevPunchesRef = useRef(0);
@@ -35,7 +36,7 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
   const [publicCard, setPublicCard] = useState<any | null>(null);
   const [publicEntries, setPublicEntries] = useState<any[]>([]);
   
-  // Hook now handles authenticated users internally
+  // Only use membership gate for guests
   const membershipGate = useMembershipGate();
 
   const {
@@ -50,19 +51,17 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     addEntry,
   } = useLoyalty(user);
 
-// Completely separate authenticated and guest flows - but wait for auth to load
+// Handle authenticated vs guest flows
 useEffect(() => {
-  // Don't do anything until auth loading is complete
   if (authLoading) return;
   
   if (!open) {
-    // Reset all state when modal closes  
+    // Reset all state when modal closes
     setAuthOpen(false);
-    setShowCard(!!user); // Keep showCard true for authenticated users
+    setShowCard(!!user);
     setReadOnly(false);
     setPublicCard(null);
     setPublicEntries([]);
-    // Only reset membership gate for guest users
     if (!user) {
       membershipGate.reset();
     }
@@ -70,7 +69,7 @@ useEffect(() => {
   }
 
   if (user) {
-    // Authenticated user path - completely bypass membership gate
+    // Authenticated user - show card directly
     setShowCard(true);
     setReadOnly(false);
     setPublicCard(null);
@@ -78,9 +77,9 @@ useEffect(() => {
     return;
   }
 
-  // Guest user path - only guests use membership gate (and only after auth loading is done)
+  // Guest user - go through membership gate
   membershipGate.start();
-}, [open, user, authLoading]);
+}, [open, user, authLoading, membershipGate]);
 
 // Separate effect to handle guest access after membership gate allows
 useEffect(() => {
