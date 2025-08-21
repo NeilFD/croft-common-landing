@@ -84,16 +84,23 @@ serve(async (req) => {
       throw new Error('No existing link found and no email provided');
     }
 
-    // Get user info for frontend session creation
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-    if (userError) throw userError;
+    // Create an admin session directly for the user
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateLink({
+      type: 'magiclink',
+      email: (await supabase.auth.admin.getUserById(userId)).data.user.email,
+      options: {
+        redirectTo: `${Deno.env.get('SUPABASE_URL')?.replace('//', '//').split('/')[0]}//`
+      }
+    });
 
-    console.log('Successfully prepared user data for session creation:', userId);
+    if (sessionError) throw sessionError;
+
+    console.log('Successfully created session for biometric user:', userId);
 
     return new Response(JSON.stringify({
       success: true,
       userId: userId,
-      email: userData.user.email
+      sessionUrl: sessionData.properties.action_link
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
