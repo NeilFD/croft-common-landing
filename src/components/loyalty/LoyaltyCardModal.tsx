@@ -49,14 +49,14 @@ useEffect(() => {
   membershipGate.start();
 }, [open]);
 
-// Show loyalty card when membership gate allows access
+// Show loyalty card when membership gate allows access AND user is available
 useEffect(() => {
-  if (membershipGate.allowed) {
+  if (membershipGate.allowed && user) {
     setShowCard(true);
   } else {
     setShowCard(false);
   }
-}, [membershipGate.allowed]);
+}, [membershipGate.allowed, user]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {
@@ -201,6 +201,11 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
           {membershipGate.checking && (
             <div className="mb-4 text-sm text-foreground/70">
               Checking membership access...
+            </div>
+          )}
+          {membershipGate.allowed && !user && (
+            <div className="mb-4 text-sm text-foreground/70">
+              Loading your loyalty card...
             </div>
           )}
 
