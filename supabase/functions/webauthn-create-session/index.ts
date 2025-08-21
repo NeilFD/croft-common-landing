@@ -88,13 +88,11 @@ serve(async (req) => {
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
     if (userError) throw userError;
 
-    // Generate a proper session for this user instead of a magic link
-    const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-      userId: userId
-    });
+    // Generate a session using generateAccessToken
+    const { data: sessionData, error: sessionError } = await supabase.auth.admin.generateAccessToken(userId);
 
     if (sessionError) {
-      console.error('Failed to create session:', sessionError);
+      console.error('Failed to generate access token:', sessionError);
       throw sessionError;
     }
 
