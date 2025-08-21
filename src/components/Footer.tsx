@@ -158,7 +158,7 @@ const Footer = ({
           </button>
         </div>
 
-        <div className="border-t border-background/20 mt-8 pt-8 text-center">
+        <div className="border-t border-background/20 mt-8 pt-8 text-left">
           <CMSText
             page="global"
             section="footer"
