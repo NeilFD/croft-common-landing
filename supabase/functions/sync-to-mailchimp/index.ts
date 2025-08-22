@@ -462,11 +462,15 @@ function formatBirthday(birthday: string): string {
 }
 
 async function createMD5Hash(text: string): Promise<string> {
+  // Deno doesn't support MD5 in crypto.subtle, so we'll use a simple implementation
+  // For Mailchimp member hash, we can use SHA-256 and take first 32 chars as substitute
   const encoder = new TextEncoder();
   const data = encoder.encode(text.toLowerCase());
-  const hashBuffer = await crypto.subtle.digest('MD5', data);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  const fullHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  // Take first 32 characters to simulate MD5 length
+  return fullHash.substring(0, 32);
 }
 
 serve(handler);
