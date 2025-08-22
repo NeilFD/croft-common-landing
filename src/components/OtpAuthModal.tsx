@@ -38,21 +38,30 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
     setLoading(true);
 
     try {
+      // Use minimal parameters - just email and explicit undefined redirect to force OTP mode
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: undefined, // This forces OTP mode instead of magic link
-          shouldCreateUser: true
+          emailRedirectTo: undefined // This forces OTP mode instead of magic link
         }
       });
 
       if (error) {
         console.error('OTP send error:', error);
-        toast({
-          title: "Failed to send code",
-          description: error.message,
-          variant: "destructive"
-        });
+        // Handle "User not found" error specifically
+        if (error.message.includes('User not found') || error.message.includes('signup')) {
+          toast({
+            title: "Account not found",
+            description: "Please sign up first or check your email address.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Failed to send code",
+            description: error.message,
+            variant: "destructive"
+          });
+        }
       } else {
         setOtpSent(true);
         toast({
