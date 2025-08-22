@@ -38,7 +38,8 @@ const handler = async (req: Request): Promise<Response> => {
       .from('subscribers')
       .update({ 
         is_active: false,
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
+        mailchimp_sync_status: 'pending' // Mark for sync
       })
       .or(`id.eq.${token},unsubscribe_token.eq.${token}`)
       .select()
@@ -53,6 +54,26 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { "Content-Type": "application/json", ...corsHeaders },
         }
       );
+    }
+
+    // Sync unsubscribe to Mailchimp in background
+    try {
+      supabase.functions.invoke('sync-to-mailchimp', {
+        body: {
+          email: subscriber.email,
+          action: 'unsubscribe'
+        }
+      }).then((response) => {
+        if (response.error) {
+          console.error('Failed to sync unsubscribe to Mailchimp:', response.error)
+        } else {
+          console.log('Successfully synced unsubscribe to Mailchimp for:', subscriber.email)
+        }
+      }).catch((error) => {
+        console.error('Error calling Mailchimp sync:', error)
+      })
+    } catch (error) {
+      console.error('Error initiating Mailchimp sync:', error)
     }
 
     return new Response(JSON.stringify({ 

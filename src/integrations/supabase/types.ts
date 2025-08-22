@@ -668,6 +668,45 @@ export type Database = {
           },
         ]
       }
+      mailchimp_sync_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          error_details: Json | null
+          failed_count: number | null
+          id: string
+          job_type: string
+          processed_count: number | null
+          started_at: string
+          status: string
+          success_count: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json | null
+          failed_count?: number | null
+          id?: string
+          job_type: string
+          processed_count?: number | null
+          started_at?: string
+          status?: string
+          success_count?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          error_details?: Json | null
+          failed_count?: number | null
+          id?: string
+          job_type?: string
+          processed_count?: number | null
+          started_at?: string
+          status?: string
+          success_count?: number | null
+        }
+        Relationships: []
+      }
       membership_codes: {
         Row: {
           code: string
@@ -1142,9 +1181,13 @@ export type Database = {
           email: string
           id: string
           is_active: boolean
+          last_mailchimp_sync_at: string | null
+          mailchimp_member_id: string | null
+          mailchimp_sync_status: string | null
           name: string | null
           preferences: Json | null
           subscription_date: string
+          sync_error: string | null
           unsubscribe_token: string
           updated_at: string
         }
@@ -1155,9 +1198,13 @@ export type Database = {
           email: string
           id?: string
           is_active?: boolean
+          last_mailchimp_sync_at?: string | null
+          mailchimp_member_id?: string | null
+          mailchimp_sync_status?: string | null
           name?: string | null
           preferences?: Json | null
           subscription_date?: string
+          sync_error?: string | null
           unsubscribe_token?: string
           updated_at?: string
         }
@@ -1168,9 +1215,13 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean
+          last_mailchimp_sync_at?: string | null
+          mailchimp_member_id?: string | null
+          mailchimp_sync_status?: string | null
           name?: string | null
           preferences?: Json | null
           subscription_date?: string
+          sync_error?: string | null
           unsubscribe_token?: string
           updated_at?: string
         }

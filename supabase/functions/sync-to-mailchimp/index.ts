@@ -14,7 +14,7 @@ interface SyncRequest {
   interests?: string[];
   consent_given?: boolean;
   consent_timestamp?: string;
-  action?: 'create' | 'update' | 'delete';
+  action?: 'create' | 'update' | 'delete' | 'subscribe' | 'unsubscribe' | 'upsert';
 }
 
 interface MailchimpMember {
@@ -68,13 +68,104 @@ const handler = async (req: Request): Promise<Response> => {
     let audienceId = await getOrCreateAudience(baseUrl, authHeader);
     
     const body = await req.json() as SyncRequest;
-    const { email, name, phone, birthday, interests, consent_given, consent_timestamp, action = 'create' } = body;
+    const { email, name, phone, birthday, interests, consent_given, consent_timestamp, action = 'upsert' } = body;
 
     if (!email) {
       return new Response(
         JSON.stringify({ error: 'Email is required' }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
+    }
+
+    // Create Supabase client for sync status updates
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    
+    if (!supabaseServiceRoleKey) {
+      console.error('SUPABASE_SERVICE_ROLE_KEY not configured');
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
+
+    // Handle unsubscribe action
+    if (action === 'unsubscribe') {
+      try {
+        const memberHash = await createMD5Hash(email);
+        const memberUrl = `${baseUrl}/lists/${audienceId}/members/${memberHash}`;
+        
+        const response = await fetch(memberUrl, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': authHeader,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            status: 'unsubscribed'
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('Mailchimp unsubscribe error:', errorData);
+          
+          // Update Supabase with error
+          if (supabaseServiceRoleKey) {
+            await supabase
+              .from('subscribers')
+              .update({
+                mailchimp_sync_status: 'failed',
+                sync_error: `Mailchimp unsubscribe failed: ${errorData.detail || 'Unknown error'}`
+              })
+              .eq('email', email);
+          }
+            
+          return new Response(
+            JSON.stringify({ error: 'Failed to unsubscribe from Mailchimp' }),
+            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        // Update Supabase sync status
+        if (supabaseServiceRoleKey) {
+          await supabase
+            .from('subscribers')
+            .update({
+              last_mailchimp_sync_at: new Date().toISOString(),
+              mailchimp_sync_status: 'synced',
+              sync_error: null
+            })
+            .eq('email', email);
+        }
+
+        return new Response(
+          JSON.stringify({ 
+            success: true, 
+            message: 'Successfully unsubscribed from Mailchimp',
+            email 
+          }),
+          { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      } catch (error: any) {
+        console.error('Error unsubscribing from Mailchimp:', error);
+        
+        // Update Supabase with error
+        if (supabaseServiceRoleKey) {
+          await supabase
+            .from('subscribers')
+            .update({
+              mailchimp_sync_status: 'failed',
+              sync_error: error.message || 'Unknown error during unsubscribe'
+            })
+            .eq('email', email);
+        }
+          
+        return new Response(
+          JSON.stringify({ error: 'Failed to unsubscribe from Mailchimp' }),
+          { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
     }
 
     // Prepare member data
@@ -84,7 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const memberData: MailchimpMember = {
       email_address: email,
-      status: consent_given ? 'subscribed' : 'unsubscribed',
+      status: consent_given !== false ? 'subscribed' : 'unsubscribed', // Default to subscribed unless explicitly false
       merge_fields: {
         FNAME: firstName,
         LNAME: lastName,
@@ -123,6 +214,18 @@ const handler = async (req: Request): Promise<Response> => {
     
     if (!response.ok) {
       console.error('Mailchimp API error:', result);
+      
+      // Update Supabase with error
+      if (supabaseServiceRoleKey) {
+        await supabase
+          .from('subscribers')
+          .update({
+            mailchimp_sync_status: 'failed',
+            sync_error: `Mailchimp API error: ${result.detail || 'Unknown error'}`
+          })
+          .eq('email', email);
+      }
+        
       return new Response(
         JSON.stringify({ 
           error: 'Failed to sync to Mailchimp', 
@@ -133,11 +236,24 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log(`Successfully synced ${email} to Mailchimp`);
+
+    // Update Supabase sync status
+    if (supabaseServiceRoleKey) {
+      await supabase
+        .from('subscribers')
+        .update({
+          last_mailchimp_sync_at: new Date().toISOString(),
+          mailchimp_sync_status: 'synced',
+          mailchimp_member_id: result.id,
+          sync_error: null
+        })
+        .eq('email', email);
+    }
     
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Successfully ${action}d subscriber in Mailchimp`,
+        message: `Successfully ${action === 'create' ? 'created' : action === 'update' ? 'updated' : 'synced'} subscriber in Mailchimp`,
         mailchimp_id: result.id
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -145,6 +261,30 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error('Error in sync-to-mailchimp:', error);
+    
+    // Update Supabase with error if possible
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+      const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+      
+      if (supabaseServiceRoleKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
+          auth: { autoRefreshToken: false, persistSession: false }
+        });
+        
+        const body = await req.json() as SyncRequest;
+        await supabase
+          .from('subscribers')
+          .update({
+            mailchimp_sync_status: 'failed',
+            sync_error: error.message || 'Unknown sync error'
+          })
+          .eq('email', body.email);
+      }
+    } catch (dbError) {
+      console.error('Failed to update sync error in database:', dbError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
