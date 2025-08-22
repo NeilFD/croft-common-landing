@@ -298,7 +298,6 @@ export const AdminNotificationsApp: React.FC = () => {
               <p>If this tab doesn’t refresh automatically, click Got it.</p>
             </>
           }
-          onCodeSent={() => setAuthOpen(false)}
         />
         <Toaster />
       </div>
