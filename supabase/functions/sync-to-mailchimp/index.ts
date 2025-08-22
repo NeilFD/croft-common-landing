@@ -33,21 +33,21 @@ interface MailchimpMember {
 const MAILCHIMP_SERVER = 'us5';
 const AUDIENCE_NAME = 'Croft Common Subscribers';
 
-// Interest categories mapping
+// Interest categories mapping - must match frontend SubscriptionForm.tsx exactly
 const INTEREST_CATEGORIES = [
-  'Private Events',
-  'Corporate Hospitality', 
-  'Wine Tastings',
-  'Cocktail Making',
+  'Private Events & Bookings',
+  'Corporate Hospitality',
+  'Wine Tastings & Masterclasses',
+  'Cocktail Masterclasses',
+  'Beer & Brewing Events',
   'Cooking Classes',
-  'Beer Tastings',
-  'Live Music',
-  'Art Exhibitions',
+  'Art & Creative Workshops',
+  'Film & Cinema',
   'Networking Events',
-  'Community Projects',
-  'Seasonal Celebrations',
-  'Educational Workshops',
-  'Wellness Programs'
+  'Live Music & Entertainment',
+  'Special Occasions & Celebrations',
+  'Wedding & Party Catering',
+  'Business Meetings & Workspace'
 ];
 
 const handler = async (req: Request): Promise<Response> => {
