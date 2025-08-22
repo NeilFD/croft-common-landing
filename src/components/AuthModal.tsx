@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,10 +15,9 @@ interface AuthModalProps {
   requireAllowedDomain?: boolean;
   title?: string;
   description?: string;
-  onMagicLinkSent?: () => void;
+  onCodeSent?: () => void;
   emailSentTitle?: string;
   emailSentDescription?: ReactNode;
-  redirectUrl?: string;
   toastTitle?: string;
   toastDescription?: string;
   emailSentInstructions?: string;
@@ -36,77 +36,15 @@ const validateEmailDomain = async (email: string): Promise<boolean> => {
   return data;
 };
 
-export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onMagicLinkSent, emailSentTitle, emailSentDescription, redirectUrl, toastTitle, toastDescription, emailSentInstructions }: AuthModalProps) => {
+export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onCodeSent, emailSentTitle, emailSentDescription, toastTitle, toastDescription, emailSentInstructions }: AuthModalProps) => {
   const [email, setEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
-  const [emailSent, setEmailSent] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const { user, refreshSession } = useAuth();
 
-  // Check for auth URL parameter on component mount
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hasAuthParam = urlParams.has('auth');
-    
-    if (hasAuthParam && isOpen) {
-      console.log('🔍 Auth parameter detected in URL, checking session...');
-      
-      // Give a moment for the auth state to settle after redirect
-      setTimeout(async () => {
-        try {
-          const session = await refreshSession();
-          if (session?.user) {
-            console.log('✅ User authenticated via URL parameter');
-            // Clean up the URL
-            urlParams.delete('auth');
-            const newUrl = window.location.pathname + (urlParams.toString() ? `?${urlParams.toString()}` : '');
-            window.history.replaceState({}, '', newUrl);
-            onSuccess();
-          }
-        } catch (error) {
-          console.error('🚨 Error checking auth from URL parameter:', error);
-        }
-      }, 1000);
-    }
-  }, [isOpen, refreshSession, onSuccess]);
 
-  // Add window focus detection for cross-window authentication
-  useEffect(() => {
-    if (!emailSent || !isOpen) return;
-
-    const handleWindowFocus = async () => {
-      console.log('🔍 Window focused, checking auth state...');
-      console.log('🔍 Current URL on focus:', window.location.href);
-      
-      try {
-        const session = await refreshSession();
-        console.log('🔍 Session after focus check:', {
-          user: session?.user?.email,
-          hasSession: !!session,
-          timestamp: new Date().toISOString()
-        });
-        
-        if (session?.user) {
-          console.log('✅ User authenticated on focus, calling onSuccess');
-          onSuccess();
-        } else {
-          console.log('❌ No user found on window focus');
-        }
-      } catch (error) {
-        console.error('🚨 Error checking auth on window focus:', error);
-      }
-    };
-
-    // Add window focus listener
-    window.addEventListener('focus', handleWindowFocus);
-    console.log('👀 Added window focus listener for auth detection');
-
-    return () => {
-      window.removeEventListener('focus', handleWindowFocus);
-      console.log('🧹 Removed window focus listener');
-    };
-  }, [emailSent, isOpen, refreshSession, onSuccess]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email) {
@@ -118,8 +56,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       return;
     }
 
-    console.log('🔐 Starting auth flow for:', email);
-    console.log('🔐 Current URL:', window.location.href);
+    console.log('🔐 Starting OTP flow for:', email);
 
     if (requireAllowedDomain) {
       try {
@@ -145,54 +82,87 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     }
 
     setLoading(true);
-
-    // Use provided redirectUrl or construct default based on current page
-    const magicLinkRedirectUrl = redirectUrl || `${window.location.origin}${window.location.pathname}`;
-    
-    console.log('🔐 Sending magic link with redirect URL:', magicLinkRedirectUrl);
-
     
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: magicLinkRedirectUrl,
-          // Add shouldCreateUser to handle new signups
           shouldCreateUser: true
         }
       });
 
       if (error) {
-        console.error('🚨 Magic link error:', {
-          message: error.message,
-          status: error.status,
-          name: error.name,
-          details: error
+        console.error('🚨 OTP send error:', error);
+        toast({
+          title: "Authentication failed",
+          description: error.message,
+          variant: "destructive"
         });
-        
-          toast({
-            title: "Authentication failed",
-            description: `${error.message} (Check console for details)`,
-            variant: "destructive"
-          });
+      } else {
+        console.log('✅ OTP sent successfully to:', email);
+        if (onCodeSent) {
+          try { onCodeSent(); } catch {}
         } else {
-          console.log('✅ Magic link sent successfully to:', email);
-          if (onMagicLinkSent) {
-            // Immediately close and let parent handle UI/navigation
-            try { onMagicLinkSent(); } catch {}
-          } else {
-            setEmailSent(true);
-          }
-          toast({
-            title: toastTitle || "Magic link sent!",
-            description: toastDescription || "Check your email and click the magic link to continue.",
-          });
+          setOtpSent(true);
         }
+        toast({
+          title: toastTitle || "Code sent!",
+          description: toastDescription || "Check your email for the 6-digit verification code.",
+        });
+      }
     } catch (error) {
-      console.error('🚨 Exception during magic link send:', error);
+      console.error('🚨 Exception during OTP send:', error);
       toast({
         title: "Unexpected error",
-        description: "An unexpected error occurred. Please check the console.",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive"
+      });
+    }
+
+    setLoading(false);
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!otpCode || otpCode.length !== 6) {
+      toast({
+        title: "Code required",
+        description: "Please enter the 6-digit code from your email.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email'
+      });
+
+      if (error) {
+        console.error('🚨 OTP verification error:', error);
+        toast({
+          title: "Invalid code",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        await refreshSession();
+        toast({
+          title: "Signed in successfully!",
+          description: "Welcome back.",
+        });
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('🚨 Exception during OTP verify:', error);
+      toast({
+        title: "Verification failed",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     }
@@ -202,35 +172,14 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
   const handleClose = () => {
     setEmail('');
-    setEmailSent(false);
+    setOtpCode('');
+    setOtpSent(false);
     onClose();
   };
 
-  const handleGotIt = async () => {
-    console.log('Got it clicked, checking authentication...');
-    
-    // Try direct Supabase check first
-    const { data: { user: directUser } } = await supabase.auth.getUser();
-    console.log('Direct user check:', directUser?.email);
-    
-    if (directUser) {
-      console.log('User found via direct check, calling onSuccess');
-      onSuccess();
-      return;
-    }
-    
-    // Fallback to refreshSession
-    console.log('No user found directly, trying refreshSession...');
-    const session = await refreshSession();
-    console.log('Session after refresh:', session?.user?.email);
-    
-    if (session?.user) {
-      console.log('User found via refresh, calling onSuccess');
-      onSuccess();
-    } else {
-      console.log('No user found, closing modal');
-      handleClose();
-    }
+  const handleBackToEmail = () => {
+    setOtpCode('');
+    setOtpSent(false);
   };
 
   // If user is already authenticated, don't show the modal
@@ -239,38 +188,63 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     return null;
   }
 
-  if (emailSent) {
+  if (otpSent) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-          <DialogTitle className="text-black font-bold">
-            {emailSentTitle ?? (requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Check your email')}
-          </DialogTitle>
-          <DialogDescription className="space-y-4 text-left">
-            <p>We've sent you a magic link to {email}.</p>
-            {emailSentDescription ? (
-              <div className="space-y-2">{emailSentDescription}</div>
-            ) : (
-              <>
-                {requireAllowedDomain ? (
-                  <>
-                    <p>Click it and you will be taken to a new browser window.</p>
-                    <p>In this new window, complete the secret gesture again and the event creation form will open for you.</p>
-                    <p>Complete the form and save.</p>
-                  </>
-                 ) : (
-                   <>
-                     <p>{emailSentInstructions || "Click the magic link to continue."}</p>
-                   </>
-                 )}
-              </>
-            )}
-          </DialogDescription>
+            <DialogTitle className="text-black font-bold">
+              {emailSentTitle ?? (requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Enter verification code')}
+            </DialogTitle>
+            <DialogDescription className="space-y-4 text-left">
+              <p>We've sent a 6-digit code to {email}.</p>
+              {emailSentDescription ? (
+                <div className="space-y-2">{emailSentDescription}</div>
+              ) : (
+                <>
+                  {requireAllowedDomain ? (
+                    <>
+                      <p>Enter the code below to continue.</p>
+                      <p>Once verified, complete the secret gesture again and the event creation form will open for you.</p>
+                      <p>Complete the form and save.</p>
+                    </>
+                   ) : (
+                     <>
+                       <p>{emailSentInstructions || "Enter the code below to continue."}</p>
+                     </>
+                   )}
+                </>
+              )}
+            </DialogDescription>
           </DialogHeader>
-          <Button onClick={handleGotIt} className="mt-4">
-            Got it
-          </Button>
+          <form onSubmit={handleVerifyOtp} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="otp">Verification code</Label>
+              <InputOTP
+                value={otpCode}
+                onChange={setOtpCode}
+                maxLength={6}
+                disabled={loading}
+              >
+                <InputOTPGroup>
+                  <InputOTPSlot index={0} />
+                  <InputOTPSlot index={1} />
+                  <InputOTPSlot index={2} />
+                  <InputOTPSlot index={3} />
+                  <InputOTPSlot index={4} />
+                  <InputOTPSlot index={5} />
+                </InputOTPGroup>
+              </InputOTP>
+            </div>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" onClick={handleBackToEmail} disabled={loading}>
+                Back
+              </Button>
+              <Button type="submit" disabled={loading || otpCode.length !== 6} className="flex-1">
+                {loading ? 'Verifying...' : 'Verify'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     );
@@ -282,10 +256,10 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>
           <DialogDescription>
-            {description ?? "Enter your email address and we'll send you a magic link to sign in."}
+            {description ?? "Enter your email address and we'll send you a 6-digit verification code to sign in."}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSendOtp} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email address</Label>
             <Input
@@ -303,7 +277,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
               Cancel
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? 'Sending...' : 'Send magic link'}
+              {loading ? 'Sending...' : 'Send code'}
             </Button>
           </div>
         </form>

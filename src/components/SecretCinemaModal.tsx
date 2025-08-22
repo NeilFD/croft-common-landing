@@ -206,7 +206,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
 
   return (
     <>
-      {/* Auth modal for verified members via magic link */}
+      {/* Auth modal for verified members via 6-digit code */}
       <AuthModal
         isOpen={emailModalOpen}
         onClose={() => setEmailModalOpen(false)}
@@ -214,14 +214,14 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
           setEmailModalOpen(false);
           toast({ title: 'Signed in', description: 'You can now reserve your tickets.' });
         }}
-        onMagicLinkSent={() => {
+        onCodeSent={() => {
           // Close both the auth modal and the cinema modal, returning to the main Hall menu
           setEmailModalOpen(false);
           onClose();
         }}
         requireAllowedDomain={false}
         title="Sign in to reserve Secret 7 Cinema Tickets"
-        description="We’ll email you a magic link to sign in."
+        description="We’ll email you a 6-digit verification code to sign in."
       />
 
       <Dialog open={open} onOpenChange={resetAndClose}>

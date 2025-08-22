@@ -1070,7 +1070,7 @@ const ImportManager = () => {
           modal_type: 'auth',
           content_section: 'body',
           content_key: 'description',
-          content_value: 'We\'ll email you a magic link to get started.',
+          content_value: 'We\'ll email you a 6-digit verification code to get started.',
           created_by: user.id,
         },
         

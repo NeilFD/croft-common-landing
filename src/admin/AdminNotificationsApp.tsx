@@ -294,11 +294,11 @@ export const AdminNotificationsApp: React.FC = () => {
           emailSentTitle="Check your email"
           emailSentDescription={
             <>
-              <p>Click the magic link; you’ll return here signed in to the Notifications Admin.</p>
+              <p>Click the 6-digit code from your email; you’ll return here signed in to the Notifications Admin.</p>
               <p>If this tab doesn’t refresh automatically, click Got it.</p>
             </>
           }
-          onMagicLinkSent={() => setAuthOpen(false)}
+          onCodeSent={() => setAuthOpen(false)}
         />
         <Toaster />
       </div>

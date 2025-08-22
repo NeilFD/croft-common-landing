@@ -120,7 +120,7 @@ React.useEffect(() => {
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Common Cook Book"
-        description="We’ll email you a magic link to confirm."
+        description="We’ll email you a 6-digit verification code to confirm."
       />
       <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent

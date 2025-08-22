@@ -108,8 +108,7 @@ const CMSLogin = () => {
         title="CMS Access"
         description="Enter your email to access the content management system"
         emailSentTitle="Check Your Email"
-        emailSentDescription="We've sent you a secure login link to access the CMS"
-        redirectUrl={`${window.location.origin}/cms/login`}
+        emailSentDescription="We've sent you a 6-digit verification code to access the CMS"
       />
     </div>
   );
