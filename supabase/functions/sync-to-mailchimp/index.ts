@@ -55,11 +55,13 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let requestBody: SyncRequest;
+  
   try {
     console.log('=== SYNC TO MAILCHIMP START ===')
     
-    const body = await req.json() as SyncRequest;
-    console.log('Request payload:', JSON.stringify(body))
+    requestBody = await req.json() as SyncRequest;
+    console.log('Request payload:', JSON.stringify(requestBody))
     
     const apiKey = Deno.env.get('MAILCHIMP_API_KEY');
     console.log('MAILCHIMP_API_KEY check:', apiKey ? `CONFIGURED (${apiKey.length} chars)` : 'NOT_CONFIGURED')
@@ -85,7 +87,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`Audience creation failed: ${audienceError.message}`)
     }
     
-    const { email, name, phone, birthday, interests, consent_given, consent_timestamp, action = 'upsert' } = body;
+    const { email, name, phone, birthday, interests, consent_given, consent_timestamp, action = 'upsert' } = requestBody;
 
     if (!email) {
       return new Response(
@@ -294,7 +296,6 @@ const handler = async (req: Request): Promise<Response> => {
           auth: { autoRefreshToken: false, persistSession: false }
         });
         
-        const requestBody = await req.json() as SyncRequest;
         await supabase
           .from('subscribers')
           .update({
@@ -335,8 +336,10 @@ async function getOrCreateAudience(baseUrl: string, authHeader: string): Promise
     name: AUDIENCE_NAME,
     contact: {
       company: 'Croft Common',
-      address1: 'London',
-      city: 'London',
+      address1: 'Stokes Croft',
+      city: 'Bristol',
+      state: '',
+      zip: 'BS1 3PR',
       country: 'GB'
     },
     permission_reminder: 'You subscribed to receive updates from Croft Common',
