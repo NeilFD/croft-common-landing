@@ -10,6 +10,7 @@ import { OtpAuthModal } from '@/components/OtpAuthModal';
 import CroftLogo from '@/components/CroftLogo';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;
@@ -32,7 +33,11 @@ const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) =>
     isLucky7,
     creatingNext,
     addEntry,
+    deleteEntry,
   } = useLoyalty(user);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<{id: string, index: number} | null>(null);
 
 // Simplified flow: authenticated users see card, unauthenticated see auth modal
 useEffect(() => {
@@ -112,9 +117,9 @@ useEffect(() => {
 
 const filledMap = useMemo(() => {
   if (!user) return {}; // No entries for unauthenticated users
-  const map: Record<number, { kind: 'punch' | 'reward'; url?: string }> = {};
+  const map: Record<number, { kind: 'punch' | 'reward'; url?: string; id?: string }> = {};
   entries.forEach((e: any) => {
-    map[e.index] = { kind: e.kind, url: e.signedUrl };
+    map[e.index] = { kind: e.kind, url: e.signedUrl, id: e.id };
   });
   return map;
 }, [user, entries]);
@@ -134,6 +139,22 @@ const handleSelect = (index: number) => async (file: File) => {
   }
 
   await addEntry(index, kind, file);
+};
+
+const handleDeleteRequest = (index: number) => {
+  const entryId = filledMap[index]?.id;
+  if (!entryId) return;
+  
+  setEntryToDelete({ id: entryId, index });
+  setDeleteDialogOpen(true);
+};
+
+const handleConfirmDelete = async () => {
+  if (!entryToDelete) return;
+  
+  await deleteEntry(entryToDelete.id, entryToDelete.index);
+  setDeleteDialogOpen(false);
+  setEntryToDelete(null);
 };
 
 const subtitle = useMemo(() => {
@@ -208,14 +229,15 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
     const disabled = loyaltyLoading || creatingNext || (!user);
 
     return (
-      <LoyaltyBox
-        key={idx}
-        index={idx}
-        filled={filled}
-        disabled={disabled}
-        imageUrl={img}
-        onSelectFile={handleSelect(idx)}
-      />
+        <LoyaltyBox
+          key={idx}
+          index={idx}
+          filled={filled}
+          disabled={disabled}
+          imageUrl={img}
+          onSelectFile={handleSelect(idx)}
+          onDeleteEntry={img ? () => handleDeleteRequest(idx) : undefined}
+        />
     );
   })}
 </div>
@@ -239,6 +261,7 @@ return (
       imageUrl={img}
       borderless={!filled && !img}
       onSelectFile={handleSelect(idx)}
+      onDeleteEntry={img ? () => handleDeleteRequest(idx) : undefined}
     />
     <div className="text-center text-xs text-foreground/70">Free coffee</div>
   </div>
@@ -264,6 +287,7 @@ return (
             disabled={disabled}
             imageUrl={img}
             onSelectFile={handleSelect(idx)}
+            onDeleteEntry={img ? () => handleDeleteRequest(idx) : undefined}
           />
         );
       })}
@@ -287,7 +311,7 @@ return (
               imageUrl={img}
               borderless={!filled && !img}
               onSelectFile={handleSelect(idx)}
-              
+              onDeleteEntry={img ? () => handleDeleteRequest(idx) : undefined}
             />
             <div className="text-center text-xs text-foreground/70">Lucky Number 7 is on us</div>
           </div>
@@ -328,6 +352,23 @@ return (
   title="Sign in to start your loyalty card"
   description="Enter your email and we'll send you a 6-digit code to access your loyalty card."
 />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete photo?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove the photo from box {entryToDelete?.index}. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };

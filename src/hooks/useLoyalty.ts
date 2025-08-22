@@ -320,6 +320,69 @@ export function useLoyalty(user: User | null) {
     }
   }, [user, fetchOrCreateActiveCard]);
 
+  const deleteEntry = useCallback(
+    async (entryId: string, index: number) => {
+      if (!user || !card) return;
+
+      try {
+        // Get the entry details before deletion
+        const entryToDelete = entries.find(e => e.id === entryId);
+        if (!entryToDelete) {
+          toast({ title: 'Error', description: 'Entry not found', variant: 'destructive' });
+          return;
+        }
+
+        // Delete from storage first
+        const { error: storageError } = await supabase.storage
+          .from(BUCKET)
+          .remove([entryToDelete.image_url]);
+
+        if (storageError) {
+          console.warn('Storage deletion failed:', storageError);
+          // Continue with database deletion even if storage fails
+        }
+
+        // Delete from database
+        const { error: dbError } = await supabase
+          .from('loyalty_entries')
+          .delete()
+          .eq('id', entryId);
+
+        if (dbError) {
+          console.error('Database deletion failed:', dbError);
+          toast({ title: 'Error', description: 'Failed to delete entry', variant: 'destructive' });
+          return;
+        }
+
+        // Update card counts
+        const newPunchesCount = entryToDelete.kind === 'punch' ? Math.max(0, card.punches_count - 1) : card.punches_count;
+        const newRewardsCount = entryToDelete.kind === 'reward' ? Math.max(0, card.rewards_count - 1) : card.rewards_count;
+
+        const { error: updateError } = await supabase
+          .from('loyalty_cards')
+          .update({
+            punches_count: newPunchesCount,
+            rewards_count: newRewardsCount,
+            is_complete: false // Card becomes incomplete when entry is deleted
+          })
+          .eq('id', card.id);
+
+        if (updateError) {
+          console.warn('Card count update failed:', updateError);
+        }
+
+        // Refresh entries to update UI
+        await refreshEntries(card.id);
+        
+        toast({ title: 'Photo deleted', description: 'Your photo has been removed from the loyalty card.' });
+      } catch (error) {
+        console.error('Delete entry error:', error);
+        toast({ title: 'Error', description: 'Failed to delete photo', variant: 'destructive' });
+      }
+    },
+    [user, card, entries, refreshEntries]
+  );
+
   return {
     loading,
     card,
@@ -331,5 +394,6 @@ export function useLoyalty(user: User | null) {
     creatingNext,
     refresh: fetchOrCreateActiveCard,
     addEntry,
+    deleteEntry,
   };
 }
