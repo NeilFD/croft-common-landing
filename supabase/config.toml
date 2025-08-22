@@ -154,3 +154,25 @@ verify_jwt = false
 
 [functions.send-welcome-emails-batch]
 verify_jwt = false
+
+[functions.subscribe-newsletter]
+verify_jwt = false
+
+# Mailchimp sync functions
+[functions.sync-to-mailchimp]
+verify_jwt = true
+
+[functions.test-mailchimp-sync]
+verify_jwt = false
+
+[functions.manual-sync-test]
+verify_jwt = false
+
+[functions.mailchimp-batch-sync]
+verify_jwt = true
+
+[functions.mailchimp-full-sync]
+verify_jwt = true
+
+[functions.mailchimp-reconciliation-sync]
+verify_jwt = true
