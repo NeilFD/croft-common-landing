@@ -242,6 +242,33 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Note: Welcome email will be sent automatically after email verification via database trigger
 
+    // Sync to Mailchimp in background (don't let Mailchimp failures break subscription)
+    try {
+      const syncPayload = {
+        email,
+        name: name || null,
+        phone: phone || null,
+        birthday: parsedBirthday,
+        interests: interests || [],
+        consent_given: consent,
+        consent_timestamp: new Date().toISOString(),
+        action: existingSubscriber ? 'update' : 'create'
+      };
+
+      const mailchimpResponse = await supabaseAdmin.functions.invoke('sync-to-mailchimp', {
+        body: syncPayload
+      });
+
+      if (mailchimpResponse.error) {
+        console.error('Mailchimp sync failed:', mailchimpResponse.error);
+      } else {
+        console.log('Successfully synced to Mailchimp:', email);
+      }
+    } catch (mailchimpError) {
+      console.error('Error calling Mailchimp sync:', mailchimpError);
+      // Continue with success response - don't fail subscription for Mailchimp issues
+    }
+
     const successMessage = isNewUser 
       ? "Successfully subscribed! Check your email to complete setup and enable personalized notifications."
       : "Successfully updated your subscription! Your profile has been enhanced with your preferences.";
