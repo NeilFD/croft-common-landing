@@ -86,7 +86,7 @@ const CommonRoom = () => {
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock The Common Room"
-        description="We’ll email you a magic link to confirm."
+        description="We’ll email you a 6-digit verification code to confirm."
       />
       <Toaster />
     </div>

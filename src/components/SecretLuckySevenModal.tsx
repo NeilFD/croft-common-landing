@@ -47,7 +47,7 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
         onSuccess={handleAuthSuccess}
         requireAllowedDomain={false}
         title="Unlock Lucky No 7"
-        description="We’ll email you a magic link to confirm."
+        description="We’ll email you a 6-digit verification code to confirm."
       />
 
       <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
