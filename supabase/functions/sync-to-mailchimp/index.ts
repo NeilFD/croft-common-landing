@@ -56,18 +56,35 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log('=== SYNC TO MAILCHIMP START ===')
+    
+    const body = await req.json() as SyncRequest;
+    console.log('Request payload:', JSON.stringify(body))
+    
     const apiKey = Deno.env.get('MAILCHIMP_API_KEY');
+    console.log('MAILCHIMP_API_KEY check:', apiKey ? `CONFIGURED (${apiKey.length} chars)` : 'NOT_CONFIGURED')
+    
     if (!apiKey) {
+      console.error('❌ MAILCHIMP_API_KEY not configured')
       throw new Error('Mailchimp API key not configured');
     }
 
     const baseUrl = `https://${MAILCHIMP_SERVER}.api.mailchimp.com/3.0`;
     const authHeader = `Basic ${btoa(`anystring:${apiKey}`)}`;
+    
+    console.log('Mailchimp config:', { baseUrl, serverCode: MAILCHIMP_SERVER })
 
     // Get or create audience
-    let audienceId = await getOrCreateAudience(baseUrl, authHeader);
+    console.log('Getting or creating Mailchimp audience...')
+    let audienceId;
+    try {
+      audienceId = await getOrCreateAudience(baseUrl, authHeader);
+      console.log('✅ Audience ID obtained:', audienceId)
+    } catch (audienceError) {
+      console.error('❌ Failed to get/create audience:', audienceError)
+      throw new Error(`Audience creation failed: ${audienceError.message}`)
+    }
     
-    const body = await req.json() as SyncRequest;
     const { email, name, phone, birthday, interests, consent_given, consent_timestamp, action = 'upsert' } = body;
 
     if (!email) {
@@ -260,7 +277,12 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
   } catch (error: any) {
-    console.error('Error in sync-to-mailchimp:', error);
+    console.error('❌ SYNC TO MAILCHIMP FAILED:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    })
     
     // Update Supabase with error if possible
     try {
@@ -272,14 +294,16 @@ const handler = async (req: Request): Promise<Response> => {
           auth: { autoRefreshToken: false, persistSession: false }
         });
         
-        const body = await req.json() as SyncRequest;
+        const requestBody = await req.json() as SyncRequest;
         await supabase
           .from('subscribers')
           .update({
             mailchimp_sync_status: 'failed',
             sync_error: error.message || 'Unknown sync error'
           })
-          .eq('email', body.email);
+          .eq('email', requestBody.email);
+          
+        console.log('Updated subscriber sync status to failed')
       }
     } catch (dbError) {
       console.error('Failed to update sync error in database:', dbError);
