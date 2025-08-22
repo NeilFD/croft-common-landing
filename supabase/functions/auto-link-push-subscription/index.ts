@@ -63,6 +63,13 @@ serve(async (req) => {
       if (!fetchError && unlinkedSubs && unlinkedSubs.length > 0) {
         console.log(`Found ${unlinkedSubs.length} unlinked subscriptions, attempting to link to user ${userId}`);
         
+        // First, deactivate any existing active subscriptions for this user
+        await adminClient
+          .from('push_subscriptions')
+          .update({ is_active: false })
+          .eq('user_id', userId)
+          .eq('is_active', true);
+
         // Update the most recent unlinked subscription to be linked to this user
         // This assumes the user is authenticating from the same device they subscribed on
         const mostRecentSub = unlinkedSubs[0]; // They're ordered by created_at desc

@@ -41,22 +41,31 @@ serve(async (req) => {
     const { data: userData } = await authClient.auth.getUser();
     const userId = userData?.user?.id ?? null;
 
-    const row = {
-      endpoint,
-      p256dh: p256dh ?? null,
-      auth: auth ?? null,
-      user_agent: user_agent ?? "",
-      platform: platform ?? "web",
-      user_id: userId,
-      is_active: true,
-      last_seen: new Date().toISOString(),
-    } as const;
-
-    const { data: upserted, error } = await adminClient
+  // If user is authenticated, deactivate any existing active subscriptions for this user
+  if (userId) {
+    await adminClient
       .from("push_subscriptions")
-      .upsert(row, { onConflict: "endpoint" })
-      .select("id, endpoint")
-      .single();
+      .update({ is_active: false })
+      .eq("user_id", userId)
+      .eq("is_active", true);
+  }
+
+  const row = {
+    endpoint,
+    p256dh: p256dh ?? null,
+    auth: auth ?? null,
+    user_agent: user_agent ?? "",
+    platform: platform ?? "web",
+    user_id: userId,
+    is_active: true,
+    last_seen: new Date().toISOString(),
+  } as const;
+
+  const { data: upserted, error } = await adminClient
+    .from("push_subscriptions")
+    .upsert(row, { onConflict: "endpoint" })
+    .select("id, endpoint")
+    .single();
 
     if (error) {
       console.error("save-push-subscription upsert error", error);
