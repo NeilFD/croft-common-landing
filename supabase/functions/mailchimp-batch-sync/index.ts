@@ -33,7 +33,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Get all active subscribers with profiles
+    // Get all active subscribers (with or without profiles)
     let query = supabase
       .from('subscribers')
       .select(`
@@ -42,13 +42,15 @@ const handler = async (req: Request): Promise<Response> => {
         consent_given,
         consent_timestamp,
         created_at,
-        profiles!inner(
+        mailchimp_sync_status,
+        profiles(
           phone_number,
           birthday,
           interests
         )
       `)
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .in('mailchimp_sync_status', ['pending', 'error']);
 
     if (limit) {
       query = query.limit(limit);
@@ -126,7 +128,7 @@ const handler = async (req: Request): Promise<Response> => {
           interests: {} as { [key: string]: boolean }
         };
 
-        // Map interests
+        // Map interests if they exist
         if (subscriber.profiles?.interests) {
           subscriber.profiles.interests.forEach((interest: string) => {
             if (interestGroupsMap[interest]) {

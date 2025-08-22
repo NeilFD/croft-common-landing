@@ -80,7 +80,7 @@ serve(async (req) => {
     const { data: subscriber, error: fetchError } = await supabase
       .from('subscribers')
       .select('*')
-      .eq('email', 'nfinchamdukes@yahoo.co.uk')
+      .eq('email', 'neil@cityandsanctuary.com')
       .single()
     
     if (fetchError || !subscriber) {
