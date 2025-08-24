@@ -31,7 +31,7 @@ export const SubscribersTable: React.FC = () => {
   const { data: subscribers, isLoading, error } = useQuery({
     queryKey: ["subscribers"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_push_subscribers");
+      const { data, error } = await supabase.functions.invoke("get-subscribers");
       if (error) throw error;
       return data as Subscriber[];
     },

@@ -16,6 +16,7 @@ import CroftLogo from "@/components/CroftLogo";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OptInAnalytics } from "./components/OptInAnalytics";
 import { UserAnalytics } from "./components/UserAnalytics";
+import { SubscribersTable } from "./components/SubscribersTable";
 
 type NotificationRow = {
   id: string;
@@ -128,7 +129,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
   const [archivedFilter, setArchivedFilter] = useState<'all' | 'active' | 'archived'>('active');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'queued' | 'sent'>('all');
-  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics'>('history');
+  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics' | 'subscribers'>('history');
 
   const queryClient = useQueryClient();
 
@@ -325,13 +326,15 @@ export const AdminNotificationsApp: React.FC = () => {
               <div className="flex items-center gap-3">
                 <CardTitle>
                   {rightTab === 'history' ? 'History' : 
-                   rightTab === 'analytics' ? 'Opt-in Analytics' : 'User Analytics'}
+                   rightTab === 'analytics' ? 'Opt-in Analytics' : 
+                   rightTab === 'user-analytics' ? 'User Analytics' : 'Subscribers'}
                 </CardTitle>
-                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics')}>
+                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics' | 'subscribers')}>
                   <TabsList>
                     <TabsTrigger value="history">History</TabsTrigger>
                     <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
                     <TabsTrigger value="user-analytics">User Analytics</TabsTrigger>
+                    <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -373,8 +376,10 @@ export const AdminNotificationsApp: React.FC = () => {
                 />
               ) : rightTab === 'analytics' ? (
                 <OptInAnalytics embedded />
-              ) : (
+              ) : rightTab === 'user-analytics' ? (
                 <UserAnalytics />
+              ) : (
+                <SubscribersTable />
               )}
             </CardContent>
           </Card>

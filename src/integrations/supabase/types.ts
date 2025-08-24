@@ -1541,6 +1541,20 @@ export type Database = {
           title: string | null
         }
       }
+      get_push_subscribers: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          device_count: number
+          email: string
+          first_name: string
+          last_name: string
+          last_seen: string
+          platform: string
+          subscriber_name: string
+          user_id: string
+        }[]
+      }
       get_user_email: {
         Args: Record<PropertyKey, never>
         Returns: string
