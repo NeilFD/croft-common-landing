@@ -15,6 +15,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["deliveries", notificationId],
     queryFn: async () => {
+      console.log("Fetching deliveries for notification:", notificationId);
       const { data, error } = await supabase
         .from("notification_deliveries")
         .select(`
@@ -25,15 +26,23 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
           error, 
           clicked_at,
           subscription_id,
-          push_subscriptions!subscription_id(
+          push_subscriptions!notification_deliveries_subscription_id_fkey(
+            id,
             user_id,
-            profiles(first_name, last_name)
+            profiles!push_subscriptions_user_id_fkey(
+              first_name, 
+              last_name
+            )
           )
         `)
         .eq("notification_id", notificationId)
         .order("sent_at", { ascending: false });
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching deliveries:", error);
+        throw error;
+      }
       
+      console.log("Deliveries data:", data);
       return data ?? [];
     },
   });
@@ -84,7 +93,11 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
           <TableBody>
             {deliveries.map((d: any) => {
               const profile = d.push_subscriptions?.profiles;
-              const displayName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Unknown User';
+              const displayName = profile 
+                ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() 
+                : d.push_subscriptions?.user_id 
+                  ? `User ${d.push_subscriptions.user_id.slice(-8)}` 
+                  : `Subscription ${d.subscription_id?.slice(-8) || 'Unknown'}`;
               
               return (
                 <TableRow key={d.id}>
