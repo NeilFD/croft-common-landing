@@ -5,11 +5,14 @@ import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useCMSMode } from '@/contexts/CMSModeContext';
+import { CMSText } from '@/components/cms/CMSText';
 
 const CommonGood = () => {
   const [amount, setAmount] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [totals, setTotals] = useState<{ people: number; croft: number; combined: number } | null>(null);
+  const { isCMSMode } = useCMSMode();
 
   useEffect(() => {
     document.title = 'The Common Good | Croft Common';
@@ -68,11 +71,18 @@ const CommonGood = () => {
 
   return (
     <div className="min-h-screen">
-      <Navigation />
+      {!isCMSMode && <Navigation />}
       <main>
         <section className="relative pt-40 md:pt-56 pb-24 bg-background">
           <div className="container mx-auto px-6 max-w-4xl">
-            <h1 className="font-brutalist text-4xl md:text-6xl mb-4 md:mb-8 text-foreground">The Common Good</h1>
+            <CMSText 
+              page="common-good" 
+              section="hero" 
+              contentKey="title"
+              fallback="The Common Good"
+              as="h1"
+              className="font-brutalist text-4xl md:text-6xl mb-4 md:mb-8 text-foreground"
+            />
             <aside aria-live="polite" className="mt-3 md:mt-0 md:absolute md:right-6 md:top-32 md:z-10">
               {/* Mobile totals bar */}
               <div className="md:hidden border border-border/30 rounded-lg px-4 py-3 mb-6">
@@ -107,9 +117,14 @@ const CommonGood = () => {
                 </div>
               </div>
             </aside>
-            <p className="font-industrial text-base md:text-lg text-foreground/80 leading-relaxed mb-8 md:mb-12 max-w-3xl">
-              For the Common Good. No names. No noise. Add what you can, when you can. Matched by us. Everything goes to local groups keeping Stokes Croft on its feet. No heroes. Just the Common, doing good.
-            </p>
+            <CMSText 
+              page="common-good" 
+              section="hero" 
+              contentKey="description"
+              fallback="For the Common Good. No names. No noise. Add what you can, when you can. Matched by us. Everything goes to local groups keeping Stokes Croft on its feet. No heroes. Just the Common, doing good."
+              as="p"
+              className="font-industrial text-base md:text-lg text-foreground/80 leading-relaxed mb-8 md:mb-12 max-w-3xl"
+            />
             <div className="grid gap-4 md:gap-6 md:grid-cols-[2fr_auto] items-end">
               <div>
                 <label className="font-industrial text-sm text-muted-foreground">Amount (GBP)</label>
@@ -133,7 +148,7 @@ const CommonGood = () => {
           </div>
         </section>
       </main>
-      <Footer />
+      {!isCMSMode && <Footer />}
     </div>
   );
 };

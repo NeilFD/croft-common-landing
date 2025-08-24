@@ -3,6 +3,8 @@ import PersonalizedMessageBox from "@/components/PersonalizedMessageBox";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useCMSMode } from "@/contexts/CMSModeContext";
+import { CMSText } from "@/components/cms/CMSText";
 
 const setMeta = (opts: { title: string; description?: string; canonical?: string }) => {
   document.title = opts.title;
@@ -30,6 +32,7 @@ export default function Notifications() {
   const [search] = useSearchParams();
   const [firstName, setFirstName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isCMSMode } = useCMSMode();
 
   const token = useMemo(() => {
     const fromUrl = search.get('ntk');
@@ -102,12 +105,21 @@ export default function Notifications() {
   return (
     <NotificationsPageLayout>
       <PersonalizedMessageBox firstName={firstName}>
-        <p>
-          Pop down to Croft Common to soak up the Membership benefits in the sun tomorrow
-        </p>
-        <p className="mt-8 text-right font-industrial text-base">
-          - Croft Common
-        </p>
+        <CMSText 
+          page="notifications" 
+          section="message" 
+          contentKey="content"
+          fallback="Pop down to Croft Common to soak up the Membership benefits in the sun tomorrow"
+          as="p"
+        />
+        <CMSText 
+          page="notifications" 
+          section="message" 
+          contentKey="signature"
+          fallback="- Croft Common"
+          as="p"
+          className="mt-8 text-right font-industrial text-base"
+        />
       </PersonalizedMessageBox>
     </NotificationsPageLayout>
   );

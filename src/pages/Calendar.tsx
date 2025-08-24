@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { useCMSMode } from '@/contexts/CMSModeContext';
+import { CMSText } from '@/components/cms/CMSText';
 import GestureOverlay from '@/components/GestureOverlay';
 import CreateEventModal from '@/components/CreateEventModal';
 import EventDetailModal from '@/components/EventDetailModal';
@@ -32,6 +34,7 @@ const Calendar = () => {
   
   const { events, loading, addEvent } = useEventManager();
   const { user, loading: authLoading } = useAuth();
+  const { isCMSMode } = useCMSMode();
   const gestureCardRef = useRef<HTMLDivElement>(null);
   
   const handleGestureSuccess = useCallback(() => {
@@ -353,7 +356,7 @@ const Calendar = () => {
       
       {/* Scrollable content */}
       <div className="relative z-10">
-        <Navigation />
+        {!isCMSMode && <Navigation />}
       
       <div className="container mx-auto px-4 md:px-6 pt-24 pb-8 md:py-12 lg:py-24">
         {/* Header */}
@@ -376,24 +379,54 @@ const Calendar = () => {
             }}
           >
             <CardContent className="p-4 md:p-8 space-y-2 text-foreground/70 text-left">
-              <h1 className="font-brutalist text-2xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-foreground leading-tight">
-                What's Next?
-              </h1>
-              <p className="font-industrial text-sm md:text-lg leading-relaxed">
-                The good stuff lands here first.
-              </p>
-              <p className="font-industrial text-sm md:text-lg leading-relaxed">
-                Gigs. Tastings. Talks. Takeovers. Secret menus.
-              </p>
-              <p className="font-industrial text-sm md:text-lg leading-relaxed">
-                Some you'll see on the posters. Some you'll only find here.
-              </p>
-              <p className="font-industrial text-sm md:text-lg leading-relaxed">
-                Quiet heads-up. Limited numbers. No fanfare. Just first access,
-              </p>
-              <p className="font-industrial text-sm md:text-lg leading-relaxed">
-                if you're paying attention.
-              </p>
+              <CMSText 
+                page="calendar" 
+                section="hero" 
+                contentKey="title"
+                fallback="What's Next?"
+                as="h1"
+                className="font-brutalist text-2xl md:text-4xl lg:text-6xl mb-4 md:mb-6 text-foreground leading-tight"
+              />
+              <CMSText 
+                page="calendar" 
+                section="hero" 
+                contentKey="subtitle"
+                fallback="The good stuff lands here first."
+                as="p"
+                className="font-industrial text-sm md:text-lg leading-relaxed"
+              />
+              <CMSText 
+                page="calendar" 
+                section="hero" 
+                contentKey="description1"
+                fallback="Gigs. Tastings. Talks. Takeovers. Secret menus."
+                as="p"
+                className="font-industrial text-sm md:text-lg leading-relaxed"
+              />
+              <CMSText 
+                page="calendar" 
+                section="hero" 
+                contentKey="description2"
+                fallback="Some you'll see on the posters. Some you'll only find here."
+                as="p"
+                className="font-industrial text-sm md:text-lg leading-relaxed"
+              />
+              <CMSText 
+                page="calendar" 
+                section="hero" 
+                contentKey="description3"
+                fallback="Quiet heads-up. Limited numbers. No fanfare. Just first access,"
+                as="p"
+                className="font-industrial text-sm md:text-lg leading-relaxed"
+              />
+              <CMSText 
+                page="calendar" 
+                section="hero" 
+                contentKey="description4"
+                fallback="if you're paying attention."
+                as="p"
+                className="font-industrial text-sm md:text-lg leading-relaxed"
+              />
             </CardContent>
           </Card>
         </div>
@@ -467,7 +500,7 @@ const Calendar = () => {
         </div>
       </div>
 
-        <Footer showSubscription={false} />
+        {!isCMSMode && <Footer showSubscription={false} />}
       </div>
       
       {/* Modals */}
