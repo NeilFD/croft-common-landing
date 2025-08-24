@@ -24,7 +24,8 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
           endpoint, 
           error, 
           clicked_at,
-          push_subscriptions(
+          subscription_id,
+          push_subscriptions!subscription_id(
             user_id,
             profiles(first_name, last_name)
           )
