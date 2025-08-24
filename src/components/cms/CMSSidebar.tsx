@@ -113,7 +113,48 @@ const pageStructure = [
     path: '/cms/visual/common-room',
     icon: Building2,
     sections: [
+      { name: 'Main', path: '/cms/visual/common-room/main' },
       { name: 'FAQ', path: '/cms/faq/common-room' }
+    ]
+  },
+  {
+    name: 'Calendar',
+    path: '/cms/visual/calendar',
+    icon: Calendar,
+    sections: [
+      { name: 'FAQ', path: '/cms/faq/calendar' }
+    ]
+  },
+  {
+    name: 'Common Good',
+    path: '/cms/visual/common-good',
+    icon: HelpCircle,
+    sections: [
+      { name: 'FAQ', path: '/cms/faq/common-good' }
+    ]
+  },
+  {
+    name: 'Book',
+    path: '/cms/visual/book',
+    icon: FileText,
+    sections: [
+      { name: 'FAQ', path: '/cms/faq/book' }
+    ]
+  },
+  {
+    name: 'Notifications',
+    path: '/cms/visual/notifications',
+    icon: MessageSquare,
+    sections: [
+      { name: 'FAQ', path: '/cms/faq/notifications' }
+    ]
+  },
+  {
+    name: 'Croft Common DateTime',
+    path: '/cms/visual/croftcommondatetime',
+    icon: Calendar,
+    sections: [
+      { name: 'FAQ', path: '/cms/faq/croftcommondatetime' }
     ]
   }
 ];

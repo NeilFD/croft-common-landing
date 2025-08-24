@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import CroftLogo from "@/components/CroftLogo";
 import { supabase } from "@/integrations/supabase/client";
+import { CMSText } from '@/components/cms/CMSText';
+import { useCMSMode } from '@/contexts/CMSModeContext';
 
 const CroftCommonDateTime: React.FC = () => {
   const [now, setNow] = useState(new Date());
   const [cgTotal, setCgTotal] = useState<number | null>(null);
+  const { isCMSMode } = useCMSMode();
 
   // Tick every second
   useEffect(() => {
@@ -67,13 +70,28 @@ const CroftCommonDateTime: React.FC = () => {
       <header className="w-full px-6 pt-8 pb-4 flex items-center justify-center">
         <div className="flex items-center gap-3">
           <CroftLogo size="lg" />
-          <span className="font-brutalist text-xl tracking-wider">CROFT COMMON</span>
+          <CMSText
+            page="croft-common-datetime"
+            section="header"
+            contentKey="title"
+            fallback="CROFT COMMON"
+            as="div"
+            className="font-brutalist text-xl tracking-wider"
+          />
         </div>
       </header>
       <div className="w-full border-t border-border/60" />
 
       <main className="flex-1 px-6 pb-12 flex flex-col items-center justify-center text-center">
-        <h1 className="sr-only">Croft Common Live Date and Time</h1>
+        <h1 className="sr-only">
+          <CMSText
+            page="croft-common-datetime"
+            section="main"
+            contentKey="seo-title"
+            fallback="Croft Common Live Date and Time"
+            as="div"
+          />
+        </h1>
         <section aria-label="Current date and time" className="space-y-6 w-full max-w-md">
           <div className="h-px w-24 bg-border/60 mx-auto" aria-hidden="true" />
           <p className="font-industrial text-lg sm:text-xl md:text-2xl opacity-80">{dateStr}</p>
@@ -87,7 +105,14 @@ const CroftCommonDateTime: React.FC = () => {
 
       <footer className="bg-void text-background py-8">
         <div className="container mx-auto px-6 text-center">
-          <div className="font-industrial text-xs uppercase tracking-wide mb-1">The Common Good</div>
+          <CMSText
+            page="croft-common-datetime"
+            section="footer"
+            contentKey="label"
+            fallback="The Common Good"
+            as="div"
+            className="font-industrial text-xs uppercase tracking-wide mb-1"
+          />
           <div className="font-brutalist text-3xl">
             {cgTotal !== null ? (cgTotal / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
           </div>

@@ -1,8 +1,12 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CommonRoomHeroCarousel from "@/components/CommonRoomHeroCarousel";
+import { CMSText } from '@/components/cms/CMSText';
+import { useCMSMode } from '@/contexts/CMSModeContext';
 
 const CommonRoomMain = () => {
+  const { isCMSMode } = useCMSMode();
+
   return (
     <div className="min-h-screen relative">
       {/* Fixed background image */}
@@ -15,23 +19,45 @@ const CommonRoomMain = () => {
       
       {/* Scrollable content */}
       <div className="relative z-10">
-        <Navigation />
+        {!isCMSMode && <Navigation />}
         <CommonRoomHeroCarousel />
         <section className="py-24 bg-background">
           <div className="container mx-auto px-6 text-center">
-            <h2 className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground">
-              THE COMMON ROOM
-            </h2>
-            <p className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-              Quiet access. Shared space. Early invites. Inside track.
-              <br /><br />
-              A place to hear first, see first, know first.
-              <br /><br />
-              Members, not membership.
-            </p>
+            <CMSText
+              page="common-room-main"
+              section="hero"
+              contentKey="title"
+              fallback="THE COMMON ROOM"
+              as="h2"
+              className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground"
+            />
+            <CMSText
+              page="common-room-main"
+              section="hero"
+              contentKey="description"
+              fallback="Quiet access. Shared space. Early invites. Inside track."
+              as="p"
+              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-4"
+            />
+            <CMSText
+              page="common-room-main"
+              section="hero"
+              contentKey="subtitle"
+              fallback="A place to hear first, see first, know first."
+              as="p"
+              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-4"
+            />
+            <CMSText
+              page="common-room-main"
+              section="hero"
+              contentKey="tagline"
+              fallback="Members, not membership."
+              as="p"
+              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed"
+            />
           </div>
         </section>
-        <Footer showSubscription={false} />
+        {!isCMSMode && <Footer showSubscription={false} />}
       </div>
     </div>
   );

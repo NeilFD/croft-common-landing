@@ -14,12 +14,14 @@ import Kitchens from '@/pages/Kitchens';
 import Hall from '@/pages/Hall';
 import Community from '@/pages/Community';
 import CommonRoom from '@/pages/CommonRoom';
+import CommonRoomMain from '@/pages/CommonRoomMain';
 import Index from '@/pages/Index';
 import Book from '@/pages/Book';
 import Calendar from '@/pages/Calendar';
 import Notifications from '@/pages/Notifications';
 import CommonGood from '@/pages/CommonGood';
 import Privacy from '@/pages/Privacy';
+import CroftCommonDateTime from '@/pages/CroftCommonDateTime';
 import CMSMenuModal from '@/pages/CMSMenuModal';
 
 // Import global component preview pages
@@ -42,11 +44,14 @@ const pageComponents: Record<string, React.ComponentType> = {
   'hall': Hall,
   'community': Community,
   'common-room': CommonRoom,
+  'common-room/main': CommonRoomMain,
   'book': Book,
   'calendar': Calendar,
   'notifications': Notifications,
   'common-good': CommonGood,
   'privacy': Privacy,
+  'croftcommondatetime': CroftCommonDateTime,
+  'croft-common-datetime': CroftCommonDateTime,
   
   // Menu modal routes
   'cafe/menu': CMSMenuModal,
