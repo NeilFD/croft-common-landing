@@ -43,17 +43,10 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       
       console.log("Subscription IDs:", subscriptionIds);
 
-      // Get user data for subscriptions
+      // Get push subscriptions first
       const { data: subscriptionData, error: subError } = await supabase
         .from("push_subscriptions")
-        .select(`
-          id,
-          user_id,
-          profiles!push_subscriptions_user_id_fkey(
-            first_name,
-            last_name
-          )
-        `)
+        .select("id, user_id")
         .in("id", subscriptionIds);
 
       if (subError) {
@@ -62,11 +55,35 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       
       console.log("Subscription data:", subscriptionData);
 
-      // Combine the data
-      const enrichedDeliveries = deliveryData.map(delivery => ({
-        ...delivery,
-        push_subscriptions: subscriptionData?.find(sub => sub.id === delivery.subscription_id) || null
-      }));
+      // Get unique user IDs
+      const userIds = [...new Set(subscriptionData?.filter(sub => sub.user_id).map(sub => sub.user_id) || [])];
+      console.log("User IDs:", userIds);
+
+      // Get profiles separately
+      const { data: profilesData, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id, first_name, last_name")
+        .in("user_id", userIds);
+
+      if (profileError) {
+        console.warn("Error fetching profiles data:", profileError);
+      }
+      
+      console.log("Profiles data:", profilesData);
+
+      // Combine the data manually
+      const enrichedDeliveries = deliveryData.map(delivery => {
+        const subscription = subscriptionData?.find(sub => sub.id === delivery.subscription_id);
+        const profile = subscription?.user_id ? profilesData?.find(p => p.user_id === subscription.user_id) : null;
+        
+        return {
+          ...delivery,
+          push_subscriptions: subscription ? {
+            ...subscription,
+            profiles: profile
+          } : null
+        };
+      });
       
       console.log("Enriched deliveries:", enrichedDeliveries);
       return enrichedDeliveries;
