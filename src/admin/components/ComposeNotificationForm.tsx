@@ -27,6 +27,7 @@ type RepeatType = "none" | "daily" | "weekly" | "monthly";
 export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onClearEdit }) => {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [defaultUrl, setDefaultUrl] = useState("https://www.croftcommontest.com/notifications");
   const [url, setUrl] = useState("");
   const [icon, setIcon] = useState(DEFAULT_ICON);
   const [badge, setBadge] = useState(DEFAULT_BADGE);
@@ -161,7 +162,10 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
     }
   };
 
-  const normalizedUrl = useMemo(() => normalizeUrlInput(url), [url]);
+  const normalizedUrl = useMemo(() => {
+    const urlToUse = url.trim() || defaultUrl.trim();
+    return normalizeUrlInput(urlToUse);
+  }, [url, defaultUrl]);
 
   const preview = useMemo(() => {
     // Replace {{first_name}} with example name for preview when personalization is enabled
@@ -420,6 +424,19 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="defaultUrl">Default URL (optional)</Label>
+            <Input
+              id="defaultUrl"
+              placeholder="https://www.croftcommontest.com/notifications"
+              value={defaultUrl}
+              onChange={(e) => setDefaultUrl(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground">
+              This URL will be used as the starting point for all notifications when no specific URL is provided.
+            </p>
+          </div>
+
+          <div className="space-y-2">
             <Label>Display Mode</Label>
             <RadioGroup value={displayMode} onValueChange={(value: any) => setDisplayMode(value)}>
               <div className="flex items-center space-x-2">
@@ -459,11 +476,11 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
               <Label htmlFor="url">URL (optional)</Label>
               <Input
                 id="url"
-                placeholder="https://example.com or /book or example.com/book"
+                placeholder="Override default URL or leave empty to use default"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
               />
-              <p className="text-xs text-muted-foreground">Tip: Enter a full URL, a path like /book, or a domain like croftcommontest.com/book. We'll normalize it.</p>
+              <p className="text-xs text-muted-foreground">Leave empty to use the default URL above, or provide a specific URL for this notification.</p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="icon">Icon URL (optional)</Label>
