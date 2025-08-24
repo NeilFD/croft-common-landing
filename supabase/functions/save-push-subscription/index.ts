@@ -41,31 +41,25 @@ serve(async (req) => {
     const { data: userData } = await authClient.auth.getUser();
     const userId = userData?.user?.id ?? null;
 
-  // If user is authenticated, deactivate any existing active subscriptions for this user
-  if (userId) {
-    await adminClient
+    console.log(`📱 DEBUG: Processing subscription for ${userId ? 'authenticated' : 'anonymous'} user${userId ? ` (${userId})` : ''}`);
+
+    const row = {
+      endpoint,
+      p256dh: p256dh ?? null,
+      auth: auth ?? null,
+      user_agent: user_agent ?? "",
+      platform: platform ?? "web",
+      user_id: userId,
+      is_active: true,
+      last_seen: new Date().toISOString(),
+    } as const;
+
+    console.log(`💾 DEBUG: Upserting subscription for endpoint: ${new URL(endpoint).hostname}`);
+    const { data: upserted, error } = await adminClient
       .from("push_subscriptions")
-      .update({ is_active: false })
-      .eq("user_id", userId)
-      .eq("is_active", true);
-  }
-
-  const row = {
-    endpoint,
-    p256dh: p256dh ?? null,
-    auth: auth ?? null,
-    user_agent: user_agent ?? "",
-    platform: platform ?? "web",
-    user_id: userId,
-    is_active: true,
-    last_seen: new Date().toISOString(),
-  } as const;
-
-  const { data: upserted, error } = await adminClient
-    .from("push_subscriptions")
-    .upsert(row, { onConflict: "endpoint" })
-    .select("id, endpoint")
-    .single();
+      .upsert(row, { onConflict: "endpoint" })
+      .select("id, endpoint")
+      .single();
 
     if (error) {
       console.error("save-push-subscription upsert error", error);
@@ -75,6 +69,28 @@ serve(async (req) => {
       });
     }
 
+    console.log(`✅ DEBUG: Successfully upserted subscription ${upserted?.id}`);
+
+    // AFTER successful upsert, deactivate any other active subscriptions for this user
+    // This prevents race conditions where user is left with no active subscriptions
+    if (userId && upserted?.id) {
+      console.log(`🧹 DEBUG: Deactivating other active subscriptions for user ${userId}`);
+      const { error: deactivateError } = await adminClient
+        .from("push_subscriptions")
+        .update({ is_active: false })
+        .eq("user_id", userId)
+        .eq("is_active", true)
+        .neq("id", upserted.id);
+
+      if (deactivateError) {
+        console.error("Error deactivating old subscriptions:", deactivateError);
+        // Don't fail the request - the new subscription was successfully created
+      } else {
+        console.log(`🎯 DEBUG: Successfully deactivated old subscriptions for user ${userId}`);
+      }
+    }
+
+    console.log(`🏁 DEBUG: Subscription saved successfully - ID: ${upserted?.id}`);
     return new Response(JSON.stringify({ ok: true, subscription_id: upserted?.id, endpoint: upserted?.endpoint }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

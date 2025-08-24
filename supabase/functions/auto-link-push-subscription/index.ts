@@ -61,30 +61,42 @@ serve(async (req) => {
         .eq('is_active', true);
 
       if (!fetchError && unlinkedSubs && unlinkedSubs.length > 0) {
-        console.log(`Found ${unlinkedSubs.length} unlinked subscriptions, attempting to link to user ${userId}`);
+        console.log(`🔗 DEBUG: Found ${unlinkedSubs.length} unlinked subscriptions, attempting to link to user ${userId}`);
         
-        // First, deactivate any existing active subscriptions for this user
-        await adminClient
-          .from('push_subscriptions')
-          .update({ is_active: false })
-          .eq('user_id', userId)
-          .eq('is_active', true);
-
         // Update the most recent unlinked subscription to be linked to this user
         // This assumes the user is authenticating from the same device they subscribed on
         const mostRecentSub = unlinkedSubs[0]; // They're ordered by created_at desc
+        console.log(`📱 DEBUG: Linking subscription ${mostRecentSub.id} to user ${userId}`);
         
         const { error: linkError } = await adminClient
           .from('push_subscriptions')
           .update({ 
             user_id: userId,
-            last_seen: new Date().toISOString()
+            last_seen: new Date().toISOString(),
+            is_active: true
           })
           .eq('id', mostRecentSub.id);
 
         if (!linkError) {
-          console.log(`Successfully linked subscription ${mostRecentSub.id} to user ${userId}`);
+          console.log(`✅ DEBUG: Successfully linked subscription ${mostRecentSub.id} to user ${userId}`);
           
+          // AFTER successful linking, deactivate any other active subscriptions for this user
+          console.log(`🧹 DEBUG: Deactivating other active subscriptions for user ${userId}`);
+          const { error: deactivateError } = await adminClient
+            .from('push_subscriptions')
+            .update({ is_active: false })
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .neq('id', mostRecentSub.id);
+
+          if (deactivateError) {
+            console.error('❌ DEBUG: Error deactivating old subscriptions:', deactivateError);
+            // Don't fail the request - the linking was successful
+          } else {
+            console.log(`🎯 DEBUG: Successfully deactivated old subscriptions for user ${userId}`);
+          }
+          
+          console.log(`🏁 DEBUG: Auto-linking completed successfully for user ${userId}`);
           return new Response(JSON.stringify({ 
             ok: true, 
             linked: true,
@@ -94,7 +106,7 @@ serve(async (req) => {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
           });
         } else {
-          console.error("Error linking subscription:", linkError);
+          console.error("❌ DEBUG: Error linking subscription:", linkError);
         }
       }
     }
