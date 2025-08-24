@@ -16,34 +16,60 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
     queryKey: ["deliveries", notificationId],
     queryFn: async () => {
       console.log("Fetching deliveries for notification:", notificationId);
-      const { data, error } = await supabase
+      
+      // First get the basic delivery data
+      const { data: deliveryData, error } = await supabase
         .from("notification_deliveries")
-        .select(`
-          id, 
-          sent_at, 
-          status, 
-          endpoint, 
-          error, 
-          clicked_at,
-          subscription_id,
-          push_subscriptions!notification_deliveries_subscription_id_fkey(
-            id,
-            user_id,
-            profiles!push_subscriptions_user_id_fkey(
-              first_name, 
-              last_name
-            )
-          )
-        `)
+        .select("*")
         .eq("notification_id", notificationId)
         .order("sent_at", { ascending: false });
+        
       if (error) {
         console.error("Error fetching deliveries:", error);
         throw error;
       }
       
-      console.log("Deliveries data:", data);
-      return data ?? [];
+      console.log("Raw delivery data:", deliveryData);
+      
+      if (!deliveryData || deliveryData.length === 0) {
+        console.log("No deliveries found for notification:", notificationId);
+        return [];
+      }
+
+      // Get subscription IDs
+      const subscriptionIds = deliveryData
+        .filter(d => d.subscription_id)
+        .map(d => d.subscription_id);
+      
+      console.log("Subscription IDs:", subscriptionIds);
+
+      // Get user data for subscriptions
+      const { data: subscriptionData, error: subError } = await supabase
+        .from("push_subscriptions")
+        .select(`
+          id,
+          user_id,
+          profiles!push_subscriptions_user_id_fkey(
+            first_name,
+            last_name
+          )
+        `)
+        .in("id", subscriptionIds);
+
+      if (subError) {
+        console.warn("Error fetching subscription data:", subError);
+      }
+      
+      console.log("Subscription data:", subscriptionData);
+
+      // Combine the data
+      const enrichedDeliveries = deliveryData.map(delivery => ({
+        ...delivery,
+        push_subscriptions: subscriptionData?.find(sub => sub.id === delivery.subscription_id) || null
+      }));
+      
+      console.log("Enriched deliveries:", enrichedDeliveries);
+      return enrichedDeliveries;
     },
   });
 
