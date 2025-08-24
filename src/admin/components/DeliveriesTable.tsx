@@ -136,11 +136,13 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
           <TableBody>
             {deliveries.map((d: any) => {
               const profile = d.push_subscriptions?.profiles;
-              const displayName = profile 
-                ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() 
-                : d.push_subscriptions?.user_id 
-                  ? `User ${d.push_subscriptions.user_id.slice(-8)}` 
-                  : `Subscription ${d.subscription_id?.slice(-8) || 'Unknown'}`;
+              let displayName = 'Unknown User';
+              
+              if (profile?.first_name || profile?.last_name) {
+                displayName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
+              } else if (d.push_subscriptions?.user_id) {
+                displayName = `User ${d.push_subscriptions.user_id.slice(-8)}`;
+              }
               
               return (
                 <TableRow key={d.id}>
