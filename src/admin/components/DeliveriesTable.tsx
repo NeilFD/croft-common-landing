@@ -17,10 +17,22 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("notification_deliveries")
-        .select("id, sent_at, status, endpoint, error, clicked_at")
+        .select(`
+          id, 
+          sent_at, 
+          status, 
+          endpoint, 
+          error, 
+          clicked_at,
+          push_subscriptions(
+            user_id,
+            profiles(first_name, last_name)
+          )
+        `)
         .eq("notification_id", notificationId)
         .order("sent_at", { ascending: false });
       if (error) throw error;
+      
       return data ?? [];
     },
   });
@@ -60,6 +72,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Name</TableHead>
               <TableHead>Sent at</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Endpoint</TableHead>
@@ -68,19 +81,25 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {deliveries.map((d: any) => (
-              <TableRow key={d.id}>
-                <TableCell className="whitespace-nowrap">{new Date(d.sent_at).toLocaleString()}</TableCell>
-                <TableCell>
-                  <Badge variant={d.status === 'sent' ? 'default' : d.status === 'failed' ? 'destructive' : 'secondary'}>
-                    {d.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="max-w-[600px] truncate">{d.endpoint}</TableCell>
-                <TableCell className="whitespace-nowrap">{d.clicked_at ? new Date(d.clicked_at).toLocaleString() : '-'}</TableCell>
-                <TableCell className="max-w-[420px] truncate text-muted-foreground">{d.error || '-'}</TableCell>
-              </TableRow>
-            ))}
+            {deliveries.map((d: any) => {
+              const profile = d.push_subscriptions?.profiles;
+              const displayName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 'Unknown User';
+              
+              return (
+                <TableRow key={d.id}>
+                  <TableCell className="whitespace-nowrap">{displayName}</TableCell>
+                  <TableCell className="whitespace-nowrap">{new Date(d.sent_at).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Badge variant={d.status === 'sent' ? 'default' : d.status === 'failed' ? 'destructive' : 'secondary'}>
+                      {d.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="max-w-[600px] truncate">{d.endpoint}</TableCell>
+                  <TableCell className="whitespace-nowrap">{d.clicked_at ? new Date(d.clicked_at).toLocaleString() : '-'}</TableCell>
+                  <TableCell className="max-w-[420px] truncate text-muted-foreground">{d.error || '-'}</TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
