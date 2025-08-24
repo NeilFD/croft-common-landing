@@ -71,7 +71,19 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       
       console.log("Profiles data:", profilesData);
 
-      // Combine the data manually
+      // Also try to get names from subscribers table
+      const { data: subscribersData, error: subsError } = await supabase
+        .from("subscribers")
+        .select("email, name")
+        .eq("is_active", true);
+
+      if (subsError) {
+        console.warn("Error fetching subscribers data:", subsError);
+      }
+      
+      console.log("Subscribers data:", subscribersData);
+
+      // Combine the data manually with enhanced name resolution
       const enrichedDeliveries = deliveryData.map(delivery => {
         const subscription = subscriptionData?.find(sub => sub.id === delivery.subscription_id);
         const profile = subscription?.user_id ? profilesData?.find(p => p.user_id === subscription.user_id) : null;
@@ -80,7 +92,8 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
           ...delivery,
           push_subscriptions: subscription ? {
             ...subscription,
-            profiles: profile
+            profiles: profile,
+            subscribers_data: subscribersData
           } : null
         };
       });
@@ -136,11 +149,24 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
           <TableBody>
             {deliveries.map((d: any) => {
               const profile = d.push_subscriptions?.profiles;
+              const subscribersData = d.push_subscriptions?.subscribers_data;
               let displayName = 'Unknown User';
               
+              // Try profile name first
               if (profile?.first_name || profile?.last_name) {
                 displayName = `${profile.first_name || ''} ${profile.last_name || ''}`.trim();
-              } else if (d.push_subscriptions?.user_id) {
+              } 
+              // Try to find name in subscribers table by matching user_id to email
+              else if (d.push_subscriptions?.user_id && subscribersData) {
+                // This is a simple approach - we could improve this by fetching auth.users email
+                // For now, let's try to find a subscriber name if available
+                const subscriberWithName = subscribersData.find((sub: any) => sub.name && sub.name.trim());
+                if (subscriberWithName) {
+                  displayName = subscriberWithName.name;
+                }
+              }
+              // Fallback to user ID
+              else if (d.push_subscriptions?.user_id) {
                 displayName = `User ${d.push_subscriptions.user_id.slice(-8)}`;
               }
               
