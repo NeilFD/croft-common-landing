@@ -2,28 +2,82 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { enableNotifications, resetNotifications } from './notifications';
 import { isStandalone, isIosSafari } from './registerPWA';
 import { BRAND_LOGO } from '@/data/brand';
+import { supabase } from '@/integrations/supabase/client';
 
 // Key to avoid nagging users repeatedly
-const DISMISS_KEY = 'notifications_prompt_dismissed_v1';
+const DISMISS_KEY = 'notifications_prompt_dismissed_v2';
 
-function canAskForNotifications() {
+// Enhanced permission detection with multiple checks
+async function canAskForNotifications(): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   if (!('Notification' in window)) return false;
-  if (Notification.permission === 'granted' || Notification.permission === 'denied') return false;
-  return true;
+  
+  const permission = Notification.permission;
+  console.log('🔔 Permission check - Browser permission:', permission);
+  
+  // If denied or already granted, don't ask
+  if (permission === 'denied') {
+    console.log('🔔 Permission check - Denied, not asking');
+    return false;
+  }
+  
+  if (permission === 'granted') {
+    console.log('🔔 Permission check - Granted, checking for active subscription...');
+    
+    // Check if user has active push subscription
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (user?.user?.id) {
+        const { data: subscriptions, error } = await supabase
+          .from('push_subscriptions')
+          .select('id, is_active')
+          .eq('user_id', user.user.id)
+          .eq('is_active', true)
+          .limit(1);
+          
+        if (error) {
+          console.warn('🔔 Permission check - Error checking subscriptions:', error);
+          return false; // If granted but can't check subscriptions, don't ask again
+        }
+        
+        const hasActiveSubscription = subscriptions && subscriptions.length > 0;
+        console.log('🔔 Permission check - Active subscriptions found:', hasActiveSubscription);
+        
+        if (hasActiveSubscription) {
+          console.log('🔔 Permission check - User has active subscription, not asking');
+          return false;
+        }
+      }
+    } catch (error) {
+      console.warn('🔔 Permission check - Error during subscription check:', error);
+    }
+  }
+  
+  const shouldAsk = permission === 'default';
+  console.log('🔔 Permission check - Final decision:', shouldAsk);
+  return shouldAsk;
 }
 
 const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistration | null }> = ({ onClose, swReg }) => {
   const [loading, setLoading] = useState(false);
 
   const onEnable = async () => {
+    console.log('🔔 Banner: Enable button clicked');
     setLoading(true);
     try {
+      // Check current permission state
+      const currentPermission = Notification.permission;
+      console.log('🔔 Banner: Current permission before enable:', currentPermission);
+      
       // Ensure the system permission prompt appears if still default
-      if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      if (typeof window !== 'undefined' && 'Notification' in window && currentPermission === 'default') {
+        console.log('🔔 Banner: Requesting system permission...');
         try {
-          await Notification.requestPermission();
-        } catch {}
+          const newPermission = await Notification.requestPermission();
+          console.log('🔔 Banner: System permission result:', newPermission);
+        } catch (error) {
+          console.warn('🔔 Banner: Error requesting permission:', error);
+        }
       }
 
       // Get SW registration, waiting for ready if needed
@@ -37,12 +91,21 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
       }
 
       if (reg) {
+        console.log('🔔 Banner: Calling enableNotifications...');
         const ok = await enableNotifications(reg);
+        console.log('🔔 Banner: enableNotifications result:', ok);
         if (ok) {
+          console.log('🔔 Banner: Success! Dismissing overlay');
           localStorage.setItem(DISMISS_KEY, '1');
           onClose();
+        } else {
+          console.log('🔔 Banner: Failed to enable notifications');
         }
+      } else {
+        console.log('🔔 Banner: No service worker registration found');
       }
+    } catch (error) {
+      console.error('🔔 Banner: Error in onEnable:', error);
     } finally {
       setLoading(false);
     }
@@ -113,19 +176,43 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
 
 const NotificationsOverlay: React.FC<{ swReg: ServiceWorkerRegistration | null }> = ({ swReg }) => {
   const [show, setShow] = useState(false);
-
-  const shouldShow = useMemo(() => {
-    if (!isStandalone) return false; // Only after added to Home Screen
-    if (!canAskForNotifications()) return false;
-    if (localStorage.getItem(DISMISS_KEY) === '1') return false;
-    // Prefer focusing iOS PWAs where this was reported, but allow others too
-    return isIosSafari() || true;
-  }, []);
+  const [permissionCheckComplete, setPermissionCheckComplete] = useState(false);
 
   useEffect(() => {
-    if (shouldShow) setShow(true);
-  }, [shouldShow]);
+    const checkShouldShow = async () => {
+      console.log('🔔 Overlay: Starting permission check...');
+      
+      // Basic checks first
+      if (!isStandalone) {
+        console.log('🔔 Overlay: Not standalone, not showing');
+        setPermissionCheckComplete(true);
+        return;
+      }
+      
+      if (localStorage.getItem(DISMISS_KEY) === '1') {
+        console.log('🔔 Overlay: Previously dismissed, not showing');
+        setPermissionCheckComplete(true);
+        return;
+      }
+      
+      // Enhanced permission check
+      const canAsk = await canAskForNotifications();
+      if (!canAsk) {
+        console.log('🔔 Overlay: Cannot ask for notifications, not showing');
+        setPermissionCheckComplete(true);
+        return;
+      }
+      
+      console.log('🔔 Overlay: All checks passed, showing prompt');
+      setShow(true);
+      setPermissionCheckComplete(true);
+    };
 
+    checkShouldShow();
+  }, []);
+
+  // Don't render anything until permission check is complete
+  if (!permissionCheckComplete) return null;
   if (!show) return null;
 
   return <Banner onClose={() => setShow(false)} swReg={swReg} />;
