@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { isStandalone, isIosSafari } from './registerPWA';
+import { getStoredUserHandle } from '@/lib/biometricAuth';
 
 const VAPID_PUBLIC_KEY = 'BNJzdn55lXCAzsC07XdmDcsJeRb9sN-tLfGkrP5uAFNEt-LyEsEhVoMjD0CtHiBZjsyrTdTh19E2cnRUB5N9Mww';
 function urlBase64ToUint8Array(base64String: string) {
@@ -69,8 +70,26 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
   const p256dh = raw.keys?.p256dh;
   const auth = raw.keys?.auth;
 
-  const { data: userRes } = await supabase.auth.getUser();
-  const userId = userRes.user?.id ?? null;
+  // Get user ID from WebAuthn user handle since this app uses WebAuthn auth
+  let userId: string | null = null;
+  const userHandle = getStoredUserHandle();
+  
+  if (userHandle) {
+    try {
+      const { data: userLink } = await supabase
+        .from('webauthn_user_links')
+        .select('user_id')
+        .eq('user_handle', userHandle)
+        .single();
+      
+      userId = userLink?.user_id ?? null;
+      if (import.meta.env.DEV) {
+        console.log('[Notifications] WebAuthn user handle:', userHandle, 'resolved to user_id:', userId);
+      }
+    } catch (error) {
+      console.warn('[Notifications] Could not resolve WebAuthn user handle to user_id:', error);
+    }
+  }
 
   const { data: saveData, error } = await supabase.functions.invoke('save-push-subscription', {
     body: {
@@ -79,6 +98,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       auth,
       user_agent: navigator.userAgent,
       platform,
+      user_id: userId, // Pass the WebAuthn-resolved user_id
     },
   });
 

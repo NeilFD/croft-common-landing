@@ -23,12 +23,13 @@ serve(async (req) => {
     const adminClient = createClient(supabaseUrl, serviceKey);
 
     const body = await req.json().catch(() => ({}));
-    const { endpoint, p256dh, auth, user_agent, platform } = body as {
+    const { endpoint, p256dh, auth, user_agent, platform, user_id: providedUserId } = body as {
       endpoint?: string;
       p256dh?: string;
       auth?: string;
       user_agent?: string;
       platform?: string;
+      user_id?: string;
     };
 
     if (!endpoint) {
@@ -38,10 +39,18 @@ serve(async (req) => {
       });
     }
 
-    const { data: userData } = await authClient.auth.getUser();
-    const userId = userData?.user?.id ?? null;
+    // Use provided user_id (from WebAuthn) or fallback to traditional auth
+    let userId: string | null = providedUserId || null;
+    
+    if (!userId) {
+      const { data: userData } = await authClient.auth.getUser();
+      userId = userData?.user?.id ?? null;
+    }
 
     console.log(`📱 DEBUG: Processing subscription for ${userId ? 'authenticated' : 'anonymous'} user${userId ? ` (${userId})` : ''}`);
+    if (providedUserId) {
+      console.log(`🔐 DEBUG: Using WebAuthn-provided user_id: ${providedUserId}`);
+    }
 
     const row = {
       endpoint,
