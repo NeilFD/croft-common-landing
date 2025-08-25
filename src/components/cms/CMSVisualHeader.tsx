@@ -87,6 +87,7 @@ export const CMSVisualHeader = ({
             className="gap-1 sm:gap-2"
             onClick={onPublish}
             disabled={(pendingChanges === 0 && draftCount === 0) || isPublishing}
+            title={draftCount === 0 && pendingChanges === 0 ? "Edit some content to enable publishing" : ""}
           >
             {isPublishing ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             <span className="hidden sm:inline">
