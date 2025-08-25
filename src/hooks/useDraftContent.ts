@@ -31,6 +31,7 @@ export const useDraftContent = (page: string) => {
 
   const publishDrafts = async () => {
     try {
+      console.log('🎯 useDraftContent: Publishing drafts for page:', page);
       const { error } = await supabase
         .from('cms_content')
         .update({ published: true })
@@ -38,9 +39,11 @@ export const useDraftContent = (page: string) => {
         .eq('published', false);
 
       if (error) {
+        console.error('🎯 useDraftContent: Publish error:', error);
         throw error;
       }
 
+      console.log('🎯 useDraftContent: Publish successful for page:', page);
       // Refresh draft count after publishing
       await fetchDraftCount();
       

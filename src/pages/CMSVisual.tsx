@@ -27,6 +27,10 @@ const CMSVisual = () => {
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(currentPage);
   
   console.log('🎭 CMSVisual - Draft count for page:', currentPage, 'is:', draftCount);
+  
+  // Debug the publish button state
+  console.log('🎭 CMSVisual - Publish button should be enabled:', draftCount > 0);
+  console.log('🎭 CMSVisual - isPublishing:', isPublishing);
   const { resetPendingChanges } = useEditMode();
 
   const handlePublish = async () => {
@@ -72,6 +76,10 @@ const CMSVisual = () => {
               isPublishing={isPublishing}
               draftCount={draftCount}
             />
+            {/* Debug info */}
+            <div className="text-xs text-gray-500 p-2">
+              Debug: Page="{currentPage}", Drafts={draftCount}, Publishing={isPublishing}
+            </div>
             <div className="flex flex-1 min-h-0">
               <CMSSidebar />
               <main className="flex-1 min-w-0 overflow-auto">
