@@ -4,9 +4,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { Calendar, Clock, MousePointer, Users, Eye, TrendingUp } from 'lucide-react';
+import { EnhancedUserAnalytics } from './EnhancedUserAnalytics';
 
 type TimeRange = '24h' | '7d' | '30d' | 'all';
 
@@ -19,8 +21,9 @@ interface AnalyticsData {
 
 const COLORS = ['hsl(var(--primary))', 'hsl(var(--secondary))', 'hsl(var(--accent))', 'hsl(var(--muted))'];
 
-export const UserAnalytics: React.FC = () => {
+const UserAnalytics: React.FC<{ embedded?: boolean }> = ({ embedded = false }) => {
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
+  const [showEnhanced, setShowEnhanced] = useState(false);
   
   const getDateFilter = (range: TimeRange) => {
     const now = new Date();
@@ -190,25 +193,38 @@ export const UserAnalytics: React.FC = () => {
     );
   }
 
-  return (
+  const content = (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">User Analytics</h2>
-        <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="24h">Last 24h</SelectItem>
-            <SelectItem value="7d">Last 7 days</SelectItem>
-            <SelectItem value="30d">Last 30 days</SelectItem>
-            <SelectItem value="all">All time</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant={showEnhanced ? "default" : "outline"}
+            onClick={() => setShowEnhanced(!showEnhanced)}
+            size="sm"
+          >
+            {showEnhanced ? "Basic View" : "Enhanced View"}
+          </Button>
+          <Select value={timeRange} onValueChange={(value: TimeRange) => setTimeRange(value)}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="24h">Last 24h</SelectItem>
+              <SelectItem value="7d">Last 7 days</SelectItem>
+              <SelectItem value="30d">Last 30 days</SelectItem>
+              <SelectItem value="all">All time</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Key Metrics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      {showEnhanced ? (
+        <EnhancedUserAnalytics embedded />
+      ) : (
+        <>
+          {/* Key Metrics Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Page Views</CardTitle>
@@ -370,6 +386,12 @@ export const UserAnalytics: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      </>
+      )}
     </div>
   );
+
+  return embedded ? content : content;
 };
+
+export { UserAnalytics };

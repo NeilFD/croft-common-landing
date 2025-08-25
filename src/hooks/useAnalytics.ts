@@ -147,7 +147,7 @@ export const useAnalytics = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Track interactions
+  // Enhanced interaction tracking with detailed categorization
   const trackInteraction = useCallback(async (
     interactionType: string,
     elementId?: string,
@@ -164,7 +164,7 @@ export const useAnalytics = () => {
         interaction_type: interactionType,
         element_id: elementId || null,
         element_class: elementClass || null,
-        element_text: elementText || null,
+        element_text: elementText?.trim().substring(0, 100) || null,
         coordinates: coordinates || null,
         additional_data: additionalData || null
       });
@@ -173,7 +173,92 @@ export const useAnalytics = () => {
     }
   }, [sessionId, user, location.pathname]);
 
-  // Track clicks on buttons and links
+  // Enhanced tracking methods for specific interaction types
+  const trackButtonClick = useCallback(async (
+    buttonType: 'primary' | 'secondary' | 'cta' | 'navigation' | 'form_submit' | 'danger',
+    elementId?: string,
+    elementText?: string,
+    coordinates?: { x: number; y: number },
+    context?: any
+  ) => {
+    await trackInteraction('button_click', elementId, buttonType, elementText, coordinates, {
+      button_type: buttonType,
+      ...context
+    });
+  }, [trackInteraction]);
+
+  const trackSecretGesture = useCallback(async (
+    gestureType: 'attempt' | 'complete' | 'failed',
+    gestureName: string,
+    gestureData?: {
+      points?: Array<{ x: number; y: number; timestamp: number }>;
+      duration?: number;
+      accuracy?: number;
+      attempts?: number;
+    }
+  ) => {
+    const interactionType = `secret_gesture_${gestureType}`;
+    await trackInteraction(interactionType, undefined, gestureType, gestureName, undefined, {
+      gesture_name: gestureName,
+      gesture_data: gestureData
+    });
+  }, [trackInteraction]);
+
+  const trackModalInteraction = useCallback(async (
+    action: 'open' | 'close' | 'submit' | 'cancel',
+    modalName: string,
+    trigger?: string
+  ) => {
+    await trackInteraction('modal_interaction', undefined, action, modalName, undefined, {
+      modal_name: modalName,
+      action,
+      trigger
+    });
+  }, [trackInteraction]);
+
+  const trackCarouselNavigation = useCallback(async (
+    direction: 'next' | 'previous' | 'dot',
+    carouselName: string,
+    currentSlide?: number,
+    totalSlides?: number
+  ) => {
+    await trackInteraction('carousel_navigation', undefined, direction, carouselName, undefined, {
+      carousel_name: carouselName,
+      direction,
+      current_slide: currentSlide,
+      total_slides: totalSlides
+    });
+  }, [trackInteraction]);
+
+  const trackFormInteraction = useCallback(async (
+    action: 'start' | 'submit' | 'abandon' | 'error',
+    formName: string,
+    fieldName?: string,
+    errorMessage?: string
+  ) => {
+    await trackInteraction('form_interaction', fieldName, action, formName, undefined, {
+      form_name: formName,
+      action,
+      field_name: fieldName,
+      error_message: errorMessage
+    });
+  }, [trackInteraction]);
+
+  const trackGameInteraction = useCallback(async (
+    action: 'start' | 'end' | 'pause' | 'score',
+    gameName: string,
+    score?: number,
+    duration?: number
+  ) => {
+    await trackInteraction('game_interaction', undefined, action, gameName, undefined, {
+      game_name: gameName,
+      action,
+      score,
+      duration
+    });
+  }, [trackInteraction]);
+
+  // Enhanced click tracking with detailed categorization
   useEffect(() => {
     const handleClick = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -184,20 +269,41 @@ export const useAnalytics = () => {
       
       if (isButton || isLink) {
         const elementId = target.id || undefined;
-        const elementClass = target.className || undefined;
         const elementText = target.textContent?.trim().substring(0, 100) || undefined;
         const coordinates = { x: event.clientX, y: event.clientY };
         
-        trackInteraction('click', elementId, elementClass, elementText, coordinates, {
+        // Categorize button types based on classes and content
+        let buttonType: 'primary' | 'secondary' | 'cta' | 'navigation' | 'form_submit' | 'danger' = 'secondary';
+        
+        const classNames = target.className.toLowerCase();
+        const textContent = elementText?.toLowerCase() || '';
+        
+        if (classNames.includes('primary') || classNames.includes('cta')) {
+          buttonType = 'cta';
+        } else if (textContent.includes('book') || textContent.includes('join') || textContent.includes('subscribe') || textContent.includes('sign up')) {
+          buttonType = 'cta';
+        } else if (classNames.includes('nav') || target.closest('nav')) {
+          buttonType = 'navigation';
+        } else if ((target as HTMLInputElement).type === 'submit' || textContent.includes('submit') || textContent.includes('send')) {
+          buttonType = 'form_submit';
+        } else if (classNames.includes('destructive') || classNames.includes('danger') || textContent.includes('delete')) {
+          buttonType = 'danger';
+        } else if (classNames.includes('primary')) {
+          buttonType = 'primary';
+        }
+        
+        // Track the categorized button click
+        trackButtonClick(buttonType, elementId, elementText, coordinates, {
           tagName: target.tagName,
-          href: isLink ? (target as HTMLAnchorElement).href : undefined
+          href: isLink ? (target as HTMLAnchorElement).href : undefined,
+          className: target.className
         });
       }
     };
 
     document.addEventListener('click', handleClick, { passive: true });
     return () => document.removeEventListener('click', handleClick);
-  }, [trackInteraction]);
+  }, [trackButtonClick]);
 
   // Clean up session on page unload
   useEffect(() => {
@@ -226,5 +332,13 @@ export const useAnalytics = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [sessionId, location.pathname]);
 
-  return { trackInteraction };
+  return { 
+    trackInteraction,
+    trackButtonClick,
+    trackSecretGesture,
+    trackModalInteraction,
+    trackCarouselNavigation,
+    trackFormInteraction,
+    trackGameInteraction
+  };
 };

@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useAnalytics } from './useAnalytics';
 
 interface Point {
   x: number;
@@ -18,6 +19,8 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   const [points, setPoints] = useState<Point[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const gestureTimeoutRef = useRef<NodeJS.Timeout>();
+  const attemptStartTime = useRef<number | null>(null);
+  const { trackSecretGesture } = useAnalytics();
 
   const clearGesture = useCallback(() => {
     setPoints([]);
@@ -93,8 +96,18 @@ const useGestureDetection = (onGestureComplete: () => void) => {
       
       // Check if gesture is complete - validate for 7 shape
       if (updated.length > 10 && isValid7Shape(updated)) {
+        const duration = attemptStartTime.current ? Date.now() - attemptStartTime.current : 0;
+        
         setIsComplete(true);
         setIsDrawing(false);
+        
+        // Track successful gesture completion
+        trackSecretGesture('complete', 'seven_gesture', {
+          points: updated,
+          duration,
+          accuracy: calculateGestureAccuracy(updated)
+        });
+        
         onGestureComplete();
         
         // Clear after a short delay
@@ -111,14 +124,31 @@ const useGestureDetection = (onGestureComplete: () => void) => {
     clearGesture();
     setIsDrawing(true);
     addPoint(x, y);
+    attemptStartTime.current = Date.now();
+    
+    // Track gesture attempt
+    trackSecretGesture('attempt', 'seven_gesture', {
+      points: [{ x, y, timestamp: Date.now() }]
+    });
     
     // Set timeout to clear gesture if not completed
     gestureTimeoutRef.current = setTimeout(() => {
       clearGesture();
     }, 8000);
-  }, [addPoint, clearGesture]);
+  }, [addPoint, clearGesture, trackSecretGesture]);
 
   const endGesture = useCallback(() => {
+    if (isDrawing && !isComplete) {
+      const duration = attemptStartTime.current ? Date.now() - attemptStartTime.current : 0;
+      
+      // Track failed gesture attempt
+      trackSecretGesture('failed', 'seven_gesture', {
+        points,
+        duration,
+        accuracy: calculateGestureAccuracy(points)
+      });
+    }
+    
     setIsDrawing(false);
     
     // Clear gesture after a delay if not completed
@@ -127,7 +157,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
         clearGesture();
       }, 500);
     }
-  }, [isComplete, clearGesture]);
+  }, [isComplete, clearGesture, isDrawing, points, trackSecretGesture]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -136,6 +166,27 @@ const useGestureDetection = (onGestureComplete: () => void) => {
         clearTimeout(gestureTimeoutRef.current);
       }
     };
+  }, []);
+
+  // Calculate gesture accuracy based on how close the path is to an ideal "7" shape
+  const calculateGestureAccuracy = useCallback((gesturePoints: Point[]): number => {
+    if (gesturePoints.length < 3) return 0;
+    
+    // Simple accuracy calculation based on path deviation
+    // This is a basic implementation - you could make it more sophisticated
+    const totalPoints = gesturePoints.length;
+    const idealRatio = 0.7; // Rough ratio for a good "7" shape
+    
+    // Calculate horizontal vs vertical movement ratio
+    const firstPoint = gesturePoints[0];
+    const lastPoint = gesturePoints[gesturePoints.length - 1];
+    const horizontalMovement = Math.abs(lastPoint.x - firstPoint.x);
+    const verticalMovement = Math.abs(lastPoint.y - firstPoint.y);
+    
+    const actualRatio = horizontalMovement / (horizontalMovement + verticalMovement);
+    const deviation = Math.abs(actualRatio - idealRatio);
+    
+    return Math.max(0, 1 - deviation * 2); // Return accuracy between 0 and 1
   }, []);
 
   return {

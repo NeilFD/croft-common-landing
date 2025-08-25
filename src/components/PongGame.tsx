@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { usePongGame } from '@/hooks/usePongGame';
 import { usePongHighScores } from '@/hooks/usePongHighScores';
 import { useAuth } from '@/hooks/useAuth';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import CroftLogo from './CroftLogo';
 import AnonymousNameModal from './AnonymousNameModal';
 
@@ -26,6 +27,7 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const [mobileAudioEnabled, setMobileAudioEnabled] = useState(false);
   const [audioInitializing, setAudioInitializing] = useState(false);
   const audioRef = useRef<HTMLAudioElement>();
+  const { trackGameInteraction } = useAnalytics();
   
   const {
     score,
@@ -288,6 +290,9 @@ const PongGame = ({ onClose }: PongGameProps) => {
   const handleStartGame = async () => {
     setGameStarted(true);
     setShowHighScores(false);
+    
+    // Track game start
+    trackGameInteraction('start', 'pong');
     
     // For desktop: initialize audio automatically
     // For mobile: only if user has enabled audio
