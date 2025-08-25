@@ -25,6 +25,8 @@ const CMSVisual = () => {
   console.log('🎭 CMSVisual - Page param:', page);
   
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(currentPage);
+  
+  console.log('🎭 CMSVisual - Draft count for page:', currentPage, 'is:', draftCount);
   const { resetPendingChanges } = useEditMode();
 
   const handlePublish = async () => {

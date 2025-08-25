@@ -8,6 +8,7 @@ export const useDraftContent = (page: string) => {
   const fetchDraftCount = async () => {
     try {
       setLoading(true);
+      console.log('🎯 useDraftContent: Fetching draft count for page:', page);
       const { count, error } = await supabase
         .from('cms_content')
         .select('*', { count: 'exact', head: true })
@@ -19,6 +20,7 @@ export const useDraftContent = (page: string) => {
         return;
       }
 
+      console.log('🎯 useDraftContent: Found', count, 'drafts for page:', page);
       setDraftCount(count || 0);
     } catch (err) {
       console.warn('Error fetching draft count:', err);
@@ -53,14 +55,15 @@ export const useDraftContent = (page: string) => {
     fetchDraftCount();
     
     // Listen for draft content changes
-    const handleDraftChange = () => {
+    const handleDraftChange = (event: CustomEvent) => {
+      console.log('🎯 useDraftContent: Received draftContentChanged event:', event.detail);
       fetchDraftCount();
     };
     
-    window.addEventListener('draftContentChanged', handleDraftChange);
+    window.addEventListener('draftContentChanged', handleDraftChange as EventListener);
     
     return () => {
-      window.removeEventListener('draftContentChanged', handleDraftChange);
+      window.removeEventListener('draftContentChanged', handleDraftChange as EventListener);
     };
   }, [page]);
 

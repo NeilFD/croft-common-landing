@@ -282,6 +282,7 @@ export const CMSText = ({
       refreshContent();
       
       // Trigger a custom event to notify other components about draft changes
+      console.log('🎯 CMS: Dispatching draftContentChanged event for page:', page);
       window.dispatchEvent(new CustomEvent('draftContentChanged', { 
         detail: { page, section, contentKey } 
       }));
