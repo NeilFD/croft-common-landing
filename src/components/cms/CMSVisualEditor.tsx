@@ -84,9 +84,22 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
   
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Normalize the page name
-  const normalizedPage = currentPage.toLowerCase().replace(/^\//, '');
+  // Normalize the page name and map URL paths to component page names
+  let normalizedPage = currentPage.toLowerCase().replace(/^\//, '');
+  
+  // Map URL segments to actual page names used in components
+  const pageNameMap: Record<string, string> = {
+    'croftcommondatetime': 'croft-common-datetime',
+    'commonroom': 'common-room'
+  };
+  
+  // Apply mapping if it exists
+  normalizedPage = pageNameMap[normalizedPage] || normalizedPage;
+  
+  console.log('🎨 CMSVisualEditor: Normalized page from', currentPage, 'to', normalizedPage);
+  
   const PageComponent = pageComponents[normalizedPage];
+  
   
   console.log('🎨 CMSVisualEditor - Current page:', currentPage);
   console.log('🎨 CMSVisualEditor - Normalized page:', normalizedPage);

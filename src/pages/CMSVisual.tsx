@@ -19,14 +19,27 @@ const CMSVisual = () => {
   const fullPath = location.pathname.replace('/cms/visual/', '').replace(/^\/+/, '');
   const currentPage = fullPath || page || 'home';
   
+  // Normalize page name for consistent mapping
+  let normalizedPage = currentPage.toLowerCase().replace(/^\//, '');
+  
+  // Map URL segments to actual page names used in components
+  const pageNameMap: Record<string, string> = {
+    'croftcommondatetime': 'croft-common-datetime',
+    'commonroom': 'common-room'
+  };
+  
+  // Apply mapping if it exists
+  normalizedPage = pageNameMap[normalizedPage] || normalizedPage;
+  
   console.log('🎭 CMSVisual - Location pathname:', location.pathname);
   console.log('🎭 CMSVisual - Full path:', fullPath);
   console.log('🎭 CMSVisual - Current page:', currentPage);
+  console.log('🎭 CMSVisual - Normalized page:', normalizedPage);
   console.log('🎭 CMSVisual - Page param:', page);
   
-  const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(currentPage);
+  const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(normalizedPage);
   
-  console.log('🎭 CMSVisual - Draft count for page:', currentPage, 'is:', draftCount);
+  console.log('🎭 CMSVisual - Draft count for page:', normalizedPage, 'is:', draftCount);
   
   // Debug the publish button state
   console.log('🎭 CMSVisual - Publish button should be enabled:', draftCount > 0);
@@ -78,12 +91,12 @@ const CMSVisual = () => {
             />
             {/* Debug info */}
             <div className="text-xs text-gray-500 p-2">
-              Debug: Page="{currentPage}", Drafts={draftCount}, Publishing={isPublishing}
+              Debug: Page="{normalizedPage}", Drafts={draftCount}, Publishing={isPublishing}
             </div>
             <div className="flex flex-1 min-h-0">
               <CMSSidebar />
               <main className="flex-1 min-w-0 overflow-auto">
-                <CMSVisualEditor currentPage={currentPage} />
+                <CMSVisualEditor currentPage={normalizedPage} />
               </main>
             </div>
           </div>
