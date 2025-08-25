@@ -155,12 +155,12 @@ const App = () => (
             <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
             <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
              <Route path="/book" element={<Book />} />
-             <Route path="/notifications" element={<Notifications />} />
              <Route path="/admin" element={<Admin />} />
              <Route path="/cms/login" element={<CMSLogin />} />
              <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
              <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
              <Route path="/cms/*" element={<CMS />} />
+             <Route path="/notifications" element={<Notifications />} />
              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
             </Routes>
