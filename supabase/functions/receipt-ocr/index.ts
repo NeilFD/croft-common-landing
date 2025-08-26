@@ -108,7 +108,13 @@ Be precise with numbers. Use GBP as default currency unless clearly stated other
       const extractedText = data.choices[0].message.content
 
       try {
-        const receiptData = JSON.parse(extractedText)
+        // Clean up any markdown formatting from the response
+        let cleanedText = extractedText.trim();
+        if (cleanedText.startsWith('```json')) {
+          cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        }
+        
+        const receiptData = JSON.parse(cleanedText);
         
         return new Response(
           JSON.stringify({
