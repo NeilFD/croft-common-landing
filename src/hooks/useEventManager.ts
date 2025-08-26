@@ -98,12 +98,7 @@ export const useEventManager = () => {
   const loadEvents = useCallback(async () => {
     try {
       setLoading(true);
-      const { data: session } = await supabase.auth.getSession();
       
-      console.log('loadEvents - session:', session.session?.user?.email);
-      
-      // Always try to load events from database first
-      console.log('Loading events from database...');
       const { data, error } = await supabase
         .from('events')
         .select('*')
@@ -111,15 +106,9 @@ export const useEventManager = () => {
 
       if (error) {
         console.error('Error loading events:', error);
-        // Only show demo events if there's an error loading from database
-        console.log('Falling back to demo events due to error');
         setEvents(initialEvents);
       } else {
         const transformedEvents = data.map(transformDbEvent);
-        console.log('Loaded events from database:', transformedEvents.length, 'events');
-        transformedEvents.forEach(event => {
-          console.log('Event:', event.title, 'Date:', event.date);
-        });
         setEvents(transformedEvents);
       }
     } catch (error) {
@@ -134,7 +123,6 @@ export const useEventManager = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('Auth state changed in useEventManager:', event, session?.user?.email);
         if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
           loadEvents();
         }
