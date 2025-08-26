@@ -51,7 +51,7 @@ const CommonRoomMain = () => {
               page="common-room-main"
               section="hero"
               contentKey="tagline"
-              fallback="Members, not membership."
+              fallback="Membership, not members."
               as="p"
               className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-8"
             />
