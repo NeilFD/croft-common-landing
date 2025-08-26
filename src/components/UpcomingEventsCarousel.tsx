@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useEventManager } from '@/hooks/useEventManager';
 import { format, isToday, isTomorrow, addDays } from 'date-fns';
 import { Calendar, Clock, MapPin, ExternalLink } from 'lucide-react';
@@ -7,11 +7,24 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { eventCategoryColors } from '@/types/event';
+import { eventCategoryColors, Event } from '@/types/event';
 import OptimizedImage from '@/components/OptimizedImage';
+import EventDetailModal from '@/components/EventDetailModal';
 
 const UpcomingEventsCarousel: React.FC = () => {
   const { events, loading } = useEventManager();
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showEventDetail, setShowEventDetail] = useState(false);
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setShowEventDetail(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowEventDetail(false);
+    setSelectedEvent(null);
+  };
 
   if (loading) {
     return (
@@ -84,7 +97,10 @@ const UpcomingEventsCarousel: React.FC = () => {
             
             return (
               <CarouselItem key={event.id} className="pl-2 basis-full md:basis-1/2 lg:basis-1/3">
-                <Card className="border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
+                <Card 
+                  className="border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer group h-full"
+                  onClick={() => handleEventClick(event)}
+                >
                   <CardContent className="p-0 h-full flex flex-col">
                     {/* Event Image */}
                     <div className="relative h-32 overflow-hidden rounded-t-lg">
@@ -154,6 +170,12 @@ const UpcomingEventsCarousel: React.FC = () => {
         <CarouselPrevious className="hidden md:flex -left-4 h-8 w-8" />
         <CarouselNext className="hidden md:flex -right-4 h-8 w-8" />
       </Carousel>
+      
+      <EventDetailModal
+        event={selectedEvent}
+        isOpen={showEventDetail}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 };

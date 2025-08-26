@@ -269,7 +269,7 @@ const MemberHome: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-foreground">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-10">
                 <Button 
                   onClick={() => setShowReceiptModal(true)}
                   className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
