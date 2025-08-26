@@ -208,63 +208,128 @@ export const CMSText = ({
       
       console.log('🎯 CMS: Checking for existing content...', { page, section, contentKey });
       
-      // Check if content exists
-      const { data: existingContent, error: selectError } = await supabase
-        .from('cms_content')
-        .select('id, created_by')
-        .eq('page', page)
-        .eq('section', section)
-        .eq('content_key', contentKey)
-        .maybeSingle();
+      // Determine which table to use based on page type
+      const isGlobalContent = page === 'global';
+      const tableName = isGlobalContent ? 'cms_global_content' : 'cms_content';
+      
+      console.log('🎯 CMS: Using table:', tableName, 'for page:', page);
+      
+      if (isGlobalContent) {
+        // Handle global content
+        const { data: existingGlobalContent, error: selectError } = await supabase
+          .from('cms_global_content')
+          .select('id, created_by')
+          .eq('content_key', contentKey)
+          .maybeSingle();
 
-      console.log('🎯 CMS: Existing content query result:', existingContent, 'Error:', selectError);
+        console.log('🎯 CMS: Existing global content query result:', existingGlobalContent, 'Error:', selectError);
 
-      const contentData = { text: editValue, positioning };
-      console.log('🎯 CMS: Content data to save:', contentData);
+        const globalContentData = { text: editValue, positioning };
+        console.log('🎯 CMS: Global content data to save:', globalContentData);
 
-      if (existingContent) {
-        console.log('🎯 CMS: Updating existing content with ID:', existingContent.id);
-        console.log('🎯 CMS: Original creator:', existingContent.created_by, 'Current user:', user.id);
-        
-        // Update existing content as draft
-        const { data: updateData, error: updateError } = await supabase
-          .from('cms_content')
-          .update({ 
-            content_data: contentData,
-            published: false, // Save as draft
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingContent.id)
-          .select();
+        if (existingGlobalContent) {
+          console.log('🎯 CMS: Updating existing global content with ID:', existingGlobalContent.id);
           
-        console.log('🎯 CMS: Update result:', updateData, 'Error:', updateError);
-        
-        if (updateError) {
-          console.log('🎯 CMS: Update failed:', updateError);
-          throw updateError;
+          // Update existing global content as draft
+          const { data: updateData, error: updateError } = await supabase
+            .from('cms_global_content')
+            .update({ 
+              content_data: globalContentData,
+              content_value: editValue,
+              content_type: 'text',
+              published: false, // Save as draft
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingGlobalContent.id)
+            .select();
+            
+          console.log('🎯 CMS: Global update result:', updateData, 'Error:', updateError);
+          
+          if (updateError) {
+            console.log('🎯 CMS: Global update failed:', updateError);
+            throw updateError;
+          }
+        } else {
+          console.log('🎯 CMS: Creating new global content entry with created_by:', user.id);
+          
+          // Create new global content as draft
+          const { data: insertData, error: insertError } = await supabase
+            .from('cms_global_content')
+            .insert({
+              content_key: contentKey,
+              content_type: 'text',
+              content_value: editValue,
+              content_data: globalContentData,
+              published: false, // Save as draft
+              created_by: user.id  // Set the creator
+            })
+            .select();
+            
+          console.log('🎯 CMS: Global insert result:', insertData, 'Error:', insertError);
+          
+          if (insertError) {
+            console.log('🎯 CMS: Global insert failed:', insertError);
+            throw insertError;
+          }
         }
       } else {
-        console.log('🎯 CMS: Creating new content entry with created_by:', user.id);
-        
-        // Create new content as draft
-        const { data: insertData, error: insertError } = await supabase
+        // Handle page-specific content (existing logic)
+        const { data: existingContent, error: selectError } = await supabase
           .from('cms_content')
-          .insert({
-            page,
-            section,
-            content_key: contentKey,
-            content_type: 'text',
-            content_data: contentData,
-            published: false, // Save as draft
-            created_by: user.id  // Set the creator
-          })
-          .select();
+          .select('id, created_by')
+          .eq('page', page)
+          .eq('section', section)
+          .eq('content_key', contentKey)
+          .maybeSingle();
+
+        console.log('🎯 CMS: Existing content query result:', existingContent, 'Error:', selectError);
+
+        const contentData = { text: editValue, positioning };
+        console.log('🎯 CMS: Content data to save:', contentData);
+
+        if (existingContent) {
+          console.log('🎯 CMS: Updating existing content with ID:', existingContent.id);
           
-        console.log('🎯 CMS: Insert result:', insertData, 'Error:', insertError);
-        
-        if (insertError) {
-          console.log('🎯 CMS: Insert failed:', insertError);
-          throw insertError;
+          // Update existing content as draft
+          const { data: updateData, error: updateError } = await supabase
+            .from('cms_content')
+            .update({ 
+              content_data: contentData,
+              published: false, // Save as draft
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingContent.id)
+            .select();
+            
+          console.log('🎯 CMS: Update result:', updateData, 'Error:', updateError);
+          
+          if (updateError) {
+            console.log('🎯 CMS: Update failed:', updateError);
+            throw updateError;
+          }
+        } else {
+          console.log('🎯 CMS: Creating new content entry with created_by:', user.id);
+          
+          // Create new content as draft
+          const { data: insertData, error: insertError } = await supabase
+            .from('cms_content')
+            .insert({
+              page,
+              section,
+              content_key: contentKey,
+              content_type: 'text',
+              content_data: contentData,
+              published: false, // Save as draft
+              created_by: user.id  // Set the creator
+            })
+            .select();
+            
+          console.log('🎯 CMS: Insert result:', insertData, 'Error:', insertError);
+          
+          if (insertError) {
+            console.log('🎯 CMS: Insert failed:', insertError);
+            throw insertError;
+          }
         }
       }
 
