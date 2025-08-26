@@ -181,27 +181,73 @@ const MemberHome: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Mini Calendar */}
-                <div className="grid grid-cols-7 gap-1 mb-4">
-                  {Array.from({ length: 28 }, (_, i) => {
-                    const date = new Date();
-                    date.setDate(date.getDate() - (27 - i));
-                    const dateStr = date.toISOString().split('T')[0];
-                    const isCheckedIn = checkedInDays.has(dateStr);
-                    
-                    return (
-                      <div
-                        key={i}
-                        className={`w-8 h-8 rounded-lg text-xs flex items-center justify-center transition-all duration-200 hover:scale-110 border ${
-                          isCheckedIn 
-                            ? 'bg-pink-500 text-white border-pink-600' 
-                            : 'bg-white text-muted-foreground border-black hover:border-pink-500'
-                        }`}
-                      >
-                        {date.getDate()}
+                {/* Enhanced Calendar */}
+                <div className="mb-4">
+                  {/* Calendar Header */}
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-sm font-semibold text-foreground">Check-in Calendar</h4>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </span>
+                  </div>
+                  
+                  {/* Day Labels */}
+                  <div className="grid grid-cols-7 gap-1 mb-2">
+                    {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day) => (
+                      <div key={day} className="text-xs text-muted-foreground text-center font-medium p-1">
+                        {day}
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
+                  
+                  {/* Calendar Grid */}
+                  <div className="grid grid-cols-7 gap-1">
+                    {Array.from({ length: 35 }, (_, i) => {
+                      const today = new Date();
+                      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                      const startDate = new Date(startOfMonth);
+                      const dayOfWeek = startOfMonth.getDay() === 0 ? 6 : startOfMonth.getDay() - 1; // Convert Sunday = 0 to Sunday = 6
+                      startDate.setDate(startDate.getDate() - dayOfWeek);
+                      
+                      const currentDate = new Date(startDate);
+                      currentDate.setDate(currentDate.getDate() + i);
+                      
+                      const dateStr = currentDate.toISOString().split('T')[0];
+                      const isCheckedIn = checkedInDays.has(dateStr);
+                      const isCurrentMonth = currentDate.getMonth() === today.getMonth();
+                      const isToday = currentDate.toDateString() === today.toDateString();
+                      
+                      return (
+                        <div
+                          key={i}
+                          className={`w-8 h-8 rounded-lg text-xs flex items-center justify-center transition-all duration-200 hover:scale-110 border ${
+                            isCheckedIn 
+                              ? 'bg-pink-500 text-white border-pink-600' 
+                              : isToday
+                              ? 'bg-white text-foreground border-pink-500 border-2'
+                              : isCurrentMonth
+                              ? 'bg-white text-foreground border-black hover:border-pink-500'
+                              : 'bg-gray-100 text-gray-400 border-gray-200'
+                          }`}
+                          title={currentDate.toLocaleDateString()}
+                        >
+                          {currentDate.getDate()}
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Calendar Legend */}
+                  <div className="flex justify-center gap-4 mt-3 text-xs">
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-pink-500 rounded border"></div>
+                      <span className="text-muted-foreground">Check-in</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <div className="w-3 h-3 bg-white border-2 border-pink-500 rounded"></div>
+                      <span className="text-muted-foreground">Today</span>
+                    </div>
+                  </div>
                 </div>
 
                 {daysUntilPerk > 0 && (
@@ -223,7 +269,7 @@ const MemberHome: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-foreground">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <Button 
                   onClick={() => setShowReceiptModal(true)}
                   className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
