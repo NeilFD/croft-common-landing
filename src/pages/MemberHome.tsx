@@ -147,7 +147,7 @@ const MemberHome: React.FC = () => {
 
         {/* Welcome Header */}
         <div className="mb-8 relative">
-          <div className="bg-card rounded-2xl p-6 border-2 border-black">
+          <div className="bg-white rounded-2xl p-6 border-2 border-black">
             <h1 className="text-4xl font-bold text-foreground mb-2">
               Welcome back, {memberStats.user.first_name || 'Member'}!
             </h1>
@@ -160,7 +160,7 @@ const MemberHome: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Streak Card - Primary */}
           <div className="lg:col-span-2">
-            <Card className="border-2 border-black hover:border-pink-500 transition-all duration-300 hover:shadow-lg">
+            <Card className="bg-white border-2 border-black hover:border-pink-500 transition-all duration-300 hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Flame className="h-5 w-5 text-foreground" />
@@ -195,7 +195,7 @@ const MemberHome: React.FC = () => {
                         className={`w-8 h-8 rounded-lg text-xs flex items-center justify-center transition-all duration-200 hover:scale-110 border ${
                           isCheckedIn 
                             ? 'bg-pink-500 text-white border-pink-600' 
-                            : 'bg-background text-muted-foreground border-black hover:border-pink-500'
+                            : 'bg-white text-muted-foreground border-black hover:border-pink-500'
                         }`}
                       >
                         {date.getDate()}
@@ -205,7 +205,7 @@ const MemberHome: React.FC = () => {
                 </div>
 
                 {daysUntilPerk > 0 && (
-                  <div className="bg-background rounded-lg p-4 text-center border-2 border-black">
+                  <div className="bg-white rounded-lg p-4 text-center border-2 border-black">
                     <p className="text-sm text-muted-foreground mb-1">Next perk in</p>
                     <p className="font-bold text-foreground text-lg">
                       {daysUntilPerk} more {daysUntilPerk === 1 ? 'day' : 'days'}
@@ -219,7 +219,7 @@ const MemberHome: React.FC = () => {
 
           {/* Quick Actions */}
           <div>
-            <Card className="hover:shadow-lg transition-all duration-300 border-2 border-black hover:border-pink-500">
+            <Card className="bg-white hover:shadow-lg transition-all duration-300 border-2 border-black hover:border-pink-500">
               <CardHeader>
                 <CardTitle className="text-foreground">Quick Actions</CardTitle>
               </CardHeader>
@@ -261,7 +261,7 @@ const MemberHome: React.FC = () => {
         {/* Community Widgets */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
           {/* Pong High Scores Widget */}
-          <div className="bg-card rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
             <div className="flex items-center gap-2 mb-4">
               <Gamepad2 className="h-5 w-5 text-foreground" />
               <h3 className="text-lg font-semibold text-foreground">Pong Champions</h3>
@@ -270,7 +270,7 @@ const MemberHome: React.FC = () => {
           </div>
 
           {/* Upcoming Events */}
-          <div className="bg-card rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
+          <div className="bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
             <div className="flex items-center gap-2 mb-4">
               <CalendarDays className="h-5 w-5 text-foreground" />
               <h3 className="text-lg font-semibold text-foreground">Upcoming Events</h3>
@@ -281,7 +281,7 @@ const MemberHome: React.FC = () => {
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
+          <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
                 <Trophy className="h-4 w-4 text-foreground" />
@@ -295,7 +295,7 @@ const MemberHome: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
+          <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
                 <FileText className="h-4 w-4 text-foreground" />
@@ -310,7 +310,7 @@ const MemberHome: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
+          <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
                 <User className="h-4 w-4 text-foreground" />
