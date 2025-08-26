@@ -52,16 +52,6 @@ const CommonRoomHeroCarousel = () => {
         </div>
       </div>
 
-      {/* Gesture Detection */}
-      <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
-      
-      {/* Visual feedback for gesture drawing */}
-      <GestureTrail 
-        points={gestureState.points} 
-        isComplete={gestureState.isComplete} 
-        isDrawing={gestureState.isDrawing} 
-      />
-
       {/* Page Title Card Overlay with Secret Cue */}
       <div className="absolute top-28 left-4 md:left-[106px] z-20 flex items-center gap-4">
         <div className="inline-block px-4 py-3 border-2 border-background bg-transparent rounded-lg transition-all duration-300 hover:border-[hsl(var(--accent-pink))]">
@@ -92,6 +82,13 @@ const CommonRoomHeroCarousel = () => {
 
       {/* Menu Button */}
       <MenuButton pageType="common-room" menuData={commonRoomMenuData} forceCafeAccent />
+
+      {/* Visual feedback for gesture drawing */}
+      <GestureTrail 
+        points={gestureState.points} 
+        isComplete={gestureState.isComplete} 
+        isDrawing={gestureState.isDrawing} 
+      />
 
       {/* Pong Game Modal */}
       {showPongGame && (
