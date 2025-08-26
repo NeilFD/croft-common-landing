@@ -85,6 +85,7 @@ export const useMemberLedger = (dateRange?: { start?: Date; end?: Date }) => {
           receipt: entry.related_id ? receiptsMap.get(entry.related_id) : undefined
         })) || [];
 
+        console.log('Enhanced entries with receipts:', enhancedEntries.filter(e => e.receipt));
         setLedgerEntries(enhancedEntries);
       } catch (err) {
         console.error('Error fetching ledger entries:', err);

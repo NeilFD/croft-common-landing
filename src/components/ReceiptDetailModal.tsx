@@ -32,6 +32,8 @@ const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
 }) => {
   if (!receipt) return null;
 
+  console.log('Receipt data in modal:', receipt);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -53,12 +55,22 @@ const ReceiptDetailModal: React.FC<ReceiptDetailModalProps> = ({
         <div className="space-y-6">
           {/* Receipt Image */}
           <div className="flex justify-center">
-            <img
-              src={receipt.receipt_image_url}
-              alt="Receipt"
-              className="max-w-full h-auto rounded-lg border"
-              style={{ maxHeight: '400px' }}
-            />
+            {receipt.receipt_image_url ? (
+              <img
+                src={receipt.receipt_image_url}
+                alt="Receipt"
+                className="max-w-full h-auto rounded-lg border"
+                style={{ maxHeight: '400px' }}
+                onError={(e) => {
+                  console.error('Failed to load receipt image:', receipt.receipt_image_url);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-48 bg-muted rounded-lg border">
+                <p className="text-muted-foreground">Receipt image not available</p>
+              </div>
+            )}
           </div>
 
           {/* Items List */}
