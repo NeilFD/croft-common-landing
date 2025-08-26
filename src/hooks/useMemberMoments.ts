@@ -62,18 +62,30 @@ export const useMemberMoments = () => {
 
       if (error) {
         console.error('Database error:', error);
-        throw error;
+        // Only show error toast for actual errors, not empty results
+        if (error.code !== 'PGRST116') {
+          toast({
+            title: "Error",
+            description: "Failed to load moments. Please try again.",
+            variant: "destructive"
+          });
+        }
+        return;
       }
       
       console.log('Fetched moments:', data);
       setMoments(data as MemberMoment[] || []);
     } catch (error) {
       console.error('Error fetching moments:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load moments. Please try again.",
-        variant: "destructive"
-      });
+      // Only show error for actual failures, not empty results
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      if (!errorMessage.includes('No rows found')) {
+        toast({
+          title: "Error", 
+          description: "Failed to load moments. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -149,21 +161,30 @@ export const useMemberMoments = () => {
       }
       console.log('User authenticated:', user.id);
 
-      // Try to get location data (optional)
+      // Try to get location data (completely optional now)
       const imageGPS = await extractGPSFromImage(file);
       const currentLocation = imageGPS || await getCurrentLocation();
 
-      // Location checking is now advisory only
+      // Location checking is now completely advisory - never blocks upload
       let locationWarning = '';
+      let needsLocationConfirmation = false;
+      
       if (currentLocation) {
         const withinBounds = isLocationWithinVenue(currentLocation);
         if (!withinBounds && !locationConfirmed) {
-          // Ask for confirmation but don't block upload
-          throw new Error('LOCATION_CONFIRMATION_NEEDED');
+          needsLocationConfirmation = true;
         }
         if (!withinBounds) {
           locationWarning = 'Location appears to be outside venue bounds';
         }
+      } else if (!locationConfirmed) {
+        // No location detected at all - ask for confirmation
+        needsLocationConfirmation = true;
+      }
+      
+      // Only ask for confirmation if we haven't already confirmed and there's a location issue
+      if (needsLocationConfirmation) {
+        throw new Error('LOCATION_CONFIRMATION_NEEDED');
       }
 
       // Upload image to storage
@@ -189,6 +210,13 @@ export const useMemberMoments = () => {
 
       // Insert moment record
       console.log('Inserting moment record...');
+      
+      // Ensure user is authenticated before inserting
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('User must be authenticated to upload moments');
+      }
+      
       const momentData = {
         user_id: user.id,
         image_url: publicUrl,
@@ -196,10 +224,11 @@ export const useMemberMoments = () => {
         date_taken: dateTaken,
         latitude: currentLocation?.latitude || null,
         longitude: currentLocation?.longitude || null,
-        location_confirmed: locationConfirmed,
+        location_confirmed: locationConfirmed || false,
         moderation_status: 'pending'
       };
       console.log('Moment data:', momentData);
+      console.log('User session:', session.user.id);
       
       const { data: insertedMoment, error: insertError } = await supabase
         .from('member_moments')
