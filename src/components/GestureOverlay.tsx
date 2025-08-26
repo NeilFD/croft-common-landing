@@ -101,8 +101,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
     
-    // Only prevent default for gesture detection
-    event.preventDefault();
+    // Don't prevent default for touch start - allow normal scrolling
+    // Only start gesture detection without interfering with scrolling
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isInteractiveElement]);
@@ -168,8 +168,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Only prevent default for gesture detection
-      e.preventDefault();
+      // Don't prevent default for touch start - allow normal scrolling
+      // Only start gesture detection without interfering with scrolling
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
