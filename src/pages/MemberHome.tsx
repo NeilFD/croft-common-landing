@@ -120,8 +120,18 @@ const MemberHome: React.FC = () => {
   const daysUntilPerk = getDaysUntilNextPerk();
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <div className="min-h-screen bg-background relative">
+      {/* Fixed Background Image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
+        style={{
+          backgroundImage: `url('/lovable-uploads/5651f236-2692-4b16-a608-b6d821d392ae.png')`
+        }}
+      />
+      
+      {/* Scrollable Content */}
+      <div className="relative z-10">
+        <Navigation />
       
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
@@ -331,7 +341,8 @@ const MemberHome: React.FC = () => {
         }}
       />
 
-      <Footer />
+        <Footer />
+      </div>
     </div>
   );
 };
