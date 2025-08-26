@@ -27,17 +27,17 @@ const CommonRoomMain = () => {
   };
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative overflow-auto" style={{ touchAction: 'manipulation' }}>
       {/* Fixed background image */}
       <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat"
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{
           backgroundImage: `url('/lovable-uploads/8f95beef-0163-4ded-a6c4-8b0a8bac8b08.png')`
         }}
       />
       
       {/* Scrollable content */}
-      <div className="relative z-10">
+      <div className="relative z-10 min-h-screen overflow-auto">
         {!isCMSMode && <Navigation />}
         <CommonRoomHeroCarousel />
         <section className="py-24 bg-background">
@@ -78,7 +78,7 @@ const CommonRoomMain = () => {
               <button
                 onClick={handleMemberLogin}
                 disabled={membershipGate.checking}
-                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 touch-manipulation"
               >
                 {membershipGate.checking ? 'Checking...' : 'Member Login'}
               </button>
