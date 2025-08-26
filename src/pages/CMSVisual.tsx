@@ -31,12 +31,6 @@ const CMSVisual = () => {
   // Apply mapping if it exists
   normalizedPage = pageNameMap[normalizedPage] || normalizedPage;
   
-  console.log('🎭 CMSVisual - Location pathname:', location.pathname);
-  console.log('🎭 CMSVisual - Full path:', fullPath);
-  console.log('🎭 CMSVisual - Current page:', currentPage);
-  console.log('🎭 CMSVisual - Normalized page:', normalizedPage);
-  console.log('🎭 CMSVisual - Page param:', page);
-  console.log('🎭 CMSVisual - RENDERING HEADER AND EDITOR FOR:', normalizedPage);
   
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(normalizedPage);
   
