@@ -21,6 +21,8 @@ import Hall from "./pages/Hall";
 import Community from "./pages/Community";
 import CommonRoom from "./pages/CommonRoom";
 import CommonRoomMain from "./pages/CommonRoomMain";
+import MemberHome from "./pages/MemberHome";
+import CheckIn from "./pages/CheckIn";
 import Calendar from "./pages/Calendar";
 import ManageEvent from "./pages/ManageEvent";
 import Privacy from "./pages/Privacy";
@@ -141,8 +143,10 @@ const App = () => (
             <Route path="/kitchens" element={<Kitchens />} />
             <Route path="/hall" element={<Hall />} />
             <Route path="/community" element={<Community />} />
-            <Route path="/common-room" element={<CommonRoom />} />
-            <Route path="/common-room/main" element={<CommonRoomMain />} />
+             <Route path="/common-room" element={<CommonRoom />} />
+             <Route path="/common-room/main" element={<CommonRoomMain />} />
+             <Route path="/common-room/member/*" element={<MemberHome />} />
+             <Route path="/check-in" element={<CheckIn />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/manage-event/:token" element={<ManageEvent />} />
             <Route path="/privacy" element={<Privacy />} />

@@ -707,6 +707,216 @@ export type Database = {
         }
         Relationships: []
       }
+      member_check_ins: {
+        Row: {
+          check_in_date: string
+          check_in_timestamp: string
+          created_at: string
+          entrance_slug: string
+          id: string
+          streak_day: number
+          user_id: string
+        }
+        Insert: {
+          check_in_date?: string
+          check_in_timestamp?: string
+          created_at?: string
+          entrance_slug: string
+          id?: string
+          streak_day?: number
+          user_id: string
+        }
+        Update: {
+          check_in_date?: string
+          check_in_timestamp?: string
+          created_at?: string
+          entrance_slug?: string
+          id?: string
+          streak_day?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      member_ledger: {
+        Row: {
+          activity_date: string
+          activity_timestamp: string
+          activity_type: string
+          amount: number | null
+          created_at: string
+          currency: string | null
+          description: string
+          id: string
+          metadata: Json | null
+          related_id: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_date: string
+          activity_timestamp?: string
+          activity_type: string
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          description: string
+          id?: string
+          metadata?: Json | null
+          related_id?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_date?: string
+          activity_timestamp?: string
+          activity_type?: string
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          description?: string
+          id?: string
+          metadata?: Json | null
+          related_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      member_profiles_extended: {
+        Row: {
+          auto_insights: Json | null
+          avatar_url: string | null
+          beer_style_preferences: string[] | null
+          created_at: string
+          dietary_notes: string | null
+          display_name: string | null
+          favorite_drink: string | null
+          favorite_venue: string | null
+          hide_from_leaderboards: boolean
+          id: string
+          join_date: string
+          preferences: Json | null
+          tier_badge: string | null
+          updated_at: string
+          user_id: string
+          visit_time_preference: string | null
+        }
+        Insert: {
+          auto_insights?: Json | null
+          avatar_url?: string | null
+          beer_style_preferences?: string[] | null
+          created_at?: string
+          dietary_notes?: string | null
+          display_name?: string | null
+          favorite_drink?: string | null
+          favorite_venue?: string | null
+          hide_from_leaderboards?: boolean
+          id?: string
+          join_date?: string
+          preferences?: Json | null
+          tier_badge?: string | null
+          updated_at?: string
+          user_id: string
+          visit_time_preference?: string | null
+        }
+        Update: {
+          auto_insights?: Json | null
+          avatar_url?: string | null
+          beer_style_preferences?: string[] | null
+          created_at?: string
+          dietary_notes?: string | null
+          display_name?: string | null
+          favorite_drink?: string | null
+          favorite_venue?: string | null
+          hide_from_leaderboards?: boolean
+          id?: string
+          join_date?: string
+          preferences?: Json | null
+          tier_badge?: string | null
+          updated_at?: string
+          user_id?: string
+          visit_time_preference?: string | null
+        }
+        Relationships: []
+      }
+      member_receipts: {
+        Row: {
+          created_at: string
+          currency: string
+          id: string
+          items: Json | null
+          processing_status: string
+          raw_ocr_data: Json | null
+          receipt_date: string
+          receipt_image_url: string
+          total_amount: number
+          updated_at: string
+          user_id: string
+          venue_location: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          id?: string
+          items?: Json | null
+          processing_status?: string
+          raw_ocr_data?: Json | null
+          receipt_date: string
+          receipt_image_url: string
+          total_amount: number
+          updated_at?: string
+          user_id: string
+          venue_location?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          id?: string
+          items?: Json | null
+          processing_status?: string
+          raw_ocr_data?: Json | null
+          receipt_date?: string
+          receipt_image_url?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+          venue_location?: string | null
+        }
+        Relationships: []
+      }
+      member_streaks: {
+        Row: {
+          created_at: string
+          current_streak: number
+          id: string
+          last_check_in_date: string | null
+          longest_streak: number
+          streak_rewards_earned: Json | null
+          total_check_ins: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_check_in_date?: string | null
+          longest_streak?: number
+          streak_rewards_earned?: Json | null
+          total_check_ins?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_streak?: number
+          id?: string
+          last_check_in_date?: string | null
+          longest_streak?: number
+          streak_rewards_earned?: Json | null
+          total_check_ins?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       membership_codes: {
         Row: {
           code: string
@@ -1483,6 +1693,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_member_streak: {
+        Args: { user_id_input: string }
+        Returns: {
+          current_streak: number
+          longest_streak: number
+          total_check_ins: number
+        }[]
+      }
       cleanup_expired_webauthn_challenges: {
         Args: Record<PropertyKey, never>
         Returns: undefined

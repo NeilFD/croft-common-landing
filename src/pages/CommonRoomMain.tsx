@@ -53,8 +53,16 @@ const CommonRoomMain = () => {
               contentKey="tagline"
               fallback="Members, not membership."
               as="p"
-              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed"
+              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-8"
             />
+            <div className="mt-8">
+              <a 
+                href="/common-room/member" 
+                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+              >
+                Member Login
+              </a>
+            </div>
           </div>
         </section>
         {!isCMSMode && <Footer showSubscription={false} />}
