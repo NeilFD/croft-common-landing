@@ -319,34 +319,32 @@ export const useMemberMoments = () => {
       }
       console.log('Moment inserted:', insertedMoment);
 
-      // Trigger AI moderation
-      try {
-        console.log('Triggering AI moderation...');
-        const { error: moderationError } = await supabase.functions.invoke(
-          'moderate-moment-image',
-          {
-            body: {
-              imageUrl: publicUrl,
-              momentId: insertedMoment.id
-            }
-          }
-        );
-
-        if (moderationError) {
-          console.error('Moderation error:', moderationError);
-          // Don't fail the upload if moderation fails
-        }
-      } catch (moderationError) {
-        console.error('Moderation failed:', moderationError);
-        // Continue anyway - moderation failure shouldn't block upload
-      }
-
+      // Show immediate success - moderation runs in background
       toast({
         title: "Moment uploaded!",
-        description: locationWarning || "Your photo is being reviewed and will appear soon.",
+        description: "Your moment is being reviewed and will appear once approved.",
       });
 
-      // Refresh moments
+      // Trigger AI moderation in background (non-blocking)
+      console.log('Triggering background AI moderation...');
+      supabase.functions.invoke('moderate-moment-image', {
+        body: {
+          imageUrl: publicUrl,
+          momentId: insertedMoment.id
+        }
+      }).then(({ error: moderationError }) => {
+        if (moderationError) {
+          console.error('Background moderation error:', moderationError);
+        } else {
+          console.log('Background AI moderation completed');
+          // Refresh moments after moderation
+          fetchMoments();
+        }
+      }).catch(error => {
+        console.error('Background moderation failed:', error);
+      });
+
+      // Refresh moments list immediately
       await fetchMoments();
 
     } catch (error: any) {
