@@ -83,6 +83,9 @@ const CommonRoomHeroCarousel = () => {
       {/* Menu Button */}
       <MenuButton pageType="common-room" menuData={commonRoomMenuData} forceCafeAccent />
 
+      {/* Gesture Detection - attach to container for touch events */}
+      <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
+      
       {/* Visual feedback for gesture drawing */}
       <GestureTrail 
         points={gestureState.points} 
