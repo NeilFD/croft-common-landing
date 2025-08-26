@@ -1,11 +1,30 @@
+import React from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CommonRoomHeroCarousel from "@/components/CommonRoomHeroCarousel";
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+import { useMembershipGate } from '@/hooks/useMembershipGate';
+import BiometricUnlockModal from '@/components/BiometricUnlockModal';
+import MembershipLinkModal from '@/components/MembershipLinkModal';
+import { OtpAuthModal } from '@/components/OtpAuthModal';
+import { useNavigate } from 'react-router-dom';
 
 const CommonRoomMain = () => {
   const { isCMSMode } = useCMSMode();
+  const navigate = useNavigate();
+  const membershipGate = useMembershipGate();
+
+  // Navigate to member area when authentication is successful
+  React.useEffect(() => {
+    if (membershipGate.allowed) {
+      navigate('/common-room/member');
+    }
+  }, [membershipGate.allowed, navigate]);
+
+  const handleMemberLogin = () => {
+    membershipGate.start();
+  };
 
   return (
     <div className="min-h-screen relative">
@@ -56,17 +75,42 @@ const CommonRoomMain = () => {
               className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-8"
             />
             <div className="mt-8">
-              <a 
-                href="/common-room/member" 
-                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+              <button
+                onClick={handleMemberLogin}
+                disabled={membershipGate.checking}
+                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
-                Member Login
-              </a>
+                {membershipGate.checking ? 'Checking...' : 'Member Login'}
+              </button>
             </div>
           </div>
         </section>
         {!isCMSMode && <Footer showSubscription={false} />}
       </div>
+      
+      {/* Authentication Modals */}
+      <BiometricUnlockModal
+        isOpen={membershipGate.bioOpen}
+        onClose={membershipGate.reset}
+        onSuccess={membershipGate.handleBioSuccess}
+        onFallback={membershipGate.handleBioFallback}
+        title="Access Common Room"
+        description="Use Face ID or your device passkey to access the member area."
+      />
+      
+      <MembershipLinkModal
+        open={membershipGate.linkOpen}
+        onClose={membershipGate.reset}
+        onSuccess={membershipGate.handleLinkSuccess}
+      />
+      
+      <OtpAuthModal
+        isOpen={membershipGate.authOpen}
+        onClose={membershipGate.reset}
+        onSuccess={membershipGate.handleAuthSuccess}
+        title="Member Authentication"
+        description="Enter your member email to receive a 6-digit access code."
+      />
     </div>
   );
 };
