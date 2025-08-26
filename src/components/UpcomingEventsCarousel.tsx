@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEventManager } from '@/hooks/useEventManager';
 import { format, isToday, isTomorrow, addDays } from 'date-fns';
 import { Calendar, Clock, MapPin, ExternalLink } from 'lucide-react';
@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, CarouselApi } from '@/components/ui/carousel';
 import { eventCategoryColors, Event } from '@/types/event';
 import OptimizedImage from '@/components/OptimizedImage';
 import EventDetailModal from '@/components/EventDetailModal';
@@ -15,6 +15,9 @@ const UpcomingEventsCarousel: React.FC = () => {
   const { events, loading } = useEventManager();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [showEventDetail, setShowEventDetail] = useState(false);
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
 
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -25,6 +28,19 @@ const UpcomingEventsCarousel: React.FC = () => {
     setShowEventDetail(false);
     setSelectedEvent(null);
   };
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
 
   if (loading) {
     return (
@@ -90,7 +106,7 @@ const UpcomingEventsCarousel: React.FC = () => {
 
   return (
     <div className="relative w-full">
-      <Carousel className="w-full">
+      <Carousel setApi={setApi} className="w-full">
         <CarouselContent className="-ml-2">
           {upcomingEvents.map((event) => {
             const categoryStyles = getCategoryStyles(event.category);
@@ -167,9 +183,27 @@ const UpcomingEventsCarousel: React.FC = () => {
             );
           })}
         </CarouselContent>
-        <CarouselPrevious className="hidden md:flex -left-4 h-8 w-8" />
-        <CarouselNext className="hidden md:flex -right-4 h-8 w-8" />
+        <CarouselPrevious className="-left-4 h-8 w-8" />
+        <CarouselNext className="-right-4 h-8 w-8" />
       </Carousel>
+      
+      {/* Carousel Dots */}
+      {count > 1 && (
+        <div className="flex justify-center mt-4 gap-2">
+          {Array.from({ length: count }, (_, i) => (
+            <button
+              key={i}
+              className={`h-2 w-2 rounded-full transition-all duration-200 ${
+                i + 1 === current 
+                  ? 'bg-primary w-6' 
+                  : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+              }`}
+              onClick={() => api?.scrollTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
       
       <EventDetailModal
         event={selectedEvent}

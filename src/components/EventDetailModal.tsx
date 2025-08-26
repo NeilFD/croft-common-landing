@@ -109,7 +109,12 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({ event, isOpen, onCl
               <Mail className="h-5 w-5 text-muted-foreground" />
               <div>
                 <div className="text-sm text-muted-foreground">Contact</div>
-                <div className="font-medium text-sm">{event.contactEmail}</div>
+                <button 
+                  onClick={() => window.location.href = `mailto:${event.contactEmail}?subject=Booking enquiry: ${event.title}`}
+                  className="font-medium text-sm text-primary hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                >
+                  {event.contactEmail}
+                </button>
               </div>
             </div>
           </div>
