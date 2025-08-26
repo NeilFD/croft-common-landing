@@ -79,6 +79,7 @@ export function useMembershipGate(): UseMembershipGate {
           const isLinked = Boolean(d.linked ?? d.isLinked ?? d.linkedAndActive ?? d.active);
           console.debug('[gate] silent check result', { isLinked, data: d });
           if (isLinked) {
+            console.log('[gate] Setting allowed to true - should trigger navigation');
             setAllowed(true);
             setLinkOpen(false);
             setBioOpen(false);

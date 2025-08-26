@@ -17,7 +17,9 @@ const CommonRoomMain = () => {
 
   // Navigate to member area when authentication is successful
   React.useEffect(() => {
+    console.log('[CommonRoomMain] membershipGate.allowed changed:', membershipGate.allowed);
     if (membershipGate.allowed) {
+      console.log('[CommonRoomMain] Attempting to navigate to /common-room/member');
       navigate('/common-room/member');
     }
   }, [membershipGate.allowed, navigate]);
