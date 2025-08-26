@@ -29,7 +29,7 @@ const CommonRoomMain = () => {
               contentKey="title"
               fallback="THE COMMON ROOM"
               as="h2"
-              className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground"
+              className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground text-center"
             />
             <CMSText
               page="common-room-main"
