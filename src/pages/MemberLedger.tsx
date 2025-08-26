@@ -19,10 +19,15 @@ const MemberLedger: React.FC = () => {
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
   
+  console.log('MemberLedger: Component mounted, dateRange:', dateRange);
+  
   const { ledgerEntries, loading, error } = useMemberLedger(dateRange);
   const { analysisData, loading: analysisLoading } = useReceiptAnalysis(dateRange);
 
+  console.log('MemberLedger: ledgerEntries:', ledgerEntries, 'loading:', loading, 'error:', error);
+
   const handleReceiptClick = (entry: any) => {
+    console.log('Receipt clicked:', entry);
     if (entry.activity_type === 'receipt' && entry.receipt) {
       setSelectedReceipt({
         receipt: entry.receipt,
