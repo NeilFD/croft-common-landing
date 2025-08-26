@@ -36,6 +36,7 @@ const CMSVisual = () => {
   console.log('🎭 CMSVisual - Current page:', currentPage);
   console.log('🎭 CMSVisual - Normalized page:', normalizedPage);
   console.log('🎭 CMSVisual - Page param:', page);
+  console.log('🎭 CMSVisual - RENDERING HEADER AND EDITOR FOR:', normalizedPage);
   
   const { draftCount, publishDrafts, refreshDraftCount } = useDraftContent(normalizedPage);
   

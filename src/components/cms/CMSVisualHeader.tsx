@@ -26,8 +26,23 @@ export const CMSVisualHeader = ({
     pendingChanges 
   } = useEditMode();
 
+  console.log('🔧 CMSVisualHeader - RENDERING for page:', currentPage);
+  console.log('🔧 CMSVisualHeader - isEditMode:', isEditMode);
+  console.log('🔧 CMSVisualHeader - pendingChanges:', pendingChanges);
+  console.log('🔧 CMSVisualHeader - draftCount:', draftCount);
+
   return (
-    <header className="flex items-center justify-between h-16 px-3 sm:px-6 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 relative z-50">
+    <header 
+      className="flex items-center justify-between h-16 px-3 sm:px-6 border-b bg-red-500/95 backdrop-blur supports-[backdrop-filter]:bg-red-500/60 relative z-[9999]"
+      style={{ 
+        backgroundColor: 'red !important',
+        zIndex: 99999,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0
+      }}
+    >
       <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         <SidebarTrigger className="p-2 hover:bg-accent rounded-md border border-border bg-background shadow-sm flex-shrink-0" />
         <CroftLogo size="lg" className="hidden sm:block ml-2" priority />
@@ -36,12 +51,12 @@ export const CMSVisualHeader = ({
         </div>
         <div className="hidden lg:block border-l border-border h-8 mx-2" />
         <div className="min-w-0">
-          <h1 className="text-base sm:text-xl font-semibold truncate">
-            Visual Editor{currentPage && (
+          <h1 className="text-base sm:text-xl font-semibold truncate text-white">
+            DEBUG MODE - Visual Editor{currentPage && (
               <span className="hidden sm:inline"> - {currentPage.charAt(0).toUpperCase() + currentPage.slice(1)}</span>
             )}
           </h1>
-          <p className="hidden sm:block text-sm text-muted-foreground">Edit your content in real-time</p>
+          <p className="hidden sm:block text-sm text-white">DEBUG: Header is rendering for {currentPage}</p>
         </div>
       </div>
       
