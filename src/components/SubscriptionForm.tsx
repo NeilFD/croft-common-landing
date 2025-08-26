@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { ChevronDown } from 'lucide-react';
 import { CMSText } from './cms/CMSText';
+import { INTEREST_OPTIONS } from '@/data/interests';
 
 interface SubscriptionFormProps {
   variant?: 'footer' | 'homepage';
@@ -25,22 +26,6 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
   const [isLoading, setIsLoading] = useState(false);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const { toast } = useToast();
-
-  const interestOptions = [
-    'Private Events & Bookings',
-    'Corporate Hospitality',
-    'Wine Tastings & Masterclasses',
-    'Cocktail Masterclasses',
-    'Beer & Brewing Events',
-    'Cooking Classes',
-    'Art & Creative Workshops',
-    'Film & Cinema',
-    'Networking Events',
-    'Live Music & Entertainment',
-    'Special Occasions & Celebrations',
-    'Wedding & Party Catering',
-    'Business Meetings & Workspace'
-  ];
 
   const dayOptions = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
   const monthOptions = [
@@ -253,7 +238,7 @@ const SubscriptionForm = ({ variant = 'footer', className = '' }: SubscriptionFo
                 What interests you? <span className="text-accent-pink">*</span>
               </Label>
               <div className="space-y-2">
-                {interestOptions.map((option) => (
+                {INTEREST_OPTIONS.map((option) => (
                   <div key={option} className="flex items-center space-x-3 p-2 border border-foreground/20 hover:border-accent-pink transition-colors bg-background">
                     <Checkbox
                       id={`interest-${option}`}

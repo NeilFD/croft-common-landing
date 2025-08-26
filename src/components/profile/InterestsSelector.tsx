@@ -1,25 +1,7 @@
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-
-const AVAILABLE_INTERESTS = [
-  'Beer', 'Wine', 'Cocktails', 'Coffee', 'Food', 'Music', 'Art', 'Film', 
-  'Books', 'Sports', 'Games', 'Technology', 'Travel', 'Photography',
-  'Comedy', 'Theatre', 'Live Music', 'Networking', 'Community Events'
-];
-
-const VENUE_PREFERENCES = [
-  'Beer Hall', 'Cafe', 'Cocktail Bar', 'Common Room', 'Kitchens', 'Event Spaces'
-];
-
-const VISIT_TIME_PREFERENCES = [
-  'Morning (8am-12pm)', 'Afternoon (12pm-5pm)', 'Evening (5pm-9pm)', 'Late Night (9pm+)'
-];
-
-const BEER_STYLES = [
-  'IPA', 'Lager', 'Stout', 'Porter', 'Wheat Beer', 'Pilsner', 'Pale Ale', 
-  'Saison', 'Sour Beer', 'Belgian', 'Cider'
-];
+import { INTEREST_OPTIONS, VENUE_PREFERENCES, VISIT_TIME_PREFERENCES, BEER_STYLES } from '@/data/interests';
 
 interface InterestsSelectorProps {
   selectedInterests: string[];
@@ -63,7 +45,7 @@ export const InterestsSelector: React.FC<InterestsSelectorProps> = ({
       <div>
         <Label className="text-base font-semibold mb-3 block">General Interests</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {AVAILABLE_INTERESTS.map((interest) => (
+          {INTEREST_OPTIONS.map((interest) => (
             <div key={interest} className="flex items-center space-x-2">
               <Checkbox
                 id={`interest-${interest}`}
