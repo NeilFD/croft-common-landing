@@ -101,8 +101,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
     
-    // Don't prevent default for touch start - allow normal scrolling
-    // Only start gesture detection without interfering with scrolling
+    // Start gesture detection without preventing scrolling
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isInteractiveElement]);
@@ -114,10 +113,26 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
     
-    event.preventDefault();
+    // Only prevent default if user is making horizontal/diagonal movements (gesture-like)
+    // Allow vertical scrolling to continue
+    if (points.length > 1) {
+      const lastPoint = points[points.length - 1];
+      const { x, y } = getEventPosition(event);
+      const deltaX = Math.abs(x - lastPoint.x);
+      const deltaY = Math.abs(y - lastPoint.y);
+      
+      // If movement is primarily vertical, allow scrolling
+      if (deltaY > deltaX * 2) {
+        return;
+      }
+      
+      // Otherwise, prevent default for gesture detection
+      event.preventDefault();
+    }
+    
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
-  }, [getEventPosition, addPoint, isDrawing, isInteractiveElement]);
+  }, [getEventPosition, addPoint, isDrawing, isInteractiveElement, points]);
 
   const handleTouchEnd = useCallback((event: React.TouchEvent) => {
     // Allow interactive elements to function normally
@@ -168,8 +183,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Don't prevent default for touch start - allow normal scrolling
-      // Only start gesture detection without interfering with scrolling
+      // Start gesture detection without preventing scrolling
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
@@ -180,7 +194,23 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      e.preventDefault();
+      // Only prevent default if user is making horizontal/diagonal movements (gesture-like)
+      // Allow vertical scrolling to continue
+      if (points.length > 1) {
+        const lastPoint = points[points.length - 1];
+        const { x, y } = getEventPosition(e);
+        const deltaX = Math.abs(x - lastPoint.x);
+        const deltaY = Math.abs(y - lastPoint.y);
+        
+        // If movement is primarily vertical, allow scrolling
+        if (deltaY > deltaX * 2) {
+          return;
+        }
+        
+        // Otherwise, prevent default for gesture detection
+        e.preventDefault();
+      }
+      
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
     };
