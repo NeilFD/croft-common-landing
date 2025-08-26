@@ -105,24 +105,15 @@ Be precise with numbers. Use GBP as default currency unless clearly stated other
       }
 
       const data = await response.json()
-      const content = data.choices[0].message.content
+      const extractedText = data.choices[0].message.content
 
       try {
-        // Parse the response, handling potential markdown code blocks
-        let jsonContent = content.trim();
-        if (jsonContent.startsWith('```json')) {
-          jsonContent = jsonContent.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-        } else if (jsonContent.startsWith('```')) {
-          jsonContent = jsonContent.replace(/^```\s*/, '').replace(/\s*```$/, '');
-        }
-        
-        console.log('Cleaned JSON content:', jsonContent);
-        const extractedData = JSON.parse(jsonContent);
+        const receiptData = JSON.parse(extractedText)
         
         return new Response(
           JSON.stringify({
-            extracted_data: extractedData,
-            raw_response: content
+            extracted_data: receiptData,
+            raw_response: extractedText
           }),
           { 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -130,11 +121,10 @@ Be precise with numbers. Use GBP as default currency unless clearly stated other
         )
       } catch (parseError) {
         console.error('Failed to parse OpenAI response:', parseError)
-        console.error('Raw OpenAI response:', content)
         return new Response(
           JSON.stringify({ 
             error: 'Failed to parse receipt data',
-            raw_response: content 
+            raw_response: extractedText 
           }),
           { 
             status: 500,
