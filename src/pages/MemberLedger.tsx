@@ -1,13 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Receipt, Calendar } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+import { useMemberLedger } from '@/hooks/useMemberData';
+import { format } from 'date-fns';
 
 const MemberLedger: React.FC = () => {
   const { isCMSMode } = useCMSMode();
+  const { ledgerEntries, loading, error } = useMemberLedger();
 
   return (
     <div className="min-h-screen bg-background">
@@ -34,7 +37,43 @@ const MemberLedger: React.FC = () => {
             <CardTitle>Transaction History</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground">Your transaction history will appear here.</p>
+            {loading ? (
+              <p className="text-muted-foreground">Loading your transaction history...</p>
+            ) : error ? (
+              <p className="text-red-500">Error loading transactions: {error}</p>
+            ) : ledgerEntries.length === 0 ? (
+              <p className="text-muted-foreground">No transactions yet. Upload a receipt to get started!</p>
+            ) : (
+              <div className="space-y-4">
+                {ledgerEntries.map((entry) => (
+                  <div key={entry.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      {entry.activity_type === 'receipt' ? (
+                        <Receipt className="h-5 w-5 text-primary" />
+                      ) : (
+                        <Calendar className="h-5 w-5 text-primary" />
+                      )}
+                      <div>
+                        <p className="font-medium">{entry.description}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {format(new Date(entry.activity_date), 'dd MMM yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                    {entry.amount && (
+                      <div className="text-right">
+                        <p className="font-semibold">
+                          £{entry.amount.toFixed(2)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {entry.currency || 'GBP'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
