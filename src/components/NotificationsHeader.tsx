@@ -1,11 +1,19 @@
 import CroftLogo from './CroftLogo';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Home } from 'lucide-react';
 
 const NotificationsHeader = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-charcoal">
       <div className="container mx-auto px-4 md:px-6 py-4 md:py-6 flex justify-center items-center relative">
+        <div className="absolute left-4 md:left-6">
+          <Button asChild variant="ghost" size="sm" className="p-2">
+            <Link to="/" className="flex items-center justify-center">
+              <Home className="h-5 w-5 md:h-6 md:w-6" />
+            </Link>
+          </Button>
+        </div>
         <Link to="/" className="flex items-center space-x-3 md:space-x-6 hover:opacity-80 transition-opacity">
           <CroftLogo 
             size="lg"
