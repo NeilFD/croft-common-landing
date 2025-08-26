@@ -1561,6 +1561,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_subscriber_for_unsubscribe: {
+        Args: { token_input: string }
+        Returns: {
+          email: string
+          subscriber_id: string
+        }[]
+      }
       get_user_email: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -1571,6 +1578,10 @@ export type Database = {
       }
       verify_event_management_token: {
         Args: { event_id_input: string; token_input: string }
+        Returns: boolean
+      }
+      verify_unsubscribe_token: {
+        Args: { token_input: string }
         Returns: boolean
       }
     }
