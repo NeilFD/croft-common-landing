@@ -779,6 +779,69 @@ export type Database = {
         }
         Relationships: []
       }
+      member_moments: {
+        Row: {
+          ai_confidence_score: number | null
+          ai_flags: Json | null
+          date_taken: string
+          id: string
+          image_url: string
+          is_featured: boolean
+          is_visible: boolean
+          latitude: number | null
+          location_confirmed: boolean
+          longitude: number | null
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_reason: string | null
+          moderation_status: string
+          tagline: string
+          updated_at: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_confidence_score?: number | null
+          ai_flags?: Json | null
+          date_taken: string
+          id?: string
+          image_url: string
+          is_featured?: boolean
+          is_visible?: boolean
+          latitude?: number | null
+          location_confirmed?: boolean
+          longitude?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string
+          tagline: string
+          updated_at?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_confidence_score?: number | null
+          ai_flags?: Json | null
+          date_taken?: string
+          id?: string
+          image_url?: string
+          is_featured?: boolean
+          is_visible?: boolean
+          latitude?: number | null
+          location_confirmed?: boolean
+          longitude?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string
+          tagline?: string
+          updated_at?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       member_profiles_extended: {
         Row: {
           auto_insights: Json | null
@@ -1792,6 +1855,10 @@ export type Database = {
       }
       is_email_domain_allowed: {
         Args: { email: string }
+        Returns: boolean
+      }
+      is_within_venue_bounds: {
+        Args: { lat: number; lng: number }
         Returns: boolean
       }
       verify_event_management_token: {
