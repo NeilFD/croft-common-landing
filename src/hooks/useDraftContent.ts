@@ -9,19 +9,33 @@ export const useDraftContent = (page: string) => {
     try {
       setLoading(true);
       console.log('🎯 useDraftContent: Fetching draft count for page:', page);
-      const { count, error } = await supabase
+      
+      // Count page-specific drafts
+      const { count: pageCount, error: pageError } = await supabase
         .from('cms_content')
         .select('*', { count: 'exact', head: true })
         .eq('page', page)
         .eq('published', false);
 
-      if (error) {
-        console.warn('Failed to fetch draft count:', error);
+      if (pageError) {
+        console.warn('Failed to fetch page draft count:', pageError);
         return;
       }
 
-      console.log('🎯 useDraftContent: Found', count, 'drafts for page:', page);
-      setDraftCount(count || 0);
+      // Count global content drafts (affects all pages)
+      const { count: globalCount, error: globalError } = await supabase
+        .from('cms_global_content')
+        .select('*', { count: 'exact', head: true })
+        .eq('published', false);
+
+      if (globalError) {
+        console.warn('Failed to fetch global draft count:', globalError);
+        return;
+      }
+
+      const totalDrafts = (pageCount || 0) + (globalCount || 0);
+      console.log('🎯 useDraftContent: Found', pageCount, 'page drafts and', globalCount, 'global drafts for page:', page);
+      setDraftCount(totalDrafts);
     } catch (err) {
       console.warn('Error fetching draft count:', err);
     } finally {
@@ -32,15 +46,28 @@ export const useDraftContent = (page: string) => {
   const publishDrafts = async () => {
     try {
       console.log('🎯 useDraftContent: Publishing drafts for page:', page);
-      const { error } = await supabase
+      
+      // Publish page-specific drafts
+      const { error: pageError } = await supabase
         .from('cms_content')
         .update({ published: true })
         .eq('page', page)
         .eq('published', false);
 
-      if (error) {
-        console.error('🎯 useDraftContent: Publish error:', error);
-        throw error;
+      if (pageError) {
+        console.error('🎯 useDraftContent: Page publish error:', pageError);
+        throw pageError;
+      }
+
+      // Publish global content drafts
+      const { error: globalError } = await supabase
+        .from('cms_global_content')
+        .update({ published: true })
+        .eq('published', false);
+
+      if (globalError) {
+        console.error('🎯 useDraftContent: Global publish error:', globalError);
+        throw globalError;
       }
 
       console.log('🎯 useDraftContent: Publish successful for page:', page);
