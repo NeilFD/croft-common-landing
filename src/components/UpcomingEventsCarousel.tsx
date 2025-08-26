@@ -77,121 +77,83 @@ const UpcomingEventsCarousel: React.FC = () => {
 
   return (
     <div className="relative w-full">
-      {upcomingEvents.length <= 2 ? (
-        // Simple list for 1-2 events
-        <div className="space-y-3">
+      <Carousel className="w-full">
+        <CarouselContent className="-ml-2">
           {upcomingEvents.map((event) => {
             const categoryStyles = getCategoryStyles(event.category);
             
             return (
-              <div key={event.id} className="flex gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer group">
-                <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg">
-                  {event.imageUrl ? (
-                    <OptimizedImage
-                      src={event.imageUrl}
-                      alt={event.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${categoryStyles.bg} flex items-center justify-center`}>
-                      <Calendar className={`h-4 w-4 ${categoryStyles.text}`} />
+              <CarouselItem key={event.id} className="pl-2 basis-full md:basis-1/2 lg:basis-1/3">
+                <Card className="border-border bg-card hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
+                  <CardContent className="p-0 h-full flex flex-col">
+                    {/* Event Image */}
+                    <div className="relative h-32 overflow-hidden rounded-t-lg">
+                      {event.imageUrl ? (
+                        <OptimizedImage
+                          src={event.imageUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      ) : (
+                        <div className={`w-full h-full bg-gradient-to-br ${categoryStyles.bg} flex items-center justify-center`}>
+                          <Calendar className={`h-8 w-8 ${categoryStyles.text}`} />
+                        </div>
+                      )}
+                      
+                      {/* Category Badge */}
+                      <Badge className={`absolute top-2 right-2 ${categoryStyles.bg} ${categoryStyles.text} ${categoryStyles.border} border capitalize text-xs`}>
+                        {event.category}
+                      </Badge>
                     </div>
-                  )}
-                </div>
-                
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-sm text-foreground mb-1 truncate group-hover:text-primary transition-colors">
-                    {event.title}
-                  </h4>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                    <Clock className="h-3 w-3 flex-shrink-0" />
-                    <span>{getDateLabel(event.date)}</span>
-                    {event.time && <span>• {event.time}</span>}
-                  </div>
-                  {event.location && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <MapPin className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">{event.location}</span>
-                    </div>
-                  )}
-                </div>
-                
-                <Badge className={`${categoryStyles.bg} ${categoryStyles.text} ${categoryStyles.border} border capitalize text-xs self-start`}>
-                  {event.category}
-                </Badge>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        // Carousel for 3+ events
-        <Carousel className="w-full">
-          <CarouselContent className="-ml-2">
-            {upcomingEvents.map((event) => {
-              const categoryStyles = getCategoryStyles(event.category);
-              
-              return (
-                <CarouselItem key={event.id} className="pl-2 basis-4/5 md:basis-1/2">
-                  <Card className="border-border bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
-                    <CardContent className="p-0 h-full flex flex-col">
-                      {/* Event Image */}
-                      <div className="relative h-24 overflow-hidden rounded-t-lg">
-                        {event.imageUrl ? (
-                          <OptimizedImage
-                            src={event.imageUrl}
-                            alt={event.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className={`w-full h-full bg-gradient-to-br ${categoryStyles.bg} flex items-center justify-center`}>
-                            <Calendar className={`h-6 w-6 ${categoryStyles.text}`} />
+
+                    {/* Event Content */}
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h4 className="font-semibold text-sm leading-tight text-card-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors">
+                        {event.title}
+                      </h4>
+                      
+                      <div className="space-y-2 mb-4 flex-1">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3 flex-shrink-0" />
+                          <span className="font-medium">{getDateLabel(event.date)}</span>
+                          {event.time && <span>• {event.time}</span>}
+                        </div>
+                        
+                        {event.location && (
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span className="truncate">{event.location}</span>
                           </div>
                         )}
                         
-                        {/* Category Badge */}
-                        <Badge className={`absolute top-1 right-1 ${categoryStyles.bg} ${categoryStyles.text} ${categoryStyles.border} border capitalize text-xs`}>
-                          {event.category}
-                        </Badge>
+                        {event.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed mt-2">
+                            {event.description}
+                          </p>
+                        )}
                       </div>
 
-                      {/* Event Content */}
-                      <div className="p-3 flex-1 flex flex-col">
-                        <h4 className="font-semibold text-sm leading-tight text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
-                          {event.title}
-                        </h4>
-                        
-                        <div className="space-y-1 mb-3 flex-1">
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3 flex-shrink-0" />
-                            <span className="font-medium">{getDateLabel(event.date)}</span>
-                            {event.time && <span>• {event.time}</span>}
-                          </div>
-                          
-                          {event.location && (
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <MapPin className="h-3 w-3 flex-shrink-0" />
-                              <span className="truncate">{event.location}</span>
-                            </div>
-                          )}
+                      {/* Event Footer */}
+                      <div className="flex items-center justify-between pt-2 border-t border-border">
+                        <div className="text-xs text-muted-foreground truncate">
+                          By {event.organizer}
                         </div>
-
-                        {/* Event Footer */}
                         {event.price && (
-                          <div className="text-sm font-semibold text-primary text-center">
+                          <div className="text-sm font-semibold text-primary">
                             £{event.price}
                           </div>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-3 h-7 w-7" />
-          <CarouselNext className="hidden md:flex -right-3 h-7 w-7" />
-        </Carousel>
-      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </CarouselItem>
+            );
+          })}
+        </CarouselContent>
+        <CarouselPrevious className="hidden md:flex -left-4 h-8 w-8" />
+        <CarouselNext className="hidden md:flex -right-4 h-8 w-8" />
+      </Carousel>
     </div>
   );
 };
