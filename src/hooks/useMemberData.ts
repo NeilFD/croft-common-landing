@@ -11,6 +11,14 @@ interface LedgerEntry {
   amount?: number;
   currency?: string;
   metadata?: any;
+  related_id?: string;
+  receipt?: {
+    id: string;
+    receipt_image_url: string;
+    venue_location?: string;
+    items: any[];
+    total_amount: number;
+  };
 }
 
 interface MemberStats {
@@ -22,7 +30,7 @@ interface MemberStats {
   lastCheckInDate?: string;
 }
 
-export const useMemberLedger = () => {
+export const useMemberLedger = (dateRange?: { start?: Date; end?: Date }) => {
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,14 +44,48 @@ export const useMemberLedger = () => {
 
     const fetchLedgerEntries = async () => {
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('member_ledger')
           .select('*')
-          .eq('user_id', user.id)
-          .order('activity_timestamp', { ascending: false });
+          .eq('user_id', user.id);
 
-        if (error) throw error;
-        setLedgerEntries(data || []);
+        // Apply date range filter if provided
+        if (dateRange?.start) {
+          query = query.gte('activity_date', dateRange.start.toISOString().split('T')[0]);
+        }
+        if (dateRange?.end) {
+          query = query.lte('activity_date', dateRange.end.toISOString().split('T')[0]);
+        }
+
+        const { data: ledgerData, error: ledgerError } = await query.order('activity_timestamp', { ascending: false });
+
+        if (ledgerError) throw ledgerError;
+
+        // Fetch receipt data for receipt entries
+        const receiptIds = ledgerData
+          ?.filter(entry => entry.activity_type === 'receipt' && entry.related_id)
+          .map(entry => entry.related_id)
+          .filter(Boolean) || [];
+
+        let receiptsMap = new Map();
+        if (receiptIds.length > 0) {
+          const { data: receiptsData } = await supabase
+            .from('member_receipts')
+            .select('id, receipt_image_url, venue_location, items, total_amount')
+            .in('id', receiptIds);
+
+          receiptsData?.forEach(receipt => {
+            receiptsMap.set(receipt.id, receipt);
+          });
+        }
+
+        // Combine ledger entries with receipt data
+        const enhancedEntries = ledgerData?.map(entry => ({
+          ...entry,
+          receipt: entry.related_id ? receiptsMap.get(entry.related_id) : undefined
+        })) || [];
+
+        setLedgerEntries(enhancedEntries);
       } catch (err) {
         console.error('Error fetching ledger entries:', err);
         setError(err instanceof Error ? err.message : 'Unknown error');
@@ -53,7 +95,7 @@ export const useMemberLedger = () => {
     };
 
     fetchLedgerEntries();
-  }, [user?.id]);
+  }, [user?.id, dateRange?.start, dateRange?.end]);
 
   return { ledgerEntries, loading, error };
 };
