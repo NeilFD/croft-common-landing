@@ -76,27 +76,66 @@ const UpcomingEventsCarousel: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Upcoming Events</h3>
-        <Button variant="ghost" size="sm" className="text-muted-foreground">
-          View All
-          <ExternalLink className="h-3 w-3 ml-1" />
-        </Button>
-      </div>
-      
-      <div className="relative">
+    <div className="relative w-full">
+      {upcomingEvents.length <= 2 ? (
+        // Simple list for 1-2 events
+        <div className="space-y-3">
+          {upcomingEvents.map((event) => {
+            const categoryStyles = getCategoryStyles(event.category);
+            
+            return (
+              <div key={event.id} className="flex gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer group">
+                <div className="relative w-16 h-16 flex-shrink-0 overflow-hidden rounded-lg">
+                  {event.imageUrl ? (
+                    <OptimizedImage
+                      src={event.imageUrl}
+                      alt={event.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${categoryStyles.bg} flex items-center justify-center`}>
+                      <Calendar className={`h-4 w-4 ${categoryStyles.text}`} />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-sm text-foreground mb-1 truncate group-hover:text-primary transition-colors">
+                    {event.title}
+                  </h4>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                    <Clock className="h-3 w-3 flex-shrink-0" />
+                    <span>{getDateLabel(event.date)}</span>
+                    {event.time && <span>• {event.time}</span>}
+                  </div>
+                  {event.location && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 flex-shrink-0" />
+                      <span className="truncate">{event.location}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <Badge className={`${categoryStyles.bg} ${categoryStyles.text} ${categoryStyles.border} border capitalize text-xs self-start`}>
+                  {event.category}
+                </Badge>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        // Carousel for 3+ events
         <Carousel className="w-full">
-          <CarouselContent className="-ml-2 md:-ml-4">
+          <CarouselContent className="-ml-2">
             {upcomingEvents.map((event) => {
               const categoryStyles = getCategoryStyles(event.category);
               
               return (
-                <CarouselItem key={event.id} className="pl-2 md:pl-4 basis-4/5 md:basis-1/2 lg:basis-1/3">
+                <CarouselItem key={event.id} className="pl-2 basis-4/5 md:basis-1/2">
                   <Card className="border-border bg-white hover:shadow-lg transition-all duration-300 cursor-pointer group h-full">
                     <CardContent className="p-0 h-full flex flex-col">
                       {/* Event Image */}
-                      <div className="relative h-32 overflow-hidden rounded-t-lg">
+                      <div className="relative h-24 overflow-hidden rounded-t-lg">
                         {event.imageUrl ? (
                           <OptimizedImage
                             src={event.imageUrl}
@@ -104,28 +143,24 @@ const UpcomingEventsCarousel: React.FC = () => {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
-                          <div 
-                            className={`w-full h-full bg-gradient-to-br ${categoryStyles.bg} flex items-center justify-center`}
-                          >
-                            <Calendar className={`h-8 w-8 ${categoryStyles.text}`} />
+                          <div className={`w-full h-full bg-gradient-to-br ${categoryStyles.bg} flex items-center justify-center`}>
+                            <Calendar className={`h-6 w-6 ${categoryStyles.text}`} />
                           </div>
                         )}
                         
                         {/* Category Badge */}
-                        <Badge 
-                          className={`absolute top-2 right-2 ${categoryStyles.bg} ${categoryStyles.text} ${categoryStyles.border} border capitalize text-xs`}
-                        >
+                        <Badge className={`absolute top-1 right-1 ${categoryStyles.bg} ${categoryStyles.text} ${categoryStyles.border} border capitalize text-xs`}>
                           {event.category}
                         </Badge>
                       </div>
 
                       {/* Event Content */}
-                      <div className="p-4 flex-1 flex flex-col">
+                      <div className="p-3 flex-1 flex flex-col">
                         <h4 className="font-semibold text-sm leading-tight text-foreground mb-2 line-clamp-2 group-hover:text-primary transition-colors">
                           {event.title}
                         </h4>
                         
-                        <div className="space-y-2 mb-4 flex-1">
+                        <div className="space-y-1 mb-3 flex-1">
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Clock className="h-3 w-3 flex-shrink-0" />
                             <span className="font-medium">{getDateLabel(event.date)}</span>
@@ -138,25 +173,14 @@ const UpcomingEventsCarousel: React.FC = () => {
                               <span className="truncate">{event.location}</span>
                             </div>
                           )}
-                          
-                          {event.description && (
-                            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                              {event.description}
-                            </p>
-                          )}
                         </div>
 
                         {/* Event Footer */}
-                        <div className="flex items-center justify-between pt-2 border-t border-border">
-                          <div className="text-xs text-muted-foreground">
-                            By {event.organizer}
+                        {event.price && (
+                          <div className="text-sm font-semibold text-primary text-center">
+                            £{event.price}
                           </div>
-                          {event.price && (
-                            <div className="text-sm font-semibold text-primary">
-                              £{event.price}
-                            </div>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -164,10 +188,10 @@ const UpcomingEventsCarousel: React.FC = () => {
               );
             })}
           </CarouselContent>
-          <CarouselPrevious className="hidden md:flex" />
-          <CarouselNext className="hidden md:flex" />
+          <CarouselPrevious className="hidden md:flex -left-3 h-7 w-7" />
+          <CarouselNext className="hidden md:flex -right-3 h-7 w-7" />
         </Carousel>
-      </div>
+      )}
     </div>
   );
 };
