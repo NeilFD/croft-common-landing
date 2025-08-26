@@ -132,8 +132,8 @@ const MemberHome: React.FC = () => {
       {/* Scrollable Content */}
       <div className="relative z-10">
         <Navigation />
-      
-      <div className="container mx-auto px-4 py-8">
+        
+        <div className="container mx-auto px-4 py-8 mt-8">
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link 
@@ -223,7 +223,7 @@ const MemberHome: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-foreground">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              <CardContent className="space-y-4">
                 <Button 
                   onClick={() => setShowReceiptModal(true)}
                   className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
