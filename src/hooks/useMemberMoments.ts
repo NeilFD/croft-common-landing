@@ -46,11 +46,12 @@ export const useMemberMoments = () => {
   const fetchMoments = async () => {
     setLoading(true);
     try {
+      console.log('Fetching moments...');
       const { data, error } = await supabase
         .from('member_moments')
         .select(`
           *,
-          profiles!member_moments_user_id_fkey (
+          profiles (
             first_name,
             last_name
           )
@@ -59,13 +60,18 @@ export const useMemberMoments = () => {
         .eq('is_visible', true)
         .order('uploaded_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
+      
+      console.log('Fetched moments:', data);
       setMoments(data as MemberMoment[] || []);
     } catch (error) {
       console.error('Error fetching moments:', error);
       toast({
         title: "Error",
-        description: "Failed to load moments",
+        description: "Failed to load moments. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -131,80 +137,102 @@ export const useMemberMoments = () => {
     file: File,
     tagline: string,
     dateTaken: string,
-    locationConfirmed: boolean
+    locationConfirmed: boolean = false
   ) => {
     setUploading(true);
     try {
+      console.log('Starting upload process...');
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        console.error('User not authenticated');
+        throw new Error('User not authenticated');
+      }
+      console.log('User authenticated:', user.id);
 
-      // Extract GPS from image first
+      // Try to get location data (optional)
       const imageGPS = await extractGPSFromImage(file);
-      
-      // Try to get current location if image doesn't have GPS
       const currentLocation = imageGPS || await getCurrentLocation();
 
-      // Check location if available
+      // Location checking is now advisory only
       let locationWarning = '';
       if (currentLocation) {
         const withinBounds = isLocationWithinVenue(currentLocation);
         if (!withinBounds && !locationConfirmed) {
+          // Ask for confirmation but don't block upload
           throw new Error('LOCATION_CONFIRMATION_NEEDED');
         }
         if (!withinBounds) {
           locationWarning = 'Location appears to be outside venue bounds';
         }
-      } else if (!locationConfirmed) {
-        throw new Error('LOCATION_CONFIRMATION_NEEDED');
       }
 
       // Upload image to storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
+      console.log('Uploading to storage:', fileName);
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('moments')
         .upload(fileName, file);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError);
+        throw uploadError;
+      }
+      console.log('Upload successful:', uploadData);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('moments')
         .getPublicUrl(fileName);
+      console.log('Public URL:', publicUrl);
 
       // Insert moment record
-      const { data: momentData, error: insertError } = await supabase
+      console.log('Inserting moment record...');
+      const momentData = {
+        user_id: user.id,
+        image_url: publicUrl,
+        tagline,
+        date_taken: dateTaken,
+        latitude: currentLocation?.latitude || null,
+        longitude: currentLocation?.longitude || null,
+        location_confirmed: locationConfirmed,
+        moderation_status: 'pending'
+      };
+      console.log('Moment data:', momentData);
+      
+      const { data: insertedMoment, error: insertError } = await supabase
         .from('member_moments')
-        .insert([{
-          user_id: user.id,
-          image_url: publicUrl,
-          tagline,
-          date_taken: dateTaken,
-          latitude: currentLocation?.latitude,
-          longitude: currentLocation?.longitude,
-          location_confirmed: locationConfirmed,
-          moderation_status: 'pending'
-        }])
+        .insert([momentData])
         .select()
         .single();
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Database insert error:', insertError);
+        throw insertError;
+      }
+      console.log('Moment inserted:', insertedMoment);
 
       // Trigger AI moderation
-      const { error: moderationError } = await supabase.functions.invoke(
-        'moderate-moment-image',
-        {
-          body: {
-            imageUrl: publicUrl,
-            momentId: momentData.id
+      try {
+        console.log('Triggering AI moderation...');
+        const { error: moderationError } = await supabase.functions.invoke(
+          'moderate-moment-image',
+          {
+            body: {
+              imageUrl: publicUrl,
+              momentId: insertedMoment.id
+            }
           }
-        }
-      );
+        );
 
-      if (moderationError) {
-        console.error('Moderation error:', moderationError);
-        // Don't fail the upload if moderation fails
+        if (moderationError) {
+          console.error('Moderation error:', moderationError);
+          // Don't fail the upload if moderation fails
+        }
+      } catch (moderationError) {
+        console.error('Moderation failed:', moderationError);
+        // Continue anyway - moderation failure shouldn't block upload
       }
 
       toast({

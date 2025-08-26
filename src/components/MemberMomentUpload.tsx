@@ -233,11 +233,10 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                 <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
                 <div className="space-y-2">
                   <p className="font-medium text-orange-800">
-                    Location Confirmation Needed
+                    Location Verification
                   </p>
                   <p className="text-sm text-orange-700">
-                    We couldn't automatically verify that this photo was taken at Croft Common. 
-                    Please confirm this photo was taken at our venue.
+                    We couldn't automatically verify your location. If this photo was taken at Croft Common, please confirm below to continue.
                   </p>
                 </div>
               </div>
@@ -250,7 +249,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                 />
                 <Label htmlFor="location-confirm" className="text-sm flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  This photo was taken at Croft Common
+                  Yes, this photo was taken at Croft Common
                 </Label>
               </div>
 
@@ -260,12 +259,13 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                   disabled={!locationConfirmed || uploading}
                   className="w-full"
                 >
-                  {uploading ? 'Uploading...' : 'Confirm & Share'}
+                  {uploading ? 'Uploading...' : 'Confirm & Upload'}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={handleBack}
                   className="w-full"
+                  disabled={uploading}
                 >
                   Go Back
                 </Button>
