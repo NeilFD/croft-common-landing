@@ -269,36 +269,44 @@ const MemberHome: React.FC = () => {
               <CardHeader>
                 <CardTitle className="text-foreground">Quick Actions</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-10">
-                <Button 
-                  onClick={() => setShowReceiptModal(true)}
-                  className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
-                  variant="default"
-                >
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Receipt
-                </Button>
-                
-                <Link to="/common-room/member/ledger">
-                  <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                    <FileText className="h-4 w-4 mr-2" />
-                    View Ledger
+              <CardContent className="space-y-4">
+                <div className="mb-6">
+                  <Button 
+                    onClick={() => setShowReceiptModal(true)}
+                    className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+                    variant="default"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Receipt
                   </Button>
-                </Link>
+                </div>
                 
-                <Link to="/common-room/member/profile">
-                  <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                    <User className="h-4 w-4 mr-2" />
-                    My Profile
-                  </Button>
-                </Link>
+                <div className="mb-6">
+                  <Link to="/common-room/member/ledger">
+                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
+                      <FileText className="h-4 w-4 mr-2" />
+                      View Ledger
+                    </Button>
+                  </Link>
+                </div>
+                
+                <div className="mb-6">
+                  <Link to="/common-room/member/profile">
+                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
+                      <User className="h-4 w-4 mr-2" />
+                      My Profile
+                    </Button>
+                  </Link>
+                </div>
 
-                <Link to="/common-room/member/dashboard">
-                  <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                    <Trophy className="h-4 w-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
+                <div>
+                  <Link to="/common-room/member/dashboard">
+                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
+                      <Trophy className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>
