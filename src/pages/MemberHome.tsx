@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, Gamepad2, CalendarDays } from 'lucide-react';
+import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, Gamepad2, CalendarDays, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import Navigation from '@/components/Navigation';
@@ -286,6 +286,15 @@ const MemberHome: React.FC = () => {
                     <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
                       <FileText className="h-4 w-4 mr-2" />
                       View Ledger
+                    </Button>
+                  </Link>
+                </div>
+                
+                <div className="mb-6">
+                  <Link to="/common-room/member/moments">
+                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Moments
                     </Button>
                   </Link>
                 </div>

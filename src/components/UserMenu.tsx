@@ -35,7 +35,7 @@ export const UserMenu = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="hidden md:flex items-center gap-1">
+      <div className="flex items-center gap-1">
         {memberMenuItems.map((item) => (
           <Button
             key={item.path}
@@ -45,7 +45,7 @@ export const UserMenu = () => {
             className="gap-2 text-xs"
           >
             <item.icon className="h-3 w-3" />
-            {item.label}
+            <span className="hidden sm:inline">{item.label}</span>
           </Button>
         ))}
       </div>
