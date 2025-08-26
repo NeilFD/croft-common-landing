@@ -25,6 +25,7 @@ import MemberHome from "./pages/MemberHome";
 import MemberLedger from "./pages/MemberLedger";
 import MemberProfile from "./pages/MemberProfile";
 import MemberDashboard from "./pages/MemberDashboard";
+import MemberMoments from "./pages/MemberMoments";
 import CheckIn from "./pages/CheckIn";
 import Calendar from "./pages/Calendar";
 import ManageEvent from "./pages/ManageEvent";
@@ -152,6 +153,7 @@ const App = () => (
              <Route path="/common-room/member/ledger" element={<MemberLedger />} />
              <Route path="/common-room/member/profile" element={<MemberProfile />} />
              <Route path="/common-room/member/dashboard" element={<MemberDashboard />} />
+             <Route path="/common-room/member/moments" element={<MemberMoments />} />
              <Route path="/check-in" element={<CheckIn />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/manage-event/:token" element={<ManageEvent />} />
