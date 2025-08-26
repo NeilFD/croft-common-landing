@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+// @ts-ignore - exif-js doesn't have TypeScript definitions
+import EXIF from 'exif-js';
 
 export interface MemberMoment {
   id: string;
@@ -91,48 +93,108 @@ export const useMemberMoments = () => {
     }
   };
 
+  // Helper function to convert DMS (degrees, minutes, seconds) to decimal degrees
+  const convertDMSToDD = (dms: number[], ref: string): number => {
+    let dd = dms[0] + dms[1]/60 + dms[2]/3600;
+    if (ref === "S" || ref === "W") dd = dd * -1;
+    return dd;
+  };
+
+  // Helper function to extract GPS data from image using EXIF
   const extractGPSFromImage = (file: File): Promise<LocationData | null> => {
     return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          // This is a simplified GPS extraction
-          // In reality, you'd use a library like exif-js or piexifjs
-          // For now, we'll just return null and rely on browser geolocation
-          resolve(null);
-        } catch (error) {
-          console.log('No GPS data found in image');
-          resolve(null);
-        }
-      };
-      reader.readAsArrayBuffer(file);
+      try {
+        EXIF.getData(file as any, function() {
+          const lat = EXIF.getTag(this, "GPSLatitude");
+          const lon = EXIF.getTag(this, "GPSLongitude");
+          const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+          const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+          
+          console.log('EXIF GPS data:', { lat, lon, latRef, lonRef });
+          
+          if (lat && lon && latRef && lonRef) {
+            // Convert DMS (degrees, minutes, seconds) to decimal degrees
+            const latitude = convertDMSToDD(lat, latRef);
+            const longitude = convertDMSToDD(lon, lonRef);
+            
+            console.log('Converted GPS coordinates:', { latitude, longitude });
+            resolve({ latitude, longitude });
+          } else {
+            console.log('No GPS data found in image EXIF');
+            resolve(null);
+          }
+        });
+      } catch (error) {
+        console.error('Error extracting GPS from image:', error);
+        resolve(null);
+      }
     });
   };
 
+  // Helper function to detect mobile device
+  const isMobileDevice = (): boolean => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // Helper function to get current location with mobile optimizations
   const getCurrentLocation = (): Promise<LocationData | null> => {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
+        console.log('Geolocation not supported by this browser');
         resolve(null);
         return;
       }
 
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.log('Geolocation error:', error);
-          resolve(null);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 300000
-        }
-      );
+      const mobile = isMobileDevice();
+      const options = {
+        enableHighAccuracy: true,
+        timeout: mobile ? 15000 : 10000, // Longer timeout for mobile
+        maximumAge: mobile ? 60000 : 300000 // Shorter cache for mobile
+      };
+
+      console.log('Requesting geolocation...', { mobile, options });
+
+      let attempts = 0;
+      const maxAttempts = 2;
+
+      const tryGetLocation = () => {
+        attempts++;
+        
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log('Geolocation success:', {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+              accuracy: position.coords.accuracy,
+              attempt: attempts
+            });
+            resolve({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            });
+          },
+          (error) => {
+            console.error(`Geolocation error (attempt ${attempts}):`, {
+              code: error.code,
+              message: error.message,
+              PERMISSION_DENIED: error.code === 1,
+              POSITION_UNAVAILABLE: error.code === 2, 
+              TIMEOUT: error.code === 3
+            });
+            
+            // Retry once if timeout or position unavailable on mobile
+            if (attempts < maxAttempts && mobile && (error.code === 2 || error.code === 3)) {
+              console.log('Retrying geolocation...');
+              setTimeout(tryGetLocation, 1000);
+            } else {
+              resolve(null);
+            }
+          },
+          options
+        );
+      };
+
+      tryGetLocation();
     });
   };
 
@@ -162,8 +224,17 @@ export const useMemberMoments = () => {
       console.log('User authenticated:', user.id);
 
       // Try to get location data (completely optional now)
+      console.log('Starting location detection...');
+      
       const imageGPS = await extractGPSFromImage(file);
-      const currentLocation = imageGPS || await getCurrentLocation();
+      console.log('Image GPS result:', imageGPS);
+      
+      let currentLocation = imageGPS;
+      if (!currentLocation) {
+        console.log('No GPS in image, trying browser geolocation...');
+        currentLocation = await getCurrentLocation();
+        console.log('Browser geolocation result:', currentLocation);
+      }
 
       // Location checking is now completely advisory - never blocks upload
       let locationWarning = '';
@@ -171,18 +242,24 @@ export const useMemberMoments = () => {
       
       if (currentLocation) {
         const withinBounds = isLocationWithinVenue(currentLocation);
+        console.log('Location check:', { currentLocation, withinBounds, locationConfirmed });
+        
         if (!withinBounds && !locationConfirmed) {
           needsLocationConfirmation = true;
+          locationWarning = `Location detected outside venue bounds (${currentLocation.latitude.toFixed(4)}, ${currentLocation.longitude.toFixed(4)})`;
         }
-        if (!withinBounds) {
-          locationWarning = 'Location appears to be outside venue bounds';
+      } else {
+        console.log('No location detected from any source');
+        // Only ask for confirmation on first attempt if no location found
+        if (!locationConfirmed) {
+          needsLocationConfirmation = true;
+          locationWarning = 'No location data found - upload will proceed without location';
         }
-      } else if (!locationConfirmed) {
-        // No location detected at all - ask for confirmation
-        needsLocationConfirmation = true;
       }
       
-      // Only ask for confirmation if we haven't already confirmed and there's a location issue
+      console.log('Location decision:', { needsLocationConfirmation, locationWarning });
+      
+      // Only ask for confirmation if we haven't already confirmed and there's a specific location issue
       if (needsLocationConfirmation) {
         throw new Error('LOCATION_CONFIRMATION_NEEDED');
       }
