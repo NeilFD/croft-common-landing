@@ -1124,6 +1124,8 @@ export type Database = {
           p256dh: string
           platform: string | null
           user_agent: string | null
+          user_email: string | null
+          user_full_name: string | null
           user_id: string | null
         }
         Insert: {
@@ -1136,6 +1138,8 @@ export type Database = {
           p256dh: string
           platform?: string | null
           user_agent?: string | null
+          user_email?: string | null
+          user_full_name?: string | null
           user_id?: string | null
         }
         Update: {
@@ -1148,6 +1152,8 @@ export type Database = {
           p256dh?: string
           platform?: string | null
           user_agent?: string | null
+          user_email?: string | null
+          user_full_name?: string | null
           user_id?: string | null
         }
         Relationships: []
