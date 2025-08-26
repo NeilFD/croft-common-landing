@@ -156,7 +156,7 @@ const MemberHome: React.FC = () => {
               <CardContent>
                 <div className="text-center mb-4">
                   <div className="text-4xl font-bold text-primary mb-1">
-                    🔥 {memberStats.streak.current_streak}
+                    {memberStats.streak.current_streak}
                   </div>
                   <div className="text-xl font-semibold text-primary">
                     {memberStats.streak.current_streak === 1 ? 'day' : 'days'}
