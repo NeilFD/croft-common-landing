@@ -148,10 +148,7 @@ const MemberHome: React.FC = () => {
           <div className="lg:col-span-2">
             <Card className="bg-gradient-to-br from-primary/10 to-primary/5 border-primary/20">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Flame className="h-6 w-6 text-orange-500" />
-                  Current Streak
-                </CardTitle>
+                <CardTitle>Current Streak</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-center mb-4">
