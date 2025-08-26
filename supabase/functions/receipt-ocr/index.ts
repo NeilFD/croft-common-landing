@@ -35,7 +35,8 @@ serve(async (req) => {
       )
     }
 
-    const { image_url, action } = await req.json()
+    const requestBody = await req.json()
+    const { image_url, action, receipt_data } = requestBody
 
     if (!image_url) {
       return new Response(
@@ -141,8 +142,6 @@ Be precise with numbers. Use GBP as default currency unless clearly stated other
     }
 
     if (action === 'save') {
-      const { receipt_data } = await req.json()
-
       if (!receipt_data) {
         return new Response(
           JSON.stringify({ error: 'receipt_data is required for save action' }),
