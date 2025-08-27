@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { usePerformanceOptimizer } from './usePerformanceOptimizer';
 
 // Generate or retrieve session ID
 const getSessionId = (): string => {
@@ -42,14 +43,16 @@ const getDeviceInfo = () => {
 export const useAnalytics = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const { isPageLoaded } = usePerformanceOptimizer();
   const sessionId = getSessionId();
   const pageStartTime = useRef<number>(Date.now());
   const lastPagePath = useRef<string>('');
   const scrollDepth = useRef<number>(0);
   const maxScrollDepth = useRef<number>(0);
 
-  // Defer session initialization
+  // Defer session initialization until page is loaded
   useEffect(() => {
+    if (!isPageLoaded) return;
     const initializeSession = () => {
       if ('requestIdleCallback' in window) {
         requestIdleCallback(async () => {
@@ -102,7 +105,7 @@ export const useAnalytics = () => {
     };
 
     initializeSession();
-  }, [sessionId, user]);
+  }, [sessionId, user, isPageLoaded]);
 
   // Track page views and navigation
   useEffect(() => {

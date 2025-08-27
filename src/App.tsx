@@ -73,24 +73,19 @@ const NotificationHandlers = () => {
   // Always handle notification deep links
   useNotificationHandler();
   
-  // Defer analytics until page is loaded
+  // Always call hooks - move conditional logic inside hooks
   const { isPageLoaded } = usePerformanceOptimizer();
   useWebVitals(); // Track performance metrics
-  
-  if (isPageLoaded) {
-    useAnalytics();
-  }
+  useAnalytics(); // Hook will handle conditional logic internally
   
   return null;
 };
 
 // Nudge handler component that runs inside NudgeNotificationProvider  
 const NudgeHandlers = () => {
-  // Defer nudge handler initialization
+  // Always call hooks - move conditional logic inside hooks  
   const { isPageLoaded } = usePerformanceOptimizer();
-  if (isPageLoaded) {
-    useNudgeNotificationHandler();
-  }
+  useNudgeNotificationHandler(); // Hook will handle conditional logic internally
   
   return null;
 };

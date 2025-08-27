@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNudgeNotification } from '@/contexts/NudgeNotificationContext';
+import { usePerformanceOptimizer } from './usePerformanceOptimizer';
 
 export const useNudgeNotificationHandler = () => {
   const { setNudgeUrl, nudgeUrl, nudgeClicked, clearNudge } = useNudgeNotification();
   const location = useLocation();
+  const { isPageLoaded } = usePerformanceOptimizer();
 
   useEffect(() => {
+    // Only initialize nudge handler after page is loaded
+    if (!isPageLoaded) return;
     console.log('🎯 NUDGE HANDLER: ================== INITIALIZING ==================');
     console.log('🎯 NUDGE HANDLER: Starting with context state:', { nudgeUrl, nudgeClicked });
     console.log('🎯 NUDGE HANDLER: Current route:', location.pathname);
@@ -414,7 +418,7 @@ export const useNudgeNotificationHandler = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
     };
-  }, [setNudgeUrl]);
+  }, [setNudgeUrl, isPageLoaded]);
 
   // Navigation tracking: clear nudge when user navigates anywhere
   const [initialPath] = useState(location.pathname);
