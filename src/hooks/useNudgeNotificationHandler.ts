@@ -355,19 +355,24 @@ export const useNudgeNotificationHandler = () => {
     window.addEventListener('message', handleWindowMessage);
     console.log('🎯 NUDGE WINDOW: ✅ Window message listener added');
 
-    // Enhanced visibility change handler - ONLY check IndexedDB for fresh service worker messages
+    // Debounced visibility change handler
+    let visibilityTimeout: NodeJS.Timeout;
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         console.log('🎯 NUDGE: 👁️ Page became visible, checking for fresh service worker messages...');
         
-        // Only check IndexedDB for fresh messages from service worker (not persistent storage)
-        initializeAndCheckIndexedDB().then(url => {
-          if (url && !nudgeUrl) {
-            console.log('🎯 NUDGE: ✓ Found fresh URL from service worker:', url);
-            setNudgeUrl(url);
-            sessionStorage.setItem('nudge_url', url);
-          }
-        });
+        // Debounce to avoid excessive checks
+        if (visibilityTimeout) clearTimeout(visibilityTimeout);
+        visibilityTimeout = setTimeout(() => {
+          // Only check IndexedDB for fresh messages from service worker (not persistent storage)
+          initializeAndCheckIndexedDB().then(url => {
+            if (url && !nudgeUrl) {
+              console.log('🎯 NUDGE: ✓ Found fresh URL from service worker:', url);
+              setNudgeUrl(url);
+              sessionStorage.setItem('nudge_url', url);
+            }
+          });
+        }, 500);
       }
     };
     

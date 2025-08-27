@@ -48,112 +48,50 @@
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 100%;
-    --accent: 350 80% 65%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 0 0% 80%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
 
-    /* Interface elements */
-    --border: 0 0% 20%;
-    --input: 0 0% 100%;
-    --ring: 350 80% 65%;
-    --muted: 0 0% 95%;
-    --muted-foreground: 0 0% 40%;
-    
-    /* Card elements */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 0%;
-    
-    /* Popover elements */
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 0%;
-
-    /* Destructive kept minimal */
-    --destructive: 0 80% 50%;
-    --destructive-foreground: 0 0% 100%;
-
-    --radius: 0;
-
-    /* Custom industrial tokens */
-    --surface: 0 0% 98%;
-    --surface-dark: 0 0% 8%;
-    --concrete: 0 0% 85%;
-    --steel: 0 0% 40%;
-    --charcoal: 0 0% 15%;
-    --void: 0 0% 5%;
-    --accent-pink: 350 80% 65%;
-    --accent-pink-subtle: 350 30% 90%;
-    --accent-pink-dark: 350 90% 40%;
-    --accent-lime: 85 80% 55%;
-    --accent-lime-subtle: 85 30% 85%;
-    --accent-lime-dark: 85 90% 35%;
-    --accent-orange: 22 100% 55%;
-    --accent-orange-subtle: 22 40% 85%;
-    --accent-orange-dark: 22 100% 40%;
-    --accent-blood-red: 0 100% 35%;
-    --accent-blood-red-subtle: 0 40% 85%;
-    --accent-blood-red-dark: 0 100% 25%;
-    --accent-vivid-purple: 261 80% 57%;
-    --accent-vivid-purple-subtle: 261 30% 85%;
-    --accent-vivid-purple-dark: 261 90% 40%;
-    
-    /* Sage green accent for common room */
-    --accent-sage-green: 120 25% 55%;
-    --accent-sage-green-subtle: 120 15% 85%;
-    --accent-sage-green-dark: 120 35% 35%;
-    --accent-sage-green-dark: 120 35% 40%;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Performance optimizations */
+    --animation-duration-fast: 0.2s;
+    --animation-duration-normal: 0.3s;
+    --animation-duration-slow: 0.5s;
+    --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -161,88 +99,266 @@
   * {
     @apply border-border;
   }
-
   body {
     @apply bg-background text-foreground;
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Performance optimizations */
+  .will-change-transform {
+    will-change: transform;
+  }
+  
+  .will-change-opacity {
+    will-change: opacity;
+  }
+  
+  /* Defer non-critical animations during load */
+  .defer-animation {
+    animation-play-state: paused;
+  }
+  
+  .resume-animation {
+    animation-play-state: running;
   }
 }
 
-/* Accent color utility classes for highlighting */
-@layer utilities {
-  .accent-pink {
-    color: hsl(var(--accent-pink));
-  }
-  
-  .accent-lime {
-    color: hsl(var(--accent-lime));
-  }
-  
-  .accent-orange {
-    color: hsl(var(--accent-orange));
-  }
-  
-  .accent-blood-red {
-    color: hsl(var(--accent-blood-red));
-  }
-  
-  .accent-vivid-purple {
-    color: hsl(var(--accent-vivid-purple));
-  }
-  
-  .accent-electric-blue {
-    color: hsl(var(--accent-electric-blue));
-  }
+/* ... keep existing CSS code for design system tokens and components ... */
 
-  /* Breathing animation for floating buttons */
-  .button-breathing::before {
-    background-color: var(--breathing-color);
-  }
-  .button-breathing-delayed::before {
-    background-color: var(--breathing-color);
-    animation-delay: 1.5s;
-  }
+/* BUTTON VARIANTS - Industrial, high contrast design */
+.btn-primary {
+  @apply bg-primary text-primary-foreground hover:bg-primary/90 transition-colors duration-200;
+}
 
-  /* Hide scrollbars */
-  .scrollbar-hide {
-    -ms-overflow-style: none;  /* Internet Explorer 10+ */
-    scrollbar-width: none;  /* Firefox */
+.btn-secondary {
+  @apply bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors duration-200;
+}
+
+.btn-accent-pink {
+  @apply bg-[hsl(var(--accent-pink))] text-white hover:bg-[hsl(var(--accent-pink-dark))] transition-colors duration-200;
+}
+
+.btn-accent-lime {
+  @apply bg-[hsl(var(--accent-lime))] text-black hover:bg-[hsl(var(--accent-lime-dark))] transition-colors duration-200;
+}
+
+.btn-accent-orange {
+  @apply bg-[hsl(var(--accent-orange))] text-white hover:bg-[hsl(var(--accent-orange-dark))] transition-colors duration-200;
+}
+
+.btn-accent-electric-blue {
+  @apply bg-[hsl(var(--accent-electric-blue))] text-white hover:bg-[hsl(var(--accent-electric-blue-dark))] transition-colors duration-200;
+}
+
+.btn-accent-blood-red {
+  @apply bg-[hsl(var(--accent-blood-red))] text-white hover:bg-[hsl(var(--accent-blood-red-dark))] transition-colors duration-200;
+}
+
+/* WATERMARK COLORS - for dynamic logo color matching */
+.watermark-pink {
+  color: hsl(var(--accent-pink));
+}
+
+.watermark-lime {
+  color: hsl(var(--accent-lime));
+}
+
+.watermark-orange {
+  color: hsl(var(--accent-orange));
+}
+
+.watermark-electric-blue {
+  color: hsl(var(--accent-electric-blue));
+}
+
+.watermark-blood-red {
+  color: hsl(var(--accent-blood-red));
+}
+
+.watermark-default {
+  color: hsl(var(--foreground));
+}
+
+/* GRADIENTS */
+.gradient-pink {
+  background: linear-gradient(135deg, hsl(var(--accent-pink)) 0%, hsl(var(--accent-pink-dark)) 100%);
+}
+
+.gradient-lime {
+  background: linear-gradient(135deg, hsl(var(--accent-lime)) 0%, hsl(var(--accent-lime-dark)) 100%);
+}
+
+.gradient-orange {
+  background: linear-gradient(135deg, hsl(var(--accent-orange)) 0%, hsl(var(--accent-orange-dark)) 100%);
+}
+
+.gradient-electric-blue {
+  background: linear-gradient(135deg, hsl(var(--accent-electric-blue)) 0%, hsl(var(--accent-electric-blue-dark)) 100%);
+}
+
+.gradient-blood-red {
+  background: linear-gradient(135deg, hsl(var(--accent-blood-red)) 0%, hsl(var(--accent-blood-red-dark)) 100%);
+}
+
+/* ACCENT STYLES - for dynamic theming */
+.accent-pink {
+  color: hsl(var(--accent-pink));
+}
+
+.bg-accent-pink {
+  background-color: hsl(var(--accent-pink));
+}
+
+.accent-lime {
+  color: hsl(var(--accent-lime));
+}
+
+.bg-accent-lime {
+  background-color: hsl(var(--accent-lime));
+}
+
+.accent-orange {
+  color: hsl(var(--accent-orange));
+}
+
+.bg-accent-orange {
+  background-color: hsl(var(--accent-orange));
+}
+
+.accent-electric-blue {
+  color: hsl(var(--accent-electric-blue));
+}
+
+.bg-accent-electric-blue {
+  background-color: hsl(var(--accent-electric-blue));
+}
+
+.accent-blood-red {
+  color: hsl(var(--accent-blood-red));
+}
+
+.bg-accent-blood-red {
+  background-color: hsl(var(--accent-blood-red));
+}
+
+/* BRUTALIST TYPOGRAPHY */
+.text-brutalist {
+  @apply font-bold tracking-tight leading-none;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+/* INDUSTRIAL BORDERS */
+.border-industrial {
+  @apply border-2 border-primary;
+}
+
+.border-accent-pink {
+  border-color: hsl(var(--accent-pink));
+}
+
+.border-accent-lime {
+  border-color: hsl(var(--accent-lime));
+}
+
+.border-accent-orange {
+  border-color: hsl(var(--accent-orange));
+}
+
+.border-accent-electric-blue {
+  border-color: hsl(var(--accent-electric-blue));
+}
+
+.border-accent-blood-red {
+  border-color: hsl(var(--accent-blood-red));
+}
+
+/* MINIMALIST SHADOWS */
+.shadow-brutal {
+  box-shadow: 4px 4px 0px hsl(var(--primary));
+}
+
+.shadow-accent-pink {
+  box-shadow: 4px 4px 0px hsl(var(--accent-pink));
+}
+
+.shadow-accent-lime {
+  box-shadow: 4px 4px 0px hsl(var(--accent-lime));
+}
+
+.shadow-accent-orange {
+  box-shadow: 4px 4px 0px hsl(var(--accent-orange));
+}
+
+.shadow-accent-electric-blue {
+  box-shadow: 4px 4px 0px hsl(var(--accent-electric-blue));
+}
+
+.shadow-accent-blood-red {
+  box-shadow: 4px 4px 0px hsl(var(--accent-blood-red));
+}
+
+/* HOVER EFFECTS */
+.hover-lift {
+  @apply transition-transform duration-200 hover:translate-y-[-2px];
+}
+
+.hover-accent-pink {
+  @apply transition-colors duration-200 hover:text-[hsl(var(--accent-pink))];
+}
+
+.hover-accent-lime {
+  @apply transition-colors duration-200 hover:text-[hsl(var(--accent-lime))];
+}
+
+.hover-accent-orange {
+  @apply transition-colors duration-200 hover:text-[hsl(var(--accent-orange))];
+}
+
+.hover-accent-electric-blue {
+  @apply transition-colors duration-200 hover:text-[hsl(var(--accent-electric-blue))];
+}
+
+.hover-accent-blood-red {
+  @apply transition-colors duration-200 hover:text-[hsl(var(--accent-blood-red))];
+}
+
+/* PWA STYLES */
+.pwa-install-prompt {
+  @apply fixed bottom-4 left-4 right-4 bg-primary text-primary-foreground p-4 rounded shadow-lg z-50;
+  @apply md:left-auto md:right-4 md:max-w-sm;
+}
+
+/* MOBILE SPECIFIC */
+@media (max-width: 768px) {
+  .mobile-only {
+    display: block;
   }
-  .scrollbar-hide::-webkit-scrollbar { 
-    display: none;  /* Safari and Chrome */
+  
+  .desktop-only {
+    display: none;
   }
 }
 
-/* Remove number input spinners for a cleaner UI */
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-/* Subtle anti-screenshot motion for dice */
-@keyframes micro-tilt {
-  0%, 100% {
-    transform: rotate(-4deg);
-    filter: drop-shadow(3px 3px 0 hsl(var(--foreground) / 0.25));
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none;
   }
-  50% {
-    transform: rotate(4deg);
-    filter: drop-shadow(-3px 3px 0 hsl(var(--foreground) / 0.25));
+  
+  .desktop-only {
+    display: block;
   }
 }
 
-@layer utilities {
-  .micro-tilt {
-    animation: micro-tilt 3s ease-in-out infinite;
-    will-change: transform, filter;
-  }
-  .micro-tilt-reverse {
-    animation: micro-tilt 3s ease-in-out infinite reverse;
-    animation-delay: -1.5s; /* 180° out of phase */
-    will-change: transform, filter;
+/* HIGH CONTRAST MODE SUPPORT */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 20%;
+    --ring: 0 0% 30%;
   }
 }

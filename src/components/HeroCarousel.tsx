@@ -9,12 +9,14 @@ import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
 import BookFloatingButton from './BookFloatingButton';
+import { usePerformanceOptimizer } from '@/hooks/usePerformanceOptimizer';
 
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
 const HeroCarousel = () => {
   const isMobile = useIsMobile();
   const { isSlowConnection } = useConnectionSpeed();
+  const { isPageLoaded } = usePerformanceOptimizer();
   
   // Fetch CMS images with fallback to static images
   const { images: heroImages, loading: imagesLoading } = useCMSImages(
@@ -23,9 +25,13 @@ const HeroCarousel = () => {
     { fallbackImages: fallbackHeroImages }
   );
   
-  // Optimize autoplay delay for mobile/slow connections
+  // Optimize autoplay delay for mobile/slow connections and page load state
   const autoplayDelay = isMobile || isSlowConnection ? 6000 : 4000;
-  const autoplay = useRef(Autoplay({ delay: autoplayDelay, stopOnInteraction: false }));
+  const autoplay = useRef(Autoplay({ 
+    delay: autoplayDelay, 
+    stopOnInteraction: false,
+    playOnInit: false // Start paused, enable after page loads
+  }));
   
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
@@ -55,33 +61,46 @@ const HeroCarousel = () => {
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
+    if (!isPageLoaded || !emblaApi || !heroImages.length) return;
+    
     const firstUrl = heroImages[0]?.src;
     let cancelled = false;
     let timeoutId: number | undefined;
-    if (autoplay.current && emblaApi) {
+    
+    if (autoplay.current) {
       try { autoplay.current.stop(); } catch {}
     }
+    
     const proceed = () => {
       if (cancelled) return;
       setIsFirstReady(true);
       try { autoplay.current?.play?.(); } catch {}
     };
+    
     if (!firstUrl) {
       proceed();
       return;
     }
+    
+    // Load critical image first, defer others
     const img = new Image();
     img.src = firstUrl;
-    // Try to decode ASAP, but also attach onload/onerror for wider support
+    
+    // Try to decode ASAP for better performance
     // @ts-ignore
     (img as any).decode?.().then(proceed).catch(proceed);
     img.onload = proceed;
     img.onerror = proceed;
-    // Safety: start anyway after 4.5s
+    
+    // Safety: start anyway after shorter timeout since page is loaded
     // @ts-ignore
-    timeoutId = setTimeout(proceed, 4500);
-    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
-  }, [emblaApi]);
+    timeoutId = setTimeout(proceed, 2000);
+    
+    return () => { 
+      cancelled = true; 
+      if (timeoutId) clearTimeout(timeoutId); 
+    };
+  }, [emblaApi, heroImages, isPageLoaded]);
 
   const currentImage = heroImages[currentSlide];
 

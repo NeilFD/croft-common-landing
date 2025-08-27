@@ -48,28 +48,56 @@ export const useAnalytics = () => {
   const scrollDepth = useRef<number>(0);
   const maxScrollDepth = useRef<number>(0);
 
-  // Initialize session
+  // Defer session initialization
   useEffect(() => {
-    const initializeSession = async () => {
-      try {
-        const deviceInfo = getDeviceInfo();
-        const referrer = document.referrer || null;
-        
-        await supabase.from('user_sessions').upsert({
-          session_id: sessionId,
-          user_id: user?.id || null,
-          started_at: new Date().toISOString(),
-          user_agent: deviceInfo.userAgent,
-          referrer,
-          device_type: deviceInfo.deviceType,
-          browser: deviceInfo.browser,
-          os: deviceInfo.os,
-          is_authenticated: !!user
-        }, {
-          onConflict: 'session_id'
+    const initializeSession = () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(async () => {
+          try {
+            const deviceInfo = getDeviceInfo();
+            const referrer = document.referrer || null;
+            
+            await supabase.from('user_sessions').upsert({
+              session_id: sessionId,
+              user_id: user?.id || null,
+              started_at: new Date().toISOString(),
+              user_agent: deviceInfo.userAgent,
+              referrer,
+              device_type: deviceInfo.deviceType,
+              browser: deviceInfo.browser,
+              os: deviceInfo.os,
+              is_authenticated: !!user
+            }, {
+              onConflict: 'session_id'
+            });
+          } catch (error) {
+            console.warn('Analytics: Session init failed:', error);
+          }
         });
-      } catch (error) {
-        console.error('Analytics: Failed to initialize session:', error);
+      } else {
+        // Fallback with timeout
+        setTimeout(async () => {
+          try {
+            const deviceInfo = getDeviceInfo();
+            const referrer = document.referrer || null;
+            
+            await supabase.from('user_sessions').upsert({
+              session_id: sessionId,
+              user_id: user?.id || null,
+              started_at: new Date().toISOString(),
+              user_agent: deviceInfo.userAgent,
+              referrer,
+              device_type: deviceInfo.deviceType,
+              browser: deviceInfo.browser,
+              os: deviceInfo.os,
+              is_authenticated: !!user
+            }, {
+              onConflict: 'session_id'
+            });
+          } catch (error) {
+            console.warn('Analytics: Session init failed:', error);
+          }
+        }, 2000);
       }
     };
 

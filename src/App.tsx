@@ -47,6 +47,8 @@ import RouteImagePreloader from '@/components/RouteImagePreloader';
 import BrandAssetPreloader from '@/components/BrandAssetPreloader';
 import ScrollToTop from '@/components/ScrollToTop';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { usePerformanceOptimizer } from '@/hooks/usePerformanceOptimizer';
+import { useWebVitals } from '@/hooks/useWebVitals';
 import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
 import { BannerNotification } from "@/components/BannerNotification";
 import { useBannerNotification } from "@/contexts/BannerNotificationContext";
@@ -68,18 +70,27 @@ const BannerOverlay = () => {
 
 // Notification handlers component that always runs
 const NotificationHandlers = () => {
-  // Handle notification deep links universally
+  // Always handle notification deep links
   useNotificationHandler();
-  // Initialize passive analytics tracking
-  useAnalytics();
+  
+  // Defer analytics until page is loaded
+  const { isPageLoaded } = usePerformanceOptimizer();
+  useWebVitals(); // Track performance metrics
+  
+  if (isPageLoaded) {
+    useAnalytics();
+  }
   
   return null;
 };
 
-// Nudge handler component that runs inside NudgeNotificationProvider
+// Nudge handler component that runs inside NudgeNotificationProvider  
 const NudgeHandlers = () => {
-  // Handle nudge notifications
-  useNudgeNotificationHandler();
+  // Defer nudge handler initialization
+  const { isPageLoaded } = usePerformanceOptimizer();
+  if (isPageLoaded) {
+    useNudgeNotificationHandler();
+  }
   
   return null;
 };
