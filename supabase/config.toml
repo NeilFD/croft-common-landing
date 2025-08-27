@@ -113,6 +113,18 @@ verify_jwt = true
 [functions.process-scheduled-notifications]
 verify_jwt = false
 
+[functions.process-receipt-streak]
+verify_jwt = false
+
+[functions.get-streak-dashboard]
+verify_jwt = true
+
+[functions.claim-streak-reward]
+verify_jwt = true
+
+[functions.calculate-weekly-streaks]
+verify_jwt = false
+
 [functions.webauthn-register-options]
 verify_jwt = false
 

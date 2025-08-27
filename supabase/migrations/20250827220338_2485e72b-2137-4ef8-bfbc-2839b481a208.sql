@@ -1,0 +1,2 @@
+-- Update the config to allow process-receipt-streak to bypass RLS
+-- This is handled in the config.toml file
