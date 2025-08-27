@@ -1,8 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { LogOut, Camera, User, ChartBar, Home } from 'lucide-react';
+import { LogOut, Camera, User, ChartBar, Home, ChevronDown } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
@@ -35,34 +42,39 @@ export const UserMenu = () => {
 
   return (
     <div className="flex items-center gap-2">
-      <div className="flex items-center gap-1">
-        {memberMenuItems.map((item) => (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <Button
-            key={item.path}
             variant="ghost"
             size="sm"
-            onClick={() => navigate(item.path)}
             className="gap-2 text-xs"
           >
-            <item.icon className="h-3 w-3" />
-            <span className="hidden sm:inline">{item.label}</span>
+            <User className="h-4 w-4" />
+            <span className="hidden sm:inline">Member</span>
+            <ChevronDown className="h-3 w-3" />
           </Button>
-        ))}
-      </div>
-      
-      <span className="text-sm text-muted-foreground hidden sm:block">
-        {user.email}
-      </span>
-      
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleSignOut}
-        className="gap-2"
-      >
-        <LogOut className="h-4 w-4" />
-        <span className="hidden sm:inline">Sign out</span>
-      </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          {memberMenuItems.map((item) => (
+            <DropdownMenuItem
+              key={item.path}
+              onClick={() => navigate(item.path)}
+              className="gap-2 cursor-pointer"
+            >
+              <item.icon className="h-4 w-4" />
+              <span>{item.label}</span>
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={handleSignOut}
+            className="gap-2 cursor-pointer"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Sign out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };
