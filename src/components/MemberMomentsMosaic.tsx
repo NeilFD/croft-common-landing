@@ -1,11 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, User, Plus, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Calendar, User, Plus, Trash2, Search, CalendarIcon } from 'lucide-react';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
 import { useAuth } from '@/hooks/useAuth';
-import { format } from 'date-fns';
+import { format, isAfter, isBefore, isSameDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 import MemberMomentUpload from './MemberMomentUpload';
 import OptimizedImage from './OptimizedImage';
 import {
@@ -25,6 +29,27 @@ const MemberMomentsMosaic: React.FC = () => {
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
+
+  // Filter moments based on search query and date range
+  const filteredMoments = useMemo(() => {
+    if (!moments) return [];
+    
+    return moments.filter((moment) => {
+      // Search filter
+      const matchesSearch = searchQuery === '' || 
+        moment.tagline.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      // Date filter
+      const momentDate = new Date(moment.date_taken);
+      const matchesDateRange = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
+                               (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
+      
+      return matchesSearch && matchesDateRange;
+    });
+  }, [moments, searchQuery, startDate, endDate]);
 
   const handleMomentClick = (moment: MemberMoment) => {
     setSelectedMoment(moment);
@@ -36,6 +61,12 @@ const MemberMomentsMosaic: React.FC = () => {
 
   const getMemberName = () => {
     return 'Member';
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setStartDate(undefined);
+    setEndDate(undefined);
   };
 
   if (loading) {
@@ -55,9 +86,9 @@ const MemberMomentsMosaic: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Members' Moments</h2>
+          <h2 className="text-2xl font-bold">Moments</h2>
           <p className="text-muted-foreground">
             Capturing memories from Croft Common
           </p>
@@ -70,17 +101,99 @@ const MemberMomentsMosaic: React.FC = () => {
         )}
       </div>
 
+      {/* Search and Filter Controls */}
+      <div className="mb-6 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search moments..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          
+          {/* Date Range Filters */}
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !startDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {startDate ? format(startDate, "MMM d, yyyy") : "Start date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={startDate}
+                  onSelect={setStartDate}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !endDate && "text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {endDate ? format(endDate, "MMM d, yyyy") : "End date"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={endDate}
+                  onSelect={setEndDate}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            
+            {(searchQuery || startDate || endDate) && (
+              <Button variant="ghost" onClick={clearFilters}>
+                Clear
+              </Button>
+            )}
+          </div>
+        </div>
+        
+        {/* Results count */}
+        <div className="text-sm text-muted-foreground">
+          {filteredMoments.length} {filteredMoments.length === 1 ? 'moment' : 'moments'} found
+        </div>
+      </div>
+
       {/* Empty State */}
-      {moments.length === 0 && !loading && (
+      {filteredMoments.length === 0 && !loading && (
         <Card className="p-8">
           <CardContent className="text-center space-y-4">
             <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
               <Calendar className="h-12 w-12 text-muted-foreground" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold">No moments yet</h3>
+              <h3 className="text-lg font-semibold">
+                {searchQuery || startDate || endDate ? 'No matching moments' : 'No moments yet'}
+              </h3>
               <p className="text-muted-foreground">
-                Be the first to share a memory from Croft Common!
+                {searchQuery || startDate || endDate 
+                  ? 'Try adjusting your search or date filters'
+                  : 'Be the first to share a memory from Croft Common!'}
               </p>
             </div>
             {user && (
@@ -93,9 +206,9 @@ const MemberMomentsMosaic: React.FC = () => {
       )}
 
       {/* Masonry Grid */}
-      {moments.length > 0 && !loading && (
+      {filteredMoments.length > 0 && !loading && (
         <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-          {moments.map((moment, index) => (
+          {filteredMoments.map((moment, index) => (
             <div
               key={moment.id}
               className="break-inside-avoid mb-4 cursor-pointer group"
