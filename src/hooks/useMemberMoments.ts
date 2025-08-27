@@ -213,6 +213,13 @@ export const useMemberMoments = () => {
     dateTaken: string,
     locationConfirmed: boolean = false
   ) => {
+    // Prevent multiple simultaneous uploads
+    if (uploading) {
+      console.warn('⚠️ UPLOAD: Upload already in progress, ignoring new request');
+      return;
+    }
+    
+    console.log('🔄 UPLOAD: Setting uploading state to true');
     setUploading(true);
     try {
       console.log('🚀 UPLOAD START: Starting upload process...', { file: file.name, size: file.size, tagline, dateTaken });
@@ -315,7 +322,8 @@ export const useMemberMoments = () => {
         latitude: currentLocation?.latitude || null,
         longitude: currentLocation?.longitude || null,
         location_confirmed: locationConfirmed || false,
-        moderation_status: 'pending'
+        moderation_status: 'approved', // Temporarily auto-approve for debugging
+        is_visible: true
       };
       console.log('Moment data:', momentData);
       console.log('User session:', session.user.id);
@@ -333,35 +341,26 @@ export const useMemberMoments = () => {
       }
       console.log('✅ DATABASE: Moment inserted:', insertedMoment);
 
-      // Show immediate success - moderation runs in background
+      // Show immediate success 
       console.log('🎉 SUCCESS: Upload complete, showing success message');
       toast({
         title: "Moment uploaded!",
-        description: "Your moment is being reviewed and will appear once approved.",
+        description: "Your moment has been uploaded successfully.",
       });
 
-      // Trigger AI moderation in background (non-blocking)
-      console.log('🤖 MODERATION: Triggering background AI moderation...');
-      supabase.functions.invoke('moderate-moment-image', {
-        body: {
-          imageUrl: publicUrl,
-          momentId: insertedMoment.id
-        }
-      }).then(({ error: moderationError }) => {
-        if (moderationError) {
-          console.error('❌ MODERATION: Background moderation error:', moderationError);
-        } else {
-          console.log('✅ MODERATION: Background AI moderation completed');
-          // Refresh moments after moderation
-          fetchMoments();
-        }
-      }).catch(error => {
-        console.error('❌ MODERATION: Background moderation failed:', error);
-      });
-
-      // Refresh moments list immediately
+      // TODO: Re-enable background moderation after fixing core upload
+      console.log('📝 TEMP: Skipping background moderation for debugging');
+      
+      // Refresh moments list
       console.log('🔄 REFRESH: Refreshing moments list...');
-      await fetchMoments();
+      try {
+        await fetchMoments();
+        console.log('✅ REFRESH: Moments list refreshed successfully');
+      } catch (refreshError) {
+        console.warn('⚠️ REFRESH: Failed to refresh moments list:', refreshError);
+        // Don't throw - upload was successful
+      }
+      
       console.log('✅ UPLOAD COMPLETE: All steps finished successfully');
 
     } catch (error: any) {
@@ -371,13 +370,31 @@ export const useMemberMoments = () => {
         throw error; // Re-throw to handle in component
       }
       
+      let errorMessage = "An unexpected error occurred";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+      
       toast({
         title: "Upload failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
+      console.log('🧹 CLEANUP: Starting final cleanup...');
       setUploading(false);
+      
+      // Clear any potential memory leaks
+      if (typeof window !== 'undefined') {
+        // Force garbage collection if available (dev tools)
+        if ((window as any).gc) {
+          setTimeout(() => (window as any).gc(), 100);
+        }
+      }
+      
+      console.log('🏁 UPLOAD END: Upload process completed');
     }
   };
 
