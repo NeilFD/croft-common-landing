@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useReceiptStreakIntegration } from '@/hooks/useReceiptStreakIntegration';
 import { Camera, Upload, Check, Loader2 } from 'lucide-react';
 
 interface ReceiptUploadModalProps {
@@ -32,6 +33,7 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
   onSuccess
 }) => {
   const { toast } = useToast();
+  const { processReceiptForStreak } = useReceiptStreakIntegration();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -139,6 +141,20 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
       });
 
       if (error) throw error;
+
+      // Process for streak system if receipt was saved successfully
+      if (data?.receipt_id) {
+        try {
+          await processReceiptForStreak(
+            data.receipt_id,
+            editedData.date,
+            editedData.total
+          );
+        } catch (streakError) {
+          console.warn('Streak processing failed, but receipt was saved:', streakError);
+          // Don't fail the entire process if streak processing fails
+        }
+      }
 
       toast({
         title: "Success",
