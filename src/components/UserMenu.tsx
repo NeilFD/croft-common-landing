@@ -54,7 +54,7 @@ export const UserMenu = () => {
             <ChevronDown className="h-3 w-3" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg z-50">
           {memberMenuItems.map((item) => (
             <DropdownMenuItem
               key={item.path}
