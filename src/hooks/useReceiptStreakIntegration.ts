@@ -8,7 +8,10 @@ export const useReceiptStreakIntegration = () => {
   const { toast } = useToast();
 
   const processReceiptForStreak = useCallback(async (receiptId: string, receiptDate: string, totalAmount: number) => {
+    console.log('processReceiptForStreak called with:', { receiptId, receiptDate, totalAmount, user });
+    
     if (!user) {
+      console.error('processReceiptForStreak: User not authenticated');
       throw new Error('User not authenticated');
     }
 

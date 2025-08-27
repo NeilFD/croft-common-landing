@@ -143,17 +143,22 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
       if (error) throw error;
 
       // Process for streak system if receipt was saved successfully
+      console.log('Receipt save response:', data);
       if (data?.receipt?.id) {
+        console.log('Attempting streak processing for receipt:', data.receipt.id);
         try {
-          await processReceiptForStreak(
+          const streakResult = await processReceiptForStreak(
             data.receipt.id,
             editedData.date,
             editedData.total
           );
+          console.log('Streak processing completed:', streakResult);
         } catch (streakError) {
           console.warn('Streak processing failed, but receipt was saved:', streakError);
           // Don't fail the entire process if streak processing fails
         }
+      } else {
+        console.error('No receipt ID returned from save operation:', data);
       }
 
       toast({
