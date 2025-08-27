@@ -19,9 +19,22 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Create supabase client with anon key for user auth
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+
+    // Create service role client for database operations
+    const supabaseService = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
       {
         auth: {
           autoRefreshToken: false,
@@ -68,8 +81,8 @@ serve(async (req: Request) => {
 
     console.log(`Receipt week: ${receiptWeekStart} to ${receiptWeekEnd}`);
 
-    // Get or create streak_week record for this week
-    let { data: streakWeek } = await supabase
+    // Get or create streak_week record for this week using service role
+    let { data: streakWeek } = await supabaseService
       .from('streak_weeks')
       .select('*')
       .eq('user_id', user.id)
@@ -78,7 +91,7 @@ serve(async (req: Request) => {
 
     if (!streakWeek) {
       // Create new streak week
-      const { data: newStreakWeek, error: insertError } = await supabase
+      const { data: newStreakWeek, error: insertError } = await supabaseService
         .from('streak_weeks')
         .insert({
           user_id: user.id,
@@ -112,8 +125,8 @@ serve(async (req: Request) => {
         const newCount = streakWeek.receipt_count + 1;
         const isComplete = newCount >= 2;
 
-        // Update streak week
-        const { error: updateError } = await supabase
+        // Update streak week using service role
+        const { error: updateError } = await supabaseService
           .from('streak_weeks')
           .update({
             receipt_count: newCount,
@@ -134,16 +147,16 @@ serve(async (req: Request) => {
 
         // If week is now complete, check for 4-week set completion
         if (isComplete) {
-          await checkAndUpdateStreakSets(supabase, user.id, receiptWeekStart);
+          await checkAndUpdateStreakSets(supabaseService, user.id, receiptWeekStart);
         }
       }
     }
 
     // Update member_streaks table
-    await updateMemberStreaksSummary(supabase, user.id);
+    await updateMemberStreaksSummary(supabaseService, user.id);
 
     // Check for badge opportunities
-    await checkAndAwardBadges(supabase, user.id);
+    await checkAndAwardBadges(supabaseService, user.id);
 
     return new Response(JSON.stringify({
       success: true,
