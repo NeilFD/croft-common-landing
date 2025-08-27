@@ -218,9 +218,16 @@ export const useMemberMoments = () => {
       console.log('🚀 UPLOAD START: Starting upload process...', { file: file.name, size: file.size, tagline, dateTaken });
       
       console.log('🔐 AUTH: Getting user...');
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      console.log('🔐 AUTH: User result:', { user: user?.id, error: userError });
+      
+      if (userError) {
+        console.error('❌ AUTH: User error:', userError);
+        throw new Error(`Authentication error: ${userError.message}`);
+      }
+      
       if (!user) {
-        console.error('❌ AUTH: User not authenticated');
+        console.error('❌ AUTH: User not authenticated - no user object');
         throw new Error('User not authenticated');
       }
       console.log('✅ AUTH: User authenticated:', user.id);
