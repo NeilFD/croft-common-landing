@@ -51,13 +51,7 @@ export const useMemberMoments = () => {
       console.log('Fetching moments...');
       const { data, error } = await supabase
         .from('member_moments')
-        .select(`
-          *,
-          profiles (
-            first_name,
-            last_name
-          )
-        `)
+        .select('*')
         .eq('moderation_status', 'approved')
         .eq('is_visible', true)
         .order('uploaded_at', { ascending: false });
