@@ -34,11 +34,8 @@ const MemberMomentsMosaic: React.FC = () => {
     await deleteMoment(momentId);
   };
 
-  const getMemberName = (moment: MemberMoment) => {
-    if (moment.profiles?.first_name || moment.profiles?.last_name) {
-      return `${moment.profiles.first_name || ''} ${moment.profiles.last_name || ''}`.trim();
-    }
-    return 'Anonymous Member';
+  const getMemberName = () => {
+    return 'Member';
   };
 
   if (loading) {
@@ -121,7 +118,7 @@ const MemberMomentsMosaic: React.FC = () => {
                       <div className="flex items-center justify-between text-xs">
                         <div className="flex items-center gap-1">
                           <User className="h-3 w-3" />
-                          {getMemberName(moment)}
+                          {getMemberName()}
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
@@ -203,7 +200,7 @@ const MemberMomentsMosaic: React.FC = () => {
                   <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-4 w-4" />
-                      {getMemberName(selectedMoment)}
+                      {getMemberName()}
                     </div>
                     <div className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />

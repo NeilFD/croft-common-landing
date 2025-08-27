@@ -23,7 +23,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [step, setStep] = useState<'upload' | 'details'>('upload');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadMoment, uploading } = useMemberMoments();
+  const { uploadMoment, uploading, refetchMoments } = useMemberMoments();
   const { toast } = useToast();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,8 +73,17 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       console.log('🚀 COMPONENT: Calling uploadMoment...');
       await uploadMoment(file, tagline.trim(), dateTaken);
       console.log('✅ COMPONENT: Upload successful, cleaning up...');
+      
+      // Refetch moments to show the new upload
+      refetchMoments();
+      
       handleReset();
       onClose?.();
+      
+      toast({
+        title: "Moment uploaded!",
+        description: "Your moment has been submitted for review.",
+      });
     } catch (error: any) {
       console.error('❌ COMPONENT: Upload error caught:', error);
       toast({
