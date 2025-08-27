@@ -12,6 +12,7 @@ import Footer from '@/components/Footer';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import PongHighScoresWidget from '@/components/PongHighScoresWidget';
 import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
+import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
 
 interface MemberStats {
   user: {
@@ -157,9 +158,12 @@ const MemberHome: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Streak Card - Primary */}
-          <div className="lg:col-span-2">
+        {/* Member Moments Carousel */}
+        <MemberMomentsCarousel />
+
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          {/* Streak Card - Larger */}
+          <div className="lg:col-span-3">
             <Card className="bg-white border-2 border-black hover:border-pink-500 transition-all duration-300 hover:shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -183,12 +187,9 @@ const MemberHome: React.FC = () => {
 
                 {/* Enhanced Calendar */}
                 <div className="mb-4">
-                  {/* Calendar Header */}
+                  {/* Compact Calendar - showing current week */}
                   <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold text-foreground">Check-in Calendar</h4>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-                    </span>
+                    <h4 className="text-sm font-semibold text-foreground">Recent Check-ins</h4>
                   </div>
                   
                   {/* Day Labels */}
@@ -200,53 +201,33 @@ const MemberHome: React.FC = () => {
                     ))}
                   </div>
                   
-                  {/* Calendar Grid */}
+                  {/* Compact Calendar Grid - only 2 weeks */}
                   <div className="grid grid-cols-7 gap-1">
-                    {Array.from({ length: 35 }, (_, i) => {
+                    {Array.from({ length: 14 }, (_, i) => {
                       const today = new Date();
-                      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                      const startDate = new Date(startOfMonth);
-                      const dayOfWeek = startOfMonth.getDay() === 0 ? 6 : startOfMonth.getDay() - 1; // Convert Sunday = 0 to Sunday = 6
-                      startDate.setDate(startDate.getDate() - dayOfWeek);
+                      const startDate = new Date(today);
+                      startDate.setDate(today.getDate() - 13 + i);
                       
-                      const currentDate = new Date(startDate);
-                      currentDate.setDate(currentDate.getDate() + i);
-                      
-                      const dateStr = currentDate.toISOString().split('T')[0];
+                      const dateStr = startDate.toISOString().split('T')[0];
                       const isCheckedIn = checkedInDays.has(dateStr);
-                      const isCurrentMonth = currentDate.getMonth() === today.getMonth();
-                      const isToday = currentDate.toDateString() === today.toDateString();
+                      const isToday = startDate.toDateString() === today.toDateString();
                       
                       return (
                         <div
                           key={i}
-                          className={`w-8 h-8 rounded-lg text-xs flex items-center justify-center transition-all duration-200 hover:scale-110 border ${
+                          className={`w-6 h-6 rounded text-xs flex items-center justify-center transition-all duration-200 border ${
                             isCheckedIn 
                               ? 'bg-pink-500 text-white border-pink-600' 
                               : isToday
                               ? 'bg-white text-foreground border-pink-500 border-2'
-                              : isCurrentMonth
-                              ? 'bg-white text-foreground border-black hover:border-pink-500'
-                              : 'bg-gray-100 text-gray-400 border-gray-200'
+                              : 'bg-white text-foreground border-black hover:border-pink-500'
                           }`}
-                          title={currentDate.toLocaleDateString()}
+                          title={startDate.toLocaleDateString()}
                         >
-                          {currentDate.getDate()}
+                          {startDate.getDate()}
                         </div>
                       );
                     })}
-                  </div>
-                  
-                  {/* Calendar Legend */}
-                  <div className="flex justify-center gap-4 mt-3 text-xs">
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-pink-500 rounded border"></div>
-                      <span className="text-muted-foreground">Check-in</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="w-3 h-3 bg-white border-2 border-pink-500 rounded"></div>
-                      <span className="text-muted-foreground">Today</span>
-                    </div>
                   </div>
                 </div>
 
@@ -263,11 +244,11 @@ const MemberHome: React.FC = () => {
             </Card>
           </div>
 
-          {/* Quick Actions */}
-          <div>
+          {/* Your Space */}
+          <div className="lg:col-span-2">
             <Card className="bg-white hover:shadow-lg transition-all duration-300 border-2 border-black hover:border-pink-500">
               <CardHeader>
-                <CardTitle className="text-foreground">Quick Actions</CardTitle>
+                <CardTitle className="text-foreground">Your Space</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="mb-6">
@@ -321,19 +302,19 @@ const MemberHome: React.FC = () => {
           </div>
         </div>
 
-        {/* Community Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          {/* Pong High Scores Widget */}
-          <div className="bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
-            <div className="flex items-center gap-2 mb-4">
-              <Gamepad2 className="h-5 w-5 text-foreground" />
-              <h3 className="text-lg font-semibold text-foreground">Pong Champions</h3>
+        {/* Community Widgets - Asymmetric Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+          {/* Pong High Scores Widget - Smaller */}
+          <div className="lg:col-span-1 bg-white rounded-2xl p-4 border-2 border-black hover:border-pink-500 transition-all duration-300">
+            <div className="flex items-center gap-2 mb-3">
+              <Gamepad2 className="h-4 w-4 text-foreground" />
+              <h3 className="text-base font-semibold text-foreground">Pong Champions</h3>
             </div>
             <PongHighScoresWidget />
           </div>
 
-          {/* Upcoming Events */}
-          <div className="bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
+          {/* Upcoming Events - Larger */}
+          <div className="lg:col-span-2 bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
             <div className="flex items-center gap-2 mb-4">
               <CalendarDays className="h-5 w-5 text-foreground" />
               <h3 className="text-lg font-semibold text-foreground">Upcoming Events</h3>
