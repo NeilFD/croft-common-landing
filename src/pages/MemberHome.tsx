@@ -15,7 +15,6 @@ import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
 import PongGame from '@/components/PongGame';
 import TraditionalStreakCalendar from '@/components/TraditionalStreakCalendar';
-import StreakRewardsDashboard from '@/components/StreakRewardsDashboard';
 
 interface MemberStats {
   user: {
@@ -203,7 +202,6 @@ const MemberHome: React.FC = () => {
 
           {/* Right Column - Community and Stats */}
           <div className="space-y-6">
-            <StreakRewardsDashboard />
             
             {/* Community Widgets */}
             <div className="space-y-4">

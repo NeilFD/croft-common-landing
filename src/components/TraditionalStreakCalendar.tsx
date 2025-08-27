@@ -1,12 +1,256 @@
 import React, { useState } from 'react';
-import { Calendar as CalendarIcon, CheckCircle, Target, Dot } from 'lucide-react';
+import { Calendar as CalendarIcon, CheckCircle, Target, Dot, Gift, Trophy, Star, Clock, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { useStreakDashboard } from '@/hooks/useStreakDashboard';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+
+// Component to render the streak reward sections
+const StreakRewardsSections: React.FC<{ dashboardData: any }> = ({ dashboardData }) => {
+  const [claiming, setClaiming] = useState(false);
+  const { toast } = useToast();
+  const { claimReward, refetch } = useStreakDashboard();
+  
+  const { rewards, statistics } = dashboardData;
+  const hasActiveRewards = rewards.active_rewards.length > 0;
+
+  const handleClaimReward = async () => {
+    if (!rewards.active_rewards.length) return;
+
+    try {
+      setClaiming(true);
+      const result = await claimReward();
+      
+      toast({
+        title: "🎉 Reward Claimed!",
+        description: `You've claimed your ${result.claimed_reward.discount_percentage}% discount! Your streak has been reset.`,
+      });
+
+      await refetch();
+    } catch (error) {
+      console.error('Error claiming reward:', error);
+      toast({
+        title: "Error",
+        description: "Failed to claim reward. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+  const getDaysUntilExpiry = (expiryDate: string) => {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffTime = expiry.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Available Rewards Section */}
+      <div className="border border-border rounded-lg p-4 bg-background">
+        <h3 className="flex items-center gap-2 font-semibold mb-3">
+          <Gift className="h-4 w-4" />
+          Available Rewards
+        </h3>
+        {hasActiveRewards ? (
+          <div className="space-y-3">
+            <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+                {rewards.available_discount}%
+              </div>
+              <div className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+                Total Discount Available
+              </div>
+              <div className="text-xs text-yellow-700 dark:text-yellow-300 mb-3">
+                Up to 4 people dining in The Kitchens
+              </div>
+              
+              <Button 
+                onClick={handleClaimReward}
+                disabled={claiming}
+                size="sm"
+                className="bg-yellow-500 hover:bg-yellow-600 text-white"
+              >
+                {claiming ? (
+                  <>
+                    <Clock className="h-3 w-3 mr-2 animate-spin" />
+                    Claiming...
+                  </>
+                ) : (
+                  <>
+                    <Gift className="h-3 w-3 mr-2" />
+                    Claim {rewards.available_discount}% Discount
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription className="text-xs">
+                Claiming your reward will reset your streak progress.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              <h4 className="font-medium text-xs text-muted-foreground">Earned Rewards</h4>
+              {rewards.active_rewards.map((reward: any) => (
+                <div key={reward.id} className="flex items-center justify-between p-2 bg-muted/50 rounded text-xs">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">
+                      {reward.tier}
+                    </div>
+                    <div>
+                      <div className="font-medium">{reward.discount_percentage}% Discount</div>
+                      <div className="text-xs text-muted-foreground">
+                        Earned {formatDate(reward.earned_date)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <Badge variant="secondary" className="text-xs">
+                      Set #{reward.tier}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-4">
+            <Gift className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-xs text-muted-foreground mb-2">
+              Complete your first 4-week streak to earn your first 25% discount!
+            </p>
+            {rewards.next_reward_at && (
+              <Badge variant="outline" className="text-xs">
+                Next reward: {rewards.next_reward_at}
+              </Badge>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Reward History & Progress */}
+      <div className="border border-border rounded-lg p-4 bg-background">
+        <h3 className="flex items-center gap-2 font-semibold mb-3">
+          <Trophy className="h-4 w-4" />
+          Reward History & Progress
+        </h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="text-center p-2 bg-muted/50 rounded-lg">
+            <div className="text-lg font-bold text-primary mb-1">
+              {statistics.total_rewards_earned}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Rewards Earned
+            </div>
+          </div>
+          
+          <div className="text-center p-2 bg-muted/50 rounded-lg">
+            <div className="text-lg font-bold text-primary mb-1">
+              {statistics.total_rewards_claimed}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Rewards Claimed
+            </div>
+          </div>
+          
+          <div className="text-center p-2 bg-muted/50 rounded-lg">
+            <div className="text-lg font-bold text-primary mb-1">
+              {statistics.total_sets_completed}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              4-Week Sets
+            </div>
+          </div>
+          
+          <div className="text-center p-2 bg-muted/50 rounded-lg">
+            <div className="text-lg font-bold text-primary mb-1">
+              {statistics.total_weeks_completed}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Weeks Completed
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* How Rewards Work */}
+      <div className="border border-border rounded-lg p-4 bg-background">
+        <h3 className="flex items-center gap-2 font-semibold mb-3">
+          <Star className="h-4 w-4" />
+          How Streak Rewards Work
+        </h3>
+        <div className="space-y-3 text-xs">
+          <div className="flex items-start gap-2">
+            <div className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+              1
+            </div>
+            <div>
+              <div className="font-medium">Complete 4-Week Sets</div>
+              <div className="text-muted-foreground">
+                Get 2+ receipts per week for 4 consecutive weeks
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2">
+            <div className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+              2
+            </div>
+            <div>
+              <div className="font-medium">Accumulative Discounts</div>
+              <div className="text-muted-foreground">
+                1st set = 25%, 2nd set = 50%, 3rd set = 75%, 4th set = 100%
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2">
+            <div className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+              3
+            </div>
+            <div>
+              <div className="font-medium">Claim & Reset</div>
+              <div className="text-muted-foreground">
+                Use your discount anytime, but claiming resets progress
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-2">
+            <div className="bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
+              4
+            </div>
+            <div>
+              <div className="font-medium">Grace Weeks & Makeup</div>
+              <div className="text-muted-foreground">
+                Earn grace weeks every 16 weeks, or make up missed weeks with 3 receipts
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const TraditionalStreakCalendar: React.FC = () => {
   const { dashboardData, loading } = useStreakDashboard();
@@ -177,6 +421,9 @@ const TraditionalStreakCalendar: React.FC = () => {
                   </div>
                 </div>
               )}
+              
+              {/* Reward Sections moved from StreakRewardsDashboard */}
+              <StreakRewardsSections dashboardData={dashboardData} />
             </CollapsibleContent>
           </Collapsible>
         </CardContent>
