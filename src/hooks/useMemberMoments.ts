@@ -49,14 +49,15 @@ export const useMemberMoments = () => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase
+      // First get moments
+      const { data: momentsData, error: momentsError } = await supabase
         .from('member_moments')
         .select('*')
         .eq('moderation_status', 'approved')
         .eq('is_visible', true)
         .order('uploaded_at', { ascending: false });
 
-      if (error) {
+      if (momentsError) {
         toast({
           title: "Error",
           description: "Failed to load moments. Please try again.",
@@ -65,7 +66,32 @@ export const useMemberMoments = () => {
         return;
       }
 
-      setMoments(data || []);
+      // Get unique user IDs from moments
+      const userIds = [...new Set(momentsData?.map(moment => moment.user_id) || [])];
+      
+      // Get profiles for those users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, first_name, last_name')
+        .in('user_id', userIds);
+
+      if (profilesError) {
+        console.warn('Failed to load profiles:', profilesError);
+      }
+
+      // Create a map of user_id to profile
+      const profilesMap = new Map();
+      profilesData?.forEach(profile => {
+        profilesMap.set(profile.user_id, profile);
+      });
+
+      // Combine moments with profiles
+      const momentsWithProfiles = momentsData?.map(moment => ({
+        ...moment,
+        profiles: profilesMap.get(moment.user_id) || null
+      })) || [];
+
+      setMoments(momentsWithProfiles);
     } catch (error) {
       toast({
         title: "Error",
