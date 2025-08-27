@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const MemberMomentsMosaic: React.FC = () => {
-  const { moments, loading, deleteMoment } = useMemberMoments();
+  const { moments, loading, deleteMoment, refetchMoments } = useMemberMoments();
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
@@ -63,10 +63,15 @@ const MemberMomentsMosaic: React.FC = () => {
           </p>
         </div>
         {user && (
-          <Button onClick={() => setShowUpload(true)} className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            Share Moment
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowUpload(true)} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Share Moment
+            </Button>
+            <Button onClick={refetchMoments} variant="outline" size="sm">
+              Refresh
+            </Button>
+          </div>
         )}
       </div>
 

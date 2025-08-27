@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 // @ts-ignore - exif-js doesn't have TypeScript definitions
@@ -45,10 +45,10 @@ export const useMemberMoments = () => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
-  const fetchMoments = async () => {
+  const fetchMoments = useCallback(async () => {
     setLoading(true);
     try {
-      console.log('Fetching moments...');
+      console.log('🔍 Fetching moments...');
       const { data, error } = await supabase
         .from('member_moments')
         .select('*')
@@ -57,7 +57,7 @@ export const useMemberMoments = () => {
         .order('uploaded_at', { ascending: false });
 
       if (error) {
-        console.error('Database error:', error);
+        console.error('❌ Database error:', error);
         // Only show error toast for actual errors, not empty results
         if (error.code !== 'PGRST116') {
           toast({
@@ -68,24 +68,25 @@ export const useMemberMoments = () => {
         }
         return;
       }
-      
-      console.log('Fetched moments:', data);
-      setMoments(data as MemberMoment[] || []);
+
+      console.log('✅ Moments fetched:', data);
+      setMoments(data || []);
     } catch (error) {
-      console.error('Error fetching moments:', error);
-      // Only show error for actual failures, not empty results
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (!errorMessage.includes('No rows found')) {
-        toast({
-          title: "Error", 
-          description: "Failed to load moments. Please try again.",
-          variant: "destructive"
-        });
-      }
+      console.error('💥 Fetch error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load moments. Please try again.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const refetchMoments = useCallback(() => {
+    console.log('🔄 Refetching moments...');
+    fetchMoments();
+  }, [fetchMoments]);
 
   // Helper function to convert DMS (degrees, minutes, seconds) to decimal degrees
   const convertDMSToDD = (dms: number[], ref: string): number => {
@@ -478,7 +479,7 @@ export const useMemberMoments = () => {
 
   useEffect(() => {
     fetchMoments();
-  }, []);
+  }, [fetchMoments]);
 
   return {
     moments,
@@ -486,6 +487,6 @@ export const useMemberMoments = () => {
     uploading,
     uploadMoment,
     deleteMoment,
-    refetchMoments: fetchMoments
+    refetchMoments,
   };
 };
