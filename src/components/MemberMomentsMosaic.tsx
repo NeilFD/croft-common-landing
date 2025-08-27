@@ -39,7 +39,6 @@ const MemberMomentsMosaic: React.FC = () => {
   };
 
   if (loading) {
-    console.log('🔄 Component is loading...');
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
         {Array.from({ length: 8 }, (_, i) => (
@@ -53,7 +52,7 @@ const MemberMomentsMosaic: React.FC = () => {
     );
   }
 
-  console.log('🎨 Component rendering with moments:', moments, 'Count:', moments.length);
+  
 
   return (
     <div className="space-y-6">
@@ -66,15 +65,10 @@ const MemberMomentsMosaic: React.FC = () => {
           </p>
         </div>
         {user && (
-          <div className="flex gap-2">
-            <Button onClick={() => setShowUpload(true)} className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Share Moment
-            </Button>
-            <Button onClick={refetchMoments} variant="outline" size="sm">
-              Refresh
-            </Button>
-          </div>
+          <Button onClick={() => setShowUpload(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Share Moment
+          </Button>
         )}
       </div>
 
@@ -205,8 +199,6 @@ const MemberMomentsMosaic: React.FC = () => {
                 src={selectedMoment.image_url}
                 alt={selectedMoment.tagline}
                 className="w-full h-auto max-h-[60vh] object-contain"
-                onLoad={() => console.log('🖼️ Modal image loaded')}
-                onError={(e) => console.error('❌ Modal image failed to load:', e)}
               />
               <div className="p-6 space-y-4">
                 <div>
