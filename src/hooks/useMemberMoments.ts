@@ -237,9 +237,9 @@ export const useMemberMoments = () => {
     try {
       console.log('🚀 UPLOAD START: Starting upload process...', { file: file.name, size: file.size, tagline, dateTaken });
       
-      console.log('🔐 AUTH: Getting user...');
+      console.log('🔐 AUTH: Getting initial user...');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('🔐 AUTH: User result:', { user: user?.id, error: userError });
+      console.log('🔐 AUTH: Initial user result:', { user: user?.id, error: userError });
       
       if (userError) {
         console.error('❌ AUTH: User error:', userError);
@@ -250,6 +250,21 @@ export const useMemberMoments = () => {
         console.error('❌ AUTH: User not authenticated - no user object');
         throw new Error('User not authenticated');
       }
+      
+      // Get initial session
+      const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+      console.log('🔐 AUTH: Initial session check:', { 
+        hasSession: !!initialSession, 
+        sessionUserId: initialSession?.user?.id,
+        userIdMatch: initialSession?.user?.id === user.id,
+        error: sessionError 
+      });
+      
+      if (sessionError || !initialSession) {
+        console.error('❌ AUTH: No valid session:', sessionError);
+        throw new Error('Authentication session required');
+      }
+      
       console.log('✅ AUTH: User authenticated:', user.id);
 
       // Simplified location detection - make it completely non-blocking
@@ -310,9 +325,16 @@ export const useMemberMoments = () => {
 
       console.log('📍 LOCATION: Final location data:', finalLocationData);
 
-      // Upload image to storage
+      // Upload image to storage with auth verification
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+      
+      console.log('📤 STORAGE: Pre-upload auth check...');
+      const { data: { session: preUploadSession } } = await supabase.auth.getSession();
+      console.log('📤 STORAGE: Pre-upload session:', { 
+        hasSession: !!preUploadSession,
+        userId: preUploadSession?.user?.id 
+      });
       
       console.log('📤 STORAGE: Uploading to storage:', fileName);
       console.time('storage-upload');
@@ -323,7 +345,7 @@ export const useMemberMoments = () => {
 
       if (uploadError) {
         console.error('❌ STORAGE: Upload error:', uploadError);
-        throw uploadError;
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
       }
       console.log('✅ STORAGE: Upload successful:', uploadData);
 
@@ -333,24 +355,37 @@ export const useMemberMoments = () => {
         .getPublicUrl(fileName);
       console.log('🔗 STORAGE: Public URL:', publicUrl);
 
-      // Insert moment record with better session handling
-      console.log('💾 DATABASE: Inserting moment record...');
+      // Insert moment record with comprehensive auth verification
+      console.log('💾 DATABASE: Starting database insert...');
       console.time('database-insert');
       
-      // Double-check authentication before database operations
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        console.error('❌ DATABASE: No valid session found:', sessionError);
-        throw new Error('Authentication required to upload moments');
+      // Fresh session check right before database operation
+      const { data: { session: dbSession }, error: dbSessionError } = await supabase.auth.getSession();
+      console.log('💾 DATABASE: Final session check:', { 
+        hasSession: !!dbSession, 
+        sessionUserId: dbSession?.user?.id,
+        originalUserId: user.id,
+        userIdMatch: dbSession?.user?.id === user.id,
+        sessionError: dbSessionError,
+        accessToken: dbSession?.access_token ? 'present' : 'missing',
+        expiresAt: dbSession?.expires_at
+      });
+      
+      if (dbSessionError || !dbSession || !dbSession.user) {
+        console.error('❌ DATABASE: Invalid session for database operation:', dbSessionError);
+        throw new Error('Authentication session invalid for database operation. Please refresh and try again.');
       }
       
-      if (session.user.id !== user.id) {
-        console.error('❌ DATABASE: Session user mismatch:', { sessionUserId: session.user.id, userUserId: user.id });
-        throw new Error('User session mismatch');
+      if (dbSession.user.id !== user.id) {
+        console.error('❌ DATABASE: User ID mismatch:', { 
+          sessionUserId: dbSession.user.id, 
+          originalUserId: user.id 
+        });
+        throw new Error('User authentication mismatch. Please log out and log back in.');
       }
 
       const momentData = {
-        user_id: session.user.id, // Use session user ID to ensure RLS compliance
+        user_id: dbSession.user.id, // Use fresh session user ID
         image_url: publicUrl,
         tagline,
         date_taken: dateTaken,
@@ -361,10 +396,10 @@ export const useMemberMoments = () => {
         is_visible: true
       };
       
-      console.log('💾 DATABASE: Moment data to insert:', { 
+      console.log('💾 DATABASE: About to insert with data:', { 
         ...momentData, 
-        sessionUserId: session.user.id,
-        sessionValid: !!session 
+        sessionValid: !!dbSession,
+        sessionUserId: dbSession.user.id 
       });
       
       // Perform the insert with detailed error handling
