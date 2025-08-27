@@ -112,12 +112,14 @@ const MemberMomentsMosaic: React.FC = () => {
               onClick={() => handleMomentClick(moment)}
             >
               <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
-                <div className="relative">
-                  <OptimizedImage
-                    src={moment.image_url}
-                    alt={moment.tagline}
-                    className="w-full h-auto object-cover"
-                  />
+                  <div className="relative">
+                    <img
+                      src={moment.image_url}
+                      alt={moment.tagline}
+                      className="w-full h-auto object-cover"
+                      onLoad={() => console.log('🖼️ Image loaded:', moment.image_url)}
+                      onError={(e) => console.error('❌ Image failed to load:', moment.image_url, e)}
+                    />
                   
                   {/* Overlay on hover */}
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-4 text-white">
@@ -199,10 +201,12 @@ const MemberMomentsMosaic: React.FC = () => {
         >
           <Card className="max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <CardContent className="p-0">
-              <OptimizedImage
+              <img
                 src={selectedMoment.image_url}
                 alt={selectedMoment.tagline}
                 className="w-full h-auto max-h-[60vh] object-contain"
+                onLoad={() => console.log('🖼️ Modal image loaded')}
+                onError={(e) => console.error('❌ Modal image failed to load:', e)}
               />
               <div className="p-6 space-y-4">
                 <div>
