@@ -59,7 +59,10 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   };
 
   const handleUpload = async () => {
+    console.log('🎬 COMPONENT: handleUpload called', { file: file?.name, tagline, dateTaken, locationConfirmed });
+    
     if (!file || !tagline.trim()) {
+      console.log('❌ COMPONENT: Missing file or tagline');
       toast({
         title: "Missing information",
         description: "Please add a photo and tagline",
@@ -69,28 +72,47 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     }
 
     try {
+      console.log('🚀 COMPONENT: Calling uploadMoment...');
       await uploadMoment(file, tagline.trim(), dateTaken, locationConfirmed);
+      console.log('✅ COMPONENT: Upload successful, cleaning up...');
       handleReset();
       onClose?.();
     } catch (error: any) {
+      console.error('❌ COMPONENT: Upload error caught:', error);
       if (error.message === 'LOCATION_CONFIRMATION_NEEDED') {
+        console.log('📍 COMPONENT: Location confirmation needed');
         setShowLocationWarning(true);
         setStep('location');
+      } else {
+        console.error('❌ COMPONENT: Unexpected error:', error);
+        toast({
+          title: "Upload failed",
+          description: error.message || "An unexpected error occurred",
+          variant: "destructive"
+        });
       }
     }
   };
 
   const handleLocationConfirm = async () => {
+    console.log('📍 COMPONENT: handleLocationConfirm called');
     setLocationConfirmed(true);
     setShowLocationWarning(false);
     
     if (file && tagline.trim()) {
       try {
+        console.log('🚀 COMPONENT: Calling uploadMoment with location confirmed...');
         await uploadMoment(file, tagline.trim(), dateTaken, true);
+        console.log('✅ COMPONENT: Location confirmed upload successful');
         handleReset();
         onClose?.();
       } catch (error) {
-        console.error('Upload error:', error);
+        console.error('❌ COMPONENT: Location confirmed upload error:', error);
+        toast({
+          title: "Upload failed",
+          description: "Failed to upload moment. Please try again.",
+          variant: "destructive"
+        });
       }
     }
   };
