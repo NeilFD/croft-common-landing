@@ -215,19 +215,21 @@ export const useMemberMoments = () => {
   ) => {
     setUploading(true);
     try {
-      console.log('Starting upload process...');
+      console.log('🚀 UPLOAD START: Starting upload process...', { file: file.name, size: file.size, tagline, dateTaken });
+      
+      console.log('🔐 AUTH: Getting user...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.error('User not authenticated');
+        console.error('❌ AUTH: User not authenticated');
         throw new Error('User not authenticated');
       }
-      console.log('User authenticated:', user.id);
+      console.log('✅ AUTH: User authenticated:', user.id);
 
       // Try to get location data (completely optional now)
-      console.log('Starting location detection...');
+      console.log('📍 LOCATION: Starting location detection...');
       
       const imageGPS = await extractGPSFromImage(file);
-      console.log('Image GPS result:', imageGPS);
+      console.log('📍 LOCATION: Image GPS result:', imageGPS);
       
       let currentLocation = imageGPS;
       if (!currentLocation) {
@@ -268,29 +270,33 @@ export const useMemberMoments = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
       
-      console.log('Uploading to storage:', fileName);
+      console.log('📤 STORAGE: Uploading to storage:', fileName);
+      console.time('storage-upload');
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('moments')
         .upload(fileName, file);
+      console.timeEnd('storage-upload');
 
       if (uploadError) {
-        console.error('Storage upload error:', uploadError);
+        console.error('❌ STORAGE: Upload error:', uploadError);
         throw uploadError;
       }
-      console.log('Upload successful:', uploadData);
+      console.log('✅ STORAGE: Upload successful:', uploadData);
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('moments')
         .getPublicUrl(fileName);
-      console.log('Public URL:', publicUrl);
+      console.log('🔗 STORAGE: Public URL:', publicUrl);
 
       // Insert moment record
-      console.log('Inserting moment record...');
+      console.log('💾 DATABASE: Inserting moment record...');
+      console.time('database-insert');
       
       // Ensure user is authenticated before inserting
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.error('❌ DATABASE: No session found');
         throw new Error('User must be authenticated to upload moments');
       }
       
@@ -312,21 +318,23 @@ export const useMemberMoments = () => {
         .insert([momentData])
         .select()
         .single();
+      console.timeEnd('database-insert');
 
       if (insertError) {
-        console.error('Database insert error:', insertError);
+        console.error('❌ DATABASE: Insert error:', insertError);
         throw insertError;
       }
-      console.log('Moment inserted:', insertedMoment);
+      console.log('✅ DATABASE: Moment inserted:', insertedMoment);
 
       // Show immediate success - moderation runs in background
+      console.log('🎉 SUCCESS: Upload complete, showing success message');
       toast({
         title: "Moment uploaded!",
         description: "Your moment is being reviewed and will appear once approved.",
       });
 
       // Trigger AI moderation in background (non-blocking)
-      console.log('Triggering background AI moderation...');
+      console.log('🤖 MODERATION: Triggering background AI moderation...');
       supabase.functions.invoke('moderate-moment-image', {
         body: {
           imageUrl: publicUrl,
@@ -334,21 +342,23 @@ export const useMemberMoments = () => {
         }
       }).then(({ error: moderationError }) => {
         if (moderationError) {
-          console.error('Background moderation error:', moderationError);
+          console.error('❌ MODERATION: Background moderation error:', moderationError);
         } else {
-          console.log('Background AI moderation completed');
+          console.log('✅ MODERATION: Background AI moderation completed');
           // Refresh moments after moderation
           fetchMoments();
         }
       }).catch(error => {
-        console.error('Background moderation failed:', error);
+        console.error('❌ MODERATION: Background moderation failed:', error);
       });
 
       // Refresh moments list immediately
+      console.log('🔄 REFRESH: Refreshing moments list...');
       await fetchMoments();
+      console.log('✅ UPLOAD COMPLETE: All steps finished successfully');
 
     } catch (error: any) {
-      console.error('Upload error:', error);
+      console.error('❌ UPLOAD ERROR:', error);
       
       if (error.message === 'LOCATION_CONFIRMATION_NEEDED') {
         throw error; // Re-throw to handle in component
