@@ -78,7 +78,7 @@ const StreakCalendar: React.FC = () => {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full bg-background border border-border">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Calendar className="h-5 w-5" />
