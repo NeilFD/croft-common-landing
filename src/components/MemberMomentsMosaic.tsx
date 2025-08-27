@@ -39,6 +39,7 @@ const MemberMomentsMosaic: React.FC = () => {
   };
 
   if (loading) {
+    console.log('🔄 Component is loading...');
     return (
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4">
         {Array.from({ length: 8 }, (_, i) => (
@@ -51,6 +52,8 @@ const MemberMomentsMosaic: React.FC = () => {
       </div>
     );
   }
+
+  console.log('🎨 Component rendering with moments:', moments, 'Count:', moments.length);
 
   return (
     <div className="space-y-6">
@@ -76,7 +79,7 @@ const MemberMomentsMosaic: React.FC = () => {
       </div>
 
       {/* Empty State */}
-      {moments.length === 0 && (
+      {moments.length === 0 && !loading && (
         <Card className="p-8">
           <CardContent className="text-center space-y-4">
             <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
@@ -98,9 +101,11 @@ const MemberMomentsMosaic: React.FC = () => {
       )}
 
       {/* Masonry Grid */}
-      {moments.length > 0 && (
+      {moments.length > 0 && !loading && (
         <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-          {moments.map((moment) => (
+          {moments.map((moment, index) => {
+            console.log('🖼️ Rendering moment:', index, moment.id, moment.tagline);
+            return (
             <div
               key={moment.id}
               className="break-inside-avoid mb-4 cursor-pointer group"
@@ -176,7 +181,7 @@ const MemberMomentsMosaic: React.FC = () => {
                 </div>
               </Card>
             </div>
-          ))}
+          );})}
         </div>
       )}
 
