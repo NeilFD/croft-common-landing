@@ -34,7 +34,7 @@ export const UserMenu = () => {
   if (!user) return null;
 
   const memberMenuItems = [
-    { icon: Home, label: "My Home", path: "/common-room/main/member" },
+    { icon: Home, label: "My Home", path: "/common-room/member" },
     { icon: LayoutDashboard, label: "Dashboard", path: "/common-room/member/dashboard" },
     { icon: User, label: "Profile", path: "/common-room/member/profile" },
     { icon: ChartBar, label: "Ledger", path: "/common-room/member/ledger" },
