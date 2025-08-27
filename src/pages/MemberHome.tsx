@@ -87,18 +87,6 @@ const MemberHome: React.FC = () => {
     }
   };
 
-  const getCheckedInDays = () => {
-    if (!memberStats?.recent_checkins) return new Set();
-    return new Set(memberStats.recent_checkins.map(c => c.check_in_date));
-  };
-
-  const getDaysUntilNextPerk = () => {
-    const currentStreak = memberStats?.streak.current_streak || 0;
-    const streakMilestones = [3, 7, 14, 30];
-    const nextMilestone = streakMilestones.find(milestone => milestone > currentStreak);
-    return nextMilestone ? nextMilestone - currentStreak : 0;
-  };
-
   if (loading || loadingStats) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -120,9 +108,6 @@ const MemberHome: React.FC = () => {
       </div>
     );
   }
-
-  const checkedInDays = getCheckedInDays();
-  const daysUntilPerk = getDaysUntilNextPerk();
 
   return (
     <div className="min-h-screen bg-background relative">
@@ -166,86 +151,13 @@ const MemberHome: React.FC = () => {
         <MemberMomentsCarousel />
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Streak Card - Larger */}
-          <div className="lg:col-span-3">
-            <Card className="bg-white border-2 border-black hover:border-pink-500 transition-all duration-300 hover:shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Flame className="h-5 w-5 text-foreground" />
-                  Current Streak
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center mb-4">
-                  <div className="text-5xl font-bold text-foreground mb-1 flex items-center justify-center gap-3">
-                    <Flame className="h-12 w-12 text-orange-500 animate-pulse" />
-                    {memberStats.streak.current_streak}
-                  </div>
-                  <div className="text-xl font-semibold text-foreground">
-                    {memberStats.streak.current_streak === 1 ? 'day' : 'days'}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Longest streak: {memberStats.streak.longest_streak} days
-                  </p>
-                </div>
-
-                {/* Enhanced Calendar */}
-                <div className="mb-4">
-                  {/* Compact Calendar - showing current week */}
-                  <div className="flex justify-between items-center mb-3">
-                    <h4 className="text-sm font-semibold text-foreground">Recent Check-ins</h4>
-                  </div>
-                  
-                  {/* Day Labels */}
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((day) => (
-                      <div key={day} className="text-xs text-muted-foreground text-center font-medium p-1">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Compact Calendar Grid - only 2 weeks */}
-                  <div className="grid grid-cols-7 gap-1">
-                    {Array.from({ length: 14 }, (_, i) => {
-                      const today = new Date();
-                      const startDate = new Date(today);
-                      startDate.setDate(today.getDate() - 13 + i);
-                      
-                      const dateStr = startDate.toISOString().split('T')[0];
-                      const isCheckedIn = checkedInDays.has(dateStr);
-                      const isToday = startDate.toDateString() === today.toDateString();
-                      
-                      return (
-                        <div
-                          key={i}
-                          className={`w-6 h-6 rounded text-xs flex items-center justify-center transition-all duration-200 border ${
-                            isCheckedIn 
-                              ? 'bg-pink-500 text-white border-pink-600' 
-                              : isToday
-                              ? 'bg-white text-foreground border-pink-500 border-2'
-                              : 'bg-white text-foreground border-black hover:border-pink-500'
-                          }`}
-                          title={startDate.toLocaleDateString()}
-                        >
-                          {startDate.getDate()}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {daysUntilPerk > 0 && (
-                  <div className="bg-white rounded-lg p-4 text-center border-2 border-black">
-                    <p className="text-sm text-muted-foreground mb-1">Next perk in</p>
-                    <p className="font-bold text-foreground text-lg">
-                      {daysUntilPerk} more {daysUntilPerk === 1 ? 'day' : 'days'}
-                    </p>
-                    <p className="text-xs text-muted-foreground">to unlock special rewards</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+          {/* Weekly Streak System - Larger */}
+          <div className="lg:col-span-3 space-y-6">
+            {/* Streak Calendar */}
+            <StreakCalendar />
+            
+            {/* Streak Rewards Dashboard */}
+            <StreakRewardsDashboard />
           </div>
 
           {/* Your Space */}
