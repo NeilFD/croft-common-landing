@@ -1,7 +1,7 @@
 // Service Worker for Croft App
 // Handles caching, push notifications, and app communication
 
-const CACHE_NAME = 'croft-v2';
+const CACHE_NAME = 'croft-v3';
 const DEBUG_BYPASS = false; // Set to true to bypass all caching for troubleshooting
 
 // Install event - immediately activate
