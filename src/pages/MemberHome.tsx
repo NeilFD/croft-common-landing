@@ -14,6 +14,8 @@ import PongHighScoresWidget from '@/components/PongHighScoresWidget';
 import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
 import PongGame from '@/components/PongGame';
+import StreakCalendar from '@/components/StreakCalendar';
+import StreakRewardsDashboard from '@/components/StreakRewardsDashboard';
 
 interface MemberStats {
   user: {

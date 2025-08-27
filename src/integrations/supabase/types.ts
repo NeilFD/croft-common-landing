@@ -946,35 +946,62 @@ export type Database = {
       }
       member_streaks: {
         Row: {
+          available_grace_weeks: number | null
           created_at: string
+          current_reward_tier: number | null
+          current_set_number: number | null
+          current_set_progress: number | null
           current_streak: number
+          current_week_receipts: number | null
+          current_week_start_date: string | null
           id: string
           last_check_in_date: string | null
+          longest_consecutive_weeks: number | null
           longest_streak: number
           streak_rewards_earned: Json | null
           total_check_ins: number
+          total_sets_completed: number | null
+          total_weeks_completed: number | null
           updated_at: string
           user_id: string
         }
         Insert: {
+          available_grace_weeks?: number | null
           created_at?: string
+          current_reward_tier?: number | null
+          current_set_number?: number | null
+          current_set_progress?: number | null
           current_streak?: number
+          current_week_receipts?: number | null
+          current_week_start_date?: string | null
           id?: string
           last_check_in_date?: string | null
+          longest_consecutive_weeks?: number | null
           longest_streak?: number
           streak_rewards_earned?: Json | null
           total_check_ins?: number
+          total_sets_completed?: number | null
+          total_weeks_completed?: number | null
           updated_at?: string
           user_id: string
         }
         Update: {
+          available_grace_weeks?: number | null
           created_at?: string
+          current_reward_tier?: number | null
+          current_set_number?: number | null
+          current_set_progress?: number | null
           current_streak?: number
+          current_week_receipts?: number | null
+          current_week_start_date?: string | null
           id?: string
           last_check_in_date?: string | null
+          longest_consecutive_weeks?: number | null
           longest_streak?: number
           streak_rewards_earned?: Json | null
           total_check_ins?: number
+          total_sets_completed?: number | null
+          total_weeks_completed?: number | null
           updated_at?: string
           user_id?: string
         }
@@ -1452,6 +1479,192 @@ export type Database = {
         }
         Relationships: []
       }
+      streak_badges: {
+        Row: {
+          badge_description: string | null
+          badge_icon: string | null
+          badge_name: string
+          badge_type: string
+          created_at: string
+          earned_date: string
+          id: string
+          milestone_value: number | null
+          user_id: string
+        }
+        Insert: {
+          badge_description?: string | null
+          badge_icon?: string | null
+          badge_name: string
+          badge_type: string
+          created_at?: string
+          earned_date?: string
+          id?: string
+          milestone_value?: number | null
+          user_id: string
+        }
+        Update: {
+          badge_description?: string | null
+          badge_icon?: string | null
+          badge_name?: string
+          badge_type?: string
+          created_at?: string
+          earned_date?: string
+          id?: string
+          milestone_value?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streak_grace_periods: {
+        Row: {
+          created_at: string
+          expires_date: string
+          grace_type: string
+          id: string
+          is_used: boolean
+          used_date: string | null
+          user_id: string
+          week_start_date: string
+        }
+        Insert: {
+          created_at?: string
+          expires_date: string
+          grace_type: string
+          id?: string
+          is_used?: boolean
+          used_date?: string | null
+          user_id: string
+          week_start_date: string
+        }
+        Update: {
+          created_at?: string
+          expires_date?: string
+          grace_type?: string
+          id?: string
+          is_used?: boolean
+          used_date?: string | null
+          user_id?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
+      streak_rewards: {
+        Row: {
+          claimed_date: string | null
+          created_at: string
+          discount_percentage: number
+          earned_date: string
+          expires_date: string
+          id: string
+          is_active: boolean
+          reward_tier: number
+          stripe_session_id: string | null
+          user_id: string
+        }
+        Insert: {
+          claimed_date?: string | null
+          created_at?: string
+          discount_percentage: number
+          earned_date?: string
+          expires_date?: string
+          id?: string
+          is_active?: boolean
+          reward_tier: number
+          stripe_session_id?: string | null
+          user_id: string
+        }
+        Update: {
+          claimed_date?: string | null
+          created_at?: string
+          discount_percentage?: number
+          earned_date?: string
+          expires_date?: string
+          id?: string
+          is_active?: boolean
+          reward_tier?: number
+          stripe_session_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streak_sets: {
+        Row: {
+          completed_at: string | null
+          completed_weeks: number
+          created_at: string
+          end_week_date: string
+          id: string
+          is_complete: boolean
+          reward_tier: number | null
+          set_number: number
+          start_week_date: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_weeks?: number
+          created_at?: string
+          end_week_date: string
+          id?: string
+          is_complete?: boolean
+          reward_tier?: number | null
+          set_number: number
+          start_week_date: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_weeks?: number
+          created_at?: string
+          end_week_date?: string
+          id?: string
+          is_complete?: boolean
+          reward_tier?: number | null
+          set_number?: number
+          start_week_date?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      streak_weeks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          is_complete: boolean
+          receipt_count: number
+          updated_at: string
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_complete?: boolean
+          receipt_count?: number
+          updated_at?: string
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          is_complete?: boolean
+          receipt_count?: number
+          updated_at?: string
+          user_id?: string
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
       subscribers: {
         Row: {
           consent_given: boolean
@@ -1808,6 +2021,13 @@ export type Database = {
           title: string
         }[]
       }
+      get_current_week_boundaries: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          week_end: string
+          week_start: string
+        }[]
+      }
       get_last_thursday: {
         Args: { month_start: string }
         Returns: string
@@ -1851,6 +2071,14 @@ export type Database = {
       }
       get_user_email: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_week_end_date: {
+        Args: { input_date: string }
+        Returns: string
+      }
+      get_week_start_date: {
+        Args: { input_date: string }
         Returns: string
       }
       is_admin_user: {
