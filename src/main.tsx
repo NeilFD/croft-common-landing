@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import './pwa'
 
 
 if (
@@ -17,4 +16,10 @@ if (
   window.location.replace(target);
 } else {
   createRoot(document.getElementById("root")!).render(<App />);
+  
+  // Defer PWA initialization until after app renders
+  setTimeout(async () => {
+    const { initializePWA } = await import('./pwa/deferredPWA');
+    initializePWA();
+  }, 100);
 }

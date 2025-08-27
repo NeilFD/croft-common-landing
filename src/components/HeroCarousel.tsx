@@ -9,14 +9,14 @@ import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
 import BookFloatingButton from './BookFloatingButton';
-import { usePerformanceOptimizer } from '@/hooks/usePerformanceOptimizer';
+import { useOptimizedPerformance } from '@/hooks/useOptimizedPerformance';
 
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
 const HeroCarousel = () => {
   const isMobile = useIsMobile();
   const { isSlowConnection } = useConnectionSpeed();
-  const { isPageLoaded } = usePerformanceOptimizer();
+  const performance = useOptimizedPerformance();
   
   // Fetch CMS images with fallback to static images
   const { images: heroImages, loading: imagesLoading } = useCMSImages(
@@ -61,7 +61,7 @@ const HeroCarousel = () => {
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    if (!isPageLoaded || !emblaApi || !heroImages.length) return;
+    if (!performance.isPageLoaded || !emblaApi || !heroImages.length) return;
     
     const firstUrl = heroImages[0]?.src;
     let cancelled = false;
@@ -100,7 +100,7 @@ const HeroCarousel = () => {
       cancelled = true; 
       if (timeoutId) clearTimeout(timeoutId); 
     };
-  }, [emblaApi, heroImages, isPageLoaded]);
+  }, [emblaApi, heroImages, performance.isPageLoaded]);
 
   const currentImage = heroImages[currentSlide];
 

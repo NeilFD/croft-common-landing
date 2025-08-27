@@ -1,6 +1,6 @@
-import Navigation from './Navigation';
+import OptimizedNavigation from './OptimizedNavigation';
 import HeroCarousel from './HeroCarousel';
-import Footer from './Footer';
+import OptimizedFooter from './OptimizedFooter';
 
 interface PageLayoutProps {
   children: React.ReactNode;
@@ -9,10 +9,10 @@ interface PageLayoutProps {
 const PageLayout = ({ children }: PageLayoutProps) => {
   return (
     <div className="min-h-screen">
-      <Navigation />
+      <OptimizedNavigation />
       <HeroCarousel />
       {children}
-      <Footer />
+      <OptimizedFooter />
     </div>
   );
 };
