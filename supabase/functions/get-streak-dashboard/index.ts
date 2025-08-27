@@ -217,9 +217,9 @@ serve(async (req: Request) => {
 
 function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any) {
   const weeks = [];
-  const startDate = getDateMinusWeeks(new Date(), 12);
+  const startDate = getDateMinusWeeks(new Date(), 16);
   
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 16; i++) {
     const weekStart = getDatePlusWeeks(startDate, i);
     const weekEnd = getDatePlusWeeks(weekStart, 0, 6); // Add 6 days
     

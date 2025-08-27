@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, Gamepad2, CalendarDays, Camera } from 'lucide-react';
+import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, Gamepad2, CalendarDays, Camera, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import Navigation from '@/components/Navigation';
@@ -14,7 +14,7 @@ import PongHighScoresWidget from '@/components/PongHighScoresWidget';
 import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
 import PongGame from '@/components/PongGame';
-import StreakCalendar from '@/components/StreakCalendar';
+import TraditionalStreakCalendar from '@/components/TraditionalStreakCalendar';
 import StreakRewardsDashboard from '@/components/StreakRewardsDashboard';
 
 interface MemberStats {
@@ -150,44 +150,46 @@ const MemberHome: React.FC = () => {
         {/* Member Moments Carousel */}
         <MemberMomentsCarousel />
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Weekly Streak System - Larger */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* Streak Calendar */}
-            <StreakCalendar />
+        {/* Main Content Grid - Rebalanced */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+          {/* Left Column - Calendar and Quick Actions */}
+          <div className="space-y-6">
+            <TraditionalStreakCalendar />
             
-            {/* Streak Rewards Dashboard */}
-            <StreakRewardsDashboard />
-          </div>
-
-          {/* Your Space */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white hover:shadow-lg transition-all duration-300 border-2 border-black hover:border-pink-500">
+            {/* Quick Actions Card */}
+            <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
               <CardHeader>
-                <CardTitle className="text-foreground">Your Space</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-foreground" />
+                  Your Space
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="mb-6">
-                  <Button 
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
                     onClick={() => setShowReceiptModal(true)}
-                    className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
-                    variant="default"
+                    className="h-auto py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white border-2 border-pink-500 hover:border-pink-600 transition-all duration-200 hover:scale-105"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Receipt
                   </Button>
-                </div>
-                
-                <div className="mb-6">
+                  
                   <Link to="/common-room/member/ledger">
-                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
+                    <Button variant="outline" className="w-full h-auto py-3 px-4 hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
                       <FileText className="h-4 w-4 mr-2" />
                       View Ledger
                     </Button>
                   </Link>
                 </div>
-                
-                <div className="mb-6">
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Link to="/common-room/member/profile">
+                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
+                      <User className="h-4 w-4 mr-2" />
+                      My Profile
+                    </Button>
+                  </Link>
+                  
                   <Link to="/common-room/member/moments">
                     <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
                       <Camera className="h-4 w-4 mr-2" />
@@ -195,49 +197,43 @@ const MemberHome: React.FC = () => {
                     </Button>
                   </Link>
                 </div>
-                
-                <div className="mb-6">
-                  <Link to="/common-room/member/profile">
-                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                      <User className="h-4 w-4 mr-2" />
-                      My Profile
-                    </Button>
-                  </Link>
-                </div>
-
-                <div>
-                  <Link to="/common-room/member/dashboard">
-                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                      <Trophy className="h-4 w-4 mr-2" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                </div>
               </CardContent>
             </Card>
           </div>
+
+          {/* Right Column - Community and Stats */}
+          <div className="space-y-6">
+            <StreakRewardsDashboard />
+            
+            {/* Community Widgets */}
+            <div className="space-y-4">
+              <Card className="bg-white rounded-2xl p-4 border-2 border-black hover:border-pink-500 transition-all duration-300">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Gamepad2 className="h-4 w-4 text-foreground" />
+                    Pong Champions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <PongHighScoresWidget onPlayClick={() => setShowPongGame(true)} />
+                </CardContent>
+              </Card>
+
+              <Card className="bg-white rounded-2xl p-4 border-2 border-black hover:border-pink-500 transition-all duration-300">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <CalendarDays className="h-5 w-5 text-foreground" />
+                    Upcoming Events
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <UpcomingEventsCarousel />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
 
-        {/* Community Widgets - Asymmetric Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
-          {/* Pong High Scores Widget - Smaller */}
-          <div className="lg:col-span-1 bg-white rounded-2xl p-4 border-2 border-black hover:border-pink-500 transition-all duration-300">
-            <div className="flex items-center gap-2 mb-3">
-              <Gamepad2 className="h-4 w-4 text-foreground" />
-              <h3 className="text-base font-semibold text-foreground">Pong Champions</h3>
-            </div>
-            <PongHighScoresWidget onPlayClick={() => setShowPongGame(true)} />
-          </div>
-
-          {/* Upcoming Events - Larger */}
-          <div className="lg:col-span-2 bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
-            <div className="flex items-center gap-2 mb-4">
-              <CalendarDays className="h-5 w-5 text-foreground" />
-              <h3 className="text-lg font-semibold text-foreground">Upcoming Events</h3>
-            </div>
-            <UpcomingEventsCarousel />
-          </div>
-        </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
