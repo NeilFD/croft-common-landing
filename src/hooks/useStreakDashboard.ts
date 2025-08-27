@@ -122,6 +122,10 @@ export const useStreakDashboard = () => {
 
       if (error) throw error;
 
+      console.log('📊 STREAK DASHBOARD: Raw data received:', data);
+      console.log('📊 STREAK DASHBOARD: Calendar weeks:', data?.calendar_weeks);
+      console.log('📊 STREAK DASHBOARD: Current week:', data?.current_week);
+
       setDashboardData(data);
     } catch (err) {
       console.error('Error fetching streak dashboard:', err);

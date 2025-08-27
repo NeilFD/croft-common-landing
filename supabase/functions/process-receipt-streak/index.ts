@@ -144,10 +144,14 @@ serve(async (req: Request) => {
         streakWeek.is_complete = isComplete;
 
         console.log(`Updated week ${receiptWeekStart}: ${newCount}/2 receipts, complete: ${isComplete}`);
+        console.log(`Streak week data:`, streakWeek);
 
         // If week is now complete, check for 4-week set completion
         if (isComplete) {
+          console.log(`Week is complete! Checking streak sets...`);
           await checkAndUpdateStreakSets(supabaseService, user.id, receiptWeekStart);
+        } else {
+          console.log(`Week not yet complete, need ${2 - newCount} more receipts`);
         }
       }
     }

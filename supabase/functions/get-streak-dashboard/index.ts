@@ -128,6 +128,10 @@ serve(async (req: Request) => {
       w.week_start_date === currentWeekBoundaries?.week_start
     );
 
+    console.log('📊 Current week boundaries:', currentWeekBoundaries);
+    console.log('📊 Found current week data:', currentWeek);
+    console.log('📊 All streak weeks:', streakWeeks);
+
     // Calculate current set progress
     const currentSet = streakSets.find(s => !s.is_complete);
 
