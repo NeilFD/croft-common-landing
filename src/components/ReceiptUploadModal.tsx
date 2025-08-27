@@ -143,10 +143,10 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
       if (error) throw error;
 
       // Process for streak system if receipt was saved successfully
-      if (data?.receipt_id) {
+      if (data?.receipt?.id) {
         try {
           await processReceiptForStreak(
-            data.receipt_id,
+            data.receipt.id,
             editedData.date,
             editedData.total
           );
