@@ -53,7 +53,7 @@ export const useMemberMoments = () => {
         .from('member_moments')
         .select(`
           *,
-          profiles (
+          profiles!member_moments_user_id_fkey (
             first_name,
             last_name
           )
