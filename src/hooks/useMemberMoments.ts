@@ -333,19 +333,24 @@ export const useMemberMoments = () => {
         .getPublicUrl(fileName);
       console.log('🔗 STORAGE: Public URL:', publicUrl);
 
-      // Insert moment record
+      // Insert moment record with better session handling
       console.log('💾 DATABASE: Inserting moment record...');
       console.time('database-insert');
       
-      // Ensure user is authenticated before inserting
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        console.error('❌ DATABASE: No session found');
-        throw new Error('User must be authenticated to upload moments');
+      // Double-check authentication before database operations
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('❌ DATABASE: No valid session found:', sessionError);
+        throw new Error('Authentication required to upload moments');
       }
       
+      if (session.user.id !== user.id) {
+        console.error('❌ DATABASE: Session user mismatch:', { sessionUserId: session.user.id, userUserId: user.id });
+        throw new Error('User session mismatch');
+      }
+
       const momentData = {
-        user_id: user.id,
+        user_id: session.user.id, // Use session user ID to ensure RLS compliance
         image_url: publicUrl,
         tagline,
         date_taken: dateTaken,
@@ -355,21 +360,42 @@ export const useMemberMoments = () => {
         moderation_status: 'approved', // Temporarily auto-approve for debugging
         is_visible: true
       };
-      console.log('Moment data:', momentData);
-      console.log('User session:', session.user.id);
       
+      console.log('💾 DATABASE: Moment data to insert:', { 
+        ...momentData, 
+        sessionUserId: session.user.id,
+        sessionValid: !!session 
+      });
+      
+      // Perform the insert with detailed error handling
       const { data: insertedMoment, error: insertError } = await supabase
         .from('member_moments')
         .insert([momentData])
-        .select()
+        .select('*')
         .single();
+      
       console.timeEnd('database-insert');
 
       if (insertError) {
-        console.error('❌ DATABASE: Insert error:', insertError);
-        throw insertError;
+        console.error('❌ DATABASE: Insert error details:', {
+          error: insertError,
+          code: insertError.code,
+          message: insertError.message,
+          details: insertError.details,
+          hint: insertError.hint,
+          momentData,
+          currentAuth: await supabase.auth.getUser()
+        });
+        
+        // Provide more specific error messages
+        if (insertError.message?.includes('row-level security policy')) {
+          throw new Error('Authentication error: Please log out and log back in, then try again.');
+        }
+        
+        throw new Error(`Database error: ${insertError.message}`);
       }
-      console.log('✅ DATABASE: Moment inserted:', insertedMoment);
+      
+      console.log('✅ DATABASE: Moment inserted successfully:', insertedMoment);
 
       // Show immediate success 
       console.log('🎉 SUCCESS: Upload complete, showing success message');
