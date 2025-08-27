@@ -152,6 +152,9 @@ serve(async (req: Request) => {
       }
     }
 
+    // Create member check-in for this receipt (receipts count as visits)
+    await createMemberCheckIn(supabaseService, user.id, receipt_date);
+
     // Update member_streaks table
     await updateMemberStreaksSummary(supabaseService, user.id);
 
@@ -323,7 +326,40 @@ async function awardStreakReward(supabase: any, userId: string, setNumber: numbe
   }
 }
 
+async function createMemberCheckIn(supabase: any, userId: string, receiptDate: string) {
+  console.log(`Creating member check-in for user ${userId} on ${receiptDate}`);
+  
+  // Check if check-in already exists for this date
+  const { data: existingCheckIn } = await supabase
+    .from('member_check_ins')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('check_in_date', receiptDate)
+    .single();
+
+  if (!existingCheckIn) {
+    const { error } = await supabase
+      .from('member_check_ins')
+      .insert({
+        user_id: userId,
+        check_in_date: receiptDate,
+        entrance_slug: 'receipt_upload',
+        streak_day: 1 // Will be calculated by trigger
+      });
+
+    if (error) {
+      console.error('Error creating member check-in:', error);
+    } else {
+      console.log(`Created member check-in for ${receiptDate}`);
+    }
+  } else {
+    console.log(`Check-in already exists for ${receiptDate}`);
+  }
+}
+
 async function updateMemberStreaksSummary(supabase: any, userId: string) {
+  console.log(`Updating member streaks summary for user ${userId}`);
+  
   // Get current stats
   const { data: weekStats } = await supabase
     .from('streak_weeks')
@@ -337,6 +373,11 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
     .eq('user_id', userId)
     .order('set_number', { ascending: false });
 
+  const { data: checkInStats } = await supabase
+    .from('member_check_ins')
+    .select('check_in_date')
+    .eq('user_id', userId);
+
   const { data: currentWeekBoundaries } = await supabase.rpc('get_current_week_boundaries');
   const currentWeek = weekStats?.find(w => w.week_start_date === currentWeekBoundaries?.week_start);
 
@@ -344,6 +385,7 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
   const totalSetsCompleted = setStats?.filter(s => s.is_complete).length || 0;
   const currentSetProgress = setStats?.[0]?.completed_weeks || 0;
   const currentWeekReceipts = currentWeek?.receipt_count || 0;
+  const totalCheckIns = checkInStats?.length || 0;
 
   // Calculate longest consecutive weeks
   let longestConsecutive = 0;
@@ -359,8 +401,10 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
     }
   }
 
+  console.log(`Summary stats - Weeks: ${totalWeeksCompleted}, Sets: ${totalSetsCompleted}, Check-ins: ${totalCheckIns}`);
+
   // Update member_streaks
-  await supabase
+  const { error } = await supabase
     .from('member_streaks')
     .upsert({
       user_id: userId,
@@ -371,9 +415,16 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
       total_sets_completed: totalSetsCompleted,
       longest_consecutive_weeks: longestConsecutive,
       total_weeks_completed: totalWeeksCompleted,
+      total_check_ins: totalCheckIns,
       current_reward_tier: await calculateRewardTier(supabase, userId),
       updated_at: new Date().toISOString()
     });
+
+  if (error) {
+    console.error('Error updating member streaks summary:', error);
+  } else {
+    console.log('Successfully updated member streaks summary');
+  }
 }
 
 async function checkAndAwardBadges(supabase: any, userId: string) {
