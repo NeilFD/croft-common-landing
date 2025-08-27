@@ -150,8 +150,24 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Parse request body once and store for use throughout function
+  let requestData: { imageUrl?: string; momentId?: string } = {};
   try {
-    const { imageUrl, momentId } = await req.json();
+    requestData = await req.json();
+  } catch (parseError) {
+    console.error('Error parsing request body:', parseError);
+    return new Response(
+      JSON.stringify({ error: 'Invalid request body' }),
+      { 
+        status: 400, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      }
+    );
+  }
+
+  const { imageUrl, momentId } = requestData;
+
+  try {
 
     if (!imageUrl || !momentId) {
       return new Response(
@@ -231,7 +247,6 @@ serve(async (req) => {
     
     // Attempt to mark the moment as needing review if we have the momentId
     try {
-      const { imageUrl, momentId } = await req.json();
       if (momentId) {
         const supabase = createClient(
           Deno.env.get('SUPABASE_URL') ?? '',
