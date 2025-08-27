@@ -402,7 +402,22 @@ export const useMemberMoments = () => {
         sessionUserId: dbSession.user.id 
       });
       
-      // Perform the insert with detailed error handling
+      // Perform the insert with a small delay to ensure session consistency
+      console.log('💾 DATABASE: Waiting 100ms for session consistency...');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // One final session check right before insert
+      const { data: { session: finalSession }, error: finalSessionError } = await supabase.auth.getSession();
+      console.log('💾 DATABASE: Final session before insert:', { 
+        hasSession: !!finalSession,
+        userId: finalSession?.user?.id,
+        error: finalSessionError
+      });
+      
+      if (finalSessionError || !finalSession?.user) {
+        throw new Error('Session lost before database insert');
+      }
+      
       const { data: insertedMoment, error: insertError } = await supabase
         .from('member_moments')
         .insert([momentData])
@@ -419,12 +434,13 @@ export const useMemberMoments = () => {
           details: insertError.details,
           hint: insertError.hint,
           momentData,
-          currentAuth: await supabase.auth.getUser()
+          currentAuth: await supabase.auth.getUser(),
+          finalSession: !!finalSession
         });
         
         // Provide more specific error messages
         if (insertError.message?.includes('row-level security policy')) {
-          throw new Error('Authentication error: Please log out and log back in, then try again.');
+          throw new Error('Authentication error: Please refresh the page and try again.');
         }
         
         throw new Error(`Database error: ${insertError.message}`);
