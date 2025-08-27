@@ -152,6 +152,21 @@ Be precise with numbers. Use GBP as default currency unless clearly stated other
         )
       }
 
+      // Validate receipt date is not in the future
+      const receiptDate = new Date(receipt_data.date);
+      const today = new Date();
+      today.setHours(23, 59, 59, 999); // End of today
+      
+      if (receiptDate > today) {
+        return new Response(
+          JSON.stringify({ error: 'Receipt date cannot be in the future' }),
+          { 
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        )
+      }
+
       // Save receipt to database (triggers will handle ledger entry)
       const { data: newReceipt, error: receiptError } = await supabase
         .from('member_receipts')

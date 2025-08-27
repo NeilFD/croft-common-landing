@@ -129,6 +129,20 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
   const saveReceipt = async () => {
     if (!editedData || !previewUrl) return;
 
+    // Validate date is not in the future
+    const receiptDate = new Date(editedData.date);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999); // End of today
+    
+    if (receiptDate > today) {
+      toast({
+        title: "Invalid Date",
+        description: "Receipt date cannot be in the future. Please select today's date or earlier.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
       setLoading(true);
 
