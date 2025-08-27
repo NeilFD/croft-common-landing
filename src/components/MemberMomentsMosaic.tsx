@@ -52,8 +52,6 @@ const MemberMomentsMosaic: React.FC = () => {
     );
   }
 
-  
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -97,48 +95,20 @@ const MemberMomentsMosaic: React.FC = () => {
       {/* Masonry Grid */}
       {moments.length > 0 && !loading && (
         <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-          {moments.map((moment, index) => {
-            console.log('🖼️ Rendering moment:', index, moment.id, moment.tagline);
-            return (
+          {moments.map((moment, index) => (
             <div
               key={moment.id}
               className="break-inside-avoid mb-4 cursor-pointer group"
               onClick={() => handleMomentClick(moment)}
             >
               <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
-                  <div className="relative">
-                    <img
-                      src={moment.image_url}
-                      alt={moment.tagline}
-                      className="w-full h-auto object-cover"
-                      onLoad={() => console.log('🖼️ Image loaded:', moment.image_url)}
-                      onError={(e) => console.error('❌ Image failed to load:', moment.image_url, e)}
-                    />
+                <div className="relative">
+                  <img
+                    src={moment.image_url}
+                    alt={moment.tagline}
+                    className="w-full h-auto object-cover"
+                  />
                   
-                  {/* Overlay on hover */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-4 text-white">
-                    <div className="space-y-2">
-                      <p className="text-sm font-medium line-clamp-2">
-                        {moment.tagline}
-                      </p>
-                      <div className="flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-1">
-                          <User className="h-3 w-3" />
-                          {getMemberName()}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {format(new Date(moment.date_taken), 'MMM dd')}
-                        </div>
-                      </div>
-                      {moment.is_featured && (
-                        <Badge variant="secondary" className="text-xs">
-                          Featured
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Delete button for own moments */}
                   {user?.id === moment.user_id && (
                     <AlertDialog>
@@ -175,9 +145,29 @@ const MemberMomentsMosaic: React.FC = () => {
                     </AlertDialog>
                   )}
                 </div>
+                
+                {/* Always visible footer */}
+                <div className="p-3 space-y-2">
+                  {moment.is_featured && (
+                    <Badge variant="secondary" className="w-fit text-xs">
+                      Featured
+                    </Badge>
+                  )}
+                  <p className="text-sm font-medium line-clamp-2">{moment.tagline}</p>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <User className="h-3 w-3" />
+                      {getMemberName()}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {format(new Date(moment.date_taken), 'MMM dd')}
+                    </div>
+                  </div>
+                </div>
               </Card>
             </div>
-          );})}
+          ))}
         </div>
       )}
 
