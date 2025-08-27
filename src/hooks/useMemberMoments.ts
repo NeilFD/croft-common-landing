@@ -392,7 +392,7 @@ export const useMemberMoments = () => {
         latitude: finalLocationData?.latitude || null,
         longitude: finalLocationData?.longitude || null,
         location_confirmed: finalLocationData?.location_confirmed || false,
-        moderation_status: 'approved', // Temporarily auto-approve for debugging
+        moderation_status: 'pending', // Set to pending for proper moderation flow
         is_visible: true
       };
       
