@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
-import { LogOut, Camera, User, ChartBar, Home, ChevronDown } from 'lucide-react';
+import { LogOut, Camera, User, ChartBar, Home, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -34,7 +34,8 @@ export const UserMenu = () => {
   if (!user) return null;
 
   const memberMenuItems = [
-    { icon: Home, label: "Dashboard", path: "/common-room/member/dashboard" },
+    { icon: Home, label: "My Home", path: "/common-room/main/member" },
+    { icon: LayoutDashboard, label: "Dashboard", path: "/common-room/member/dashboard" },
     { icon: User, label: "Profile", path: "/common-room/member/profile" },
     { icon: ChartBar, label: "Ledger", path: "/common-room/member/ledger" },
     { icon: Camera, label: "Moments", path: "/common-room/member/moments" },
