@@ -1,9 +1,14 @@
 import React from 'react';
 import { usePongHighScores } from '@/hooks/usePongHighScores';
-import { Trophy, Medal, Award, Gamepad2 } from 'lucide-react';
+import { Trophy, Medal, Award, Gamepad2, Play } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
-const PongHighScoresWidget: React.FC = () => {
+interface PongHighScoresWidgetProps {
+  onPlayClick?: () => void;
+}
+
+const PongHighScoresWidget: React.FC<PongHighScoresWidgetProps> = ({ onPlayClick }) => {
   const { highScores, loading } = usePongHighScores();
 
   if (loading) {
@@ -44,8 +49,20 @@ const PongHighScoresWidget: React.FC = () => {
   };
 
   return (
-    <div className="space-y-2">
-      {highScores.slice(0, 5).map((score, index) => (
+    <div className="space-y-3">
+      {/* Play Button */}
+      {onPlayClick && (
+        <Button
+          onClick={onPlayClick}
+          className="w-full bg-pink-500 hover:bg-pink-600 text-white border-0 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200"
+        >
+          <Play className="h-4 w-4 mr-2" />
+          Play Pong
+        </Button>
+      )}
+
+      <div className="space-y-2">
+        {highScores.slice(0, 5).map((score, index) => (
         <div
           key={score.id}
           className="flex items-center gap-3 p-2 rounded-lg hover:bg-pink-500/5 transition-colors"
@@ -62,12 +79,13 @@ const PongHighScoresWidget: React.FC = () => {
             {score.score.toLocaleString()}
           </div>
         </div>
-      ))}
-      {highScores.length === 0 && (
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Play Pong to see your name here!
-        </p>
-      )}
+        ))}
+        {highScores.length === 0 && (
+          <p className="text-xs text-muted-foreground text-center mt-2">
+            Play Pong to see your name here!
+          </p>
+        )}
+      </div>
     </div>
   );
 };

@@ -13,6 +13,7 @@ import { useCMSMode } from '@/contexts/CMSModeContext';
 import PongHighScoresWidget from '@/components/PongHighScoresWidget';
 import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
+import PongGame from '@/components/PongGame';
 
 interface MemberStats {
   user: {
@@ -51,6 +52,7 @@ const MemberHome: React.FC = () => {
   const [memberStats, setMemberStats] = useState<MemberStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [showPongGame, setShowPongGame] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -310,7 +312,7 @@ const MemberHome: React.FC = () => {
               <Gamepad2 className="h-4 w-4 text-foreground" />
               <h3 className="text-base font-semibold text-foreground">Pong Champions</h3>
             </div>
-            <PongHighScoresWidget />
+            <PongHighScoresWidget onPlayClick={() => setShowPongGame(true)} />
           </div>
 
           {/* Upcoming Events - Larger */}
@@ -384,6 +386,11 @@ const MemberHome: React.FC = () => {
           fetchMemberStats(); // Refresh stats
         }}
       />
+
+      {/* Pong Game Modal */}
+      {showPongGame && (
+        <PongGame onClose={() => setShowPongGame(false)} />
+      )}
 
         <Footer />
       </div>
