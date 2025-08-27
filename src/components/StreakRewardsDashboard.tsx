@@ -40,7 +40,7 @@ const StreakRewardsDashboard: React.FC = () => {
 
   if (loading) {
     return (
-      <Card className="w-full">
+      <Card className="w-full bg-background border border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5" />
@@ -59,7 +59,7 @@ const StreakRewardsDashboard: React.FC = () => {
 
   if (!dashboardData) {
     return (
-      <Card className="w-full">
+      <Card className="w-full bg-background border border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5" />
@@ -95,7 +95,7 @@ const StreakRewardsDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Main Reward Display */}
-      <Card className="w-full">
+      <Card className="w-full bg-background border border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Gift className="h-5 w-5" />
@@ -192,7 +192,7 @@ const StreakRewardsDashboard: React.FC = () => {
       </Card>
 
       {/* Reward Progress & Statistics */}
-      <Card className="w-full">
+      <Card className="w-full bg-background border border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5" />
@@ -241,7 +241,7 @@ const StreakRewardsDashboard: React.FC = () => {
       </Card>
 
       {/* How Rewards Work */}
-      <Card className="w-full">
+      <Card className="w-full bg-background border border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Star className="h-5 w-5" />
