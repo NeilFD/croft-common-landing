@@ -223,8 +223,7 @@ export const useMemberMoments = () => {
   const uploadMoment = async (
     file: File,
     tagline: string,
-    dateTaken: string,
-    locationConfirmed: boolean = false
+    dateTaken: string
   ) => {
     // Prevent multiple simultaneous uploads
     if (uploading) {
@@ -266,64 +265,6 @@ export const useMemberMoments = () => {
       }
       
       console.log('✅ AUTH: User authenticated:', user.id);
-
-      // Simplified location detection - make it completely non-blocking
-      console.log('📍 LOCATION: Starting simplified location detection...');
-      
-      let finalLocationData: any = null;
-      
-      try {
-        // Try EXIF first with timeout protection
-        console.log('📍 LOCATION: Attempting EXIF GPS extraction...');
-        const imageGPS = await Promise.race([
-          extractGPSFromImage(file),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
-        ]);
-        
-        if (imageGPS) {
-          console.log('📍 LOCATION: Found GPS in image:', imageGPS);
-          finalLocationData = {
-            ...imageGPS,
-            location_name: 'From image EXIF',
-            location_confirmed: false
-          };
-        } else {
-          console.log('📍 LOCATION: No GPS in image, trying browser geolocation...');
-          
-          // Try browser geolocation with timeout protection
-          const browserLocation = await Promise.race([
-            getCurrentLocation(),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 5000))
-          ]);
-          
-          if (browserLocation) {
-            console.log('📍 LOCATION: Found browser location:', browserLocation);
-            finalLocationData = {
-              ...browserLocation,
-              location_name: 'From browser',
-              location_confirmed: false
-            };
-          } else {
-            console.log('📍 LOCATION: No location found from any source');
-          }
-        }
-      } catch (locationError) {
-        console.error('📍 LOCATION: Error during location detection (non-blocking):', locationError);
-        // Continue with upload regardless of location errors
-      }
-
-      // Location checking is now completely advisory and never blocks upload
-      if (finalLocationData && !locationConfirmed) {
-        const withinBounds = isLocationWithinVenue(finalLocationData);
-        console.log('📍 LOCATION: Venue check:', { withinBounds, locationConfirmed });
-        
-        if (!withinBounds) {
-          console.log('📍 LOCATION: Outside venue bounds but continuing upload');
-          // Don't throw error, just log and continue
-        }
-      }
-
-      console.log('📍 LOCATION: Final location data:', finalLocationData);
 
       // Upload image to storage with auth verification
       const fileExt = file.name.split('.').pop();
@@ -400,10 +341,10 @@ export const useMemberMoments = () => {
         image_url: publicUrl,
         tagline,
         date_taken: dateTaken,
-        latitude: finalLocationData?.latitude || null,
-        longitude: finalLocationData?.longitude || null,
-        location_confirmed: finalLocationData?.location_confirmed || false,
-        moderation_status: 'pending', // Set to pending for proper moderation flow
+        latitude: null, // Remove location tracking
+        longitude: null, // Remove location tracking
+        location_confirmed: false, // Always false since no location tracking
+        moderation_status: 'pending', // Set to pending for automatic moderation
         is_visible: true
       };
       
@@ -466,8 +407,8 @@ export const useMemberMoments = () => {
         description: "Your moment has been uploaded successfully.",
       });
 
-      // TODO: Re-enable background moderation after fixing core upload
-      console.log('📝 TEMP: Skipping background moderation for debugging');
+      // Automatic moderation will be triggered by database trigger
+      console.log('📝 MODERATION: Database trigger will handle automatic moderation');
       
       // Refresh moments list
       console.log('🔄 REFRESH: Refreshing moments list...');

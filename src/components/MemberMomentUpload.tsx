@@ -20,9 +20,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [tagline, setTagline] = useState('');
   const [dateTaken, setDateTaken] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [locationConfirmed, setLocationConfirmed] = useState(false);
-  const [showLocationWarning, setShowLocationWarning] = useState(false);
-  const [step, setStep] = useState<'upload' | 'details' | 'location'>('upload');
+  const [step, setStep] = useState<'upload' | 'details'>('upload');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadMoment, uploading } = useMemberMoments();
@@ -59,7 +57,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   };
 
   const handleUpload = async () => {
-    console.log('🎬 COMPONENT: handleUpload called', { file: file?.name, tagline, dateTaken, locationConfirmed });
+    console.log('🎬 COMPONENT: handleUpload called', { file: file?.name, tagline, dateTaken });
     
     if (!file || !tagline.trim()) {
       console.log('❌ COMPONENT: Missing file or tagline');
@@ -73,49 +71,20 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
 
     try {
       console.log('🚀 COMPONENT: Calling uploadMoment...');
-      await uploadMoment(file, tagline.trim(), dateTaken, locationConfirmed);
+      await uploadMoment(file, tagline.trim(), dateTaken);
       console.log('✅ COMPONENT: Upload successful, cleaning up...');
       handleReset();
       onClose?.();
     } catch (error: any) {
       console.error('❌ COMPONENT: Upload error caught:', error);
-      if (error.message === 'LOCATION_CONFIRMATION_NEEDED') {
-        console.log('📍 COMPONENT: Location confirmation needed');
-        setShowLocationWarning(true);
-        setStep('location');
-      } else {
-        console.error('❌ COMPONENT: Unexpected error:', error);
-        toast({
-          title: "Upload failed",
-          description: error.message || "An unexpected error occurred",
-          variant: "destructive"
-        });
-      }
+      toast({
+        title: "Upload failed",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleLocationConfirm = async () => {
-    console.log('📍 COMPONENT: handleLocationConfirm called');
-    setLocationConfirmed(true);
-    setShowLocationWarning(false);
-    
-    if (file && tagline.trim()) {
-      try {
-        console.log('🚀 COMPONENT: Calling uploadMoment with location confirmed...');
-        await uploadMoment(file, tagline.trim(), dateTaken, true);
-        console.log('✅ COMPONENT: Location confirmed upload successful');
-        handleReset();
-        onClose?.();
-      } catch (error) {
-        console.error('❌ COMPONENT: Location confirmed upload error:', error);
-        toast({
-          title: "Upload failed",
-          description: "Failed to upload moment. Please try again.",
-          variant: "destructive"
-        });
-      }
-    }
-  };
 
   const handleReset = () => {
     setFile(null);
@@ -125,8 +94,6 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     }
     setTagline('');
     setDateTaken(format(new Date(), 'yyyy-MM-dd'));
-    setLocationConfirmed(false);
-    setShowLocationWarning(false);
     setStep('upload');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -137,9 +104,6 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     if (step === 'details') {
       setStep('upload');
       handleReset();
-    } else if (step === 'location') {
-      setStep('details');
-      setShowLocationWarning(false);
     }
   };
 
@@ -249,51 +213,6 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
             </div>
           )}
 
-          {step === 'location' && (
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 border border-orange-200 rounded-lg bg-orange-50">
-                <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5 flex-shrink-0" />
-                <div className="space-y-2">
-                  <p className="font-medium text-orange-800">
-                    Location Verification
-                  </p>
-                  <p className="text-sm text-orange-700">
-                    We couldn't automatically verify your location. If this photo was taken at Croft Common, please confirm below to continue.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="location-confirm"
-                  checked={locationConfirmed}
-                  onCheckedChange={(checked) => setLocationConfirmed(checked === true)}
-                />
-                <Label htmlFor="location-confirm" className="text-sm flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  Yes, this photo was taken at Croft Common
-                </Label>
-              </div>
-
-              <div className="space-y-2">
-                <Button
-                  onClick={handleLocationConfirm}
-                  disabled={!locationConfirmed || uploading}
-                  className="w-full"
-                >
-                  {uploading ? 'Uploading...' : 'Confirm & Upload'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleBack}
-                  className="w-full"
-                  disabled={uploading}
-                >
-                  Go Back
-                </Button>
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>
