@@ -333,9 +333,20 @@ export const useMemberMoments = () => {
       const { data: { session: preUploadSession } } = await supabase.auth.getSession();
       console.log('📤 STORAGE: Pre-upload session:', { 
         hasSession: !!preUploadSession,
-        userId: preUploadSession?.user?.id 
+        userId: preUploadSession?.user?.id,
+        fileName,
+        extractedFolderName: fileName.split('/')[0],
+        userIdMatch: preUploadSession?.user?.id === fileName.split('/')[0]
       });
       
+      // Double check auth just before upload
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      console.log('📤 STORAGE: Current user before upload:', { 
+        hasUser: !!currentUser,
+        userId: currentUser?.id,
+        sessionUserMatch: currentUser?.id === preUploadSession?.user?.id
+      });
+
       console.log('📤 STORAGE: Uploading to storage:', fileName);
       console.time('storage-upload');
       const { data: uploadData, error: uploadError } = await supabase.storage
