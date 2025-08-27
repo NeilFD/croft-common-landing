@@ -32,7 +32,7 @@ const MemberMoments: React.FC = () => {
     <div className="min-h-screen">
       {!isCMSMode && <Navigation />}
       
-      <main className="pt-20 pb-8">
+      <main className="pt-32 pb-8">
         <div className="container mx-auto px-4 max-w-7xl">
           <MemberMomentsMosaic />
         </div>
