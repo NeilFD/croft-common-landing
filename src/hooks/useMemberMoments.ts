@@ -46,26 +46,17 @@ export const useMemberMoments = () => {
   const { toast } = useToast();
 
   const fetchMoments = useCallback(async () => {
-    console.log('🔍 Starting fetchMoments...');
     setLoading(true);
     
     try {
-      console.log('🔗 Supabase client check:', !!supabase);
-      
-      const query = supabase
+      const { data, error } = await supabase
         .from('member_moments')
         .select('*')
         .eq('moderation_status', 'approved')
         .eq('is_visible', true)
         .order('uploaded_at', { ascending: false });
-      
-      console.log('📝 Query built, executing...');
-      const { data, error } = await query;
-      
-      console.log('📊 Query result:', { data, error, dataLength: data?.length });
 
       if (error) {
-        console.error('❌ Database error:', error);
         toast({
           title: "Error",
           description: "Failed to load moments. Please try again.",
@@ -74,21 +65,17 @@ export const useMemberMoments = () => {
         return;
       }
 
-      console.log('✅ Setting moments:', data);
       setMoments(data || []);
-      
     } catch (error) {
-      console.error('💥 Catch block error:', error);
       toast({
         title: "Error",
         description: "Failed to load moments. Please try again.",
         variant: "destructive"
       });
     } finally {
-      console.log('🏁 fetchMoments complete, setting loading false');
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   const refetchMoments = useCallback(() => {
     console.log('🔄 Refetching moments...');
