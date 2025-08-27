@@ -13,9 +13,9 @@ const MemberDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {isCMSMode && <Navigation />}
+      <Navigation />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 mt-8">
         <div className="mb-6">
           <Link 
             to="/common-room/member" 
@@ -128,7 +128,7 @@ const MemberDashboard: React.FC = () => {
         )}
       </div>
 
-      {isCMSMode && <Footer />}
+      <Footer />
     </div>
   );
 };
