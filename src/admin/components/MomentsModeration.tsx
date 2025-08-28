@@ -41,7 +41,13 @@ const MomentsModeration: React.FC = () => {
     queryFn: async () => {
       let query = supabase
         .from('member_moments')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            first_name,
+            last_name
+          )
+        `)
         .order('uploaded_at', { ascending: false });
 
       if (selectedStatus !== 'all') {

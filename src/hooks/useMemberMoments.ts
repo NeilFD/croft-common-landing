@@ -419,7 +419,7 @@ export const useMemberMoments = () => {
       console.log('🎉 SUCCESS: Upload complete, showing success message');
       toast({
         title: "Moment uploaded!",
-        description: "Your moment has been uploaded successfully.",
+        description: "Your moment has been sent for AI moderation review and will appear once approved.",
       });
 
       // Automatic moderation will be triggered by database trigger
