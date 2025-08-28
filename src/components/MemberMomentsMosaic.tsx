@@ -50,29 +50,47 @@ const MemberMomentsMosaic: React.FC = () => {
 
   // Enhanced filtering that includes tags
   const filteredMoments = useMemo(() => {
-    if (!moments) return [];
+    console.log('🔍 FILTER: Starting filteredMoments calculation', { searchQuery, momentsCount: moments?.length });
     
-    return moments.filter((moment) => {
-      // Search in tagline, member name, and tags
-      const searchMatches = searchQuery === '' || (
-        moment.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        getMemberName(moment).toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (moment.tags && moment.tags.some(tag => 
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
-        ))
-      );
+    if (!moments) {
+      console.log('🔍 FILTER: No moments, returning empty array');
+      return [];
+    }
+    
+    try {
+      const result = moments.filter((moment) => {
+        try {
+          // Search in tagline, member name, and tags
+          const searchMatches = searchQuery === '' || (
+            moment.tagline?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            getMemberName(moment).toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (moment.tags && moment.tags.some(tag => 
+              tag.toLowerCase().includes(searchQuery.toLowerCase())
+            ))
+          );
+          
+          // Date range filtering
+          const momentDate = new Date(moment.date_taken);
+          const dateMatches = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
+                             (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
+          
+          // Tag filtering
+          const tagMatches = !selectedTagFilter || 
+                            (moment.tags && moment.tags.includes(selectedTagFilter));
+          
+          return searchMatches && dateMatches && tagMatches;
+        } catch (momentError) {
+          console.error('🔍 FILTER: Error filtering individual moment:', momentError, moment);
+          return false;
+        }
+      });
       
-      // Date range filtering
-      const momentDate = new Date(moment.date_taken);
-      const dateMatches = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
-                         (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
-      
-      // Tag filtering
-      const tagMatches = !selectedTagFilter || 
-                        (moment.tags && moment.tags.includes(selectedTagFilter));
-      
-      return searchMatches && dateMatches && tagMatches;
-    });
+      console.log('🔍 FILTER: Filtering complete', { resultCount: result.length });
+      return result;
+    } catch (filterError) {
+      console.error('🔍 FILTER: Error in filteredMoments calculation:', filterError);
+      return [];
+    }
   }, [moments, searchQuery, startDate, endDate, selectedTagFilter]);
 
   const handleMomentClick = (moment: MemberMoment) => {
