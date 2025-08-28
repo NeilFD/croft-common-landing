@@ -114,20 +114,30 @@ export const useStreakDashboard = () => {
       setLoading(true);
       setError(null);
 
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token;
+      
+      console.log('🔑 HOOK: Calling edge function with token present:', !!token);
+
       const { data, error } = await supabase.functions.invoke('get-streak-dashboard', {
         headers: {
-          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       if (error) throw error;
 
-      console.log('✅ STREAK DASHBOARD: Successfully fetched data');
+      console.log(`✅ STREAK DASHBOARD: Successfully fetched data for user ${user?.id}`);
+      console.log(`✅ STREAK DASHBOARD: Recent activity count: ${data?.recent_activity?.length || 0}`);
 
       setDashboardData(data);
     } catch (err) {
-      console.error('Error fetching streak dashboard:', err);
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      console.error('❌ STREAK DASHBOARD ERROR:', err);
+      console.error('❌ STREAK DASHBOARD ERROR Details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        user: user?.id
+      });
+      setError(err instanceof Error ? err.message : 'Failed to fetch dashboard');
     } finally {
       setLoading(false);
     }

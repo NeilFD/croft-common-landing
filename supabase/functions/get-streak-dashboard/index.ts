@@ -15,7 +15,10 @@ serve(async (req: Request) => {
   try {
     // Get user from auth header
     const authHeader = req.headers.get('Authorization');
+    console.log('🔑 Auth header present:', !!authHeader);
+    
     if (!authHeader) {
+      console.error('❌ No authorization header found');
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -23,6 +26,7 @@ serve(async (req: Request) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
+    console.log('🔑 Token extracted, length:', token.length);
 
     // Create authenticated Supabase client using the user's token
     const authenticatedSupabase = createClient(
@@ -43,9 +47,19 @@ serve(async (req: Request) => {
 
     // Verify user authentication
     const { data: { user }, error: authError } = await authenticatedSupabase.auth.getUser();
+    
+    console.log('🔑 Auth verification:', {
+      hasUser: !!user,
+      userId: user?.id,
+      authError: authError?.message
+    });
 
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Invalid auth' }), {
+      console.error('❌ Authentication failed:', authError?.message || 'No user found');
+      return new Response(JSON.stringify({ 
+        error: 'Invalid auth',
+        details: authError?.message || 'No user found'
+      }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
