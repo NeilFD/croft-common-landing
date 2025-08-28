@@ -4,9 +4,34 @@ import { supabase } from '@/integrations/supabase/client';
 const USER_HANDLE_KEY = 'biometric_user_handle';
 const HAS_CREDENTIALS_KEY = 'has_webauthn_credentials';
 
+// PWA context detection
+function isPWAContext(): boolean {
+  try {
+    return window.matchMedia('(display-mode: standalone)').matches || 
+           (window.navigator as any).standalone === true ||
+           document.referrer.includes('android-app://');
+  } catch {
+    return false;
+  }
+}
+
 function getRpParams() {
-  const host = window.location.hostname.replace(/^www\./, '');
-  return { rpId: host, origin: window.location.origin };
+  // Use croftcommontest.com to match existing credentials in database
+  // This ensures consistency between browser and PWA contexts
+  const rpId = 'croftcommontest.com';
+  const origin = window.location.origin;
+  const currentHost = window.location.hostname;
+  const inPWA = isPWAContext();
+  
+  console.debug('[biometricAuth] RP params:', { 
+    rpId, 
+    origin, 
+    currentHost, 
+    inPWA,
+    userAgent: navigator.userAgent 
+  });
+  
+  return { rpId, origin };
 }
 
 // Track credential existence in localStorage
@@ -103,10 +128,31 @@ export type BioResult = {
   details?: any; 
 };
 
+// Clear credentials that may have been registered with old RP ID
+function clearLegacyCredentials() {
+  console.log('[biometricAuth] Clearing legacy credentials due to RP ID mismatch');
+  try {
+    localStorage.removeItem(USER_HANDLE_KEY);
+    localStorage.removeItem(HAS_CREDENTIALS_KEY);
+    sessionStorage.removeItem(RECENT_REG_TS_KEY);
+  } catch (e) {
+    console.warn('[biometricAuth] Failed to clear some legacy data:', e);
+  }
+}
+
 function mapWebAuthnError(err: unknown): { code: string; message: string } {
   const e = err as any;
   const name = e?.name || e?.constructor?.name;
   const message = e?.message || 'Unknown error';
+  
+  // Enhanced error detection for PWA/RP ID issues
+  if (name === 'SecurityError' || (message && message.toLowerCase().includes('insecure'))) {
+    return { 
+      code: 'rp_id_mismatch', 
+      message: 'Security context changed. Please re-register your passkey.' 
+    };
+  }
+  
   switch (name) {
     case 'NotAllowedError':
       return { code: 'not_allowed', message };
@@ -145,16 +191,14 @@ async function createSupabaseSession(userHandle: string, email?: string): Promis
   try {
     console.log('[biometricAuth] Creating Supabase session for userHandle:', userHandle);
     
-    const response = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-create-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
-      },
-      body: JSON.stringify({ userHandle, email })
+    const { data: result, error: invokeError } = await supabase.functions.invoke('webauthn-create-session', {
+      body: { userHandle, email }
     });
     
-    const result = await response.json();
+    if (invokeError) {
+      console.error('[biometricAuth] Session creation failed:', invokeError);
+      return { ok: false, error: invokeError.message };
+    }
     
     if (!result.success) {
       console.error('[biometricAuth] Session creation failed:', result.error);
@@ -207,26 +251,35 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
     let attResp: any;
     try {
       attResp = await startRegistration(options);
-    } catch (err) {
-      const mapped = mapWebAuthnError(err);
-      console.debug('[webauthn] register start error', mapped);
-      return { ok: false, errorCode: mapped.code, error: mapped.message };
-    }
+      } catch (err) {
+        const mapped = mapWebAuthnError(err);
+        console.debug('[webauthn] register start error', mapped);
+        
+        // Clear legacy credentials if RP ID mismatch detected
+        if (mapped.code === 'rp_id_mismatch') {
+          clearLegacyCredentials();
+        }
+        
+        return { ok: false, errorCode: mapped.code, error: mapped.message };
+      }
 
-    const verifyResp = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-register-verify`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
-      },
-      body: JSON.stringify({
+    const { data: verifyData, error: verError } = await supabase.functions.invoke('webauthn-register-verify', {
+      body: {
         userHandle: userHandle ?? existing,
         attResp,
         rpId,
         origin
-      })
+      }
     });
-    const verifyData = await verifyResp.json();
+
+    if (verError) {
+      console.error('[biometricAuth] Verification call failed:', verError);
+      return { 
+        ok: false, 
+        errorCode: 'verification_failed', 
+        error: verError.message 
+      };
+    }
 
     console.log('[biometricAuth] Verification response:', verifyData);
 
@@ -375,15 +428,13 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
     }
 
     // Verify if we obtained an assertion
-    const verifyResp = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-auth-verify`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
-      },
-      body: JSON.stringify({ userHandle: handle, authResp, rpId, origin })
+    const { data: authData, error: verError } = await supabase.functions.invoke('webauthn-auth-verify', {
+      body: { userHandle: handle, authResp, rpId, origin }
     });
-    const authData = await verifyResp.json();
+
+    if (verError) {
+      return { ok: false, errorCode: 'verification_failed', error: verError.message };
+    }
 
     if (!authData.verified) {
       return { ok: false, errorCode: 'verification_failed', error: 'Authentication verification failed' };
