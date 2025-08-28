@@ -1,15 +1,19 @@
 import React from 'react';
-import { Calendar, CheckCircle, Circle, Clock, Target, Gift } from 'lucide-react';
+import { Calendar, CheckCircle, Circle, Clock, Target, Gift, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useStreakDashboard } from '@/hooks/useStreakDashboard';
+import { useWeekCompletion } from '@/hooks/useWeekCompletion';
+import { ReceiptDotsLayer } from './ReceiptDotsLayer';
+import { WeekCompletionLayer } from './WeekCompletionLayer';
 import { StreakCalendarDebug } from './StreakCalendarDebug';
 
 const StreakCalendar: React.FC = () => {
   const { dashboardData, loading } = useStreakDashboard();
+  const { weekCompletions, loading: weekLoading } = useWeekCompletion();
 
-  if (loading) {
+  if (loading || weekLoading) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -70,6 +74,33 @@ const StreakCalendar: React.FC = () => {
       day: 'numeric', 
       month: 'short' 
     });
+  };
+
+  const formatWeekRange = (weekStart: string, weekEnd: string) => {
+    const start = new Date(weekStart);
+    const end = new Date(weekEnd);
+    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  };
+
+  // Generate calendar grid for each week
+  const generateWeekCalendar = (weekStart: string) => {
+    const start = new Date(weekStart);
+    const days = [];
+    
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+      
+      days.push(
+        <div key={dateStr} className="relative h-8 w-8 border border-border rounded flex items-center justify-center text-xs">
+          <span className="text-muted-foreground">{date.getDate()}</span>
+          <ReceiptDotsLayer date={dateStr} />
+        </div>
+      );
+    }
+    
+    return days;
   };
 
   // Group weeks into 4-week sets for visual grouping
@@ -149,69 +180,104 @@ const StreakCalendar: React.FC = () => {
 
         {/* Calendar Grid */}
         <div className="space-y-6">
-          {weekSets.map((setWeeks, setIndex) => (
-            <div key={setIndex} className="space-y-2">
-              <h4 className="text-sm font-medium text-muted-foreground">
-                Weeks {setIndex * 4 + 1}-{Math.min((setIndex + 1) * 4, calendar_weeks.length)}
-              </h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {setWeeks.map((week, weekIndex) => (
-                  <Card 
-                    key={`${setIndex}-${weekIndex}`}
-                    className={`p-3 transition-all hover:shadow-md ${
-                      week.is_current 
-                        ? 'ring-2 ring-primary shadow-md' 
-                        : week.is_complete 
-                        ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'
-                        : week.is_future 
-                        ? 'bg-muted/30'
-                        : 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      {getWeekIcon(week)}
-                      <Badge 
-                        variant={week.is_complete ? 'default' : week.is_current ? 'secondary' : 'outline'}
-                        className="text-xs"
+          {weekCompletions.length > 0 ? (
+            Array.from({ length: Math.ceil(weekCompletions.length / 4) }, (_, setIndex) => {
+              const setWeeks = weekCompletions.slice(setIndex * 4, (setIndex + 1) * 4);
+              const completedWeeks = setWeeks.filter(week => week.isComplete).length;
+              const isSetComplete = completedWeeks === 4;
+              
+              return (
+                <div key={setIndex} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">
+                      4-Week Set {setIndex + 1}
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        {completedWeeks}/4 weeks
+                      </span>
+                      {isSetComplete && (
+                        <Badge variant="default" className="text-xs">
+                          <Trophy className="w-3 h-3 mr-1" />
+                          Complete
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {setWeeks.map((week, weekIndex) => (
+                      <Card 
+                        key={week.weekStart}
+                        className={`p-3 relative ${
+                          week.isComplete ? 'bg-green-50 border-green-200' : 
+                          week.isCurrent ? 'bg-blue-50 border-blue-200' : 
+                          'bg-background border-border'
+                        }`}
                       >
-                        {getWeekStatus(week)}
-                      </Badge>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatDate(week.week_start)}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      to {formatDate(week.week_end)}
-                    </div>
-                    {week.completed_at && (
-                      <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                        ✓ Completed
-                      </div>
-                    )}
-                  </Card>
-                ))}
-              </div>
+                        <WeekCompletionLayer weekStart={week.weekStart} />
+                        
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xl">
+                              {week.isCurrent ? '🎯' : week.isComplete ? '✅' : week.receiptCount > 0 ? '📝' : '⬜'}
+                            </span>
+                            {week.isComplete && (
+                              <Badge variant="secondary">✓</Badge>
+                            )}
+                          </div>
+                          
+                          <div>
+                            <div className="text-xs font-medium">
+                              Week {setIndex * 4 + weekIndex + 1}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {formatWeekRange(week.weekStart, week.weekEnd)}
+                            </div>
+                          </div>
+                          
+                          <div className="text-xs">
+                            {week.isCurrent ? `${week.receiptCount}/2` : 
+                             week.isComplete ? 'Complete' :
+                             week.receiptCount > 0 ? `${week.receiptCount} visit${week.receiptCount > 1 ? 's' : ''}` : 'No visits'}
+                          </div>
+
+                          {/* Mini calendar for the week */}
+                          <div className="grid grid-cols-7 gap-0.5 mt-2">
+                            {generateWeekCalendar(week.weekStart)}
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No calendar data available</p>
             </div>
-          ))}
+          )}
         </div>
 
         {/* Legend */}
         <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+            Receipt uploaded
+          </div>
+          <div className="flex items-center gap-1">
             <CheckCircle className="h-3 w-3 text-green-500" />
-            Complete (2+ receipts)
+            Week complete (2+ receipts)
           </div>
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3 text-yellow-500" />
             Current week
           </div>
           <div className="flex items-center gap-1">
-            <Circle className="h-3 w-3 text-red-500" />
-            Incomplete
-          </div>
-          <div className="flex items-center gap-1">
             <Circle className="h-3 w-3 text-muted-foreground" />
-            Future weeks
+            No visits yet
           </div>
         </div>
       </CardContent>
