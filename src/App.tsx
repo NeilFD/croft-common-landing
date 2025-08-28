@@ -110,6 +110,13 @@ const LowercasePathGuard = () => {
   useEffect(() => {
     const path = location.pathname;
     if (!/[A-Z]/.test(path)) return;
+    
+    // Don't redirect if user is actively typing in input fields
+    const activeElement = document.activeElement;
+    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+      return;
+    }
+    
     const first = path.split("/").filter(Boolean)[0] ?? "";
     const lowerFirst = first.toLowerCase();
     if (allowedRoots.has(lowerFirst)) {
