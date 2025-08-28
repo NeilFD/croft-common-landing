@@ -103,6 +103,9 @@ const StreakCalendar: React.FC = () => {
 
   // Memoized calendar generation to prevent infinite re-renders
   const generateWeekCalendar = useCallback((weekStart: string) => {
+    console.log(`📅 generateWeekCalendar: Generating calendar for week starting ${weekStart}`);
+    console.log(`📅 generateWeekCalendar: Available receiptDots:`, receiptDots);
+    
     const start = new Date(weekStart);
     const days = [];
     
@@ -111,16 +114,27 @@ const StreakCalendar: React.FC = () => {
       date.setDate(start.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
       
-      console.log('CALENDAR DAY:', dateStr, 'Receipt match:', receiptDots.find(dot => dot.date === dateStr));
+      const matchingReceipt = receiptDots.find(dot => dot.date === dateStr);
+      console.log(`📅 Day ${dateStr}: Receipt match:`, matchingReceipt);
       
       days.push(
-        <div key={dateStr} className="relative h-8 w-8 border border-border rounded flex items-center justify-center text-xs">
+        <div 
+          key={dateStr} 
+          className="relative border border-border rounded flex items-center justify-center text-xs"
+          style={{
+            position: 'relative', // Ensure positioning context for absolute children
+            height: '32px',       // Bigger height for visibility
+            width: '32px',        // Bigger width for visibility
+            minHeight: '32px',
+          }}
+        >
           <span className="text-muted-foreground">{date.getDate()}</span>
           <ReceiptDotsLayer date={dateStr} receiptDots={receiptDots} />
         </div>
       );
     }
     
+    console.log(`📅 generateWeekCalendar: Generated ${days.length} days for week starting ${weekStart}`);
     return days;
   }, [receiptDots]);
 
