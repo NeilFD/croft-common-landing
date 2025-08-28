@@ -15,6 +15,7 @@ import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
 import PongGame from '@/components/PongGame';
 import TraditionalStreakCalendar from '@/components/TraditionalStreakCalendar';
+import { MobileErrorBoundary } from '@/components/MobileErrorBoundary';
 
 interface MemberStats {
   user: {
@@ -56,12 +57,22 @@ const MemberHome: React.FC = () => {
   const [showPongGame, setShowPongGame] = useState(false);
 
   useEffect(() => {
+    console.log('[MemberHome] 🔍 MOBILE: Component mounted', {
+      loading,
+      hasUser: !!user,
+      userAgent: navigator.userAgent,
+      viewport: { width: window.innerWidth, height: window.innerHeight },
+      standalone: window.matchMedia('(display-mode: standalone)').matches
+    });
+
     if (!loading && !user) {
+      console.log('[MemberHome] ❌ MOBILE: No user found, redirecting to main');
       navigate('/common-room/main');
       return;
     }
 
     if (user) {
+      console.log('[MemberHome] ✅ MOBILE: User found, fetching member stats');
       fetchMemberStats();
     }
   }, [user, loading, navigate]);
@@ -69,13 +80,19 @@ const MemberHome: React.FC = () => {
   const fetchMemberStats = async () => {
     try {
       setLoadingStats(true);
+      console.log('[MemberHome] 📊 MOBILE: Fetching member stats...');
+      
       const { data, error } = await supabase.functions.invoke('member-stats');
       
-      if (error) throw error;
+      if (error) {
+        console.error('[MemberHome] ❌ MOBILE: Stats error:', error);
+        throw error;
+      }
       
+      console.log('[MemberHome] ✅ MOBILE: Stats loaded successfully:', data);
       setMemberStats(data);
     } catch (error) {
-      console.error('Error fetching member stats:', error);
+      console.error('[MemberHome] ❌ MOBILE: Error fetching member stats:', error);
       toast({
         title: "Error",
         description: "Failed to load member data",
@@ -87,11 +104,15 @@ const MemberHome: React.FC = () => {
   };
 
   if (loading || loadingStats) {
+    console.log('[MemberHome] ⏳ MOBILE: Loading state', { loading, loadingStats });
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading member area...</p>
+          <p className="text-xs text-muted-foreground/60 mt-2">
+            Mobile PWA • {loading ? 'Auth' : 'Stats'} loading...
+          </p>
         </div>
       </div>
     );
@@ -108,13 +129,20 @@ const MemberHome: React.FC = () => {
     );
   }
 
+  console.log('[MemberHome] 🎨 MOBILE: Rendering member home component');
+
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Fixed Background Image */}
+    <MobileErrorBoundary>
+      <div className="min-h-screen bg-background relative mobile-optimized">
+      {/* Mobile-Optimized Background Image with Fallback */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
         style={{
-          backgroundImage: `url('/lovable-uploads/5651f236-2692-4b16-a608-b6d821d392ae.png')`
+          backgroundImage: `url('/lovable-uploads/5651f236-2692-4b16-a608-b6d821d392ae.png'), linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)`
+        }}
+        onError={(e) => {
+          console.log('[MemberHome] ⚠️ MOBILE: Background image load failed, using fallback');
+          (e.target as HTMLElement).style.backgroundImage = 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)';
         }}
       />
       
@@ -276,8 +304,9 @@ const MemberHome: React.FC = () => {
       )}
 
         <Footer />
+        </div>
       </div>
-    </div>
+    </MobileErrorBoundary>
   );
 };
 

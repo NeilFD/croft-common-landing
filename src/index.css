@@ -335,6 +335,34 @@
 }
 
 /* MOBILE SPECIFIC */
+
+/* Mobile PWA Optimizations */
+.mobile-optimized {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Fix iOS viewport bounce */
+  overscroll-behavior: none;
+  /* Better touch handling */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.mobile-safe-carousel {
+  /* Prevent carousel translate3d from moving content off-screen on mobile */
+  position: relative;
+  contain: layout style paint;
+  /* Ensure proper touch handling */
+  touch-action: pan-x;
+}
+
+.mobile-safe-carousel [data-radix-scroll-area-viewport] {
+  /* Constrain viewport to prevent off-screen content */
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 @media (max-width: 768px) {
   .mobile-only {
     display: block;
