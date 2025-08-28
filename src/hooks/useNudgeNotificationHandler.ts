@@ -200,10 +200,16 @@ export const useNudgeNotificationHandler = () => {
         setTimeout(() => {
           console.log('🎯 NUDGE BC: 🧪 Testing BroadcastChannel with test message...');
           try {
-            channel?.postMessage({ type: 'TEST', source: 'react-app', timestamp: Date.now() });
-            console.log('🎯 NUDGE BC: ✅ Test message sent successfully');
+            // Check if channel exists and is not closed before posting
+            if (channel && typeof channel.postMessage === 'function') {
+              channel.postMessage({ type: 'TEST', source: 'react-app', timestamp: Date.now() });
+              console.log('🎯 NUDGE BC: ✅ Test message sent successfully');
+            } else {
+              console.log('🎯 NUDGE BC: ⚠️ Channel not available for test message');
+            }
           } catch (error) {
             console.error('🎯 NUDGE BC: ❌ Failed to send test message:', error);
+            // If the channel failed, don't throw the error - just log it
           }
         }, 500);
         
