@@ -106,13 +106,13 @@ serve(async (req: Request) => {
         .eq('is_used', false)
         .gt('expires_date', new Date().toISOString()),
 
-      // Recent receipts for context
+      // Recent receipts for context - get ALL receipts, don't filter by date
       supabase
         .from('member_receipts')
         .select('id, receipt_date, total_amount, venue_location')
         .eq('user_id', user.id)
-        .gte('receipt_date', getDateMinusWeeks(new Date(), 4))
         .order('receipt_date', { ascending: false })
+        .limit(50)
     ]);
 
     const memberStreaks = memberStreaksResult.data;
@@ -122,28 +122,6 @@ serve(async (req: Request) => {
     const badges = badgesResult.data || [];
     const availableGrace = gracePeriods.data || [];
     const receipts = recentReceipts.data || [];
-
-    // DEBUG: Log receipt data
-    console.log('📊 Recent receipts query error:', recentReceipts.error);
-    console.log('📊 Recent receipts data length:', receipts?.length || 0);
-    console.log('📊 Recent receipts sample:', receipts?.slice(0, 3));
-    console.log('📊 Date filter (4 weeks ago):', getDateMinusWeeks(new Date(), 4));
-    console.log('📊 Current user ID for receipts query:', user.id);
-    
-    // DEBUG: Check if ANY receipts exist for this user (no date filter)
-    const { data: allReceipts, error: allReceiptsError } = await supabase
-      .from('member_receipts')
-      .select('id, receipt_date, total_amount, venue_location, user_id')
-      .eq('user_id', user.id);
-    
-    console.log('📊 ALL receipts for user (no date filter):', allReceipts?.length || 0);
-    console.log('📊 ALL receipts error:', allReceiptsError);
-    console.log('📊 ALL receipts sample:', allReceipts?.slice(0, 5));
-    
-    // DEBUG: Check for August 27th specifically
-    const aug27Receipts = allReceipts?.filter(r => r.receipt_date?.includes('2025-08-27')) || [];
-    console.log('📊 August 27th receipts found:', aug27Receipts.length);
-    console.log('📊 August 27th receipts:', aug27Receipts);
 
     // Calculate current week progress
     // Fix property name mismatch: streak_weeks uses week_start_date, boundaries returns week_start
