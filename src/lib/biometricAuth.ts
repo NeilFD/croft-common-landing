@@ -353,38 +353,18 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
         return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
       } else {
         const discOptions = (discData as any).options;
-    try {
-      console.log('🚀 [webauthn-debug] Fetching auth options from edge function');
-      const { data, error } = await supabase.functions.invoke('webauthn-auth-options', {
-        body: { userHandle: handle, rpId, origin, discoverable: preferDiscoverable }
-      });
-      if (error) {
-        console.error('🚨 [webauthn-debug] Auth options error:', error);
-        throw error;
-      }
-      
-      const options = data.options;
-      console.log('✅ [webauthn-debug] Got auth options, starting browser authentication');
-      console.log('🔍 [webauthn-debug] Options details:', {
-        challenge: options.challenge?.substring(0, 20) + '...',
-        rpId: options.rpId,
-        allowCredentials: options.allowCredentials?.length || 0
-      });
-      
-      authResp = await startAuthentication({
-        ...options,
-        mediation: 'optional',
-      });
-      console.log('✅ [webauthn-debug] Browser authentication completed successfully');
-    } catch (error) {
-      console.error('🚨 [webauthn-debug] Authentication failed:', {
-        error: error.message,
-        name: error.name,
-        stack: error.stack?.substring(0, 200)
-      });
-      const mapped = mapWebAuthnError(error);
-      return { ok: false, errorCode: mapped.code, error: mapped.message };
-    }
+        console.debug('[webauthn] trying discoverable auth with options');
+        try {
+          authResp = await startAuthentication({
+            ...discOptions,
+            mediation: 'optional',
+          });
+          console.debug('[webauthn] discoverable auth success');
+        } catch (discAuthErr) {
+          const mapped = mapWebAuthnError(discAuthErr);
+          console.debug('[webauthn] discoverable auth error', mapped);
+          // Will fall through to allowCredentials fallback below
+        }
       }
 
       // 2) If discoverable failed, fall back to allowCredentials list
