@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useStreakDashboard } from '@/hooks/useStreakDashboard';
+import { StreakCalendarDebug } from './StreakCalendarDebug';
 
 const StreakCalendar: React.FC = () => {
   const { dashboardData, loading } = useStreakDashboard();
@@ -78,6 +79,7 @@ const StreakCalendar: React.FC = () => {
   }
 
   return (
+    <div className="space-y-4">{/* Container for multiple cards */}
     <Card className="w-full bg-background border border-border">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -214,6 +216,10 @@ const StreakCalendar: React.FC = () => {
         </div>
       </CardContent>
     </Card>
+    
+    {/* Debug Component - Remove this after fixing */}
+    <StreakCalendarDebug />
+    </div>
   );
 };
 
