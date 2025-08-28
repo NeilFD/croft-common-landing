@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { format, isAfter, isBefore, isSameDay } from 'date-fns';
+import { format } from 'date-fns';
 
 // UI Components
 import { Card, CardContent } from '@/components/ui/card';
@@ -66,41 +66,65 @@ const MemberMomentsMosaic: React.FC = () => {
     return Array.from(tagSet).sort();
   }, [moments]);
 
-  // Enhanced filtering that includes tags
+  // Enhanced filtering that includes tags with native date comparison
   const filteredMoments = useMemo(() => {
     if (!moments) return [];
     
-    return moments.filter((moment) => {
-      const query = searchQuery.toLowerCase().trim();
-      
-      // Search in tagline, member name, and tags (enhanced)
-      const searchMatches = query === '' || (
-        // Search in tagline
-        moment.tagline?.toLowerCase().includes(query) ||
-        // Search in member name
-        getMemberName(moment).toLowerCase().includes(query) ||
-        // Search in tags (enhanced with better matching)
-        (moment.tags && moment.tags.some(tag => 
-          tag.toLowerCase().includes(query) || 
-          tag.toLowerCase().replace(/\s+/g, '').includes(query.replace(/\s+/g, ''))
-        )) ||
-        // Search for exact tag matches
-        (moment.tags && moment.tags.some(tag => 
-          tag.toLowerCase() === query
-        ))
-      );
-      
-      // Date range filtering
-      const momentDate = new Date(moment.date_taken);
-      const dateMatches = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
-                         (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
-      
-      // Tag filtering
-      const tagMatches = !selectedTagFilter || 
-                        (moment.tags && moment.tags.includes(selectedTagFilter));
-      
-      return searchMatches && dateMatches && tagMatches;
-    });
+    try {
+      return moments.filter((moment) => {
+        const query = searchQuery.toLowerCase().trim();
+        
+        // Search in tagline, member name, and tags (enhanced)
+        const searchMatches = query === '' || (
+          // Search in tagline
+          moment.tagline?.toLowerCase().includes(query) ||
+          // Search in member name
+          getMemberName(moment).toLowerCase().includes(query) ||
+          // Search in tags (enhanced with better matching)
+          (moment.tags && moment.tags.some(tag => 
+            tag.toLowerCase().includes(query) || 
+            tag.toLowerCase().replace(/\s+/g, '').includes(query.replace(/\s+/g, ''))
+          )) ||
+          // Search for exact tag matches
+          (moment.tags && moment.tags.some(tag => 
+            tag.toLowerCase() === query
+          ))
+        );
+        
+        // Date range filtering with native JavaScript (defensive)
+        let dateMatches = true;
+        try {
+          if (startDate || endDate) {
+            const momentDate = new Date(moment.date_taken);
+            const momentTime = momentDate.getTime();
+            
+            if (startDate) {
+              const startTime = new Date(startDate).getTime();
+              dateMatches = dateMatches && (momentTime >= startTime || 
+                momentDate.toDateString() === startDate.toDateString());
+            }
+            
+            if (endDate && dateMatches) {
+              const endTime = new Date(endDate).getTime();
+              dateMatches = dateMatches && (momentTime <= endTime || 
+                momentDate.toDateString() === endDate.toDateString());
+            }
+          }
+        } catch (error) {
+          console.warn('Date filtering error:', error);
+          dateMatches = true; // Fallback to show all moments if date filtering fails
+        }
+        
+        // Tag filtering
+        const tagMatches = !selectedTagFilter || 
+                          (moment.tags && moment.tags.includes(selectedTagFilter));
+        
+        return searchMatches && dateMatches && tagMatches;
+      });
+    } catch (error) {
+      console.warn('Filtering error:', error);
+      return moments; // Fallback to show all moments if filtering fails
+    }
   }, [moments, searchQuery, startDate, endDate, selectedTagFilter]);
 
   const handleMomentClick = (moment: MemberMoment) => {
