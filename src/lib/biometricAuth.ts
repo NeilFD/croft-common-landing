@@ -145,16 +145,14 @@ async function createSupabaseSession(userHandle: string, email?: string): Promis
   try {
     console.log('[biometricAuth] Creating Supabase session for userHandle:', userHandle);
     
-    const response = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-create-session`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
-      },
-      body: JSON.stringify({ userHandle, email })
+    const { data: result, error: invokeError } = await supabase.functions.invoke('webauthn-create-session', {
+      body: { userHandle, email }
     });
     
-    const result = await response.json();
+    if (invokeError) {
+      console.error('[biometricAuth] Session creation failed:', invokeError);
+      return { ok: false, error: invokeError.message };
+    }
     
     if (!result.success) {
       console.error('[biometricAuth] Session creation failed:', result.error);
@@ -213,20 +211,23 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
       return { ok: false, errorCode: mapped.code, error: mapped.message };
     }
 
-    const verifyResp = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-register-verify`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
-      },
-      body: JSON.stringify({
+    const { data: verifyData, error: verError } = await supabase.functions.invoke('webauthn-register-verify', {
+      body: {
         userHandle: userHandle ?? existing,
         attResp,
         rpId,
         origin
-      })
+      }
     });
-    const verifyData = await verifyResp.json();
+
+    if (verError) {
+      console.error('[biometricAuth] Verification call failed:', verError);
+      return { 
+        ok: false, 
+        errorCode: 'verification_failed', 
+        error: verError.message 
+      };
+    }
 
     console.log('[biometricAuth] Verification response:', verifyData);
 
@@ -375,15 +376,13 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
     }
 
     // Verify if we obtained an assertion
-    const verifyResp = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/webauthn-auth-verify`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU'
-      },
-      body: JSON.stringify({ userHandle: handle, authResp, rpId, origin })
+    const { data: authData, error: verError } = await supabase.functions.invoke('webauthn-auth-verify', {
+      body: { userHandle: handle, authResp, rpId, origin }
     });
-    const authData = await verifyResp.json();
+
+    if (verError) {
+      return { ok: false, errorCode: 'verification_failed', error: verError.message };
+    }
 
     if (!authData.verified) {
       return { ok: false, errorCode: 'verification_failed', error: 'Authentication verification failed' };
