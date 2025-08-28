@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Tag, X, Plus, Edit as EditIcon } from 'lucide-react';
+import { Calendar, Tag, X, Plus, Edit as ModifyIcon } from 'lucide-react';
 import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -85,7 +85,7 @@ const MemberMomentEdit: React.FC<MemberMomentEditProps> = ({ moment, onClose, is
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <EditIcon className="h-5 w-5" />
+              <ModifyIcon className="h-5 w-5" />
               Edit Moment
             </CardTitle>
             <Button variant="ghost" size="icon" onClick={onClose}>
