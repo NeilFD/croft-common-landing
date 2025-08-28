@@ -31,7 +31,7 @@ import {
   Search, 
   CalendarIcon, 
   Tag,
-  Edit as EditIcon 
+  Edit as PencilIcon 
 } from 'lucide-react';
 
 // Custom Components & Hooks
@@ -325,7 +325,7 @@ const MemberMomentsMosaic: React.FC = () => {
                             setEditingMoment(moment);
                           }}
                         >
-                          <EditIcon className="h-3 w-3" />
+                          <PencilIcon className="h-3 w-3" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
