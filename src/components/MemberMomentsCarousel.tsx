@@ -9,13 +9,6 @@ import OptimizedImage from '@/components/OptimizedImage';
 const MemberMomentsCarousel: React.FC = () => {
   const { moments, loading } = useMemberMoments();
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
-  
-  // Mobile debugging
-  console.log('[MemberMomentsCarousel] 📱 MOBILE: Rendering carousel', {
-    momentsCount: moments?.length || 0,
-    loading,
-    viewport: { width: window.innerWidth, height: window.innerHeight }
-  });
 
   const getMemberName = (moment: MemberMoment) => {
     if (moment.profiles) {
@@ -69,75 +62,63 @@ const MemberMomentsCarousel: React.FC = () => {
 
   return (
     <>
-    <div className="w-full mb-8">
-      <div className="bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-foreground">Member Moments</h2>
-        </div>
-        
-        {loading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        ) : moments && moments.length > 0 ? (
-          <div className="mobile-safe-carousel">
-            <Carousel 
-              className="w-full"
-              opts={{
-                align: "start",
-                dragFree: true,
-                containScroll: "trimSnaps"
-              }}
-            >
-              <CarouselContent className="-ml-2 md:-ml-4">
-                {moments.map((moment) => (
-                  <CarouselItem key={moment.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
-                    <Card 
-                      className="cursor-pointer hover:shadow-md transition-all duration-200 border border-gray-200 hover:border-pink-300"
-                      onClick={() => {
-                        console.log('[MemberMomentsCarousel] 🖱️ MOBILE: Moment clicked', moment.id);
-                        setSelectedMoment(moment);
-                      }}
-                    >
-                      <CardContent className="p-2">
-                        <div className="aspect-square relative rounded-lg overflow-hidden mb-2">
-                          <OptimizedImage
-                            src={moment.image_url}
-                            alt={moment.tagline || 'Member moment'}
-                            className="w-full h-full object-cover"
-                            sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                          />
-                        </div>
-                        <div className="space-y-1">
+      <div className="w-full mb-8">
+        <div className="bg-white rounded-2xl p-6 border-2 border-black hover:border-pink-500 transition-all duration-300">
+          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Camera className="h-5 w-5" />
+            Member Moments
+          </h2>
+          
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {moments.map((moment) => (
+                <CarouselItem key={moment.id} className="pl-2 md:pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4">
+                  <Card 
+                    className="border-2 border-black hover:border-pink-500 transition-all duration-300 cursor-pointer hover:scale-105 overflow-hidden"
+                    onClick={() => setSelectedMoment(moment)}
+                  >
+                    <CardContent className="p-0">
+                      <div className="aspect-square relative overflow-hidden">
+                        <OptimizedImage
+                          src={moment.image_url}
+                          alt={moment.tagline || 'Member moment'}
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-3">
                           {moment.tagline && (
-                            <p className="text-xs font-medium text-gray-900 line-clamp-2">{moment.tagline}</p>
+                            <p className="text-white text-sm font-medium mb-2 line-clamp-2">
+                              {moment.tagline}
+                            </p>
                           )}
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <User className="h-3 w-3" />
-                            <span>{moment.profiles?.first_name || 'Member'}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <Calendar className="h-3 w-3" />
-                            <span>{new Date(moment.uploaded_at).toLocaleDateString()}</span>
+                          <div className="flex items-center justify-between text-xs text-white/80">
+                            <div className="flex items-center gap-1">
+                              <User className="h-3 w-3" />
+                              {getMemberName(moment)}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(moment.uploaded_at)}
+                            </div>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious className="hidden sm:flex" />
-              <CarouselNext className="hidden sm:flex" />
-            </Carousel>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <Camera className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No moments shared yet</p>
-          </div>
-        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="hidden md:flex -left-12 border-2 border-black hover:border-pink-500 bg-white hover:bg-pink-50" />
+            <CarouselNext className="hidden md:flex -right-12 border-2 border-black hover:border-pink-500 bg-white hover:bg-pink-50" />
+          </Carousel>
+        </div>
       </div>
-    </div>
 
       {/* Enlarged Image Modal */}
       <Dialog open={!!selectedMoment} onOpenChange={() => setSelectedMoment(null)}>

@@ -362,8 +362,8 @@ const MemberMomentsMosaic: React.FC = () => {
                               "h-8 px-2 gap-1.5 rounded-full backdrop-blur-sm border",
                               "transition-all duration-200 hover:scale-105",
                               moment.user_has_liked || (moment.like_count && moment.like_count > 0)
-                                ? "bg-background/10 border-destructive text-destructive hover:bg-background/20"
-                                : "bg-background/10 border-white/20 text-white hover:bg-background/20"
+                                ? "bg-red-500/90 border-red-500/50 text-white hover:bg-red-600/90"
+                                : "bg-black/40 border-white/20 text-white hover:bg-black/60"
                             )}
                             onClick={(e) => {
                               e.stopPropagation();
@@ -374,14 +374,14 @@ const MemberMomentsMosaic: React.FC = () => {
                               }
                             }}
                           >
-                             <Heart 
-                               className={cn(
-                                 "h-4 w-4 transition-all stroke-2",
-                                 moment.user_has_liked || (moment.like_count && moment.like_count > 0)
-                                   ? "fill-none stroke-destructive"
-                                   : "fill-none stroke-white"
-                               )}
-                             />
+                            <Heart 
+                              className={cn(
+                                "h-4 w-4 transition-all",
+                                moment.user_has_liked || (moment.like_count && moment.like_count > 0)
+                                  ? "fill-current"
+                                  : "fill-none"
+                              )}
+                            />
                             {moment.like_count && moment.like_count > 0 && (
                               <span className="text-xs font-medium min-w-[1ch]">
                                 {moment.like_count}
