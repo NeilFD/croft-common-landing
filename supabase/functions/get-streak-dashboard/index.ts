@@ -124,13 +124,16 @@ serve(async (req: Request) => {
     const receipts = recentReceipts.data || [];
 
     // Calculate current week progress
+    // Fix property name mismatch: streak_weeks uses week_start_date, boundaries returns week_start
+    const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
     const currentWeek = streakWeeks.find(w => 
-      w.week_start_date === currentWeekBoundaries?.week_start
+      w.week_start_date === currentWeekStartDate
     );
 
     console.log('📊 Current week boundaries:', currentWeekBoundaries);
+    console.log('📊 Current week start date:', currentWeekStartDate);
     console.log('📊 Found current week data:', currentWeek);
-    console.log('📊 All streak weeks:', streakWeeks);
+    console.log('📊 All streak weeks:', streakWeeks.map(w => ({ start: w.week_start_date, complete: w.is_complete, receipts: w.receipt_count })));
 
     // Calculate current set progress
     const currentSet = streakSets.find(s => !s.is_complete);
@@ -150,8 +153,8 @@ serve(async (req: Request) => {
     const dashboardData = {
       user_id: user.id,
       current_week: {
-        week_start: currentWeekBoundaries?.week_start,
-        week_end: currentWeekBoundaries?.week_end,
+        week_start: currentWeekStartDate,
+        week_end: currentWeekBoundaries?.[0]?.week_end,
         receipts_count: currentWeek?.receipt_count || 0,
         receipts_needed: Math.max(0, 2 - (currentWeek?.receipt_count || 0)),
         is_complete: currentWeek?.is_complete || false,
@@ -222,14 +225,18 @@ serve(async (req: Request) => {
 function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any) {
   const weeks = [];
   const startDate = getDateMinusWeeks(new Date(), 16);
+  const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
   
   for (let i = 0; i < 16; i++) {
     const weekStart = getDatePlusWeeks(startDate, i);
     const weekEnd = getDatePlusWeeks(weekStart, 0, 6); // Add 6 days
     
+    // Find matching week data by comparing week_start_date from database
     const weekData = streakWeeks.find(w => w.week_start_date === weekStart);
-    const isCurrent = weekStart === currentWeekBoundaries?.week_start;
+    const isCurrent = weekStart === currentWeekStartDate;
     const isFuture = new Date(weekStart) > new Date();
+    
+    console.log(`📅 Week ${weekStart}: weekData=${!!weekData}, complete=${weekData?.is_complete}, receipts=${weekData?.receipt_count}`);
     
     weeks.push({
       week_start: weekStart,
@@ -242,6 +249,7 @@ function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any) {
     });
   }
   
+  console.log('📅 Generated calendar weeks:', weeks.filter(w => w.receipts_count > 0 || w.is_complete));
   return weeks;
 }
 
