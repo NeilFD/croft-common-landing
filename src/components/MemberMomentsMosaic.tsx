@@ -70,12 +70,22 @@ const MemberMomentsMosaic: React.FC = () => {
     if (!moments) return [];
     
     return moments.filter((moment) => {
-      // Search in tagline, member name, and tags
-      const searchMatches = searchQuery === '' || (
-        moment.tagline?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        getMemberName(moment).toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const query = searchQuery.toLowerCase().trim();
+      
+      // Search in tagline, member name, and tags (enhanced)
+      const searchMatches = query === '' || (
+        // Search in tagline
+        moment.tagline?.toLowerCase().includes(query) ||
+        // Search in member name
+        getMemberName(moment).toLowerCase().includes(query) ||
+        // Search in tags (enhanced with better matching)
         (moment.tags && moment.tags.some(tag => 
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
+          tag.toLowerCase().includes(query) || 
+          tag.toLowerCase().replace(/\s+/g, '').includes(query.replace(/\s+/g, ''))
+        )) ||
+        // Search for exact tag matches
+        (moment.tags && moment.tags.some(tag => 
+          tag.toLowerCase() === query
         ))
       );
       
