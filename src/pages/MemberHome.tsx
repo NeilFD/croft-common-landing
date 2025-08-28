@@ -228,7 +228,7 @@ const MemberHome: React.FC = () => {
 
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
           <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg flex items-center gap-2">
@@ -255,25 +255,6 @@ const MemberHome: React.FC = () => {
                 £{memberStats.monthly_spend.toFixed(2)}
               </div>
               <p className="text-sm text-muted-foreground">Spend tracked</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <User className="h-4 w-4 text-foreground" />
-                Loyalty Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground capitalize">
-                {memberStats.profile.tier_badge}
-              </div>
-              {memberStats.loyalty_card && (
-                <p className="text-sm text-muted-foreground">
-                  {memberStats.loyalty_card.punches_count}/{memberStats.loyalty_card.punches_required} punches
-                </p>
-              )}
             </CardContent>
           </Card>
         </div>

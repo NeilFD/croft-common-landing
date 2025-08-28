@@ -299,20 +299,20 @@ const MemberMomentsMosaic: React.FC = () => {
       {/* Detail Modal */}
       {selectedMoment && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-background/90 backdrop-blur-sm"
           onClick={() => setSelectedMoment(null)}
         >
-          <Card className="max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <Card className="w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <CardContent className="p-0">
               <img
                 src={selectedMoment.image_url}
                 alt={selectedMoment.tagline}
-                className="w-full h-auto max-h-[60vh] object-contain"
+                className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain"
               />
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg">{selectedMoment.tagline}</h3>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-4 w-4" />
                       {getMemberName(selectedMoment)}
