@@ -539,46 +539,41 @@ const MemberMomentsMosaic: React.FC = () => {
       {/* Detail Modal */}
       {selectedMoment && (
         <div 
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] bg-black/90"
           onClick={() => setSelectedMoment(null)}
         >
-          <Card className="w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col bg-white" onClick={e => e.stopPropagation()}>
-            <CardContent className="p-0 flex flex-col h-full">
-              {/* Image Container */}
-              <div className="flex-1 flex items-center justify-center p-4 min-h-0">
-                <img
-                  src={selectedMoment.image_url}
-                  alt={selectedMoment.tagline}
-                  className="max-w-full max-h-full object-contain"
-                  style={{ 
-                    width: 'auto', 
-                    height: 'auto',
-                    maxWidth: '100%',
-                    maxHeight: '100%'
-                  }}
-                />
-              </div>
-              
-              {/* Information Panel */}
-              <div className="flex-shrink-0 p-4 bg-white border-t">
-                <div className="space-y-3">
-                  <h3 className="font-semibold text-lg text-gray-900">{selectedMoment.tagline}</h3>
-                  
-                  {/* Tags */}
-                  {selectedMoment.tags && selectedMoment.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {selectedMoment.tags.map(tag => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="bg-gray-50 text-gray-700 border-gray-300"
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  
+          <div className="h-full flex flex-col">
+            {/* Image Area - takes most of the space */}
+            <div className="flex-1 flex items-center justify-center p-4 min-h-0">
+              <img
+                src={selectedMoment.image_url}
+                alt={selectedMoment.tagline}
+                className="max-w-full max-h-full w-auto h-auto object-contain"
+                onClick={e => e.stopPropagation()}
+              />
+            </div>
+            
+            {/* Info Panel - fixed at bottom */}
+            <div className="flex-shrink-0 bg-white p-4" onClick={e => e.stopPropagation()}>
+              <div className="max-w-4xl mx-auto">
+                <h3 className="font-semibold text-lg text-gray-900 mb-2">{selectedMoment.tagline}</h3>
+                
+                {/* Tags */}
+                {selectedMoment.tags && selectedMoment.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {selectedMoment.tags.map(tag => (
+                      <Badge
+                        key={tag}
+                        variant="outline"
+                        className="bg-gray-100 text-gray-700 border-gray-300"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
@@ -588,25 +583,24 @@ const MemberMomentsMosaic: React.FC = () => {
                       <Calendar className="h-4 w-4" />
                       <span>{format(new Date(selectedMoment.date_taken), 'MMMM dd, yyyy')}</span>
                     </div>
+                    {selectedMoment.is_featured && (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-800 w-fit">
+                        Featured Moment
+                      </Badge>
+                    )}
                   </div>
                   
-                  {selectedMoment.is_featured && (
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
-                      Featured Moment
-                    </Badge>
-                  )}
-                  
                   <Button 
-                    variant="outline" 
+                    variant="outline"
                     onClick={() => setSelectedMoment(null)}
-                    className="w-full mt-4"
+                    className="w-full sm:w-auto"
                   >
                     Close
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       )}
     </div>
