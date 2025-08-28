@@ -1,7 +1,7 @@
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Save, Eye, RefreshCw, Edit, Globe } from 'lucide-react';
+import { Save, Eye, RefreshCw, Edit as EditIcon, Globe } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
 import { useEditMode } from '@/contexts/EditModeContext';
 
@@ -70,7 +70,7 @@ export const CMSVisualHeader = ({
           onClick={toggleEditMode}
           className="gap-1 sm:gap-2"
         >
-          {isEditMode ? <Eye className="h-4 w-4" /> : <Edit className="h-4 w-4" />}
+          {isEditMode ? <Eye className="h-4 w-4" /> : <EditIcon className="h-4 w-4" />}
           <span className="hidden md:inline">{isEditMode ? 'Preview' : 'Edit'}</span>
         </Button>
         
