@@ -379,13 +379,28 @@ const TraditionalStreakCalendar: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Current Week Summary */}
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 rounded-lg">
+          <div className={cn(
+            "p-3 rounded-lg border-2 transition-all",
+            current_week.is_complete 
+              ? "bg-green-50 border-green-400 shadow-md" 
+              : "bg-white border-pink-200"
+          )}>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">This Week</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">This Week</span>
+                {current_week.is_complete && (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                )}
+              </div>
               <Badge variant={current_week.is_complete ? 'default' : 'secondary'}>
                 {current_week.receipts_count}/2
               </Badge>
             </div>
+            {current_week.is_complete && (
+              <div className="mt-2 text-xs text-green-700 font-medium">
+                🎉 Week completed! Great job!
+              </div>
+            )}
           </div>
 
           {/* Calendar View */}
@@ -441,7 +456,7 @@ const TraditionalStreakCalendar: React.FC = () => {
             <CollapsibleContent className="space-y-4 mt-4">
               {/* Current Set Progress */}
               {current_set && (
-                <div className="bg-gradient-to-r from-secondary/10 to-secondary/5 p-3 rounded-lg">
+                <div className="bg-white border-2 border-pink-200 p-3 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium flex items-center gap-1">
                       <Target className="h-3 w-3" />
