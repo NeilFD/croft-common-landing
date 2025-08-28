@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle, CheckCircle, XCircle, Eye, User, Calendar } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, Eye, User, Calendar, Archive, ArchiveRestore } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -18,7 +18,7 @@ interface MemberMoment {
   tagline: string;
   date_taken: string;
   uploaded_at: string;
-  moderation_status: 'pending' | 'approved' | 'rejected' | 'needs_review';
+  moderation_status: string;
   moderation_reason?: string;
   ai_confidence_score?: number;
   ai_flags?: any[];
@@ -27,10 +27,14 @@ interface MemberMoment {
   latitude?: number;
   longitude?: number;
   location_confirmed: boolean;
+  profiles?: {
+    first_name: string;
+    last_name: string;
+  } | null;
 }
 
 const MomentsModeration: React.FC = () => {
-  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'needs_review'>('pending');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'needs_review' | 'archived'>('pending');
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
@@ -72,9 +76,7 @@ const MomentsModeration: React.FC = () => {
         
         let query = supabase
           .from('member_moments')
-          .select(`
-            *
-          `)
+          .select('*')
           .order('uploaded_at', { ascending: false });
 
         if (selectedStatus !== 'all') {
@@ -108,7 +110,7 @@ const MomentsModeration: React.FC = () => {
 
   // Moderation mutations
   const moderateMoment = useMutation({
-    mutationFn: async ({ momentId, status, reason }: { momentId: string; status: 'approved' | 'rejected'; reason?: string }) => {
+    mutationFn: async ({ momentId, status, reason }: { momentId: string; status: 'approved' | 'rejected' | 'archived'; reason?: string }) => {
       const { error } = await supabase
         .from('member_moments')
         .update({
@@ -184,6 +186,8 @@ const MomentsModeration: React.FC = () => {
         return <Badge variant="outline" className="text-red-600 border-red-600"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
       case 'needs_review':
         return <Badge variant="outline" className="text-orange-600 border-orange-600"><AlertTriangle className="h-3 w-3 mr-1" />Needs Review</Badge>;
+      case 'archived':
+        return <Badge variant="outline" className="text-gray-600 border-gray-600"><Archive className="h-3 w-3 mr-1" />Archived</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -197,8 +201,17 @@ const MomentsModeration: React.FC = () => {
     moderateMoment.mutate({ momentId, status: 'rejected', reason });
   };
 
+  const handleArchive = (momentId: string) => {
+    moderateMoment.mutate({ momentId, status: 'archived' });
+  };
+
+  const handleUnarchive = (momentId: string) => {
+    moderateMoment.mutate({ momentId, status: 'approved' });
+  };
+
   const pendingCount = moments.filter(m => m.moderation_status === 'pending').length;
   const needsReviewCount = moments.filter(m => m.moderation_status === 'needs_review').length;
+  const archivedCount = moments.filter(m => m.moderation_status === 'archived').length;
 
   return (
     <div className="space-y-6">
@@ -228,6 +241,7 @@ const MomentsModeration: React.FC = () => {
           <TabsTrigger value="needs_review">Need Review ({needsReviewCount})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({moments.filter(m => m.moderation_status === 'approved').length})</TabsTrigger>
           <TabsTrigger value="rejected">Rejected ({moments.filter(m => m.moderation_status === 'rejected').length})</TabsTrigger>
+          <TabsTrigger value="archived">Archived ({archivedCount})</TabsTrigger>
         </TabsList>
 
         <TabsContent value={selectedStatus} className="space-y-4">
@@ -317,7 +331,7 @@ const MomentsModeration: React.FC = () => {
                     <p className="font-medium line-clamp-2 mb-2">{moment.tagline}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                       <User className="h-3 w-3" />
-                      <span>User {moment.user_id.slice(0, 8)}...</span>
+                       <span>User {moment.user_id.slice(0, 8)}...</span>
                       <Calendar className="h-3 w-3" />
                       <span>{format(new Date(moment.uploaded_at), 'MMM dd')}</span>
                     </div>
@@ -360,6 +374,32 @@ const MomentsModeration: React.FC = () => {
                           Reject
                         </Button>
                       </div>
+                    )}
+
+                    {(moment.moderation_status === 'approved' || moment.moderation_status === 'rejected') && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-gray-600 border-gray-600 hover:bg-gray-50 w-full"
+                        onClick={() => handleArchive(moment.id)}
+                        disabled={moderateMoment.isPending}
+                      >
+                        <Archive className="h-3 w-3 mr-1" />
+                        Archive
+                      </Button>
+                    )}
+
+                    {moment.moderation_status === 'archived' && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-blue-600 border-blue-600 hover:bg-blue-50 w-full"
+                        onClick={() => handleUnarchive(moment.id)}
+                        disabled={moderateMoment.isPending}
+                      >
+                        <ArchiveRestore className="h-3 w-3 mr-1" />
+                        Restore
+                      </Button>
                     )}
                   </CardContent>
                 </Card>
@@ -434,6 +474,30 @@ const MomentsModeration: React.FC = () => {
                   >
                     {selectedMoment.is_visible ? 'Hide' : 'Show'}
                   </Button>
+                  
+                  {selectedMoment.moderation_status === 'archived' ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUnarchive(selectedMoment.id)}
+                      disabled={moderateMoment.isPending}
+                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                    >
+                      <ArchiveRestore className="h-4 w-4 mr-1" />
+                      Restore
+                    </Button>
+                  ) : selectedMoment.moderation_status !== 'pending' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleArchive(selectedMoment.id)}
+                      disabled={moderateMoment.isPending}
+                      className="text-gray-600 border-gray-600 hover:bg-gray-50"
+                    >
+                      <Archive className="h-4 w-4 mr-1" />
+                      Archive
+                    </Button>
+                  )}
                 </div>
 
                 {selectedMoment.moderation_status === 'pending' && (
