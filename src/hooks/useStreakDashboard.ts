@@ -160,6 +160,9 @@ export const useStreakDashboard = () => {
 
   useEffect(() => {
     fetchDashboard();
+    
+    // DEBUG: Force a refetch to see the new logs
+    console.log('🔍 FORCING REFETCH TO SEE EDGE FUNCTION LOGS...');
   }, [user?.id]);
 
   return {

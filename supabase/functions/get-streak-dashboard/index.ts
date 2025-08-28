@@ -123,6 +123,12 @@ serve(async (req: Request) => {
     const availableGrace = gracePeriods.data || [];
     const receipts = recentReceipts.data || [];
 
+    // DEBUG: Log receipt data
+    console.log('📊 Recent receipts query error:', recentReceipts.error);
+    console.log('📊 Recent receipts data length:', receipts?.length || 0);
+    console.log('📊 Recent receipts sample:', receipts?.slice(0, 3));
+    console.log('📊 Date filter (4 weeks ago):', getDateMinusWeeks(new Date(), 4));
+
     // Calculate current week progress
     // Fix property name mismatch: streak_weeks uses week_start_date, boundaries returns week_start
     const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
