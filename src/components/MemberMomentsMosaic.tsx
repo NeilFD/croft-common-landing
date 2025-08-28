@@ -542,7 +542,7 @@ const MemberMomentsMosaic: React.FC = () => {
           className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setSelectedMoment(null)}
         >
-          <div className="bg-white rounded-lg overflow-hidden shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+          <div className="bg-white rounded-lg overflow-hidden shadow-2xl max-w-3xl w-full max-h-[90vh] flex flex-col">
             {/* Image Area - takes most of the space */}
             <div className="flex-1 flex items-center justify-center bg-gray-50 min-h-[60vh]">
               <img
