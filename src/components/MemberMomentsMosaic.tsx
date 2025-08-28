@@ -544,12 +544,13 @@ const MemberMomentsMosaic: React.FC = () => {
         >
           <div className="bg-white rounded-lg overflow-hidden shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
             {/* Image Area - takes most of the space */}
-            <div className="flex-1 flex items-center justify-center p-4 min-h-0">
+            <div className="flex-1 flex items-center justify-center bg-gray-50 min-h-[60vh]">
               <img
                 src={selectedMoment.image_url}
                 alt={selectedMoment.tagline}
-                className="max-w-full max-h-full w-auto h-auto object-contain"
+                className="max-w-full max-h-full object-contain"
                 onClick={e => e.stopPropagation()}
+                style={{ maxHeight: 'calc(90vh - 200px)' }}
               />
             </div>
             
