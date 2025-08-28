@@ -54,6 +54,17 @@ const MemberMomentsMosaic: React.FC = () => {
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [selectedTagFilter, setSelectedTagFilter] = useState<string>('');
 
+  // Helper function to get member name (moved before filtering logic)
+  const getMemberName = (moment: MemberMoment) => {
+    if (moment.profiles) {
+      const { first_name, last_name } = moment.profiles;
+      if (first_name || last_name) {
+        return `${first_name || ''} ${last_name || ''}`.trim();
+      }
+    }
+    return 'Member';
+  };
+
   // Get all unique tags for filtering
   const allTags = useMemo(() => {
     if (!moments) return [];
@@ -138,16 +149,6 @@ const MemberMomentsMosaic: React.FC = () => {
 
   const handleDelete = async (momentId: string) => {
     await deleteMoment(momentId);
-  };
-
-  const getMemberName = (moment: MemberMoment) => {
-    if (moment.profiles) {
-      const { first_name, last_name } = moment.profiles;
-      if (first_name || last_name) {
-        return `${first_name || ''} ${last_name || ''}`.trim();
-      }
-    }
-    return 'Member';
   };
 
   const clearFilters = () => {
