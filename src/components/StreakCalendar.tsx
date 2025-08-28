@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Calendar, CheckCircle, Circle, Clock, Target, Gift, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,6 +16,10 @@ const StreakCalendar: React.FC = () => {
   const { receiptDots, loading: receiptLoading } = useReceiptDots();
 
   const loading = dashboardLoading || weekLoading || receiptLoading;
+
+  // Debug logging
+  console.log('CALENDAR RENDER: Receipt dots:', receiptDots);
+  console.log('CALENDAR RENDER: Week completions:', weekCompletions);
 
   if (loading) {
     return (
@@ -56,7 +60,17 @@ const StreakCalendar: React.FC = () => {
     );
   }
 
-  const { current_week, current_set, rewards } = dashboardData || { current_week: null, current_set: null, rewards: { available_discount: 0 } };
+  // Memoized current week calculation
+  const currentWeek = useMemo(() => 
+    weekCompletions.find(week => week.isCurrent), 
+    [weekCompletions]
+  );
+
+  // Memoized dashboard data destructuring
+  const { current_week, current_set, rewards } = useMemo(() => 
+    dashboardData || { current_week: null, current_set: null, rewards: { available_discount: 0 } }, 
+    [dashboardData]
+  );
 
   const getWeekIcon = (week: any) => {
     if (week.is_future) return <Circle className="h-4 w-4 text-muted-foreground" />;
@@ -72,22 +86,23 @@ const StreakCalendar: React.FC = () => {
     return 'Incomplete';
   };
 
-  const formatDate = (dateStr: string) => {
+  // Memoized format functions to prevent re-creation
+  const formatDate = useCallback((dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-GB', { 
       day: 'numeric', 
       month: 'short' 
     });
-  };
+  }, []);
 
-  const formatWeekRange = (weekStart: string, weekEnd: string) => {
+  const formatWeekRange = useCallback((weekStart: string, weekEnd: string) => {
     const start = new Date(weekStart);
     const end = new Date(weekEnd);
     return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-  };
+  }, []);
 
-  // Generate calendar grid for each week
-  const generateWeekCalendar = (weekStart: string) => {
+  // Memoized calendar generation to prevent infinite re-renders
+  const generateWeekCalendar = useCallback((weekStart: string) => {
     const start = new Date(weekStart);
     const days = [];
     
@@ -95,6 +110,8 @@ const StreakCalendar: React.FC = () => {
       const date = new Date(start);
       date.setDate(start.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
+      
+      console.log('CALENDAR DAY:', dateStr, 'Receipt match:', receiptDots.find(dot => dot.date === dateStr));
       
       days.push(
         <div key={dateStr} className="relative h-8 w-8 border border-border rounded flex items-center justify-center text-xs">
@@ -105,10 +122,7 @@ const StreakCalendar: React.FC = () => {
     }
     
     return days;
-  };
-
-  // Find current week from weekCompletions for progress display
-  const currentWeek = weekCompletions.find(week => week.isCurrent);
+  }, [receiptDots]);
 
   return (
     <div className="space-y-4">{/* Container for multiple cards */}
