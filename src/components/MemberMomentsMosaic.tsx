@@ -539,10 +539,10 @@ const MemberMomentsMosaic: React.FC = () => {
       {/* Detail Modal */}
       {selectedMoment && (
         <div 
-          className="fixed inset-0 z-[60] bg-black/90"
+          className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4"
           onClick={() => setSelectedMoment(null)}
         >
-          <div className="h-full flex flex-col">
+          <div className="bg-white rounded-lg overflow-hidden shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
             {/* Image Area - takes most of the space */}
             <div className="flex-1 flex items-center justify-center p-4 min-h-0">
               <img
@@ -554,8 +554,8 @@ const MemberMomentsMosaic: React.FC = () => {
             </div>
             
             {/* Info Panel - fixed at bottom */}
-            <div className="flex-shrink-0 bg-white p-4" onClick={e => e.stopPropagation()}>
-              <div className="max-w-4xl mx-auto">
+            <div className="flex-shrink-0 bg-white p-4 border-t" onClick={e => e.stopPropagation()}>
+              <div className="max-w-full mx-auto">
                 <h3 className="font-semibold text-lg text-gray-900 mb-2">{selectedMoment.tagline}</h3>
                 
                 {/* Tags */}
