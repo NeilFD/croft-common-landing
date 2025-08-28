@@ -137,12 +137,49 @@ const MemberHome: React.FC = () => {
         {/* Welcome Header */}
         <div className="mb-8 relative">
           <div className="bg-white rounded-2xl p-6 border-2 border-black">
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Welcome back, {memberStats.user.first_name || 'Member'}!
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              {memberStats.profile.tier_badge} member since {new Date(memberStats.profile.join_date).toLocaleDateString()}
-            </p>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+              <div>
+                <h1 className="text-4xl font-bold text-foreground mb-2">
+                  Welcome back, {memberStats.user.first_name || 'Member'}!
+                </h1>
+                <p className="text-muted-foreground text-lg">
+                  {memberStats.profile.tier_badge} member since {new Date(memberStats.profile.join_date).toLocaleDateString()}
+                </p>
+              </div>
+              
+              {/* Quick Actions Buttons */}
+              <div className="flex flex-wrap gap-2 lg:flex-nowrap">
+                <Button
+                  onClick={() => setShowReceiptModal(true)}
+                  size="sm"
+                  className="bg-pink-500 hover:bg-pink-600 text-white border-2 border-pink-500 hover:border-pink-600 transition-all duration-200"
+                >
+                  <Upload className="h-4 w-4 mr-1" />
+                  Upload
+                </Button>
+                
+                <Link to="/common-room/member/ledger">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
+                    <FileText className="h-4 w-4 mr-1" />
+                    Ledger
+                  </Button>
+                </Link>
+                
+                <Link to="/common-room/member/profile">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
+                    <User className="h-4 w-4 mr-1" />
+                    Profile
+                  </Button>
+                </Link>
+                
+                <Link to="/common-room/member/moments">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
+                    <Camera className="h-4 w-4 mr-1" />
+                    Moments
+                  </Button>
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -155,49 +192,6 @@ const MemberHome: React.FC = () => {
           <div className="space-y-6">
             <TraditionalStreakCalendar />
             
-            {/* Quick Actions Card */}
-            <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-foreground" />
-                  Your Space
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <Button
-                    onClick={() => setShowReceiptModal(true)}
-                    className="h-auto py-3 px-4 bg-pink-500 hover:bg-pink-600 text-white border-2 border-pink-500 hover:border-pink-600 transition-all duration-200 hover:scale-105"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Upload Receipt
-                  </Button>
-                  
-                  <Link to="/common-room/member/ledger">
-                    <Button variant="outline" className="w-full h-auto py-3 px-4 hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                      <FileText className="h-4 w-4 mr-2" />
-                      View Ledger
-                    </Button>
-                  </Link>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Link to="/common-room/member/profile">
-                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                      <User className="h-4 w-4 mr-2" />
-                      My Profile
-                    </Button>
-                  </Link>
-                  
-                  <Link to="/common-room/member/moments">
-                    <Button variant="outline" className="w-full hover:bg-pink-500/10 border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200 hover:scale-105">
-                      <Camera className="h-4 w-4 mr-2" />
-                      Moments
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
           </div>
 
           {/* Right Column - Community and Stats */}
