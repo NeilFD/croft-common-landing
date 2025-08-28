@@ -662,8 +662,7 @@ export const useMemberMoments = () => {
         return moment;
       }));
 
-      // Refresh to get accurate data
-      refetchMoments();
+      console.log('✅ LIKE: Moment liked successfully - real-time will update for other users');
     } catch (error) {
       toast({
         title: "Error",
@@ -713,8 +712,7 @@ export const useMemberMoments = () => {
         return moment;
       }));
 
-      // Refresh to get accurate data
-      refetchMoments();
+      console.log('✅ UNLIKE: Moment unliked successfully - real-time will update for other users');
     } catch (error) {
       toast({
         title: "Error",
@@ -726,6 +724,50 @@ export const useMemberMoments = () => {
 
   useEffect(() => {
     fetchMoments();
+
+    // Set up real-time subscriptions for instant updates
+    console.log('🔔 REALTIME: Setting up subscriptions...');
+    
+    const likesChannel = supabase
+      .channel('moment_likes_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'moment_likes'
+        },
+        (payload) => {
+          console.log('🔔 REALTIME: Moment likes change:', payload);
+          // Re-fetch moments to get updated like counts and user likes
+          fetchMoments();
+        }
+      )
+      .subscribe();
+
+    const momentsChannel = supabase
+      .channel('member_moments_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'member_moments'
+        },
+        (payload) => {
+          console.log('🔔 REALTIME: Member moment update:', payload);
+          // Re-fetch moments to get updated moment data
+          fetchMoments();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      console.log('🔔 REALTIME: Cleaning up subscriptions...');
+      supabase.removeChannel(likesChannel);
+      supabase.removeChannel(momentsChannel);
+    };
   }, [fetchMoments]);
 
   return {

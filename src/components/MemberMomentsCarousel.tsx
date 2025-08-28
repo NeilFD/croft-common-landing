@@ -1,22 +1,10 @@
 import React, { useState } from 'react';
-import { useMemberMoments } from '@/hooks/useMemberMoments';
+import { useMemberMoments, type MemberMoment } from '@/hooks/useMemberMoments';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Calendar, User, Camera } from 'lucide-react';
 import OptimizedImage from '@/components/OptimizedImage';
-
-interface MemberMoment {
-  id: string;
-  user_id: string;
-  image_url: string;
-  tagline: string | null;
-  uploaded_at: string;
-  profiles?: {
-    first_name?: string;
-    last_name?: string;
-  } | null;
-}
 
 const MemberMomentsCarousel: React.FC = () => {
   const { moments, loading } = useMemberMoments();
