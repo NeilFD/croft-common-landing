@@ -237,30 +237,35 @@ const MemberMomentsMosaic: React.FC = () => {
         </div>
       </div>
 
-      {/* Empty State */}
+      {/* Empty State - Only show if no moments exist or user has been searching/filtering */}
       {filteredMoments.length === 0 && !loading && (
-        <Card className="p-8">
-          <CardContent className="text-center space-y-4">
-            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
-              <Calendar className="h-12 w-12 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">
-                {searchQuery || startDate || endDate || selectedTagFilter ? 'No matching moments' : 'No moments yet'}
-              </h3>
-              <p className="text-muted-foreground">
-                {searchQuery || startDate || endDate || selectedTagFilter
-                  ? 'Try adjusting your search, date, or tag filters'
-                  : 'Be the first to share a memory from Croft Common!'}
-              </p>
-            </div>
-            {user && (
-              <Button onClick={() => setShowUpload(true)} className="mt-4">
-                Share Your First Moment
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <div className={cn(
+          "transition-all duration-300",
+          (searchQuery || startDate || endDate || selectedTagFilter) ? "opacity-60" : "opacity-100"
+        )}>
+          <Card className="p-8">
+            <CardContent className="text-center space-y-4">
+              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
+                <Calendar className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {searchQuery || startDate || endDate || selectedTagFilter ? 'No matching moments' : 'No moments yet'}
+                </h3>
+                <p className="text-muted-foreground">
+                  {searchQuery || startDate || endDate || selectedTagFilter
+                    ? 'Try adjusting your search, date, or tag filters'
+                    : 'Be the first to share a memory from Croft Common!'}
+                </p>
+              </div>
+              {user && (
+                <Button onClick={() => setShowUpload(true)} className="mt-4">
+                  Share Your First Moment
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Masonry Grid */}
@@ -287,7 +292,7 @@ const MemberMomentsMosaic: React.FC = () => {
                         <Button
                           variant="secondary"
                           size="icon"
-                          className="h-8 w-8 bg-background/80 hover:bg-background"
+                          className="h-8 w-8 bg-accent/90 hover:bg-accent text-accent-foreground"
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditingMoment(moment);
