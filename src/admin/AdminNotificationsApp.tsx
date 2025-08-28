@@ -18,6 +18,7 @@ import { OptInAnalytics } from "./components/OptInAnalytics";
 import { UserAnalytics } from "./components/UserAnalytics";
 import { SubscribersTable } from "./components/SubscribersTable";
 import MomentsModeration from "./components/MomentsModeration";
+import { GranularAnalytics } from "./components/GranularAnalytics";
 
 type NotificationRow = {
   id: string;
