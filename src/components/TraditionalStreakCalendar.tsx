@@ -320,7 +320,8 @@ const TraditionalStreakCalendar: React.FC = () => {
 
   // Custom day renderer for calendar
   const dayRenderer = (day: Date) => {
-    const dateStr = day.toISOString().split('T')[0];
+    // Use local timezone formatting instead of UTC to avoid date shifting
+    const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
     const hasReceipt = receiptDates.has(dateStr);
     const isToday = day.toDateString() === new Date().toDateString();
     
@@ -329,7 +330,9 @@ const TraditionalStreakCalendar: React.FC = () => {
       console.log(`🔍 DAY RENDERER: Checking ${dateStr}:`, {
         hasReceipt,
         isInSet: receiptDates.has(dateStr),
-        allDatesInSet: Array.from(receiptDates)
+        allDatesInSet: Array.from(receiptDates),
+        originalDay: day,
+        localDateStr: dateStr
       });
     }
     
