@@ -18,9 +18,42 @@ const CommonRoomMain = () => {
   // Navigate to member area when authentication is successful
   React.useEffect(() => {
     console.log('[CommonRoomMain] membershipGate.allowed changed:', membershipGate.allowed);
+    console.log('[CommonRoomMain] Mobile PWA context:', {
+      userAgent: navigator.userAgent,
+      standalone: window.matchMedia('(display-mode: standalone)').matches,
+      viewport: { width: window.innerWidth, height: window.innerHeight }
+    });
+    
     if (membershipGate.allowed) {
-      console.log('[CommonRoomMain] Attempting to navigate to /common-room/member');
-      navigate('/common-room/member');
+      console.log('[CommonRoomMain] 🚀 MOBILE: Authentication successful, navigating to /common-room/member');
+      
+      // Add mobile-specific navigation with retry
+      const navigateWithRetry = () => {
+        try {
+          navigate('/common-room/member', { replace: true });
+          console.log('[CommonRoomMain] ✅ MOBILE: Navigation initiated');
+        } catch (error) {
+          console.error('[CommonRoomMain] ❌ MOBILE: Navigation failed:', error);
+          // Retry after short delay
+          setTimeout(() => {
+            try {
+              window.location.href = '/common-room/member';
+            } catch (e) {
+              console.error('[CommonRoomMain] ❌ MOBILE: Fallback navigation failed:', e);
+            }
+          }, 100);
+        }
+      };
+
+      // On mobile PWA, add small delay to ensure DOM is ready
+      const isMobile = window.innerWidth < 768;
+      const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+      
+      if (isMobile || isPWA) {
+        setTimeout(navigateWithRetry, 50);
+      } else {
+        navigateWithRetry();
+      }
     }
   }, [membershipGate.allowed, navigate]);
 

@@ -796,6 +796,7 @@ export type Database = {
           moderation_reason: string | null
           moderation_status: string
           tagline: string
+          tags: string[] | null
           updated_at: string
           uploaded_at: string
           user_id: string
@@ -816,6 +817,7 @@ export type Database = {
           moderation_reason?: string | null
           moderation_status?: string
           tagline: string
+          tags?: string[] | null
           updated_at?: string
           uploaded_at?: string
           user_id: string
@@ -836,6 +838,7 @@ export type Database = {
           moderation_reason?: string | null
           moderation_status?: string
           tagline?: string
+          tags?: string[] | null
           updated_at?: string
           uploaded_at?: string
           user_id?: string
@@ -1063,6 +1066,35 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: []
+      }
+      moment_likes: {
+        Row: {
+          created_at: string
+          id: string
+          moment_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          moment_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          moment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_likes_moment_id_fkey"
+            columns: ["moment_id"]
+            isOneToOne: false
+            referencedRelation: "member_moments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notification_deliveries: {
         Row: {

@@ -23,22 +23,27 @@ export interface MemberMoment {
   moderated_at?: string | null;
   moderated_by?: string | null;
   updated_at: string;
-  like_count: number;
-  user_has_liked: boolean;
+  tags?: string[] | null;
   profiles?: {
     first_name?: string | null;
     last_name?: string | null;
   } | null;
+  like_count?: number;
+  user_has_liked?: boolean;
+  likers?: {
+    first_name?: string | null;
+    last_name?: string | null;
+  }[];
 }
 
 interface LocationData {
-  latitude: number;
-  longitude: number;
+  lat: number;
+  lng: number;
 }
 
-const VENUE_COORDS = {
-  latitude: 51.4583,
-  longitude: -2.6014
+const VENUE_COORDINATES = {
+  lat: 51.4583,
+  lng: -2.6014
 };
 
 export const useMemberMoments = () => {
@@ -51,7 +56,9 @@ export const useMemberMoments = () => {
     setLoading(true);
     
     try {
-      // Get basic moments data first
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      // First get moments
       const { data: momentsData, error: momentsError } = await supabase
         .from('member_moments')
         .select('*')
@@ -68,21 +75,10 @@ export const useMemberMoments = () => {
         return;
       }
 
-      if (!momentsData || momentsData.length === 0) {
-        setMoments([]);
-        return;
-      }
-
-      // For now, set like_count to 0 and user_has_liked to false
-      // This will be updated once the database functions are available
-      const processedMoments = momentsData.map(moment => ({
-        ...moment,
-        like_count: 0,
-        user_has_liked: false
-      }));
-
-      // Get profiles for users
-      const userIds = [...new Set(processedMoments.map(moment => moment.user_id))];
+      // Get unique user IDs from moments
+      const userIds = [...new Set(momentsData?.map(moment => moment.user_id) || [])];
+      
+      // Get profiles for those users
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, first_name, last_name')
@@ -92,19 +88,76 @@ export const useMemberMoments = () => {
         console.warn('Failed to load profiles:', profilesError);
       }
 
+      // Get like counts and user likes for each moment
+      const momentIds = momentsData?.map(moment => moment.id) || [];
+      
+      // Get like counts
+      const { data: likeCounts, error: likeCountError } = await supabase
+        .from('moment_likes')
+        .select('moment_id')
+        .in('moment_id', momentIds);
+        
+      // Get user's likes if authenticated
+      let userLikes: any[] = [];
+      if (currentUser) {
+        const { data: userLikesData, error: userLikesError } = await supabase
+          .from('moment_likes')
+          .select('moment_id')
+          .eq('user_id', currentUser.id)
+          .in('moment_id', momentIds);
+        
+        userLikes = userLikesData || [];
+      }
+
+      // Get likers with profiles for tooltips
+      const { data: likersData, error: likersError } = await supabase
+        .from('moment_likes')
+        .select(`
+          moment_id,
+          user_id,
+          profiles!inner(first_name, last_name)
+        `)
+        .in('moment_id', momentIds);
+
+      // Create maps
       const profilesMap = new Map();
       profilesData?.forEach(profile => {
         profilesMap.set(profile.user_id, profile);
       });
 
-      const momentsWithProfiles = processedMoments.map(moment => ({
-        ...moment,
-        profiles: profilesMap.get(moment.user_id) || null
-      }));
+      const likeCountMap = new Map();
+      const userLikeMap = new Set();
+      const likersMap = new Map();
 
-      setMoments(momentsWithProfiles);
+      // Process like counts
+      likeCounts?.forEach(like => {
+        likeCountMap.set(like.moment_id, (likeCountMap.get(like.moment_id) || 0) + 1);
+      });
+
+      // Process user likes
+      userLikes.forEach(like => {
+        userLikeMap.add(like.moment_id);
+      });
+
+      // Process likers
+      likersData?.forEach(like => {
+        if (!likersMap.has(like.moment_id)) {
+          likersMap.set(like.moment_id, []);
+        }
+        likersMap.get(like.moment_id).push(like.profiles);
+      });
+
+      // Combine moments with all data
+      const momentsWithData = momentsData?.map(moment => ({
+        ...moment,
+        profiles: profilesMap.get(moment.user_id) || null,
+        like_count: likeCountMap.get(moment.id) || 0,
+        user_has_liked: userLikeMap.has(moment.id),
+        likers: likersMap.get(moment.id) || []
+      })) || [];
+
+      setMoments(momentsWithData);
     } catch (error) {
-      console.error('Error fetching moments:', error);
       toast({
         title: "Error",
         description: "Failed to load moments. Please try again.",
@@ -127,8 +180,8 @@ export const useMemberMoments = () => {
     return dd;
   };
 
-  // Helper function to extract GPS data from image using EXIF
-  const extractGPSFromImage = (file: File): Promise<LocationData | null> => {
+  // Helper function to get GPS data from image using EXIF
+  const getGPSFromImage = (file: File): Promise<LocationData | null> => {
     return new Promise((resolve) => {
       try {
         console.log('📷 EXIF: Starting GPS extraction from image...');
@@ -152,11 +205,11 @@ export const useMemberMoments = () => {
             
             if (lat && lon && latRef && lonRef) {
               // Convert DMS (degrees, minutes, seconds) to decimal degrees
-              const latitude = convertDMSToDD(lat, latRef);
-              const longitude = convertDMSToDD(lon, lonRef);
+              const latCoord = convertDMSToDD(lat, latRef);
+              const lngCoord = convertDMSToDD(lon, lonRef);
               
-              console.log('📷 EXIF: Converted GPS coordinates:', { latitude, longitude });
-              resolve({ latitude, longitude });
+              console.log('📷 EXIF: Converted GPS coordinates:', { lat: latCoord, lng: lngCoord });
+              resolve({ lat: latCoord, lng: lngCoord });
             } else {
               console.log('📷 EXIF: No GPS data found in image EXIF');
               resolve(null);
@@ -174,7 +227,7 @@ export const useMemberMoments = () => {
   };
 
   // Helper function to detect mobile device
-  const isMobileDevice = (): boolean => {
+  const checkMobileDevice = (): boolean => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
 
@@ -190,7 +243,7 @@ export const useMemberMoments = () => {
           return;
         }
 
-        const mobile = isMobileDevice();
+        const mobile = checkMobileDevice();
         const options = {
           enableHighAccuracy: true,
           timeout: mobile ? 8000 : 5000, // Shorter timeout to prevent hanging
@@ -209,13 +262,13 @@ export const useMemberMoments = () => {
           (position) => {
             clearTimeout(timeoutId);
             console.log('📍 GEOLOCATION: Success:', {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
               accuracy: position.coords.accuracy
             });
             resolve({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
             });
           },
           (error) => {
@@ -238,10 +291,10 @@ export const useMemberMoments = () => {
     });
   };
 
-  const isLocationWithinVenue = (location: LocationData): boolean => {
+  const checkLocationWithinVenue = (coords: LocationData): boolean => {
     const distance = Math.sqrt(
-      Math.pow(69.1 * (location.latitude - VENUE_COORDS.latitude), 2) +
-      Math.pow(69.1 * (VENUE_COORDS.longitude - location.longitude) * Math.cos(VENUE_COORDS.latitude / 57.3), 2)
+      Math.pow(69.1 * (coords.lat - VENUE_COORDINATES.lat), 2) +
+      Math.pow(69.1 * (VENUE_COORDINATES.lng - coords.lng) * Math.cos(VENUE_COORDINATES.lat / 57.3), 2)
     ) * 1.609344; // Convert to km
     
     return distance <= 0.2; // 200 meter radius
@@ -250,7 +303,8 @@ export const useMemberMoments = () => {
   const uploadMoment = async (
     file: File,
     tagline: string,
-    dateTaken: string
+    dateTaken: string,
+    tags: string[] = []
   ) => {
     // Prevent multiple simultaneous uploads
     if (uploading) {
@@ -269,12 +323,14 @@ export const useMemberMoments = () => {
       
       if (userError) {
         console.error('❌ AUTH: User error:', userError);
-        throw new Error(`Authentication error: ${userError.message}`);
+        const authError = new TypeError(`Authentication error: ${userError.message}`);
+        throw authError;
       }
       
       if (!user) {
         console.error('❌ AUTH: User not authenticated - no user object');
-        throw new Error('User not authenticated');
+        const userAuthError = new TypeError('User not authenticated');
+        throw userAuthError;
       }
       
       // Get initial session
@@ -288,7 +344,8 @@ export const useMemberMoments = () => {
       
       if (sessionError || !initialSession) {
         console.error('❌ AUTH: No valid session:', sessionError);
-        throw new Error('Authentication session required');
+        const authError = new TypeError('Authentication session required');
+        throw authError;
       }
       
       console.log('✅ AUTH: User authenticated:', user.id);
@@ -324,7 +381,8 @@ export const useMemberMoments = () => {
 
       if (uploadError) {
         console.error('❌ STORAGE: Upload error:', uploadError);
-        throw new Error(`Storage upload failed: ${uploadError.message}`);
+        const storageError = new TypeError(`Storage upload failed: ${uploadError.message}`);
+        throw storageError;
       }
       console.log('✅ STORAGE: Upload successful:', uploadData);
 
@@ -352,7 +410,8 @@ export const useMemberMoments = () => {
       
       if (dbSessionError || !dbSession || !dbSession.user) {
         console.error('❌ DATABASE: Invalid session for database operation:', dbSessionError);
-        throw new Error('Authentication session invalid for database operation. Please refresh and try again.');
+        const dbError = new TypeError('Authentication session invalid for database operation. Please refresh and try again.');
+        throw dbError;
       }
       
       if (dbSession.user.id !== user.id) {
@@ -360,7 +419,8 @@ export const useMemberMoments = () => {
           sessionUserId: dbSession.user.id, 
           originalUserId: user.id 
         });
-        throw new Error('User authentication mismatch. Please log out and log back in.');
+        const authMismatchError = new TypeError('User authentication mismatch. Please log out and log back in.');
+        throw authMismatchError;
       }
 
       const momentData = {
@@ -372,7 +432,8 @@ export const useMemberMoments = () => {
         longitude: null, // Remove location tracking
         location_confirmed: false, // Always false since no location tracking
         moderation_status: 'pending', // Set to pending for automatic moderation
-        is_visible: true
+        is_visible: true,
+        tags: tags.filter(tag => tag.trim().length > 0)
       };
       
       console.log('💾 DATABASE: About to insert with data:', { 
@@ -394,7 +455,8 @@ export const useMemberMoments = () => {
       });
       
       if (finalSessionError || !finalSession?.user) {
-        throw new Error('Session lost before database insert');
+        const sessionError = new TypeError('Session lost before database insert');
+        throw sessionError;
       }
       
       const { data: insertedMoment, error: insertError } = await supabase
@@ -419,10 +481,12 @@ export const useMemberMoments = () => {
         
         // Provide more specific error messages
         if (insertError.message?.includes('row-level security policy')) {
-          throw new Error('Authentication error: Please refresh the page and try again.');
+          const authError = new TypeError('Authentication error: Please refresh the page and try again.');
+          throw authError;
         }
         
-        throw new Error(`Database error: ${insertError.message}`);
+        const dbError = new TypeError(`Database error: ${insertError.message}`);
+        throw dbError;
       }
       
       console.log('✅ DATABASE: Moment inserted successfully:', insertedMoment);
@@ -431,7 +495,7 @@ export const useMemberMoments = () => {
       console.log('🎉 SUCCESS: Upload complete, showing success message');
       toast({
         title: "Moment uploaded!",
-        description: "Your moment has been uploaded successfully.",
+        description: "Your moment has been sent for AI moderation review and will appear once approved.",
       });
 
       // Automatic moderation will be triggered by database trigger
@@ -457,7 +521,7 @@ export const useMemberMoments = () => {
       }
       
       let errorMessage = "An unexpected error occurred";
-      if (error instanceof Error) {
+      if (error instanceof TypeError) {
         errorMessage = error.message;
       } else if (typeof error === 'string') {
         errorMessage = error;
@@ -509,17 +573,202 @@ export const useMemberMoments = () => {
     }
   };
 
+  const updateMoment = async (
+    momentId: string,
+    tagline: string,
+    dateTaken: string,
+    tags: string[] = []
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        const authError = new TypeError('User not authenticated');
+        throw authError;
+      }
+
+      const updateData = {
+        tagline,
+        date_taken: dateTaken,
+        tags: tags.filter(tag => tag.trim().length > 0)
+      };
+
+      const { error } = await supabase
+        .from('member_moments')
+        .update(updateData)
+        .eq('id', momentId)
+        .eq('user_id', user.id); // Ensure user can only update their own moments
+
+      if (error) throw error;
+
+      toast({
+        title: "Moment updated",
+        description: "Your moment has been updated successfully."
+      });
+
+      await fetchMoments();
+    } catch (error: any) {
+      console.error('Update error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update moment",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const likeMoment = async (momentId: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to like moments.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('moment_likes')
+        .insert([{ moment_id: momentId, user_id: user.id }]);
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast({
+            title: "Already liked",
+            description: "You have already liked this moment.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to like moment. Please try again.",
+            variant: "destructive"
+          });
+        }
+        return;
+      }
+
+      // Optimistic update
+      setMoments(prev => prev.map(moment => {
+        if (moment.id === momentId) {
+          return {
+            ...moment,
+            like_count: (moment.like_count || 0) + 1,
+            user_has_liked: true
+          };
+        }
+        return moment;
+      }));
+
+      console.log('✅ LIKE: Moment liked successfully - real-time will update for other users');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to like moment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const unlikeMoment = async (momentId: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to unlike moments.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('moment_likes')
+        .delete()
+        .eq('moment_id', momentId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to unlike moment. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Optimistic update
+      setMoments(prev => prev.map(moment => {
+        if (moment.id === momentId) {
+          return {
+            ...moment,
+            like_count: Math.max((moment.like_count || 0) - 1, 0),
+            user_has_liked: false
+          };
+        }
+        return moment;
+      }));
+
+      console.log('✅ UNLIKE: Moment unliked successfully - real-time will update for other users');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to unlike moment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     fetchMoments();
-  }, [fetchMoments]);
 
-  const toggleLike = async (momentId: string) => {
-    // Temporarily disabled - will show toast message
-    toast({
-      title: "Feature coming soon",
-      description: "Like functionality will be available soon!",
-    });
-  };
+    // Set up real-time subscriptions for instant updates
+    console.log('🔔 REALTIME: Setting up subscriptions...');
+    
+    const likesChannel = supabase
+      .channel('moment_likes_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'moment_likes'
+        },
+        (payload) => {
+          console.log('🔔 REALTIME: Moment likes change:', payload);
+          // Re-fetch moments to get updated like counts and user likes
+          fetchMoments();
+        }
+      )
+      .subscribe();
+
+    const momentsChannel = supabase
+      .channel('member_moments_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'member_moments'
+        },
+        (payload) => {
+          console.log('🔔 REALTIME: Member moment update:', payload);
+          // Re-fetch moments to get updated moment data
+          fetchMoments();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      console.log('🔔 REALTIME: Cleaning up subscriptions...');
+      supabase.removeChannel(likesChannel);
+      supabase.removeChannel(momentsChannel);
+    };
+  }, [fetchMoments]);
 
   return {
     moments,
@@ -527,7 +776,9 @@ export const useMemberMoments = () => {
     uploading,
     uploadMoment,
     deleteMoment,
+    updateMoment,
     refetchMoments,
-    toggleLike,
+    likeMoment,
+    unlikeMoment
   };
 };

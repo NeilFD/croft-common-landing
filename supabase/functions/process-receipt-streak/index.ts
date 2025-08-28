@@ -383,7 +383,9 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
     .eq('user_id', userId);
 
   const { data: currentWeekBoundaries } = await supabase.rpc('get_current_week_boundaries');
-  const currentWeek = weekStats?.find(w => w.week_start_date === currentWeekBoundaries?.week_start);
+  // Fix property access - get_current_week_boundaries returns an array
+  const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
+  const currentWeek = weekStats?.find(w => w.week_start_date === currentWeekStartDate);
 
   const totalWeeksCompleted = weekStats?.filter(w => w.is_complete).length || 0;
   const totalSetsCompleted = setStats?.filter(s => s.is_complete).length || 0;
@@ -413,7 +415,7 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
     .upsert({
       user_id: userId,
       current_week_receipts: currentWeekReceipts,
-      current_week_start_date: currentWeekBoundaries?.week_start,
+      current_week_start_date: currentWeekStartDate,
       current_set_number: setStats?.[0]?.set_number || 1,
       current_set_progress: currentSetProgress,
       total_sets_completed: totalSetsCompleted,

@@ -3,9 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Image, MapPin, AlertTriangle, Calendar, Tag, X } from 'lucide-react';
+import { Upload, Image, Calendar, Tag, X, Plus } from 'lucide-react';
 import { useMemberMoments } from '@/hooks/useMemberMoments';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -15,11 +15,18 @@ interface MemberMomentUploadProps {
   isOpen?: boolean;
 }
 
+const PRESET_TAGS = [
+  'Café', 'Cocktails', 'Kitchens', 'Taprooms', 'Hall', 'Terrace', 
+  'Rooftop', 'SecretCinema', 'LuckyNo7', 'CroftCommon', 'CommonGood'
+];
+
 const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true }) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [tagline, setTagline] = useState('');
   const [dateTaken, setDateTaken] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [customTag, setCustomTag] = useState('');
   const [step, setStep] = useState<'upload' | 'details'>('upload');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -56,8 +63,28 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     }
   };
 
+  const togglePresetTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const addCustomTag = () => {
+    const trimmedTag = customTag.trim();
+    if (trimmedTag && !selectedTags.includes(trimmedTag)) {
+      setSelectedTags(prev => [...prev, trimmedTag]);
+      setCustomTag('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
+  };
+
   const handleUpload = async () => {
-    console.log('🎬 COMPONENT: handleUpload called', { file: file?.name, tagline, dateTaken });
+    console.log('🎬 COMPONENT: handleUpload called', { file: file?.name, tagline, dateTaken, tags: selectedTags });
     
     if (!file || !tagline.trim()) {
       console.log('❌ COMPONENT: Missing file or tagline');
@@ -71,7 +98,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
 
     try {
       console.log('🚀 COMPONENT: Calling uploadMoment...');
-      await uploadMoment(file, tagline.trim(), dateTaken);
+      await uploadMoment(file, tagline.trim(), dateTaken, selectedTags);
       console.log('✅ COMPONENT: Upload successful, cleaning up...');
       
       // Refetch moments to show the new upload
@@ -94,7 +121,6 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     }
   };
 
-
   const handleReset = () => {
     setFile(null);
     if (previewUrl) {
@@ -103,6 +129,8 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     }
     setTagline('');
     setDateTaken(format(new Date(), 'yyyy-MM-dd'));
+    setSelectedTags([]);
+    setCustomTag('');
     setStep('upload');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -210,6 +238,86 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                   onChange={(e) => setDateTaken(e.target.value)}
                   max={format(new Date(), 'yyyy-MM-dd')}
                 />
+              </div>
+
+              {/* Tags Section */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <Tag className="h-4 w-4" />
+                  Add tags (optional)
+                </Label>
+                
+                {/* Preset Tags */}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Popular tags:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {PRESET_TAGS.map(tag => (
+                      <Button
+                        key={tag}
+                        type="button"
+                        variant={selectedTags.includes(tag) ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => togglePresetTag(tag)}
+                        className={`text-xs h-7 ${
+                          selectedTags.includes(tag) 
+                            ? 'bg-background text-accent border-accent' 
+                            : 'bg-background text-foreground border-accent hover:border-accent hover:bg-accent/5'
+                        }`}
+                      >
+                        {tag}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom Tag Input */}
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Add your own:</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Type a custom tag..."
+                      value={customTag}
+                      onChange={(e) => setCustomTag(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && addCustomTag()}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addCustomTag}
+                      disabled={!customTag.trim()}
+                      className="border-accent hover:bg-accent/5"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Selected Tags */}
+                {selectedTags.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">Selected tags:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedTags.map(tag => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="bg-background text-foreground border-accent flex items-center gap-1"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            className="ml-1 hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <Button

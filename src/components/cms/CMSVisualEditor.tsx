@@ -3,7 +3,7 @@ import { useEditMode } from '@/contexts/EditModeContext';
 import { CMSModeProvider } from '@/contexts/CMSModeContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Edit, Globe, Save, RefreshCw } from 'lucide-react';
+import { Eye, Edit as EditIcon, Globe, Save, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 // Import all page components

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Save, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Edit as EditIcon, Trash2, Save, X, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -324,7 +324,7 @@ export const FAQManager = ({ page, onPublish }: FAQManagerProps) => {
                         <ArrowDown className="h-4 w-4" />
                       </Button>
                       <Button onClick={() => setEditingId(faq.id!)} size="sm" variant="outline">
-                        <Edit className="h-4 w-4" />
+                        <EditIcon className="h-4 w-4" />
                       </Button>
                       <Button 
                         onClick={() => handleDelete(faq.id!)} 

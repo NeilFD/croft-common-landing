@@ -79,7 +79,7 @@ const MemberProfile: React.FC = () => {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      <div className="container mx-auto px-4 py-8 max-w-4xl mt-8">
+      <div className="container mx-auto px-4 pt-32 pb-8 max-w-4xl">
         <div className="mb-6">
           <Link 
             to="/common-room/member" 

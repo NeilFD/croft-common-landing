@@ -1,17 +1,16 @@
 import React, { useState, useMemo } from 'react';
+import { format } from 'date-fns';
+
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+// UI Components
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Calendar, User, Plus, Trash2, Search, CalendarIcon, Heart } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
-import { useAuth } from '@/hooks/useAuth';
-import { format, isAfter, isBefore, isSameDay } from 'date-fns';
-import { cn } from '@/lib/utils';
-import MemberMomentUpload from './MemberMomentUpload';
-import OptimizedImage from './OptimizedImage';
+
+// Alert Dialog Components
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,41 +23,41 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+// Icons
+import { 
+  Calendar, 
+  User, 
+  Plus, 
+  Trash2, 
+  Search, 
+  CalendarIcon, 
+  Tag,
+  Pencil,
+  Heart
+} from 'lucide-react';
+
+// Custom Components & Hooks
+import { cn } from '@/lib/utils';
+import SearchInput from './SearchInput';
+import { SearchErrorBoundary } from './SearchErrorBoundary';
+import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
+import { useAuth } from '@/hooks/useAuth';
+import MemberMomentUpload from './MemberMomentUpload';
+import MemberMomentEdit from './MemberMomentEdit';
+import OptimizedImage from './OptimizedImage';
+
 const MemberMomentsMosaic: React.FC = () => {
-  const { moments, loading, deleteMoment, refetchMoments, toggleLike } = useMemberMoments();
+  const { moments, loading, deleteMoment, refetchMoments, likeMoment, unlikeMoment } = useMemberMoments();
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
+  const [editingMoment, setEditingMoment] = useState<MemberMoment | null>(null);
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [selectedTagFilter, setSelectedTagFilter] = useState<string>('');
 
-  // Filter moments based on search query and date range
-  const filteredMoments = useMemo(() => {
-    if (!moments) return [];
-    
-    return moments.filter((moment) => {
-      // Search filter
-      const matchesSearch = searchQuery === '' || 
-        moment.tagline.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Date filter
-      const momentDate = new Date(moment.date_taken);
-      const matchesDateRange = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
-                               (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
-      
-      return matchesSearch && matchesDateRange;
-    });
-  }, [moments, searchQuery, startDate, endDate]);
-
-  const handleMomentClick = (moment: MemberMoment) => {
-    setSelectedMoment(moment);
-  };
-
-  const handleDelete = async (momentId: string) => {
-    await deleteMoment(momentId);
-  };
-
+  // Helper function to get member name (moved before filtering logic)
   const getMemberName = (moment: MemberMoment) => {
     if (moment.profiles) {
       const { first_name, last_name } = moment.profiles;
@@ -69,10 +68,97 @@ const MemberMomentsMosaic: React.FC = () => {
     return 'Member';
   };
 
+  // Get all unique tags for filtering
+  const allTags = useMemo(() => {
+    if (!moments) return [];
+    const tagSet = new Set<string>();
+    moments.forEach(moment => {
+      if (moment.tags) {
+        moment.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [moments]);
+
+  // Enhanced filtering that includes tags with native date comparison
+  const filteredMoments = useMemo(() => {
+    if (!moments) return [];
+    
+    console.log('🔍 MemberMomentsMosaic: Filtering with searchQuery:', searchQuery); // Debug log
+    
+    try {
+      const filtered = moments.filter((moment) => {
+        const query = searchQuery.toLowerCase().trim();
+        
+        // Search in tagline, member name, and tags (enhanced)
+        const searchMatches = query === '' || (
+          // Search in tagline
+          moment.tagline?.toLowerCase().includes(query) ||
+          // Search in member name
+          getMemberName(moment).toLowerCase().includes(query) ||
+          // Search in tags (enhanced with better matching)
+          (moment.tags && moment.tags.some(tag => 
+            tag.toLowerCase().includes(query) || 
+            tag.toLowerCase().replace(/\s+/g, '').includes(query.replace(/\s+/g, ''))
+          )) ||
+          // Search for exact tag matches
+          (moment.tags && moment.tags.some(tag => 
+            tag.toLowerCase() === query
+          ))
+        );
+        
+        // Date range filtering with native JavaScript (defensive)
+        let dateMatches = true;
+        try {
+          if (startDate || endDate) {
+            const momentDate = new Date(moment.date_taken);
+            const momentTime = momentDate.getTime();
+            
+            if (startDate) {
+              const startTime = new Date(startDate).getTime();
+              dateMatches = dateMatches && (momentTime >= startTime || 
+                momentDate.toDateString() === startDate.toDateString());
+            }
+            
+            if (endDate && dateMatches) {
+              const endTime = new Date(endDate).getTime();
+              dateMatches = dateMatches && (momentTime <= endTime || 
+                momentDate.toDateString() === endDate.toDateString());
+            }
+          }
+        } catch (error) {
+          console.warn('Date filtering error:', error);
+          dateMatches = true; // Fallback to show all moments if date filtering fails
+        }
+        
+        // Tag filtering
+        const tagMatches = !selectedTagFilter || 
+                          (moment.tags && moment.tags.includes(selectedTagFilter));
+        
+        return searchMatches && dateMatches && tagMatches;
+      });
+      
+      console.log('🔍 MemberMomentsMosaic: Filtered results count:', filtered.length); // Debug log
+      return filtered;
+    } catch (error) {
+      console.warn('Filtering error:', error);
+      return moments; // Fallback to show all moments if filtering fails
+    }
+  }, [moments, searchQuery, startDate, endDate, selectedTagFilter]);
+
+  const handleMomentClick = (moment: MemberMoment) => {
+    setSelectedMoment(moment);
+  };
+
+  const handleDelete = async (momentId: string) => {
+    await deleteMoment(momentId);
+  };
+
   const clearFilters = () => {
     setSearchQuery('');
     setStartDate(undefined);
     setEndDate(undefined);
+    setSelectedTagFilter('');
   };
 
   if (loading) {
@@ -111,14 +197,18 @@ const MemberMomentsMosaic: React.FC = () => {
       <div className="mb-6 space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search moments..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex-1">
+            <SearchErrorBoundary
+              fallbackValue={searchQuery}
+              onFallbackChange={setSearchQuery}
+              placeholder="Search moments or tags..."
+            >
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search moments or tags..."
+              />
+            </SearchErrorBoundary>
           </div>
           
           {/* Date Range Filters */}
@@ -171,13 +261,40 @@ const MemberMomentsMosaic: React.FC = () => {
               </PopoverContent>
             </Popover>
             
-            {(searchQuery || startDate || endDate) && (
+            {(searchQuery || startDate || endDate || selectedTagFilter) && (
               <Button variant="ghost" onClick={clearFilters}>
                 Clear
               </Button>
             )}
           </div>
         </div>
+
+        {/* Tag Filter Buttons */}
+        {allTags.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Filter by tag:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {allTags.map(tag => (
+                <Button
+                  key={tag}
+                  variant={selectedTagFilter === tag ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedTagFilter(selectedTagFilter === tag ? '' : tag)}
+                  className={`text-xs h-7 ${
+                    selectedTagFilter === tag
+                      ? 'bg-background text-accent border-accent' 
+                      : 'bg-background text-foreground border-accent hover:border-accent hover:bg-accent/5'
+                  }`}
+                >
+                  {tag}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Results count */}
         <div className="text-sm text-muted-foreground">
@@ -185,30 +302,35 @@ const MemberMomentsMosaic: React.FC = () => {
         </div>
       </div>
 
-      {/* Empty State */}
+      {/* Empty State - Only show if no moments exist or user has been searching/filtering */}
       {filteredMoments.length === 0 && !loading && (
-        <Card className="p-8">
-          <CardContent className="text-center space-y-4">
-            <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
-              <Calendar className="h-12 w-12 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold">
-                {searchQuery || startDate || endDate ? 'No matching moments' : 'No moments yet'}
-              </h3>
-              <p className="text-muted-foreground">
-                {searchQuery || startDate || endDate 
-                  ? 'Try adjusting your search or date filters'
-                  : 'Be the first to share a memory from Croft Common!'}
-              </p>
-            </div>
-            {user && (
-              <Button onClick={() => setShowUpload(true)} className="mt-4">
-                Share Your First Moment
-              </Button>
-            )}
-          </CardContent>
-        </Card>
+        <div className={cn(
+          "transition-all duration-300",
+          (searchQuery || startDate || endDate || selectedTagFilter) ? "opacity-60" : "opacity-100"
+        )}>
+          <Card className="p-8">
+            <CardContent className="text-center space-y-4">
+              <div className="mx-auto w-24 h-24 bg-muted rounded-full flex items-center justify-center">
+                <Calendar className="h-12 w-12 text-muted-foreground" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {searchQuery || startDate || endDate || selectedTagFilter ? 'No matching moments' : 'No moments yet'}
+                </h3>
+                <p className="text-muted-foreground">
+                  {searchQuery || startDate || endDate || selectedTagFilter
+                    ? 'Try adjusting your search, date, or tag filters'
+                    : 'Be the first to share a memory from Croft Common!'}
+                </p>
+              </div>
+              {user && (
+                <Button onClick={() => setShowUpload(true)} className="mt-4">
+                  Share Your First Moment
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Masonry Grid */}
@@ -221,63 +343,132 @@ const MemberMomentsMosaic: React.FC = () => {
               onClick={() => handleMomentClick(moment)}
             >
               <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
-                <div className="relative">
+                 <div className="relative">
                   <img
                     src={moment.image_url}
                     alt={moment.tagline}
                     className="w-full h-auto object-cover"
                   />
                   
-                  {/* Like button overlay */}
-                  <div className="absolute bottom-2 right-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleLike(moment.id);
-                      }}
-                      className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs font-medium hover:bg-black/70 transition-colors"
-                    >
-                      <Heart
-                        className={`h-3 w-3 ${moment.user_has_liked ? 'fill-white text-white' : 'fill-white/70 text-white'}`}
-                      />
-                      {moment.like_count}
-                    </button>
-                  </div>
-                  
-                  {/* Delete button for own moments */}
-                  {user?.id === moment.user_id && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete moment?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete your moment. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
+                  {/* Heart Like Button - Bottom Left of Image */}
+                  <div className="absolute bottom-2 left-2 z-10">
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "h-8 px-2 gap-1.5 rounded-full backdrop-blur-sm border",
+                              "transition-all duration-200 hover:scale-105",
+                              moment.user_has_liked || (moment.like_count && moment.like_count > 0)
+                                ? "bg-background/10 border-destructive text-destructive hover:bg-background/20"
+                                : "bg-background/10 border-white/20 text-white hover:bg-background/20"
+                            )}
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleDelete(moment.id);
+                              if (moment.user_has_liked) {
+                                unlikeMoment(moment.id);
+                              } else {
+                                likeMoment(moment.id);
+                              }
                             }}
-                            className="bg-destructive hover:bg-destructive/90"
                           >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                             <Heart 
+                               className={cn(
+                                 "h-4 w-4 transition-all stroke-2",
+                                 moment.user_has_liked || (moment.like_count && moment.like_count > 0)
+                                   ? "fill-none stroke-destructive"
+                                   : "fill-none stroke-white"
+                               )}
+                             />
+                            {moment.like_count && moment.like_count > 0 && (
+                              <span className="text-xs font-medium min-w-[1ch]">
+                                {moment.like_count}
+                              </span>
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        {moment.likers && moment.likers.length > 0 && (
+                          <TooltipContent 
+                            side="top" 
+                            className="max-w-xs bg-popover border border-border text-popover-foreground"
+                          >
+                            <div className="text-sm">
+                              <span className="font-medium">Liked by:</span>
+                              <div className="mt-1">
+                                {moment.likers.map((liker, index) => {
+                                  const name = liker.first_name && liker.last_name 
+                                    ? `${liker.first_name} ${liker.last_name}`.trim()
+                                    : liker.first_name || liker.last_name || 'Member';
+                                  
+                                  if (index === moment.likers!.length - 1) {
+                                    return name;
+                                  } else if (index === moment.likers!.length - 2) {
+                                    return `${name} and `;
+                                  } else if (moment.likers!.length > 3 && index === 2) {
+                                    return `${name}, and ${moment.likers!.length - 3} others`;
+                                  } else {
+                                    return `${name}, `;
+                                  }
+                                }).join('')}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  
+                  {/* Action buttons for moment owner */}
+                  {user?.id === moment.user_id && (
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1">
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-8 w-8 bg-accent/90 hover:bg-accent text-accent-foreground"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingMoment(moment);
+                          }}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              className="h-8 w-8 bg-background/80 hover:bg-background text-destructive hover:text-destructive"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete moment?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete your moment. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(moment.id);
+                                }}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
                   )}
                 </div>
                 
@@ -289,6 +480,30 @@ const MemberMomentsMosaic: React.FC = () => {
                     </Badge>
                   )}
                   <p className="text-sm font-medium line-clamp-2">{moment.tagline}</p>
+                  
+                  {/* Tags */}
+                  {moment.tags && moment.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {moment.tags.slice(0, 3).map(tag => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="text-xs bg-background text-foreground border-accent"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                      {moment.tags.length > 3 && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-background text-muted-foreground border-muted"
+                        >
+                          +{moment.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-3 w-3" />
@@ -312,23 +527,48 @@ const MemberMomentsMosaic: React.FC = () => {
         onClose={() => setShowUpload(false)}
       />
 
+      {/* Edit Modal */}
+      {editingMoment && (
+        <MemberMomentEdit
+          moment={editingMoment}
+          isOpen={!!editingMoment}
+          onClose={() => setEditingMoment(null)}
+        />
+      )}
+
       {/* Detail Modal */}
       {selectedMoment && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-2 sm:p-4 bg-background/90 backdrop-blur-sm"
           onClick={() => setSelectedMoment(null)}
         >
-          <Card className="max-w-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+          <Card className="w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <CardContent className="p-0">
               <img
                 src={selectedMoment.image_url}
                 alt={selectedMoment.tagline}
-                className="w-full h-auto max-h-[60vh] object-contain"
+                className="w-full h-auto max-h-[50vh] sm:max-h-[60vh] object-contain"
               />
-              <div className="p-6 space-y-4">
+              <div className="p-4 sm:p-6 space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg">{selectedMoment.tagline}</h3>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                  
+                  {/* Tags */}
+                  {selectedMoment.tags && selectedMoment.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {selectedMoment.tags.map(tag => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="bg-background text-foreground border-accent"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-4 w-4" />
                       {getMemberName(selectedMoment)}
