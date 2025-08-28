@@ -146,22 +146,24 @@ const MemberMomentsCarousel: React.FC = () => {
 
       {/* Enlarged Image Modal */}
       <Dialog open={!!selectedMoment} onOpenChange={() => setSelectedMoment(null)}>
-        <DialogContent className="max-w-4xl p-0 border-2 border-black">
+        <DialogContent className="max-w-4xl p-4 border-2 border-black bg-white">
           {selectedMoment && (() => {
             console.log('[MemberMomentsCarousel] 🖼️ MODAL: Rendering image in modal', {
               imageUrl: selectedMoment.image_url,
               tagline: selectedMoment.tagline
             });
             return (
-              <div className="relative">
-                <OptimizedImage
-                  src={selectedMoment.image_url}
-                  alt={selectedMoment.tagline || 'Member moment'}
-                  className="w-full max-h-[80vh] object-contain"
-                  priority={true}
-                  onLoad={() => console.log('[MemberMomentsCarousel] ✅ MODAL: Image loaded successfully')}
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+              <div className="relative bg-white min-h-[400px]">
+                <div className="w-full h-[70vh] bg-gray-50 rounded-lg overflow-hidden">
+                  <OptimizedImage
+                    src={selectedMoment.image_url}
+                    alt={selectedMoment.tagline || 'Member moment'}
+                    className="w-full h-full"
+                    priority={true}
+                    onLoad={() => console.log('[MemberMomentsCarousel] ✅ MODAL: Image loaded successfully')}
+                  />
+                </div>
+                <div className="mt-4 p-4 bg-gray-900/90 rounded-lg">
                   {selectedMoment.tagline && (
                     <h3 className="text-white text-lg font-semibold mb-2">
                       {selectedMoment.tagline}
