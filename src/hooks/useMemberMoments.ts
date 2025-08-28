@@ -259,12 +259,14 @@ export const useMemberMoments = () => {
       
       if (userError) {
         console.error('❌ AUTH: User error:', userError);
-        throw new Error(`Authentication error: ${userError.message}`);
+        const authError = new TypeError(`Authentication error: ${userError.message}`);
+        throw authError;
       }
       
       if (!user) {
         console.error('❌ AUTH: User not authenticated - no user object');
-        throw new Error('User not authenticated');
+        const userAuthError = new TypeError('User not authenticated');
+        throw userAuthError;
       }
       
       // Get initial session
@@ -278,7 +280,8 @@ export const useMemberMoments = () => {
       
       if (sessionError || !initialSession) {
         console.error('❌ AUTH: No valid session:', sessionError);
-        throw new Error('Authentication session required');
+        const authError = new TypeError('Authentication session required');
+        throw authError;
       }
       
       console.log('✅ AUTH: User authenticated:', user.id);
@@ -314,7 +317,8 @@ export const useMemberMoments = () => {
 
       if (uploadError) {
         console.error('❌ STORAGE: Upload error:', uploadError);
-        throw new Error(`Storage upload failed: ${uploadError.message}`);
+        const storageError = new TypeError(`Storage upload failed: ${uploadError.message}`);
+        throw storageError;
       }
       console.log('✅ STORAGE: Upload successful:', uploadData);
 
@@ -342,7 +346,8 @@ export const useMemberMoments = () => {
       
       if (dbSessionError || !dbSession || !dbSession.user) {
         console.error('❌ DATABASE: Invalid session for database operation:', dbSessionError);
-        throw new Error('Authentication session invalid for database operation. Please refresh and try again.');
+        const dbError = new TypeError('Authentication session invalid for database operation. Please refresh and try again.');
+        throw dbError;
       }
       
       if (dbSession.user.id !== user.id) {
@@ -350,7 +355,8 @@ export const useMemberMoments = () => {
           sessionUserId: dbSession.user.id, 
           originalUserId: user.id 
         });
-        throw new Error('User authentication mismatch. Please log out and log back in.');
+        const authMismatchError = new TypeError('User authentication mismatch. Please log out and log back in.');
+        throw authMismatchError;
       }
 
       const momentData = {
@@ -385,7 +391,8 @@ export const useMemberMoments = () => {
       });
       
       if (finalSessionError || !finalSession?.user) {
-        throw new Error('Session lost before database insert');
+        const sessionError = new TypeError('Session lost before database insert');
+        throw sessionError;
       }
       
       const { data: insertedMoment, error: insertError } = await supabase
@@ -410,10 +417,12 @@ export const useMemberMoments = () => {
         
         // Provide more specific error messages
         if (insertError.message?.includes('row-level security policy')) {
-          throw new Error('Authentication error: Please refresh the page and try again.');
+          const authError = new TypeError('Authentication error: Please refresh the page and try again.');
+          throw authError;
         }
         
-        throw new Error(`Database error: ${insertError.message}`);
+        const dbError = new TypeError(`Database error: ${insertError.message}`);
+        throw dbError;
       }
       
       console.log('✅ DATABASE: Moment inserted successfully:', insertedMoment);
@@ -448,7 +457,7 @@ export const useMemberMoments = () => {
       }
       
       let errorMessage = "An unexpected error occurred";
-      if (error instanceof Error) {
+      if (error instanceof TypeError) {
         errorMessage = error.message;
       } else if (typeof error === 'string') {
         errorMessage = error;
@@ -508,7 +517,10 @@ export const useMemberMoments = () => {
   ) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) {
+        const authError = new TypeError('User not authenticated');
+        throw authError;
+      }
 
       const updateData = {
         tagline,
