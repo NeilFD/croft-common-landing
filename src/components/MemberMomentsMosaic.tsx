@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, User, Plus, Trash2, Search, CalendarIcon, Tag, Edit } from 'lucide-react';
+import { Calendar, User, Plus, Trash2, Search, CalendarIcon, Tag, Edit as EditIcon } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
@@ -298,7 +298,7 @@ const MemberMomentsMosaic: React.FC = () => {
                             setEditingMoment(moment);
                           }}
                         >
-                          <Edit className="h-3 w-3" />
+                          <EditIcon className="h-3 w-3" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
