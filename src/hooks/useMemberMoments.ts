@@ -31,13 +31,13 @@ export interface MemberMoment {
 }
 
 interface LocationData {
-  latitude: number;
-  longitude: number;
+  lat: number;
+  lng: number;
 }
 
-const VENUE_COORDS = {
-  latitude: 51.4583,
-  longitude: -2.6014
+const VENUE_COORDINATES = {
+  lat: 51.4583,
+  lng: -2.6014
 };
 
 export const useMemberMoments = () => {
@@ -141,11 +141,11 @@ export const useMemberMoments = () => {
             
             if (lat && lon && latRef && lonRef) {
               // Convert DMS (degrees, minutes, seconds) to decimal degrees
-              const latitude = convertDMSToDD(lat, latRef);
-              const longitude = convertDMSToDD(lon, lonRef);
+              const latCoord = convertDMSToDD(lat, latRef);
+              const lngCoord = convertDMSToDD(lon, lonRef);
               
-              console.log('📷 EXIF: Converted GPS coordinates:', { latitude, longitude });
-              resolve({ latitude, longitude });
+              console.log('📷 EXIF: Converted GPS coordinates:', { lat: latCoord, lng: lngCoord });
+              resolve({ lat: latCoord, lng: lngCoord });
             } else {
               console.log('📷 EXIF: No GPS data found in image EXIF');
               resolve(null);
@@ -198,13 +198,13 @@ export const useMemberMoments = () => {
           (position) => {
             clearTimeout(timeoutId);
             console.log('📍 GEOLOCATION: Success:', {
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude,
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
               accuracy: position.coords.accuracy
             });
             resolve({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
             });
           },
           (error) => {
@@ -227,10 +227,10 @@ export const useMemberMoments = () => {
     });
   };
 
-  const checkLocationWithinVenue = (location: LocationData): boolean => {
+  const checkLocationWithinVenue = (coords: LocationData): boolean => {
     const distance = Math.sqrt(
-      Math.pow(69.1 * (location.latitude - VENUE_COORDS.latitude), 2) +
-      Math.pow(69.1 * (VENUE_COORDS.longitude - location.longitude) * Math.cos(VENUE_COORDS.latitude / 57.3), 2)
+      Math.pow(69.1 * (coords.lat - VENUE_COORDINATES.lat), 2) +
+      Math.pow(69.1 * (VENUE_COORDINATES.lng - coords.lng) * Math.cos(VENUE_COORDINATES.lat / 57.3), 2)
     ) * 1.609344; // Convert to km
     
     return distance <= 0.2; // 200 meter radius

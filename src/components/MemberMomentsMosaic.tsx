@@ -5,7 +5,6 @@ import { format, isAfter, isBefore, isSameDay } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
@@ -35,9 +34,11 @@ import {
 } from 'lucide-react';
 
 // Custom Components & Hooks
+import { cn } from '@/lib/utils';
+import SearchInput from './SearchInput';
+import { SearchErrorBoundary } from './SearchErrorBoundary';
 import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
 import { useAuth } from '@/hooks/useAuth';
-import { cn } from '@/lib/utils';
 import MemberMomentUpload from './MemberMomentUpload';
 import MemberMomentEdit from './MemberMomentEdit';
 import OptimizedImage from './OptimizedImage';
@@ -163,20 +164,18 @@ const MemberMomentsMosaic: React.FC = () => {
       <div className="mb-6 space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
+          <div className="flex-1">
+            <SearchErrorBoundary
+              fallbackValue={searchQuery}
+              onFallbackChange={setSearchQuery}
               placeholder="Search moments or tags..."
-              value={searchQuery}
-              onChange={(e) => {
-                try {
-                  setSearchQuery(e.target.value);
-                } catch (error) {
-                  console.error('Search input error:', error);
-                }
-              }}
-              className="pl-10"
-            />
+            >
+              <SearchInput
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search moments or tags..."
+              />
+            </SearchErrorBoundary>
           </div>
           
           {/* Date Range Filters */}
