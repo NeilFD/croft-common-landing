@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { format } from 'date-fns';
 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 // UI Components
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +32,8 @@ import {
   Search, 
   CalendarIcon, 
   Tag,
-  Pencil 
+  Pencil,
+  Heart
 } from 'lucide-react';
 
 // Custom Components & Hooks
@@ -44,7 +47,7 @@ import MemberMomentEdit from './MemberMomentEdit';
 import OptimizedImage from './OptimizedImage';
 
 const MemberMomentsMosaic: React.FC = () => {
-  const { moments, loading, deleteMoment, refetchMoments } = useMemberMoments();
+  const { moments, loading, deleteMoment, refetchMoments, likeMoment, unlikeMoment } = useMemberMoments();
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
   const [editingMoment, setEditingMoment] = useState<MemberMoment | null>(null);
@@ -340,12 +343,82 @@ const MemberMomentsMosaic: React.FC = () => {
               onClick={() => handleMomentClick(moment)}
             >
               <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
-                <div className="relative">
+                 <div className="relative">
                   <img
                     src={moment.image_url}
                     alt={moment.tagline}
                     className="w-full h-auto object-cover"
                   />
+                  
+                  {/* Heart Like Button - Bottom Left of Image */}
+                  <div className="absolute bottom-2 left-2 z-10">
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={cn(
+                              "h-8 px-2 gap-1.5 rounded-full backdrop-blur-sm border",
+                              "transition-all duration-200 hover:scale-105",
+                              moment.user_has_liked || (moment.like_count && moment.like_count > 0)
+                                ? "bg-red-500/90 border-red-500/50 text-white hover:bg-red-600/90"
+                                : "bg-black/40 border-white/20 text-white hover:bg-black/60"
+                            )}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (moment.user_has_liked) {
+                                unlikeMoment(moment.id);
+                              } else {
+                                likeMoment(moment.id);
+                              }
+                            }}
+                          >
+                            <Heart 
+                              className={cn(
+                                "h-4 w-4 transition-all",
+                                moment.user_has_liked || (moment.like_count && moment.like_count > 0)
+                                  ? "fill-current"
+                                  : "fill-none"
+                              )}
+                            />
+                            {moment.like_count && moment.like_count > 0 && (
+                              <span className="text-xs font-medium min-w-[1ch]">
+                                {moment.like_count}
+                              </span>
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        {moment.likers && moment.likers.length > 0 && (
+                          <TooltipContent 
+                            side="top" 
+                            className="max-w-xs bg-popover border border-border text-popover-foreground"
+                          >
+                            <div className="text-sm">
+                              <span className="font-medium">Liked by:</span>
+                              <div className="mt-1">
+                                {moment.likers.map((liker, index) => {
+                                  const name = liker.first_name && liker.last_name 
+                                    ? `${liker.first_name} ${liker.last_name}`.trim()
+                                    : liker.first_name || liker.last_name || 'Member';
+                                  
+                                  if (index === moment.likers!.length - 1) {
+                                    return name;
+                                  } else if (index === moment.likers!.length - 2) {
+                                    return `${name} and `;
+                                  } else if (moment.likers!.length > 3 && index === 2) {
+                                    return `${name}, and ${moment.likers!.length - 3} others`;
+                                  } else {
+                                    return `${name}, `;
+                                  }
+                                }).join('')}
+                              </div>
+                            </div>
+                          </TooltipContent>
+                        )}
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   
                   {/* Action buttons for moment owner */}
                   {user?.id === moment.user_id && (

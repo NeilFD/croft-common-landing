@@ -28,6 +28,12 @@ export interface MemberMoment {
     first_name?: string | null;
     last_name?: string | null;
   } | null;
+  like_count?: number;
+  user_has_liked?: boolean;
+  likers?: {
+    first_name?: string | null;
+    last_name?: string | null;
+  }[];
 }
 
 interface LocationData {
@@ -50,6 +56,8 @@ export const useMemberMoments = () => {
     setLoading(true);
     
     try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
       // First get moments
       const { data: momentsData, error: momentsError } = await supabase
         .from('member_moments')
@@ -80,19 +88,75 @@ export const useMemberMoments = () => {
         console.warn('Failed to load profiles:', profilesError);
       }
 
-      // Create a map of user_id to profile
+      // Get like counts and user likes for each moment
+      const momentIds = momentsData?.map(moment => moment.id) || [];
+      
+      // Get like counts
+      const { data: likeCounts, error: likeCountError } = await supabase
+        .from('moment_likes')
+        .select('moment_id')
+        .in('moment_id', momentIds);
+        
+      // Get user's likes if authenticated
+      let userLikes: any[] = [];
+      if (currentUser) {
+        const { data: userLikesData, error: userLikesError } = await supabase
+          .from('moment_likes')
+          .select('moment_id')
+          .eq('user_id', currentUser.id)
+          .in('moment_id', momentIds);
+        
+        userLikes = userLikesData || [];
+      }
+
+      // Get likers with profiles for tooltips
+      const { data: likersData, error: likersError } = await supabase
+        .from('moment_likes')
+        .select(`
+          moment_id,
+          user_id,
+          profiles!inner(first_name, last_name)
+        `)
+        .in('moment_id', momentIds);
+
+      // Create maps
       const profilesMap = new Map();
       profilesData?.forEach(profile => {
         profilesMap.set(profile.user_id, profile);
       });
 
-      // Combine moments with profiles
-      const momentsWithProfiles = momentsData?.map(moment => ({
+      const likeCountMap = new Map();
+      const userLikeMap = new Set();
+      const likersMap = new Map();
+
+      // Process like counts
+      likeCounts?.forEach(like => {
+        likeCountMap.set(like.moment_id, (likeCountMap.get(like.moment_id) || 0) + 1);
+      });
+
+      // Process user likes
+      userLikes.forEach(like => {
+        userLikeMap.add(like.moment_id);
+      });
+
+      // Process likers
+      likersData?.forEach(like => {
+        if (!likersMap.has(like.moment_id)) {
+          likersMap.set(like.moment_id, []);
+        }
+        likersMap.get(like.moment_id).push(like.profiles);
+      });
+
+      // Combine moments with all data
+      const momentsWithData = momentsData?.map(moment => ({
         ...moment,
-        profiles: profilesMap.get(moment.user_id) || null
+        profiles: profilesMap.get(moment.user_id) || null,
+        like_count: likeCountMap.get(moment.id) || 0,
+        user_has_liked: userLikeMap.has(moment.id),
+        likers: likersMap.get(moment.id) || []
       })) || [];
 
-      setMoments(momentsWithProfiles);
+      setMoments(momentsWithData);
     } catch (error) {
       toast({
         title: "Error",
@@ -552,6 +616,114 @@ export const useMemberMoments = () => {
     }
   };
 
+  const likeMoment = async (momentId: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to like moments.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('moment_likes')
+        .insert([{ moment_id: momentId, user_id: user.id }]);
+
+      if (error) {
+        if (error.code === '23505') { // Unique constraint violation
+          toast({
+            title: "Already liked",
+            description: "You have already liked this moment.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to like moment. Please try again.",
+            variant: "destructive"
+          });
+        }
+        return;
+      }
+
+      // Optimistic update
+      setMoments(prev => prev.map(moment => {
+        if (moment.id === momentId) {
+          return {
+            ...moment,
+            like_count: (moment.like_count || 0) + 1,
+            user_has_liked: true
+          };
+        }
+        return moment;
+      }));
+
+      // Refresh to get accurate data
+      refetchMoments();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to like moment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const unlikeMoment = async (momentId: string) => {
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        toast({
+          title: "Error",
+          description: "You must be logged in to unlike moments.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase
+        .from('moment_likes')
+        .delete()
+        .eq('moment_id', momentId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: "Failed to unlike moment. Please try again.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Optimistic update
+      setMoments(prev => prev.map(moment => {
+        if (moment.id === momentId) {
+          return {
+            ...moment,
+            like_count: Math.max((moment.like_count || 0) - 1, 0),
+            user_has_liked: false
+          };
+        }
+        return moment;
+      }));
+
+      // Refresh to get accurate data
+      refetchMoments();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to unlike moment. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     fetchMoments();
   }, [fetchMoments]);
@@ -564,5 +736,7 @@ export const useMemberMoments = () => {
     deleteMoment,
     updateMoment,
     refetchMoments,
+    likeMoment,
+    unlikeMoment
   };
 };
