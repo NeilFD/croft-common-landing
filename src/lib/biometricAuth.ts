@@ -4,9 +4,34 @@ import { supabase } from '@/integrations/supabase/client';
 const USER_HANDLE_KEY = 'biometric_user_handle';
 const HAS_CREDENTIALS_KEY = 'has_webauthn_credentials';
 
+// PWA context detection
+function isPWAContext(): boolean {
+  try {
+    return window.matchMedia('(display-mode: standalone)').matches || 
+           (window.navigator as any).standalone === true ||
+           document.referrer.includes('android-app://');
+  } catch {
+    return false;
+  }
+}
+
 function getRpParams() {
-  const host = window.location.hostname.replace(/^www\./, '');
-  return { rpId: host, origin: window.location.origin };
+  // Hardcode RP ID to ensure consistency between browser and PWA contexts
+  // Dynamic hostname causes "operation is insecure" errors in PWA mode
+  const rpId = '410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com';
+  const origin = window.location.origin;
+  const currentHost = window.location.hostname;
+  const inPWA = isPWAContext();
+  
+  console.debug('[biometricAuth] RP params:', { 
+    rpId, 
+    origin, 
+    currentHost, 
+    inPWA,
+    userAgent: navigator.userAgent 
+  });
+  
+  return { rpId, origin };
 }
 
 // Track credential existence in localStorage
@@ -103,10 +128,31 @@ export type BioResult = {
   details?: any; 
 };
 
+// Clear credentials that may have been registered with old RP ID
+function clearLegacyCredentials() {
+  console.log('[biometricAuth] Clearing legacy credentials due to RP ID mismatch');
+  try {
+    localStorage.removeItem(USER_HANDLE_KEY);
+    localStorage.removeItem(HAS_CREDENTIALS_KEY);
+    sessionStorage.removeItem(RECENT_REG_TS_KEY);
+  } catch (e) {
+    console.warn('[biometricAuth] Failed to clear some legacy data:', e);
+  }
+}
+
 function mapWebAuthnError(err: unknown): { code: string; message: string } {
   const e = err as any;
   const name = e?.name || e?.constructor?.name;
   const message = e?.message || 'Unknown error';
+  
+  // Enhanced error detection for PWA/RP ID issues
+  if (name === 'SecurityError' || (message && message.toLowerCase().includes('insecure'))) {
+    return { 
+      code: 'rp_id_mismatch', 
+      message: 'Security context changed. Please re-register your passkey.' 
+    };
+  }
+  
   switch (name) {
     case 'NotAllowedError':
       return { code: 'not_allowed', message };
@@ -205,11 +251,17 @@ export async function registerPasskeyDetailed(displayName?: string): Promise<Bio
     let attResp: any;
     try {
       attResp = await startRegistration(options);
-    } catch (err) {
-      const mapped = mapWebAuthnError(err);
-      console.debug('[webauthn] register start error', mapped);
-      return { ok: false, errorCode: mapped.code, error: mapped.message };
-    }
+      } catch (err) {
+        const mapped = mapWebAuthnError(err);
+        console.debug('[webauthn] register start error', mapped);
+        
+        // Clear legacy credentials if RP ID mismatch detected
+        if (mapped.code === 'rp_id_mismatch') {
+          clearLegacyCredentials();
+        }
+        
+        return { ok: false, errorCode: mapped.code, error: mapped.message };
+      }
 
     const { data: verifyData, error: verError } = await supabase.functions.invoke('webauthn-register-verify', {
       body: {
