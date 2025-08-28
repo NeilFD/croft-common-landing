@@ -36,7 +36,7 @@ const StreakCalendar: React.FC = () => {
     );
   }
 
-  if (!dashboardData) {
+  if (weekCompletions.length === 0) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -52,7 +52,7 @@ const StreakCalendar: React.FC = () => {
     );
   }
 
-  const { current_week, current_set, calendar_weeks, rewards } = dashboardData;
+  const { current_week, current_set, rewards } = dashboardData || { current_week: null, current_set: null, rewards: { available_discount: 0 } };
 
   const getWeekIcon = (week: any) => {
     if (week.is_future) return <Circle className="h-4 w-4 text-muted-foreground" />;
@@ -103,11 +103,8 @@ const StreakCalendar: React.FC = () => {
     return days;
   };
 
-  // Group weeks into 4-week sets for visual grouping
-  const weekSets = [];
-  for (let i = 0; i < calendar_weeks.length; i += 4) {
-    weekSets.push(calendar_weeks.slice(i, i + 4));
-  }
+  // Find current week from weekCompletions for progress display
+  const currentWeek = weekCompletions.find(week => week.isCurrent);
 
   return (
     <div className="space-y-4">{/* Container for multiple cards */}
@@ -120,26 +117,28 @@ const StreakCalendar: React.FC = () => {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Current Week Progress */}
-        <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-lg">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-semibold">This Week's Progress</h3>
-            <Badge variant={current_week.is_complete ? 'default' : 'secondary'}>
-              {current_week.receipts_count}/2 Receipts
-            </Badge>
+        {currentWeek && (
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-lg">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold">This Week's Progress</h3>
+              <Badge variant={currentWeek.isComplete ? 'default' : 'secondary'}>
+                {currentWeek.receiptCount}/2 Receipts
+              </Badge>
+            </div>
+            <div className="text-sm text-muted-foreground mb-3">
+              {formatDate(currentWeek.weekStart)} - {formatDate(currentWeek.weekEnd)}
+            </div>
+            <Progress 
+              value={(currentWeek.receiptCount / 2) * 100} 
+              className="h-2"
+            />
+            {currentWeek.receiptCount < 2 && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {2 - currentWeek.receiptCount} more receipt{2 - currentWeek.receiptCount > 1 ? 's' : ''} needed to complete this week
+              </p>
+            )}
           </div>
-          <div className="text-sm text-muted-foreground mb-3">
-            {formatDate(current_week.week_start)} - {formatDate(current_week.week_end)}
-          </div>
-          <Progress 
-            value={(current_week.receipts_count / 2) * 100} 
-            className="h-2"
-          />
-          {current_week.receipts_needed > 0 && (
-            <p className="text-sm text-muted-foreground mt-2">
-              {current_week.receipts_needed} more receipt{current_week.receipts_needed > 1 ? 's' : ''} needed to complete this week
-            </p>
-          )}
-        </div>
+        )}
 
         {/* Current Set Progress */}
         {current_set && (
