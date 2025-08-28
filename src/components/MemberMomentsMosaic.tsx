@@ -1,29 +1,46 @@
 import React, { useState, useMemo } from 'react';
+import { format, isAfter, isBefore, isSameDay } from 'date-fns';
+
+// UI Components
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, User, Plus, Trash2, Search, CalendarIcon, Tag, Edit as EditIcon } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+
+// Alert Dialog Components
+import {
+  AlertDialog as AlertDialogRoot,
+  AlertDialogAction as AlertAction,
+  AlertDialogCancel as AlertCancel,
+  AlertDialogContent as AlertContent,
+  AlertDialogDescription as AlertDescription,
+  AlertDialogFooter as AlertFooter,
+  AlertDialogHeader as AlertHeader,
+  AlertDialogTitle as AlertTitle,
+  AlertDialogTrigger as AlertTrigger,
+} from "@/components/ui/alert-dialog";
+
+// Icons
+import { 
+  Calendar, 
+  User, 
+  Plus, 
+  Trash2, 
+  Search, 
+  CalendarIcon, 
+  Tag,
+  Edit as EditIcon 
+} from 'lucide-react';
+
+// Custom Components & Hooks
 import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
 import { useAuth } from '@/hooks/useAuth';
-import { format, isAfter, isBefore, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import MemberMomentUpload from './MemberMomentUpload';
 import MemberMomentEdit from './MemberMomentEdit';
 import OptimizedImage from './OptimizedImage';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 const MemberMomentsMosaic: React.FC = () => {
   const { moments, loading, deleteMoment, refetchMoments } = useMemberMoments();
@@ -50,47 +67,29 @@ const MemberMomentsMosaic: React.FC = () => {
 
   // Enhanced filtering that includes tags
   const filteredMoments = useMemo(() => {
-    console.log('🔍 FILTER: Starting filteredMoments calculation', { searchQuery, momentsCount: moments?.length });
+    if (!moments) return [];
     
-    if (!moments) {
-      console.log('🔍 FILTER: No moments, returning empty array');
-      return [];
-    }
-    
-    try {
-      const result = moments.filter((moment) => {
-        try {
-          // Search in tagline, member name, and tags
-          const searchMatches = searchQuery === '' || (
-            moment.tagline?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            getMemberName(moment).toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (moment.tags && moment.tags.some(tag => 
-              tag.toLowerCase().includes(searchQuery.toLowerCase())
-            ))
-          );
-          
-          // Date range filtering
-          const momentDate = new Date(moment.date_taken);
-          const dateMatches = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
-                             (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
-          
-          // Tag filtering
-          const tagMatches = !selectedTagFilter || 
-                            (moment.tags && moment.tags.includes(selectedTagFilter));
-          
-          return searchMatches && dateMatches && tagMatches;
-        } catch (momentError) {
-          console.error('🔍 FILTER: Error filtering individual moment:', momentError, moment);
-          return false;
-        }
-      });
+    return moments.filter((moment) => {
+      // Search in tagline, member name, and tags
+      const searchMatches = searchQuery === '' || (
+        moment.tagline?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getMemberName(moment).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (moment.tags && moment.tags.some(tag => 
+          tag.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
+      );
       
-      console.log('🔍 FILTER: Filtering complete', { resultCount: result.length });
-      return result;
-    } catch (filterError) {
-      console.error('🔍 FILTER: Error in filteredMoments calculation:', filterError);
-      return [];
-    }
+      // Date range filtering
+      const momentDate = new Date(moment.date_taken);
+      const dateMatches = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
+                         (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
+      
+      // Tag filtering
+      const tagMatches = !selectedTagFilter || 
+                        (moment.tags && moment.tags.includes(selectedTagFilter));
+      
+      return searchMatches && dateMatches && tagMatches;
+    });
   }, [moments, searchQuery, startDate, endDate, selectedTagFilter]);
 
   const handleMomentClick = (moment: MemberMoment) => {
@@ -318,8 +317,8 @@ const MemberMomentsMosaic: React.FC = () => {
                         >
                           <EditIcon className="h-3 w-3" />
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
+                        <AlertDialogRoot>
+                          <AlertTrigger asChild>
                             <Button
                               variant="secondary"
                               size="icon"
@@ -328,17 +327,17 @@ const MemberMomentsMosaic: React.FC = () => {
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete moment?</AlertDialogTitle>
-                              <AlertDialogDescription>
+                          </AlertTrigger>
+                          <AlertContent>
+                            <AlertHeader>
+                              <AlertTitle>Delete moment?</AlertTitle>
+                              <AlertDescription>
                                 This will permanently delete your moment. This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
+                              </AlertDescription>
+                            </AlertHeader>
+                            <AlertFooter>
+                              <AlertCancel>Cancel</AlertCancel>
+                              <AlertAction
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDelete(moment.id);
@@ -346,10 +345,10 @@ const MemberMomentsMosaic: React.FC = () => {
                                 className="bg-destructive hover:bg-destructive/90"
                               >
                                 Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                              </AlertAction>
+                            </AlertFooter>
+                          </AlertContent>
+                        </AlertDialogRoot>
                       </div>
                     </div>
                   )}
