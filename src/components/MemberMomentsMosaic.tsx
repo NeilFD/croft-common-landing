@@ -70,8 +70,10 @@ const MemberMomentsMosaic: React.FC = () => {
   const filteredMoments = useMemo(() => {
     if (!moments) return [];
     
+    console.log('🔍 MemberMomentsMosaic: Filtering with searchQuery:', searchQuery); // Debug log
+    
     try {
-      return moments.filter((moment) => {
+      const filtered = moments.filter((moment) => {
         const query = searchQuery.toLowerCase().trim();
         
         // Search in tagline, member name, and tags (enhanced)
@@ -121,6 +123,9 @@ const MemberMomentsMosaic: React.FC = () => {
         
         return searchMatches && dateMatches && tagMatches;
       });
+      
+      console.log('🔍 MemberMomentsMosaic: Filtered results count:', filtered.length); // Debug log
+      return filtered;
     } catch (error) {
       console.warn('Filtering error:', error);
       return moments; // Fallback to show all moments if filtering fails

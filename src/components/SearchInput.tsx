@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
@@ -15,26 +15,14 @@ const SearchInput: React.FC<SearchInputProps> = ({
   placeholder = "Search...",
   className 
 }) => {
-  const [searchState, setSearchState] = useState(value);
   const inputRef = useRef<HTMLInputElement>(null);
   
-  // Defensive onChange handler with multiple fallbacks
+  // Simple controlled input - no internal state
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const inputValue = event?.target?.value ?? '';
-      setSearchState(inputValue);
-      onChange(inputValue);
-    } catch (err) {
-      console.warn('SearchInput: Error in onChange handler:', err);
-      // Fallback to direct value if event fails
-      const directValue = event?.target?.value || '';
-      setSearchState(directValue);
-      onChange(directValue);
-    }
+    const inputValue = event?.target?.value ?? '';
+    console.log('🔍 SearchInput: User typed:', inputValue); // Debug log
+    onChange(inputValue);
   }, [onChange]);
-
-  // Additional safety for controlled input
-  const safeValue = searchState !== undefined ? searchState : '';
 
   return (
     <div className="relative">
@@ -43,7 +31,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
         ref={inputRef}
         type="text"
         placeholder={placeholder}
-        value={safeValue}
+        value={value}
         onChange={handleInputChange}
         className={`pl-10 ${className || ''}`}
         autoComplete="off"
