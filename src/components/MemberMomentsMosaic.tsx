@@ -378,8 +378,8 @@ const MemberMomentsMosaic: React.FC = () => {
                                className={cn(
                                  "h-4 w-4 transition-all stroke-2",
                                  moment.user_has_liked || (moment.like_count && moment.like_count > 0)
-                                   ? "fill-none stroke-destructive"
-                                   : "fill-none stroke-white"
+                                   ? "fill-red-500 stroke-red-600"
+                                   : "fill-white/90 stroke-white/20"
                                )}
                              />
                             {moment.like_count && moment.like_count > 0 && (
