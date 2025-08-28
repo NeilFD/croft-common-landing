@@ -16,9 +16,9 @@ function isPWAContext(): boolean {
 }
 
 function getRpParams() {
-  // Hardcode RP ID to ensure consistency between browser and PWA contexts
-  // Dynamic hostname causes "operation is insecure" errors in PWA mode
-  const rpId = '410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com';
+  // Use croftcommontest.com to match existing credentials in database
+  // This ensures consistency between browser and PWA contexts
+  const rpId = 'croftcommontest.com';
   const origin = window.location.origin;
   const currentHost = window.location.hostname;
   const inPWA = isPWAContext();
