@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, User, Plus, Trash2, Search, CalendarIcon } from 'lucide-react';
+import { Calendar, User, Plus, Trash2, Search, CalendarIcon, Tag, Edit } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { format, isAfter, isBefore, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import MemberMomentUpload from './MemberMomentUpload';
+import MemberMomentEdit from './MemberMomentEdit';
 import OptimizedImage from './OptimizedImage';
 import {
   AlertDialog,
@@ -28,28 +29,51 @@ const MemberMomentsMosaic: React.FC = () => {
   const { moments, loading, deleteMoment, refetchMoments } = useMemberMoments();
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
+  const [editingMoment, setEditingMoment] = useState<MemberMoment | null>(null);
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [selectedTagFilter, setSelectedTagFilter] = useState<string>('');
 
-  // Filter moments based on search query and date range
+  // Get all unique tags for filtering
+  const allTags = useMemo(() => {
+    if (!moments) return [];
+    const tagSet = new Set<string>();
+    moments.forEach(moment => {
+      if (moment.tags) {
+        moment.tags.forEach(tag => tagSet.add(tag));
+      }
+    });
+    return Array.from(tagSet).sort();
+  }, [moments]);
+
+  // Enhanced filtering that includes tags
   const filteredMoments = useMemo(() => {
     if (!moments) return [];
     
     return moments.filter((moment) => {
-      // Search filter
-      const matchesSearch = searchQuery === '' || 
-        moment.tagline.toLowerCase().includes(searchQuery.toLowerCase());
+      // Search in tagline, member name, and tags
+      const searchMatches = searchQuery === '' || (
+        moment.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        getMemberName(moment).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (moment.tags && moment.tags.some(tag => 
+          tag.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
+      );
       
-      // Date filter
+      // Date range filtering
       const momentDate = new Date(moment.date_taken);
-      const matchesDateRange = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
-                               (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
+      const dateMatches = (!startDate || isAfter(momentDate, startDate) || isSameDay(momentDate, startDate)) &&
+                         (!endDate || isBefore(momentDate, endDate) || isSameDay(momentDate, endDate));
       
-      return matchesSearch && matchesDateRange;
+      // Tag filtering
+      const tagMatches = !selectedTagFilter || 
+                        (moment.tags && moment.tags.includes(selectedTagFilter));
+      
+      return searchMatches && dateMatches && tagMatches;
     });
-  }, [moments, searchQuery, startDate, endDate]);
+  }, [moments, searchQuery, startDate, endDate, selectedTagFilter]);
 
   const handleMomentClick = (moment: MemberMoment) => {
     setSelectedMoment(moment);
@@ -73,6 +97,7 @@ const MemberMomentsMosaic: React.FC = () => {
     setSearchQuery('');
     setStartDate(undefined);
     setEndDate(undefined);
+    setSelectedTagFilter('');
   };
 
   if (loading) {
@@ -114,7 +139,7 @@ const MemberMomentsMosaic: React.FC = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search moments..."
+              placeholder="Search moments or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -171,13 +196,40 @@ const MemberMomentsMosaic: React.FC = () => {
               </PopoverContent>
             </Popover>
             
-            {(searchQuery || startDate || endDate) && (
+            {(searchQuery || startDate || endDate || selectedTagFilter) && (
               <Button variant="ghost" onClick={clearFilters}>
                 Clear
               </Button>
             )}
           </div>
         </div>
+
+        {/* Tag Filter Buttons */}
+        {allTags.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Filter by tag:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {allTags.map(tag => (
+                <Button
+                  key={tag}
+                  variant={selectedTagFilter === tag ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedTagFilter(selectedTagFilter === tag ? '' : tag)}
+                  className={`text-xs h-7 ${
+                    selectedTagFilter === tag
+                      ? 'bg-background text-accent border-accent' 
+                      : 'bg-background text-foreground border-accent hover:border-accent hover:bg-accent/5'
+                  }`}
+                >
+                  {tag}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
         
         {/* Results count */}
         <div className="text-sm text-muted-foreground">
@@ -194,11 +246,11 @@ const MemberMomentsMosaic: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-semibold">
-                {searchQuery || startDate || endDate ? 'No matching moments' : 'No moments yet'}
+                {searchQuery || startDate || endDate || selectedTagFilter ? 'No matching moments' : 'No moments yet'}
               </h3>
               <p className="text-muted-foreground">
-                {searchQuery || startDate || endDate 
-                  ? 'Try adjusting your search or date filters'
+                {searchQuery || startDate || endDate || selectedTagFilter
+                  ? 'Try adjusting your search, date, or tag filters'
                   : 'Be the first to share a memory from Croft Common!'}
               </p>
             </div>
@@ -228,40 +280,55 @@ const MemberMomentsMosaic: React.FC = () => {
                     className="w-full h-auto object-cover"
                   />
                   
-                  {/* Delete button for own moments */}
+                  {/* Action buttons for moment owner */}
                   {user?.id === moment.user_id && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1">
                         <Button
-                          variant="destructive"
+                          variant="secondary"
                           size="icon"
-                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
-                          onClick={(e) => e.stopPropagation()}
+                          className="h-8 w-8 bg-background/80 hover:bg-background"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingMoment(moment);
+                          }}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Edit className="h-3 w-3" />
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete moment?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This will permanently delete your moment. This action cannot be undone.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(moment.id);
-                            }}
-                            className="bg-destructive hover:bg-destructive/90"
-                          >
-                            Delete
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="secondary"
+                              size="icon"
+                              className="h-8 w-8 bg-background/80 hover:bg-background text-destructive hover:text-destructive"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete moment?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will permanently delete your moment. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(moment.id);
+                                }}
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
                   )}
                 </div>
                 
@@ -273,6 +340,30 @@ const MemberMomentsMosaic: React.FC = () => {
                     </Badge>
                   )}
                   <p className="text-sm font-medium line-clamp-2">{moment.tagline}</p>
+                  
+                  {/* Tags */}
+                  {moment.tags && moment.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                      {moment.tags.slice(0, 3).map(tag => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="text-xs bg-background text-foreground border-accent"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                      {moment.tags.length > 3 && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs bg-background text-muted-foreground border-muted"
+                        >
+                          +{moment.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+                  
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-3 w-3" />
@@ -296,6 +387,15 @@ const MemberMomentsMosaic: React.FC = () => {
         onClose={() => setShowUpload(false)}
       />
 
+      {/* Edit Modal */}
+      {editingMoment && (
+        <MemberMomentEdit
+          moment={editingMoment}
+          isOpen={!!editingMoment}
+          onClose={() => setEditingMoment(null)}
+        />
+      )}
+
       {/* Detail Modal */}
       {selectedMoment && (
         <div 
@@ -312,6 +412,22 @@ const MemberMomentsMosaic: React.FC = () => {
               <div className="p-4 sm:p-6 space-y-4">
                 <div>
                   <h3 className="font-semibold text-lg">{selectedMoment.tagline}</h3>
+                  
+                  {/* Tags */}
+                  {selectedMoment.tags && selectedMoment.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {selectedMoment.tags.map(tag => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="bg-background text-foreground border-accent"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <User className="h-4 w-4" />

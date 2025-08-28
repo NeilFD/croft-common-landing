@@ -796,6 +796,7 @@ export type Database = {
           moderation_reason: string | null
           moderation_status: string
           tagline: string
+          tags: string[] | null
           updated_at: string
           uploaded_at: string
           user_id: string
@@ -816,6 +817,7 @@ export type Database = {
           moderation_reason?: string | null
           moderation_status?: string
           tagline: string
+          tags?: string[] | null
           updated_at?: string
           uploaded_at?: string
           user_id: string
@@ -836,6 +838,7 @@ export type Database = {
           moderation_reason?: string | null
           moderation_status?: string
           tagline?: string
+          tags?: string[] | null
           updated_at?: string
           uploaded_at?: string
           user_id?: string

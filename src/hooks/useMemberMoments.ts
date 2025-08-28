@@ -23,6 +23,7 @@ export interface MemberMoment {
   moderated_at?: string | null;
   moderated_by?: string | null;
   updated_at: string;
+  tags?: string[] | null;
   profiles?: {
     first_name?: string | null;
     last_name?: string | null;
@@ -238,7 +239,8 @@ export const useMemberMoments = () => {
   const uploadMoment = async (
     file: File,
     tagline: string,
-    dateTaken: string
+    dateTaken: string,
+    tags: string[] = []
   ) => {
     // Prevent multiple simultaneous uploads
     if (uploading) {
@@ -360,7 +362,8 @@ export const useMemberMoments = () => {
         longitude: null, // Remove location tracking
         location_confirmed: false, // Always false since no location tracking
         moderation_status: 'pending', // Set to pending for automatic moderation
-        is_visible: true
+        is_visible: true,
+        tags: tags.filter(tag => tag.trim().length > 0)
       };
       
       console.log('💾 DATABASE: About to insert with data:', { 
@@ -497,6 +500,46 @@ export const useMemberMoments = () => {
     }
   };
 
+  const updateMoment = async (
+    momentId: string,
+    tagline: string,
+    dateTaken: string,
+    tags: string[] = []
+  ) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const updateData = {
+        tagline,
+        date_taken: dateTaken,
+        tags: tags.filter(tag => tag.trim().length > 0)
+      };
+
+      const { error } = await supabase
+        .from('member_moments')
+        .update(updateData)
+        .eq('id', momentId)
+        .eq('user_id', user.id); // Ensure user can only update their own moments
+
+      if (error) throw error;
+
+      toast({
+        title: "Moment updated",
+        description: "Your moment has been updated successfully."
+      });
+
+      await fetchMoments();
+    } catch (error: any) {
+      console.error('Update error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update moment",
+        variant: "destructive"
+      });
+    }
+  };
+
   useEffect(() => {
     fetchMoments();
   }, [fetchMoments]);
@@ -507,6 +550,7 @@ export const useMemberMoments = () => {
     uploading,
     uploadMoment,
     deleteMoment,
+    updateMoment,
     refetchMoments,
   };
 };
