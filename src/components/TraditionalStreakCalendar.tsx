@@ -309,6 +309,7 @@ const TraditionalStreakCalendar: React.FC = () => {
   // DEBUG: Log the receipt dates set
   console.log('🔍 TRADITIONAL CALENDAR: receiptDates Set:', Array.from(receiptDates));
   console.log('🔍 TRADITIONAL CALENDAR: Looking for 2025-08-27:', receiptDates.has('2025-08-27'));
+  console.log('🔍 TRADITIONAL CALENDAR: Has any August dates:', Array.from(receiptDates).filter(d => d.includes('2025-08')));
 
   // Create week completion map
   const weekCompletions = new Map();
@@ -346,14 +347,12 @@ const TraditionalStreakCalendar: React.FC = () => {
         </span>
         {hasReceipt && (
           <div 
-            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-yellow-400 rounded-full flex items-center justify-center"
+            className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center animate-pulse"
             style={{
-              width: '20px',
-              height: '20px',
               backgroundColor: '#ef4444',
-              border: '2px solid #facc15',
-              boxShadow: '0 0 10px rgba(239, 68, 68, 0.8)',
-              zIndex: 10
+              border: '3px solid #facc15',
+              boxShadow: '0 0 15px rgba(239, 68, 68, 0.9)',
+              zIndex: 20
             }}
           >
             <span className="text-white text-xs font-bold">●</span>

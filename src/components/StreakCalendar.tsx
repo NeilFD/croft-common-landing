@@ -17,9 +17,6 @@ const StreakCalendar: React.FC = () => {
 
   const loading = dashboardLoading || weekLoading || receiptLoading;
 
-  // Debug logging
-  console.log('CALENDAR RENDER: Receipt dots:', receiptDots);
-  console.log('CALENDAR RENDER: Week completions:', weekCompletions);
 
   if (loading) {
     return (
@@ -297,9 +294,6 @@ const StreakCalendar: React.FC = () => {
         </div>
       </CardContent>
     </Card>
-    
-    {/* Debug Component - Remove this after fixing */}
-    <StreakCalendarDebug />
     </div>
   );
 };
