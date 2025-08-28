@@ -13,17 +13,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
     // Get user from auth header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
@@ -33,9 +22,27 @@ serve(async (req: Request) => {
       });
     }
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
+    const token = authHeader.replace('Bearer ', '');
+
+    // Create authenticated Supabase client using the user's token
+    const authenticatedSupabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
     );
+
+    // Verify user authentication
+    const { data: { user }, error: authError } = await authenticatedSupabase.auth.getUser();
 
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid auth' }), {
@@ -47,9 +54,9 @@ serve(async (req: Request) => {
     console.log(`Fetching streak dashboard for user ${user.id}`);
 
     // Get current week boundaries
-    const { data: currentWeekBoundaries } = await supabase.rpc('get_current_week_boundaries');
+    const { data: currentWeekBoundaries } = await authenticatedSupabase.rpc('get_current_week_boundaries');
 
-    // Fetch all streak data in parallel
+    // Fetch all streak data in parallel using authenticated client
     const [
       memberStreaksResult,
       streakWeeksResult,
@@ -60,14 +67,14 @@ serve(async (req: Request) => {
       recentReceipts
     ] = await Promise.all([
       // Member streaks summary
-      supabase
+      authenticatedSupabase
         .from('member_streaks')
         .select('*')
         .eq('user_id', user.id)
         .single(),
 
       // Streak weeks (last 12 weeks for calendar display)
-      supabase
+      authenticatedSupabase
         .from('streak_weeks')
         .select('*')
         .eq('user_id', user.id)
@@ -75,7 +82,7 @@ serve(async (req: Request) => {
         .order('week_start_date', { ascending: true }),
 
       // Current and recent streak sets
-      supabase
+      authenticatedSupabase
         .from('streak_sets')
         .select('*')
         .eq('user_id', user.id)
@@ -83,7 +90,7 @@ serve(async (req: Request) => {
         .limit(5),
 
       // Active rewards
-      supabase
+      authenticatedSupabase
         .from('streak_rewards')
         .select('*')
         .eq('user_id', user.id)
@@ -91,7 +98,7 @@ serve(async (req: Request) => {
         .order('reward_tier', { ascending: false }),
 
       // Recent badges (last 10)
-      supabase
+      authenticatedSupabase
         .from('streak_badges')
         .select('*')
         .eq('user_id', user.id)
@@ -99,7 +106,7 @@ serve(async (req: Request) => {
         .limit(10),
 
       // Available grace periods
-      supabase
+      authenticatedSupabase
         .from('streak_grace_periods')
         .select('*')
         .eq('user_id', user.id)
@@ -107,7 +114,7 @@ serve(async (req: Request) => {
         .gt('expires_date', new Date().toISOString()),
 
       // Recent receipts for context - get ALL receipts, don't filter by date
-      supabase
+      authenticatedSupabase
         .from('member_receipts')
         .select('id, receipt_date, total_amount, venue_location')
         .eq('user_id', user.id)
@@ -142,7 +149,7 @@ serve(async (req: Request) => {
     const totalDiscount = activeRewards.reduce((sum, r) => sum + (r.reward_tier * 25), 0);
 
     // Check for make-up opportunities
-    const makeupOpportunity = await checkMakeupOpportunity(supabase, user.id, streakWeeks);
+    const makeupOpportunity = await checkMakeupOpportunity(authenticatedSupabase, user.id, streakWeeks);
 
     // Generate calendar data (12 weeks)
     const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries);

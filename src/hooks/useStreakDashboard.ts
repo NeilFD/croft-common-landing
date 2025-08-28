@@ -122,11 +122,7 @@ export const useStreakDashboard = () => {
 
       if (error) throw error;
 
-      console.log('📊 STREAK DASHBOARD: Raw data received:', data);
-      console.log('📊 STREAK DASHBOARD: Calendar weeks:', data?.calendar_weeks);
-      console.log('📊 STREAK DASHBOARD: Current week:', data?.current_week);
-      console.log('📊 STREAK DASHBOARD: Recent activity length:', data?.recent_activity?.length || 0);
-      console.log('📊 STREAK DASHBOARD: Recent activity sample:', data?.recent_activity?.slice(0, 3) || []);
+      console.log('✅ STREAK DASHBOARD: Successfully fetched data');
 
       setDashboardData(data);
     } catch (err) {
