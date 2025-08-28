@@ -382,7 +382,7 @@ const TraditionalStreakCalendar: React.FC = () => {
           <div className={cn(
             "p-3 rounded-lg border-2 transition-all",
             current_week.is_complete 
-              ? "bg-green-50 border-green-400 shadow-md" 
+              ? "bg-white border-green-400 shadow-md" 
               : "bg-white border-pink-200"
           )}>
             <div className="flex items-center justify-between">
@@ -398,7 +398,7 @@ const TraditionalStreakCalendar: React.FC = () => {
             </div>
             {current_week.is_complete && (
               <div className="mt-2 text-xs text-green-700 font-medium">
-                🎉 Week completed! Great job!
+                Week completed. Great work. See you next week
               </div>
             )}
           </div>
