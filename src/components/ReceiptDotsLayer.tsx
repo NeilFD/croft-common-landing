@@ -1,13 +1,18 @@
 import React from 'react';
-import { useReceiptDots } from '@/hooks/useReceiptDots';
+
+interface ReceiptDot {
+  date: string;
+  count: number;
+  amount: number;
+}
 
 interface ReceiptDotsLayerProps {
   date: string;
+  receiptDots: ReceiptDot[];
   className?: string;
 }
 
-export const ReceiptDotsLayer: React.FC<ReceiptDotsLayerProps> = ({ date, className = "" }) => {
-  const { receiptDots } = useReceiptDots();
+export const ReceiptDotsLayer: React.FC<ReceiptDotsLayerProps> = ({ date, receiptDots, className = "" }) => {
 
   const dayReceipts = receiptDots.find(dot => dot.date === date);
 

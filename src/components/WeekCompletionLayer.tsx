@@ -1,14 +1,22 @@
 import React from 'react';
 import { Check } from 'lucide-react';
-import { useWeekCompletion } from '@/hooks/useWeekCompletion';
+
+interface WeekCompletion {
+  weekStart: string;
+  weekEnd: string;
+  receiptCount: number;
+  isComplete: boolean;
+  isCurrent: boolean;
+  totalAmount: number;
+}
 
 interface WeekCompletionLayerProps {
   weekStart: string;
+  weekCompletions: WeekCompletion[];
   className?: string;
 }
 
-export const WeekCompletionLayer: React.FC<WeekCompletionLayerProps> = ({ weekStart, className = "" }) => {
-  const { weekCompletions } = useWeekCompletion();
+export const WeekCompletionLayer: React.FC<WeekCompletionLayerProps> = ({ weekStart, weekCompletions, className = "" }) => {
 
   const week = weekCompletions.find(w => w.weekStart === weekStart);
 

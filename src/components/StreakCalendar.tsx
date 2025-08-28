@@ -5,15 +5,19 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useStreakDashboard } from '@/hooks/useStreakDashboard';
 import { useWeekCompletion } from '@/hooks/useWeekCompletion';
+import { useReceiptDots } from '@/hooks/useReceiptDots';
 import { ReceiptDotsLayer } from './ReceiptDotsLayer';
 import { WeekCompletionLayer } from './WeekCompletionLayer';
 import { StreakCalendarDebug } from './StreakCalendarDebug';
 
 const StreakCalendar: React.FC = () => {
-  const { dashboardData, loading } = useStreakDashboard();
+  const { dashboardData, loading: dashboardLoading } = useStreakDashboard();
   const { weekCompletions, loading: weekLoading } = useWeekCompletion();
+  const { receiptDots, loading: receiptLoading } = useReceiptDots();
 
-  if (loading || weekLoading) {
+  const loading = dashboardLoading || weekLoading || receiptLoading;
+
+  if (loading) {
     return (
       <Card className="w-full">
         <CardHeader>
@@ -95,7 +99,7 @@ const StreakCalendar: React.FC = () => {
       days.push(
         <div key={dateStr} className="relative h-8 w-8 border border-border rounded flex items-center justify-center text-xs">
           <span className="text-muted-foreground">{date.getDate()}</span>
-          <ReceiptDotsLayer date={dateStr} />
+          <ReceiptDotsLayer date={dateStr} receiptDots={receiptDots} />
         </div>
       );
     }
@@ -214,7 +218,7 @@ const StreakCalendar: React.FC = () => {
                           'bg-background border-border'
                         }`}
                       >
-                        <WeekCompletionLayer weekStart={week.weekStart} />
+                        <WeekCompletionLayer weekStart={week.weekStart} weekCompletions={weekCompletions} />
                         
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
