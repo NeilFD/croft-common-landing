@@ -293,10 +293,22 @@ const TraditionalStreakCalendar: React.FC = () => {
 
   const { current_week, current_set, calendar_weeks, recent_activity } = dashboardData;
 
+  // DEBUG: Log the recent activity data
+  console.log('🔍 TRADITIONAL CALENDAR: recent_activity data:', recent_activity);
+  console.log('🔍 TRADITIONAL CALENDAR: recent_activity length:', recent_activity?.length || 0);
+  if (recent_activity?.length > 0) {
+    console.log('🔍 TRADITIONAL CALENDAR: First activity:', recent_activity[0]);
+    console.log('🔍 TRADITIONAL CALENDAR: All activity dates:', recent_activity.map((a: any) => a.date));
+  }
+
   // Create a map of receipt dates for easier lookup
   const receiptDates = new Set(
     recent_activity?.map((activity: any) => activity.date) || []
   );
+
+  // DEBUG: Log the receipt dates set
+  console.log('🔍 TRADITIONAL CALENDAR: receiptDates Set:', Array.from(receiptDates));
+  console.log('🔍 TRADITIONAL CALENDAR: Looking for 2025-08-27:', receiptDates.has('2025-08-27'));
 
   // Create week completion map
   const weekCompletions = new Map();
@@ -311,6 +323,15 @@ const TraditionalStreakCalendar: React.FC = () => {
     const hasReceipt = receiptDates.has(dateStr);
     const isToday = day.toDateString() === new Date().toDateString();
     
+    // DEBUG: Log specific dates we're checking
+    if (dateStr === '2025-08-27' || dateStr.includes('2025-08-2')) {
+      console.log(`🔍 DAY RENDERER: Checking ${dateStr}:`, {
+        hasReceipt,
+        isInSet: receiptDates.has(dateStr),
+        allDatesInSet: Array.from(receiptDates)
+      });
+    }
+    
     // Check if this day is at the end of a completed week (Sunday)
     const isWeekEnd = day.getDay() === 0; // Sunday
     const isWeekComplete = weekCompletions.get(dateStr);
@@ -324,7 +345,19 @@ const TraditionalStreakCalendar: React.FC = () => {
           {day.getDate()}
         </span>
         {hasReceipt && (
-          <Dot className="absolute -top-1 -right-1 h-3 w-3 text-green-500 fill-current" />
+          <div 
+            className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 border-2 border-yellow-400 rounded-full flex items-center justify-center"
+            style={{
+              width: '20px',
+              height: '20px',
+              backgroundColor: '#ef4444',
+              border: '2px solid #facc15',
+              boxShadow: '0 0 10px rgba(239, 68, 68, 0.8)',
+              zIndex: 10
+            }}
+          >
+            <span className="text-white text-xs font-bold">●</span>
+          </div>
         )}
         {isWeekEnd && isWeekComplete && (
           <CheckCircle className="absolute -bottom-1 -right-1 h-3 w-3 text-green-500" />
