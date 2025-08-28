@@ -11,15 +11,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 
 // Alert Dialog Components
 import {
-  AlertDialog as AlertDialogRoot,
-  AlertDialogAction as AlertAction,
-  AlertDialogCancel as AlertCancel,
-  AlertDialogContent as AlertContent,
-  AlertDialogDescription as AlertDescription,
-  AlertDialogFooter as AlertFooter,
-  AlertDialogHeader as AlertHeader,
-  AlertDialogTitle as AlertTitle,
-  AlertDialogTrigger as AlertTrigger,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 // Icons
@@ -327,8 +327,8 @@ const MemberMomentsMosaic: React.FC = () => {
                         >
                           <EditIcon className="h-3 w-3" />
                         </Button>
-                        <AlertDialogRoot>
-                          <AlertTrigger asChild>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
                             <Button
                               variant="secondary"
                               size="icon"
@@ -337,17 +337,17 @@ const MemberMomentsMosaic: React.FC = () => {
                             >
                               <Trash2 className="h-3 w-3" />
                             </Button>
-                          </AlertTrigger>
-                          <AlertContent>
-                            <AlertHeader>
-                              <AlertTitle>Delete moment?</AlertTitle>
-                              <AlertDescription>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete moment?</AlertDialogTitle>
+                              <AlertDialogDescription>
                                 This will permanently delete your moment. This action cannot be undone.
-                              </AlertDescription>
-                            </AlertHeader>
-                            <AlertFooter>
-                              <AlertCancel>Cancel</AlertCancel>
-                              <AlertAction
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDelete(moment.id);
@@ -355,10 +355,10 @@ const MemberMomentsMosaic: React.FC = () => {
                                 className="bg-destructive hover:bg-destructive/90"
                               >
                                 Delete
-                              </AlertAction>
-                            </AlertFooter>
-                          </AlertContent>
-                        </AlertDialogRoot>
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   )}
