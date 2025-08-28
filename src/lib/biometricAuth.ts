@@ -323,6 +323,18 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
 
     const { rpId, origin } = getRpParams();
     
+    // Enhanced debug logging for WebAuthn issues
+    console.log('🔍 [webauthn-debug] Authentication attempt:', {
+      userHandle: handle,
+      rpId,
+      origin,
+      currentHost: window.location.hostname,
+      storedCredentials: localStorage.getItem('webauthn_has_credentials'),
+      recentRegistration: localStorage.getItem('webauthn_recent_registration'),
+      userAgent: navigator.userAgent.substring(0, 100),
+      timestamp: new Date().toISOString()
+    });
+    
     const preferDiscoverable = isApplePlatform() || isRecentlyRegistered();
     const ua = navigator.userAgent;
     console.debug('[webauthn] auth start', { rpId, preferDiscoverable, ua });
@@ -341,13 +353,38 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
         return { ok: false, errorCode: 'no_credentials', error: 'No credentials registered' };
       } else {
         const discOptions = (discData as any).options;
-        try {
-          console.debug('[webauthn] discoverable attempt');
-          authResp = await startAuthentication(discOptions);
-        } catch (err) {
-          const mapped = mapWebAuthnError(err);
-          console.debug('[webauthn] discoverable auth error', mapped);
-        }
+    try {
+      console.log('🚀 [webauthn-debug] Fetching auth options from edge function');
+      const { data, error } = await supabase.functions.invoke('webauthn-auth-options', {
+        body: { userHandle: handle, rpId, origin, discoverable: preferDiscoverable }
+      });
+      if (error) {
+        console.error('🚨 [webauthn-debug] Auth options error:', error);
+        throw error;
+      }
+      
+      const options = data.options;
+      console.log('✅ [webauthn-debug] Got auth options, starting browser authentication');
+      console.log('🔍 [webauthn-debug] Options details:', {
+        challenge: options.challenge?.substring(0, 20) + '...',
+        rpId: options.rpId,
+        allowCredentials: options.allowCredentials?.length || 0
+      });
+      
+      authResp = await startAuthentication({
+        ...options,
+        mediation: 'optional',
+      });
+      console.log('✅ [webauthn-debug] Browser authentication completed successfully');
+    } catch (error) {
+      console.error('🚨 [webauthn-debug] Authentication failed:', {
+        error: error.message,
+        name: error.name,
+        stack: error.stack?.substring(0, 200)
+      });
+      const mapped = mapWebAuthnError(error);
+      return { ok: false, errorCode: mapped.code, error: mapped.message };
+    }
       }
 
       // 2) If discoverable failed, fall back to allowCredentials list
