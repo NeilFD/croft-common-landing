@@ -539,30 +539,39 @@ const MemberMomentsMosaic: React.FC = () => {
       {/* Detail Modal */}
       {selectedMoment && (
         <div 
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/90 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           onClick={() => setSelectedMoment(null)}
         >
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+          <Card className="w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col bg-white" onClick={e => e.stopPropagation()}>
             <CardContent className="p-0 flex flex-col h-full">
-              <div className="flex-shrink-0 flex items-center justify-center bg-gray-50 min-h-[40vh] max-h-[70vh]">
+              {/* Image Container */}
+              <div className="flex-1 flex items-center justify-center p-4 min-h-0">
                 <img
                   src={selectedMoment.image_url}
                   alt={selectedMoment.tagline}
                   className="max-w-full max-h-full object-contain"
+                  style={{ 
+                    width: 'auto', 
+                    height: 'auto',
+                    maxWidth: '100%',
+                    maxHeight: '100%'
+                  }}
                 />
               </div>
-              <div className="flex-1 p-4 sm:p-6 space-y-4 overflow-y-auto">
-                <div>
-                  <h3 className="font-semibold text-lg">{selectedMoment.tagline}</h3>
+              
+              {/* Information Panel */}
+              <div className="flex-shrink-0 p-4 bg-white border-t">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-lg text-gray-900">{selectedMoment.tagline}</h3>
                   
                   {/* Tags */}
                   {selectedMoment.tags && selectedMoment.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
+                    <div className="flex flex-wrap gap-2">
                       {selectedMoment.tags.map(tag => (
                         <Badge
                           key={tag}
                           variant="outline"
-                          className="bg-background text-foreground border-accent"
+                          className="bg-gray-50 text-gray-700 border-gray-300"
                         >
                           {tag}
                         </Badge>
@@ -570,29 +579,31 @@ const MemberMomentsMosaic: React.FC = () => {
                     </div>
                   )}
                   
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mt-2 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-sm text-gray-600">
+                    <div className="flex items-center gap-2">
                       <User className="h-4 w-4" />
-                      {getMemberName(selectedMoment)}
+                      <span className="font-medium">{getMemberName(selectedMoment)}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      {format(new Date(selectedMoment.date_taken), 'MMMM dd, yyyy')}
+                      <span>{format(new Date(selectedMoment.date_taken), 'MMMM dd, yyyy')}</span>
                     </div>
                   </div>
+                  
                   {selectedMoment.is_featured && (
-                    <Badge variant="secondary" className="mt-2">
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-800">
                       Featured Moment
                     </Badge>
                   )}
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setSelectedMoment(null)}
+                    className="w-full mt-4"
+                  >
+                    Close
+                  </Button>
                 </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSelectedMoment(null)}
-                  className="w-full"
-                >
-                  Close
-                </Button>
               </div>
             </CardContent>
           </Card>
