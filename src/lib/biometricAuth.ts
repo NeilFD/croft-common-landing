@@ -16,16 +16,18 @@ function isPWAContext(): boolean {
 }
 
 function getRpParams() {
-  // Use dynamic hostname detection to ensure compatibility across different contexts
-  // This allows the same code to work in both preview and production environments
   const currentHost = window.location.hostname;
-  
-  // Normalize RP ID by removing 'www.' prefix if present
-  const rpId = currentHost.replace(/^www\./, '');
   const origin = window.location.origin;
+  
+  // For production domain, always use hardcoded RP ID for stability
+  // For other domains (preview/dev), use dynamic detection
+  const rpId = currentHost === 'croftcommontest.com' 
+    ? 'croftcommontest.com' 
+    : currentHost.replace(/^www\./, '');
+  
   const inPWA = isPWAContext();
   
-  console.debug('[biometricAuth] RP params (dynamic):', { 
+  console.debug('[biometricAuth] RP params:', { 
     rpId, 
     origin, 
     currentHost, 
@@ -321,31 +323,9 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
 
     const { rpId, origin } = getRpParams();
     
-    // Check if we're in a different security context (RP ID changed)
-    // This handles the transition from hardcoded to dynamic RP ID
-    const isPreviewDomain = rpId.includes('lovableproject.com');
-    const wasPreviouslyHardcoded = localStorage.getItem('webauthn_rp_context') === 'hardcoded';
-    
-    if (isPreviewDomain && !wasPreviouslyHardcoded) {
-      console.log('[biometricAuth] Detected RP ID context change, clearing old credentials');
-      try {
-        await supabase.functions.invoke('clear-webauthn-data', {
-          body: { userHandle: handle }
-        });
-        clearLegacyCredentials();
-        localStorage.setItem('webauthn_rp_context', 'dynamic');
-        return { ok: false, errorCode: 'rp_context_changed', error: 'Security context updated. Please re-register your passkey.' };
-      } catch (clearError) {
-        console.warn('[biometricAuth] Failed to clear old credentials:', clearError);
-      }
-    }
-    
-    // Store current context
-    localStorage.setItem('webauthn_rp_context', isPreviewDomain ? 'dynamic' : 'production');
-    
     const preferDiscoverable = isApplePlatform() || isRecentlyRegistered();
     const ua = navigator.userAgent;
-    console.debug('[webauthn] auth start', { rpId, preferDiscoverable, ua, isPreviewDomain });
+    console.debug('[webauthn] auth start', { rpId, preferDiscoverable, ua });
 
     let authResp: any | null = null;
 
