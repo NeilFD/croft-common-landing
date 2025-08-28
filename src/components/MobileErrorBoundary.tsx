@@ -48,10 +48,21 @@ export class MobileErrorBoundary extends React.Component<MobileErrorBoundaryProp
   handleClearPasskeyData = async () => {
     console.log('🧹 MOBILE: Clearing passkey data');
     try {
-      // Clear all WebAuthn related localStorage
-      const keys = ['webauthn_user_handle', 'webauthn_has_credentials', 'webauthn_recent_registration'];
-      keys.forEach(key => localStorage.removeItem(key));
+      // Clear all WebAuthn related localStorage with correct keys
+      const localStorageKeys = ['biometric_user_handle', 'has_webauthn_credentials', 'bioLongOkAt'];
+      localStorageKeys.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`🧹 MOBILE: Cleared localStorage key: ${key}`);
+      });
       
+      // Clear sessionStorage keys
+      const sessionStorageKeys = ['recentPasskeyRegisteredAt', 'recentBioOKAt'];
+      sessionStorageKeys.forEach(key => {
+        sessionStorage.removeItem(key);
+        console.log(`🧹 MOBILE: Cleared sessionStorage key: ${key}`);
+      });
+      
+      console.log('🧹 MOBILE: All passkey data cleared, reloading...');
       // Reload to start fresh
       window.location.reload();
     } catch (e) {
@@ -63,9 +74,11 @@ export class MobileErrorBoundary extends React.Component<MobileErrorBoundaryProp
     try {
       const currentHost = window.location.hostname;
       const origin = window.location.origin;
-      const storedHandle = localStorage.getItem('webauthn_user_handle');
-      const hasCredentials = localStorage.getItem('webauthn_has_credentials');
-      const recentRegistration = localStorage.getItem('webauthn_recent_registration');
+      const storedHandle = localStorage.getItem('biometric_user_handle');
+      const hasCredentials = localStorage.getItem('has_webauthn_credentials');
+      const recentRegistration = sessionStorage.getItem('recentPasskeyRegisteredAt');
+      const bioLongOkAt = localStorage.getItem('bioLongOkAt');
+      const recentBioOKAt = sessionStorage.getItem('recentBioOKAt');
       
       return {
         currentHost,
@@ -73,6 +86,8 @@ export class MobileErrorBoundary extends React.Component<MobileErrorBoundaryProp
         storedHandle,
         hasCredentials,
         recentRegistration,
+        bioLongOkAt,
+        recentBioOKAt,
         userAgent: navigator.userAgent.substring(0, 100) + '...'
       };
     } catch (e) {
