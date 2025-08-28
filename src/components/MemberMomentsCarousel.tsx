@@ -3,7 +3,7 @@ import { useMemberMoments } from '@/hooks/useMemberMoments';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar, User, Camera } from 'lucide-react';
+import { Calendar, User, Camera, Heart } from 'lucide-react';
 import OptimizedImage from '@/components/OptimizedImage';
 
 interface MemberMoment {
@@ -12,6 +12,8 @@ interface MemberMoment {
   image_url: string;
   tagline: string | null;
   uploaded_at: string;
+  like_count: number;
+  user_has_liked: boolean;
   profiles?: {
     first_name?: string;
     last_name?: string;
@@ -19,7 +21,7 @@ interface MemberMoment {
 }
 
 const MemberMomentsCarousel: React.FC = () => {
-  const { moments, loading } = useMemberMoments();
+  const { moments, loading, toggleLike } = useMemberMoments();
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
 
   const getMemberName = (moment: MemberMoment) => {
@@ -103,6 +105,23 @@ const MemberMomentsCarousel: React.FC = () => {
                           className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                        
+                        {/* Like button */}
+                        <div className="absolute top-2 right-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleLike(moment.id);
+                            }}
+                            className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs font-medium hover:bg-black/70 transition-colors"
+                          >
+                            <Heart
+                              className={`h-3 w-3 ${moment.user_has_liked ? 'fill-white text-white' : 'fill-white/70 text-white'}`}
+                            />
+                            {moment.like_count}
+                          </button>
+                        </div>
+                        
                         <div className="absolute bottom-0 left-0 right-0 p-3">
                           {moment.tagline && (
                             <p className="text-white text-sm font-medium mb-2 line-clamp-2">

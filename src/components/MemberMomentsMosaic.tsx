@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, User, Plus, Trash2, Search, CalendarIcon } from 'lucide-react';
+import { Calendar, User, Plus, Trash2, Search, CalendarIcon, Heart } from 'lucide-react';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useMemberMoments, MemberMoment } from '@/hooks/useMemberMoments';
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const MemberMomentsMosaic: React.FC = () => {
-  const { moments, loading, deleteMoment, refetchMoments } = useMemberMoments();
+  const { moments, loading, deleteMoment, refetchMoments, toggleLike } = useMemberMoments();
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
@@ -227,6 +227,22 @@ const MemberMomentsMosaic: React.FC = () => {
                     alt={moment.tagline}
                     className="w-full h-auto object-cover"
                   />
+                  
+                  {/* Like button overlay */}
+                  <div className="absolute bottom-2 right-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleLike(moment.id);
+                      }}
+                      className="flex items-center gap-1 bg-black/50 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs font-medium hover:bg-black/70 transition-colors"
+                    >
+                      <Heart
+                        className={`h-3 w-3 ${moment.user_has_liked ? 'fill-white text-white' : 'fill-white/70 text-white'}`}
+                      />
+                      {moment.like_count}
+                    </button>
+                  </div>
                   
                   {/* Delete button for own moments */}
                   {user?.id === moment.user_id && (

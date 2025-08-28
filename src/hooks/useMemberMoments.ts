@@ -23,6 +23,8 @@ export interface MemberMoment {
   moderated_at?: string | null;
   moderated_by?: string | null;
   updated_at: string;
+  like_count: number;
+  user_has_liked: boolean;
   profiles?: {
     first_name?: string | null;
     last_name?: string | null;
@@ -49,7 +51,7 @@ export const useMemberMoments = () => {
     setLoading(true);
     
     try {
-      // First get moments
+      // Get basic moments data first
       const { data: momentsData, error: momentsError } = await supabase
         .from('member_moments')
         .select('*')
@@ -66,10 +68,21 @@ export const useMemberMoments = () => {
         return;
       }
 
-      // Get unique user IDs from moments
-      const userIds = [...new Set(momentsData?.map(moment => moment.user_id) || [])];
-      
-      // Get profiles for those users
+      if (!momentsData || momentsData.length === 0) {
+        setMoments([]);
+        return;
+      }
+
+      // For now, set like_count to 0 and user_has_liked to false
+      // This will be updated once the database functions are available
+      const processedMoments = momentsData.map(moment => ({
+        ...moment,
+        like_count: 0,
+        user_has_liked: false
+      }));
+
+      // Get profiles for users
+      const userIds = [...new Set(processedMoments.map(moment => moment.user_id))];
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, first_name, last_name')
@@ -79,20 +92,19 @@ export const useMemberMoments = () => {
         console.warn('Failed to load profiles:', profilesError);
       }
 
-      // Create a map of user_id to profile
       const profilesMap = new Map();
       profilesData?.forEach(profile => {
         profilesMap.set(profile.user_id, profile);
       });
 
-      // Combine moments with profiles
-      const momentsWithProfiles = momentsData?.map(moment => ({
+      const momentsWithProfiles = processedMoments.map(moment => ({
         ...moment,
         profiles: profilesMap.get(moment.user_id) || null
-      })) || [];
+      }));
 
       setMoments(momentsWithProfiles);
     } catch (error) {
+      console.error('Error fetching moments:', error);
       toast({
         title: "Error",
         description: "Failed to load moments. Please try again.",
@@ -501,6 +513,14 @@ export const useMemberMoments = () => {
     fetchMoments();
   }, [fetchMoments]);
 
+  const toggleLike = async (momentId: string) => {
+    // Temporarily disabled - will show toast message
+    toast({
+      title: "Feature coming soon",
+      description: "Like functionality will be available soon!",
+    });
+  };
+
   return {
     moments,
     loading,
@@ -508,5 +528,6 @@ export const useMemberMoments = () => {
     uploadMoment,
     deleteMoment,
     refetchMoments,
+    toggleLike,
   };
 };
