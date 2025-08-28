@@ -320,9 +320,32 @@ export async function authenticatePasskeyDetailed(): Promise<BioResult> {
     if (!handle) return { ok: false, errorCode: 'no_user_handle', error: 'No saved passkey user found' };
 
     const { rpId, origin } = getRpParams();
+    
+    // Check if we're in a different security context (RP ID changed)
+    // This handles the transition from hardcoded to dynamic RP ID
+    const isPreviewDomain = rpId.includes('lovableproject.com');
+    const wasPreviouslyHardcoded = localStorage.getItem('webauthn_rp_context') === 'hardcoded';
+    
+    if (isPreviewDomain && !wasPreviouslyHardcoded) {
+      console.log('[biometricAuth] Detected RP ID context change, clearing old credentials');
+      try {
+        await supabase.functions.invoke('clear-webauthn-data', {
+          body: { userHandle: handle }
+        });
+        clearLegacyCredentials();
+        localStorage.setItem('webauthn_rp_context', 'dynamic');
+        return { ok: false, errorCode: 'rp_context_changed', error: 'Security context updated. Please re-register your passkey.' };
+      } catch (clearError) {
+        console.warn('[biometricAuth] Failed to clear old credentials:', clearError);
+      }
+    }
+    
+    // Store current context
+    localStorage.setItem('webauthn_rp_context', isPreviewDomain ? 'dynamic' : 'production');
+    
     const preferDiscoverable = isApplePlatform() || isRecentlyRegistered();
     const ua = navigator.userAgent;
-    console.debug('[webauthn] auth start', { rpId, preferDiscoverable, ua });
+    console.debug('[webauthn] auth start', { rpId, preferDiscoverable, ua, isPreviewDomain });
 
     let authResp: any | null = null;
 

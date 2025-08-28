@@ -68,6 +68,10 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
         return 'Passkeys are not supported in this browser.';
       case 'server':
         return 'There was an issue contacting the server. Please try again.';
+      case 'rp_context_changed':
+        return 'Security context updated. Your passkey needs to be re-registered for this domain.';
+      case 'rp_id_mismatch':
+        return 'Security context changed. Please re-register your passkey.';
       default:
         return fallback || 'Biometric unlock failed. You can try again or use email.';
     }
