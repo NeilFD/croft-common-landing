@@ -95,7 +95,12 @@ const MemberMomentsCarousel: React.FC = () => {
                     <Card 
                       className="cursor-pointer hover:shadow-md transition-all duration-200 border border-gray-200 hover:border-pink-300"
                       onClick={() => {
-                        console.log('[MemberMomentsCarousel] 🖱️ MOBILE: Moment clicked', moment.id);
+                        console.log('[MemberMomentsCarousel] 🖱️ MOBILE: Moment clicked', {
+                          id: moment.id,
+                          imageUrl: moment.image_url,
+                          tagline: moment.tagline
+                        });
+                        console.log('[MemberMomentsCarousel] 🖼️ Full moment object:', moment);
                         setSelectedMoment(moment);
                       }}
                     >
@@ -142,36 +147,44 @@ const MemberMomentsCarousel: React.FC = () => {
       {/* Enlarged Image Modal */}
       <Dialog open={!!selectedMoment} onOpenChange={() => setSelectedMoment(null)}>
         <DialogContent className="max-w-4xl p-0 border-2 border-black">
-          {selectedMoment && (
-            <div className="relative">
-              <OptimizedImage
-                src={selectedMoment.image_url}
-                alt={selectedMoment.tagline || 'Member moment'}
-                className="w-full max-h-[80vh] object-contain"
-              />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                {selectedMoment.tagline && (
-                  <h3 className="text-white text-lg font-semibold mb-2">
-                    {selectedMoment.tagline}
-                  </h3>
-                )}
-                <div className="flex items-center gap-4 text-sm text-white/90">
-                  <div className="flex items-center gap-1">
-                    <User className="h-4 w-4" />
-                    {getMemberName(selectedMoment)}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(selectedMoment.uploaded_at).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
+          {selectedMoment && (() => {
+            console.log('[MemberMomentsCarousel] 🖼️ MODAL: Rendering image in modal', {
+              imageUrl: selectedMoment.image_url,
+              tagline: selectedMoment.tagline
+            });
+            return (
+              <div className="relative">
+                <OptimizedImage
+                  src={selectedMoment.image_url}
+                  alt={selectedMoment.tagline || 'Member moment'}
+                  className="w-full max-h-[80vh] object-contain"
+                  priority={true}
+                  onLoad={() => console.log('[MemberMomentsCarousel] ✅ MODAL: Image loaded successfully')}
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                  {selectedMoment.tagline && (
+                    <h3 className="text-white text-lg font-semibold mb-2">
+                      {selectedMoment.tagline}
+                    </h3>
+                  )}
+                  <div className="flex items-center gap-4 text-sm text-white/90">
+                    <div className="flex items-center gap-1">
+                      <User className="h-4 w-4" />
+                      {getMemberName(selectedMoment)}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(selectedMoment.uploaded_at).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </>
