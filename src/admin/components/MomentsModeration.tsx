@@ -33,30 +33,80 @@ const MomentsModeration: React.FC = () => {
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'needs_review'>('pending');
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
+  // Check authentication state
+  const { data: authCheck } = useQuery({
+    queryKey: ['admin-auth-check'],
+    queryFn: async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        console.log('🔍 MomentsModeration: Auth check result:', {
+          hasSession: !!session,
+          userEmail: session?.user?.email,
+          userId: session?.user?.id
+        });
+        
+        return {
+          isAuthenticated: !!session,
+          userEmail: session?.user?.email,
+          userId: session?.user?.id
+        };
+      } catch (error) {
+        console.error('🚨 MomentsModeration: Auth check failed:', error);
+        throw error;
+      }
+    },
+    refetchInterval: 30000, // Check auth every 30 seconds
+  });
+
   // Fetch moments based on filter
-  const { data: moments = [], isLoading, refetch } = useQuery({
+  const { data: moments = [], isLoading, error: queryError, refetch } = useQuery({
     queryKey: ['admin-moments', selectedStatus],
     queryFn: async () => {
-      let query = supabase
-        .from('member_moments')
-        .select(`
-          *,
-          profiles:user_id (
-            first_name,
-            last_name
-          )
-        `)
-        .order('uploaded_at', { ascending: false });
+      try {
+        console.log('🔍 MomentsModeration: Fetching moments with status:', selectedStatus);
+        
+        let query = supabase
+          .from('member_moments')
+          .select(`
+            *,
+            profiles:user_id (
+              first_name,
+              last_name
+            )
+          `)
+          .order('uploaded_at', { ascending: false });
 
-      if (selectedStatus !== 'all') {
-        query = query.eq('moderation_status', selectedStatus);
+        if (selectedStatus !== 'all') {
+          query = query.eq('moderation_status', selectedStatus);
+        }
+
+        const { data, error } = await query;
+        if (error) {
+          console.error('🚨 MomentsModeration: Query error:', error);
+          setAuthError(error.message);
+          throw error;
+        }
+        
+        console.log('✅ MomentsModeration: Query successful, found moments:', data?.length || 0);
+        setAuthError(null);
+        return data as MemberMoment[];
+      } catch (error) {
+        console.error('🚨 MomentsModeration: Failed to fetch moments:', error);
+        throw error;
       }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as MemberMoment[];
+    },
+    enabled: authCheck?.isAuthenticated === true, // Only run if authenticated
+    retry: (failureCount, error: any) => {
+      // Don't retry on permission errors
+      if (error?.code === 'PGRST116' || error?.message?.includes('permission')) {
+        return false;
+      }
+      return failureCount < 3;
     },
   });
 
@@ -185,7 +235,23 @@ const MomentsModeration: React.FC = () => {
         </TabsList>
 
         <TabsContent value={selectedStatus} className="space-y-4">
-          {isLoading ? (
+          {!authCheck?.isAuthenticated ? (
+            <Card className="p-8">
+              <CardContent className="text-center space-y-4">
+                <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto" />
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Authentication Required</h3>
+                  <p className="text-muted-foreground">Please ensure you are properly signed in to access moments moderation.</p>
+                  {authError && (
+                    <p className="text-sm text-red-600 mt-2">Error: {authError}</p>
+                  )}
+                </div>
+                <Button onClick={() => window.location.reload()} variant="outline">
+                  Refresh Page
+                </Button>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }, (_, i) => (
                 <Card key={i} className="aspect-square">
@@ -193,10 +259,32 @@ const MomentsModeration: React.FC = () => {
                 </Card>
               ))}
             </div>
+          ) : queryError ? (
+            <Card className="p-8">
+              <CardContent className="text-center space-y-4">
+                <XCircle className="h-12 w-12 text-red-500 mx-auto" />
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Database Access Error</h3>
+                  <p className="text-muted-foreground">Failed to load moments. This may be due to insufficient permissions.</p>
+                  <p className="text-sm text-red-600 mt-2">{queryError.message}</p>
+                </div>
+                <div className="flex gap-2 justify-center">
+                  <Button onClick={() => refetch()} variant="outline">
+                    Retry
+                  </Button>
+                  <Button onClick={() => window.location.reload()} variant="outline">
+                    Refresh Page
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           ) : moments.length === 0 ? (
             <Card className="p-8">
               <CardContent className="text-center">
                 <p className="text-muted-foreground">No moments found for this filter.</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Debug: Auth={authCheck?.isAuthenticated ? 'Yes' : 'No'}, Email={authCheck?.userEmail || 'None'}
+                </p>
               </CardContent>
             </Card>
           ) : (
