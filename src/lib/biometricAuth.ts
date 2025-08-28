@@ -16,14 +16,16 @@ function isPWAContext(): boolean {
 }
 
 function getRpParams() {
-  // Use croftcommontest.com to match existing credentials in database
-  // This ensures consistency between browser and PWA contexts
-  const rpId = 'croftcommontest.com';
-  const origin = window.location.origin;
+  // Use dynamic hostname detection to ensure compatibility across different contexts
+  // This allows the same code to work in both preview and production environments
   const currentHost = window.location.hostname;
+  
+  // Normalize RP ID by removing 'www.' prefix if present
+  const rpId = currentHost.replace(/^www\./, '');
+  const origin = window.location.origin;
   const inPWA = isPWAContext();
   
-  console.debug('[biometricAuth] RP params:', { 
+  console.debug('[biometricAuth] RP params (dynamic):', { 
     rpId, 
     origin, 
     currentHost, 
