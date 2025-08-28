@@ -542,13 +542,13 @@ const MemberMomentsMosaic: React.FC = () => {
           className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/90 backdrop-blur-sm"
           onClick={() => setSelectedMoment(null)}
         >
-          <Card className="w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
             <CardContent className="p-0 flex flex-col h-full">
-              <div className="flex-shrink-0 max-h-[55vh] overflow-hidden bg-gray-50">
+              <div className="flex-shrink-0 flex items-center justify-center bg-gray-50 min-h-[40vh] max-h-[70vh]">
                 <img
                   src={selectedMoment.image_url}
                   alt={selectedMoment.tagline}
-                  className="w-full h-auto max-h-full object-contain"
+                  className="max-w-full max-h-full object-contain"
                 />
               </div>
               <div className="flex-1 p-4 sm:p-6 space-y-4 overflow-y-auto">
