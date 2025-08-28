@@ -137,17 +137,28 @@ serve(async (req: Request) => {
     const availableGrace = gracePeriods.data || [];
     const receipts = recentReceipts.data || [];
 
-    // Calculate current week progress
-    // Fix property name mismatch: streak_weeks uses week_start_date, boundaries returns week_start
+    // Calculate current week progress with unique receipt days
     const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
+    const currentWeekEndDate = currentWeekBoundaries?.[0]?.week_end;
+    
+    // Get unique receipt days for current week from actual receipts
+    const currentWeekReceipts = receipts.filter(r => {
+      const receiptDate = r.receipt_date;
+      return receiptDate >= currentWeekStartDate && receiptDate <= currentWeekEndDate;
+    });
+    
+    // Count unique days, not total receipts
+    const uniqueReceiptDays = new Set(currentWeekReceipts.map(r => r.receipt_date)).size;
+    const isCurrentWeekComplete = uniqueReceiptDays >= 2;
+    
     const currentWeek = streakWeeks.find(w => 
       w.week_start_date === currentWeekStartDate
     );
 
     console.log('📊 Current week boundaries:', currentWeekBoundaries);
-    console.log('📊 Current week start date:', currentWeekStartDate);
-    console.log('📊 Found current week data:', currentWeek);
-    console.log('📊 All streak weeks:', streakWeeks.map(w => ({ start: w.week_start_date, complete: w.is_complete, receipts: w.receipt_count })));
+    console.log('📊 Current week receipts:', currentWeekReceipts.map(r => r.receipt_date));
+    console.log('📊 Unique receipt days this week:', uniqueReceiptDays);
+    console.log('📊 Is current week complete:', isCurrentWeekComplete);
 
     // Calculate current set progress
     const currentSet = streakSets.find(s => !s.is_complete);
@@ -158,8 +169,8 @@ serve(async (req: Request) => {
     // Check for make-up opportunities
     const makeupOpportunity = await checkMakeupOpportunity(serviceSupabase, user.id, streakWeeks);
 
-    // Generate calendar data (12 weeks)
-    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries);
+    // Generate calendar data (12 weeks) with receipt data for accurate counting
+    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries, receipts);
 
     // Calculate streak statistics
     const stats = calculateStreakStats(streakWeeks, streakSets, activeRewards);
@@ -169,9 +180,9 @@ serve(async (req: Request) => {
       current_week: {
         week_start: currentWeekStartDate,
         week_end: currentWeekBoundaries?.[0]?.week_end,
-        receipts_count: currentWeek?.receipt_count || 0,
-        receipts_needed: Math.max(0, 2 - (currentWeek?.receipt_count || 0)),
-        is_complete: currentWeek?.is_complete || false,
+        receipts_count: uniqueReceiptDays,
+        receipts_needed: Math.max(0, 2 - uniqueReceiptDays),
+        is_complete: isCurrentWeekComplete,
         is_current: true
       },
       current_set: currentSet ? {
@@ -219,7 +230,10 @@ serve(async (req: Request) => {
         amount: r.total_amount,
         venue: r.venue_location || 'Unknown Venue'
       })),
-      notifications: generateNotifications(currentWeek, currentSet, makeupOpportunity, activeRewards)
+      notifications: generateNotifications({
+        receipts_count: uniqueReceiptDays,
+        is_complete: isCurrentWeekComplete
+      }, currentSet, makeupOpportunity, activeRewards)
     };
 
     return new Response(JSON.stringify(dashboardData), {
@@ -236,7 +250,7 @@ serve(async (req: Request) => {
   }
 });
 
-function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any) {
+function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, receipts: any[] = []) {
   const weeks = [];
   const startDate = getDateMinusWeeks(new Date(), 16);
   const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
@@ -250,20 +264,28 @@ function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any) {
     const isCurrent = weekStart === currentWeekStartDate;
     const isFuture = new Date(weekStart) > new Date();
     
-    console.log(`📅 Week ${weekStart}: weekData=${!!weekData}, complete=${weekData?.is_complete}, receipts=${weekData?.receipt_count}`);
+    // Calculate unique receipt days for this week from actual receipt data
+    const weekReceipts = receipts.filter(r => {
+      const receiptDate = r.receipt_date;
+      return receiptDate >= weekStart && receiptDate <= weekEnd;
+    });
+    const uniqueReceiptDays = new Set(weekReceipts.map(r => r.receipt_date)).size;
+    const weekComplete = uniqueReceiptDays >= 2;
+    
+    console.log(`📅 Week ${weekStart}: weekData=${!!weekData}, complete=${weekComplete}, unique_days=${uniqueReceiptDays}`);
     
     weeks.push({
       week_start: weekStart,
       week_end: weekEnd,
-      receipts_count: weekData?.receipt_count || 0,
-      is_complete: weekData?.is_complete || false,
+      receipts_count: uniqueReceiptDays,
+      is_complete: weekComplete,
       is_current: isCurrent,
       is_future: isFuture,
       completed_at: weekData?.completed_at || null
     });
   }
   
-  console.log('📅 Generated calendar weeks:', weeks.filter(w => w.receipts_count > 0 || w.is_complete));
+  console.log('📅 Generated calendar weeks with unique days:', weeks.filter(w => w.receipts_count > 0 || w.is_complete));
   return weeks;
 }
 
@@ -326,14 +348,14 @@ function calculateStreakStats(streakWeeks: any[], streakSets: any[], activeRewar
 function generateNotifications(currentWeek: any, currentSet: any, makeupOpportunity: any, activeRewards: any[]) {
   const notifications = [];
   
-  // Current week progress
+  // Current week progress - use unique days instead of total receipts
   if (currentWeek) {
-    const receiptsNeeded = 2 - currentWeek.receipt_count;
+    const receiptsNeeded = 2 - (currentWeek.receipts_count || 0);
     if (receiptsNeeded > 0) {
       notifications.push({
         type: 'progress',
         title: 'Week Progress',
-        message: `${receiptsNeeded} more receipt${receiptsNeeded > 1 ? 's' : ''} needed to complete this week`,
+        message: `${receiptsNeeded} more visit${receiptsNeeded > 1 ? ' day' : ' days'} needed to complete this week`,
         priority: 'medium'
       });
     }
