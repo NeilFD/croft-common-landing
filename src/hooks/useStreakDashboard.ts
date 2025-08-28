@@ -117,7 +117,7 @@ export const useStreakDashboard = () => {
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
       
-      console.log('🔑 HOOK: Calling edge function with token present:', !!token);
+      console.log('🔑 HOOK: Calling edge function');
 
       const { data, error } = await supabase.functions.invoke('get-streak-dashboard', {
         headers: {
@@ -127,16 +127,11 @@ export const useStreakDashboard = () => {
 
       if (error) throw error;
 
-      console.log(`✅ STREAK DASHBOARD: Successfully fetched data for user ${user?.id}`);
-      console.log(`✅ STREAK DASHBOARD: Recent activity count: ${data?.recent_activity?.length || 0}`);
+      console.log('✅ STREAK DASHBOARD: Data fetched successfully');
 
       setDashboardData(data);
     } catch (err) {
       console.error('❌ STREAK DASHBOARD ERROR:', err);
-      console.error('❌ STREAK DASHBOARD ERROR Details:', {
-        message: err instanceof Error ? err.message : 'Unknown error',
-        user: user?.id
-      });
       setError(err instanceof Error ? err.message : 'Failed to fetch dashboard');
     } finally {
       setLoading(false);

@@ -15,10 +15,7 @@ serve(async (req: Request) => {
   try {
     // Get user from auth header
     const authHeader = req.headers.get('Authorization');
-    console.log('🔑 Auth header present:', !!authHeader);
-    
     if (!authHeader) {
-      console.error('❌ No authorization header found');
       return new Response(JSON.stringify({ error: 'No authorization header' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -26,18 +23,12 @@ serve(async (req: Request) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    console.log('🔑 Token extracted, length:', token.length);
 
-    // Create authenticated Supabase client using the user's token
-    const authenticatedSupabase = createClient(
+    // Create client to verify user token
+    const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
       {
-        global: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
         auth: {
           autoRefreshToken: false,
           persistSession: false,
@@ -46,31 +37,33 @@ serve(async (req: Request) => {
     );
 
     // Verify user authentication
-    const { data: { user }, error: authError } = await authenticatedSupabase.auth.getUser();
-    
-    console.log('🔑 Auth verification:', {
-      hasUser: !!user,
-      userId: user?.id,
-      authError: authError?.message
-    });
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
 
     if (authError || !user) {
-      console.error('❌ Authentication failed:', authError?.message || 'No user found');
-      return new Response(JSON.stringify({ 
-        error: 'Invalid auth',
-        details: authError?.message || 'No user found'
-      }), {
+      return new Response(JSON.stringify({ error: 'Invalid auth' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // Create service role client for database queries to bypass RLS
+    const serviceSupabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+
     console.log(`Fetching streak dashboard for user ${user.id}`);
 
     // Get current week boundaries
-    const { data: currentWeekBoundaries } = await authenticatedSupabase.rpc('get_current_week_boundaries');
+    const { data: currentWeekBoundaries } = await serviceSupabase.rpc('get_current_week_boundaries');
 
-    // Fetch all streak data in parallel using authenticated client
+    // Fetch all streak data in parallel using service role client
     const [
       memberStreaksResult,
       streakWeeksResult,
@@ -81,14 +74,14 @@ serve(async (req: Request) => {
       recentReceipts
     ] = await Promise.all([
       // Member streaks summary
-      authenticatedSupabase
+      serviceSupabase
         .from('member_streaks')
         .select('*')
         .eq('user_id', user.id)
         .single(),
 
       // Streak weeks (last 12 weeks for calendar display)
-      authenticatedSupabase
+      serviceSupabase
         .from('streak_weeks')
         .select('*')
         .eq('user_id', user.id)
@@ -96,7 +89,7 @@ serve(async (req: Request) => {
         .order('week_start_date', { ascending: true }),
 
       // Current and recent streak sets
-      authenticatedSupabase
+      serviceSupabase
         .from('streak_sets')
         .select('*')
         .eq('user_id', user.id)
@@ -104,7 +97,7 @@ serve(async (req: Request) => {
         .limit(5),
 
       // Active rewards
-      authenticatedSupabase
+      serviceSupabase
         .from('streak_rewards')
         .select('*')
         .eq('user_id', user.id)
@@ -112,7 +105,7 @@ serve(async (req: Request) => {
         .order('reward_tier', { ascending: false }),
 
       // Recent badges (last 10)
-      authenticatedSupabase
+      serviceSupabase
         .from('streak_badges')
         .select('*')
         .eq('user_id', user.id)
@@ -120,7 +113,7 @@ serve(async (req: Request) => {
         .limit(10),
 
       // Available grace periods
-      authenticatedSupabase
+      serviceSupabase
         .from('streak_grace_periods')
         .select('*')
         .eq('user_id', user.id)
@@ -128,7 +121,7 @@ serve(async (req: Request) => {
         .gt('expires_date', new Date().toISOString()),
 
       // Recent receipts for context - get ALL receipts, don't filter by date
-      authenticatedSupabase
+      serviceSupabase
         .from('member_receipts')
         .select('id, receipt_date, total_amount, venue_location')
         .eq('user_id', user.id)
@@ -163,7 +156,7 @@ serve(async (req: Request) => {
     const totalDiscount = activeRewards.reduce((sum, r) => sum + (r.reward_tier * 25), 0);
 
     // Check for make-up opportunities
-    const makeupOpportunity = await checkMakeupOpportunity(authenticatedSupabase, user.id, streakWeeks);
+    const makeupOpportunity = await checkMakeupOpportunity(serviceSupabase, user.id, streakWeeks);
 
     // Generate calendar data (12 weeks)
     const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries);
