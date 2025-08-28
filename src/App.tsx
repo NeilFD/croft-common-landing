@@ -71,10 +71,28 @@ const BannerOverlay = () => {
 
 // Single performance and notification handler
 const GlobalHandlers = () => {
-  // Call hooks at the top level (Rules of Hooks)
+  // Single performance optimizer instance
   useOptimizedPerformance();
-  useWebVitals();
-  useAnalytics();
+  
+  // Defer these hooks until after initial render
+  useEffect(() => {
+    // Small delay to let page start rendering
+    const timer = setTimeout(() => {
+      // These will be loaded asynchronously
+      Promise.all([
+        import('@/hooks/useWebVitals').then(m => m.useWebVitals),
+        import('@/hooks/useAnalytics').then(m => m.useAnalytics),
+      ]).then(([useWebVitals, useAnalytics]) => {
+        // Only call these after initial page load
+        if (document.readyState === 'complete') {
+          useWebVitals();
+          useAnalytics();
+        }
+      });
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, []);
   
   // Handle notifications immediately as they're critical
   useNotificationHandler();
@@ -110,13 +128,6 @@ const LowercasePathGuard = () => {
   useEffect(() => {
     const path = location.pathname;
     if (!/[A-Z]/.test(path)) return;
-    
-    // Don't redirect if user is actively typing in input fields
-    const activeElement = document.activeElement;
-    if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-      return;
-    }
-    
     const first = path.split("/").filter(Boolean)[0] ?? "";
     const lowerFirst = first.toLowerCase();
     if (allowedRoots.has(lowerFirst)) {

@@ -219,87 +219,23 @@ export const AdminNotificationsApp: React.FC = () => {
 
   useEffect(() => {
     let mounted = true;
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
       const email = session?.user?.email ?? null;
       setUserEmail(email);
-      
-      // Debug session state for admin interface
-      console.log('🔐 Admin: Auth state change', { 
-        event, 
-        hasSession: !!session, 
-        email,
-        userId: session?.user?.id 
-      });
-      
-      // Test database session after auth change
-      if (session?.user) {
-        try {
-          const { data: testData, error: testError } = await supabase
-            .from('member_moments')
-            .select('id')
-            .limit(1);
-          console.log('🔍 Admin: DB session test result:', { 
-            canQuery: !testError, 
-            error: testError?.message,
-            rowCount: testData?.length 
-          });
-        } catch (e) {
-          console.error('🚨 Admin: DB session test failed:', e);
-        }
-      }
-      
       // Avoid reopening modal on transient refresh events; only open on explicit sign-out
       if (event === 'SIGNED_OUT') {
         setAuthOpen(true);
       }
     });
 
-    const initializeSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (!mounted) return;
-        
-        const email = session?.user?.email ?? null;
-        setUserEmail(email);
-        setReady(true);
-        
-        // Debug initial session state
-        console.log('🔐 Admin: Initial session check', { 
-          hasSession: !!session, 
-          email,
-          userId: session?.user?.id,
-          error: error?.message 
-        });
-        
-        // Test database session on initial load
-        if (session?.user) {
-          try {
-            const { data: testData, error: testError } = await supabase
-              .from('member_moments')
-              .select('id')
-              .limit(1);
-            console.log('🔍 Admin: Initial DB session test:', { 
-              canQuery: !testError, 
-              error: testError?.message,
-              rowCount: testData?.length 
-            });
-          } catch (e) {
-            console.error('🚨 Admin: Initial DB session test failed:', e);
-          }
-        }
-        
-        if (!email) setAuthOpen(true);
-      } catch (error) {
-        console.error('🚨 Admin: Failed to get initial session:', error);
-        if (mounted) {
-          setReady(true);
-          setAuthOpen(true);
-        }
-      }
-    };
-
-    initializeSession();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      const email = session?.user?.email ?? null;
+      setUserEmail(email);
+      setReady(true);
+      if (!email) setAuthOpen(true);
+    });
 
     return () => {
       mounted = false;

@@ -293,23 +293,10 @@ const TraditionalStreakCalendar: React.FC = () => {
 
   const { current_week, current_set, calendar_weeks, recent_activity } = dashboardData;
 
-  // DEBUG: Log the recent activity data
-  console.log('🔍 TRADITIONAL CALENDAR: recent_activity data:', recent_activity);
-  console.log('🔍 TRADITIONAL CALENDAR: recent_activity length:', recent_activity?.length || 0);
-  if (recent_activity?.length > 0) {
-    console.log('🔍 TRADITIONAL CALENDAR: First activity:', recent_activity[0]);
-    console.log('🔍 TRADITIONAL CALENDAR: All activity dates:', recent_activity.map((a: any) => a.date));
-  }
-
   // Create a map of receipt dates for easier lookup
   const receiptDates = new Set(
     recent_activity?.map((activity: any) => activity.date) || []
   );
-
-  // DEBUG: Log the receipt dates set
-  console.log('🔍 TRADITIONAL CALENDAR: receiptDates Set:', Array.from(receiptDates));
-  console.log('🔍 TRADITIONAL CALENDAR: Looking for 2025-08-27:', receiptDates.has('2025-08-27'));
-  console.log('🔍 TRADITIONAL CALENDAR: Has any August dates:', Array.from(receiptDates).filter(d => d.includes('2025-08')));
 
   // Create week completion map
   const weekCompletions = new Map();
@@ -320,21 +307,9 @@ const TraditionalStreakCalendar: React.FC = () => {
 
   // Custom day renderer for calendar
   const dayRenderer = (day: Date) => {
-    // Use local timezone formatting instead of UTC to avoid date shifting
-    const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
+    const dateStr = day.toISOString().split('T')[0];
     const hasReceipt = receiptDates.has(dateStr);
     const isToday = day.toDateString() === new Date().toDateString();
-    
-    // DEBUG: Log specific dates we're checking
-    if (dateStr === '2025-08-27' || dateStr.includes('2025-08-2')) {
-      console.log(`🔍 DAY RENDERER: Checking ${dateStr}:`, {
-        hasReceipt,
-        isInSet: receiptDates.has(dateStr),
-        allDatesInSet: Array.from(receiptDates),
-        originalDay: day,
-        localDateStr: dateStr
-      });
-    }
     
     // Check if this day is at the end of a completed week (Sunday)
     const isWeekEnd = day.getDay() === 0; // Sunday
@@ -349,17 +324,7 @@ const TraditionalStreakCalendar: React.FC = () => {
           {day.getDate()}
         </span>
         {hasReceipt && (
-          <div 
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center animate-pulse"
-            style={{
-              backgroundColor: '#ef4444',
-              border: '3px solid #facc15',
-              boxShadow: '0 0 15px rgba(239, 68, 68, 0.9)',
-              zIndex: 20
-            }}
-          >
-            <span className="text-white text-xs font-bold">●</span>
-          </div>
+          <Dot className="absolute -top-1 -right-1 h-3 w-3 text-green-500 fill-current" />
         )}
         {isWeekEnd && isWeekComplete && (
           <CheckCircle className="absolute -bottom-1 -right-1 h-3 w-3 text-green-500" />
@@ -379,28 +344,13 @@ const TraditionalStreakCalendar: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Current Week Summary */}
-          <div className={cn(
-            "p-3 rounded-lg border-2 transition-all",
-            current_week.is_complete 
-              ? "bg-white border-green-400 shadow-md" 
-              : "bg-white border-pink-200"
-          )}>
+          <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-3 rounded-lg">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">This Week</span>
-                {current_week.is_complete && (
-                  <CheckCircle className="h-4 w-4 text-green-500" />
-                )}
-              </div>
+              <span className="text-sm font-medium">This Week</span>
               <Badge variant={current_week.is_complete ? 'default' : 'secondary'}>
                 {current_week.receipts_count}/2
               </Badge>
             </div>
-            {current_week.is_complete && (
-              <div className="mt-2 text-xs text-green-700 font-medium">
-                Week completed. Great work. See you next week
-              </div>
-            )}
           </div>
 
           {/* Calendar View */}
@@ -456,7 +406,7 @@ const TraditionalStreakCalendar: React.FC = () => {
             <CollapsibleContent className="space-y-4 mt-4">
               {/* Current Set Progress */}
               {current_set && (
-                <div className="bg-white border-2 border-pink-200 p-3 rounded-lg">
+                <div className="bg-gradient-to-r from-secondary/10 to-secondary/5 p-3 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium flex items-center gap-1">
                       <Target className="h-3 w-3" />

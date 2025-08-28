@@ -114,25 +114,22 @@ export const useStreakDashboard = () => {
       setLoading(true);
       setError(null);
 
-      const session = await supabase.auth.getSession();
-      const token = session.data.session?.access_token;
-      
-      console.log('🔑 HOOK: Calling edge function');
-
       const { data, error } = await supabase.functions.invoke('get-streak-dashboard', {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
         },
       });
 
       if (error) throw error;
 
-      console.log('✅ STREAK DASHBOARD: Data fetched successfully');
+      console.log('📊 STREAK DASHBOARD: Raw data received:', data);
+      console.log('📊 STREAK DASHBOARD: Calendar weeks:', data?.calendar_weeks);
+      console.log('📊 STREAK DASHBOARD: Current week:', data?.current_week);
 
       setDashboardData(data);
     } catch (err) {
-      console.error('❌ STREAK DASHBOARD ERROR:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch dashboard');
+      console.error('Error fetching streak dashboard:', err);
+      setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }

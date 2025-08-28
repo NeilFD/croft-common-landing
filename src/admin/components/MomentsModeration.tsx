@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle, CheckCircle, XCircle, Eye, User, Calendar, Archive, ArchiveRestore } from 'lucide-react';
+import { AlertTriangle, CheckCircle, XCircle, Eye, User, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from '@/hooks/use-toast';
 
@@ -18,7 +18,7 @@ interface MemberMoment {
   tagline: string;
   date_taken: string;
   uploaded_at: string;
-  moderation_status: string;
+  moderation_status: 'pending' | 'approved' | 'rejected' | 'needs_review';
   moderation_reason?: string;
   ai_confidence_score?: number;
   ai_flags?: any[];
@@ -27,90 +27,36 @@ interface MemberMoment {
   latitude?: number;
   longitude?: number;
   location_confirmed: boolean;
-  profiles?: {
-    first_name: string;
-    last_name: string;
-  } | null;
 }
 
 const MomentsModeration: React.FC = () => {
-  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'needs_review' | 'archived'>('pending');
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected' | 'needs_review'>('pending');
   const [selectedMoment, setSelectedMoment] = useState<MemberMoment | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [authError, setAuthError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  // Check authentication state
-  const { data: authCheck } = useQuery({
-    queryKey: ['admin-auth-check'],
-    queryFn: async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        console.log('🔍 MomentsModeration: Auth check result:', {
-          hasSession: !!session,
-          userEmail: session?.user?.email,
-          userId: session?.user?.id
-        });
-        
-        return {
-          isAuthenticated: !!session,
-          userEmail: session?.user?.email,
-          userId: session?.user?.id
-        };
-      } catch (error) {
-        console.error('🚨 MomentsModeration: Auth check failed:', error);
-        throw error;
-      }
-    },
-    refetchInterval: 30000, // Check auth every 30 seconds
-  });
-
   // Fetch moments based on filter
-  const { data: moments = [], isLoading, error: queryError, refetch } = useQuery({
+  const { data: moments = [], isLoading, refetch } = useQuery({
     queryKey: ['admin-moments', selectedStatus],
     queryFn: async () => {
-      try {
-        console.log('🔍 MomentsModeration: Fetching moments with status:', selectedStatus);
-        
-        let query = supabase
-          .from('member_moments')
-          .select('*')
-          .order('uploaded_at', { ascending: false });
+      let query = supabase
+        .from('member_moments')
+        .select('*')
+        .order('uploaded_at', { ascending: false });
 
-        if (selectedStatus !== 'all') {
-          query = query.eq('moderation_status', selectedStatus);
-        }
+      if (selectedStatus !== 'all') {
+        query = query.eq('moderation_status', selectedStatus);
+      }
 
-        const { data, error } = await query;
-        if (error) {
-          console.error('🚨 MomentsModeration: Query error:', error);
-          setAuthError(error.message);
-          throw error;
-        }
-        
-        console.log('✅ MomentsModeration: Query successful, found moments:', data?.length || 0);
-        setAuthError(null);
-        return data as MemberMoment[];
-      } catch (error) {
-        console.error('🚨 MomentsModeration: Failed to fetch moments:', error);
-        throw error;
-      }
-    },
-    enabled: authCheck?.isAuthenticated === true, // Only run if authenticated
-    retry: (failureCount, error: any) => {
-      // Don't retry on permission errors
-      if (error?.code === 'PGRST116' || error?.message?.includes('permission')) {
-        return false;
-      }
-      return failureCount < 3;
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as MemberMoment[];
     },
   });
 
   // Moderation mutations
   const moderateMoment = useMutation({
-    mutationFn: async ({ momentId, status, reason }: { momentId: string; status: 'approved' | 'rejected' | 'archived'; reason?: string }) => {
+    mutationFn: async ({ momentId, status, reason }: { momentId: string; status: 'approved' | 'rejected'; reason?: string }) => {
       const { error } = await supabase
         .from('member_moments')
         .update({
@@ -186,8 +132,6 @@ const MomentsModeration: React.FC = () => {
         return <Badge variant="outline" className="text-red-600 border-red-600"><XCircle className="h-3 w-3 mr-1" />Rejected</Badge>;
       case 'needs_review':
         return <Badge variant="outline" className="text-orange-600 border-orange-600"><AlertTriangle className="h-3 w-3 mr-1" />Needs Review</Badge>;
-      case 'archived':
-        return <Badge variant="outline" className="text-gray-600 border-gray-600"><Archive className="h-3 w-3 mr-1" />Archived</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -201,17 +145,8 @@ const MomentsModeration: React.FC = () => {
     moderateMoment.mutate({ momentId, status: 'rejected', reason });
   };
 
-  const handleArchive = (momentId: string) => {
-    moderateMoment.mutate({ momentId, status: 'archived' });
-  };
-
-  const handleUnarchive = (momentId: string) => {
-    moderateMoment.mutate({ momentId, status: 'approved' });
-  };
-
   const pendingCount = moments.filter(m => m.moderation_status === 'pending').length;
   const needsReviewCount = moments.filter(m => m.moderation_status === 'needs_review').length;
-  const archivedCount = moments.filter(m => m.moderation_status === 'archived').length;
 
   return (
     <div className="space-y-6">
@@ -241,27 +176,10 @@ const MomentsModeration: React.FC = () => {
           <TabsTrigger value="needs_review">Need Review ({needsReviewCount})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({moments.filter(m => m.moderation_status === 'approved').length})</TabsTrigger>
           <TabsTrigger value="rejected">Rejected ({moments.filter(m => m.moderation_status === 'rejected').length})</TabsTrigger>
-          <TabsTrigger value="archived">Archived ({archivedCount})</TabsTrigger>
         </TabsList>
 
         <TabsContent value={selectedStatus} className="space-y-4">
-          {!authCheck?.isAuthenticated ? (
-            <Card className="p-8">
-              <CardContent className="text-center space-y-4">
-                <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto" />
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Authentication Required</h3>
-                  <p className="text-muted-foreground">Please ensure you are properly signed in to access moments moderation.</p>
-                  {authError && (
-                    <p className="text-sm text-red-600 mt-2">Error: {authError}</p>
-                  )}
-                </div>
-                <Button onClick={() => window.location.reload()} variant="outline">
-                  Refresh Page
-                </Button>
-              </CardContent>
-            </Card>
-          ) : isLoading ? (
+          {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 6 }, (_, i) => (
                 <Card key={i} className="aspect-square">
@@ -269,32 +187,10 @@ const MomentsModeration: React.FC = () => {
                 </Card>
               ))}
             </div>
-          ) : queryError ? (
-            <Card className="p-8">
-              <CardContent className="text-center space-y-4">
-                <XCircle className="h-12 w-12 text-red-500 mx-auto" />
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">Database Access Error</h3>
-                  <p className="text-muted-foreground">Failed to load moments. This may be due to insufficient permissions.</p>
-                  <p className="text-sm text-red-600 mt-2">{queryError.message}</p>
-                </div>
-                <div className="flex gap-2 justify-center">
-                  <Button onClick={() => refetch()} variant="outline">
-                    Retry
-                  </Button>
-                  <Button onClick={() => window.location.reload()} variant="outline">
-                    Refresh Page
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
           ) : moments.length === 0 ? (
             <Card className="p-8">
               <CardContent className="text-center">
                 <p className="text-muted-foreground">No moments found for this filter.</p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Debug: Auth={authCheck?.isAuthenticated ? 'Yes' : 'No'}, Email={authCheck?.userEmail || 'None'}
-                </p>
               </CardContent>
             </Card>
           ) : (
@@ -331,7 +227,7 @@ const MomentsModeration: React.FC = () => {
                     <p className="font-medium line-clamp-2 mb-2">{moment.tagline}</p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
                       <User className="h-3 w-3" />
-                       <span>User {moment.user_id.slice(0, 8)}...</span>
+                      <span>User {moment.user_id.slice(0, 8)}...</span>
                       <Calendar className="h-3 w-3" />
                       <span>{format(new Date(moment.uploaded_at), 'MMM dd')}</span>
                     </div>
@@ -374,32 +270,6 @@ const MomentsModeration: React.FC = () => {
                           Reject
                         </Button>
                       </div>
-                    )}
-
-                    {(moment.moderation_status === 'approved' || moment.moderation_status === 'rejected') && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-gray-600 border-gray-600 hover:bg-gray-50 w-full"
-                        onClick={() => handleArchive(moment.id)}
-                        disabled={moderateMoment.isPending}
-                      >
-                        <Archive className="h-3 w-3 mr-1" />
-                        Archive
-                      </Button>
-                    )}
-
-                    {moment.moderation_status === 'archived' && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="text-blue-600 border-blue-600 hover:bg-blue-50 w-full"
-                        onClick={() => handleUnarchive(moment.id)}
-                        disabled={moderateMoment.isPending}
-                      >
-                        <ArchiveRestore className="h-3 w-3 mr-1" />
-                        Restore
-                      </Button>
                     )}
                   </CardContent>
                 </Card>
@@ -474,30 +344,6 @@ const MomentsModeration: React.FC = () => {
                   >
                     {selectedMoment.is_visible ? 'Hide' : 'Show'}
                   </Button>
-                  
-                  {selectedMoment.moderation_status === 'archived' ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleUnarchive(selectedMoment.id)}
-                      disabled={moderateMoment.isPending}
-                      className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                    >
-                      <ArchiveRestore className="h-4 w-4 mr-1" />
-                      Restore
-                    </Button>
-                  ) : selectedMoment.moderation_status !== 'pending' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleArchive(selectedMoment.id)}
-                      disabled={moderateMoment.isPending}
-                      className="text-gray-600 border-gray-600 hover:bg-gray-50"
-                    >
-                      <Archive className="h-4 w-4 mr-1" />
-                      Archive
-                    </Button>
-                  )}
                 </div>
 
                 {selectedMoment.moderation_status === 'pending' && (

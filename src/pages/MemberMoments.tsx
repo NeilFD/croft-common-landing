@@ -1,7 +1,6 @@
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Navigate, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import MemberMomentsMosaic from '@/components/MemberMomentsMosaic';
@@ -35,15 +34,6 @@ const MemberMoments: React.FC = () => {
       
       <main className="pt-32 pb-8">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="mb-6">
-            <Link 
-              to="/common-room/member" 
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Member Home
-            </Link>
-          </div>
           <MemberMomentsMosaic />
         </div>
       </main>

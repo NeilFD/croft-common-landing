@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, Edit as EditIcon, Wand2 } from 'lucide-react';
+import { Save, Edit, Wand2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -191,7 +191,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
                     onClick={() => setEditingItem(editingItem === item.id ? null : item.id)}
                     className="w-full sm:w-auto flex-shrink-0 min-h-[44px] sm:min-h-auto"
                   >
-                    <EditIcon className="h-4 w-4 mr-2" />
+                    <Edit className="h-4 w-4 mr-2" />
                     {editingItem === item.id ? 'Cancel' : 'Edit'}
                   </Button>
                 </div>

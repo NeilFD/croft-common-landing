@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.53.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,18 +13,6 @@ serve(async (req: Request) => {
   }
 
   try {
-    // Get user from auth header
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'No authorization header' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const token = authHeader.replace('Bearer ', '');
-
-    // Create client to verify user token
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -36,8 +24,18 @@ serve(async (req: Request) => {
       }
     );
 
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Get user from auth header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'No authorization header' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
 
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid auth' }), {
@@ -46,24 +44,12 @@ serve(async (req: Request) => {
       });
     }
 
-    // Create service role client for database queries to bypass RLS
-    const serviceSupabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-
     console.log(`Fetching streak dashboard for user ${user.id}`);
 
     // Get current week boundaries
-    const { data: currentWeekBoundaries } = await serviceSupabase.rpc('get_current_week_boundaries');
+    const { data: currentWeekBoundaries } = await supabase.rpc('get_current_week_boundaries');
 
-    // Fetch all streak data in parallel using service role client
+    // Fetch all streak data in parallel
     const [
       memberStreaksResult,
       streakWeeksResult,
@@ -74,14 +60,14 @@ serve(async (req: Request) => {
       recentReceipts
     ] = await Promise.all([
       // Member streaks summary
-      serviceSupabase
+      supabase
         .from('member_streaks')
         .select('*')
         .eq('user_id', user.id)
         .single(),
 
       // Streak weeks (last 12 weeks for calendar display)
-      serviceSupabase
+      supabase
         .from('streak_weeks')
         .select('*')
         .eq('user_id', user.id)
@@ -89,7 +75,7 @@ serve(async (req: Request) => {
         .order('week_start_date', { ascending: true }),
 
       // Current and recent streak sets
-      serviceSupabase
+      supabase
         .from('streak_sets')
         .select('*')
         .eq('user_id', user.id)
@@ -97,7 +83,7 @@ serve(async (req: Request) => {
         .limit(5),
 
       // Active rewards
-      serviceSupabase
+      supabase
         .from('streak_rewards')
         .select('*')
         .eq('user_id', user.id)
@@ -105,7 +91,7 @@ serve(async (req: Request) => {
         .order('reward_tier', { ascending: false }),
 
       // Recent badges (last 10)
-      serviceSupabase
+      supabase
         .from('streak_badges')
         .select('*')
         .eq('user_id', user.id)
@@ -113,20 +99,20 @@ serve(async (req: Request) => {
         .limit(10),
 
       // Available grace periods
-      serviceSupabase
+      supabase
         .from('streak_grace_periods')
         .select('*')
         .eq('user_id', user.id)
         .eq('is_used', false)
         .gt('expires_date', new Date().toISOString()),
 
-      // Recent receipts for context - get ALL receipts, don't filter by date
-      serviceSupabase
+      // Recent receipts for context
+      supabase
         .from('member_receipts')
         .select('id, receipt_date, total_amount, venue_location')
         .eq('user_id', user.id)
+        .gte('receipt_date', getDateMinusWeeks(new Date(), 4))
         .order('receipt_date', { ascending: false })
-        .limit(50)
     ]);
 
     const memberStreaks = memberStreaksResult.data;
@@ -137,28 +123,14 @@ serve(async (req: Request) => {
     const availableGrace = gracePeriods.data || [];
     const receipts = recentReceipts.data || [];
 
-    // Calculate current week progress with unique receipt days
-    const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
-    const currentWeekEndDate = currentWeekBoundaries?.[0]?.week_end;
-    
-    // Get unique receipt days for current week from actual receipts
-    const currentWeekReceipts = receipts.filter(r => {
-      const receiptDate = r.receipt_date;
-      return receiptDate >= currentWeekStartDate && receiptDate <= currentWeekEndDate;
-    });
-    
-    // Count unique days, not total receipts
-    const uniqueReceiptDays = new Set(currentWeekReceipts.map(r => r.receipt_date)).size;
-    const isCurrentWeekComplete = uniqueReceiptDays >= 2;
-    
+    // Calculate current week progress
     const currentWeek = streakWeeks.find(w => 
-      w.week_start_date === currentWeekStartDate
+      w.week_start_date === currentWeekBoundaries?.week_start
     );
 
     console.log('📊 Current week boundaries:', currentWeekBoundaries);
-    console.log('📊 Current week receipts:', currentWeekReceipts.map(r => r.receipt_date));
-    console.log('📊 Unique receipt days this week:', uniqueReceiptDays);
-    console.log('📊 Is current week complete:', isCurrentWeekComplete);
+    console.log('📊 Found current week data:', currentWeek);
+    console.log('📊 All streak weeks:', streakWeeks);
 
     // Calculate current set progress
     const currentSet = streakSets.find(s => !s.is_complete);
@@ -167,10 +139,10 @@ serve(async (req: Request) => {
     const totalDiscount = activeRewards.reduce((sum, r) => sum + (r.reward_tier * 25), 0);
 
     // Check for make-up opportunities
-    const makeupOpportunity = await checkMakeupOpportunity(serviceSupabase, user.id, streakWeeks);
+    const makeupOpportunity = await checkMakeupOpportunity(supabase, user.id, streakWeeks);
 
-    // Generate calendar data (12 weeks) with receipt data for accurate counting
-    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries, receipts);
+    // Generate calendar data (12 weeks)
+    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries);
 
     // Calculate streak statistics
     const stats = calculateStreakStats(streakWeeks, streakSets, activeRewards);
@@ -178,11 +150,11 @@ serve(async (req: Request) => {
     const dashboardData = {
       user_id: user.id,
       current_week: {
-        week_start: currentWeekStartDate,
-        week_end: currentWeekBoundaries?.[0]?.week_end,
-        receipts_count: uniqueReceiptDays,
-        receipts_needed: Math.max(0, 2 - uniqueReceiptDays),
-        is_complete: isCurrentWeekComplete,
+        week_start: currentWeekBoundaries?.week_start,
+        week_end: currentWeekBoundaries?.week_end,
+        receipts_count: currentWeek?.receipt_count || 0,
+        receipts_needed: Math.max(0, 2 - (currentWeek?.receipt_count || 0)),
+        is_complete: currentWeek?.is_complete || false,
         is_current: true
       },
       current_set: currentSet ? {
@@ -230,10 +202,7 @@ serve(async (req: Request) => {
         amount: r.total_amount,
         venue: r.venue_location || 'Unknown Venue'
       })),
-      notifications: generateNotifications({
-        receipts_count: uniqueReceiptDays,
-        is_complete: isCurrentWeekComplete
-      }, currentSet, makeupOpportunity, activeRewards)
+      notifications: generateNotifications(currentWeek, currentSet, makeupOpportunity, activeRewards)
     };
 
     return new Response(JSON.stringify(dashboardData), {
@@ -250,42 +219,29 @@ serve(async (req: Request) => {
   }
 });
 
-function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, receipts: any[] = []) {
+function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any) {
   const weeks = [];
   const startDate = getDateMinusWeeks(new Date(), 16);
-  const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
   
   for (let i = 0; i < 16; i++) {
     const weekStart = getDatePlusWeeks(startDate, i);
     const weekEnd = getDatePlusWeeks(weekStart, 0, 6); // Add 6 days
     
-    // Find matching week data by comparing week_start_date from database
     const weekData = streakWeeks.find(w => w.week_start_date === weekStart);
-    const isCurrent = weekStart === currentWeekStartDate;
+    const isCurrent = weekStart === currentWeekBoundaries?.week_start;
     const isFuture = new Date(weekStart) > new Date();
-    
-    // Calculate unique receipt days for this week from actual receipt data
-    const weekReceipts = receipts.filter(r => {
-      const receiptDate = r.receipt_date;
-      return receiptDate >= weekStart && receiptDate <= weekEnd;
-    });
-    const uniqueReceiptDays = new Set(weekReceipts.map(r => r.receipt_date)).size;
-    const weekComplete = uniqueReceiptDays >= 2;
-    
-    console.log(`📅 Week ${weekStart}: weekData=${!!weekData}, complete=${weekComplete}, unique_days=${uniqueReceiptDays}`);
     
     weeks.push({
       week_start: weekStart,
       week_end: weekEnd,
-      receipts_count: uniqueReceiptDays,
-      is_complete: weekComplete,
+      receipts_count: weekData?.receipt_count || 0,
+      is_complete: weekData?.is_complete || false,
       is_current: isCurrent,
       is_future: isFuture,
       completed_at: weekData?.completed_at || null
     });
   }
   
-  console.log('📅 Generated calendar weeks with unique days:', weeks.filter(w => w.receipts_count > 0 || w.is_complete));
   return weeks;
 }
 
@@ -348,14 +304,14 @@ function calculateStreakStats(streakWeeks: any[], streakSets: any[], activeRewar
 function generateNotifications(currentWeek: any, currentSet: any, makeupOpportunity: any, activeRewards: any[]) {
   const notifications = [];
   
-  // Current week progress - use unique days instead of total receipts
+  // Current week progress
   if (currentWeek) {
-    const receiptsNeeded = 2 - (currentWeek.receipts_count || 0);
+    const receiptsNeeded = 2 - currentWeek.receipt_count;
     if (receiptsNeeded > 0) {
       notifications.push({
         type: 'progress',
         title: 'Week Progress',
-        message: `${receiptsNeeded} more visit${receiptsNeeded > 1 ? ' day' : ' days'} needed to complete this week`,
+        message: `${receiptsNeeded} more receipt${receiptsNeeded > 1 ? 's' : ''} needed to complete this week`,
         priority: 'medium'
       });
     }
