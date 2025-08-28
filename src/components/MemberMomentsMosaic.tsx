@@ -168,7 +168,13 @@ const MemberMomentsMosaic: React.FC = () => {
             <Input
               placeholder="Search moments or tags..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                try {
+                  setSearchQuery(e.target.value);
+                } catch (error) {
+                  console.error('Search input error:', error);
+                }
+              }}
               className="pl-10"
             />
           </div>

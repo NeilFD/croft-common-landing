@@ -116,8 +116,8 @@ export const useMemberMoments = () => {
     return dd;
   };
 
-  // Helper function to extract GPS data from image using EXIF
-  const extractGPSFromImage = (file: File): Promise<LocationData | null> => {
+  // Helper function to get GPS data from image using EXIF
+  const getGPSFromImage = (file: File): Promise<LocationData | null> => {
     return new Promise((resolve) => {
       try {
         console.log('📷 EXIF: Starting GPS extraction from image...');
@@ -163,7 +163,7 @@ export const useMemberMoments = () => {
   };
 
   // Helper function to detect mobile device
-  const isMobileDevice = (): boolean => {
+  const checkMobileDevice = (): boolean => {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   };
 
@@ -179,7 +179,7 @@ export const useMemberMoments = () => {
           return;
         }
 
-        const mobile = isMobileDevice();
+        const mobile = checkMobileDevice();
         const options = {
           enableHighAccuracy: true,
           timeout: mobile ? 8000 : 5000, // Shorter timeout to prevent hanging
@@ -227,7 +227,7 @@ export const useMemberMoments = () => {
     });
   };
 
-  const isLocationWithinVenue = (location: LocationData): boolean => {
+  const checkLocationWithinVenue = (location: LocationData): boolean => {
     const distance = Math.sqrt(
       Math.pow(69.1 * (location.latitude - VENUE_COORDS.latitude), 2) +
       Math.pow(69.1 * (VENUE_COORDS.longitude - location.longitude) * Math.cos(VENUE_COORDS.latitude / 57.3), 2)
