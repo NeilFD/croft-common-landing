@@ -130,7 +130,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
   const [archivedFilter, setArchivedFilter] = useState<'all' | 'active' | 'archived'>('active');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'queued' | 'sent'>('all');
-  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics' | 'subscribers' | 'moments'>('history');
+  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments'>('history');
 
   const queryClient = useQueryClient();
 
@@ -393,13 +393,15 @@ export const AdminNotificationsApp: React.FC = () => {
                   {rightTab === 'history' ? 'History' : 
                    rightTab === 'analytics' ? 'Opt-in Analytics' : 
                    rightTab === 'user-analytics' ? 'User Analytics' : 
+                   rightTab === 'granular' ? 'Granular Analytics' :
                    rightTab === 'moments' ? 'Member Moments' : 'Subscribers'}
                 </CardTitle>
-                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics' | 'subscribers' | 'moments')}>
+                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments')}>
                   <TabsList>
                     <TabsTrigger value="history">History</TabsTrigger>
                     <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
                     <TabsTrigger value="user-analytics">User Analytics</TabsTrigger>
+                    <TabsTrigger value="granular">Granular</TabsTrigger>
                     <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
                     <TabsTrigger value="moments">Moments</TabsTrigger>
                   </TabsList>
@@ -445,6 +447,8 @@ export const AdminNotificationsApp: React.FC = () => {
                 <OptInAnalytics embedded />
               ) : rightTab === 'user-analytics' ? (
                 <UserAnalytics />
+              ) : rightTab === 'granular' ? (
+                <GranularAnalytics />
               ) : rightTab === 'moments' ? (
                 <MomentsModeration />
               ) : (
