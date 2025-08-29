@@ -191,3 +191,9 @@ verify_jwt = true
 
 [functions.check-vapid-config]
 verify_jwt = false
+
+[functions.test-push-debug]
+verify_jwt = false
+
+[functions.simple-push-test]
+verify_jwt = false
