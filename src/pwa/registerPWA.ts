@@ -10,10 +10,35 @@ declare global {
   }
 }
 
-export const isStandalone =
-  (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-  // @ts-ignore iOS Safari
-  (window.navigator as any).standalone === true;
+// Enhanced standalone detection with debugging and fallback methods
+export const isStandalone = (() => {
+  // Primary detection methods
+  const mediaQueryMatch = window.matchMedia && window.matchMedia('(display-mode: standalone)').matches;
+  const iosStandalone = (window.navigator as any).standalone === true;
+  
+  // Fallback detection for iOS Safari PWA
+  const cssSupportsStandalone = window.CSS && window.CSS.supports && window.CSS.supports('display-mode', 'standalone');
+  const heightBasedDetection = window.innerHeight === window.screen.height;
+  
+  // Check if we're in a PWA context by examining the document
+  const documentStandaloneCheck = document.documentElement.getAttribute('data-standalone') === 'true';
+  
+  const result = mediaQueryMatch || iosStandalone || documentStandaloneCheck;
+  
+  // Debug logging for troubleshooting
+  console.log('🎯 STANDALONE DETECTION:', {
+    mediaQueryMatch,
+    iosStandalone,
+    cssSupportsStandalone,
+    heightBasedDetection,
+    documentStandaloneCheck,
+    finalResult: result,
+    userAgent: navigator.userAgent.substring(0, 100),
+    displayMode: window.matchMedia ? window.matchMedia('(display-mode: standalone)').media : 'no-media-query-support'
+  });
+  
+  return result;
+})();
 
 export function isIosSafari(): boolean {
   const ua = window.navigator.userAgent;

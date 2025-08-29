@@ -3,12 +3,22 @@ import App from './App.tsx'
 import './index.css'
 
 
+// Set standalone attribute early for PWA detection
+if (
+  typeof window !== 'undefined' &&
+  ((window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+   (window.navigator as any).standalone === true)
+) {
+  document.documentElement.setAttribute('data-standalone', 'true');
+}
+
+// Only redirect if not in PWA mode and has www prefix
 if (
   typeof window !== 'undefined' &&
   !(
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-    // @ts-ignore iOS Safari
-    (window.navigator as any).standalone === true
+    (window.navigator as any).standalone === true ||
+    document.documentElement.getAttribute('data-standalone') === 'true'
   ) &&
   window.location.hostname.startsWith('www.')
 ) {
@@ -17,9 +27,9 @@ if (
 } else {
   createRoot(document.getElementById("root")!).render(<App />);
   
-  // Defer PWA initialization until after app renders
-  setTimeout(async () => {
+  // Initialize PWA earlier and with better timing
+  requestAnimationFrame(async () => {
     const { initializePWA } = await import('./pwa/deferredPWA');
     initializePWA();
-  }, 100);
+  });
 }

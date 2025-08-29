@@ -1,4 +1,3 @@
-
 import React, { useEffect, useMemo, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { setupInstallPromptListener, isStandalone, isIosSafari, BeforeInstallPromptEvent } from './registerPWA';
@@ -72,23 +71,52 @@ const Overlay: React.FC = () => {
   };
 
   const onEnableNotifications = async () => {
-    // On iOS, notifications only work after installing to Home Screen
-    if (isIosSafari() && !isStandalone) {
-      setShowIOSHelp(true);
+    console.log('🔔 Enable notifications clicked - iOS Safari:', isIosSafari(), 'Standalone:', isStandalone);
+    
+    try {
+      // Get or refresh service worker registration
+      if (!reg) {
+        const r = await navigator.serviceWorker.getRegistration();
+        if (r) {
+          setReg(r);
+        } else {
+          toast({
+            title: 'Service worker not available',
+            description: 'Please refresh the page and try again.',
+            variant: 'destructive'
+          });
+          return;
+        }
+      }
+
+      // Always attempt to enable notifications - let the enableNotifications function handle iOS specifics
+      if (reg) {
+        console.log('🔔 Calling enableNotifications with registration:', reg);
+        const success = await enableNotifications(reg);
+        if (success) {
+          toast({
+            title: 'Notifications enabled!',
+            description: 'You\'ll now receive important updates from Croft Common.',
+          });
+          setShow(false); // Hide the overlay on success
+        } else {
+          toast({
+            title: 'Enable notifications',
+            description: 'Please allow notifications in your browser settings.',
+            variant: 'destructive'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('🔔 Error enabling notifications:', error);
       toast({
-        title: 'Install app to enable notifications',
-        description: 'On iPhone/iPad: Tap “How to install”, add to Home Screen, open the app, then enable notifications.',
+        title: 'Error enabling notifications',
+        description: error instanceof Error ? error.message : 'Please try again or check your browser settings.',
+        variant: 'destructive'
       });
-      return;
-    }
-    if (!reg) {
-      const r = await navigator.serviceWorker.getRegistration();
-      if (r) setReg(r);
-    }
-    if (reg) {
-      await enableNotifications(reg);
     }
   };
+  
   if (!shouldShow) return null;
 
   return (
@@ -98,7 +126,7 @@ const Overlay: React.FC = () => {
           <div className="flex items-center gap-3 min-w-0">
             <CroftLogo size="sm" />
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-foreground">Download “Croft Common”</span>
+              <span className="text-sm font-medium text-foreground">Download "Croft Common"</span>
               <span className="text-xs text-muted-foreground">Add to your Home Screen for a faster app-like experience.</span>
             </div>
           </div>
@@ -106,11 +134,9 @@ const Overlay: React.FC = () => {
             <div className="grid grid-cols-2 gap-2 w-full sm:w-auto">
               <button
                 onClick={onEnableNotifications}
-                disabled={isIosSafari()}
-                title={isIosSafari() ? 'Install the app first to enable notifications on iPhone/iPad' : undefined}
-                className="text-xs px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 disabled:opacity-60 disabled:cursor-not-allowed w-full"
+                className="text-xs px-3 py-2 rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80 w-full"
               >
-                {isIosSafari() ? 'Enable after install' : 'Enable notifications'}
+                Enable notifications
               </button>
               <button
                 onClick={onInstallClick}
@@ -134,7 +160,7 @@ const Overlay: React.FC = () => {
               <div className="font-medium text-foreground mb-1">iPhone/iPad</div>
               <ol className="list-decimal list-inside space-y-1">
                 <li>Tap the Share icon in Safari.</li>
-                <li>Scroll down and tap “Add to Home Screen”.</li>
+                <li>Scroll down and tap "Add to Home Screen".</li>
                 <li>Tap Add.</li>
                 <li>After installing, open the app from your Home Screen, then enable notifications.</li>
               </ol>

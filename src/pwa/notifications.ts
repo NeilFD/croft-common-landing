@@ -41,6 +41,20 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     return false;
   }
 
+  if (!('PushManager' in window)) {
+    logStep('❌ Push manager not supported');
+    return false;
+  }
+
+  // Enhanced debugging for iOS
+  logStep('🔍 iOS NOTIFICATION DEBUG', {
+    permission: Notification.permission,
+    userAgent: navigator.userAgent.substring(0, 100),
+    isStandalone: (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (window.navigator as any).standalone === true,
+    pushManagerExists: !!reg.pushManager,
+    serviceWorkerReady: !!reg.active
+  });
+
   try {
     let permission = Notification.permission;
     const platform = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'web');
