@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { enableNotifications, resetNotifications } from './notifications';
+import { enableNotifications, resetNotifications, DEBUG_SESSION_ID } from './notifications';
 import { isStandalone, isIosSafari } from './registerPWA';
 import { BRAND_LOGO } from '@/data/brand';
 import { supabase } from '@/integrations/supabase/client';
+import { MobileDebugPanel } from '@/components/MobileDebugPanel';
 
 // Key to avoid nagging users repeatedly
 const DISMISS_KEY = 'notifications_prompt_dismissed_v2';
@@ -117,78 +118,85 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
   };
 
   return (
-    <div className="fixed inset-x-0 bottom-4 z-[10000] px-4">
-      <div className="mx-auto max-w-sm rounded-lg border bg-background text-foreground shadow-xl">
-        <div className="p-4">
-          <div className="flex items-center gap-2">
-            <img src={BRAND_LOGO} alt="Croft Common logo" className="h-4 w-4 rounded-sm" loading="lazy" />
-            <h3 className="text-sm font-medium">Enable notifications</h3>
+    <>
+      <div className="fixed inset-x-0 bottom-4 z-[10000] px-4">
+        <div className="mx-auto max-w-sm rounded-lg border bg-background text-foreground shadow-xl">
+          <div className="p-4">
+            <div className="flex items-center gap-2">
+              <img src={BRAND_LOGO} alt="Croft Common logo" className="h-4 w-4 rounded-sm" loading="lazy" />
+              <h3 className="text-sm font-medium">Enable notifications</h3>
+            </div>
+            
+            <p className="mt-1 text-sm text-muted-foreground">
+              Get updates from Croft Common
+            </p>
+            
+            {/* Success state */}
+            {success && (
+              <div className="mt-3 rounded-md bg-green-50 dark:bg-green-950/20 p-3 text-center">
+                <div className="text-green-600 dark:text-green-400">
+                  <svg className="mx-auto h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <p className="text-sm font-medium">Notifications enabled!</p>
+                  <p className="text-xs mt-1">You'll now receive updates from Croft Common</p>
+                </div>
+              </div>
+            )}
+            
+            {/* Error state */}
+            {error && !success && (
+              <div className="mt-3 rounded-md bg-destructive/10 p-3">
+                <p className="text-sm text-destructive">{error}</p>
+                {isIosSafari() && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    <strong>iPhone users:</strong> Make sure to add this app to your Home Screen first, then enable notifications in Settings → Notifications → Croft Common.
+                  </p>
+                )}
+              </div>
+            )}
+            
+            {/* Loading state */}
+            {loading && (
+              <div className="mt-3 rounded-md bg-muted p-3 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full"></div>
+                  <p className="text-sm text-muted-foreground">Setting up notifications...</p>
+                </div>
+              </div>
+            )}
+            
+            {/* Actions */}
+            {!success && (
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={onEnable}
+                  disabled={loading}
+                  className="flex-1 inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+                >
+                  {loading ? 'Enabling...' : 'Enable notifications'}
+                </button>
+                <button
+                  onClick={() => {
+                    localStorage.setItem(DISMISS_KEY, '1');
+                    onClose();
+                  }}
+                  disabled={loading}
+                  className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+                >
+                  Not now
+                </button>
+              </div>
+            )}
           </div>
-          
-          <p className="mt-1 text-sm text-muted-foreground">
-            Get updates from Croft Common
-          </p>
-          
-          {/* Success state */}
-          {success && (
-            <div className="mt-3 rounded-md bg-green-50 dark:bg-green-950/20 p-3 text-center">
-              <div className="text-green-600 dark:text-green-400">
-                <svg className="mx-auto h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <p className="text-sm font-medium">Notifications enabled!</p>
-                <p className="text-xs mt-1">You'll now receive updates from Croft Common</p>
-              </div>
-            </div>
-          )}
-          
-          {/* Error state */}
-          {error && !success && (
-            <div className="mt-3 rounded-md bg-destructive/10 p-3">
-              <p className="text-sm text-destructive">{error}</p>
-              {isIosSafari() && (
-                <p className="text-xs text-muted-foreground mt-2">
-                  <strong>iPhone users:</strong> Make sure to add this app to your Home Screen first, then enable notifications in Settings → Notifications → Croft Common.
-                </p>
-              )}
-            </div>
-          )}
-          
-          {/* Loading state */}
-          {loading && (
-            <div className="mt-3 rounded-md bg-muted p-3 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <div className="animate-spin h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full"></div>
-                <p className="text-sm text-muted-foreground">Setting up notifications...</p>
-              </div>
-            </div>
-          )}
-          
-          {/* Actions */}
-          {!success && (
-            <div className="mt-3 flex gap-2">
-              <button
-                onClick={onEnable}
-                disabled={loading}
-                className="flex-1 inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-              >
-                {loading ? 'Enabling...' : 'Enable notifications'}
-              </button>
-              <button
-                onClick={() => {
-                  localStorage.setItem(DISMISS_KEY, '1');
-                  onClose();
-                }}
-                disabled={loading}
-                className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-              >
-                Not now
-              </button>
-            </div>
-          )}
         </div>
       </div>
-    </div>
+      
+      {/* Mobile Debug Panel - show if there's an error or during development */}
+      {(error || process.env.NODE_ENV === 'development') && (
+        <MobileDebugPanel sessionId={DEBUG_SESSION_ID} />
+      )}
+    </>
   );
 };
 

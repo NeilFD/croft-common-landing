@@ -4,6 +4,47 @@ import { toast } from '@/hooks/use-toast';
 import { isStandalone, isIosSafari } from './registerPWA';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
 
+// Generate unique session ID for debugging
+const DEBUG_SESSION_ID = `mobile-debug-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+// Mobile-friendly logging that saves to database and shows toasts
+async function mobileLog(step: string, data?: any, error?: Error | string, showToast: boolean = false) {
+  const errorMessage = error ? (error instanceof Error ? error.message : error) : undefined;
+  
+  // Always log to console for development
+  console.log(`🔔 [Mobile] ${step}`, data || '');
+  if (error) console.error('Error:', error);
+  
+  // Save to database for mobile debugging
+  try {
+    await supabase.from('mobile_debug_logs').insert({
+      session_id: DEBUG_SESSION_ID,
+      step,
+      data: data ? JSON.parse(JSON.stringify(data)) : null,
+      error_message: errorMessage,
+      user_agent: navigator.userAgent,
+      platform: /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'web')
+    });
+  } catch (dbError) {
+    console.warn('Failed to save debug log:', dbError);
+  }
+  
+  // Show important steps as toasts on mobile
+  if (showToast || error) {
+    const title = error ? "Debug Error" : "Debug Step";
+    const description = error ? errorMessage : step;
+    toast({ 
+      title, 
+      description, 
+      variant: error ? "destructive" : "default",
+      duration: error ? 8000 : 3000 
+    });
+  }
+}
+
+// Export debug session ID for debug panel
+export { DEBUG_SESSION_ID };
+
 const VAPID_PUBLIC_KEY = 'BNJzdn55lXCAzsC07XdmDcsJeRb9sN-tLfGkrP5uAFNEt-LyEsEhVoMjD0CtHiBZjsyrTdTh19E2cnRUB5N9Mww';
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -28,22 +69,22 @@ async function retryWithDelay<T>(fn: () => Promise<T>, maxRetries: number = 3, d
   throw new Error('All retries failed');
 }
 
-// Enhanced logging utility
-function logStep(step: string, data?: any) {
-  console.log(`🔔 [EnableNotifications] ${step}`, data || '');
+// Enhanced logging utility - now uses mobile-friendly logging
+function logStep(step: string, data?: any, showToast: boolean = false) {
+  mobileLog(step, data, undefined, showToast);
 }
 
 export async function enableNotifications(reg: ServiceWorkerRegistration): Promise<boolean> {
-  logStep('🚀 Starting notification enablement process');
+  logStep('🚀 Starting notification enablement process', { sessionId: DEBUG_SESSION_ID }, true);
   
   if (!('Notification' in window)) {
-    logStep('❌ Notification API not supported');
+    await mobileLog('❌ Notification API not supported', null, 'Notification API not available', true);
     toast({ title: "Error", description: "Notifications are not supported in this browser", variant: "destructive" });
     return false;
   }
 
   if (!('PushManager' in window)) {
-    logStep('❌ Push manager not supported');
+    await mobileLog('❌ Push manager not supported', null, 'PushManager API not available', true);
     toast({ title: "Error", description: "Push notifications are not supported in this browser", variant: "destructive" });
     return false;
   }
@@ -58,7 +99,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       platform, 
       isStandalone, 
       userAgent: navigator.userAgent.slice(0, 50) + '...'
-    });
+    }, true);
 
     // Track prompt shown
     logStep('📊 Tracking prompt_shown event');
@@ -92,7 +133,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
           console.warn(`⚠️ Failed to track ${event}:`, error);
         }
       } catch (error) {
-        logStep('❌ Permission request failed', error);
+        await mobileLog('❌ Permission request failed', null, error as Error, true);
         toast({ title: "Permission denied", description: "Could not request notification permission", variant: "destructive" });
         return false;
       }
@@ -120,7 +161,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       return false;
     }
 
-    logStep('✅ Permission granted, proceeding with subscription');
+    logStep('✅ Permission granted, proceeding with subscription', null, true);
 
     // Create push subscription
     let sub: PushSubscription | null = null;
@@ -174,11 +215,11 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
         });
       }
     } catch (error) {
-      logStep('❌ Failed to create/get subscription', {
+      await mobileLog('❌ Failed to create/get subscription', {
         error: error.message,
         name: error.name,
         stack: error.stack?.split('\n')[0]
-      });
+      }, error as Error, true);
       
       // More specific error messages
       let errorMessage = "Could not create push subscription.";
@@ -211,7 +252,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     });
 
     if (!endpoint || !p256dh || !auth) {
-      logStep('❌ Invalid subscription data', { endpoint: !!endpoint, p256dh: !!p256dh, auth: !!auth });
+      await mobileLog('❌ Invalid subscription data', { endpoint: !!endpoint, p256dh: !!p256dh, auth: !!auth }, 'Missing subscription keys', true);
       toast({ title: "Invalid subscription", description: "Subscription data is incomplete", variant: "destructive" });
       return false;
     }
@@ -247,7 +288,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       userId: userId ? 'present' : 'null',
       platform,
       endpointLength: endpoint?.length
-    });
+    }, true);
     
     try {
       const saveBody = {
@@ -278,12 +319,12 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       });
       
       if (error) {
-        logStep('❌ Supabase function error', {
+        await mobileLog('❌ Supabase function error', {
           message: error.message,
           details: error.details,
           hint: error.hint,
           code: error.code
-        });
+        }, error, true);
         throw error;
       }
       
@@ -310,12 +351,12 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
         // Don't fail the whole process for tracking errors
       }
 
-      logStep('🎉 Notification enablement completed successfully');
+      logStep('🎉 Notification enablement completed successfully', null, true);
       toast({ title: "Success!", description: "Notifications enabled successfully", variant: "default" });
       return true;
       
     } catch (error) {
-      logStep('❌ Failed to save subscription', error);
+      await mobileLog('❌ Failed to save subscription', null, error as Error, true);
       toast({ 
         title: "Save failed", 
         description: "Could not register device for notifications. Please try again.", 
@@ -325,7 +366,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     }
     
   } catch (e) {
-    logStep('💥 Fatal error in enableNotifications', e);
+    await mobileLog('💥 Fatal error in enableNotifications', null, e as Error, true);
     toast({ 
       title: "Unexpected error", 
       description: "Something went wrong. Please try again later.", 

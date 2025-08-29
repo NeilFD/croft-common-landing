@@ -1067,6 +1067,42 @@ export type Database = {
         }
         Relationships: []
       }
+      mobile_debug_logs: {
+        Row: {
+          created_at: string
+          data: Json | null
+          error_message: string | null
+          id: string
+          platform: string | null
+          session_id: string
+          step: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          data?: Json | null
+          error_message?: string | null
+          id?: string
+          platform?: string | null
+          session_id: string
+          step: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          data?: Json | null
+          error_message?: string | null
+          id?: string
+          platform?: string | null
+          session_id?: string
+          step?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       moment_likes: {
         Row: {
           created_at: string
