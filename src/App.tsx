@@ -6,7 +6,6 @@ import { HelmetProvider } from "react-helmet-async";
 import { useEffect, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
-import { useNotificationHandler } from "@/hooks/useNotificationHandler";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
 import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
 import NudgeFloatingButton from './components/NudgeFloatingButton';
@@ -50,24 +49,9 @@ import ScrollToTop from '@/components/ScrollToTop';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useOptimizedPerformance } from '@/hooks/useOptimizedPerformance';
 import { useWebVitals } from '@/hooks/useWebVitals';
-import { BannerNotificationProvider } from "@/contexts/BannerNotificationContext";
-import { BannerNotification } from "@/components/BannerNotification";
-import { useBannerNotification } from "@/contexts/BannerNotificationContext";
 
 const queryClient = new QueryClient();
 
-const BannerOverlay = () => {
-  const { currentBanner, dismissBanner } = useBannerNotification();
-
-  if (!currentBanner) return null;
-
-  return (
-    <BannerNotification
-      data={currentBanner}
-      onDismiss={dismissBanner}
-    />
-  );
-};
 
 // Single performance and notification handler
 const GlobalHandlers = () => {
@@ -76,8 +60,7 @@ const GlobalHandlers = () => {
   useWebVitals();
   useAnalytics();
   
-  // Handle notifications immediately as they're critical
-  useNotificationHandler();
+  // Handle nudge notifications
   useNudgeNotificationHandler();
   
   return null;
@@ -137,8 +120,7 @@ const App = () => (
   <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <BannerNotificationProvider>
-          <NudgeNotificationProvider>
+        <NudgeNotificationProvider>
             <Toaster />
             <Sonner />
             <BrowserRouter>
@@ -146,7 +128,6 @@ const App = () => (
               <GlobalHandlers />
               <LowercasePathGuard />
               <RouteImagePreloader />
-              <BannerOverlay />
               <NudgeFloatingButton />
               
               <TransitionProvider>
@@ -190,8 +171,7 @@ const App = () => (
                 </Suspense>
               </TransitionProvider>
             </BrowserRouter>
-          </NudgeNotificationProvider>
-        </BannerNotificationProvider>
+        </NudgeNotificationProvider>
       </TooltipProvider>
     </QueryClientProvider>
   </HelmetProvider>
