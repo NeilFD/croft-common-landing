@@ -196,11 +196,11 @@ export const useNudgeNotificationHandler = () => {
         
         console.log('🎯 NUDGE BC: ✅ Event listeners attached');
         
-        // Test the channel immediately
+        // Test the channel immediately with safer approach
         setTimeout(() => {
           console.log('🎯 NUDGE BC: 🧪 Testing BroadcastChannel with test message...');
           try {
-            // Check if channel exists and is not closed before posting
+            // Only test if channel exists and has postMessage method
             if (channel && typeof channel.postMessage === 'function') {
               channel.postMessage({ type: 'TEST', source: 'react-app', timestamp: Date.now() });
               console.log('🎯 NUDGE BC: ✅ Test message sent successfully');
@@ -209,7 +209,15 @@ export const useNudgeNotificationHandler = () => {
             }
           } catch (error) {
             console.error('🎯 NUDGE BC: ❌ Failed to send test message:', error);
-            // If the channel failed, don't throw the error - just log it
+            // Recreate the channel if it failed
+            try {
+              console.log('🎯 NUDGE BC: 🔄 Recreating channel after error...');
+              channel = new BroadcastChannel('nudge-notification');
+              channel.addEventListener('message', handleNudgeMessage);
+              console.log('🎯 NUDGE BC: ✅ Channel recreated successfully');
+            } catch (recreateError) {
+              console.error('🎯 NUDGE BC: ❌ Failed to recreate channel:', recreateError);
+            }
           }
         }, 500);
         
