@@ -131,31 +131,68 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       sub = await reg.pushManager.getSubscription();
       
       if (sub) {
-        logStep('♻️ Found existing subscription, reusing');
+        logStep('♻️ Found existing subscription, reusing', {
+          endpoint: sub.endpoint?.slice(0, 50) + '...',
+          keys: !!sub.toJSON().keys
+        });
       } else {
         logStep('🆕 Creating new subscription');
         
+        // Detailed VAPID key logging for debugging
+        logStep('🔑 VAPID key info', {
+          vapidKeyLength: VAPID_PUBLIC_KEY.length,
+          vapidKeyStart: VAPID_PUBLIC_KEY.substring(0, 20) + '...',
+          pushManagerExists: !!reg.pushManager,
+          pushManagerSupported: 'PushManager' in window
+        });
+        
         const subscribeFunction = async () => {
+          logStep('📡 Attempting push subscription with VAPID key');
+          const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+          logStep('🔢 Converted VAPID key', {
+            arrayLength: applicationServerKey.length,
+            firstBytes: Array.from(applicationServerKey.slice(0, 5))
+          });
+          
           return await reg.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+            applicationServerKey,
           });
         };
 
         // Retry for iOS reliability
         if (isIos) {
+          logStep('🍎 Using iOS retry logic (3 attempts)');
           sub = await retryWithDelay(subscribeFunction, 3, 1000);
         } else {
           sub = await subscribeFunction();
         }
         
-        logStep('✅ Successfully created subscription');
+        logStep('✅ Successfully created subscription', {
+          endpoint: sub.endpoint?.slice(0, 50) + '...',
+          keys: !!sub.toJSON().keys
+        });
       }
     } catch (error) {
-      logStep('❌ Failed to create/get subscription', error);
+      logStep('❌ Failed to create/get subscription', {
+        error: error.message,
+        name: error.name,
+        stack: error.stack?.split('\n')[0]
+      });
+      
+      // More specific error messages
+      let errorMessage = "Could not create push subscription.";
+      if (error.name === 'NotSupportedError') {
+        errorMessage = "Push notifications are not supported on this device.";
+      } else if (error.name === 'NotAllowedError') {
+        errorMessage = "Notification permission was denied.";
+      } else if (error.message.includes('VAPID')) {
+        errorMessage = "Server configuration issue. Please try again later.";
+      }
+      
       toast({ 
         title: "Subscription failed", 
-        description: "Could not create push subscription. Please try again.", 
+        description: errorMessage + " Please try again.", 
         variant: "destructive" 
       });
       return false;
@@ -203,25 +240,57 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     }
 
     // Save subscription to backend
-    logStep('💾 Saving subscription to backend');
+    logStep('💾 Saving subscription to backend', {
+      hasEndpoint: !!endpoint,
+      hasP256dh: !!p256dh,
+      hasAuth: !!auth,
+      userId: userId ? 'present' : 'null',
+      platform,
+      endpointLength: endpoint?.length
+    });
     
     try {
+      const saveBody = {
+        endpoint,
+        p256dh,
+        auth,
+        user_agent: navigator.userAgent,
+        platform,
+        user_id: userId,
+      };
+      
+      logStep('📤 Calling save-push-subscription with payload', {
+        bodyKeys: Object.keys(saveBody),
+        endpointProvider: endpoint?.includes('fcm') ? 'FCM' : 
+                         endpoint?.includes('mozilla') ? 'Mozilla' :
+                         endpoint?.includes('webpush') ? 'WebPush' : 'Unknown'
+      });
+      
       const { data, error } = await supabase.functions.invoke('save-push-subscription', {
-        body: {
-          endpoint,
-          p256dh,
-          auth,
-          user_agent: navigator.userAgent,
-          platform,
-          user_id: userId,
-        },
+        body: saveBody,
+      });
+      
+      logStep('📥 save-push-subscription response', { 
+        hasData: !!data, 
+        hasError: !!error,
+        errorMessage: error?.message,
+        dataKeys: data ? Object.keys(data) : null
       });
       
       if (error) {
+        logStep('❌ Supabase function error', {
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          code: error.code
+        });
         throw error;
       }
       
-      logStep('✅ Successfully saved subscription', { subscriptionId: data?.subscription_id });
+      logStep('✅ Successfully saved subscription', { 
+        subscriptionId: data?.subscription_id,
+        responseData: data 
+      });
 
       // Track successful subscribe
       logStep('📊 Tracking subscribed event');
