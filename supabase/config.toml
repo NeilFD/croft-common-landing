@@ -188,3 +188,6 @@ verify_jwt = true
 
 [functions.mailchimp-reconciliation-sync]
 verify_jwt = true
+
+[functions.check-vapid-config]
+verify_jwt = false
