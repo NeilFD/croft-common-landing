@@ -138,7 +138,7 @@ serve(async (req) => {
     const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
     const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT")!;
 
-    console.log(`🔑 DEBUG: VAPID Configuration Check:`);
+    console.log(`🔑 DEBUG: VAPID Configuration Check (updated):`);
     console.log(`  - VAPID_SUBJECT: "${VAPID_SUBJECT}"`);
     console.log(`  - VAPID_PUBLIC_KEY length: ${VAPID_PUBLIC_KEY?.length || 0}`);
     console.log(`  - VAPID_PRIVATE_KEY length: ${VAPID_PRIVATE_KEY?.length || 0}`);
