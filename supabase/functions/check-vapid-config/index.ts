@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('🔍 Starting VAPID configuration diagnostic...');
+    console.log('🔍 Starting VAPID configuration diagnostic (updated for thehive-hospitality.com)...');
 
     // Get VAPID configuration from secrets
     const vapidSubject = Deno.env.get('VAPID_SUBJECT');
@@ -70,12 +70,12 @@ Deno.serve(async (req) => {
         
         try {
           const url = new URL(vapidSubject);
-          if (url.hostname.includes('croftcommontest.com') || url.hostname === 'localhost') {
+          if (url.hostname.includes('thehive-hospitality.com') || url.hostname === 'localhost') {
             result.appleCompatible = true;
             console.log('✅ Valid URL format detected matching app domain');
           } else {
             result.issues.push('VAPID_SUBJECT URL does not match app domain');
-            result.recommendations.push('VAPID_SUBJECT URL should match your app domain (croftcommontest.com)');
+            result.recommendations.push('VAPID_SUBJECT URL should match your app domain (thehive-hospitality.com)');
           }
         } catch {
           result.issues.push('VAPID_SUBJECT URL format is invalid');
@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       } else {
         result.subjectFormat = 'invalid';
         result.issues.push('VAPID_SUBJECT must start with "mailto:" or "https://"');
-        result.recommendations.push('Change VAPID_SUBJECT to either mailto:your-email@domain.com or https://croftcommontest.com');
+        result.recommendations.push('Change VAPID_SUBJECT to either mailto:your-email@domain.com or https://thehive-hospitality.com');
       }
     }
 
