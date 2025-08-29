@@ -138,14 +138,33 @@ serve(async (req) => {
     const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
     const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT")!;
 
+    console.log(`🔑 DEBUG: VAPID Configuration Check:`);
+    console.log(`  - VAPID_SUBJECT: "${VAPID_SUBJECT}"`);
+    console.log(`  - VAPID_PUBLIC_KEY length: ${VAPID_PUBLIC_KEY?.length || 0}`);
+    console.log(`  - VAPID_PRIVATE_KEY length: ${VAPID_PRIVATE_KEY?.length || 0}`);
+
     if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
+      console.error(`❌ DEBUG: Missing VAPID configuration:`, {
+        has_public: !!VAPID_PUBLIC_KEY,
+        has_private: !!VAPID_PRIVATE_KEY,
+        has_subject: !!VAPID_SUBJECT
+      });
       return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+    try {
+      webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+      console.log(`✅ DEBUG: VAPID details set successfully`);
+    } catch (vapidError: any) {
+      console.error(`❌ DEBUG: Failed to set VAPID details:`, vapidError);
+      return new Response(JSON.stringify({ error: `VAPID configuration error: ${vapidError.message}` }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
+    }
 
     // Parse body, support both shapes
     const rawBody: SendPushRequest = await req.json().catch(() => ({} as any));
@@ -180,10 +199,9 @@ serve(async (req) => {
       .eq("is_active", true);
 
     if (scope === "self") {
-      // Hardcode Neil's user ID for testing to bypass auth issues
-      const testUserId = "d3da6974-b49c-4e24-a649-5690ff0c1bca";
-      console.log(`🎯 DEBUG: Self-scope detected, using hardcoded user ID: ${testUserId}`);
-      query = query.eq("user_id", testUserId);
+      // Use the actual authenticated user's ID for testing
+      console.log(`🎯 DEBUG: Self-scope detected, using authenticated user ID: ${userRes.user.id}`);
+      query = query.eq("user_id", userRes.user.id);
     }
 
     const { data: subs, error: subsErr } = await query;
@@ -317,9 +335,18 @@ serve(async (req) => {
 
       try {
         console.log(`⏳ DEBUG: Sending push notification to ${new URL(s.endpoint).hostname}...`);
-        await webpush.sendNotification(subscription as any, JSON.stringify(payloadForSub));
+        console.log(`📦 DEBUG: Subscription object:`, {
+          endpoint: s.endpoint,
+          keys: { 
+            p256dh: s.p256dh ? `${s.p256dh.substring(0, 20)}...` : 'missing',
+            auth: s.auth ? `${s.auth.substring(0, 20)}...` : 'missing'
+          }
+        });
+        console.log(`📄 DEBUG: Payload size: ${JSON.stringify(payloadForSub).length} bytes`);
+        
+        const pushResult = await webpush.sendNotification(subscription as any, JSON.stringify(payloadForSub));
         success++;
-        console.log(`✅ DEBUG: Successfully sent to subscription ${s.id}`);
+        console.log(`✅ DEBUG: Successfully sent to subscription ${s.id}. Response:`, pushResult);
 
         await supabaseAdmin.from("notification_deliveries").insert({
           notification_id: notificationId,
@@ -335,9 +362,14 @@ serve(async (req) => {
         const statusCode = err?.statusCode ?? err?.status ?? 0;
         const isGone = statusCode === 404 || statusCode === 410;
         console.log(`❌ DEBUG: Failed to send to subscription ${s.id}:`);
-        console.log(`  - Error: ${err?.message || err}`);
+        console.log(`  - Error message: ${err?.message || err}`);
+        console.log(`  - Error name: ${err?.name}`);
         console.log(`  - Status code: ${statusCode}`);
+        console.log(`  - Headers: ${JSON.stringify(err?.headers || {})}`);
+        console.log(`  - Body: ${err?.body || 'no body'}`);
+        console.log(`  - Stack: ${err?.stack || 'no stack'}`);
         console.log(`  - Is gone (404/410): ${isGone}`);
+        console.log(`  - Full error object:`, err);
 
         // Deactivate dead endpoints
         if (isGone) {
