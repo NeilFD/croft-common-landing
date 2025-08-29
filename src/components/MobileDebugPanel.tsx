@@ -76,7 +76,7 @@ export function MobileDebugPanel({ sessionId }: MobileDebugPanelProps) {
     }
   }, [isOpen, sessionId]);
 
-  // Real-time updates
+  // Real-time updates with more frequent polling for active debugging
   useEffect(() => {
     const channel = supabase
       .channel('debug-logs')
@@ -94,10 +94,17 @@ export function MobileDebugPanel({ sessionId }: MobileDebugPanelProps) {
       )
       .subscribe();
 
+    // Auto-refresh every 2 seconds while panel is open
+    let interval: NodeJS.Timeout;
+    if (isOpen) {
+      interval = setInterval(fetchLogs, 2000);
+    }
+
     return () => {
       supabase.removeChannel(channel);
+      if (interval) clearInterval(interval);
     };
-  }, [sessionId]);
+  }, [sessionId, isOpen]);
 
   const formatTime = (timestamp: string) => {
     return new Date(timestamp).toLocaleTimeString();

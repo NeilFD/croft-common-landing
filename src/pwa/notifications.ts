@@ -319,13 +319,30 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       });
       
       if (error) {
-        await mobileLog('❌ Supabase function error', {
+        // Enhanced error logging with backend response details
+        const errorStep = '❌ Save subscription failed - Backend error';
+        const errorData = {
           message: error.message,
           details: error.details,
           hint: error.hint,
-          code: error.code
-        }, error, true);
-        throw error;
+          code: error.code,
+          endpoint: endpoint?.slice(0, 100) + '...',
+          endpointDomain: new URL(endpoint).hostname,
+          platform,
+          userAgent: navigator.userAgent.slice(0, 100) + '...'
+        };
+        
+        await mobileLog(errorStep, errorData, error, true);
+        
+        // Show user-friendly error message based on error type
+        let userMessage = error.message;
+        if (error.message?.includes('Invalid push endpoint format')) {
+          userMessage = `Your device's push service (${new URL(endpoint).hostname}) is not supported yet. This typically happens on newer iOS devices.`;
+        } else if (error.message?.includes('RATE_LIMIT_EXCEEDED')) {
+          userMessage = 'Too many attempts. Please wait a minute and try again.';
+        }
+        
+        throw new Error(userMessage);
       }
       
       logStep('✅ Successfully saved subscription', { 

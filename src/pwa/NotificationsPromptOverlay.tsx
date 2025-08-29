@@ -192,8 +192,8 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
         </div>
       </div>
       
-      {/* Mobile Debug Panel - show if there's an error or during development */}
-      {(error || process.env.NODE_ENV === 'development') && (
+      {/* Mobile Debug Panel - always show if there's an error */}
+      {error && (
         <MobileDebugPanel sessionId={DEBUG_SESSION_ID} />
       )}
     </>

@@ -53,7 +53,8 @@ function validateEndpoint(endpoint: string): boolean {
       'fcm.googleapis.com',
       'updates.push.services.mozilla.com',
       'wns2-par02p.notify.windows.com',
-      'notify.bugsnag.com'
+      'notify.bugsnag.com',
+      'web.push.apple.com' // Apple Push Service
     ];
     return validDomains.some(domain => url.hostname.includes(domain)) && 
            endpoint.length <= 2048; // Reasonable URL length limit
