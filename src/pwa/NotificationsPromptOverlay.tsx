@@ -61,103 +61,56 @@ async function canAskForNotifications(): Promise<boolean> {
 const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistration | null }> = ({ onClose, swReg }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [debugMode, setDebugMode] = useState(false);
-  const [progress, setProgress] = useState<string>('');
-
-  const updateProgress = (step: string) => {
-    setProgress(step);
-    console.log('🔔 Progress:', step);
-  };
+  const [success, setSuccess] = useState(false);
 
   const onEnable = async () => {
     console.log('🔔 Banner: Enable button clicked');
     setLoading(true);
     setError(null);
-    setProgress('');
+    setSuccess(false);
     
     try {
-      updateProgress('Checking browser support...');
-      
-      // Enhanced browser support check
-      if (!('Notification' in window)) {
-        throw new Error('Push notifications are not supported in this browser');
+      // Basic browser support check
+      if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+        throw new Error('Notifications are not supported in this browser');
       }
-      
-      if (!('serviceWorker' in navigator)) {
-        throw new Error('Service workers are not supported in this browser');
-      }
-      
-      updateProgress('Checking permission status...');
-      const currentPermission = Notification.permission;
-      console.log('🔔 Banner: Current permission before enable:', currentPermission);
-      
-      // Enhanced permission handling
-      if (currentPermission === 'denied') {
+
+      // Check if notifications are already blocked
+      if (Notification.permission === 'denied') {
         throw new Error('Notifications are blocked. Please enable them in your browser settings and refresh the page.');
       }
       
-      updateProgress('Getting service worker registration...');
-      
-      // Enhanced service worker registration handling with timeout
+      // Get service worker registration
       let reg = swReg;
       if (!reg) {
-        console.log('🔔 Banner: No SW registration provided, getting from navigator...');
-        try {
-          // Try to get existing registration first
-          reg = await navigator.serviceWorker.getRegistration();
-          if (!reg) {
-            console.log('🔔 Banner: No existing registration, waiting for ready...');
-            // Wait for service worker to be ready with timeout
-            const readyPromise = navigator.serviceWorker.ready;
-            const timeoutPromise = new Promise((_, reject) => 
-              setTimeout(() => reject(new Error('Service worker timeout')), 10000)
-            );
-            reg = await Promise.race([readyPromise, timeoutPromise]) as ServiceWorkerRegistration;
-          }
-        } catch (error) {
-          console.error('🔔 Banner: SW registration error:', error);
-          throw new Error('Service worker is not ready. Please refresh the page and try again.');
+        reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) {
+          reg = await navigator.serviceWorker.ready;
         }
       }
 
       if (!reg) {
-        throw new Error('Could not get service worker registration');
+        throw new Error('Service worker is not available. Please refresh the page and try again.');
       }
 
-      console.log('🔔 Banner: SW registration ready:', reg.scope);
-      updateProgress('Enabling notifications...');
-
-      // Call enableNotifications with enhanced error handling
+      // Enable notifications
       const success = await enableNotifications(reg);
       
       if (success) {
-        updateProgress('Success! Notifications enabled.');
-        console.log('🔔 Banner: Success! Dismissing overlay');
+        setSuccess(true);
         localStorage.setItem(DISMISS_KEY, '1');
         
-        // Small delay to show success message
+        // Auto-close after showing success
         setTimeout(() => {
           onClose();
-        }, 1000);
+        }, 2000);
       } else {
-        // Enhanced error message based on platform
-        let errorMessage = 'Failed to enable notifications. Please try again.';
-        
-        if (isIosSafari()) {
-          if (!isStandalone) {
-            errorMessage = 'Please add this app to your Home Screen first, then try enabling notifications.';
-          } else {
-            errorMessage = 'Go to Settings → Notifications → Croft Common → Allow Notifications. Then force-quit and reopen the app.';
-          }
-        }
-        
-        throw new Error(errorMessage);
+        throw new Error('Failed to register for notifications. Please try again or check your device settings.');
       }
     } catch (error) {
-      console.error('🔔 Banner: Error in onEnable:', error);
+      console.error('🔔 Banner: Error enabling notifications:', error);
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
-      updateProgress('');
     } finally {
       setLoading(false);
     }
@@ -165,135 +118,71 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
 
   return (
     <div className="fixed inset-x-0 bottom-4 z-[10000] px-4">
-      <div className="mx-auto max-w-xl rounded-lg border bg-background text-foreground shadow-xl">
+      <div className="mx-auto max-w-sm rounded-lg border bg-background text-foreground shadow-xl">
         <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <img src={BRAND_LOGO} alt="Croft Common logo" className="h-4 w-4 rounded-sm" loading="lazy" />
-              <h3 className="text-sm font-medium">Enable notifications</h3>
-            </div>
-            {/* Debug toggle for development */}
-            {import.meta.env.DEV && (
-              <button
-                onClick={() => setDebugMode(!debugMode)}
-                className="text-xs text-muted-foreground underline"
-              >
-                Debug
-              </button>
-            )}
+          <div className="flex items-center gap-2">
+            <img src={BRAND_LOGO} alt="Croft Common logo" className="h-4 w-4 rounded-sm" loading="lazy" />
+            <h3 className="text-sm font-medium">Enable notifications</h3>
           </div>
           
           <p className="mt-1 text-sm text-muted-foreground">
-            Get updates from Croft Common. You can change this later in your settings.
+            Get updates from Croft Common
           </p>
           
-          {/* Error display */}
-          {error && (
-            <div className="mt-2 rounded-md bg-destructive/10 p-2">
-              <p className="text-xs text-destructive">{error}</p>
+          {/* Success state */}
+          {success && (
+            <div className="mt-3 rounded-md bg-green-50 dark:bg-green-950/20 p-3 text-center">
+              <div className="text-green-600 dark:text-green-400">
+                <svg className="mx-auto h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                <p className="text-sm font-medium">Notifications enabled!</p>
+                <p className="text-xs mt-1">You'll now receive updates from Croft Common</p>
+              </div>
             </div>
           )}
           
-          {/* Progress display */}
-          {loading && progress && (
-            <div className="mt-2 rounded-md bg-muted p-2">
-              <p className="text-xs text-muted-foreground">{progress}</p>
+          {/* Error state */}
+          {error && !success && (
+            <div className="mt-3 rounded-md bg-destructive/10 p-3">
+              <p className="text-sm text-destructive">{error}</p>
+              {isIosSafari() && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  <strong>iPhone users:</strong> Make sure to add this app to your Home Screen first, then enable notifications in Settings → Notifications → Croft Common.
+                </p>
+              )}
             </div>
           )}
           
-          {/* Debug info */}
-          {debugMode && (
-            <div className="mt-2 rounded-md bg-muted p-2">
-              <p className="text-xs font-mono text-muted-foreground">
-                Permission: {Notification.permission}<br/>
-                Platform: {/iPad|iPhone|iPod/.test(navigator.userAgent) ? 'iOS' : 'Other'}<br/>
-                Standalone: {isStandalone ? 'Yes' : 'No'}<br/>
-                SW Support: {'serviceWorker' in navigator ? 'Yes' : 'No'}
-              </p>
+          {/* Loading state */}
+          {loading && (
+            <div className="mt-3 rounded-md bg-muted p-3 text-center">
+              <div className="flex items-center justify-center gap-2">
+                <div className="animate-spin h-4 w-4 border-2 border-muted-foreground border-t-transparent rounded-full"></div>
+                <p className="text-sm text-muted-foreground">Setting up notifications...</p>
+              </div>
             </div>
           )}
           
-          <div className="mt-3 flex items-center gap-2">
-            <button
-              onClick={onEnable}
-              disabled={loading}
-              className="inline-flex items-center rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
-            >
-              {loading ? (progress ? 'Processing...' : 'Enabling...') : 'Enable notifications'}
-            </button>
-            <button
-              onClick={() => {
-                localStorage.setItem(DISMISS_KEY, '1');
-                onClose();
-              }}
-              disabled={loading}
-              className="inline-flex items-center rounded-md border bg-background px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
-            >
-              Not now
-            </button>
-            <button
-              onClick={async () => {
-                setLoading(true);
-                setError(null);
-                updateProgress('Resetting notifications...');
-                try {
-                  let reg = swReg || (await navigator.serviceWorker.getRegistration());
-                  if (!reg) {
-                    try {
-                      reg = await navigator.serviceWorker.ready;
-                    } catch {
-                      reg = null as any;
-                    }
-                  }
-                  if (reg) {
-                    await resetNotifications(reg);
-                    updateProgress('Reset complete. Try enabling again.');
-                    setTimeout(() => setProgress(''), 2000);
-                  } else {
-                    throw new Error('No service worker found');
-                  }
-                } catch (error) {
-                  setError('Reset failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              disabled={loading}
-              className="text-xs underline underline-offset-4 text-muted-foreground disabled:opacity-60"
-            >
-              Reset
-            </button>
-          </div>
-          
-          {isIosSafari() && (
-            <div className="mt-2 rounded-md bg-blue-50 p-2 dark:bg-blue-950/20">
-              <p className="text-xs text-blue-700 dark:text-blue-300">
-                <strong>iOS Users:</strong> If you just enabled notifications in Settings, force-quit and reopen the app, then tap Enable.
-                {!isStandalone && (
-                  <> First, add this app to your Home Screen (Share → Add to Home Screen).</>
-                )}
-              </p>
-              {/* Test notification button for iOS debugging */}
+          {/* Actions */}
+          {!success && (
+            <div className="mt-3 flex gap-2">
               <button
-                onClick={async () => {
-                  setProgress('Testing iOS notification display...');
-                  try {
-                    const registration = await navigator.serviceWorker.ready;
-                    await registration.showNotification('🧪 Croft Common Test', {
-                      body: 'If you see this notification, your iOS settings are correct!',
-                      icon: '/brand/logo.png',
-                      badge: '/brand/logo.png',
-                      tag: 'ios-test-notification',
-                      requireInteraction: true
-                    });
-                    setProgress('Test notification sent! Check if it appears on your screen or in Notification Center.');
-                  } catch (error) {
-                    setProgress(`Test failed: ${error.message}`);
-                  }
-                }}
-                className="mt-2 w-full text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 py-1 px-2 rounded border border-blue-200 dark:border-blue-800"
+                onClick={onEnable}
+                disabled={loading}
+                className="flex-1 inline-flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
               >
-                🧪 Test iOS Notification Display
+                {loading ? 'Enabling...' : 'Enable notifications'}
+              </button>
+              <button
+                onClick={() => {
+                  localStorage.setItem(DISMISS_KEY, '1');
+                  onClose();
+                }}
+                disabled={loading}
+                className="px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                Not now
               </button>
             </div>
           )}

@@ -38,22 +38,15 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
   
   if (!('Notification' in window)) {
     logStep('❌ Notification API not supported');
+    toast({ title: "Error", description: "Notifications are not supported in this browser", variant: "destructive" });
     return false;
   }
 
   if (!('PushManager' in window)) {
     logStep('❌ Push manager not supported');
+    toast({ title: "Error", description: "Push notifications are not supported in this browser", variant: "destructive" });
     return false;
   }
-
-  // Enhanced debugging for iOS
-  logStep('🔍 iOS NOTIFICATION DEBUG', {
-    permission: Notification.permission,
-    userAgent: navigator.userAgent.substring(0, 100),
-    isStandalone: (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (window.navigator as any).standalone === true,
-    pushManagerExists: !!reg.pushManager,
-    serviceWorkerReady: !!reg.active
-  });
 
   try {
     let permission = Notification.permission;
@@ -64,8 +57,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       permission, 
       platform, 
       isStandalone, 
-      isIos: isIosSafari(),
-      userAgent: navigator.userAgent.slice(0, 100) + '...'
+      userAgent: navigator.userAgent.slice(0, 50) + '...'
     });
 
     // Track prompt shown
@@ -79,15 +71,9 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       console.warn('⚠️ Failed to track prompt_shown:', error);
     }
 
-    // Handle permission request with iOS-specific timing
+    // Handle permission request
     if (permission === 'default') {
       logStep('🔑 Requesting permission from user');
-      
-      if (isIos) {
-        // iOS Safari needs more time to process permission requests
-        logStep('🍎 Applying iOS-specific permission handling');
-        await new Promise(resolve => setTimeout(resolve, 100));
-      }
       
       try {
         permission = await Notification.requestPermission();
@@ -107,6 +93,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
         }
       } catch (error) {
         logStep('❌ Permission request failed', error);
+        toast({ title: "Permission denied", description: "Could not request notification permission", variant: "destructive" });
         return false;
       }
     } else {
@@ -116,23 +103,26 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     if (permission !== 'granted') {
       logStep('❌ Permission not granted', { permission });
       
-      let description = permission === 'denied'
-        ? 'You can enable notifications in your browser settings.'
-        : 'Please try again, or enable notifications in your browser settings.';
-
-      if (isIosSafari()) {
-        description = !isStandalone
-          ? 'On iPhone, add the app to your Home Screen first (Share → Add to Home Screen). Open it, then enable notifications.'
-          : 'On iPhone, go to Settings → Notifications → Croft Common → Allow Notifications. Then force-quit and reopen the app.';
+      if (permission === 'denied') {
+        toast({ 
+          title: "Notifications blocked", 
+          description: "Please enable notifications in your browser settings", 
+          variant: "destructive" 
+        });
+      } else {
+        toast({ 
+          title: "Permission required", 
+          description: "Please allow notifications to continue", 
+          variant: "destructive" 
+        });
       }
-
-      logStep('💡 User guidance', { description });
+      
       return false;
     }
 
     logStep('✅ Permission granted, proceeding with subscription');
 
-    // Enhanced subscription creation with retry for iOS
+    // Create push subscription
     let sub: PushSubscription | null = null;
     
     try {
@@ -143,20 +133,18 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       if (sub) {
         logStep('♻️ Found existing subscription, reusing');
       } else {
-        logStep('🆕 No existing subscription, creating new one');
+        logStep('🆕 Creating new subscription');
         
-        // For iOS, we need to be more careful about subscription creation
         const subscribeFunction = async () => {
-          logStep('📡 Attempting push subscription');
           return await reg.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
           });
         };
 
+        // Retry for iOS reliability
         if (isIos) {
-          logStep('🍎 Using iOS-specific subscription retry logic');
-          sub = await retryWithDelay(subscribeFunction, 3, 1500);
+          sub = await retryWithDelay(subscribeFunction, 3, 1000);
         } else {
           sub = await subscribeFunction();
         }
@@ -165,6 +153,11 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
       }
     } catch (error) {
       logStep('❌ Failed to create/get subscription', error);
+      toast({ 
+        title: "Subscription failed", 
+        description: "Could not create push subscription. Please try again.", 
+        variant: "destructive" 
+      });
       return false;
     }
 
@@ -182,49 +175,37 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
 
     if (!endpoint || !p256dh || !auth) {
       logStep('❌ Invalid subscription data', { endpoint: !!endpoint, p256dh: !!p256dh, auth: !!auth });
+      toast({ title: "Invalid subscription", description: "Subscription data is incomplete", variant: "destructive" });
       return false;
     }
 
-    // Enhanced user ID resolution with retry
+    // Resolve user ID from WebAuthn
     logStep('🔍 Resolving user ID from WebAuthn');
     let userId: string | null = null;
     const userHandle = getStoredUserHandle();
     
     if (userHandle) {
-      logStep('🔑 Found WebAuthn user handle, resolving to user ID');
-      
-      const resolveUserId = async () => {
+      try {
         const { data: userLink, error } = await supabase
           .from('webauthn_user_links')
           .select('user_id')
           .eq('user_handle', userHandle)
           .single();
         
-        if (error) throw error;
-        return userLink?.user_id ?? null;
-      };
-
-      try {
-        if (isIos) {
-          logStep('🍎 Using iOS-specific user ID resolution retry');
-          userId = await retryWithDelay(resolveUserId, 2, 1000);
-        } else {
-          userId = await resolveUserId();
+        if (!error && userLink?.user_id) {
+          userId = userLink.user_id;
+          logStep('✅ Successfully resolved user ID', { userId: 'found' });
         }
-        
-        logStep('✅ Successfully resolved user ID', { userId: userId ? 'found' : 'null' });
       } catch (error) {
         logStep('⚠️ Could not resolve WebAuthn user handle to user_id', error);
         // Continue without user_id - the backend can handle this
       }
-    } else {
-      logStep('ℹ️ No WebAuthn user handle found');
     }
 
-    // Save subscription with enhanced error handling
+    // Save subscription to backend
     logStep('💾 Saving subscription to backend');
     
-    const saveSubscription = async () => {
+    try {
       const { data, error } = await supabase.functions.invoke('save-push-subscription', {
         body: {
           endpoint,
@@ -236,56 +217,51 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
         },
       });
       
-      if (error) throw error;
-      return data;
-    };
-
-    let saveData;
-    try {
-      if (isIos) {
-        logStep('🍎 Using iOS-specific save retry logic');
-        saveData = await retryWithDelay(saveSubscription, 2, 1000);
-      } else {
-        saveData = await saveSubscription();
+      if (error) {
+        throw error;
       }
       
-      logStep('✅ Successfully saved subscription', { subscriptionId: saveData?.subscription_id });
+      logStep('✅ Successfully saved subscription', { subscriptionId: data?.subscription_id });
+
+      // Track successful subscribe
+      logStep('📊 Tracking subscribed event');
+      try {
+        await supabase.functions.invoke('track-push-optin', {
+          body: {
+            event: 'subscribed',
+            subscription_id: data?.subscription_id,
+            platform,
+            user_agent: navigator.userAgent,
+            endpoint,
+          },
+        });
+        logStep('✅ Successfully tracked subscribed event');
+      } catch (trackError) {
+        console.warn('⚠️ Failed to track subscribed event:', trackError);
+        // Don't fail the whole process for tracking errors
+      }
+
+      logStep('🎉 Notification enablement completed successfully');
+      toast({ title: "Success!", description: "Notifications enabled successfully", variant: "default" });
+      return true;
+      
     } catch (error) {
       logStep('❌ Failed to save subscription', error);
+      toast({ 
+        title: "Save failed", 
+        description: "Could not register device for notifications. Please try again.", 
+        variant: "destructive" 
+      });
       return false;
     }
-
-    // Track successful subscribe
-    logStep('📊 Tracking subscribed event');
-    try {
-      await supabase.functions.invoke('track-push-optin', {
-        body: {
-          event: 'subscribed',
-          subscription_id: saveData?.subscription_id,
-          platform,
-          user_agent: navigator.userAgent,
-          endpoint,
-        },
-      });
-      logStep('✅ Successfully tracked subscribed event');
-    } catch (error) {
-      console.warn('⚠️ Failed to track subscribed event:', error);
-      // Don't fail the whole process for tracking errors
-    }
-
-    logStep('🎉 Notification enablement completed successfully');
-    return true;
     
   } catch (e) {
     logStep('💥 Fatal error in enableNotifications', e);
-    
-    let description = 'Please try again later.';
-    if (isIosSafari()) {
-      description = !isStandalone
-        ? 'Install the app to your Home Screen first, then try again.'
-        : 'If you just changed Settings, force-quit and reopen the app, then try again.';
-    }
-    logStep('💡 Error guidance for user', { description });
+    toast({ 
+      title: "Unexpected error", 
+      description: "Something went wrong. Please try again later.", 
+      variant: "destructive" 
+    });
     return false;
   }
 }
