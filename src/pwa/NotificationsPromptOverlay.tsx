@@ -273,6 +273,28 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
                   <> First, add this app to your Home Screen (Share → Add to Home Screen).</>
                 )}
               </p>
+              {/* Test notification button for iOS debugging */}
+              <button
+                onClick={async () => {
+                  setProgress('Testing iOS notification display...');
+                  try {
+                    const registration = await navigator.serviceWorker.ready;
+                    await registration.showNotification('🧪 Croft Common Test', {
+                      body: 'If you see this notification, your iOS settings are correct!',
+                      icon: '/brand/logo.png',
+                      badge: '/brand/logo.png',
+                      tag: 'ios-test-notification',
+                      requireInteraction: true
+                    });
+                    setProgress('Test notification sent! Check if it appears on your screen or in Notification Center.');
+                  } catch (error) {
+                    setProgress(`Test failed: ${error.message}`);
+                  }
+                }}
+                className="mt-2 w-full text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 py-1 px-2 rounded border border-blue-200 dark:border-blue-800"
+              >
+                🧪 Test iOS Notification Display
+              </button>
             </div>
           )}
         </div>
