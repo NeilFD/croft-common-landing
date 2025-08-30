@@ -19,23 +19,37 @@ export const ImageTextSlide: React.FC<ImageTextSlideProps> = ({
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
 
   useEffect(() => {
-    const handleScroll = (e: Event) => {
-      const target = e.target as HTMLElement;
-      const { scrollTop, scrollHeight, clientHeight } = target;
+    const checkScrollState = (scrollContainer: HTMLElement) => {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
       const isScrollable = scrollHeight > clientHeight;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
+      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 5; // Reduced threshold for better detection
       setShowScrollIndicator(isScrollable && !isAtBottom);
     };
 
-    const scrollContainer = document.querySelector('.scroll-container');
-    if (scrollContainer) {
-      scrollContainer.addEventListener('scroll', handleScroll);
-      // Initial check
-      const { scrollHeight, clientHeight } = scrollContainer;
-      setShowScrollIndicator(scrollHeight > clientHeight);
-      
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
-    }
+    const handleScroll = (e: Event) => {
+      const target = e.target as HTMLElement;
+      checkScrollState(target);
+    };
+
+    // Use a timeout to ensure the component is fully rendered
+    const timer = setTimeout(() => {
+      const scrollContainer = document.querySelector('.scroll-container');
+      if (scrollContainer) {
+        scrollContainer.addEventListener('scroll', handleScroll);
+        // Initial check
+        checkScrollState(scrollContainer as HTMLElement);
+        
+        return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      const scrollContainer = document.querySelector('.scroll-container');
+      if (scrollContainer) {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+      }
+    };
   }, []);
 
   // Break up the content into paragraphs
