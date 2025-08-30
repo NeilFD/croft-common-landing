@@ -52,59 +52,20 @@ export const CourtyardSlide: React.FC<CourtyardSlideProps> = ({
 
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Left Side - Black Background with Scrollable Text */}
-      <div className="w-1/2 bg-black text-white p-8 md:p-12 flex flex-col relative">
-        <div className="courtyard-scroll-container flex-1 overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
-          <div className="text-sm md:text-base leading-relaxed">
-            {formatContent(leftContent)}
-          </div>
-        </div>
-        
-        {/* Scroll Indicator */}
-        {showScrollIndicator && (
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-            <ChevronDown className="h-6 w-6 text-white" />
-          </div>
-        )}
+      {/* Left Side - Black Background with Title Only */}
+      <div className="w-1/2 bg-black text-white p-8 md:p-12 flex flex-col justify-center items-center">
+        <h1 className="font-brutalist text-4xl md:text-6xl leading-tight tracking-tight text-white text-center">
+          {title}
+        </h1>
       </div>
 
-      {/* Right Side - Image with Title Overlay */}
+      {/* Right Side - Image */}
       <div className="w-1/2 relative">
-        {rightImage ? (
-          <div className="h-full relative">
-            <img 
-              src={rightImage} 
-              alt="Courtyard space" 
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-between p-8 md:p-12">
-              <h1 className="font-brutalist text-4xl md:text-5xl leading-tight tracking-tight text-white text-center">
-                {title}
-              </h1>
-              {rightTitle && (
-                <h2 className="font-industrial text-2xl md:text-3xl text-white text-center leading-tight tracking-tight">
-                  {rightTitle}
-                </h2>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white text-black p-8 md:p-12 flex flex-col justify-center h-full">
-            <h1 className="font-brutalist text-4xl md:text-5xl leading-tight mb-6 md:mb-8 tracking-tight text-center">
-              {title}
-            </h1>
-            {rightTitle && (
-              <h2 className="font-industrial text-2xl md:text-3xl leading-tight mb-6 md:mb-8 tracking-tight">
-                {rightTitle}
-              </h2>
-            )}
-            {rightContent && (
-              <div className="text-sm md:text-base leading-relaxed max-w-xl">
-                {formatContent(rightContent)}
-              </div>
-            )}
-          </div>
-        )}
+        <img 
+          src={rightImage} 
+          alt="The Courtyard space" 
+          className="w-full h-full object-cover"
+        />
       </div>
 
       {/* Croft Logo Watermark */}

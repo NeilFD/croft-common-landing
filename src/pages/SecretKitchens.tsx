@@ -129,10 +129,8 @@ const slideConfigs = [
   },
   { 
     type: 'COURTYARD', 
-    title: 'THE COURTYARD', 
-    rightTitle: 'OUTDOOR DINING & EVENTS',
-    leftContent: "The Courtyard is Croft Common's beautiful outdoor dining and events space, designed to bring the community together in a relaxed, open-air setting.\n\nThis carefully curated outdoor area offers the perfect backdrop for alfresco dining, intimate gatherings, and larger community events. Whether you're enjoying a casual meal with friends or attending a special celebration, The Courtyard provides a unique atmosphere that bridges the gap between indoor comfort and outdoor charm.\n\nWith thoughtfully designed seating areas, ambient lighting, and flexible spaces that can adapt to different occasions, The Courtyard becomes an extension of our indoor venues. It's equally suited for a quiet afternoon coffee, a family dinner under the stars, or hosting private events and celebrations.\n\nThe space seamlessly connects with our other venues, allowing guests to flow naturally between The Taproom, Woodfire & Kitchen, and the outdoor areas. This creates a dynamic environment where different experiences can unfold simultaneously.\n\nDuring warmer months, The Courtyard becomes the heart of Croft Common's social scene, hosting everything from weekend markets and live music sessions to private parties and corporate events. The flexible design means we can configure the space to suit any occasion, from intimate gatherings of 20 to larger celebrations for up to 100 guests.",
-    rightImage: '/lovable-uploads/courtyard-image.png'
+    title: 'THE COURTYARD',
+    rightImage: '/lovable-uploads/606af3e3-0044-4849-99c6-926e2dffa563.png'
   },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 20', subtitle: 'Left Layout Final', backgroundColor: 'muted' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 21', subtitle: 'Right Layout Final' },
