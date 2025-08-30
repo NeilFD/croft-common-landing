@@ -35,7 +35,7 @@ const slideConfigs = [
     leftContent: "Marketing and PR for the venue as a whole will be led by the Team at Croft Common. This includes the initial launch campaign, press outreach, brand partnerships and social media. We will also support each vendor's individual story and aim to foster an atmosphere of collaboration between all parties. Our curatorial approach blends high standards with community roots. We want to bring together a collection of food concepts that are both original and accessible, that reflect the vibrancy of the area while elevating the overall customer experience.",
     rightContent: "If you would like to be considered for one of the three kitchen spaces, we would love to hear from you. We are offering private tours, design walk-throughs and commercial meetings across the coming months. We are also happy to share our projected financials and detailed layout plans. To arrange a time to speak or visit the site, please contact: Neil Fincham-Dukes, Founding Partner, Croft Common and City & Sanctuary, neil@cityandsanctuary.com. We look forward to welcoming the first wave of partners to Croft Common and creating something extraordinary together."
   },
-  { type: 'GALLERY', title: 'SLIDE 6', subtitle: 'Gallery Layout' },
+  { type: 'HERO', title: 'WELCOME TO CROFT COMMON.', subtitle: 'A NEW ADDITION TO STOKES CROFT AND MAYBE YOUR NEW FAVOURITE PLACE...', backgroundImage: '/lovable-uploads/b0fe37fa-228e-460f-9c90-99ed660449b6.png' },
   { type: 'HERO', title: 'SLIDE 7', subtitle: 'Second Hero Layout' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 8', subtitle: 'Left Layout Variant', backgroundColor: 'muted' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 9', subtitle: 'Right Layout Variant', backgroundColor: 'muted' },
