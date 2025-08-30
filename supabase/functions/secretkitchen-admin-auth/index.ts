@@ -55,7 +55,7 @@ serve(async (req) => {
       // Send OTP via email
       try {
         await resend.emails.send({
-          from: 'Secret Kitchen Admin <admin@cityandsanctuary.com>',
+          from: 'Secret Kitchen Admin <admin@thehive-hospitality.com>',
           to: [email],
           subject: 'Secret Kitchen Admin - Login Code',
           html: `
