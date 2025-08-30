@@ -14,6 +14,7 @@ import { SplitLayoutSlide } from '@/components/slides/SplitLayoutSlide';
 import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
 import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { TaproomSlide } from '@/components/slides/TaproomSlide';
+import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu } from 'lucide-react';
 
 // Navigation labels for dropdown (max 3 words each)
@@ -126,7 +127,13 @@ const slideConfigs = [
     leftContent: "Croft Common's aspires to be the heart and soul of our local community with a Taproom serving flavour, variety and provenance.\n\nThe craft beer movement has turned casual drinking into a curated experience. Drinkers aren't loyal to brands anymore, they're loyal to discovery. They want new. They want local. They want beer with character.\n\nCraft beer offers more—more hops, more depth, more everything. One day it's a hazy IPA, the next a crisp pilsner or a bold stout. And behind every beer is a small brewery doing something different.\n\nThat's where we come in.\n\nOur Taproom is designed to be both a social anchor, and a showcase for Bristol's independent beer. The best taprooms aren't about scale; they're about personality. Here, brewers themselves pour the pints, sharing their stories and bringing drinkers closer to the beer. And because great beer deserves great food, you can always grab a burger or snack from the Woodfire & Kitchen to enjoy with your pint.\n\nThe Taproom will be open from 5 pm until 11 pm on Monday to Wednesday. On Thursday it opens at 5 pm and closes at 12am. On Friday it will open at 3pm, closing at 1 am. On Saturdays the Taproom will open from 12 pm until 1 am, with a similar opening time on Sunday, but closing at 11 pm.\n\nThe Taproom space will cater for approx. 80 covers with the ability to spill-out into The Courtyard which can accommodate 30 covers or Onto the rooftop terraces which can accommodate a further 80 covers.",
     rightImage: '/lovable-uploads/62ee9ff9-3f4e-4b23-a404-aeb8949ddbb1.png'
   },
-  { type: 'HERO', title: 'SLIDE 19', subtitle: 'Fourth Hero Layout' },
+  { 
+    type: 'COURTYARD', 
+    title: 'THE COURTYARD', 
+    rightTitle: 'OUTDOOR DINING & EVENTS',
+    leftContent: "The Courtyard is Croft Common's beautiful outdoor dining and events space, designed to bring the community together in a relaxed, open-air setting.\n\nThis carefully curated outdoor area offers the perfect backdrop for alfresco dining, intimate gatherings, and larger community events. Whether you're enjoying a casual meal with friends or attending a special celebration, The Courtyard provides a unique atmosphere that bridges the gap between indoor comfort and outdoor charm.\n\nWith thoughtfully designed seating areas, ambient lighting, and flexible spaces that can adapt to different occasions, The Courtyard becomes an extension of our indoor venues. It's equally suited for a quiet afternoon coffee, a family dinner under the stars, or hosting private events and celebrations.\n\nThe space seamlessly connects with our other venues, allowing guests to flow naturally between The Taproom, Woodfire & Kitchen, and the outdoor areas. This creates a dynamic environment where different experiences can unfold simultaneously.\n\nDuring warmer months, The Courtyard becomes the heart of Croft Common's social scene, hosting everything from weekend markets and live music sessions to private parties and corporate events. The flexible design means we can configure the space to suit any occasion, from intimate gatherings of 20 to larger celebrations for up to 100 guests.",
+    rightImage: '/lovable-uploads/courtyard-image.png'
+  },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 20', subtitle: 'Left Layout Final', backgroundColor: 'muted' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 21', subtitle: 'Right Layout Final' },
   { type: 'CENTERED', title: 'SLIDE 22', subtitle: 'Centered Final', backgroundColor: 'muted' },
@@ -265,6 +272,16 @@ const SecretKitchens = () => {
         return (
           <TaproomSlide
             title={config.title}
+            leftContent={config.leftContent}
+            rightImage={config.rightImage}
+          />
+        );
+      
+      case 'COURTYARD':
+        return (
+          <CourtyardSlide
+            title={config.title}
+            rightTitle={config.rightTitle}
             leftContent={config.leftContent}
             rightImage={config.rightImage}
           />
