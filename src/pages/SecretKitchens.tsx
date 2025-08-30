@@ -10,6 +10,7 @@ import { ListSlide } from '@/components/slides/ListSlide';
 import { HalfScreenSlide } from '@/components/slides/HalfScreenSlide';
 import { SplitLayoutSlide } from '@/components/slides/SplitLayoutSlide';
 import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
+import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } from 'lucide-react';
 
 // Slide configurations for 40 slides
@@ -50,8 +51,8 @@ const slideConfigs = [
     rightImage: '/lovable-uploads/41ae38cd-ab7d-4fea-91e7-cd2dfb8b4b6c.png'
   },
   { type: 'HERO', title: 'THE STREET TERRACE', backgroundImage: '/lovable-uploads/6508d223-d38b-4548-bb78-f79d3adffc41.png', noOverlay: true },
-  { type: 'GALLERY', title: 'SLIDE 12', subtitle: 'Gallery 4 Column', columns: 4 },
-  { type: 'HERO', title: 'SLIDE 13', subtitle: 'Third Hero Layout' },
+  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/2501737a-fee4-46b5-bad4-686fc66ed1dd.png', alt: 'Coffee preparation scene' },
+  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21f71c45-1b6f-4e0b-963c-a0f725504104.png', alt: 'Industrial concrete staircase' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 14', subtitle: 'Left Layout Standard' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 15', subtitle: 'Right Layout Standard' },
   { type: 'CENTERED', title: 'SLIDE 16', subtitle: 'Centered Standard' },
@@ -204,6 +205,14 @@ const SecretKitchens = () => {
             rightTitle={config.rightTitle}
             leftContent={config.leftContent}
             rightImage={config.rightImage}
+          />
+        );
+      
+      case 'PLAIN_IMAGE':
+        return (
+          <PlainImageSlide
+            backgroundImage={config.backgroundImage}
+            alt={config.alt}
           />
         );
       
