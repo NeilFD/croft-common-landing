@@ -43,6 +43,11 @@
     --accent-blood-red-subtle: 0 40% 85%;
     --accent-blood-red-dark: 0 100% 25%;
 
+    /* Sage green accent for common room */
+    --accent-sage-green: 120 25% 50%;
+    --accent-sage-green-subtle: 120 25% 85%;
+    --accent-sage-green-dark: 120 35% 35%;
+
     /* Design tokens */
     --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
@@ -381,6 +386,26 @@
   .desktop-only {
     display: block;
   }
+}
+
+/* CUSTOM SCROLLBAR STYLES FOR DROPDOWNS */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--accent-pink));
+  border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--accent-pink));
+  opacity: 0.8;
 }
 
 /* HIGH CONTRAST MODE SUPPORT */

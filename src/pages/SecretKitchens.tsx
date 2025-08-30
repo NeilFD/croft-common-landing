@@ -24,6 +24,9 @@ import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { SplitLayoutWithTitleSlide } from '@/components/slides/SplitLayoutWithTitleSlide';
 import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown } from 'lucide-react';
+import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
+import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
+import { cn } from '@/lib/utils';
 
 // Navigation labels for dropdown (max 3 words each)
 const slideNavigationLabels = [
@@ -607,7 +610,12 @@ const SecretKitchens = () => {
           onClick={logout}
           variant="outline" 
           size="sm" 
-          className="bg-white/90 hover:bg-white"
+          className={cn(
+            "bg-background/95 backdrop-blur-sm border-2 border-foreground/20",
+            "hover:bg-[hsl(var(--accent-pink))] hover:border-[hsl(var(--accent-pink))]",
+            "hover:text-background transition-all duration-300",
+            "font-brutalist tracking-wider text-xs"
+          )}
         >
           <LogOut className="h-4 w-4 mr-2" />
           Logout
@@ -632,30 +640,14 @@ const SecretKitchens = () => {
         
         {/* Navigation dropdown - moved to top right */}
         <div className="absolute top-4 right-20 z-20">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white flex items-center gap-2">
-                Navigate
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto bg-white border shadow-lg">
-              {slideNavigationLabels.map((label, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  onClick={() => {
-                    api?.scrollTo(index);
-                    setCurrentSlide(index);
-                  }}
-                  className={`hover:bg-pink-50 hover:text-pink-700 cursor-pointer ${
-                    currentSlide === index ? "bg-pink-100 text-pink-700" : ""
-                  }`}
-                >
-                  {index + 1}. {label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <StyledNavigationDropdown
+            currentSlide={currentSlide}
+            labels={slideNavigationLabels}
+            onSlideSelect={(index) => {
+              api?.scrollTo(index);
+              setCurrentSlide(index);
+            }}
+          />
         </div>
 
         {/* Slide counter */}
@@ -665,8 +657,12 @@ const SecretKitchens = () => {
           </div>
         </div>
 
-        <CarouselPrevious className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/30 hover:bg-white/50 backdrop-blur-sm" />
-        <CarouselNext className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/30 hover:bg-white/50 backdrop-blur-sm" />
+        <TransparentCarouselArrows
+          onPrevious={() => api?.scrollPrev()}
+          onNext={() => api?.scrollNext()}
+          canScrollPrev={true}
+          canScrollNext={true}
+        />
       </Carousel>
     </div>
   );
