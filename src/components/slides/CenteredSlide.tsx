@@ -71,16 +71,27 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
             </div>
             <div className="space-y-4">
               <div className={`text-base font-industrial leading-relaxed ${contentColor}`}>
-                {rightContent?.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line.includes('Neil Fincham-Dukes') || line.includes('Founding Partner') || line.includes('neil@cityandsanctuary.com') ? (
-                      <span className="font-bold text-lg block mb-1">{line}</span>
-                    ) : (
-                      line
-                    )}
-                    {index < rightContent.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
+                {rightContent?.split('\n').map((line, index) => {
+                  const isContactInfo = line.includes('Neil Fincham-Dukes') || line.includes('Founding Partner') || line.includes('neil@cityandsanctuary.com');
+                  const isEmptyLine = line.trim() === '';
+                  const nextLine = rightContent?.split('\n')[index + 1];
+                  const isBeforeContactInfo = nextLine && (nextLine.includes('Neil Fincham-Dukes') || nextLine.includes('Founding Partner') || nextLine.includes('neil@cityandsanctuary.com'));
+                  
+                  return (
+                    <React.Fragment key={index}>
+                      {isContactInfo ? (
+                        <span className="font-bold text-lg block leading-tight">{line}</span>
+                      ) : isEmptyLine && isBeforeContactInfo ? (
+                        <br />
+                      ) : isEmptyLine ? (
+                        null
+                      ) : (
+                        line
+                      )}
+                      {!isContactInfo && !isEmptyLine && index < rightContent.split('\n').length - 1 && <br />}
+                    </React.Fragment>
+                  );
+                })}
               </div>
             </div>
           </div>
