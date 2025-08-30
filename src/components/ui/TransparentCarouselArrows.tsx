@@ -26,8 +26,8 @@ export function TransparentCarouselArrow({
         // Base styles - transparent with just the icon
         "absolute z-10 transition-all duration-300",
         "flex items-center justify-center",
-        "text-background/60 hover:text-[hsl(var(--accent-pink))]",
-        "disabled:text-background/20 disabled:cursor-not-allowed",
+        "text-white/80 hover:text-[hsl(var(--accent-pink))]",
+        "disabled:text-white/30 disabled:cursor-not-allowed",
         "focus:outline-none focus:text-[hsl(var(--accent-pink))]",
         // Positioning
         direction === 'left' 
@@ -39,7 +39,7 @@ export function TransparentCarouselArrow({
         className
       )}
       style={{
-        filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3))',
+        filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.3))',
       }}
     >
       <Icon 

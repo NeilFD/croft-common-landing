@@ -201,6 +201,8 @@ const SecretKitchens = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<any>(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
   // Check if user's email is in secret_kitchen_access table
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -658,10 +660,16 @@ const SecretKitchens = () => {
         </div>
 
         <TransparentCarouselArrows
-          onPrevious={() => api?.scrollPrev()}
-          onNext={() => api?.scrollNext()}
-          canScrollPrev={true}
-          canScrollNext={true}
+          onPrevious={() => {
+            api?.scrollPrev();
+            if (api) setCurrentSlide(api.selectedScrollSnap());
+          }}
+          onNext={() => {
+            api?.scrollNext();
+            if (api) setCurrentSlide(api.selectedScrollSnap());
+          }}
+          canScrollPrev={canScrollPrev}
+          canScrollNext={canScrollNext}
         />
       </Carousel>
     </div>
