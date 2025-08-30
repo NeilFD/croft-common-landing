@@ -7,15 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface OTPStorage {
-  [email: string]: {
-    code: string;
-    expires: number;
-  };
-}
-
-// In-memory storage for OTP codes (in production, use Redis or database)
-const otpStore: OTPStorage = {};
 
 // Initialize Resend
 const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
@@ -43,14 +34,34 @@ serve(async (req) => {
         );
       }
 
+      // Clean up expired OTP codes first
+      await supabase.rpc('cleanup_expired_otp_codes');
+
       // Generate 6-digit OTP
       const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
       
-      // Store OTP with 10-minute expiry
-      otpStore[email] = {
-        code: otpCode,
-        expires: Date.now() + 10 * 60 * 1000 // 10 minutes
-      };
+      // Store OTP in database with 10-minute expiry
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+      
+      // Delete any existing OTP for this email
+      await supabase.from('otp_codes').delete().eq('email', email);
+      
+      // Insert new OTP
+      const { error: insertError } = await supabase
+        .from('otp_codes')
+        .insert({
+          email,
+          code: otpCode,
+          expires_at: expiresAt
+        });
+
+      if (insertError) {
+        console.error('Failed to store OTP:', insertError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to store verification code' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       // Send OTP via email
       try {
@@ -85,24 +96,37 @@ serve(async (req) => {
     }
 
     if (action === 'verify-otp') {
-      const stored = otpStore[email];
-      
-      if (!stored) {
+      // Clean up expired OTP codes first
+      await supabase.rpc('cleanup_expired_otp_codes');
+
+      // Look up OTP in database
+      const { data: otpData, error: fetchError } = await supabase
+        .from('otp_codes')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (fetchError || !otpData) {
+        console.log('No OTP found for email:', email, fetchError);
         return new Response(
           JSON.stringify({ error: 'No OTP found for this email' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      if (Date.now() > stored.expires) {
-        delete otpStore[email];
+      // Check if OTP has expired
+      if (new Date() > new Date(otpData.expires_at)) {
+        // Delete expired OTP
+        await supabase.from('otp_codes').delete().eq('email', email);
         return new Response(
           JSON.stringify({ error: 'OTP expired' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      if (stored.code !== code) {
+      // Check if OTP code matches
+      if (otpData.code !== code) {
+        console.log('Invalid OTP attempt:', { provided: code, stored: otpData.code });
         return new Response(
           JSON.stringify({ error: 'Invalid OTP' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -110,7 +134,9 @@ serve(async (req) => {
       }
 
       // OTP is valid, clean up and return success
-      delete otpStore[email];
+      await supabase.from('otp_codes').delete().eq('email', email);
+      
+      console.log(`Successful OTP verification for ${email}`);
       
       return new Response(
         JSON.stringify({ 
