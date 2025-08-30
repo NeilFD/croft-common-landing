@@ -10,7 +10,7 @@ import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } 
 
 // Slide configurations for 40 slides
 const slideConfigs = [
-  { type: 'HERO', title: 'SLIDE 1', subtitle: 'Hero Layout Template' },
+  { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 2', subtitle: 'Left Aligned Layout', content: 'Content placeholder for left aligned slide layout.' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 3', subtitle: 'Right Aligned Layout', content: 'Content placeholder for right aligned slide layout.' },
   { type: 'CENTERED', title: 'SLIDE 4', subtitle: 'Centered Layout', content: 'Content placeholder for centered slide layout.' },
@@ -81,8 +81,10 @@ const SecretKitchens = () => {
         return (
           <HeroSlide
             title={config.title}
-            subtitle={`${config.subtitle} (${slideNumber}/${totalSlides})`}
+            subtitle={slideNumber === 1 ? config.subtitle : `${config.subtitle} (${slideNumber}/${totalSlides})`}
+            backgroundImage={config.backgroundImage}
             logoPosition={index % 2 === 0 ? 'bottom-right' : 'top-left'}
+            noOverlay={config.noOverlay}
           />
         );
       

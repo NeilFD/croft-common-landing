@@ -8,13 +8,15 @@ interface HeroSlideProps {
   subtitle?: string;
   backgroundImage?: string;
   logoPosition?: 'top-left' | 'bottom-right';
+  noOverlay?: boolean;
 }
 
 export const HeroSlide: React.FC<HeroSlideProps> = ({
   title,
   subtitle,
   backgroundImage,
-  logoPosition = 'bottom-right'
+  logoPosition = 'bottom-right',
+  noOverlay = false
 }) => {
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -26,7 +28,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
             className="absolute inset-0 w-full h-full object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-black/60"></div>
+          {!noOverlay && <div className="absolute inset-0 bg-black/60"></div>}
         </>
       )}
       
