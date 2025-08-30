@@ -142,8 +142,9 @@ const slideConfigs = [
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/e8f27397-9658-4342-b75c-8bff91090e67.png', alt: 'Industrial hall interior with brick walls and metal ceiling structure' },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/14947106-1082-495d-a320-e9b9f52e1379.png', alt: 'Modern industrial corridor with glass doors and natural lighting' },
   { 
-    type: 'SPLIT_LAYOUT', 
-    title: 'THE HALL',
+    type: 'IMAGE_TEXT', 
+    title: 'THE HALL. EVENT SPACE.',
+    rightTitle: 'THE HALL',
     leftContent: "The Hall at Croft Common is our largest and most versatile space — a venue full of character, set within a building that blends industrial heritage with contemporary style. With its raw energy, original features and endless potential, The Hall offers a unique backdrop for one-of-a-kind events that leave a lasting impression.\n\nThis is a space designed to adapt — from wedding celebrations and corporate parties to special exhibitions. It's vast, flexible, and can be transformed with elegance and imagination to match the client's vision.\n\nWhether hired on its own or combined with the adjoining Terrace and Rooftop, The Hall offers possibilities that go far beyond a traditional venue. Our dedicated events team works with every client to help shape, plan, and deliver the perfect experience — whatever the occasion.\n\nWe aim to host at least 25 weddings a year, offering couples a stylish 'urban' alternative to the country estate. With hotels at every price point just a short walk away, Croft Common gives couples and planners the chance to create a wedding weekend that's flexible, fun, and seamless — from relaxed night-before drinks to a day-after gathering across our ground-floor spaces.\n\nThe Hall and Rooftop can stay open until 1:30am, giving events the freedom to flow into the night. The Hall's capacity is 400 standing, with seated events comfortably accommodating up to 220 guests.",
     rightImage: "/lovable-uploads/a0ae3c58-ca38-458c-9be0-d6860f7af235.png"
   },
