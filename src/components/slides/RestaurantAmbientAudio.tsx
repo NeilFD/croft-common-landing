@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
 
@@ -9,41 +9,32 @@ interface RestaurantAmbientAudioProps {
 const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({ 
   isPlaying 
 }) => {
-  const audioRef = useRef<HTMLAudioElement>(null);
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.3);
-
-  // Restaurant ambience sound effect (using a working ambient sound)
-  const ambientSoundUrl = "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav";
-
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      audioRef.current.loop = true;
-      
-      if (isPlaying && isAmbientPlaying) {
-        audioRef.current.play().catch(console.error);
-      } else {
-        audioRef.current.pause();
-      }
-    }
-  }, [isPlaying, isAmbientPlaying, volume]);
+  
+  // Restaurant ambience Spotify track
+  const trackId = "1S19QdPqpeQ3SMIGNaQiRA";
+  const embedUrl = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0&autoplay=1&loop=1`;
 
   const toggleAmbient = () => {
     setIsAmbientPlaying(!isAmbientPlaying);
   };
 
   return (
-    <div className="flex items-center space-x-2">
-      <audio
-        ref={audioRef}
-        preload="metadata"
-        className="hidden"
-      >
-        <source src={ambientSoundUrl} type="audio/mpeg" />
-        {/* Fallback: Using a data URL for a simple ambient sound */}
-        <source src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IAAAAAEAAQBEAAAAEAAAAAgABAAUAAAAAA==" type="audio/wav" />
-      </audio>
+    <div className="flex flex-col items-center space-y-3">
+      {isPlaying && isAmbientPlaying && (
+        <div className="w-80 h-20 bg-black rounded-lg overflow-hidden border border-white/20">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            allowFullScreen
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            className="rounded-lg"
+          />
+        </div>
+      )}
       
       <Button
         onClick={toggleAmbient}
@@ -58,18 +49,6 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
         )}
         Restaurant Ambience
       </Button>
-      
-      {isAmbientPlaying && (
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.1"
-          value={volume}
-          onChange={(e) => setVolume(parseFloat(e.target.value))}
-          className="w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer"
-        />
-      )}
     </div>
   );
 };
