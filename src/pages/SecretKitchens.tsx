@@ -52,7 +52,7 @@ const slideConfigs = [
   },
   { type: 'HERO', title: 'THE STREET TERRACE', backgroundImage: '/lovable-uploads/6508d223-d38b-4548-bb78-f79d3adffc41.png', noOverlay: true },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/2501737a-fee4-46b5-bad4-686fc66ed1dd.png', alt: 'Coffee preparation scene' },
-  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21f71c45-1b6f-4e0b-963c-a0f725504104.png', alt: 'Industrial concrete staircase' },
+  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21d8aba5-3872-43e7-828f-83f8f0a1b842.png', alt: 'Industrial loft space with brick walls and large windows' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 14', subtitle: 'Left Layout Standard' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 15', subtitle: 'Right Layout Standard' },
   { type: 'CENTERED', title: 'SLIDE 16', subtitle: 'Centered Standard' },
