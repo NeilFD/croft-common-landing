@@ -15,27 +15,27 @@ export const SplitLayoutSlide: React.FC<SplitLayoutSlideProps> = ({
   rightContent,
 }) => {
   return (
-    <div className="relative w-full h-screen flex">
+    <div className="relative w-full h-screen flex overflow-hidden">
       {/* Left Side - Black Background */}
-      <div className="w-1/2 bg-black text-white p-16 flex flex-col justify-center">
-        <h1 className="font-industrial text-6xl md:text-8xl leading-none mb-12 tracking-tight">
+      <div className="w-1/2 bg-black text-white p-8 md:p-12 flex flex-col justify-center">
+        <h1 className="font-industrial text-4xl md:text-5xl leading-tight mb-6 md:mb-8 tracking-tight">
           {title}
         </h1>
-        <p className="text-lg md:text-xl leading-relaxed max-w-2xl">
+        <p className="text-sm md:text-base leading-relaxed max-w-xl">
           {leftContent}
         </p>
       </div>
 
       {/* Right Side - White Background */}
-      <div className="w-1/2 bg-white text-black p-16 flex flex-col justify-center">
-        <h2 className="font-industrial text-4xl md:text-6xl leading-none mb-12 tracking-tight">
+      <div className="w-1/2 bg-white text-black p-8 md:p-12 flex flex-col justify-center">
+        <h2 className="font-industrial text-2xl md:text-3xl leading-tight mb-6 md:mb-8 tracking-tight">
           {rightTitle}
         </h2>
-        <div className="text-lg md:text-xl leading-relaxed max-w-2xl">
-          <p className="mb-8">
+        <div className="text-sm md:text-base leading-relaxed max-w-xl">
+          <p className="mb-4 md:mb-6">
             {rightContent.split('neil@cityandsanctuary.com')[0]}
           </p>
-          <div className="mb-8">
+          <div className="mb-4 md:mb-6">
             <p className="font-semibold mb-2">Neil Fincham-Dukes</p>
             <p className="mb-2">Founding Partner, Croft Common and City & Sanctuary</p>
             <p className="text-blue-600 underline">neil@cityandsanctuary.com</p>
