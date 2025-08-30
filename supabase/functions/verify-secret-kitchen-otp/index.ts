@@ -58,14 +58,16 @@ serve(async (req) => {
     }
 
     // Check if user already exists
-    const { data: existingUser, error: userCheckError } = await supabase.auth.admin.getUserByEmail(normEmail);
+    const { data: existingUser, error: userCheckError } = await supabase.auth.admin.listUsers({
+      filter: `email.eq.${normEmail}`
+    });
     
     let userId: string;
     let accessToken: string;
 
-    if (existingUser?.user) {
+    if (existingUser?.users && existingUser.users.length > 0) {
       // User exists, generate session
-      userId = existingUser.user.id;
+      userId = existingUser.users[0].id;
       
       // Create a session for existing user
       const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
