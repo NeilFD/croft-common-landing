@@ -19,7 +19,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
   noOverlay = false
 }) => {
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex overflow-hidden">
       {backgroundImage && (
         <>
           <OptimizedImage
@@ -37,12 +37,13 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         <CroftLogo size="lg" className="opacity-80" />
       </div>
       
-      <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-6">
+      {/* Title in bottom left corner */}
+      <div className="absolute bottom-8 left-8 z-10">
         <FramedBox
           as="h1"
-          size="lg"
+          size="sm"
           contrast="contrast"
-          className="text-6xl md:text-8xl font-brutalist mb-6 p-8 border-4"
+          className="text-2xl md:text-3xl font-brutalist border-2 px-4 py-2"
         >
           {title}
         </FramedBox>
