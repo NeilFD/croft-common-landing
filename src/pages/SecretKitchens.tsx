@@ -271,7 +271,7 @@ const SecretKitchens = () => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false
+          shouldCreateUser: true
         }
       });
 
