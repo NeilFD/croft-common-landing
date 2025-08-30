@@ -73,9 +73,9 @@ const slideConfigs = [
     rightContent: "The Kitchens will be open seven days a week, with trading expected from midday until close each evening. Last orders will typically be around 10pm on weekdays and 11pm on weekends. All vendors will be expected to trade throughout these hours unless a different arrangement is agreed in advance. Croft Common will provide all front of house staff, table runners and bar staff. This means vendors can focus entirely on delivering exceptional food with their own kitchen teams. Orders will be taken via Square POS, with a combination of table service and table ordering using QR codes or NFC tags. We are designing the system to feel seamless and intuitive for customers."
   },
   { 
-    type: 'SPLIT_LAYOUT', 
+    type: 'CENTERED', 
     title: 'PROMOTION & POSITIONING', 
-    rightTitle: 'Next steps',
+    backgroundColor: 'accent',
     leftContent: "Marketing and PR for the venue as a whole will be led by the Team at Croft Common. This includes the initial launch campaign, press outreach, brand partnerships and social media. We will also support each vendor's individual story and aim to foster an atmosphere of collaboration between all parties. Our curatorial approach blends high standards with community roots. We want to bring together a collection of food concepts that are both original and accessible, that reflect the vibrancy of the area while elevating the overall customer experience.",
     rightContent: "If you would like to be considered for one of the three kitchen spaces, we would love to hear from you. We are offering private tours, design walk-throughs and commercial meetings across the coming months. We are also happy to share our projected financials and detailed layout plans. To arrange a time to speak or visit the site, please contact: Neil Fincham-Dukes, Founding Partner, Croft Common and City & Sanctuary, neil@cityandsanctuary.com. We look forward to welcoming the first wave of partners to Croft Common and creating something extraordinary together."
   },
