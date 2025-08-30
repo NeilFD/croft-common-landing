@@ -507,15 +507,18 @@ const SecretKitchens = () => {
           <h1 className="text-white text-2xl font-brutalist tracking-wider">CROFT COMMON</h1>
         </div>
 
-        <div className="w-full max-w-md space-y-6">
-          {/* Instruction text box */}
-          <div className="bg-[hsl(var(--accent-pink))] border-2 border-white rounded-lg p-6 text-white">
+        <div className="w-full flex flex-col items-center space-y-6">
+          {/* Instruction text box - wider */}
+          <div className="w-full max-w-2xl bg-[hsl(var(--accent-pink))] border-2 border-white rounded-lg p-6 text-white">
             <div className="space-y-4 text-center">
               <p className="text-lg leading-relaxed">Welcome. You're one of the few invited behind the curtain at Croft Common.</p>
               <p className="text-lg leading-relaxed">This page won't last. From the moment you enter, the clock is ticking - 48 hours before it disappears.</p>
               <p className="text-lg font-brutalist tracking-wider">— Croft Common</p>
             </div>
           </div>
+
+          {/* Email form - smaller width */}
+          <div className="w-full max-w-md">
 
           <Card className="bg-white/10 backdrop-blur-sm border-white/20">
             <CardHeader className="text-center">
@@ -584,6 +587,7 @@ const SecretKitchens = () => {
             </CardContent>
           </Card>
         </div>
+      </div>
       </div>
     );
   }
