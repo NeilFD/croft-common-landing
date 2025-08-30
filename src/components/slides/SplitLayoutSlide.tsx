@@ -20,12 +20,9 @@ export const SplitLayoutSlide: React.FC<SplitLayoutSlideProps> = ({
     <div className="relative w-full h-screen flex overflow-hidden">
       {/* Left Side - Pink Background */}
       <div className="w-1/2 bg-[hsl(var(--accent-pink))] text-white p-8 md:p-12 flex flex-col justify-center">
-        <h1 className="font-brutalist text-4xl md:text-5xl leading-tight mb-6 md:mb-8 tracking-tight">
+        <h1 className="font-brutalist text-4xl md:text-5xl leading-tight mb-6 md:mb-8 tracking-tight text-center">
           {title}
         </h1>
-        <p className="text-lg leading-relaxed max-w-xl">
-          {leftContent}
-        </p>
       </div>
 
       {/* Right Side - Image or Content */}
