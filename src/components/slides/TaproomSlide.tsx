@@ -17,22 +17,25 @@ export const TaproomSlide: React.FC<TaproomSlideProps> = ({
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollContainer = document.querySelector('.taproom-scroll-container');
+      const scrollContainer = document.querySelector('.scroll-container');
       if (scrollContainer) {
         const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
         const isScrollable = scrollHeight > clientHeight;
-        const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 5;
+        const isAtBottom = Math.abs(scrollHeight - clientHeight - scrollTop) < 10;
         setShowScrollIndicator(isScrollable && !isAtBottom);
       }
     };
 
-    const scrollContainer = document.querySelector('.taproom-scroll-container');
+    const scrollContainer = document.querySelector('.scroll-container');
     if (scrollContainer) {
       scrollContainer.addEventListener('scroll', handleScroll);
-      // Check initial state
-      handleScroll();
+      // Check initial state after a brief delay to ensure content is rendered
+      const timer = setTimeout(handleScroll, 100);
       
-      return () => scrollContainer.removeEventListener('scroll', handleScroll);
+      return () => {
+        scrollContainer.removeEventListener('scroll', handleScroll);
+        clearTimeout(timer);
+      };
     }
   }, []);
 
@@ -48,7 +51,7 @@ export const TaproomSlide: React.FC<TaproomSlideProps> = ({
     <div className="relative w-full h-screen flex overflow-hidden">
       {/* Left Side - Pink Background with Scrollable Text */}
       <div className="w-1/2 bg-[hsl(var(--accent-pink))] text-white p-8 md:p-12 flex flex-col relative">
-        <div className="taproom-scroll-container flex-1 overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
+        <div className="scroll-container flex-1 overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
           <div className="text-sm md:text-base leading-relaxed">
             {formatContent(leftContent)}
           </div>
@@ -56,8 +59,8 @@ export const TaproomSlide: React.FC<TaproomSlideProps> = ({
         
         {/* Scroll Indicator */}
         {showScrollIndicator && (
-          <div className="absolute bottom-8 right-8 animate-bounce">
-            <ChevronDown className="h-6 w-6 text-white/80" />
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <ChevronDown className="h-6 w-6 text-white" />
           </div>
         )}
       </div>
