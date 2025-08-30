@@ -76,6 +76,7 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
                   const isEmptyLine = line.trim() === '';
                   const nextLine = rightContent?.split('\n')[index + 1];
                   const isBeforeContactInfo = nextLine && (nextLine.includes('Neil Fincham-Dukes') || nextLine.includes('Founding Partner') || nextLine.includes('neil@cityandsanctuary.com'));
+                  const isEmailLine = line.includes('neil@cityandsanctuary.com');
                   
                   return (
                     <React.Fragment key={index}>
@@ -88,7 +89,11 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
                       ) : (
                         line
                       )}
-                      {!isContactInfo && !isEmptyLine && index < rightContent.split('\n').length - 1 && <br />}
+                      {isEmailLine ? (
+                        <><br /><br /></>
+                      ) : !isContactInfo && !isEmptyLine && index < rightContent.split('\n').length - 1 ? (
+                        <br />
+                      ) : null}
                     </React.Fragment>
                   );
                 })}
