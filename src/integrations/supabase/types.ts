@@ -1526,6 +1526,66 @@ export type Database = {
         }
         Relationships: []
       }
+      secret_kitchen_access: {
+        Row: {
+          business_name: string
+          created_at: string
+          created_by: string | null
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          business_name: string
+          created_at?: string
+          created_by?: string | null
+          email: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      secret_kitchen_usage: {
+        Row: {
+          accessed_at: string
+          email: string
+          id: string
+          ip_address: string | null
+          session_id: string
+          user_agent: string | null
+        }
+        Insert: {
+          accessed_at?: string
+          email: string
+          id?: string
+          ip_address?: string | null
+          session_id: string
+          user_agent?: string | null
+        }
+        Update: {
+          accessed_at?: string
+          email?: string
+          id?: string
+          ip_address?: string | null
+          session_id?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       secret_words: {
         Row: {
           created_at: string
