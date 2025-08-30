@@ -503,7 +503,7 @@ const SecretKitchens = () => {
       <div className="min-h-screen bg-[hsl(var(--accent-pink))] flex items-center justify-center p-4 relative">
         {/* Croft Common branding with logo */}
         <div className="absolute top-6 left-6 z-10 flex items-center gap-3">
-          <CroftLogo size="sm" className="text-white" />
+          <CroftLogo size="lg" className="text-white" />
           <h1 className="text-white text-2xl font-brutalist tracking-wider">CROFT COMMON</h1>
         </div>
 
