@@ -144,8 +144,8 @@ const slideConfigs = [
     subtitle: '', 
     backgroundImage: '/lovable-uploads/f409d2c8-b310-4231-9843-31ae8cf0ecd5.png' 
   },
-  { type: 'CENTERED', title: 'SLIDE 22', subtitle: 'Centered Final', backgroundColor: 'muted' },
-  { type: 'THREE_COLUMN', title: 'SLIDE 23', subtitle: 'Three Column Final' },
+  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/e8f27397-9658-4342-b75c-8bff91090e67.png', alt: 'Industrial hall interior with brick walls and metal ceiling structure' },
+  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/14947106-1082-495d-a320-e9b9f52e1379.png', alt: 'Modern industrial corridor with glass doors and natural lighting' },
   { type: 'GALLERY', title: 'SLIDE 24', subtitle: 'Gallery Final' },
   { type: 'HERO', title: 'SLIDE 25', subtitle: 'Fifth Hero Layout' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 26', subtitle: 'Left Layout Extra' },
