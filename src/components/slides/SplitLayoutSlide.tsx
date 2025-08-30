@@ -20,16 +20,18 @@ export const SplitLayoutSlide: React.FC<SplitLayoutSlideProps> = ({
     <div className="relative w-full h-screen flex overflow-hidden">
       {/* Left Side - Pink Background */}
       <div className="w-1/2 bg-[hsl(var(--accent-pink))] text-white p-6 md:p-8 flex flex-col justify-center overflow-y-auto max-h-screen">
-        <div className="text-xs md:text-sm leading-relaxed max-w-xl">
-          {leftContent ? (
-            leftContent.split('\n\n').map((paragraph, index) => (
-              <p key={index} className="mb-3 md:mb-4">
-                {paragraph}
-              </p>
-            ))
+        <div className="max-w-xl">
+          {leftContent && leftContent.includes('\n\n') ? (
+            <div className="text-xs md:text-sm leading-relaxed">
+              {leftContent.split('\n\n').map((paragraph, index) => (
+                <p key={index} className="mb-3 md:mb-4">
+                  {paragraph}
+                </p>
+              ))}
+            </div>
           ) : (
-            <h1 className="font-brutalist text-4xl md:text-5xl leading-tight mb-6 md:mb-8 tracking-tight text-center">
-              {title}
+            <h1 className="font-brutalist text-4xl md:text-5xl lg:text-6xl leading-tight mb-6 md:mb-8 tracking-tight text-center">
+              {leftContent || title}
             </h1>
           )}
         </div>
