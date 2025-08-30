@@ -32,7 +32,7 @@ const slideNavigationLabels = [
   'Industrial Loft',
   'The Kitchens',
   'Independent Kitchens',
-  'Slide 16',
+  'Hospitality Experience',
   'Slide 17',
   'Slide 18',
   'Slide 19',
@@ -107,7 +107,12 @@ const slideConfigs = [
     leftContent: "The Kitchens are where Bristol's boldest food talent comes together under one roof, a curated collection of four kitchens serving up serious flavour and fierce creativity.\n\nFirst off is The Woodfire, our own signature kitchen, built around a glowing wood-fired oven. From morning through to night, it brings depth, drama and flame-fired theatre to every plate, it sets the tone.\n\nSurrounding it are four of Bristol's most exciting food entrepreneurs: up-and-coming street food stars, pop-up pioneers, and cult favourites, each with their own distinct style. From globally inspired comfort food to next-generation brunches, this is a true showcase of Bristol's food scene, independent, inventive and always evolving.\n\nIt's more than a food hall. It's a launchpad for local talent. A place where new ideas meet hungry crowds, where big names get discovered, and where everything, from the food to the fit-out, reflects the creativity of Stokes Croft.\n\nCommunal tables and open kitchens create a space that's vibrant, social and full of energy. Whether you're meeting friends, grabbing lunch solo, or staying for the evening, it's casual dining with serious intent.\n\nOpen daily from 12pm to 10pm, with The Woodfire serving from 7am, this is where Bristol eats - together.\n\nThe Kitchen offer 80 seats, with 100 more in The Café and Cocktail Bar, 30 in The Courtyard, 60 in the Taproom and 80 across the rooftop terraces, all designed to flow effortlessly into one another, creating a flexible, social space where dining, drinking, and gathering come together.",
     rightImage: '/lovable-uploads/71adf12c-12fa-4b43-9a36-2668dee03a18.png'
   },
-  { type: 'CENTERED', title: 'SLIDE 16', subtitle: 'Centered Standard' },
+  { 
+    type: 'SPLIT', 
+    title: 'TRULY MEMORABLE HOSPITALITY EXPERIENCES INVARIABLY HAVE AN EXTRAORDINARY PEOPLE EXPERIENCE; NATURAL AND GENEROUS HOSPITALITY IS STILL THE KILLER APP.', 
+    leftContent: 'TRULY MEMORABLE HOSPITALITY EXPERIENCES INVARIABLY HAVE AN EXTRAORDINARY PEOPLE EXPERIENCE; NATURAL AND GENEROUS HOSPITALITY IS STILL THE KILLER APP.',
+    rightImage: '/lovable-uploads/7afc4c37-6fa4-45c5-97eb-63a174938c51.png'
+  },
   { type: 'THREE_COLUMN', title: 'SLIDE 17', subtitle: 'Three Column Standard' },
   { type: 'GALLERY', title: 'SLIDE 18', subtitle: 'Gallery 2 Column', columns: 2 },
   { type: 'HERO', title: 'SLIDE 19', subtitle: 'Fourth Hero Layout' },
@@ -231,6 +236,17 @@ const SecretKitchens = () => {
             rightTitle={config.rightTitle}
             leftContent={config.leftContent}
             rightContent={config.rightContent}
+          />
+        );
+      
+      case 'SPLIT':
+        return (
+          <SplitLayoutSlide
+            title={config.title}
+            rightTitle={config.rightTitle}
+            leftContent={config.leftContent}
+            rightContent={config.rightContent}
+            rightImage={config.rightImage}
           />
         );
       
