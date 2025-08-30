@@ -29,10 +29,10 @@ export function TransparentCarouselArrow({
         "text-white/80 hover:text-[hsl(var(--accent-pink))]",
         "disabled:text-white/30 disabled:cursor-not-allowed",
         "focus:outline-none focus:text-[hsl(var(--accent-pink))]",
-        // Positioning
+        // Positioning - fixed position relative to viewport
         direction === 'left' 
-          ? "left-4 top-1/2 -translate-y-1/2" 
-          : "right-4 top-1/2 -translate-y-1/2",
+          ? "left-4 top-1/2 -translate-y-1/2 fixed" 
+          : "right-4 top-1/2 -translate-y-1/2 fixed",
         // Hover effects
         "hover:scale-110 hover:drop-shadow-lg",
         "active:scale-95",
