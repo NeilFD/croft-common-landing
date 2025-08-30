@@ -12,7 +12,13 @@ import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } 
 const slideConfigs = [
   { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
   { type: 'CENTERED', title: 'Rooted in the neighbourhood. Alive with city energy.', subtitle: 'This is Croft Common — where Bristol meets, eats, and stays a little longer than planned...', backgroundColor: 'accent' },
-  { type: 'RIGHT_ALIGNED', title: 'SLIDE 3', subtitle: 'Right Aligned Layout', content: 'Content placeholder for right aligned slide layout.' },
+  { 
+    type: 'CENTERED', 
+    title: 'TENANT OPPORTUNITY PROPOSAL', 
+    backgroundColor: 'accent',
+    leftContent: 'We are pleased to offer a unique opportunity for a small number of exceptional food businesses to take up residence within The Kitchens at Croft Common, launching in February 2026 in the heart of Stokes Croft.',
+    rightContent: 'Croft Common is a new landmark hospitality venue combining The Kitchens at Croft Common, a Cocktail Bar, Beer Hall, Café, and Event Space, all under one roof across 16,000 square feet. At its core will sit The Kitchens, a four-unit destination for outstanding, independent food, one operated by Croft Common and three reserved for exciting independent vendors. We are seeking operators with a strong local following, a reputation for quality, and a desire to grow their brand without the cost or commitment of taking on their own premises. This is a rare chance to be part of a high-profile launch in a much-loved area, with infrastructure, marketing support and footfall potential already in place.'
+  },
   { type: 'CENTERED', title: 'SLIDE 4', subtitle: 'Centered Layout', content: 'Content placeholder for centered slide layout.' },
   { type: 'THREE_COLUMN', title: 'SLIDE 5', subtitle: 'Three Column Layout' },
   { type: 'GALLERY', title: 'SLIDE 6', subtitle: 'Gallery Layout' },
@@ -112,8 +118,10 @@ const SecretKitchens = () => {
         return (
           <CenteredSlide
             title={config.title}
-            subtitle={slideNumber === 2 ? config.subtitle : `${config.subtitle} (${slideNumber}/${totalSlides})`}
-            content={slideNumber === 2 ? '' : "This is placeholder content for a centered layout. This format works well for quotes, key messages, or important announcements that need maximum visual impact."}
+            subtitle={slideNumber === 2 ? config.subtitle : (slideNumber === 3 ? undefined : `${config.subtitle} (${slideNumber}/${totalSlides})`)}
+            content={slideNumber === 2 ? '' : (slideNumber === 3 ? undefined : "This is placeholder content for a centered layout. This format works well for quotes, key messages, or important announcements that need maximum visual impact.")}
+            leftContent={config.leftContent}
+            rightContent={config.rightContent}
             backgroundColor={config.backgroundColor}
           />
         );
