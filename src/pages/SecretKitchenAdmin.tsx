@@ -30,12 +30,9 @@ interface UsageRecord {
 }
 
 export default function SecretKitchenAdmin() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
-  const [otpCode, setOtpCode] = useState('');
-  const [showOtpInput, setShowOtpInput] = useState(false);
   const [loading, setLoading] = useState(false);
   
   // Admin data states
@@ -44,16 +41,16 @@ export default function SecretKitchenAdmin() {
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [newUser, setNewUser] = useState({ name: '', email: '', business_name: '' });
 
-  // Check if user is already authenticated
+  // Check if user is authenticated with proper access
+  const isAuthenticated = user?.email === 'neil@cityandsanctuary.com';
+
   useEffect(() => {
-    const adminToken = sessionStorage.getItem('sk_admin_token');
-    if (adminToken && user?.email === 'neil@cityandsanctuary.com') {
-      setIsAuthenticated(true);
+    if (isAuthenticated) {
       loadAdminData();
     }
-  }, [user]);
+  }, [isAuthenticated]);
 
-  const sendOTP = async () => {
+  const sendMagicLink = async () => {
     if (email !== 'neil@cityandsanctuary.com') {
       toast({
         title: "Access Denied",
@@ -65,48 +62,24 @@ export default function SecretKitchenAdmin() {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('secretkitchen-admin-auth', {
-        body: { action: 'send-otp', email }
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false,
+          emailRedirectTo: `${window.location.origin}/secretkitchenadmin`
+        }
       });
 
       if (error) throw error;
 
-      setShowOtpInput(true);
       toast({
-        title: "OTP Sent",
-        description: "Check your email for the 6-digit code."
+        title: "Magic Link Sent",
+        description: "Check your email and click the link to sign in."
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send OTP. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const verifyOTP = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('secretkitchen-admin-auth', {
-        body: { action: 'verify-otp', email, code: otpCode }
-      });
-
-      if (error) throw error;
-
-      sessionStorage.setItem('sk_admin_token', data.token);
-      setIsAuthenticated(true);
-      loadAdminData();
-      toast({
-        title: "Authentication Successful",
-        description: "Welcome to Secret Kitchen Admin!"
-      });
-    } catch (error) {
-      toast({
-        title: "Invalid Code",
-        description: "Please check your code and try again.",
+        description: "Failed to send magic link. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -223,13 +196,25 @@ export default function SecretKitchenAdmin() {
     }
   };
 
-  const logout = () => {
-    sessionStorage.removeItem('sk_admin_token');
-    setIsAuthenticated(false);
+  const logout = async () => {
+    await supabase.auth.signOut();
     setEmail('');
-    setOtpCode('');
-    setShowOtpInput(false);
+    toast({
+      title: "Signed Out",
+      description: "You have been successfully signed out."
+    });
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
@@ -237,57 +222,28 @@ export default function SecretKitchenAdmin() {
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-center">Secret Kitchen Admin</CardTitle>
+            <p className="text-center text-muted-foreground">
+              Restricted access for neil@cityandsanctuary.com
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!showOtpInput ? (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                  />
-                </div>
-                <Button 
-                  onClick={sendOTP} 
-                  disabled={loading || !email}
-                  className="w-full"
-                >
-                  {loading ? 'Sending...' : 'Send Verification Code'}
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="otp">6-Digit Verification Code</Label>
-                  <Input
-                    id="otp"
-                    type="text"
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    placeholder="000000"
-                    maxLength={6}
-                  />
-                </div>
-                <Button 
-                  onClick={verifyOTP} 
-                  disabled={loading || otpCode.length !== 6}
-                  className="w-full"
-                >
-                  {loading ? 'Verifying...' : 'Verify Code'}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowOtpInput(false)}
-                  className="w-full"
-                >
-                  Back
-                </Button>
-              </>
-            )}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="neil@cityandsanctuary.com"
+              />
+            </div>
+            <Button 
+              onClick={sendMagicLink} 
+              disabled={loading || !email}
+              className="w-full"
+            >
+              {loading ? 'Sending...' : 'Send Magic Link'}
+            </Button>
           </CardContent>
         </Card>
       </div>
