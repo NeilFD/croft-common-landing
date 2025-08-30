@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import CroftLogo from '@/components/CroftLogo';
+import { LandingSlide } from '@/components/slides/LandingSlide';
 import { HeroSlide } from '@/components/slides/HeroSlide';
 import { LeftAlignedSlide } from '@/components/slides/LeftAlignedSlide';
 import { RightAlignedSlide } from '@/components/slides/RightAlignedSlide';
@@ -30,6 +31,7 @@ import { cn } from '@/lib/utils';
 
 // Navigation labels for dropdown (max 3 words each)
 const slideNavigationLabels = [
+  'Welcome',
   'Croft Common',
   'Neighbourhood Energy',
   'Tenant Opportunity',
@@ -66,6 +68,7 @@ const slideNavigationLabels = [
 
 // Slide configurations for all slides
 const slideConfigs = [
+  { type: 'LANDING' },
   { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
   { type: 'CENTERED', title: 'Rooted in the neighbourhood. Alive with city energy.', subtitle: 'This is Croft Common — where Bristol meets, eats, and stays a little longer than planned...', backgroundColor: 'accent' },
   { 
@@ -366,8 +369,44 @@ const SecretKitchens = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [api]);
 
+  // Sync carousel state with currentSlide
+  useEffect(() => {
+    if (!api) return;
+
+    const onSelect = () => {
+      setCurrentSlide(api.selectedScrollSnap());
+    };
+
+    const onScrollPrev = () => {
+      setCanScrollPrev(api.canScrollPrev());
+    };
+
+    const onScrollNext = () => {
+      setCanScrollNext(api.canScrollNext());
+    };
+
+    api.on('select', onSelect);
+    api.on('reInit', onSelect);
+    api.on('reInit', onScrollPrev);
+    api.on('reInit', onScrollNext);
+
+    // Set initial state
+    setCurrentSlide(api.selectedScrollSnap());
+    setCanScrollPrev(api.canScrollPrev());
+    setCanScrollNext(api.canScrollNext());
+  }, [api]);
+
   const renderSlide = (config: any) => {
     switch (config.type) {
+      case 'LANDING':
+        return (
+          <LandingSlide
+            onEnter={() => {
+              api?.scrollTo(1);
+              setCurrentSlide(1);
+            }}
+          />
+        );
       case 'HERO':
         return (
           <HeroSlide

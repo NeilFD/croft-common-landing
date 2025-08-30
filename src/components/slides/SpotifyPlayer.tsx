@@ -1,0 +1,78 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Play, Pause, ExternalLink } from 'lucide-react';
+
+interface SpotifyPlayerProps {
+  playlistId: string;
+  isPlaying: boolean;
+  onToggle: (playing: boolean) => void;
+}
+
+const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ 
+  playlistId, 
+  isPlaying, 
+  onToggle 
+}) => {
+  const [showIframe, setShowIframe] = useState(false);
+  const spotifyUrl = `https://open.spotify.com/playlist/${playlistId}`;
+  const embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0&autoplay=1&loop=1`;
+
+  const handleToggle = () => {
+    if (!showIframe && !isPlaying) {
+      setShowIframe(true);
+      onToggle(true);
+    } else {
+      onToggle(!isPlaying);
+    }
+  };
+
+  const openSpotify = () => {
+    window.open(spotifyUrl, '_blank');
+  };
+
+  return (
+    <div className="flex flex-col items-center space-y-4">
+      {showIframe && (
+        <div className="w-80 h-32 bg-black rounded-lg overflow-hidden border border-white/20">
+          <iframe
+            src={embedUrl}
+            width="100%"
+            height="100%"
+            frameBorder="0"
+            allowFullScreen
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            className="rounded-lg"
+          />
+        </div>
+      )}
+      
+      <div className="flex items-center space-x-3">
+        <Button
+          onClick={handleToggle}
+          variant="outline"
+          size="sm"
+          className="bg-transparent border-white/50 text-white hover:bg-white/10"
+        >
+          {isPlaying ? (
+            <Pause className="h-4 w-4" />
+          ) : (
+            <Play className="h-4 w-4" />
+          )}
+        </Button>
+        
+        <Button
+          onClick={openSpotify}
+          variant="ghost"
+          size="sm"
+          className="text-white/70 hover:text-white hover:bg-white/10"
+        >
+          <ExternalLink className="mr-2 h-4 w-4" />
+          Open in Spotify
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export default SpotifyPlayer;
