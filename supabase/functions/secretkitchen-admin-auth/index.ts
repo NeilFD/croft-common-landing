@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { Resend } from 'npm:resend@2.0.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,9 @@ interface OTPStorage {
 
 // In-memory storage for OTP codes (in production, use Redis or database)
 const otpStore: OTPStorage = {};
+
+// Initialize Resend
+const resend = new Resend(Deno.env.get('RESEND_API_KEY'));
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -48,9 +52,31 @@ serve(async (req) => {
         expires: Date.now() + 10 * 60 * 1000 // 10 minutes
       };
 
-      // In production, send email via Resend or similar service
-      // For now, we'll just log it (you can check function logs)
-      console.log(`OTP for ${email}: ${otpCode}`);
+      // Send OTP via email
+      try {
+        await resend.emails.send({
+          from: 'Secret Kitchen Admin <admin@cityandsanctuary.com>',
+          to: [email],
+          subject: 'Secret Kitchen Admin - Login Code',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2 style="color: #333;">Secret Kitchen Admin Access</h2>
+              <p>Your verification code is:</p>
+              <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+                <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #333;">${otpCode}</span>
+              </div>
+              <p style="color: #666; font-size: 14px;">This code will expire in 10 minutes.</p>
+              <p style="color: #666; font-size: 12px;">If you didn't request this code, please ignore this email.</p>
+            </div>
+          `,
+        });
+        
+        console.log(`OTP sent successfully to ${email}: ${otpCode}`);
+      } catch (emailError) {
+        console.error('Failed to send OTP email:', emailError);
+        // Still log the OTP as fallback
+        console.log(`OTP for ${email}: ${otpCode}`);
+      }
 
       return new Response(
         JSON.stringify({ success: true, message: 'OTP sent to email' }),
