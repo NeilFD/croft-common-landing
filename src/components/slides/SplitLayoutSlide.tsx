@@ -1,5 +1,4 @@
 import React from 'react';
-import CroftLogo from '@/components/CroftLogo';
 
 interface SplitLayoutSlideProps {
   title: string;
@@ -74,10 +73,6 @@ export const SplitLayoutSlide: React.FC<SplitLayoutSlideProps> = ({
         )}
       </div>
 
-      {/* Croft Logo Watermark */}
-      <div className="absolute top-4 right-4 opacity-20">
-        <CroftLogo className="h-12 w-12" />
-      </div>
     </div>
   );
 };

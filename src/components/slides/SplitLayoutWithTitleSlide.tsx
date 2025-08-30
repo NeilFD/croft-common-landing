@@ -1,5 +1,4 @@
 import React from 'react';
-import CroftLogo from '@/components/CroftLogo';
 import OptimizedImage from '@/components/OptimizedImage';
 import { FramedBox } from '@/components/ui/FramedBox';
 
@@ -18,11 +17,6 @@ export const SplitLayoutWithTitleSlide: React.FC<SplitLayoutWithTitleSlideProps>
     <section className="h-screen flex overflow-hidden">
       {/* Left Content */}
       <div className="w-1/2 bg-background flex flex-col justify-center p-12 relative">
-        {/* Logo Watermark */}
-        <div className="absolute top-6 right-6 z-20">
-          <CroftLogo size="md" className="opacity-60" />
-        </div>
-        
         <div className="space-y-8">
           <FramedBox
             as="h2"

@@ -1,5 +1,4 @@
 import React from 'react';
-import CroftLogo from '@/components/CroftLogo';
 import { FramedBox } from '@/components/ui/FramedBox';
 
 interface CenteredSlideProps {
@@ -30,11 +29,6 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
 
   return (
     <section className={`h-screen flex items-center py-20 px-6 relative ${bgClass}`}>
-      {/* Logo Watermark */}
-      <div className="absolute top-6 right-6 z-20">
-        <CroftLogo size="md" className="opacity-60" />
-      </div>
-      
       <div className={`max-w-6xl mx-auto w-full ${isTwoColumn ? 'space-y-6' : 'text-center space-y-8'}`}>
         <FramedBox
           as="h2"

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
@@ -180,7 +180,26 @@ const sampleGalleryItems = [
 ];
 
 const SecretKitchens = () => {
-  const [currentSlide, setCurrentSlide] = React.useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<any>(null);
+
+  // Add keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!carouselApi) return;
+      
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        carouselApi.scrollPrev();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        carouselApi.scrollNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [carouselApi]);
   const renderSlide = (config: any, index: number) => {
     const slideNumber = index + 1;
     const totalSlides = slideConfigs.length;
@@ -378,14 +397,18 @@ const SecretKitchens = () => {
         </DropdownMenu>
       </div>
 
-      <Carousel className="w-full h-screen" setApi={(api) => {
-        if (api) {
-          api.on("select", () => {
-            setCurrentSlide(api.selectedScrollSnap());
-          });
-          api.scrollTo(currentSlide);
-        }
-      }}>
+      <Carousel 
+        className="w-full h-screen" 
+        setApi={(api) => {
+          setCarouselApi(api);
+          if (api) {
+            api.on("select", () => {
+              setCurrentSlide(api.selectedScrollSnap());
+            });
+            api.scrollTo(currentSlide);
+          }
+        }}
+      >
         <CarouselContent>
           {slideConfigs.map((config, index) => (
             <CarouselItem key={index} className="relative">

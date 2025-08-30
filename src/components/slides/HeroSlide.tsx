@@ -1,6 +1,5 @@
 import React from 'react';
 import OptimizedImage from '@/components/OptimizedImage';
-import CroftLogo from '@/components/CroftLogo';
 import { FramedBox } from '@/components/ui/FramedBox';
 
 interface HeroSlideProps {
@@ -32,10 +31,6 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         </>
       )}
       
-      {/* Logo Watermark */}
-      <div className={`absolute z-20 ${logoPosition === 'top-left' ? 'top-6 left-6' : 'bottom-6 right-6'}`}>
-        <CroftLogo size="lg" className="opacity-80" />
-      </div>
       
       {/* Title in bottom left corner */}
       <div className="absolute bottom-8 left-8 z-10">
