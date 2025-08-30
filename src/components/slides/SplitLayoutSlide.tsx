@@ -33,7 +33,7 @@ export const SplitLayoutSlide: React.FC<SplitLayoutSlideProps> = ({
         </h2>
         <div className="text-sm md:text-base leading-relaxed max-w-xl">
           <p className="mb-4 md:mb-6">
-            {rightContent.split('neil@cityandsanctuary.com')[0]}
+            {rightContent ? rightContent.split('neil@cityandsanctuary.com')[0] : ''}
           </p>
           <div className="mb-4 md:mb-6">
             <p className="font-semibold mb-2">Neil Fincham-Dukes</p>
