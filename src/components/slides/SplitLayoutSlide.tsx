@@ -16,12 +16,12 @@ export const SplitLayoutSlide: React.FC<SplitLayoutSlideProps> = ({
 }) => {
   return (
     <div className="relative w-full h-screen flex overflow-hidden">
-      {/* Left Side - Black Background */}
-      <div className="w-1/2 bg-black text-white p-8 md:p-12 flex flex-col justify-center">
-        <h1 className="font-industrial text-4xl md:text-5xl leading-tight mb-6 md:mb-8 tracking-tight">
+      {/* Left Side - Pink Background */}
+      <div className="w-1/2 bg-[hsl(var(--accent-pink))] text-white p-8 md:p-12 flex flex-col justify-center">
+        <h1 className="font-brutalist text-4xl md:text-5xl leading-tight mb-6 md:mb-8 tracking-tight">
           {title}
         </h1>
-        <p className="text-sm md:text-base leading-relaxed max-w-xl">
+        <p className="text-lg leading-relaxed max-w-xl">
           {leftContent}
         </p>
       </div>
