@@ -1,5 +1,7 @@
 import React from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { HeroSlide } from '@/components/slides/HeroSlide';
 import { LeftAlignedSlide } from '@/components/slides/LeftAlignedSlide';
 import { RightAlignedSlide } from '@/components/slides/RightAlignedSlide';
@@ -11,7 +13,51 @@ import { HalfScreenSlide } from '@/components/slides/HalfScreenSlide';
 import { SplitLayoutSlide } from '@/components/slides/SplitLayoutSlide';
 import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
 import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
-import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } from 'lucide-react';
+import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu } from 'lucide-react';
+
+// Navigation labels for dropdown (max 3 words each)
+const slideNavigationLabels = [
+  'Croft Common',
+  'Neighbourhood Energy',
+  'Tenant Opportunity',
+  'Trading Made Easy',
+  'Promotion & Positioning',
+  'Welcome Croft Common',
+  'Stokes Croft Energy',
+  'Venue Spaces',
+  'Café & Bar',
+  'Morning to Night',
+  'Street Terrace',
+  'Coffee Preparation',
+  'Industrial Loft',
+  'The Kitchens',
+  'Independent Kitchens',
+  'Slide 16',
+  'Slide 17',
+  'Slide 18',
+  'Slide 19',
+  'Slide 20',
+  'Slide 21',
+  'Slide 22',
+  'Slide 23',
+  'Slide 24',
+  'Slide 25',
+  'Slide 26',
+  'Slide 27',
+  'Slide 28',
+  'Slide 29',
+  'Slide 30',
+  'Slide 31',
+  'Slide 32',
+  'Slide 33',
+  'Slide 34',
+  'Slide 35',
+  'Slide 36',
+  'Slide 37',
+  'Slide 38',
+  'Slide 39',
+  'Final Slide'
+];
 
 // Slide configurations for 40 slides
 const slideConfigs = [
@@ -108,6 +154,7 @@ const sampleGalleryItems = [
 ];
 
 const SecretKitchens = () => {
+  const [currentSlide, setCurrentSlide] = React.useState(0);
   const renderSlide = (config: any, index: number) => {
     const slideNumber = index + 1;
     const totalSlides = slideConfigs.length;
@@ -234,12 +281,55 @@ const SecretKitchens = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Carousel className="w-full h-screen">
+    <div className="min-h-screen bg-background relative">
+      {/* Navigation Dropdown - Top Right */}
+      <div className="absolute top-4 right-4 z-50">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-black/80 text-white border-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))] hover:text-black shadow-brutal"
+            >
+              <Menu className="h-4 w-4 mr-2" />
+              Navigate
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-[hsl(var(--accent-pink))] shadow-brutal max-h-80 overflow-y-auto" align="end">
+            {slideNavigationLabels.map((label, index) => (
+              <DropdownMenuItem 
+                key={index}
+                className="cursor-pointer hover:bg-[hsl(var(--accent-pink))]/20 text-sm"
+                onClick={() => setCurrentSlide(index)}
+              >
+                <span className="text-[hsl(var(--accent-pink))] font-mono text-xs mr-2">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                {label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <Carousel className="w-full h-screen" setApi={(api) => {
+        if (api) {
+          api.on("select", () => {
+            setCurrentSlide(api.selectedScrollSnap());
+          });
+          api.scrollTo(currentSlide);
+        }
+      }}>
         <CarouselContent>
           {slideConfigs.map((config, index) => (
-            <CarouselItem key={index}>
+            <CarouselItem key={index} className="relative">
               {renderSlide(config, index)}
+              {/* Discrete Slide Number - Bottom Right */}
+              <div className="absolute bottom-4 right-4 z-10">
+                <div className="bg-black/40 backdrop-blur-sm text-white text-xs font-mono px-2 py-1 rounded border border-white/20">
+                  {String(index + 1).padStart(2, '0')}/{String(slideConfigs.length).padStart(2, '0')}
+                </div>
+              </div>
             </CarouselItem>
           ))}
         </CarouselContent>
