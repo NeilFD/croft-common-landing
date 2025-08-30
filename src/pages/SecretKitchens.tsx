@@ -13,6 +13,7 @@ import { HalfScreenSlide } from '@/components/slides/HalfScreenSlide';
 import { SplitLayoutSlide } from '@/components/slides/SplitLayoutSlide';
 import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
 import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
+import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu } from 'lucide-react';
 
 // Navigation labels for dropdown (max 3 words each)
@@ -120,10 +121,10 @@ const slideConfigs = [
     backgroundImage: '/lovable-uploads/a63430da-48b9-4104-b246-fdc7df85f6e6.png' 
   },
   { 
-    type: 'SPLIT', 
+    type: 'TAPROOM', 
     title: 'CASUAL DRINKING BOLD FLAVOURS', 
     leftContent: "Croft Common's aspires to be the heart and soul of our local community with a Taproom serving flavour, variety and provenance.\n\nThe craft beer movement has turned casual drinking into a curated experience. Drinkers aren't loyal to brands anymore, they're loyal to discovery. They want new. They want local. They want beer with character.\n\nCraft beer offers more—more hops, more depth, more everything. One day it's a hazy IPA, the next a crisp pilsner or a bold stout. And behind every beer is a small brewery doing something different.\n\nThat's where we come in.\n\nOur Taproom is designed to be both a social anchor, and a showcase for Bristol's independent beer. The best taprooms aren't about scale; they're about personality. Here, brewers themselves pour the pints, sharing their stories and bringing drinkers closer to the beer. And because great beer deserves great food, you can always grab a burger or snack from the Woodfire & Kitchen to enjoy with your pint.\n\nThe Taproom will be open from 5 pm until 11 pm on Monday to Wednesday. On Thursday it opens at 5 pm and closes at 12am. On Friday it will open at 3pm, closing at 1 am. On Saturdays the Taproom will open from 12 pm until 1 am, with a similar opening time on Sunday, but closing at 11 pm.\n\nThe Taproom space will cater for approx. 80 covers with the ability to spill-out into The Courtyard which can accommodate 30 covers or Onto the rooftop terraces which can accommodate a further 80 covers.",
-    rightImage: '/lovable-uploads/658adc23-14c0-49cd-ba6c-a0394c72de7d.png'
+    rightImage: '/lovable-uploads/a761e5ee-8330-49d9-b5fd-7bbe2ec77ef7.png'
   },
   { type: 'HERO', title: 'SLIDE 19', subtitle: 'Fourth Hero Layout' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 20', subtitle: 'Left Layout Final', backgroundColor: 'muted' },
@@ -256,6 +257,15 @@ const SecretKitchens = () => {
             rightTitle={config.rightTitle}
             leftContent={config.leftContent}
             rightContent={config.rightContent}
+            rightImage={config.rightImage}
+          />
+        );
+      
+      case 'TAPROOM':
+        return (
+          <TaproomSlide
+            title={config.title}
+            leftContent={config.leftContent}
             rightImage={config.rightImage}
           />
         );
