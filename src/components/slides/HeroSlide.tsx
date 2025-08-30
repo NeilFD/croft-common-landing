@@ -16,7 +16,7 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
   subtitle,
   backgroundImage,
   logoPosition = 'bottom-right',
-  noOverlay = false
+  noOverlay = true
 }) => {
   return (
     <section className="relative h-screen flex overflow-hidden">
