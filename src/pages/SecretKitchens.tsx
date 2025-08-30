@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { HeroSlide } from '@/components/slides/HeroSlide';
 import { LeftAlignedSlide } from '@/components/slides/LeftAlignedSlide';
 import { RightAlignedSlide } from '@/components/slides/RightAlignedSlide';
@@ -15,9 +21,8 @@ import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
 import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { SplitLayoutWithTitleSlide } from '@/components/slides/SplitLayoutWithTitleSlide';
-
 import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
-import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu } from 'lucide-react';
+import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut } from 'lucide-react';
 
 // Navigation labels for dropdown (max 3 words each)
 const slideNavigationLabels = [
@@ -55,7 +60,7 @@ const slideNavigationLabels = [
   'Croft Common Exterior'
 ];
 
-// Slide configurations for 40 slides
+// Slide configurations for all slides
 const slideConfigs = [
   { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
   { type: 'CENTERED', title: 'Rooted in the neighbourhood. Alive with city energy.', subtitle: 'This is Croft Common — where Bristol meets, eats, and stays a little longer than planned...', backgroundColor: 'accent' },
@@ -184,59 +189,180 @@ const sampleGalleryItems = [
 ];
 
 const SecretKitchens = () => {
+  const { user, loading: authLoading } = useAuth();
+  const { toast } = useToast();
+  const [email, setEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [carouselApi, setCarouselApi] = useState<any>(null);
+  const [api, setApi] = useState<any>(null);
 
-  // Add keyboard navigation
+  // Check if user's email is in secret_kitchen_access table
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
   useEffect(() => {
+    if (user?.email) {
+      checkEmailAccess(user.email);
+    }
+  }, [user]);
+
+  const checkEmailAccess = async (email: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('secret_kitchen_access')
+        .select('email')
+        .eq('email', email.toLowerCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking email access:', error);
+        return;
+      }
+
+      setIsAuthorized(!!data);
+    } catch (error) {
+      console.error('Error checking email access:', error);
+    }
+  };
+
+  const validateEmailAccess = async (email: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('secret_kitchen_access')
+        .select('email')
+        .eq('email', email.toLowerCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return !!data;
+    } catch (error) {
+      console.error('Error validating email access:', error);
+      return false;
+    }
+  };
+
+  const sendOtpCode = async () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // First validate the email is in our access list
+      const hasAccess = await validateEmailAccess(email);
+      if (!hasAccess) {
+        toast({
+          title: "Access Denied",
+          description: "This email is not authorized to access Secret Kitchens.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: false
+        }
+      });
+
+      if (error) throw error;
+
+      setOtpSent(true);
+      toast({
+        title: "OTP Code Sent",
+        description: "Check your email for a 6-digit verification code."
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send OTP code. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtpCode = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid 6-digit code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Authentication Successful",
+        description: "Welcome to Secret Kitchens."
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Invalid or expired code. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+    setEmail('');
+    setOtpCode('');
+    setOtpSent(false);
+    setIsAuthorized(false);
+    toast({
+      title: "Signed Out",
+      description: "You have been successfully signed out."
+    });
+  };
+
+  useEffect(() => {
+    if (!api) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!carouselApi) return;
-      
       if (event.key === 'ArrowLeft') {
-        event.preventDefault();
-        carouselApi.scrollPrev();
+        api.scrollPrev();
       } else if (event.key === 'ArrowRight') {
-        event.preventDefault();
-        carouselApi.scrollNext();
+        api.scrollNext();
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [carouselApi]);
-  const renderSlide = (config: any, index: number) => {
-    const slideNumber = index + 1;
-    const totalSlides = slideConfigs.length;
-    
+  }, [api]);
+
+  const renderSlide = (config: any) => {
     switch (config.type) {
       case 'HERO':
         return (
           <HeroSlide
             title={config.title}
-            subtitle={slideNumber === 1 || slideNumber === 6 ? config.subtitle : `${config.subtitle} (${slideNumber}/${totalSlides})`}
+            subtitle={config.subtitle}
             backgroundImage={config.backgroundImage}
-            logoPosition={index % 2 === 0 ? 'bottom-right' : 'top-left'}
             noOverlay={config.noOverlay}
-          />
-        );
-      
-      case 'LEFT_ALIGNED':
-        return (
-          <LeftAlignedSlide
-            title={config.title}
-            subtitle={`${config.subtitle} (${slideNumber}/${totalSlides})`}
-            content="This is placeholder content that will be replaced with your actual copy. The layout demonstrates left-aligned content with space for imagery on the right side."
-            backgroundColor={config.backgroundColor}
-          />
-        );
-      
-      case 'RIGHT_ALIGNED':
-        return (
-          <RightAlignedSlide
-            title={config.title}
-            subtitle={`${config.subtitle} (${slideNumber}/${totalSlides})`}
-            content="This is placeholder content that will be replaced with your actual copy. The layout demonstrates right-aligned content with space for imagery on the left side."
-            backgroundColor={config.backgroundColor}
           />
         );
       
@@ -244,8 +370,7 @@ const SecretKitchens = () => {
         return (
           <CenteredSlide
             title={config.title}
-            subtitle={slideNumber === 2 ? config.subtitle : (slideNumber === 3 ? undefined : `${config.subtitle} (${slideNumber}/${totalSlides})`)}
-            content={slideNumber === 2 ? '' : (slideNumber === 3 ? undefined : "This is placeholder content for a centered layout. This format works well for quotes, key messages, or important announcements that need maximum visual impact.")}
+            subtitle={config.subtitle}
             leftContent={config.leftContent}
             rightContent={config.rightContent}
             backgroundColor={config.backgroundColor}
@@ -256,7 +381,7 @@ const SecretKitchens = () => {
         return (
           <ThreeColumnSlide
             title={config.title}
-            subtitle={`${config.subtitle} (${slideNumber}/${totalSlides})`}
+            subtitle={config.subtitle}
             columns={sampleColumns}
             backgroundColor={config.backgroundColor}
           />
@@ -266,7 +391,7 @@ const SecretKitchens = () => {
         return (
           <GallerySlide
             title={config.title}
-            subtitle={`${config.subtitle} (${slideNumber}/${totalSlides})`}
+            subtitle={config.subtitle}
             items={sampleGalleryItems.slice(0, config.columns || 3)}
             backgroundColor={config.backgroundColor}
             columns={config.columns || 3}
@@ -274,16 +399,6 @@ const SecretKitchens = () => {
         );
       
       case 'SPLIT_LAYOUT':
-        return (
-          <SplitLayoutSlide
-            title={config.title}
-            rightTitle={config.rightTitle}
-            leftContent={config.leftContent}
-            rightContent={config.rightContent}
-            rightImage={config.rightImage}
-          />
-        );
-      
       case 'SPLIT':
         return (
           <SplitLayoutSlide
@@ -369,66 +484,160 @@ const SecretKitchens = () => {
     }
   };
 
+  // Show loading state
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show authentication form if user is not authenticated or not authorized
+  if (!user || !isAuthorized) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl font-bold">Secret Kitchens</CardTitle>
+              <CardDescription>
+                Enter your authorized email to access the presentation
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@company.com"
+                  disabled={otpSent}
+                />
+              </div>
+              
+              {!otpSent ? (
+                <Button 
+                  onClick={sendOtpCode} 
+                  disabled={loading || !email}
+                  className="w-full"
+                >
+                  {loading ? 'Sending...' : 'Send OTP Code'}
+                </Button>
+              ) : (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="otp">6-Digit Verification Code</Label>
+                    <Input
+                      id="otp"
+                      type="text"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="000000"
+                      maxLength={6}
+                      className="text-center text-lg tracking-widest"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Button 
+                      onClick={verifyOtpCode} 
+                      disabled={loading || !otpCode || otpCode.length !== 6}
+                      className="w-full"
+                    >
+                      {loading ? 'Verifying...' : 'Verify Code'}
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setOtpSent(false);
+                        setOtpCode('');
+                      }} 
+                      variant="outline"
+                      className="w-full"
+                    >
+                      Back to Email
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show slide presentation for authenticated and authorized users
   return (
-    <div className="min-h-screen bg-background relative">
-      {/* Navigation Dropdown - Top Right */}
-      <div className="absolute top-4 right-4 z-50">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="bg-black/80 text-white border-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))] hover:text-black shadow-brutal"
-            >
-              <Menu className="h-4 w-4 mr-2" />
-              Navigate
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-white/95 backdrop-blur-sm border-[hsl(var(--accent-pink))] shadow-brutal max-h-80 overflow-y-auto" align="end">
-            {slideNavigationLabels.map((label, index) => (
-              <DropdownMenuItem 
-                key={index}
-                className="cursor-pointer hover:bg-[hsl(var(--accent-pink))]/20 text-sm"
-                onClick={() => setCurrentSlide(index)}
-              >
-                <span className="text-[hsl(var(--accent-pink))] font-mono text-xs mr-2">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                {label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <div className="min-h-screen bg-background">
+      {/* Logout button */}
+      <div className="absolute top-4 right-20 z-20">
+        <Button 
+          onClick={logout}
+          variant="outline" 
+          size="sm" 
+          className="bg-white/90 hover:bg-white"
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          Logout
+        </Button>
       </div>
 
-      <Carousel 
-        className="w-full h-screen" 
-        setApi={(api) => {
-          setCarouselApi(api);
-          if (api) {
-            api.on("select", () => {
-              setCurrentSlide(api.selectedScrollSnap());
-            });
-            api.scrollTo(currentSlide);
-          }
+      <Carousel
+        setApi={setApi}
+        className="w-full h-screen"
+        opts={{
+          align: "start",
+          loop: true,
         }}
       >
-        <CarouselContent>
+        <CarouselContent className="h-screen">
           {slideConfigs.map((config, index) => (
-            <CarouselItem key={index} className="relative">
-              {renderSlide(config, index)}
-              {/* Discrete Slide Number - Bottom Right */}
-              <div className="absolute bottom-4 right-4 z-10">
-                <div className="bg-black/40 backdrop-blur-sm text-white text-xs font-mono px-2 py-1 rounded border border-white/20">
-                  {String(index + 1).padStart(2, '0')}/{String(slideConfigs.length).padStart(2, '0')}
-                </div>
-              </div>
+            <CarouselItem key={index} className="h-screen">
+              {renderSlide(config)}
             </CarouselItem>
           ))}
         </CarouselContent>
         
-        <CarouselPrevious className="left-4 bg-black/20 border border-white/10 text-white/60 hover:bg-black/40 hover:text-white/80 w-8 h-8 transition-opacity duration-300 hover:opacity-100 opacity-40" />
-        <CarouselNext className="right-4 bg-black/20 border border-white/10 text-white/60 hover:bg-black/40 hover:text-white/80 w-8 h-8 transition-opacity duration-300 hover:opacity-100 opacity-40" />
+        {/* Navigation dropdown */}
+        <div className="absolute top-4 left-4 z-20">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
+                <Menu className="h-4 w-4 mr-2" />
+                Navigate ({currentSlide + 1}/{slideConfigs.length})
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto">
+              {slideNavigationLabels.map((label, index) => (
+                <DropdownMenuItem
+                  key={index}
+                  onClick={() => {
+                    api?.scrollTo(index);
+                    setCurrentSlide(index);
+                  }}
+                  className={currentSlide === index ? "bg-accent" : ""}
+                >
+                  {index + 1}. {label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        {/* Slide counter */}
+        <div className="absolute bottom-4 right-4 z-20">
+          <div className="bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+            {currentSlide + 1} / {slideConfigs.length}
+          </div>
+        </div>
+
+        <CarouselPrevious className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20" />
+        <CarouselNext className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20" />
       </Carousel>
     </div>
   );
