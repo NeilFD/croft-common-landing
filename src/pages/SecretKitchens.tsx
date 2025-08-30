@@ -15,7 +15,7 @@ import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
 import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { SplitLayoutWithTitleSlide } from '@/components/slides/SplitLayoutWithTitleSlide';
-import { ScrollableSplitLayoutSlide } from '@/components/slides/ScrollableSplitLayoutSlide';
+
 import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu } from 'lucide-react';
 
@@ -127,7 +127,7 @@ const slideConfigs = [
     rightImage: '/lovable-uploads/606af3e3-0044-4849-99c6-926e2dffa563.png'
   },
   { 
-    type: 'SPLIT_LAYOUT_WITH_TITLE', 
+    type: 'SPLIT_LAYOUT', 
     title: 'THE COURTYARD',
     leftContent: "The Courtyard is the central space at Croft Common, the entry point and the place everything connects. From here, you can head to The Taproom on the left, or to The Café & Cocktail Bar and The Kitchens on the right.\n\nIt's a space to meet, drift through, or settle into, not tied to any one part of the venue. You can sit anywhere, no matter where you've ordered from. That mix of movement and ease is what makes it work.\n\nThe feel is open and relaxed, with plenty of natural light and greenery. Inspired by the kind of informal courtyards where people naturally gather, it gives you that outside feel, even when you're under cover. In Stokes Croft, where street-side drinks and casual hangouts are part of daily life, the Courtyard fits right in.\n\nBright and sociable during the day, warm and low-lit at night, it's a place to pass through, or stay a while.\n\nThe Courtyard will be open from 7am to 11pm Sunday to Wednesday, until midnight on Thursdays, and right through to 1am on Fridays and Saturdays. The space can accommodate for approx. 60 covers, being over spill from the Taproom or Café.",
     rightImage: "/lovable-uploads/619f6472-f3d5-47cf-a311-b7de1c629b92.png"
@@ -302,16 +302,6 @@ const SecretKitchens = () => {
         );
       
       case 'SPLIT_LAYOUT_WITH_TITLE':
-        // Use scrollable component for slide 20 (index 19)
-        if (index === 19) {
-          return (
-            <ScrollableSplitLayoutSlide
-              title={config.title}
-              leftContent={config.leftContent}
-              rightImage={config.rightImage}
-            />
-          );
-        }
         return (
           <SplitLayoutWithTitleSlide
             title={config.title}
