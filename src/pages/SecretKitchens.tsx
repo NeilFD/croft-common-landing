@@ -252,12 +252,10 @@ const SecretKitchens = () => {
         return;
       }
 
-      // Use Supabase's native OTP system
+      // Use Supabase's native OTP system (6-digit code)
       const { error } = await supabase.auth.signInWithOtp({
-        email: email.toLowerCase(),
-        options: {
-          emailRedirectTo: `${window.location.origin}/secretkitchens`
-        }
+        email: email.toLowerCase()
+        // No emailRedirectTo option - this ensures 6-digit code is sent instead of magic link
       });
 
       if (error) {
