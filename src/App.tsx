@@ -42,6 +42,7 @@ const CMS = lazy(() => import("./pages/CMS"));
 const CMSLogin = lazy(() => import("./pages/CMSLogin"));
 const CMSVisual = lazy(() => import("./pages/CMSVisual"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const SecretKitchens = lazy(() => import("./pages/SecretKitchens"));
 
 // Optimized imports that load immediately
 import RouteImagePreloader from '@/components/RouteImagePreloader';
@@ -75,8 +76,9 @@ const LowercasePathGuard = () => {
      "cafe",
      "cocktails",
      "beer",
-     "kitchens",
-     "hall",
+      "kitchens",
+      "secretkitchens",
+      "hall",
      "community",
      "common-room",
      "calendar",
@@ -138,6 +140,7 @@ const App = () => (
                     <Route path="/cocktails" element={<Cocktails />} />
                     <Route path="/beer" element={<Beer />} />
                     <Route path="/kitchens" element={<Kitchens />} />
+                    <Route path="/secretkitchens" element={<SecretKitchens />} />
                     <Route path="/hall" element={<Hall />} />
                     <Route path="/community" element={<Community />} />
                     <Route path="/common-room" element={<CommonRoom />} />
