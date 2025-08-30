@@ -60,14 +60,28 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
         {isTwoColumn && (
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 mt-8">
             <div className="space-y-4">
-              <p className={`text-lg font-industrial leading-relaxed ${contentColor}`}>
-                {leftContent}
-              </p>
+              <div className={`text-lg font-industrial leading-relaxed ${contentColor}`}>
+                {leftContent?.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < leftContent.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
             <div className="space-y-4">
-              <p className={`text-lg font-industrial leading-relaxed ${contentColor}`}>
-                {rightContent}
-              </p>
+              <div className={`text-lg font-industrial leading-relaxed ${contentColor}`}>
+                {rightContent?.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line.includes('Neil Fincham-Dukes') || line.includes('Founding Partner') || line.includes('neil@cityandsanctuary.com') ? (
+                      <span className="font-bold text-xl">{line}</span>
+                    ) : (
+                      line
+                    )}
+                    {index < rightContent.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
           </div>
         )}
