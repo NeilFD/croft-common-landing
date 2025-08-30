@@ -89,7 +89,7 @@ serve(async (req) => {
     const siteBase = Deno.env.get('SITE_BASE_URL') || requestOrigin;
 
     const emailRes = await resend.emails.send({
-      from: "Croft Common <hello@thehive-hospitality.com>",
+      from: "Croft Common <admin@thehive-hospitality.com>",
       to: [normEmail],
       subject: "Secret Kitchen Access Code",
       html: `

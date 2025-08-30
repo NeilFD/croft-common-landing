@@ -20,8 +20,13 @@ serve(async (req) => {
   );
 
   try {
+    console.log('🔍 Starting OTP verification process');
+    
     const { email, code } = await req.json();
+    console.log('📧 Request data:', { email, code: code ? '******' : null });
+    
     if (!email || !code) {
+      console.log('❌ Missing email or code');
       return new Response(JSON.stringify({ error: 'Email and code are required' }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -29,7 +34,10 @@ serve(async (req) => {
     }
 
     const normEmail = String(email).trim().toLowerCase();
+    console.log('📧 Normalized email:', normEmail);
+    
     if (!isValidEmail(normEmail)) {
+      console.log('❌ Invalid email format');
       return new Response(JSON.stringify({ error: 'Invalid email format' }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -37,6 +45,7 @@ serve(async (req) => {
     }
 
     // Verify OTP code
+    console.log('🔐 Checking OTP code in database');
     const { data: otpData, error: otpError } = await supabase
       .from('otp_codes')
       .select('*')
@@ -46,21 +55,32 @@ serve(async (req) => {
       .maybeSingle();
 
     if (otpError) {
-      console.error('OTP verification error:', otpError);
+      console.error('❌ OTP verification error:', otpError);
       throw otpError;
     }
 
     if (!otpData) {
+      console.log('❌ Invalid or expired OTP code');
       return new Response(JSON.stringify({ error: 'Invalid or expired code' }), { 
         status: 400, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       });
     }
 
+    console.log('✅ OTP verified successfully');
+
     // Check if user already exists
+    console.log('👤 Checking if user exists');
     const { data: existingUser, error: userCheckError } = await supabase.auth.admin.listUsers({
       filter: `email.eq.${normEmail}`
     });
+    
+    if (userCheckError) {
+      console.error('❌ User check error:', userCheckError);
+      throw userCheckError;
+    }
+    
+    console.log('👤 User check result:', { userCount: existingUser?.users?.length || 0 });
     
     let userId: string;
     let accessToken: string;
@@ -68,46 +88,62 @@ serve(async (req) => {
     if (existingUser?.users && existingUser.users.length > 0) {
       // User exists, generate session
       userId = existingUser.users[0].id;
+      console.log('👤 Existing user found, creating session for:', userId);
       
       // Create a session for existing user
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-        user_id: userId
-      });
+      try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+          user_id: userId
+        });
 
-      if (sessionError) {
-        console.error('Session creation error:', sessionError);
-        throw sessionError;
+        if (sessionError) {
+          console.error('❌ Session creation error for existing user:', sessionError);
+          throw sessionError;
+        }
+
+        console.log('✅ Session created successfully for existing user');
+        accessToken = sessionData.session.access_token;
+      } catch (sessionErr) {
+        console.error('❌ Failed to create session for existing user:', sessionErr);
+        throw sessionErr;
       }
-
-      accessToken = sessionData.session.access_token;
     } else {
       // Create new user
-      const { data: newUserData, error: createError } = await supabase.auth.admin.createUser({
-        email: normEmail,
-        email_confirm: true,
-        user_metadata: {
-          secret_kitchen_access: true
+      console.log('👤 Creating new user');
+      try {
+        const { data: newUserData, error: createError } = await supabase.auth.admin.createUser({
+          email: normEmail,
+          email_confirm: true,
+          user_metadata: {
+            secret_kitchen_access: true
+          }
+        });
+
+        if (createError) {
+          console.error('❌ User creation error:', createError);
+          throw createError;
         }
-      });
 
-      if (createError) {
-        console.error('User creation error:', createError);
-        throw createError;
+        console.log('✅ New user created successfully:', newUserData.user.id);
+        userId = newUserData.user.id;
+
+        // Create session for new user
+        console.log('🔐 Creating session for new user');
+        const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
+          user_id: userId
+        });
+
+        if (sessionError) {
+          console.error('❌ Session creation error for new user:', sessionError);
+          throw sessionError;
+        }
+
+        console.log('✅ Session created successfully for new user');
+        accessToken = sessionData.session.access_token;
+      } catch (newUserErr) {
+        console.error('❌ Failed to create new user or session:', newUserErr);
+        throw newUserErr;
       }
-
-      userId = newUserData.user.id;
-
-      // Create session for new user
-      const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-        user_id: userId
-      });
-
-      if (sessionError) {
-        console.error('Session creation error:', sessionError);
-        throw sessionError;
-      }
-
-      accessToken = sessionData.session.access_token;
     }
 
     // Mark OTP as consumed by deleting it
