@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Volume2, VolumeX } from 'lucide-react';
 
@@ -10,31 +10,43 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
   isPlaying 
 }) => {
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
   
-  // Restaurant ambience Spotify track
-  const trackId = "1S19QdPqpeQ3SMIGNaQiRA";
-  const embedUrl = `https://open.spotify.com/embed/track/${trackId}?utm_source=generator&theme=0&autoplay=1&loop=1`;
+  // Archive.org hosted pub ambient audio
+  const audioUrl = "https://archive.org/download/es-london-pub-crowded-no-music-epidemic-sound/ES_London%2C%20Pub%2C%20Crowded%2C%20No%20Music%20-%20Epidemic%20Sound.mp3";
 
   const toggleAmbient = () => {
-    setIsAmbientPlaying(!isAmbientPlaying);
+    const newState = !isAmbientPlaying;
+    setIsAmbientPlaying(newState);
+    
+    if (audioRef.current) {
+      if (newState && isPlaying) {
+        audioRef.current.play().catch(console.error);
+      } else {
+        audioRef.current.pause();
+      }
+    }
   };
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isAmbientPlaying && isPlaying) {
+        audioRef.current.play().catch(console.error);
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, isAmbientPlaying]);
 
   return (
     <div className="flex flex-col items-center space-y-3">
-      {isPlaying && isAmbientPlaying && (
-        <div className="w-80 h-20 bg-black rounded-lg overflow-hidden border border-white/20">
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            allowFullScreen
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            className="rounded-lg"
-          />
-        </div>
-      )}
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        loop
+        preload="auto"
+        className="hidden"
+      />
       
       <Button
         onClick={toggleAmbient}
