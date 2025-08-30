@@ -6,6 +6,7 @@ import { RightAlignedSlide } from '@/components/slides/RightAlignedSlide';
 import { CenteredSlide } from '@/components/slides/CenteredSlide';
 import { ThreeColumnSlide } from '@/components/slides/ThreeColumnSlide';
 import { GallerySlide } from '@/components/slides/GallerySlide';
+import { SplitLayoutSlide } from '@/components/slides/SplitLayoutSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } from 'lucide-react';
 
 // Slide configurations for 40 slides
@@ -27,7 +28,13 @@ const slideConfigs = [
     leftContent: "Each operator will be granted a fully fitted kitchen space within the food hall, complete with kitchen equipment, extraction, cold storage and prep facilities. The precise kitchen specifications will be shared upon request, along with plans and full technical documentation. We are covering the cost of the fit-out in full. Operators will be charged a simple turnover rent, set at 20 percent of net sales. There is no base rent. A service charge will also apply, with the amount currently being finalised based on projected operations costs.",
     rightContent: "The Kitchens will be open seven days a week, with trading expected from midday until close each evening. Last orders will typically be around 10pm on weekdays and 11pm on weekends. All vendors will be expected to trade throughout these hours unless a different arrangement is agreed in advance. Croft Common will provide all front of house staff, table runners and bar staff. This means vendors can focus entirely on delivering exceptional food with their own kitchen teams. Orders will be taken via Square POS, with a combination of table service and table ordering using QR codes or NFC tags. We are designing the system to feel seamless and intuitive for customers."
   },
-  { type: 'THREE_COLUMN', title: 'SLIDE 5', subtitle: 'Three Column Layout' },
+  { 
+    type: 'SPLIT_LAYOUT', 
+    title: 'PROMOTION & POSITIONING', 
+    rightTitle: 'Next steps',
+    leftContent: "Marketing and PR for the venue as a whole will be led by the Team at Croft Common. This includes the initial launch campaign, press outreach, brand partnerships and social media. We will also support each vendor's individual story and aim to foster an atmosphere of collaboration between all parties. Our curatorial approach blends high standards with community roots. We want to bring together a collection of food concepts that are both original and accessible, that reflect the vibrancy of the area while elevating the overall customer experience.",
+    rightContent: "If you would like to be considered for one of the three kitchen spaces, we would love to hear from you. We are offering private tours, design walk-throughs and commercial meetings across the coming months. We are also happy to share our projected financials and detailed layout plans. To arrange a time to speak or visit the site, please contact: Neil Fincham-Dukes, Founding Partner, Croft Common and City & Sanctuary, neil@cityandsanctuary.com. We look forward to welcoming the first wave of partners to Croft Common and creating something extraordinary together."
+  },
   { type: 'GALLERY', title: 'SLIDE 6', subtitle: 'Gallery Layout' },
   { type: 'HERO', title: 'SLIDE 7', subtitle: 'Second Hero Layout' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 8', subtitle: 'Left Layout Variant', backgroundColor: 'muted' },
@@ -151,6 +158,16 @@ const SecretKitchens = () => {
             items={sampleGalleryItems.slice(0, config.columns || 3)}
             backgroundColor={config.backgroundColor}
             columns={config.columns || 3}
+          />
+        );
+      
+      case 'SPLIT_LAYOUT':
+        return (
+          <SplitLayoutSlide
+            title={config.title}
+            rightTitle={config.rightTitle}
+            leftContent={config.leftContent}
+            rightContent={config.rightContent}
           />
         );
       
