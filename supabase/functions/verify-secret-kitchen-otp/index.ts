@@ -86,62 +86,55 @@ serve(async (req) => {
     let accessToken: string;
 
     if (existingUser?.users && existingUser.users.length > 0) {
-      // User exists, generate session
+      // User exists, generate magic link for sign in
       userId = existingUser.users[0].id;
-      console.log('👤 Existing user found, creating session for:', userId);
+      console.log('👤 Existing user found, generating magic link for:', userId);
       
-      // Create a session for existing user
       try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-          user_id: userId
-        });
-
-        if (sessionError) {
-          console.error('❌ Session creation error for existing user:', sessionError);
-          throw sessionError;
-        }
-
-        console.log('✅ Session created successfully for existing user');
-        accessToken = sessionData.session.access_token;
-      } catch (sessionErr) {
-        console.error('❌ Failed to create session for existing user:', sessionErr);
-        throw sessionErr;
-      }
-    } else {
-      // Create new user
-      console.log('👤 Creating new user');
-      try {
-        const { data: newUserData, error: createError } = await supabase.auth.admin.createUser({
+        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+          type: 'magiclink',
           email: normEmail,
-          email_confirm: true,
-          user_metadata: {
-            secret_kitchen_access: true
+          options: {
+            redirectTo: `${Deno.env.get('SUPABASE_URL')?.replace('https://', 'https://') || 'http://localhost:54321'}/auth/v1/verify?redirect_to=${encodeURIComponent(window?.location?.origin || 'http://localhost:8080')}/secretkitchens`
           }
         });
 
-        if (createError) {
-          console.error('❌ User creation error:', createError);
-          throw createError;
+        if (linkError) {
+          console.error('❌ Magic link generation error:', linkError);
+          throw linkError;
         }
 
-        console.log('✅ New user created successfully:', newUserData.user.id);
-        userId = newUserData.user.id;
-
-        // Create session for new user
-        console.log('🔐 Creating session for new user');
-        const { data: sessionData, error: sessionError } = await supabase.auth.admin.createSession({
-          user_id: userId
+        console.log('✅ Magic link generated successfully');
+        accessToken = linkData.properties.access_token;
+      } catch (linkErr) {
+        console.error('❌ Failed to generate magic link:', linkErr);
+        throw linkErr;
+      }
+    } else {
+      // Create new user with magic link
+      console.log('👤 Creating new user with magic link');
+      try {
+        const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+          type: 'signup',
+          email: normEmail,
+          options: {
+            data: {
+              secret_kitchen_access: true
+            },
+            redirectTo: `${Deno.env.get('SUPABASE_URL')?.replace('https://', 'https://') || 'http://localhost:54321'}/auth/v1/verify?redirect_to=${encodeURIComponent(window?.location?.origin || 'http://localhost:8080')}/secretkitchens`
+          }
         });
 
-        if (sessionError) {
-          console.error('❌ Session creation error for new user:', sessionError);
-          throw sessionError;
+        if (linkError) {
+          console.error('❌ User creation with magic link error:', linkError);
+          throw linkError;
         }
 
-        console.log('✅ Session created successfully for new user');
-        accessToken = sessionData.session.access_token;
+        console.log('✅ New user created with magic link successfully');
+        userId = linkData.user.id;
+        accessToken = linkData.properties.access_token;
       } catch (newUserErr) {
-        console.error('❌ Failed to create new user or session:', newUserErr);
+        console.error('❌ Failed to create new user with magic link:', newUserErr);
         throw newUserErr;
       }
     }
