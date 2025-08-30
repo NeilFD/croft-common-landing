@@ -219,28 +219,12 @@ const SecretKitchens = () => {
 
       if (error) {
         console.error('Error checking email access:', error);
-        return;
+        return false;
       }
 
-      setIsAuthorized(!!data);
-    } catch (error) {
-      console.error('Error checking email access:', error);
-    }
-  };
-
-  const validateEmailAccess = async (email: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('secret_kitchen_access')
-        .select('email')
-        .eq('email', email.toLowerCase())
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (error) throw error;
       return !!data;
     } catch (error) {
-      console.error('Error validating email access:', error);
+      console.error('Error checking email access:', error);
       return false;
     }
   };
@@ -257,8 +241,23 @@ const SecretKitchens = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('send-secret-kitchen-otp', {
-        body: { email }
+      // First check if email has access
+      const hasAccess = await checkEmailAccess(email);
+      if (!hasAccess) {
+        toast({
+          title: "Access Denied",
+          description: "This email is not authorized for Secret Kitchen access.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Use Supabase's native OTP system
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.toLowerCase(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/secretkitchens`
+        }
       });
 
       if (error) {
@@ -267,23 +266,6 @@ const SecretKitchens = () => {
           description: error.message || "Failed to send verification code.",
           variant: "destructive"
         });
-        return;
-      }
-
-      if (data?.error) {
-        if (data.error === 'Access denied') {
-          toast({
-            title: "Access Denied",
-            description: "This email is not authorized for Secret Kitchen access.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: data.error,
-            variant: "destructive"
-          });
-        }
         return;
       }
 
@@ -315,79 +297,31 @@ const SecretKitchens = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('verify-secret-kitchen-otp', {
-        body: { email, code: otpCode }
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: email.toLowerCase(),
+        token: otpCode,
+        type: 'email'
       });
 
       if (error) {
         toast({
-          title: "Error",
-          description: error.message || "Verification failed.",
+          title: "Invalid Code",
+          description: "Invalid or expired verification code.",
           variant: "destructive"
         });
         return;
       }
 
-      if (data?.error) {
-        if (data.error === 'Invalid or expired code') {
-          toast({
-            title: "Invalid Code",
-            description: "Invalid or expired verification code.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: data.error,
-            variant: "destructive"
-          });
-        }
-        return;
-      }
-
-      if (data?.success) {
-        // Use Supabase's built-in OTP verification
-        const { error: signInError } = await supabase.auth.verifyOtp({
-          email,
-          token: otpCode,
-          type: 'email'
+      if (data?.user) {
+        setIsAuthorized(true);
+        toast({
+          title: "Authentication Successful",
+          description: "Welcome to Secret Kitchens."
         });
-
-        if (signInError) {
-          // If built-in OTP fails, the user exists and we can sign them in using magic link
-          const { error: magicLinkError } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-              shouldCreateUser: true
-            }
-          });
-
-          if (magicLinkError) {
-            toast({
-              title: "Error", 
-              description: "Authentication failed. Please try again.",
-              variant: "destructive"
-            });
-            return;
-          }
-
-          // For now, just mark as authorized since the OTP was verified by our edge function
-          setIsAuthorized(true);
-          toast({
-            title: "Authentication Successful",
-            description: "Welcome to Secret Kitchens."
-          });
-        } else {
-          setIsAuthorized(true);
-          toast({
-            title: "Authentication Successful",
-            description: "Welcome to Secret Kitchens."
-          });
-        }
       } else {
         toast({
           title: "Error",
-          description: "Unexpected response from server.",
+          description: "Verification failed. Please try again.",
           variant: "destructive"
         });
       }
