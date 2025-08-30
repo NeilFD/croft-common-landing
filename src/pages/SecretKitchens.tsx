@@ -101,7 +101,7 @@ const SecretKitchens = () => {
         return (
           <HeroSlide
             title={config.title}
-            subtitle={slideNumber === 1 ? config.subtitle : `${config.subtitle} (${slideNumber}/${totalSlides})`}
+            subtitle={slideNumber === 1 || slideNumber === 6 ? config.subtitle : `${config.subtitle} (${slideNumber}/${totalSlides})`}
             backgroundImage={config.backgroundImage}
             logoPosition={index % 2 === 0 ? 'bottom-right' : 'top-left'}
             noOverlay={config.noOverlay}
