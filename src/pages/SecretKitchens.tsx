@@ -159,7 +159,7 @@ const slideConfigs = [
     type: 'SPLIT', 
     title: 'THE ROOFTOP', 
     leftContent: 'THE ROOFTOP',
-    rightImage: '/lovable-uploads/f8527cd0-7c8b-4509-8ad1-9596748a7ba4.png'
+    rightImage: '/lovable-uploads/72f85a66-3116-41f8-ae48-d11a3835ff9c.png'
   },
   { type: 'THREE_COLUMN', title: 'SLIDE 29', subtitle: 'Three Column Extra', backgroundColor: 'muted' },
   { type: 'GALLERY', title: 'SLIDE 30', subtitle: 'Gallery Extra' },
