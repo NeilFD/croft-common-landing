@@ -40,7 +40,7 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
           as="h2"
           size="lg"
           contrast={backgroundColor === 'accent' ? 'contrast' : 'neutral'}
-          className={`text-4xl md:text-5xl font-brutalist ${textColor} border-2 p-8 ${isTwoColumn ? 'text-center' : ''}`}
+          className={`text-3xl md:text-4xl font-brutalist ${textColor} border-2 p-6 text-center w-full`}
         >
           {title}
         </FramedBox>
@@ -60,7 +60,7 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
         {isTwoColumn && (
           <div className="grid md:grid-cols-2 gap-8 md:gap-12 mt-8">
             <div className="space-y-4">
-              <div className={`text-lg font-industrial leading-relaxed ${contentColor}`}>
+              <div className={`text-base font-industrial leading-relaxed ${contentColor}`}>
                 {leftContent?.split('\n').map((line, index) => (
                   <React.Fragment key={index}>
                     {line}
@@ -70,11 +70,11 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
               </div>
             </div>
             <div className="space-y-4">
-              <div className={`text-lg font-industrial leading-relaxed ${contentColor}`}>
+              <div className={`text-base font-industrial leading-relaxed ${contentColor}`}>
                 {rightContent?.split('\n').map((line, index) => (
                   <React.Fragment key={index}>
                     {line.includes('Neil Fincham-Dukes') || line.includes('Founding Partner') || line.includes('neil@cityandsanctuary.com') ? (
-                      <span className="font-bold text-xl">{line}</span>
+                      <span className="font-bold text-lg block mb-1">{line}</span>
                     ) : (
                       line
                     )}
