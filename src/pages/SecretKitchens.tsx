@@ -601,8 +601,8 @@ const SecretKitchens = () => {
   // Show slide presentation for authenticated and authorized users
   return (
     <div className="min-h-screen bg-background">
-      {/* Logout button */}
-      <div className="absolute top-4 right-20 z-20">
+      {/* Logout button - moved to top left */}
+      <div className="absolute top-4 left-4 z-20">
         <Button 
           onClick={logout}
           variant="outline" 
@@ -630,8 +630,8 @@ const SecretKitchens = () => {
           ))}
         </CarouselContent>
         
-        {/* Navigation dropdown */}
-        <div className="absolute top-4 left-4 z-20">
+        {/* Navigation dropdown - moved to top right */}
+        <div className="absolute top-4 right-20 z-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
