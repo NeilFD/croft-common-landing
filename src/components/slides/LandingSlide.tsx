@@ -12,10 +12,13 @@ interface LandingSlideProps {
 export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showSpotify, setShowSpotify] = useState(false);
+  const [restaurantAmbienceEnabled, setRestaurantAmbienceEnabled] = useState(false);
 
   const handlePlayMusic = () => {
     setShowSpotify(true);
     setIsPlaying(true);
+    // Auto-enable restaurant ambience for full experience
+    setRestaurantAmbienceEnabled(true);
   };
 
   return (
@@ -45,7 +48,7 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
             className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300"
           >
             <Play className="mr-2 h-5 w-5" />
-            Play Music
+            Set the Scene
           </Button>
         ) : (
           <div className="flex flex-col items-center space-y-4">
@@ -54,7 +57,19 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
               isPlaying={isPlaying}
               onToggle={setIsPlaying}
             />
-            <RestaurantAmbientAudio isPlaying={isPlaying} />
+            <div className="flex flex-col items-center space-y-3">
+              <RestaurantAmbientAudio isPlaying={isPlaying && restaurantAmbienceEnabled} />
+              {!restaurantAmbienceEnabled && (
+                <Button
+                  onClick={() => setRestaurantAmbienceEnabled(true)}
+                  variant="ghost"
+                  size="sm"
+                  className="text-white/60 hover:text-white/80 hover:bg-white/10 text-sm"
+                >
+                  + Add Restaurant Ambience
+                </Button>
+              )}
+            </div>
           </div>
         )}
       </div>

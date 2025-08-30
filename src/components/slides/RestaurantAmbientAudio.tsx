@@ -13,8 +13,8 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
   const [volume, setVolume] = useState(0.3);
 
-  // Restaurant ambience sound effect (using a free sound URL)
-  const ambientSoundUrl = "https://www.soundjay.com/misc/sounds/restaurant_ambience.mp3";
+  // Restaurant ambience sound effect (using a working ambient sound)
+  const ambientSoundUrl = "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav";
 
   useEffect(() => {
     if (audioRef.current) {
