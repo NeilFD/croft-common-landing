@@ -672,6 +672,7 @@ const SecretKitchensContent = () => {
         opts={{
           align: "start",
           loop: true,
+          slidesToScroll: 1,
         }}
       >
         <CarouselContent className="h-screen">
