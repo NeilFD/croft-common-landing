@@ -48,7 +48,7 @@ const slideNavigationLabels = [
   'Hall Terrace',
   'The Rooftop',
   'Rooftop Terrace',
-  'Slide 30',
+  'The Rooftop Bar',
   'Slide 31',
   'Slide 32',
   'Slide 33',
@@ -157,7 +157,12 @@ const slideConfigs = [
   { type: 'HERO', title: 'THE HALL TERRACE', subtitle: '', backgroundImage: '/lovable-uploads/4ea420c5-ba71-4d78-abba-9966d51143f0.png' },
   { type: 'HERO', title: 'THE ROOFTOP', backgroundImage: '/lovable-uploads/91371b23-d165-4e7b-8661-82d2c7508cde.png', noOverlay: true },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/eea25fb0-c01f-4026-91c4-4578a1cfcc7d.png', alt: 'Rooftop terrace with modern pergola and city views' },
-  { type: 'GALLERY', title: 'SLIDE 30', subtitle: 'Gallery Extra' },
+  { 
+    type: 'SPLIT_LAYOUT', 
+    title: 'THE ROOFTOP',
+    leftContent: "The Rooftop is Bristol's only true rooftop bar and events pavilion. Sitting atop the building, it captures the city lights and the vibrant energy of Stokes Croft below.\n\nFilled with greenery, trees and soft lighting, the look and feel of this space evolves with the seasons, creating the right mood for every moment. In summer, it's all about Aperol spritz, crisp beers and cocktails under open skies. In the winter, the terrace transforms into a cosy hideaway with heaters, blankets and sheltered corners, perfect for warming up with mulled wine or hot cocktails as the city lights glow below.\n\nThe Rooftop has the potential to become Bristol favourite roof garden to enjoy long summer evenings and cosy winter nights.\n\nLike The Hall Terrace, the space can be split — part private, part open to the public — offering flexibility for any event.\n\nThe Roof Terrace, along with The Hall can open until 1.30 am. As a standalone venue it can comfortably occupy 120 people standing and lounging.",
+    rightImage: "/lovable-uploads/11fd165f-dc22-41dc-80f5-8c38cc022923.png"
+  },
   { type: 'HERO', title: 'SLIDE 31', subtitle: 'Sixth Hero Layout' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 32', subtitle: 'Left Layout Bonus', backgroundColor: 'muted' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 33', subtitle: 'Right Layout Bonus' },
