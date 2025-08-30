@@ -33,7 +33,7 @@ const slideNavigationLabels = [
   'The Kitchens',
   'Independent Kitchens',
   'Hospitality Experience',
-  'Slide 17',
+  'The Taproom',
   'Slide 18',
   'Slide 19',
   'Slide 20',
@@ -113,7 +113,12 @@ const slideConfigs = [
     leftContent: 'TRULY MEMORABLE HOSPITALITY EXPERIENCES INVARIABLY HAVE AN EXTRAORDINARY PEOPLE EXPERIENCE; NATURAL AND GENEROUS HOSPITALITY IS STILL THE KILLER APP.',
     rightImage: '/lovable-uploads/7afc4c37-6fa4-45c5-97eb-63a174938c51.png'
   },
-  { type: 'THREE_COLUMN', title: 'SLIDE 17', subtitle: 'Three Column Standard' },
+  { 
+    type: 'HERO', 
+    title: 'THE TAPROOM', 
+    subtitle: '', 
+    backgroundImage: '/lovable-uploads/a63430da-48b9-4104-b246-fdc7df85f6e6.png' 
+  },
   { type: 'GALLERY', title: 'SLIDE 18', subtitle: 'Gallery 2 Column', columns: 2 },
   { type: 'HERO', title: 'SLIDE 19', subtitle: 'Fourth Hero Layout' },
   { type: 'LEFT_ALIGNED', title: 'SLIDE 20', subtitle: 'Left Layout Final', backgroundColor: 'muted' },
