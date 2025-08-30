@@ -19,7 +19,14 @@ const slideConfigs = [
     leftContent: "We are pleased to offer a unique opportunity for a small number of exceptional food businesses to take up residence within The Kitchens at Croft Common, launching in February 2026 in the heart of Stokes Croft. Croft Common is a new landmark hospitality venue combining The Kitchens at Croft Common, a Cocktail Bar, Beer Hall, Café, and Event Space, all under one roof across 16,000 square feet.",
     rightContent: "At its core will sit The Kitchens, a four-unit destination for outstanding, independent food, one operated by Croft Common and three reserved for exciting independent vendors. We are seeking operators with a strong local following, a reputation for quality, and a desire to grow their brand without the cost or commitment of taking on their own premises. This is a rare chance to be part of a high-profile launch in a much-loved area, with infrastructure, marketing support and footfall potential already in place."
   },
-  { type: 'CENTERED', title: 'SLIDE 4', subtitle: 'Centered Layout', content: 'Content placeholder for centered slide layout.' },
+  { 
+    type: 'CENTERED', 
+    title: 'TRADING MADE EASY', 
+    subtitle: 'Fully equipped kitchens, simple turnover-based rent, flexible licences and dedicated front-of-house support.',
+    backgroundColor: 'accent',
+    leftContent: "Each operator will be granted a fully fitted kitchen space within the food hall, complete with kitchen equipment, extraction, cold storage and prep facilities. The precise kitchen specifications will be shared upon request, along with plans and full technical documentation. We are covering the cost of the fit-out in full. Operators will be charged a simple turnover rent, set at 20 percent of net sales. There is no base rent. A service charge will also apply, with the amount currently being finalised based on projected operations costs.",
+    rightContent: "The Kitchens will be open seven days a week, with trading expected from midday until close each evening. Last orders will typically be around 10pm on weekdays and 11pm on weekends. All vendors will be expected to trade throughout these hours unless a different arrangement is agreed in advance. Croft Common will provide all front of house staff, table runners and bar staff. This means vendors can focus entirely on delivering exceptional food with their own kitchen teams. Orders will be taken via Square POS, with a combination of table service and table ordering using QR codes or NFC tags. We are designing the system to feel seamless and intuitive for customers."
+  },
   { type: 'THREE_COLUMN', title: 'SLIDE 5', subtitle: 'Three Column Layout' },
   { type: 'GALLERY', title: 'SLIDE 6', subtitle: 'Gallery Layout' },
   { type: 'HERO', title: 'SLIDE 7', subtitle: 'Second Hero Layout' },
