@@ -155,12 +155,7 @@ const slideConfigs = [
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/dc853637-3a6a-4e1d-a921-f4fc1be81134.png', alt: 'Wedding venue setup with industrial brick walls and elegant dining arrangements' },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/630eaa28-f2e7-41c3-b576-0794724b5d34.png', alt: 'Event space with chandeliers and autumn-themed table settings in industrial venue' },
   { type: 'HERO', title: 'THE HALL TERRACE', subtitle: '', backgroundImage: '/lovable-uploads/4ea420c5-ba71-4d78-abba-9966d51143f0.png' },
-  { 
-    type: 'SPLIT', 
-    title: 'THE ROOFTOP', 
-    leftContent: 'THE ROOFTOP',
-    rightImage: '/lovable-uploads/f8527cd0-7c8b-4509-8ad1-9596748a7ba4.png'
-  },
+  { type: 'CENTERED', title: 'SLIDE 28', subtitle: 'Centered Extra' },
   { type: 'THREE_COLUMN', title: 'SLIDE 29', subtitle: 'Three Column Extra', backgroundColor: 'muted' },
   { type: 'GALLERY', title: 'SLIDE 30', subtitle: 'Gallery Extra' },
   { type: 'HERO', title: 'SLIDE 31', subtitle: 'Sixth Hero Layout' },
