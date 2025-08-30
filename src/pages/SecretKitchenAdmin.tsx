@@ -33,7 +33,9 @@ export default function SecretKitchenAdmin() {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
   
   // Admin data states
   const [accessUsers, setAccessUsers] = useState<AccessUser[]>([]);
@@ -50,7 +52,7 @@ export default function SecretKitchenAdmin() {
     }
   }, [isAuthenticated]);
 
-  const sendMagicLink = async () => {
+  const sendOtpCode = async () => {
     if (email !== 'neil@cityandsanctuary.com') {
       toast({
         title: "Access Denied",
@@ -65,21 +67,56 @@ export default function SecretKitchenAdmin() {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/secretkitchenadmin`
+          shouldCreateUser: false
         }
       });
 
       if (error) throw error;
 
+      setOtpSent(true);
       toast({
-        title: "Magic Link Sent",
-        description: "Check your email and click the link to sign in."
+        title: "OTP Code Sent",
+        description: "Check your email for a 6-digit verification code."
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to send magic link. Please try again.",
+        description: "Failed to send OTP code. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyOtpCode = async () => {
+    if (!otpCode || otpCode.length !== 6) {
+      toast({
+        title: "Invalid Code",
+        description: "Please enter a valid 6-digit code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token: otpCode,
+        type: 'email'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Authentication Successful",
+        description: "Welcome to Secret Kitchen Admin."
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Invalid or expired code. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -199,6 +236,8 @@ export default function SecretKitchenAdmin() {
   const logout = async () => {
     await supabase.auth.signOut();
     setEmail('');
+    setOtpCode('');
+    setOtpSent(false);
     toast({
       title: "Signed Out",
       description: "You have been successfully signed out."
@@ -235,15 +274,53 @@ export default function SecretKitchenAdmin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="neil@cityandsanctuary.com"
+                disabled={otpSent}
               />
             </div>
-            <Button 
-              onClick={sendMagicLink} 
-              disabled={loading || !email}
-              className="w-full"
-            >
-              {loading ? 'Sending...' : 'Send Magic Link'}
-            </Button>
+            
+            {!otpSent ? (
+              <Button 
+                onClick={sendOtpCode} 
+                disabled={loading || !email}
+                className="w-full"
+              >
+                {loading ? 'Sending...' : 'Send OTP Code'}
+              </Button>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="otp">6-Digit Verification Code</Label>
+                  <Input
+                    id="otp"
+                    type="text"
+                    value={otpCode}
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="000000"
+                    maxLength={6}
+                    className="text-center text-lg tracking-widest"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Button 
+                    onClick={verifyOtpCode} 
+                    disabled={loading || !otpCode || otpCode.length !== 6}
+                    className="w-full"
+                  >
+                    {loading ? 'Verifying...' : 'Verify Code'}
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      setOtpSent(false);
+                      setOtpCode('');
+                    }} 
+                    variant="outline"
+                    className="w-full"
+                  >
+                    Back to Email
+                  </Button>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
