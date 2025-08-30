@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import CroftLogo from '@/components/CroftLogo';
 import { HeroSlide } from '@/components/slides/HeroSlide';
 import { LeftAlignedSlide } from '@/components/slides/LeftAlignedSlide';
 import { RightAlignedSlide } from '@/components/slides/RightAlignedSlide';
@@ -500,14 +501,15 @@ const SecretKitchens = () => {
   if (!user || !isAuthorized) {
     return (
       <div className="min-h-screen bg-[hsl(var(--accent-pink))] flex items-center justify-center p-4 relative">
-        {/* Croft Common branding */}
-        <div className="absolute top-6 left-6 z-10">
+        {/* Croft Common branding with logo */}
+        <div className="absolute top-6 left-6 z-10 flex items-center gap-3">
+          <CroftLogo size="sm" className="text-white" />
           <h1 className="text-white text-2xl font-brutalist tracking-wider">CROFT COMMON</h1>
         </div>
 
         <div className="w-full max-w-md space-y-6">
           {/* Instruction text box */}
-          <div className="bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg p-6 text-white">
+          <div className="bg-[hsl(var(--accent-pink))] border-2 border-white rounded-lg p-6 text-white">
             <div className="space-y-4 text-center">
               <p className="text-lg leading-relaxed">Welcome. You're one of the few invited behind the curtain at Croft Common.</p>
               <p className="text-lg leading-relaxed">This page won't last. From the moment you enter, the clock is ticking - 48 hours before it disappears.</p>
