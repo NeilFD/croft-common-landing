@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, ExternalLink } from 'lucide-react';
+import { useAudio } from '@/contexts/AudioContext';
 
 interface SpotifyPlayerProps {
   playlistId: string;
@@ -14,15 +15,19 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   onToggle 
 }) => {
   const [showIframe, setShowIframe] = useState(false);
+  const { isGlobalMuted } = useAudio();
   const spotifyUrl = `https://open.spotify.com/playlist/${playlistId}`;
   const embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0&autoplay=1&loop=1`;
 
   const handleToggle = () => {
-    if (!showIframe && !isPlaying) {
-      setShowIframe(true);
-      onToggle(true);
-    } else {
-      onToggle(!isPlaying);
+    if (!isGlobalMuted) {
+      if (!showIframe) {
+        // Auto-start: show iframe and set playing to true immediately
+        setShowIframe(true);
+        onToggle(true);
+      } else {
+        onToggle(!isPlaying);
+      }
     }
   };
 
@@ -32,7 +37,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      {showIframe && (
+      {showIframe && !isGlobalMuted && (
         <div className="w-96 h-40 bg-black rounded-lg overflow-hidden border border-white/20">
           <iframe
             src={embedUrl}
@@ -53,8 +58,9 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           variant="outline"
           size="sm"
           className="bg-transparent border-white/50 text-white hover:bg-white/10"
+          disabled={isGlobalMuted}
         >
-          {isPlaying ? (
+          {isPlaying && !isGlobalMuted ? (
             <Pause className="h-4 w-4" />
           ) : (
             <Play className="h-4 w-4" />
@@ -71,6 +77,10 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           Open in Spotify
         </Button>
       </div>
+      
+      {isGlobalMuted && (
+        <p className="text-white/50 text-xs text-center">Audio muted globally</p>
+      )}
     </div>
   );
 };

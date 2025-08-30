@@ -24,7 +24,9 @@ import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { SplitLayoutWithTitleSlide } from '@/components/slides/SplitLayoutWithTitleSlide';
 import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
-import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown } from 'lucide-react';
+import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown, Volume2, VolumeX } from 'lucide-react';
+import { AudioProvider, useAudio } from '@/contexts/AudioContext';
+import MasterAudioControl from '@/components/MasterAudioControl';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
 import { cn } from '@/lib/utils';
@@ -195,7 +197,7 @@ const sampleGalleryItems = [
   { title: 'Gallery Item 4', description: 'Description for fourth gallery item' }
 ];
 
-const SecretKitchens = () => {
+const SecretKitchensContent = () => {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -645,8 +647,8 @@ const SecretKitchens = () => {
   // Show slide presentation for authenticated and authorized users
   return (
     <div className="min-h-screen bg-background">
-      {/* Logout button - moved to top left */}
-      <div className="absolute top-4 left-4 z-20">
+      {/* Top controls - logout and master audio */}
+      <div className="absolute top-4 left-4 z-20 flex items-center space-x-3">
         <Button 
           onClick={logout}
           variant="outline" 
@@ -661,6 +663,7 @@ const SecretKitchens = () => {
           <LogOut className="h-4 w-4 mr-2" />
           Logout
         </Button>
+        <MasterAudioControl />
       </div>
 
       <Carousel
@@ -712,6 +715,14 @@ const SecretKitchens = () => {
         />
       </Carousel>
     </div>
+  );
+};
+
+const SecretKitchens = () => {
+  return (
+    <AudioProvider>
+      <SecretKitchensContent />
+    </AudioProvider>
   );
 };
 

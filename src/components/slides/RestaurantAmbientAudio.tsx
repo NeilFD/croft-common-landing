@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Volume2, VolumeX, Play, Pause } from 'lucide-react';
+import { useAudio } from '@/contexts/AudioContext';
 
 interface RestaurantAmbientAudioProps {
   isPlaying: boolean;
@@ -10,7 +12,9 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
   isPlaying 
 }) => {
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
+  const [volume, setVolume] = useState(0.6);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const { isGlobalMuted } = useAudio();
   
   // Archive.org hosted pub ambient audio
   const audioUrl = "https://archive.org/download/es-london-pub-crowded-no-music-epidemic-sound/ES_London%2C%20Pub%2C%20Crowded%2C%20No%20Music%20-%20Epidemic%20Sound.mp3";
@@ -30,16 +34,21 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
 
   useEffect(() => {
     if (audioRef.current) {
-      if (isAmbientPlaying && isPlaying) {
+      audioRef.current.volume = volume;
+      if (isAmbientPlaying && isPlaying && !isGlobalMuted) {
         audioRef.current.play().catch(console.error);
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, isAmbientPlaying]);
+  }, [isPlaying, isAmbientPlaying, isGlobalMuted, volume]);
+
+  const handleVolumeChange = (newVolume: number[]) => {
+    setVolume(newVolume[0]);
+  };
 
   return (
-    <div className="flex flex-col items-center space-y-3">
+    <div className="flex flex-col items-center space-y-4 p-4 bg-black/20 rounded-lg border border-white/20">
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -48,19 +57,44 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
         className="hidden"
       />
       
-      <Button
-        onClick={toggleAmbient}
-        variant="ghost"
-        size="sm"
-        className="text-white/60 hover:text-white/80 hover:bg-white/5 text-xs"
-      >
-        {isAmbientPlaying ? (
-          <Volume2 className="mr-1 h-3 w-3" />
-        ) : (
-          <VolumeX className="mr-1 h-3 w-3" />
-        )}
-        Restaurant Ambience
-      </Button>
+      <div className="text-center space-y-2">
+        <h3 className="text-white text-lg font-medium">Restaurant Ambience</h3>
+        <p className="text-white/70 text-sm">Perfect atmosphere for dining</p>
+      </div>
+      
+      <div className="flex items-center space-x-4">
+        <Button
+          onClick={toggleAmbient}
+          variant="outline"
+          size="sm"
+          className="bg-transparent border-white/50 text-white hover:bg-white/10"
+          disabled={isGlobalMuted}
+        >
+          {isAmbientPlaying && !isGlobalMuted ? (
+            <Pause className="h-4 w-4" />
+          ) : (
+            <Play className="h-4 w-4" />
+          )}
+        </Button>
+        
+        <div className="flex items-center space-x-2 min-w-32">
+          <VolumeX className="h-4 w-4 text-white/60" />
+          <Slider
+            value={[volume]}
+            onValueChange={handleVolumeChange}
+            max={1}
+            min={0}
+            step={0.1}
+            className="flex-1"
+            disabled={isGlobalMuted}
+          />
+          <Volume2 className="h-4 w-4 text-white/60" />
+        </div>
+      </div>
+      
+      {isGlobalMuted && (
+        <p className="text-white/50 text-xs">Audio muted globally</p>
+      )}
     </div>
   );
 };
