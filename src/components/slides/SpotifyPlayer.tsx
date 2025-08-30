@@ -22,9 +22,9 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   const handleToggle = () => {
     if (!isGlobalMuted) {
       if (!showIframe) {
-        // Auto-start: show iframe and set playing to true immediately
+        // Show iframe but don't auto-set playing state
         setShowIframe(true);
-        onToggle(true);
+        // Don't call onToggle(true) here - let user click play when ready
       } else {
         onToggle(!isPlaying);
       }
