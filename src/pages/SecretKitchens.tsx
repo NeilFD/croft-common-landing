@@ -6,6 +6,7 @@ import { RightAlignedSlide } from '@/components/slides/RightAlignedSlide';
 import { CenteredSlide } from '@/components/slides/CenteredSlide';
 import { ThreeColumnSlide } from '@/components/slides/ThreeColumnSlide';
 import { GallerySlide } from '@/components/slides/GallerySlide';
+import { ListSlide } from '@/components/slides/ListSlide';
 import { HalfScreenSlide } from '@/components/slides/HalfScreenSlide';
 import { SplitLayoutSlide } from '@/components/slides/SplitLayoutSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } from 'lucide-react';
@@ -38,7 +39,7 @@ const slideConfigs = [
   },
   { type: 'HERO', title: 'WELCOME TO CROFT COMMON.', subtitle: 'A NEW ADDITION TO STOKES CROFT AND MAYBE YOUR NEW FAVOURITE PLACE...', backgroundImage: '/lovable-uploads/b0fe37fa-228e-460f-9c90-99ed660449b6.png' },
   { type: 'HALF_SCREEN', backgroundImage: '/lovable-uploads/a0587370-62e3-43a1-aad1-10c43e42b909.png', content: "Shaped by the streets of Stokes Croft, we've refurbished a landmark building and reimagined it as a space to gather, make, eat, drink, and stay a while. The energy of Stokes Croft has always been there — creative, raw, full of potential. Croft Common is a place that reflects that energy. Somewhere where the atmosphere's easy, the crowd's like-minded, and the experiences just happen.\n\nThis is a venue that moves with you. From weekday mornings to late-night weekends. From spontaneous drop-ins to planned get-togethers. From first coffee to last call.\n\nStart your day with a coffee from The Café, where the counter is piled high with freshly baked breads and pastries from the city's best local bakeries. On your way to work? Grab and go. Or, take a moment — settle in on The Street Terrace and soak up the morning sun as the neighbourhood comes to life.\n\nAs the day unfolds, The Taproom opens its doors, pouring fresh local craft beers. Next door, the Kitchens fire up — a showcase for Bristol's most exciting chefs and emerging foodies, serving up bold flavours and original ideas.\n\nAt the centre of it all is The Courtyard: an open-air space where you can gather with friends over a pint from The Taproom or plates from the kitchens, all under open skies.\n\nAs night falls, The Café shifts gear. The coffee counter clears, the lights dim, and the space transforms into elegant Cocktail bar with a resident DJs setting the tone deep into the night.\n\nUpstairs, an unique event space full of character hosts the city's best moments — from intimate ceremonies to after-hours celebrations. And above it all, Bristol's only rooftop bar invites you to bask in the sun by day and sip cocktails beneath the stars by night." },
-  { type: 'LEFT_ALIGNED', title: 'SLIDE 8', subtitle: 'Left Layout Variant', backgroundColor: 'muted' },
+  { type: 'LIST', items: ['THE CAFÉ & COCKTAIL BAR', 'THE KITCHENS', 'THE TAPROOM', 'THE HALL & TERRACE', 'THE COURTYARD', 'THE ROOFTOP'], backgroundColor: 'accent' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 9', subtitle: 'Right Layout Variant', backgroundColor: 'muted' },
   { type: 'CENTERED', title: 'SLIDE 10', subtitle: 'Centered Accent', backgroundColor: 'accent' },
   { type: 'THREE_COLUMN', title: 'SLIDE 11', subtitle: 'Three Column Variant', backgroundColor: 'muted' },
@@ -178,6 +179,14 @@ const SecretKitchens = () => {
             content={config.content}
             backgroundImage={config.backgroundImage}
             imagePosition="left"
+          />
+        );
+      
+      case 'LIST':
+        return (
+          <ListSlide
+            items={config.items}
+            backgroundColor={config.backgroundColor}
           />
         );
       
