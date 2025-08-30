@@ -128,9 +128,9 @@ const slideConfigs = [
   },
   { 
     type: 'IMAGE_TEXT',
-    title: 'INDEPENDENT KITCHENS. COLLECTIVE EXPERIENCE.',
-    rightTitle: 'THE KITCHENS',
-    leftContent: "Our kitchens operate as independent businesses within our space. Each brings their own menu, style, and approach to food, but they share the same values we do: quality ingredients, community connection, and doing things a bit differently.\n\nWhether it's wood-fired pizza, fresh pasta, or inventive small plates, the food comes from people who care about what they're making. You'll find menus that change with the seasons, dishes that tell a story, and cooking that feels personal rather than corporate.\n\nThe beauty of having multiple kitchens is choice without compromise. You can grab a quick bite or settle in for a proper meal, try something familiar or push your taste buds somewhere new. And because our kitchens work together rather than compete, you'll often find them collaborating on special menus and events.\n\nIt's food with personality, made by people who know their craft.",
+    title: 'THE COURTYARD. CENTRAL CONNECTION.',
+    rightTitle: 'THE COURTYARD',
+    leftContent: "The Courtyard is the central space at Croft Common - the entry point and the place everything connects. From here, you can head to The Taproom on the left, or to The Café & Cocktail Bar and The Kitchens on the right.\n\nIt's a space to meet, drift through, or settle into, not tied to any one part of the venue. You can sit anywhere, no matter where you've ordered from. That mix of movement and ease is what makes it work.\n\nThe feel is open and relaxed, with plenty of natural light and greenery. Inspired by the kind of informal courtyards where people naturally gather, it gives you that outside feel, even when you're under cover. In Stokes Croft, where street-side drinks and casual hangouts are part of daily life, the Courtyard fits right in.\n\nBright and sociable during the day, warm and low-lit at night, it's a place to pass through - or stay a while.\n\nThe Courtyard will be open from 7am to 11pm Sunday to Wednesday, until midnight on Thursdays, and right through to 1am on Fridays and Saturdays.\n\nThe space can accommodate for approx. 40 covers, being over spill from the Taproom or Café.",
     rightImage: '/lovable-uploads/4ea420c5-ba71-4d78-abba-9966d51143f0.png'
   },
   { 
