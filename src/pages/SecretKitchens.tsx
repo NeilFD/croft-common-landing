@@ -159,11 +159,11 @@ const SecretKitchens = () => {
           ))}
         </CarouselContent>
         
-        <CarouselPrevious className="left-4 bg-white/10 border-white/20 text-white hover:bg-white/20" />
-        <CarouselNext className="right-4 bg-white/10 border-white/20 text-white hover:bg-white/20" />
+        <CarouselPrevious className="left-4 bg-black/80 border-2 border-[hsl(var(--accent-pink))] text-white hover:bg-[hsl(var(--accent-pink))] hover:text-black shadow-brutal" />
+        <CarouselNext className="right-4 bg-black/80 border-2 border-[hsl(var(--accent-pink))] text-white hover:bg-[hsl(var(--accent-pink))] hover:text-black shadow-brutal" />
         
         {/* Slide Counter */}
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full font-industrial text-sm">
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-full font-industrial text-sm border-2 border-[hsl(var(--accent-pink))]">
           <span className="text-[hsl(var(--accent-pink))]">●</span> Use arrows to navigate between slides
         </div>
       </Carousel>

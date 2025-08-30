@@ -67,7 +67,7 @@ export const GallerySlide: React.FC<GallerySlideProps> = ({
                 </div>
               )}
               
-              <div className="absolute inset-0 bg-black/40 rounded-lg flex items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-lg flex items-end">
                 <div className="p-6 w-full">
                   <FramedBox
                     as="h3"
