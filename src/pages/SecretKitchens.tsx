@@ -499,18 +499,32 @@ const SecretKitchens = () => {
   // Show authentication form if user is not authenticated or not authorized
   if (!user || !isAuthorized) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <Card>
+      <div className="min-h-screen bg-[hsl(var(--accent-pink))] flex items-center justify-center p-4 relative">
+        {/* Croft Common branding */}
+        <div className="absolute top-6 left-6 z-10">
+          <h1 className="text-white text-2xl font-brutalist tracking-wider">CROFT COMMON</h1>
+        </div>
+
+        <div className="w-full max-w-md space-y-6">
+          {/* Instruction text box */}
+          <div className="bg-black/20 backdrop-blur-sm border border-white/20 rounded-lg p-6 text-white">
+            <div className="space-y-4 text-center">
+              <p className="text-lg leading-relaxed">Welcome. You're one of the few invited behind the curtain at Croft Common.</p>
+              <p className="text-lg leading-relaxed">This page won't last. From the moment you enter, the clock is ticking - 48 hours before it disappears.</p>
+              <p className="text-lg font-brutalist tracking-wider">— Croft Common</p>
+            </div>
+          </div>
+
+          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold">Secret Kitchens</CardTitle>
-              <CardDescription>
-                Enter your authorized email to access the presentation
+              <CardTitle className="text-2xl font-bold text-white">Secret Kitchens</CardTitle>
+              <CardDescription className="text-white/80">
+                Enter your email, follow the instructions
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -518,6 +532,7 @@ const SecretKitchens = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your.email@company.com"
                   disabled={otpSent}
+                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
                 />
               </div>
               
@@ -525,14 +540,14 @@ const SecretKitchens = () => {
                 <Button 
                   onClick={sendOtpCode} 
                   disabled={loading || !email}
-                  className="w-full"
+                  className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90"
                 >
                   {loading ? 'Sending...' : 'Send OTP Code'}
                 </Button>
               ) : (
                 <>
                   <div className="space-y-2">
-                    <Label htmlFor="otp">6-Digit Verification Code</Label>
+                    <Label htmlFor="otp" className="text-white">6-Digit Verification Code</Label>
                     <Input
                       id="otp"
                       type="text"
@@ -540,14 +555,14 @@ const SecretKitchens = () => {
                       onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                       placeholder="000000"
                       maxLength={6}
-                      className="text-center text-lg tracking-widest"
+                      className="text-center text-lg tracking-widest bg-white/20 border-white/30 text-white placeholder:text-white/60"
                     />
                   </div>
                   <div className="space-y-2">
                     <Button 
                       onClick={verifyOtpCode} 
                       disabled={loading || !otpCode || otpCode.length !== 6}
-                      className="w-full"
+                      className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90"
                     >
                       {loading ? 'Verifying...' : 'Verify Code'}
                     </Button>
@@ -557,7 +572,7 @@ const SecretKitchens = () => {
                         setOtpCode('');
                       }} 
                       variant="outline"
-                      className="w-full"
+                      className="w-full border-white/30 text-white hover:bg-white/10"
                     >
                       Back to Email
                     </Button>
