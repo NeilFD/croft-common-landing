@@ -29,6 +29,8 @@ import { AudioProvider, useAudio } from '@/contexts/AudioContext';
 import MasterAudioControl from '@/components/MasterAudioControl';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
+import { SecretKitchensCountdown } from '@/components/SecretKitchensCountdown';
+import { useTimedAccess } from '@/hooks/useTimedAccess';
 import { cn } from '@/lib/utils';
 
 // Navigation labels for dropdown (max 3 words each)
@@ -211,6 +213,16 @@ const SecretKitchensContent = () => {
 
   // Check if user's email is in secret_kitchen_access table
   const [isAuthorized, setIsAuthorized] = useState(false);
+  
+  // Timed access hook for 48-hour countdown
+  const { 
+    accessData, 
+    isExpired, 
+    loading: accessLoading, 
+    checkAccessStatus, 
+    recordFirstAccess, 
+    handleExpiration 
+  } = useTimedAccess(user?.email || null);
 
   useEffect(() => {
     if (user?.email) {
@@ -220,19 +232,18 @@ const SecretKitchensContent = () => {
 
   const checkEmailAccess = async (email: string) => {
     try {
-      const { data, error } = await supabase
-        .from('secret_kitchen_access')
-        .select('email')
-        .eq('email', email.toLowerCase())
-        .eq('is_active', true)
-        .maybeSingle();
-
-      if (error) {
-        console.error('Error checking email access:', error);
+      // Use the timed access hook to check status
+      const data = await checkAccessStatus(email);
+      if (!data) {
         return false;
       }
 
-      return !!data;
+      // Check if access has expired
+      if (data.access_expires_at && new Date(data.access_expires_at) <= new Date()) {
+        return false;
+      }
+
+      return data.is_active;
     } catch (error) {
       console.error('Error checking email access:', error);
       return false;
@@ -321,6 +332,13 @@ const SecretKitchensContent = () => {
       }
 
       if (data?.user) {
+        // Check if this is the user's first access
+        const currentAccessData = await checkAccessStatus(email);
+        if (currentAccessData && !currentAccessData.first_access_at) {
+          // Record first access and start 48-hour timer
+          await recordFirstAccess(email);
+        }
+
         setIsAuthorized(true);
         toast({
           title: "Authentication Successful",
@@ -644,10 +662,18 @@ const SecretKitchensContent = () => {
     );
   }
 
+  // Handle access expiration effect
+  useEffect(() => {
+    if (isExpired) {
+      // Force logout when access expires
+      logout();
+    }
+  }, [isExpired]);
+
   // Show slide presentation for authenticated and authorized users
   return (
     <div className="min-h-screen bg-background">
-      {/* Top controls - logout and master audio */}
+      {/* Top controls - logout, master audio, and countdown */}
       <div className="absolute top-4 left-4 z-20 flex items-center space-x-3">
         <Button 
           onClick={logout}
@@ -664,6 +690,15 @@ const SecretKitchensContent = () => {
           Logout
         </Button>
         <MasterAudioControl />
+        
+        {/* Countdown display */}
+        {accessData?.access_expires_at && !isExpired && (
+          <SecretKitchensCountdown
+            expiresAt={accessData.access_expires_at}
+            onExpired={handleExpiration}
+            className="bg-background/95 backdrop-blur-sm"
+          />
+        )}
       </div>
 
       <Carousel
