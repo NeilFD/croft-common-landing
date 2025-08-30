@@ -132,7 +132,12 @@ const slideConfigs = [
     title: 'THE COURTYARD',
     rightImage: '/lovable-uploads/606af3e3-0044-4849-99c6-926e2dffa563.png'
   },
-  { type: 'LEFT_ALIGNED', title: 'SLIDE 20', subtitle: 'Left Layout Final', backgroundColor: 'muted' },
+  { 
+    type: 'SPLIT_LAYOUT', 
+    title: 'THE COURTYARD',
+    leftContent: "The Courtyard is the central space at Croft Common — the entry point and the place everything connects. From here, you can head to The Taproom on the left, or to The Café & Cocktail Bar and The Kitchens on the right. It's a space to meet, drift through, or settle into, not tied to any one part of the venue. You can sit anywhere, no matter where you've ordered from. That mix of movement and ease is what makes it work. The feel is open and relaxed, with plenty of natural light and greenery. Inspired by the kind of informal courtyards where people naturally gather, it gives you that outside feel, even when you're under cover. In Stokes Croft, where street-side drinks and casual hangouts are part of daily life, the Courtyard fits right in. Bright and sociable during the day, warm and low-lit at night, it's a place to pass through — or stay a while. The Courtyard will be open from 7am to 11pm Sunday to Wednesday, until midnight on Thursdays, and right through to 1am on Fridays and Saturdays. The space can accommodate for approx. 60 covers, being over spill from the Taproom or Café.",
+    rightImage: "/lovable-uploads/619f6472-f3d5-47cf-a311-b7de1c629b92.png"
+  },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 21', subtitle: 'Right Layout Final' },
   { type: 'CENTERED', title: 'SLIDE 22', subtitle: 'Centered Final', backgroundColor: 'muted' },
   { type: 'THREE_COLUMN', title: 'SLIDE 23', subtitle: 'Three Column Final' },
@@ -252,6 +257,7 @@ const SecretKitchens = () => {
             rightTitle={config.rightTitle}
             leftContent={config.leftContent}
             rightContent={config.rightContent}
+            rightImage={config.rightImage}
           />
         );
       
