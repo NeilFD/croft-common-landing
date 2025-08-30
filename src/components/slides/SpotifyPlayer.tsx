@@ -17,7 +17,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   const [showIframe, setShowIframe] = useState(false);
   const { isGlobalMuted } = useAudio();
   const spotifyUrl = `https://open.spotify.com/playlist/${playlistId}`;
-  const embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&theme=0&autoplay=1&loop=1`;
+  const embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator`;
 
   const handleToggle = () => {
     if (!isGlobalMuted) {
@@ -38,7 +38,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   return (
     <div className="flex flex-col items-center space-y-4">
       {showIframe && !isGlobalMuted && (
-        <div className="w-96 h-40 bg-black rounded-lg overflow-hidden border border-white/20">
+        <div className="w-96 h-38 bg-black rounded-xl overflow-hidden border border-white/20">
           <iframe
             src={embedUrl}
             width="100%"
@@ -47,7 +47,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
             allowFullScreen
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             loading="lazy"
-            className="rounded-lg"
+            className="rounded-xl"
           />
         </div>
       )}
