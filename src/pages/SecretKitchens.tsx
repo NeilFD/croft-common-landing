@@ -40,7 +40,7 @@ const slideNavigationLabels = [
   'The Courtyard',
   'Courtyard Details',
   'The Hall',
-  'The Hall Detail',
+  'Slide 22',
   'Slide 23',
   'Slide 24',
   'Slide 25',
@@ -139,15 +139,12 @@ const slideConfigs = [
     rightImage: "/lovable-uploads/619f6472-f3d5-47cf-a311-b7de1c629b92.png"
   },
   { 
-    type: 'PLAIN_IMAGE', 
-    backgroundImage: '/lovable-uploads/f579ce02-0756-4824-915c-9d49531f6c3c.png',
-    alt: 'The Hall interior view'
+    type: 'HERO', 
+    title: 'THE HALL', 
+    subtitle: '', 
+    backgroundImage: '/lovable-uploads/f409d2c8-b310-4231-9843-31ae8cf0ecd5.png' 
   },
-  { 
-    type: 'PLAIN_IMAGE', 
-    backgroundImage: '/lovable-uploads/6ea4e29d-f78e-4757-a8d9-6a47bef166b3.png',
-    alt: 'The Hall detail with window lighting'
-  },
+  { type: 'CENTERED', title: 'SLIDE 22', subtitle: 'Centered Final', backgroundColor: 'muted' },
   { type: 'THREE_COLUMN', title: 'SLIDE 23', subtitle: 'Three Column Final' },
   { type: 'GALLERY', title: 'SLIDE 24', subtitle: 'Gallery Final' },
   { type: 'HERO', title: 'SLIDE 25', subtitle: 'Fifth Hero Layout' },
