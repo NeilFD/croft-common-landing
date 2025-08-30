@@ -257,25 +257,35 @@ const SecretKitchens = () => {
 
     setLoading(true);
     try {
-      // First validate the email is in our access list
-      const hasAccess = await validateEmailAccess(email);
-      if (!hasAccess) {
+      const { data, error } = await supabase.functions.invoke('send-secret-kitchen-otp', {
+        body: { email }
+      });
+
+      if (error) {
         toast({
-          title: "Access Denied",
-          description: "This email is not authorized to access Secret Kitchens.",
+          title: "Error",
+          description: error.message || "Failed to send verification code.",
           variant: "destructive"
         });
         return;
       }
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true
+      if (data?.error) {
+        if (data.error === 'Access denied') {
+          toast({
+            title: "Access Denied",
+            description: "This email is not authorized for Secret Kitchen access.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: data.error,
+            variant: "destructive"
+          });
         }
-      });
-
-      if (error) throw error;
+        return;
+      }
 
       setOtpSent(true);
       toast({
@@ -305,22 +315,68 @@ const SecretKitchens = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: 'email'
+      const { data, error } = await supabase.functions.invoke('verify-secret-kitchen-otp', {
+        body: { email, code: otpCode }
       });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message || "Verification failed.",
+          variant: "destructive"
+        });
+        return;
+      }
 
-      toast({
-        title: "Authentication Successful",
-        description: "Welcome to Secret Kitchens."
-      });
+      if (data?.error) {
+        if (data.error === 'Invalid or expired code') {
+          toast({
+            title: "Invalid Code",
+            description: "Invalid or expired verification code.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: data.error,
+            variant: "destructive"
+          });
+        }
+        return;
+      }
+
+      if (data?.access_token) {
+        // Set the session using the access token
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.access_token // In this case we use the same token
+        });
+
+        if (sessionError) {
+          toast({
+            title: "Error",
+            description: "Failed to establish session.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        setIsAuthorized(true);
+        toast({
+          title: "Authentication Successful",
+          description: "Welcome to Secret Kitchens."
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Unexpected response from server.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Invalid or expired code. Please try again.",
+        description: "Verification failed. Please try again.",
         variant: "destructive"
       });
     } finally {
