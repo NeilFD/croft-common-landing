@@ -40,7 +40,7 @@ export const CenteredSlide: React.FC<CenteredSlideProps> = ({
           as="h2"
           size="lg"
           contrast={backgroundColor === 'accent' ? 'contrast' : 'neutral'}
-          className={`text-3xl md:text-4xl font-brutalist ${textColor} border-2 p-6 text-center w-full`}
+          className={`text-3xl md:text-4xl font-brutalist ${textColor} border-2 p-6 text-center w-full hover:!border-current hover:!text-current`}
         >
           {title}
         </FramedBox>
