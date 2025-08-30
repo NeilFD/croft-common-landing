@@ -9,6 +9,7 @@ import { GallerySlide } from '@/components/slides/GallerySlide';
 import { ListSlide } from '@/components/slides/ListSlide';
 import { HalfScreenSlide } from '@/components/slides/HalfScreenSlide';
 import { SplitLayoutSlide } from '@/components/slides/SplitLayoutSlide';
+import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } from 'lucide-react';
 
 // Slide configurations for 40 slides
@@ -42,11 +43,11 @@ const slideConfigs = [
   { type: 'LIST', items: ['THE CAFÉ & COCKTAIL BAR', 'THE KITCHENS', 'THE TAPROOM', 'THE HALL & TERRACE', 'THE COURTYARD', 'THE ROOFTOP'], backgroundColor: 'accent' },
   { type: 'HERO', title: 'THE CAFE & COCKTAIL BAR', backgroundImage: '/lovable-uploads/405bb3db-323f-47e0-b0ef-26ef79e890e8.png' },
   { 
-    type: 'SPLIT_LAYOUT', 
+    type: 'IMAGE_TEXT', 
     title: 'The engine of Croft Common is The Café & Cocktail Bar, being open for trade from early in the morning until late in the evening.',
     rightTitle: 'FROM MORNING ESPRESSO TO LATE-NIGHT VINYL',
     leftContent: "During the day it's counters will be piled high with tempting pastries, cakes and tarts, along with salads, frittatas, flatbreads and other savoury delights. All food will be made on the premises and all orders will be taken at the counter. People can eat in, grab food to go, or take a moment and enjoy brunch on The Street Terrace.\n\nThe Street Terrace will be a private space, filled with plants under a canvas awning. Fresh and bright in the summer, snug and warm in the winter.\n\nIn a neighbourhood where outdoor seating is hard to come by, the terrace will be a local hotspot, with a lively ambience, attracting locals and passersby to the intrigue of the building.\n\nAs the daytime trade slows, The Café transitions into a Cocktail Bar. The café counter houses the decks, and the music vibe changes. The lighting is dimmed, and the bar counter is lit, ready to serve local spirits and classic cocktails.\n\nOpening is from 7 am every day, except for 10 am on Sunday. Monday to Wednesday it will close at 11 pm, on Thursday at 12am, on Friday and Saturday at 1 am and on Sunday at 11pm.\n\nThe inner and outer space caters for approx. 100 covers with the ability to spill-out into The Courtyard which can accommodate 30 covers.",
-    rightContent: '/lovable-uploads/7789f3cd-9a6a-445d-b4f9-fd3de95a41cc.png'
+    rightImage: '/lovable-uploads/41ae38cd-ab7d-4fea-91e7-cd2dfb8b4b6c.png'
   },
   { type: 'THREE_COLUMN', title: 'SLIDE 11', subtitle: 'Three Column Variant', backgroundColor: 'muted' },
   { type: 'GALLERY', title: 'SLIDE 12', subtitle: 'Gallery 4 Column', columns: 4 },
@@ -193,6 +194,16 @@ const SecretKitchens = () => {
           <ListSlide
             items={config.items}
             backgroundColor={config.backgroundColor}
+          />
+        );
+      
+      case 'IMAGE_TEXT':
+        return (
+          <ImageTextSlide
+            title={config.title}
+            rightTitle={config.rightTitle}
+            leftContent={config.leftContent}
+            rightImage={config.rightImage}
           />
         );
       
