@@ -15,6 +15,7 @@ import { ImageTextSlide } from '@/components/slides/ImageTextSlide';
 import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { SplitLayoutWithTitleSlide } from '@/components/slides/SplitLayoutWithTitleSlide';
+import { ScrollableSplitLayoutSlide } from '@/components/slides/ScrollableSplitLayoutSlide';
 import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu } from 'lucide-react';
 
@@ -301,6 +302,16 @@ const SecretKitchens = () => {
         );
       
       case 'SPLIT_LAYOUT_WITH_TITLE':
+        // Use scrollable component for slide 20 (index 19)
+        if (index === 19) {
+          return (
+            <ScrollableSplitLayoutSlide
+              title={config.title}
+              leftContent={config.leftContent}
+              rightImage={config.rightImage}
+            />
+          );
+        }
         return (
           <SplitLayoutWithTitleSlide
             title={config.title}
