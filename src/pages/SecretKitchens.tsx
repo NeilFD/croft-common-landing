@@ -49,16 +49,8 @@ const slideNavigationLabels = [
   'The Rooftop',
   'Rooftop Terrace',
   'The Rooftop Bar',
-  'Croft Common Exterior',
   'Casual Dining',
-  'Slide 33',
-  'Slide 34',
-  'Slide 35',
-  'Slide 36',
-  'Slide 37',
-  'Slide 38',
-  'Slide 39',
-  'Final Slide'
+  'Croft Common Exterior'
 ];
 
 // Slide configurations for 40 slides
@@ -163,16 +155,8 @@ const slideConfigs = [
     leftContent: "The Rooftop is Bristol's only true rooftop bar and events pavilion. Sitting atop the building, it captures the city lights and the vibrant energy of Stokes Croft below.\n\nFilled with greenery, trees and soft lighting, the look and feel of this space evolves with the seasons, creating the right mood for every moment. In summer, it's all about Aperol spritz, crisp beers and cocktails under open skies. In the winter, the terrace transforms into a cosy hideaway with heaters, blankets and sheltered corners, perfect for warming up with mulled wine or hot cocktails as the city lights glow below.\n\nThe Rooftop has the potential to become Bristol favourite roof garden to enjoy long summer evenings and cosy winter nights.\n\nLike The Hall Terrace, the space can be split — part private, part open to the public — offering flexibility for any event.\n\nThe Roof Terrace, along with The Hall can open until 1.30 am. As a standalone venue it can comfortably occupy 120 people standing and lounging.",
     rightImage: "/lovable-uploads/11fd165f-dc22-41dc-80f5-8c38cc022923.png"
   },
-  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21b8d579-c2a1-47be-8892-9e87e4dfa27c.png', alt: 'Croft Common exterior at night with illuminated rooftop' },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/0cad0be9-a1f3-4a81-abc6-042496911628.png', alt: 'Casual dining serious craft window signage' },
-  { type: 'RIGHT_ALIGNED', title: 'SLIDE 33', subtitle: 'Right Layout Bonus' },
-  { type: 'CENTERED', title: 'SLIDE 34', subtitle: 'Centered Bonus', backgroundColor: 'accent' },
-  { type: 'THREE_COLUMN', title: 'SLIDE 35', subtitle: 'Three Column Bonus' },
-  { type: 'GALLERY', title: 'SLIDE 36', subtitle: 'Gallery Bonus', columns: 4 },
-  { type: 'HERO', title: 'SLIDE 37', subtitle: 'Seventh Hero Layout' },
-  { type: 'LEFT_ALIGNED', title: 'SLIDE 38', subtitle: 'Left Layout Final Set' },
-  { type: 'RIGHT_ALIGNED', title: 'SLIDE 39', subtitle: 'Right Layout Final Set', backgroundColor: 'muted' },
-  { type: 'CENTERED', title: 'SLIDE 40', subtitle: 'Final Slide', backgroundColor: 'accent' }
+  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21b8d579-c2a1-47be-8892-9e87e4dfa27c.png', alt: 'Croft Common exterior at night with illuminated rooftop' }
 ];
 
 // Sample data for three column slides
