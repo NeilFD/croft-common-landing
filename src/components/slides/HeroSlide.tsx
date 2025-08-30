@@ -46,12 +46,6 @@ export const HeroSlide: React.FC<HeroSlideProps> = ({
         >
           {title}
         </FramedBox>
-        
-        {subtitle && (
-          <p className="text-xl md:text-2xl font-industrial mt-8 max-w-2xl mx-auto">
-            {subtitle}
-          </p>
-        )}
       </div>
     </section>
   );
