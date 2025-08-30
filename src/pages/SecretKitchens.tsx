@@ -23,7 +23,7 @@ import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { SplitLayoutWithTitleSlide } from '@/components/slides/SplitLayoutWithTitleSlide';
 import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
-import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut } from 'lucide-react';
+import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown } from 'lucide-react';
 
 // Navigation labels for dropdown (max 3 words each)
 const slideNavigationLabels = [
@@ -634,12 +634,12 @@ const SecretKitchens = () => {
         <div className="absolute top-4 right-20 z-20">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white">
-                <Menu className="h-4 w-4 mr-2" />
-                Navigate ({currentSlide + 1}/{slideConfigs.length})
+              <Button variant="outline" size="sm" className="bg-white/90 hover:bg-white flex items-center gap-2">
+                Navigate
+                <ChevronDown className="h-3 w-3" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto">
+            <DropdownMenuContent className="w-56 max-h-96 overflow-y-auto bg-white border shadow-lg">
               {slideNavigationLabels.map((label, index) => (
                 <DropdownMenuItem
                   key={index}
@@ -647,7 +647,9 @@ const SecretKitchens = () => {
                     api?.scrollTo(index);
                     setCurrentSlide(index);
                   }}
-                  className={currentSlide === index ? "bg-accent" : ""}
+                  className={`hover:bg-pink-50 hover:text-pink-700 cursor-pointer ${
+                    currentSlide === index ? "bg-pink-100 text-pink-700" : ""
+                  }`}
                 >
                   {index + 1}. {label}
                 </DropdownMenuItem>
@@ -663,8 +665,8 @@ const SecretKitchens = () => {
           </div>
         </div>
 
-        <CarouselPrevious className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20" />
-        <CarouselNext className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20" />
+        <CarouselPrevious className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/30 hover:bg-white/50 backdrop-blur-sm" />
+        <CarouselNext className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/30 hover:bg-white/50 backdrop-blur-sm" />
       </Carousel>
     </div>
   );
