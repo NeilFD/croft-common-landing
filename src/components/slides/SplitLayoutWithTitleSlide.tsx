@@ -34,11 +34,11 @@ export const SplitLayoutWithTitleSlide: React.FC<SplitLayoutWithTitleSlideProps>
           </FramedBox>
           
           <div className="space-y-6">
-            <h3 className="text-2xl md:text-3xl font-brutalist text-[hsl(var(--accent-pink))] leading-tight">
+            <h3 className="text-4xl md:text-5xl lg:text-6xl font-brutalist text-[hsl(var(--accent-pink))] leading-tight">
               {leftContent.split('\n\n')[0]}
             </h3>
             
-            <div className="text-base font-industrial leading-relaxed text-muted-foreground space-y-4">
+            <div className="text-2xl md:text-3xl lg:text-4xl font-industrial leading-relaxed text-muted-foreground space-y-4">
               {leftContent.split('\n\n').slice(1).map((paragraph, index) => (
                 <p key={index}>{paragraph}</p>
               ))}

@@ -400,8 +400,8 @@ const SecretKitchens = () => {
           ))}
         </CarouselContent>
         
-        <CarouselPrevious className="left-4 bg-black/80 border-2 border-[hsl(var(--accent-pink))] text-white hover:bg-[hsl(var(--accent-pink))] hover:text-black shadow-brutal" />
-        <CarouselNext className="right-4 bg-black/80 border-2 border-[hsl(var(--accent-pink))] text-white hover:bg-[hsl(var(--accent-pink))] hover:text-black shadow-brutal" />
+        <CarouselPrevious className="left-4 bg-black/20 border border-white/10 text-white/60 hover:bg-black/40 hover:text-white/80 w-8 h-8 transition-opacity duration-300 hover:opacity-100 opacity-40" />
+        <CarouselNext className="right-4 bg-black/20 border border-white/10 text-white/60 hover:bg-black/40 hover:text-white/80 w-8 h-8 transition-opacity duration-300 hover:opacity-100 opacity-40" />
       </Carousel>
     </div>
   );
