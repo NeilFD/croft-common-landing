@@ -11,7 +11,7 @@ import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award } 
 // Slide configurations for 40 slides
 const slideConfigs = [
   { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
-  { type: 'LEFT_ALIGNED', title: 'SLIDE 2', subtitle: 'Left Aligned Layout', content: 'Content placeholder for left aligned slide layout.' },
+  { type: 'CENTERED', title: 'Rooted in the neighbourhood. Alive with city energy.', subtitle: 'This is Croft Common — where Bristol meets, eats, and stays a little longer than planned...', backgroundColor: 'accent' },
   { type: 'RIGHT_ALIGNED', title: 'SLIDE 3', subtitle: 'Right Aligned Layout', content: 'Content placeholder for right aligned slide layout.' },
   { type: 'CENTERED', title: 'SLIDE 4', subtitle: 'Centered Layout', content: 'Content placeholder for centered slide layout.' },
   { type: 'THREE_COLUMN', title: 'SLIDE 5', subtitle: 'Three Column Layout' },
@@ -112,8 +112,8 @@ const SecretKitchens = () => {
         return (
           <CenteredSlide
             title={config.title}
-            subtitle={`${config.subtitle} (${slideNumber}/${totalSlides})`}
-            content="This is placeholder content for a centered layout. This format works well for quotes, key messages, or important announcements that need maximum visual impact."
+            subtitle={slideNumber === 2 ? config.subtitle : `${config.subtitle} (${slideNumber}/${totalSlides})`}
+            content={slideNumber === 2 ? '' : "This is placeholder content for a centered layout. This format works well for quotes, key messages, or important announcements that need maximum visual impact."}
             backgroundColor={config.backgroundColor}
           />
         );
