@@ -731,7 +731,7 @@ const SecretKitchensContent = () => {
                     
                     <TabsContent value="signup" className="space-y-4 mt-4">
                       <div className="text-sm text-white/80 bg-white/10 p-3 rounded border border-white/20">
-                        <strong>New to Secret Kitchens?</strong> Create your account to access exclusive wood-fired recipes. We'll send you a 6-digit code to verify your email.
+                        Sign-up to create your user, we'll send you a 6-digit code to verify your email.
                       </div>
                       <form onSubmit={sendOtpCode} className="space-y-4">
                         <div className="space-y-2">
