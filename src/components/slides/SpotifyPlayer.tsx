@@ -55,7 +55,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         </div>
       )}
       
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center justify-center">
         <Button
           onClick={handleToggle}
           variant="outline"
@@ -68,16 +68,6 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
           ) : (
             <Play className="h-4 w-4" />
           )}
-        </Button>
-        
-        <Button
-          onClick={handlePlaylistClick}
-          variant="ghost"
-          size="sm"
-          className="text-white/70 hover:text-white hover:bg-white/10"
-        >
-          <Play className="mr-2 h-4 w-4" />
-          Play Playlist
         </Button>
       </div>
       

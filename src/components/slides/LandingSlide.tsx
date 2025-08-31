@@ -68,14 +68,6 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
         )}
       </div>
 
-      {/* Enter Button */}
-      <Button
-        onClick={onEnter}
-        size="lg"
-        className="bg-white text-black hover:bg-white/90 transition-colors duration-300 font-semibold px-8 py-3"
-      >
-        Enter Croft Common
-      </Button>
 
       {/* Subtle ambient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 pointer-events-none" />
