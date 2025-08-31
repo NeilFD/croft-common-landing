@@ -716,10 +716,10 @@ const SecretKitchensContent = () => {
                   <CardDescription className="text-white/80 space-y-2">
                     <p>Enter your email, follow the instructions</p>
                     <p className="text-sm font-medium text-white/90">
-                      <strong>First time visitor?</strong> Use "Sign Up" to create your account first.
+                      <strong>First time?</strong> Use Sign Up to create your user, and then Sign-In to access
                     </p>
                     <p className="text-sm text-white/70">
-                      <strong>Returning visitor?</strong> Use "Sign In" to access your existing account.
+                      <strong>Back again?</strong> Sign-In with a six-digit code to access the Croft Common info.
                     </p>
                   </CardDescription>
                 </CardHeader>
