@@ -16,7 +16,7 @@ export const SplitLayoutWithTitleSlide: React.FC<SplitLayoutWithTitleSlideProps>
   return (
     <section className="h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Left Content */}
-      <div className="w-full md:w-1/2 h-1/2 md:h-full bg-background flex flex-col justify-center pt-28 pb-24 md:p-8 lg:p-12 px-4 md:px-8 lg:px-12 relative overflow-y-auto">
+      <div className="w-full md:w-1/2 h-1/2 md:h-full bg-background flex flex-col justify-center pt-40 pb-24 md:p-8 lg:p-12 px-4 md:px-8 lg:px-12 relative overflow-y-auto">
         <div className="space-y-4 md:space-y-6 lg:space-y-8">
           <FramedBox
             as="h2"
