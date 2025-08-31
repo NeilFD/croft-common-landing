@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, ExternalLink } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import { useAudio } from '@/contexts/AudioContext';
 
 interface SpotifyPlayerProps {
@@ -17,7 +17,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
   const [showIframe, setShowIframe] = useState(false);
   const { isGlobalMuted } = useAudio();
   const spotifyUrl = `https://open.spotify.com/playlist/${playlistId}`;
-  const embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator`;
+  const embedUrl = `https://open.spotify.com/embed/playlist/${playlistId}?utm_source=generator&autoplay=1&theme=0`;
 
   const handleToggle = () => {
     if (!isGlobalMuted) {
@@ -31,8 +31,10 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
     }
   };
 
-  const openSpotify = () => {
-    window.open(spotifyUrl, '_blank');
+  const handlePlaylistClick = () => {
+    if (!showIframe) {
+      setShowIframe(true);
+    }
   };
 
   return (
@@ -68,13 +70,13 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         </Button>
         
         <Button
-          onClick={openSpotify}
+          onClick={handlePlaylistClick}
           variant="ghost"
           size="sm"
           className="text-white/70 hover:text-white hover:bg-white/10"
         >
-          <ExternalLink className="mr-2 h-4 w-4" />
-          Open in Spotify
+          <Play className="mr-2 h-4 w-4" />
+          Play Playlist
         </Button>
       </div>
       
