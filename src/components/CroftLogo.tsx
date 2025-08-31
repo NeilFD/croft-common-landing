@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { cn } from "@/lib/utils";
 import { BRAND_LOGO } from "@/data/brand";
-import OptimizedImage from "./OptimizedImage";
 import fallbackLogo from "@/assets/croft-logo.png";
 
 interface CroftLogoProps {
@@ -10,6 +10,7 @@ interface CroftLogoProps {
 }
 
 const CroftLogo = ({ className, size = 'md', priority = false }: CroftLogoProps) => {
+  const [imageError, setImageError] = useState(false);
   const sizeClasses = {
     sm: 'w-6 h-6',
     md: 'w-8 h-8',
@@ -17,18 +18,24 @@ const CroftLogo = ({ className, size = 'md', priority = false }: CroftLogoProps)
   };
 
   return (
-    <OptimizedImage
-      src={BRAND_LOGO}
-      alt="Croft Common Logo"
-      className={cn(
-        "object-contain",
-        sizeClasses[size],
-        className
+    <div className={cn("object-contain", sizeClasses[size], className)}>
+      {!imageError ? (
+        <img
+          src={BRAND_LOGO}
+          alt="Croft Common Logo"
+          className="w-full h-full object-contain"
+          onError={() => setImageError(true)}
+          loading={priority ? 'eager' : 'lazy'}
+        />
+      ) : (
+        <img
+          src={fallbackLogo}
+          alt="Croft Common Logo"
+          className="w-full h-full object-contain"
+          loading={priority ? 'eager' : 'lazy'}
+        />
       )}
-      priority={priority || size === 'lg'}
-      mobileOptimized={true}
-      sizes="(max-width: 768px) 50vw, 25vw"
-    />
+    </div>
   );
 };
 
