@@ -49,6 +49,7 @@ const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
 import RouteImagePreloader from '@/components/RouteImagePreloader';
 import ScrollToTop from '@/components/ScrollToTop';
 import DomainGuard from '@/components/DomainGuard';
+import ReverseDomainGuard from '@/components/ReverseDomainGuard';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useOptimizedPerformance } from '@/hooks/useOptimizedPerformance';
 import { useWebVitals } from '@/hooks/useWebVitals';
@@ -132,6 +133,7 @@ const App = () => (
               <ScrollToTop />
               <GlobalHandlers />
               <LowercasePathGuard />
+              <ReverseDomainGuard />
               <RouteImagePreloader />
               <NudgeFloatingButton />
               
