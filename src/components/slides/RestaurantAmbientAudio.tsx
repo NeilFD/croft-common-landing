@@ -35,11 +35,13 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
-      // Auto-start ambient when component becomes enabled
-      if (isPlaying && !isAmbientPlaying) {
+      
+      // When isPlaying becomes true, automatically start the ambience
+      if (isPlaying && !isAmbientPlaying && !isGlobalMuted) {
         setIsAmbientPlaying(true);
       }
       
+      // Control audio playback based on state
       if (isAmbientPlaying && isPlaying && !isGlobalMuted) {
         audioRef.current.play().catch(console.error);
       } else {

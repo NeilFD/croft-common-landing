@@ -45,7 +45,7 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
             data-testid="embed-iframe" 
             style={{borderRadius:'12px'}} 
             src="https://open.spotify.com/embed/playlist/0IrHtvIi9DVrTcFb1bM3CR?utm_source=generator" 
-            width="50%" 
+            width="100%" 
             height="352" 
             frameBorder="0" 
             allowFullScreen 
