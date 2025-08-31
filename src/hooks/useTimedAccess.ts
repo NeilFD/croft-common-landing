@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,10 +15,9 @@ export const useTimedAccess = (email: string | null) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  // Check access status
-  const checkAccessStatus = useCallback(async (userEmail: string) => {
+  // Simple access check function
+  const checkAccessStatus = async (userEmail: string) => {
     try {
-      setLoading(true);
       const { data, error } = await supabase
         .from('secret_kitchen_access')
         .select('email, first_access_at, access_expires_at, is_active')
@@ -37,22 +36,18 @@ export const useTimedAccess = (email: string | null) => {
 
       // Check if access has expired
       if (data.access_expires_at && new Date(data.access_expires_at) <= new Date()) {
-        setIsExpired(true);
-        return data;
+        return { ...data, expired: true };
       }
 
-      setAccessData(data);
       return data;
     } catch (error) {
       console.error('Error in checkAccessStatus:', error);
       return null;
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  };
 
   // Record first access and set expiration
-  const recordFirstAccess = useCallback(async (userEmail: string) => {
+  const recordFirstAccess = async (userEmail: string) => {
     try {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + (48 * 60 * 60 * 1000)); // 48 hours from now
@@ -99,10 +94,10 @@ export const useTimedAccess = (email: string | null) => {
       console.error('Error in recordFirstAccess:', error);
       return false;
     }
-  }, []);
+  };
 
   // Handle access expiration
-  const handleExpiration = useCallback(async () => {
+  const handleExpiration = () => {
     setIsExpired(true);
     toast({
       title: "Access Expired",
@@ -110,70 +105,15 @@ export const useTimedAccess = (email: string | null) => {
       variant: "destructive",
       duration: 10000
     });
-  }, []);
+  };
 
+  // Only run effect when email changes, don't auto-check
   useEffect(() => {
     if (!email) {
       setAccessData(null);
       setIsExpired(false);
       setLoading(false);
-      return;
     }
-
-    let isMounted = true;
-    console.log('🔍 useTimedAccess: Starting access check for email:', email);
-
-    const checkAccess = async () => {
-      try {
-        if (!isMounted) return;
-        
-        setLoading(true);
-        console.log('🔍 useTimedAccess: Querying database for:', email.toLowerCase());
-        
-        const { data, error } = await supabase
-          .from('secret_kitchen_access')
-          .select('email, first_access_at, access_expires_at, is_active')
-          .eq('email', email.toLowerCase())
-          .eq('is_active', true)
-          .maybeSingle();
-
-        if (!isMounted) return;
-
-        if (error) {
-          console.error('🚨 useTimedAccess: Database error:', error);
-          return;
-        }
-
-        if (!data) {
-          console.log('🚨 useTimedAccess: No matching record found for email:', email);
-          return;
-        }
-
-        console.log('✅ useTimedAccess: Found access data:', data);
-
-        // Check if access has expired
-        if (data.access_expires_at && new Date(data.access_expires_at) <= new Date()) {
-          console.log('⏰ useTimedAccess: Access expired for:', email);
-          setIsExpired(true);
-          return;
-        }
-
-        console.log('✅ useTimedAccess: Setting access data for:', email);
-        setAccessData(data);
-      } catch (error) {
-        console.error('🚨 useTimedAccess: Unexpected error:', error);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    };
-    
-    checkAccess();
-
-    return () => {
-      isMounted = false;
-    };
   }, [email]);
 
   return {
@@ -182,6 +122,9 @@ export const useTimedAccess = (email: string | null) => {
     loading,
     checkAccessStatus,
     recordFirstAccess,
-    handleExpiration
+    handleExpiration,
+    setAccessData,
+    setIsExpired,
+    setLoading
   };
 };

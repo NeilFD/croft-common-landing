@@ -221,37 +221,50 @@ const SecretKitchensContent = () => {
     loading: accessLoading, 
     checkAccessStatus, 
     recordFirstAccess, 
-    handleExpiration 
+    handleExpiration,
+    setAccessData,
+    setIsExpired,
+    setLoading: setAccessLoading
   } = useTimedAccess(user?.email || null);
 
-  // Set authorization based on accessData from the hook
-  useEffect(() => {
-    if (accessData) {
-      setIsAuthorized(true);
-    } else if (user?.email && !accessLoading) {
-      setIsAuthorized(false);
-    }
-  }, [accessData, user?.email, accessLoading]);
-
+  // Manual access check function
   const checkEmailAccess = async (email: string) => {
     try {
-      // Use the timed access hook to check status
+      setAccessLoading(true);
       const data = await checkAccessStatus(email);
+      
       if (!data) {
+        setIsAuthorized(false);
         return false;
       }
 
-      // Check if access has expired
-      if (data.access_expires_at && new Date(data.access_expires_at) <= new Date()) {
+      if ('expired' in data && data.expired) {
+        setIsExpired(true);
+        setIsAuthorized(false);
         return false;
       }
 
-      return data.is_active;
+      setAccessData(data);
+      setIsAuthorized(true);
+      return true;
     } catch (error) {
       console.error('Error checking email access:', error);
+      setIsAuthorized(false);
       return false;
+    } finally {
+      setAccessLoading(false);
     }
   };
+
+  // Check access when user email changes
+  useEffect(() => {
+    if (user?.email) {
+      checkEmailAccess(user.email);
+    } else {
+      setIsAuthorized(false);
+      setAccessData(null);
+    }
+  }, [user?.email]);
 
   const sendOtpCode = async () => {
     if (!email) {
