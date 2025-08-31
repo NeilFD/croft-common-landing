@@ -54,8 +54,8 @@ const SecretKitchensCountdown: React.FC<SecretKitchensCountdownProps> = ({
   if (isExpired) {
     return (
       <div className={cn(
-        "fixed top-4 right-4 z-50 bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg",
-        "border border-red-500",
+        "fixed top-4 left-1/2 transform -translate-x-1/2 z-50 text-white px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm",
+        "border-2 border-red-500 hover:text-red-500 transition-colors duration-300",
         className
       )}>
         <div className="flex items-center gap-2">
@@ -70,11 +70,9 @@ const SecretKitchensCountdown: React.FC<SecretKitchensCountdownProps> = ({
 
   return (
     <div className={cn(
-      "fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm",
-      "border transition-all duration-300",
-      showWarning 
-        ? "bg-red-600/90 text-white border-red-500 animate-pulse" 
-        : "bg-black/60 text-white border-white/20",
+      "fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm",
+      "border-2 border-red-500 text-white transition-all duration-300 hover:text-red-500",
+      showWarning && "animate-pulse",
       className
     )}>
       <div className="flex items-center gap-2">
