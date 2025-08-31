@@ -664,7 +664,7 @@ const SecretKitchensContent = () => {
                   disabled={loading || !email}
                   className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90"
                 >
-                  {loading ? 'Sending...' : 'Send OTP Code'}
+                  {loading ? 'Sending...' : 'Send Code'}
                 </Button>
               ) : (
                 <>
