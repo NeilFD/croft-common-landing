@@ -39,20 +39,6 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
 
   return (
     <div className="flex flex-col items-center space-y-4">
-      {showIframe && !isGlobalMuted && (
-        <div className="w-full h-88 bg-black rounded-xl overflow-hidden border border-white/20">
-          <iframe
-            src={embedUrl}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            allowFullScreen
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-            className="rounded-xl"
-          />
-        </div>
-      )}
       
       <div className="flex items-center space-x-3">
         <Button
