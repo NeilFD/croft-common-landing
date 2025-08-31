@@ -152,7 +152,7 @@ export function useMembershipGate(): UseMembershipGate {
   }, []);
 
   const handleBioFallback = useCallback(() => {
-    console.debug('[gate] bio fallback -> authOpen');
+    console.debug('[gate] bio fallback -> authOpen for Secret Kitchens');
     setBioOpen(false);
     setAuthOpen(true);
   }, []);
