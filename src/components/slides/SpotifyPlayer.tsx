@@ -55,20 +55,27 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({
         </div>
       )}
       
-      <div className="flex items-center justify-center">
-        <Button
-          onClick={handleToggle}
-          variant="outline"
-          size="sm"
-          className="bg-transparent border-white/50 text-white hover:bg-white/10"
-          disabled={isGlobalMuted}
-        >
-          {isPlaying && !isGlobalMuted ? (
-            <Pause className="h-4 w-4" />
-          ) : (
-            <Play className="h-4 w-4" />
-          )}
-        </Button>
+      <div className="flex flex-col items-center space-y-4 p-4 bg-black/20 rounded-lg border border-white/20">
+        <div className="text-center space-y-2">
+          <h3 className="text-white text-lg font-medium">Spotify Playlist</h3>
+          <p className="text-white/70 text-sm">Play the Croft Common playlist</p>
+        </div>
+        
+        <div className="flex items-center justify-center">
+          <Button
+            onClick={handleToggle}
+            variant="outline"
+            size="sm"
+            className="bg-transparent border-white/50 text-white hover:bg-white/10"
+            disabled={isGlobalMuted}
+          >
+            {isPlaying && !isGlobalMuted ? (
+              <Pause className="h-4 w-4" />
+            ) : (
+              <Play className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
       </div>
       
       {isGlobalMuted && (
