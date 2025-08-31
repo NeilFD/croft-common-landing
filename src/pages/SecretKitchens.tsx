@@ -14,6 +14,8 @@ import { HeroSlide } from '@/components/slides/HeroSlide';
 import { LeftAlignedSlide } from '@/components/slides/LeftAlignedSlide';
 import { RightAlignedSlide } from '@/components/slides/RightAlignedSlide';
 import { CenteredSlide } from '@/components/slides/CenteredSlide';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ThreeColumnSlide } from '@/components/slides/ThreeColumnSlide';
 import { GallerySlide } from '@/components/slides/GallerySlide';
 import { ListSlide } from '@/components/slides/ListSlide';
@@ -205,6 +207,8 @@ const SecretKitchensContent = () => {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [activeTab, setActiveTab] = useState<'signup' | 'signin'>('signup');
+  const [isSignup, setIsSignup] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<any>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -275,7 +279,8 @@ const SecretKitchensContent = () => {
     }
   };
 
-  const sendOtpCode = async () => {
+  const sendOtpCode = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!email) {
       toast({
         title: "Email Required",
@@ -286,6 +291,8 @@ const SecretKitchensContent = () => {
     }
 
     setLoading(true);
+    setIsSignup(activeTab === 'signup');
+    
     try {
       // First check if email has access
       const hasAccess = await checkEmailAccess(email);
@@ -295,30 +302,46 @@ const SecretKitchensContent = () => {
           description: "This email is not authorized for Secret Kitchen access.",
           variant: "destructive"
         });
+        setLoading(false);
         return;
       }
 
       // Use Supabase's native OTP system (6-digit code)
       const { error } = await supabase.auth.signInWithOtp({
-        email: email.toLowerCase()
-        // No emailRedirectTo option - this ensures 6-digit code is sent instead of magic link
+        email: email.toLowerCase(),
+        options: {
+          shouldCreateUser: activeTab === 'signup',
+          data: activeTab === 'signup' ? {
+            user_type: 'secret_kitchens'
+          } : undefined
+        }
       });
 
       if (error) {
+        console.error('OTP send error:', error);
+        if (error.message?.includes('Signup not allowed')) {
+          toast({
+            title: "Account Creation Failed",
+            description: "Account creation failed. Please contact support.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message || "Failed to send verification code.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        setOtpSent(true);
+        const action = activeTab === 'signup' ? 'Account creation code' : 'Verification code';
         toast({
-          title: "Error",
-          description: error.message || "Failed to send verification code.",
-          variant: "destructive"
+          title: `${action} Sent`,
+          description: "Check your email for a 6-digit verification code."
         });
-        return;
       }
-
-      setOtpSent(true);
-      toast({
-        title: "OTP Code Sent",
-        description: "Check your email for a 6-digit verification code."
-      });
     } catch (error) {
+      console.error('Send OTP error:', error);
       toast({
         title: "Error",
         description: "Failed to send OTP code. Please try again.",
@@ -329,7 +352,8 @@ const SecretKitchensContent = () => {
     }
   };
 
-  const verifyOtpCode = async () => {
+  const verifyOtpCode = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!otpCode || otpCode.length !== 6) {
       toast({
         title: "Invalid Code",
@@ -348,15 +372,16 @@ const SecretKitchensContent = () => {
       });
 
       if (error) {
+        console.error('OTP verify error:', error);
         toast({
           title: "Invalid Code",
           description: "Invalid or expired verification code.",
           variant: "destructive"
         });
-        return;
-      }
-
-      if (data?.user) {
+      } else if (data?.user) {
+        // Refresh the session to ensure we have the latest auth state
+        await supabase.auth.refreshSession();
+        
         // Update first access and get expiration time
         try {
           const { data: accessData, error: accessError } = await supabase
@@ -372,18 +397,14 @@ const SecretKitchensContent = () => {
         }
 
         setIsAuthorized(true);
+        const action = isSignup ? 'Account created!' : 'Welcome back!';
         toast({
           title: "Authentication Successful",
-          description: "Welcome to Secret Kitchens."
-        });
-      } else {
-        toast({
-          title: "Error",
-          description: "Verification failed. Please try again.",
-          variant: "destructive"
+          description: `${action} Accessing Secret Kitchens...`
         });
       }
     } catch (error) {
+      console.error('Verify OTP error:', error);
       toast({
         title: "Error",
         description: "Verification failed. Please try again.",
@@ -634,76 +655,133 @@ const SecretKitchensContent = () => {
             </div>
           </div>
 
-          {/* Email form - smaller width */}
+          {/* Authentication form - smaller width */}
           <div className="w-full max-w-md">
-
-          <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl font-bold text-white">Secret Kitchens</CardTitle>
-              <CardDescription className="text-white/80">
-                Enter your email, follow the instructions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-white">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your.email@company.com"
-                  disabled={otpSent}
-                  className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
-                />
-              </div>
-              
-              {!otpSent ? (
-                <Button 
-                  onClick={sendOtpCode} 
-                  disabled={loading || !email}
-                  className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90"
-                >
-                  {loading ? 'Sending...' : 'Send Code'}
-                </Button>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="otp" className="text-white">6-Digit Verification Code</Label>
-                    <Input
-                      id="otp"
-                      type="text"
-                      value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      placeholder="000000"
-                      maxLength={6}
-                      className="text-center text-lg tracking-widest bg-white/20 border-white/30 text-white placeholder:text-white/60"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Button 
-                      onClick={verifyOtpCode} 
-                      disabled={loading || !otpCode || otpCode.length !== 6}
-                      className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90"
-                    >
-                      {loading ? 'Verifying...' : 'Verify Code'}
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setOtpSent(false);
-                        setOtpCode('');
-                      }} 
-                      variant="outline"
-                      className="w-full border-white/30 text-black hover:bg-white/10"
-                    >
-                      Back to Email
-                    </Button>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+            {otpSent ? (
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl font-bold text-white">Enter verification code</CardTitle>
+                  <CardDescription className="text-white/80">
+                    We've sent a 6-digit code to {email}. Enter it below to access Secret Kitchens.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <form onSubmit={verifyOtpCode} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="otp" className="text-white">Verification code</Label>
+                      <InputOTP
+                        value={otpCode}
+                        onChange={setOtpCode}
+                        maxLength={6}
+                        disabled={loading}
+                        className="justify-center"
+                      >
+                        <InputOTPGroup className="bg-white/20 border-white/30 text-white">
+                          <InputOTPSlot index={0} className="bg-white/20 border-white/30 text-white" />
+                          <InputOTPSlot index={1} className="bg-white/20 border-white/30 text-white" />
+                          <InputOTPSlot index={2} className="bg-white/20 border-white/30 text-white" />
+                          <InputOTPSlot index={3} className="bg-white/20 border-white/30 text-white" />
+                          <InputOTPSlot index={4} className="bg-white/20 border-white/30 text-white" />
+                          <InputOTPSlot index={5} className="bg-white/20 border-white/30 text-white" />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </div>
+                    <div className="space-y-2">
+                      <Button 
+                        type="submit"
+                        disabled={loading || otpCode.length !== 6}
+                        className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90"
+                      >
+                        {loading ? 'Verifying...' : 'Verify Code'}
+                      </Button>
+                      <Button 
+                        type="button"
+                        onClick={() => {
+                          setOtpSent(false);
+                          setOtpCode('');
+                        }}
+                        variant="outline"
+                        className="w-full border-white/30 text-white hover:bg-white/10"
+                      >
+                        Back
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="bg-white/10 backdrop-blur-sm border-white/20">
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl font-bold text-white">Secret Kitchens</CardTitle>
+                  <CardDescription className="text-white/80 space-y-2">
+                    <p>Enter your email, follow the instructions</p>
+                    <p className="text-sm font-medium text-white/90">
+                      <strong>First time visitor?</strong> Use "Sign Up" to create your account first.
+                    </p>
+                    <p className="text-sm text-white/70">
+                      <strong>Returning visitor?</strong> Use "Sign In" to access your existing account.
+                    </p>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-white/10">
+                      <TabsTrigger value="signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-[hsl(var(--accent-pink))]">Sign Up</TabsTrigger>
+                      <TabsTrigger value="signin" className="text-white data-[state=active]:bg-white data-[state=active]:text-[hsl(var(--accent-pink))]">Sign In</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="signup" className="space-y-4 mt-4">
+                      <div className="text-sm text-white/80 bg-white/10 p-3 rounded border border-white/20">
+                        <strong>New to Secret Kitchens?</strong> Create your account to access exclusive wood-fired recipes. We'll send you a 6-digit code to verify your email.
+                      </div>
+                      <form onSubmit={sendOtpCode} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email" className="text-white">Email address</Label>
+                          <Input
+                            id="signup-email"
+                            type="email"
+                            placeholder="your.name@company.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={loading}
+                            required
+                            className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+                          />
+                        </div>
+                        <Button type="submit" disabled={loading} className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90">
+                          {loading ? 'Creating account...' : 'Create Account'}
+                        </Button>
+                      </form>
+                    </TabsContent>
+                    
+                    <TabsContent value="signin" className="space-y-4 mt-4">
+                      <div className="text-sm text-white/80 bg-white/10 p-3 rounded border border-white/20">
+                        <strong>Already have an account?</strong> Sign in with your email address. We'll send you a 6-digit code to verify it's you.
+                      </div>
+                      <form onSubmit={sendOtpCode} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="signin-email" className="text-white">Email address</Label>
+                          <Input
+                            id="signin-email"
+                            type="email"
+                            placeholder="your.name@company.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            disabled={loading}
+                            required
+                            className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+                          />
+                        </div>
+                        <Button type="submit" disabled={loading} className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90">
+                          {loading ? 'Sending code...' : 'Send Code'}
+                        </Button>
+                      </form>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            )}
+          </div>
       </div>
       </div>
     );
