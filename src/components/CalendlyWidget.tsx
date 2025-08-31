@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 interface CalendlyWidgetProps {
   url: string;
@@ -19,45 +19,58 @@ export const CalendlyWidget: React.FC<CalendlyWidgetProps> = ({
   className = "", 
   height = 700 
 }) => {
+  const widgetRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     // Load Calendly script if not already loaded
-    if (!document.querySelector('script[src*="calendly.com"]')) {
+    const existingScript = document.querySelector('script[src="https://assets.calendly.com/assets/external/widget.js"]');
+    
+    if (!existingScript) {
       const script = document.createElement('script');
       script.src = 'https://assets.calendly.com/assets/external/widget.js';
       script.async = true;
+      script.onload = () => {
+        console.log('Calendly script loaded successfully');
+        initWidget();
+      };
+      script.onerror = () => {
+        console.error('Failed to load Calendly script');
+      };
       document.head.appendChild(script);
+    } else {
+      // Script already exists, check if Calendly is available
+      if (window.Calendly) {
+        initWidget();
+      } else {
+        // Wait for existing script to load
+        const checkCalendly = setInterval(() => {
+          if (window.Calendly) {
+            clearInterval(checkCalendly);
+            initWidget();
+          }
+        }, 100);
+        
+        setTimeout(() => clearInterval(checkCalendly), 10000);
+      }
     }
 
-    // Initialize widget when script loads
-    const initWidget = () => {
-      const element = document.querySelector('.calendly-inline-widget');
-      if (element && window.Calendly) {
+    function initWidget() {
+      if (widgetRef.current && window.Calendly) {
+        console.log('Initializing Calendly widget with URL:', url);
+        // Clear any existing content
+        widgetRef.current.innerHTML = '';
+        
         window.Calendly.initInlineWidget({
           url: url,
-          parentElement: element as HTMLElement
+          parentElement: widgetRef.current
         });
       }
-    };
-
-    // Check if Calendly is already loaded
-    if (window.Calendly) {
-      initWidget();
-    } else {
-      // Wait for script to load
-      const checkCalendly = setInterval(() => {
-        if (window.Calendly) {
-          clearInterval(checkCalendly);
-          initWidget();
-        }
-      }, 100);
-
-      // Cleanup interval after 10 seconds
-      setTimeout(() => clearInterval(checkCalendly), 10000);
     }
   }, [url]);
 
   return (
     <div 
+      ref={widgetRef}
       className={`calendly-inline-widget bg-white rounded-lg overflow-hidden ${className}`}
       data-url={url}
       style={{ minWidth: '320px', height: `${height}px` }}
