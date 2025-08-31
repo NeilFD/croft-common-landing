@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import CroftLogo from '@/components/CroftLogo';
+import { CalendlyWidget } from '@/components/CalendlyWidget';
 
 const vendorInquirySchema = z.object({
   businessName: z.string().min(2, "Business name must be at least 2 characters"),
@@ -138,27 +139,10 @@ export const QuestionnaireSlide: React.FC = () => {
               Book Your Kitchen Consultation
             </h2>
             
-            {/* Calendly Inline Widget */}
-            <div 
-              className="calendly-inline-widget bg-white rounded-lg overflow-hidden"
-              data-url="https://calendly.com/your-calendly-link/kitchen-vendor-consultation"
-              style={{ minWidth: '320px', height: '630px' }}
-            >
-              {/* Fallback content */}
-              <div className="flex items-center justify-center h-full text-gray-600">
-                <div className="text-center">
-                  <p className="mb-4">Calendar widget loading...</p>
-                  <a 
-                    href="https://calendly.com/your-calendly-link/kitchen-vendor-consultation"
-                    className="text-primary hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Click here to schedule directly
-                  </a>
-                </div>
-              </div>
-            </div>
+            <CalendlyWidget 
+              url="https://calendly.com/neil-cityandsanctuary/30min?hide_gdpr_banner=1&primary_color=e85a9b"
+              height={700}
+            />
           </div>
         </div>
       </div>

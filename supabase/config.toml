@@ -197,3 +197,6 @@ verify_jwt = false
 
 [functions.simple-push-test]
 verify_jwt = false
+
+[functions.calendly-webhook]
+verify_jwt = false
