@@ -49,7 +49,7 @@ export const useTimedAccess = (email: string | null) => {
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   // Record first access and set expiration
   const recordFirstAccess = useCallback(async (userEmail: string) => {
@@ -99,7 +99,7 @@ export const useTimedAccess = (email: string | null) => {
       console.error('Error in recordFirstAccess:', error);
       return false;
     }
-  }, [toast]);
+  }, []);
 
   // Handle access expiration
   const handleExpiration = useCallback(async () => {
@@ -110,7 +110,7 @@ export const useTimedAccess = (email: string | null) => {
       variant: "destructive",
       duration: 10000
     });
-  }, [toast]);
+  }, []);
 
   useEffect(() => {
     if (email) {
