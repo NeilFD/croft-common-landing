@@ -224,11 +224,14 @@ const SecretKitchensContent = () => {
     handleExpiration 
   } = useTimedAccess(user?.email || null);
 
+  // Set authorization based on accessData from the hook
   useEffect(() => {
-    if (user?.email) {
-      checkEmailAccess(user.email);
+    if (accessData) {
+      setIsAuthorized(true);
+    } else if (user?.email && !accessLoading) {
+      setIsAuthorized(false);
     }
-  }, [user]);
+  }, [accessData, user?.email, accessLoading]);
 
   const checkEmailAccess = async (email: string) => {
     try {
