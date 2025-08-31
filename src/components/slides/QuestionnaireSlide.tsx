@@ -121,7 +121,7 @@ export const QuestionnaireSlide: React.FC = () => {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary via-primary-dark to-primary-darker flex flex-col">
+      <div className="min-h-screen bg-black flex flex-col">
         <div className="flex-shrink-0 p-8 text-center">
           <CroftLogo className="w-24 h-24 mx-auto mb-4" />
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
@@ -166,7 +166,7 @@ export const QuestionnaireSlide: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary via-primary-dark to-primary-darker">
+    <div className="min-h-screen bg-black flex flex-col">
       <div className="flex-shrink-0 p-8 text-center">
         <CroftLogo className="w-24 h-24 mx-auto mb-4" />
         <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
@@ -177,8 +177,8 @@ export const QuestionnaireSlide: React.FC = () => {
         </p>
       </div>
 
-      <div className="flex items-center justify-center p-8">
-        <Card className="w-full max-w-4xl bg-white/10 backdrop-blur-sm border-white/20">
+      <div className="flex-1 flex justify-center pb-8 px-8">
+        <Card className="w-full max-w-4xl bg-white/10 backdrop-blur-sm border-white/20 h-fit">
           <CardHeader>
             <CardTitle className="text-2xl text-white">Your Kitchen Concept</CardTitle>
             <CardDescription className="text-white/80">
@@ -186,7 +186,7 @@ export const QuestionnaireSlide: React.FC = () => {
             </CardDescription>
           </CardHeader>
           
-          <CardContent className="space-y-8 max-h-[600px] overflow-y-auto">
+          <CardContent className="space-y-8">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Business Information Section */}
