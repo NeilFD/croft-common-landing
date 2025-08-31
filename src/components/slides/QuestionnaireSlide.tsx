@@ -177,16 +177,16 @@ export const QuestionnaireSlide: React.FC = () => {
         </p>
       </div>
 
-      <div className="flex-1 flex justify-center pb-8 px-8">
-        <Card className="w-full max-w-4xl bg-white/10 backdrop-blur-sm border-white/20 h-fit">
-          <CardHeader>
+      <div className="flex-1 flex justify-center pb-8 px-8 overflow-hidden">
+        <Card className="w-full max-w-4xl bg-white/10 backdrop-blur-sm border-white/20 flex flex-col max-h-full">
+          <CardHeader className="flex-shrink-0">
             <CardTitle className="text-2xl text-white">Your Kitchen Concept</CardTitle>
             <CardDescription className="text-white/80">
               Help us understand your business and how we can support your success.
             </CardDescription>
           </CardHeader>
           
-          <CardContent className="space-y-8">
+          <CardContent className="space-y-8 overflow-y-auto flex-1">
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 {/* Business Information Section */}
