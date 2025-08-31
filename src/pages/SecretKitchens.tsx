@@ -714,7 +714,6 @@ const SecretKitchensContent = () => {
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl font-bold text-white">Secret Kitchens</CardTitle>
                   <CardDescription className="text-white/80 space-y-2">
-                    <p>Enter your email, follow the instructions</p>
                     <p className="text-sm font-medium text-white/90">
                       <strong>First time?</strong> Use Sign Up to create your user, and then Sign-In to access
                     </p>
