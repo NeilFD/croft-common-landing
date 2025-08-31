@@ -1619,11 +1619,16 @@ export type Database = {
       secret_kitchen_access: {
         Row: {
           access_expires_at: string | null
+          application_date: string | null
+          application_id: string | null
           business_name: string
+          calendly_booked: boolean | null
+          calendly_booking_date: string | null
           created_at: string
           created_by: string | null
           email: string
           first_access_at: string | null
+          has_applied: boolean | null
           id: string
           is_active: boolean
           name: string
@@ -1631,11 +1636,16 @@ export type Database = {
         }
         Insert: {
           access_expires_at?: string | null
+          application_date?: string | null
+          application_id?: string | null
           business_name: string
+          calendly_booked?: boolean | null
+          calendly_booking_date?: string | null
           created_at?: string
           created_by?: string | null
           email: string
           first_access_at?: string | null
+          has_applied?: boolean | null
           id?: string
           is_active?: boolean
           name: string
@@ -1643,17 +1653,30 @@ export type Database = {
         }
         Update: {
           access_expires_at?: string | null
+          application_date?: string | null
+          application_id?: string | null
           business_name?: string
+          calendly_booked?: boolean | null
+          calendly_booking_date?: string | null
           created_at?: string
           created_by?: string | null
           email?: string
           first_access_at?: string | null
+          has_applied?: boolean | null
           id?: string
           is_active?: boolean
           name?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "secret_kitchen_access_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "kitchen_vendor_inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       secret_kitchen_usage: {
         Row: {
@@ -2341,6 +2364,14 @@ export type Database = {
       }
       is_within_venue_bounds: {
         Args: { lat: number; lng: number }
+        Returns: boolean
+      }
+      update_meeting_status: {
+        Args: {
+          booking_date?: string
+          booking_status: boolean
+          user_email: string
+        }
         Returns: boolean
       }
       update_secret_kitchen_first_access: {
