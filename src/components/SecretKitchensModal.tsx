@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { SecretKitchensAuthModal } from "@/components/SecretKitchensAuthModal";
+import { AuthModal } from "@/components/AuthModal";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
@@ -13,25 +13,15 @@ interface SecretKitchensModalProps {
   onClose: () => void;
 }
 
-type RecipeId = 'pizza-margherita' | 'pizza-puttanesca' | 'pizza-sausage' | 'beef-ragu' | 'chili-crab' | 'chicken-piri' | 'chimichurri-lamb' | 'flatbread' | 'tenderstem' | 'leek-slaw' | 'beetroot-labneh';
+const Separator = () => (
+  <div className="my-5 text-center select-none" aria-hidden="true">
+    <span className="text-foreground/60">⸻</span>
+  </div>
+);
 
-export default function SecretKitchensModal({ open, onClose }: SecretKitchensModalProps) {
-  const [activeId, setActiveId] = React.useState<RecipeId>('pizza-margherita');
-  const contentRef = React.useRef<HTMLDivElement>(null);
-
-  const {
-    bioOpen,
-    linkOpen,
-    authOpen,
-    allowed,
-    checking,
-    start,
-    reset,
-    handleBioSuccess,
-    handleBioFallback,
-    handleLinkSuccess,
-    handleAuthSuccess
-  } = useMembershipGate();
+const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose }) => {
+const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
+const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleCloseAll = () => {
     reset();
@@ -39,31 +29,64 @@ export default function SecretKitchensModal({ open, onClose }: SecretKitchensMod
   };
 
   React.useEffect(() => {
-    if (open && !checking && !bioOpen && !linkOpen && !authOpen && !allowed) {
-      start();
+    if (open) {
+      // Ensure we start at the top with no lingering text selection
+      try { window.getSelection()?.removeAllRanges(); } catch {}
+      contentRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
     }
-  }, [open, checking, bioOpen, linkOpen, authOpen, allowed, start]);
+  }, [open]);
 
-  React.useEffect(() => {
-    if (allowed) {
-      // Continue...
-    }
-  }, [allowed]);
+React.useEffect(() => {
+  if (!open) {
+    reset();
+    return;
+  }
+  start();
+}, [open]);
 
-  const pizzaItems = [
-    { id: 'pizza-margherita', title: 'PIZZA MARGHERITA' },
-    { id: 'pizza-puttanesca', title: 'PIZZA PUTTANESCA' },
-    { id: 'pizza-sausage', title: 'SAUSAGE & FENNEL PIZZA' },
+
+  type RecipeId =
+    | 'cover'
+    | 'sourdough'
+    | 'margherita'
+    | 'hot-honey-goat'
+    | 'nduja-ricotta'
+    | 'anchovy-olive-caper'
+    | 'mushroom-sage-taleggio'
+    | 'cauliflower'
+    | 'porchetta'
+    | 'chicken-thighs'
+    | 'salmon-dill'
+    | 'maple-pork-belly'
+    | 'charred-corn'
+    | 'roast-potatoes'
+    | 'flatbread'
+    | 'tenderstem'
+    | 'leek-slaw'
+    | 'beetroot-labneh';
+
+  const [activeId, setActiveId] = React.useState<RecipeId>('cover');
+
+  const pizzaItems: { id: RecipeId; title: string }[] = [
+    { id: 'sourdough', title: 'COMMON SOURDOUGH PIZZA DOUGH' },
+    { id: 'margherita', title: 'MARGHERITA' },
+    { id: 'hot-honey-goat', title: 'HOT HONEY & GOAT CHEESE' },
+    { id: 'nduja-ricotta', title: 'NDUJA & RICOTTA' },
+    { id: 'anchovy-olive-caper', title: 'ANCHOVY, OLIVE, CAPER' },
+    { id: 'mushroom-sage-taleggio', title: 'MUSHROOM, SAGE, TALEGGIO' },
   ];
 
-  const mainsItems = [
-    { id: 'beef-ragu', title: 'BEEF RAGU, PAPPARDELLE & PARMESAN' },
-    { id: 'chili-crab', title: 'CHILLI CRAB & SWEET CORN LINGUINE' },
-    { id: 'chicken-piri', title: 'PIRI PIRI CHICKEN' },
-    { id: 'chimichurri-lamb', title: 'CHIMICHURRI LAMB' },
+  const mainsItems: { id: RecipeId; title: string }[] = [
+    { id: 'cauliflower', title: 'WHOLE CAULIFLOWER, HARISSA & TAHINI' },
+    { id: 'porchetta', title: 'PORCHETTA ROLL, SAGE APRICOTS' },
+    { id: 'chicken-thighs', title: 'WOOD-ROASTED CHICKEN THIGHS, HERBS' },
+    { id: 'salmon-dill', title: 'SMOKED SALMON FILLET, DILL CREAM' },
+    { id: 'maple-pork-belly', title: 'MAPLE PORK BELLY, APPLE SLAW' },
+    { id: 'charred-corn', title: 'CHARRED CORN, LIME MAYO' },
   ];
 
-  const sidesItems = [
+  const sidesItems: { id: RecipeId; title: string }[] = [
+    { id: 'roast-potatoes', title: 'WOOD-FIRED ROAST POTATOES, GARLIC BUTTER' },
     { id: 'flatbread', title: 'FLATBREAD, OLIVE OIL & SALT' },
     { id: 'tenderstem', title: 'GRILLED TENDERSTEM, SESAME & CHILLI' },
     { id: 'leek-slaw', title: 'BURNT LEEK & HERB SLAW' },
@@ -77,7 +100,7 @@ export default function SecretKitchensModal({ open, onClose }: SecretKitchensMod
 
   return (
     <>
-      <BiometricUnlockModal
+<BiometricUnlockModal
         isOpen={bioOpen}
         onClose={() => { reset(); }}
         onSuccess={handleBioSuccess}
@@ -91,10 +114,13 @@ export default function SecretKitchensModal({ open, onClose }: SecretKitchensMod
         onClose={() => { reset(); }}
         onSuccess={(email) => { handleLinkSuccess(email); }}
       />
-      <SecretKitchensAuthModal
+      <AuthModal
         isOpen={authOpen}
         onClose={() => { reset(); }}
         onSuccess={handleAuthSuccess}
+        requireAllowedDomain={false}
+        title="Unlock Common Cook Book"
+        description="We’ll email you a 6-digit verification code to confirm."
       />
       <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent
@@ -104,410 +130,455 @@ export default function SecretKitchensModal({ open, onClose }: SecretKitchensMod
         className="w-[92vw] sm:w-[86vw] md:max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-[85vh] overflow-y-auto border border-border bg-background"
       >
         <div className="space-y-6">
-          {/* Header with back button and logo */}
-          <div className="flex items-center justify-between relative">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCloseAll}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft size={16} />
-              Back
-            </Button>
-            <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2">
-              <CroftLogo className="h-8 text-foreground" />
-            </div>
+          {/* Brand + Back */}
+          <div className="flex items-center gap-4">
+            {activeId !== 'cover' && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setActiveId('cover')}
+                aria-label="Back to cover"
+                className="border-none bg-transparent hover:bg-transparent focus-visible:ring-0 text-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+            )}
+            <CroftLogo className="w-10 h-10" />
+            <span className="font-brutalist text-foreground tracking-wider text-xl md:text-2xl leading-none">CROFT COMMON</span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-8">
-            {/* Main Content */}
-            <div className="order-2 lg:order-1">
-              {activeId === 'pizza-margherita' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">PIZZA MARGHERITA</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>For the dough:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 500g strong white bread flour</li>
-                      <li>• 325ml warm water</li>
-                      <li>• 7g active dry yeast</li>
-                      <li>• 1 tsp fine sea salt</li>
-                      <li>• 2 tbsp extra virgin olive oil</li>
-                    </ul>
 
-                    <p><strong>For the topping:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 200ml San Marzano tomatoes, crushed</li>
-                      <li>• 200g fresh mozzarella, torn</li>
-                      <li>• Fresh basil leaves</li>
-                      <li>• Extra virgin olive oil</li>
-                      <li>• Sea salt and black pepper</li>
-                    </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Dissolve yeast in warm water with a pinch of sugar. Let stand for 5 minutes until foamy.</li>
-                      <li>2. In a large bowl, combine flour and salt. Make a well in the center and add the yeast mixture and olive oil.</li>
-                      <li>3. Mix until a rough dough forms, then turn onto a floured surface and knead for 8-10 minutes until smooth and elastic.</li>
-                      <li>4. Place in an oiled bowl, cover, and let rise for 1-2 hours until doubled in size.</li>
-                      <li>5. Punch down dough and divide into 2-3 portions. Roll each into a thin circle.</li>
-                      <li>6. Transfer to a pizza stone or baking sheet. Spread crushed tomatoes, leaving a border for the crust.</li>
-                      <li>7. Top with torn mozzarella and season with salt and pepper.</li>
-                      <li>8. Bake at 250°C (480°F) for 10-12 minutes until crust is golden and cheese is bubbling.</li>
-                      <li>9. Remove from oven, top with fresh basil leaves and a drizzle of olive oil.</li>
-                      <li>10. Slice and serve immediately while hot.</li>
-                    </ol>
-                  </div>
+          {/* Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-[1fr_280px] gap-6">
+            {/* Main content */}
+            <article className="space-y-4">
+              {activeId === 'cover' && (
+                <div className="flex flex-col items-center text-center py-8 select-none">
+                  <CroftLogo size="lg" className="w-20 h-20 md:w-24 md:h-24" />
+                  <div className="h-6" aria-hidden="true" />
+                  <h3 className="font-brutalist text-foreground text-4xl md:text-5xl tracking-wider">Common Cook Book</h3>
+                  <p className="font-industrial text-foreground/80 mt-2">Wood. Fire. Dough. Good Taste</p>
                 </div>
               )}
 
-              {activeId === 'pizza-puttanesca' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">PIZZA PUTTANESCA</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>For the topping:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• Pizza dough (as above)</li>
-                      <li>• 200ml San Marzano tomatoes, crushed</li>
-                      <li>• 150g fresh mozzarella</li>
-                      <li>• 50g anchovy fillets</li>
-                      <li>• 100g Kalamata olives, pitted</li>
-                      <li>• 2 tbsp capers</li>
-                      <li>• 2 cloves garlic, thinly sliced</li>
-                      <li>• Red chili flakes</li>
-                      <li>• Fresh oregano</li>
-                      <li>• Extra virgin olive oil</li>
+              {activeId === 'sourdough' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">COMMON SOURDOUGH PIZZA DOUGH</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 6 pizzas</p>
+                    <p>Time: 24 hours if you respect it, 6 if you don’t</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Chewy in the middle. Charred at the edge. A base that holds its own without stealing the show. Built for heat, whether it’s a backyard fire or your kitchen oven.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1kg strong white bread flour</li>
+                      <li>700ml cold water</li>
+                      <li>25g salt</li>
+                      <li>20g olive oil</li>
+                      <li>200g active sourdough starter (or 7g dried yeast if you’re cheating)</li>
                     </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Prepare pizza dough as per margherita recipe.</li>
-                      <li>2. Roll out dough and spread with crushed tomatoes.</li>
-                      <li>3. Scatter torn mozzarella, anchovy fillets, olives, and capers.</li>
-                      <li>4. Add thinly sliced garlic and a pinch of chili flakes.</li>
-                      <li>5. Drizzle with olive oil and season with salt and pepper.</li>
-                      <li>6. Bake at 250°C (480°F) for 10-12 minutes.</li>
-                      <li>7. Finish with fresh oregano leaves before serving.</li>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Day Before</h4>
+                    <ol className="font-industrial text-foreground/90 leading-relaxed list-decimal pl-5 space-y-1">
+                      <li>Mix – Flour, water, starter. Leave salt out for now. Bring together into a rough dough. Rest 30 mins.</li>
+                      <li>Salt & Oil – Add salt and oil. Knead for 8–10 mins until smooth.</li>
+                      <li>Bulk – Cover and leave at room temp for 4 hours, folding the dough over itself every hour.</li>
+                      <li>Shape – Split into 250g balls. Flour lightly, store in a covered container, fridge overnight.</li>
                     </ol>
                   </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Bring dough to room temp for an hour. Preheat oven to max (250°C) with a pizza stone or baking tray inside for at least 45 mins. Stretch by hand to keep the air in the crust. Bake 5–7 mins until golden and blistered.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten</p>
                 </div>
               )}
 
-              {activeId === 'pizza-sausage' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">SAUSAGE & FENNEL PIZZA</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>For the topping:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• Pizza dough (as above)</li>
-                      <li>• 200ml tomato sauce</li>
-                      <li>• 150g fresh mozzarella</li>
-                      <li>• 200g Italian sausage, casings removed</li>
-                      <li>• 1 fennel bulb, thinly sliced</li>
-                      <li>• 1 red onion, thinly sliced</li>
-                      <li>• 50g Parmesan, grated</li>
-                      <li>• Fennel seeds</li>
-                      <li>• Fresh rosemary</li>
-                      <li>• Extra virgin olive oil</li>
-                    </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Cook sausage in a pan, breaking into small pieces. Set aside.</li>
-                      <li>2. Sauté fennel and red onion until softened.</li>
-                      <li>3. Roll out dough and spread with tomato sauce.</li>
-                      <li>4. Top with mozzarella, cooked sausage, fennel, and onion.</li>
-                      <li>5. Sprinkle with Parmesan and fennel seeds.</li>
-                      <li>6. Bake at 250°C (480°F) for 10-12 minutes.</li>
-                      <li>7. Garnish with fresh rosemary before serving.</li>
-                    </ol>
+              {activeId === 'margherita' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">MARGHERITA</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 10 mins once dough’s ready</p>
                   </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Tomato. Mozzarella. Basil. The blueprint.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>80g passata mixed with olive oil and salt</li>
+                      <li>100g fresh mozzarella, torn</li>
+                      <li>4 basil leaves</li>
+                      <li>Olive oil</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Stretch dough. Spread sauce evenly, leaving a 2cm edge. Scatter mozzarella, lay basil leaves on top. Bake on preheated stone for 6–8 mins until crust is spotted and cheese is bubbling. Drizzle oil to finish.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
                 </div>
               )}
 
-              {activeId === 'beef-ragu' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">BEEF RAGU, PAPPARDELLE & PARMESAN</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 500g beef chuck, diced</li>
-                      <li>• 400g pappardelle pasta</li>
-                      <li>• 1 onion, finely chopped</li>
-                      <li>• 2 carrots, finely chopped</li>
-                      <li>• 2 celery stalks, finely chopped</li>
-                      <li>• 3 cloves garlic, minced</li>
-                      <li>• 800g crushed tomatoes</li>
-                      <li>• 250ml red wine</li>
-                      <li>• 500ml beef stock</li>
-                      <li>• 2 bay leaves</li>
-                      <li>• Fresh thyme</li>
-                      <li>• Parmesan cheese, grated</li>
-                      <li>• Extra virgin olive oil</li>
+              {activeId === 'hot-honey-goat' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider text-center">HOT HONEY & GOAT CHEESE</h3>
+                  <p className="font-industrial text-foreground/80 text-center">Sweet, sharp, heat.</p>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>80g passata</li>
+                      <li>80g soft goat cheese</li>
+                      <li>40g mozzarella</li>
+                      <li>Hot honey (chilli-infused)</li>
+                      <li>1 red chilli, sliced thin</li>
                     </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Heat olive oil in a heavy-bottomed pot. Brown beef pieces on all sides.</li>
-                      <li>2. Remove beef and sauté onion, carrots, and celery until softened.</li>
-                      <li>3. Add garlic and cook for another minute.</li>
-                      <li>4. Return beef to pot, add red wine and let it reduce.</li>
-                      <li>5. Add crushed tomatoes, stock, bay leaves, and thyme.</li>
-                      <li>6. Bring to a boil, then reduce heat and simmer for 2-3 hours until beef is tender.</li>
-                      <li>7. Cook pappardelle according to package instructions.</li>
-                      <li>8. Toss pasta with ragu and serve with grated Parmesan.</li>
-                    </ol>
                   </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Stretch dough. Spread passata, top with mozzarella and chilli slices. Bake until crust is golden. Crumble goat cheese on top straight from the oven and drizzle with hot honey.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
                 </div>
               )}
 
-              {activeId === 'chili-crab' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">CHILLI CRAB & SWEET CORN LINGUINE</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 400g linguine</li>
-                      <li>• 300g fresh crab meat</li>
-                      <li>• 2 corn cobs, kernels removed</li>
-                      <li>• 2 red chilies, finely chopped</li>
-                      <li>• 4 cloves garlic, sliced</li>
-                      <li>• 1 lemon, zested and juiced</li>
-                      <li>• Fresh parsley, chopped</li>
-                      <li>• Extra virgin olive oil</li>
-                      <li>• White wine</li>
-                      <li>• Sea salt and pepper</li>
+              {activeId === 'nduja-ricotta' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">NDUJA & RICOTTA</h3>
+                  <p className="font-industrial text-foreground/80">Fire and cream.</p>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>80g passata</li>
+                      <li>60g nduja</li>
+                      <li>60g ricotta</li>
+                      <li>40g mozzarella</li>
                     </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Cook linguine according to package instructions until al dente.</li>
-                      <li>2. Heat olive oil in a large pan and sauté corn kernels until lightly charred.</li>
-                      <li>3. Add garlic and chili, cook for 1 minute.</li>
-                      <li>4. Add white wine and let it reduce.</li>
-                      <li>5. Gently fold in crab meat and warm through.</li>
-                      <li>6. Drain pasta and add to the pan with a splash of pasta water.</li>
-                      <li>7. Toss everything together with lemon zest, juice, and parsley.</li>
-                      <li>8. Season with salt and pepper, serve immediately.</li>
-                    </ol>
                   </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Stretch dough, spread passata, scatter mozzarella and nduja. Bake until crust blisters. Add spoonfuls of ricotta after baking so it stays cool against the heat.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
                 </div>
               )}
 
-              {activeId === 'chicken-piri' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">PIRI PIRI CHICKEN</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>For the marinade:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 4 chicken breasts or 1 whole chicken, spatchcocked</li>
-                      <li>• 6 piri piri chilies (or 3 red chilies + 1 tsp hot sauce)</li>
-                      <li>• 4 cloves garlic</li>
-                      <li>• 1 red bell pepper, charred and peeled</li>
-                      <li>• 2 tbsp red wine vinegar</li>
-                      <li>• 60ml olive oil</li>
-                      <li>• 1 tsp smoked paprika</li>
-                      <li>• 1 tsp oregano</li>
-                      <li>• Salt and pepper</li>
-                      <li>• Juice of 1 lemon</li>
+              {activeId === 'anchovy-olive-caper' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">ANCHOVY, OLIVE, CAPER</h3>
+                  <p className="font-industrial text-foreground/80">Salt and bite.</p>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>80g passata</li>
+                      <li>6 anchovy fillets</li>
+                      <li>40g black olives, halved</li>
+                      <li>20g capers</li>
+                      <li>40g mozzarella</li>
                     </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Blend all marinade ingredients until smooth.</li>
-                      <li>2. Score chicken skin and coat thoroughly with marinade.</li>
-                      <li>3. Marinate for at least 2 hours, preferably overnight.</li>
-                      <li>4. Preheat grill or oven to high heat.</li>
-                      <li>5. Grill chicken for 6-8 minutes per side until cooked through.</li>
-                      <li>6. Rest for 5 minutes before serving.</li>
-                      <li>7. Serve with extra piri piri sauce on the side.</li>
-                    </ol>
                   </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Stretch dough, spread passata, add mozzarella, anchovies, olives and capers all at once. Bake until crust is crisp and toppings are sizzling.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, fish</p>
                 </div>
               )}
 
-              {activeId === 'chimichurri-lamb' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">CHIMICHURRI LAMB</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>For the lamb:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 1kg lamb leg steaks</li>
-                      <li>• 2 tbsp olive oil</li>
-                      <li>• Salt and pepper</li>
+              {activeId === 'mushroom-sage-taleggio' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">MUSHROOM, SAGE, TALEGGIO</h3>
+                  <p className="font-industrial text-foreground/80">Earth and melt.</p>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>100g mixed mushrooms, sliced</li>
+                      <li>80g Taleggio, torn</li>
+                      <li>4 sage leaves</li>
+                      <li>Olive oil</li>
                     </ul>
-
-                    <p><strong>For the chimichurri:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 1 cup fresh parsley, chopped</li>
-                      <li>• 3 cloves garlic, minced</li>
-                      <li>• 2 tbsp red wine vinegar</li>
-                      <li>• 1/3 cup olive oil</li>
-                      <li>• 1 tsp red pepper flakes</li>
-                      <li>• 1/2 tsp oregano</li>
-                      <li>• Salt and pepper to taste</li>
-                    </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Mix all chimichurri ingredients in a bowl. Let stand for 30 minutes.</li>
-                      <li>2. Season lamb with salt, pepper, and olive oil.</li>
-                      <li>3. Heat a grill pan or BBQ to high heat.</li>
-                      <li>4. Cook lamb for 3-4 minutes per side for medium-rare.</li>
-                      <li>5. Rest meat for 5 minutes before slicing.</li>
-                      <li>6. Serve sliced lamb with generous chimichurri spooned over.</li>
-                    </ol>
                   </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Pan-fry mushrooms in olive oil until golden. Stretch dough, brush base with oil (no tomato). Scatter mushrooms, cheese, and sage. Bake until edges are brown and cheese has pooled.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
+              {activeId === 'cauliflower' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WHOLE CAULIFLOWER, HARISSA & TAHINI</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 1.5 hours</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 whole cauliflower</li>
+                      <li>3 tbsp rose harissa</li>
+                      <li>3 tbsp olive oil</li>
+                      <li>100g tahini</li>
+                      <li>Juice of 1 lemon</li>
+                      <li>Salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Preheat oven to 200°C. Remove cauliflower leaves, trim stalk slightly. Mix harissa, oil, and salt, rub all over. Wrap in foil, roast 1 hour until tender. Unwrap and roast another 15 mins for char. Whisk tahini, lemon juice, pinch of salt and water until pourable. Slice cauliflower, spoon sauce over.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: sesame</p>
+                </div>
+              )}
+
+              {activeId === 'porchetta' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">PORCHETTA ROLL, SAGE APRICOTS</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves 6 hungry people</p>
+                    <p>Two days if you’ve got them. Four hours if you don’t.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Pork that falls when you touch it. Skin that shatters. Sage for the ground. Apricots for the lift. All in a soft roll that barely holds it together.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-3">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2kg boneless pork belly, skin on</li>
+                      <li>Sea salt — the good kind</li>
+                      <li>Black pepper, cracked fresh</li>
+                      <li>1 bunch sage, leaves only</li>
+                      <li>6 garlic cloves, smashed</li>
+                      <li>Zest of 1 lemon</li>
+                      <li>Olive oil</li>
+                      <li>200g dried apricots, chopped</li>
+                      <li>100ml white wine</li>
+                      <li>6 soft white rolls</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Day Before</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Score the skin fine. Salt deep. Flip it. Pepper, lemon zest, chopped sage, garlic — work it into the meat. Wrap. Chill overnight. Let the salt get to work.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Oven to 150°C. Roll the belly tight, skin out. Tie it like you mean it. Rack over tin. Three hours until the meat sighs. While it goes, warm a pan. Olive oil. Apricots. Wine. Simmer to sticky — your quiet ace. Last half hour, oven to 230°C. Let the skin turn to glass.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">To Serve</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Slice thick. Stack into rolls. Apricots on top. No sides, unless it’s a pint.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
+              {activeId === 'chicken-thighs' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WOOD-ROASTED CHICKEN THIGHS, HERBS</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 50 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>8 chicken thighs, bone-in, skin on</li>
+                      <li>4 sprigs rosemary</li>
+                      <li>4 sprigs thyme</li>
+                      <li>4 garlic cloves, smashed</li>
+                      <li>Olive oil, salt, pepper</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Preheat oven to 220°C. Toss chicken with herbs, garlic, oil, salt, pepper. Arrange skin side up on a baking tray. Roast 40–45 mins until skin is crisp and juices run clear. Rest 5 mins before serving.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'salmon-dill' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">SMOKED SALMON FILLET, DILL CREAM</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 25 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 salmon fillets</li>
+                      <li>Olive oil, salt, pepper</li>
+                      <li>150g crème fraîche</li>
+                      <li>Small bunch dill, chopped</li>
+                      <li>Juice of 1 lemon</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Preheat oven to 200°C. Rub salmon with oil, season. Roast 12–15 mins until just opaque. Mix crème fraîche, dill, and lemon. Serve salmon hot with a spoonful of dill cream on top.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: fish, milk</p>
+                </div>
+              )}
+
+              {activeId === 'maple-pork-belly' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">MAPLE PORK BELLY, APPLE SLAW</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 3 hours</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1.5kg pork belly, scored</li>
+                      <li>3 tbsp maple syrup</li>
+                      <li>Salt, pepper</li>
+                      <li>For slaw: ¼ cabbage, shredded; 1 apple, grated; 2 tbsp cider vinegar; pinch sugar</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Preheat oven to 150°C. Season pork belly generously. Roast on a rack 2.5 hrs until tender. Brush with maple syrup, raise heat to 230°C for 20 mins until skin crackles. Rest 10 mins. Toss slaw ingredients. Slice pork thick, serve with slaw.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'charred-corn' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CHARRED CORN, LIME MAYO</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You’ll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 corn cobs</li>
+                      <li>3 tbsp mayonnaise</li>
+                      <li>Juice of 1 lime</li>
+                      <li>Salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Preheat grill or griddle. Char corn on all sides until blistered. Mix mayo, lime juice, pinch of salt. Brush over hot corn. Sprinkle chilli powder if you like.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: egg (in mayo)</p>
+                </div>
+              )}
+
+              {activeId === 'roast-potatoes' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WOOD-FIRED ROAST POTATOES, GARLIC BUTTER</h3>
+                  <p className="font-industrial text-foreground/90 leading-relaxed">Parboil 500g halved potatoes 8 mins. Drain, steam dry. Melt 50g butter with 2 crushed garlic cloves. Toss potatoes in butter, season. Roast at 200°C for 35–40 mins until crisp.</p>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk</p>
                 </div>
               )}
 
               {activeId === 'flatbread' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">FLATBREAD, OLIVE OIL & SALT</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 300g plain flour</li>
-                      <li>• 1 tsp salt</li>
-                      <li>• 180ml warm water</li>
-                      <li>• 3 tbsp olive oil</li>
-                      <li>• Extra olive oil for cooking</li>
-                      <li>• Flaky sea salt</li>
-                      <li>• Fresh herbs (optional)</li>
-                    </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Mix flour and salt in a bowl.</li>
-                      <li>2. Add warm water and olive oil, mix to form a soft dough.</li>
-                      <li>3. Knead for 2-3 minutes until smooth.</li>
-                      <li>4. Rest for 30 minutes covered.</li>
-                      <li>5. Divide into 6 portions and roll very thin.</li>
-                      <li>6. Heat a dry pan and cook each flatbread for 1-2 minutes per side.</li>
-                      <li>7. Brush with olive oil and sprinkle with sea salt while warm.</li>
-                    </ol>
-                  </div>
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">FLATBREAD, OLIVE OIL & SALT</h3>
+                  <p className="font-industrial text-foreground/90 leading-relaxed">Use pizza dough, roll thin. Heat dry frying pan or hot oven tray. Cook 1–2 mins each side until spotted. Brush with oil, sprinkle with sea salt.</p>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten</p>
                 </div>
               )}
 
               {activeId === 'tenderstem' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">GRILLED TENDERSTEM, SESAME & CHILLI</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 400g tenderstem broccoli</li>
-                      <li>• 2 tbsp sesame oil</li>
-                      <li>• 1 tbsp soy sauce</li>
-                      <li>• 1 red chili, sliced</li>
-                      <li>• 2 tbsp sesame seeds</li>
-                      <li>• 2 cloves garlic, minced</li>
-                      <li>• 1 tsp ginger, grated</li>
-                      <li>• Lime juice</li>
-                    </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Heat grill pan to high heat.</li>
-                      <li>2. Toss tenderstem with sesame oil, salt, and pepper.</li>
-                      <li>3. Grill for 3-4 minutes until charred and tender.</li>
-                      <li>4. Meanwhile, toast sesame seeds in a dry pan.</li>
-                      <li>5. Mix soy sauce, garlic, ginger, and chili.</li>
-                      <li>6. Toss hot broccoli with dressing and sesame seeds.</li>
-                      <li>7. Finish with lime juice and serve immediately.</li>
-                    </ol>
-                  </div>
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">GRILLED TENDERSTEM, SESAME & CHILLI</h3>
+                  <p className="font-industrial text-foreground/90 leading-relaxed">Blanch 200g tenderstem broccoli 2 mins, drain. Heat griddle pan until smoking, char broccoli. Toss with 1 tsp sesame oil, pinch of chilli flakes, toasted sesame seeds.</p>
+                  <p className="font-industrial text-steel text-sm">Allergens: sesame</p>
                 </div>
               )}
 
               {activeId === 'leek-slaw' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">BURNT LEEK & HERB SLAW</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 3 large leeks, halved lengthwise</li>
-                      <li>• 1/2 white cabbage, finely shredded</li>
-                      <li>• 2 carrots, julienned</li>
-                      <li>• 1 cup mixed herbs (parsley, dill, mint)</li>
-                      <li>• 3 tbsp olive oil</li>
-                      <li>• 2 tbsp lemon juice</li>
-                      <li>• 1 tbsp honey</li>
-                      <li>• 1 tsp Dijon mustard</li>
-                      <li>• Salt and pepper</li>
-                    </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Char leeks on a grill until blackened outside but tender inside.</li>
-                      <li>2. Cool and roughly chop, including some charred bits.</li>
-                      <li>3. Combine cabbage, carrots, and herbs in a large bowl.</li>
-                      <li>4. Whisk together olive oil, lemon juice, honey, and mustard.</li>
-                      <li>5. Add charred leeks to the slaw mixture.</li>
-                      <li>6. Toss with dressing and season with salt and pepper.</li>
-                      <li>7. Let stand for 15 minutes before serving.</li>
-                    </ol>
-                  </div>
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">BURNT LEEK & HERB SLAW</h3>
+                  <p className="font-industrial text-foreground/90 leading-relaxed">Grill 2 whole leeks until blackened. Peel outer layer, slice fine. Mix with 150g shredded cabbage, 2 tbsp mayo, handful chopped parsley and chives.</p>
+                  <p className="font-industrial text-steel text-sm">Allergens: egg (in mayo)</p>
                 </div>
               )}
 
               {activeId === 'beetroot-labneh' && (
-                <div className="space-y-6">
-                  <h1 className="text-2xl font-light text-foreground tracking-wide">EMBER-BAKED BEETROOT, LABNEH</h1>
-                  
-                  <div className="space-y-4 text-sm text-muted-foreground leading-relaxed">
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="space-y-1 ml-4">
-                      <li>• 6 medium beetroots</li>
-                      <li>• 200g labneh or thick Greek yogurt</li>
-                      <li>• 50g walnuts, roughly chopped</li>
-                      <li>• 2 tbsp honey</li>
-                      <li>• 1 tbsp balsamic vinegar</li>
-                      <li>• Olive oil</li>
-                      <li>• Fresh thyme</li>
-                      <li>• Sea salt and pepper</li>
-                    </ul>
-
-                    <p><strong>Method:</strong></p>
-                    <ol className="space-y-2 ml-4">
-                      <li>1. Wrap whole beetroots in foil with olive oil and thyme.</li>
-                      <li>2. Bake at 200°C for 1-1.5 hours until tender.</li>
-                      <li>3. Cool and peel beetroots, then slice into wedges.</li>
-                      <li>4. Spread labneh on serving plate.</li>
-                      <li>5. Arrange beetroot wedges over labneh.</li>
-                      <li>6. Drizzle with honey and balsamic vinegar.</li>
-                      <li>7. Top with chopped walnuts and fresh thyme.</li>
-                      <li>8. Season with salt and pepper, finish with olive oil.</li>
-                    </ol>
-                  </div>
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">EMBER-BAKED BEETROOT, LABNEH</h3>
+                  <p className="font-industrial text-foreground/90 leading-relaxed">Wrap 4 beets in foil, roast at 200°C for 1 hour until tender. Peel, quarter. Dollop with 100g labneh, drizzle with olive oil.</p>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk</p>
                 </div>
               )}
-            </div>
+            </article>
 
-            {/* Sidebar Navigation */}
-            <div className="order-1 lg:order-2 lg:border-l lg:border-border lg:pl-8">
-              <nav className="space-y-6">
+            {/* Mobile divider before menu options */}
+            <div className="md:hidden my-6 border-t-2 border-border" aria-hidden="true" />
+
+            {/* Sidebar */}
+            <aside className="md:border-l md:border-border md:pl-4">
+              <nav className="space-y-4">
                 <div>
-                  <h3 className="text-sm font-medium text-foreground mb-3 tracking-wide">PIZZA</h3>
-                  <ul className="space-y-2">
+                  <button
+                    className={`w-full text-left font-industrial text-sm ${activeId === 'cover' ? 'text-[hsl(var(--accent-pink))] ring-1 ring-[hsl(var(--accent-pink))] rounded px-2 py-1' : 'text-foreground/90 hover:text-[hsl(var(--accent-pink))]'} transition-colors`}
+                    onClick={() => setActiveId('cover')}
+                    aria-selected={activeId === 'cover'}
+                  >
+                    Cover
+                  </button>
+                </div>
+                <div>
+                  <h5 className="font-brutalist text-foreground/80 tracking-wider mb-2">PIZZA</h5>
+                  <ul className="space-y-1">
                     {pizzaItems.map((item) => (
                       <li key={item.id}>
                         <button
-                          onClick={() => setActiveId(item.id as RecipeId)}
-                          className={`text-left text-sm transition-colors hover:text-foreground ${
-                            activeId === item.id ? 'text-foreground font-medium' : 'text-muted-foreground'
-                          }`}
+                          className={`w-full text-left font-industrial text-sm ${activeId === item.id ? 'text-[hsl(var(--accent-blood-red))]' : 'text-foreground/90 hover:text-[hsl(var(--accent-blood-red))]'} transition-colors`}
+                          onClick={() => setActiveId(item.id)}
+                          aria-selected={activeId === item.id}
                         >
                           {item.title}
                         </button>
@@ -515,17 +586,15 @@ export default function SecretKitchensModal({ open, onClose }: SecretKitchensMod
                     ))}
                   </ul>
                 </div>
-
                 <div>
-                  <h3 className="text-sm font-medium text-foreground mb-3 tracking-wide">MAINS</h3>
-                  <ul className="space-y-2">
+                  <h5 className="font-brutalist text-foreground/80 tracking-wider mb-2">WOOD-FIRED MAINS</h5>
+                  <ul className="space-y-1">
                     {mainsItems.map((item) => (
                       <li key={item.id}>
                         <button
-                          onClick={() => setActiveId(item.id as RecipeId)}
-                          className={`text-left text-sm transition-colors hover:text-foreground ${
-                            activeId === item.id ? 'text-foreground font-medium' : 'text-muted-foreground'
-                          }`}
+                          className={`w-full text-left font-industrial text-sm ${activeId === item.id ? 'text-[hsl(var(--accent-blood-red))]' : 'text-foreground/90 hover:text-[hsl(var(--accent-blood-red))]'} transition-colors`}
+                          onClick={() => setActiveId(item.id)}
+                          aria-selected={activeId === item.id}
                         >
                           {item.title}
                         </button>
@@ -533,17 +602,15 @@ export default function SecretKitchensModal({ open, onClose }: SecretKitchensMod
                     ))}
                   </ul>
                 </div>
-
                 <div>
-                  <h3 className="text-sm font-medium text-foreground mb-3 tracking-wide">SIDES</h3>
-                  <ul className="space-y-2">
+                  <h5 className="font-brutalist text-foreground/80 tracking-wider mb-2">SIDES</h5>
+                  <ul className="space-y-1">
                     {sidesItems.map((item) => (
                       <li key={item.id}>
                         <button
-                          onClick={() => setActiveId(item.id as RecipeId)}
-                          className={`text-left text-sm transition-colors hover:text-foreground ${
-                            activeId === item.id ? 'text-foreground font-medium' : 'text-muted-foreground'
-                          }`}
+                          className={`w-full text-left font-industrial text-sm ${activeId === item.id ? 'text-[hsl(var(--accent-blood-red))]' : 'text-foreground/90 hover:text-[hsl(var(--accent-blood-red))]'} transition-colors`}
+                          onClick={() => setActiveId(item.id)}
+                          aria-selected={activeId === item.id}
                         >
                           {item.title}
                         </button>
@@ -552,11 +619,13 @@ export default function SecretKitchensModal({ open, onClose }: SecretKitchensMod
                   </ul>
                 </div>
               </nav>
-            </div>
+            </aside>
           </div>
         </div>
       </DialogContent>
-      </Dialog>
+    </Dialog>
     </>
   );
-}
+};
+
+export default SecretKitchensModal;

@@ -6,12 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
-import { SecretKitchensAuthModal } from '@/components/SecretKitchensAuthModal';
+import { AuthModal } from '@/components/AuthModal';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { BRAND_LOGO } from '@/data/brand';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
-
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
@@ -29,7 +28,6 @@ const CommonRoom = () => {
       navigate('/common-room/main');
     }
   }, [allowed, navigate, reset]);
-  
   return (
     <div className="min-h-screen bg-white">
       {!isCMSMode && <Navigation />}
@@ -82,10 +80,13 @@ const CommonRoom = () => {
         onClose={() => { reset(); }}
         onSuccess={(email) => { handleLinkSuccess(email); }}
       />
-      <SecretKitchensAuthModal
+      <AuthModal
         isOpen={authOpen}
         onClose={() => { reset(); }}
         onSuccess={handleAuthSuccess}
+        requireAllowedDomain={false}
+        title="Unlock The Common Room"
+        description="We’ll email you a 6-digit verification code to confirm."
       />
       <Toaster />
     </div>
