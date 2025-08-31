@@ -16,7 +16,7 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
 
   const handlePlayMusic = () => {
     setShowSpotify(true);
-    setIsPlaying(true);
+    setIsPlaying(false);
     // Auto-enable restaurant ambience for full experience
     setRestaurantAmbienceEnabled(true);
   };
@@ -34,7 +34,7 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
       {/* Instructions */}
       <div className="text-center mb-8 max-w-md">
         <p className="text-lg md:text-xl text-white/80 leading-relaxed">
-          Before you start, set the scene, turn the sound on
+          Before you start, set the scene, turn the sounds on
         </p>
       </div>
 
