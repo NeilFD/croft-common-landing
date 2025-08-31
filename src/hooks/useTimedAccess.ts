@@ -113,42 +113,67 @@ export const useTimedAccess = (email: string | null) => {
   }, []);
 
   useEffect(() => {
-    if (email) {
-      const checkAccess = async () => {
-        try {
-          setLoading(true);
-          const { data, error } = await supabase
-            .from('secret_kitchen_access')
-            .select('email, first_access_at, access_expires_at, is_active')
-            .eq('email', email.toLowerCase())
-            .eq('is_active', true)
-            .maybeSingle();
+    if (!email) {
+      setAccessData(null);
+      setIsExpired(false);
+      setLoading(false);
+      return;
+    }
 
-          if (error) {
-            console.error('Error checking access status:', error);
-            return;
-          }
+    let isMounted = true;
+    console.log('🔍 useTimedAccess: Starting access check for email:', email);
 
-          if (!data) {
-            return;
-          }
+    const checkAccess = async () => {
+      try {
+        if (!isMounted) return;
+        
+        setLoading(true);
+        console.log('🔍 useTimedAccess: Querying database for:', email.toLowerCase());
+        
+        const { data, error } = await supabase
+          .from('secret_kitchen_access')
+          .select('email, first_access_at, access_expires_at, is_active')
+          .eq('email', email.toLowerCase())
+          .eq('is_active', true)
+          .maybeSingle();
 
-          // Check if access has expired
-          if (data.access_expires_at && new Date(data.access_expires_at) <= new Date()) {
-            setIsExpired(true);
-            return;
-          }
+        if (!isMounted) return;
 
-          setAccessData(data);
-        } catch (error) {
-          console.error('Error in checkAccessStatus:', error);
-        } finally {
+        if (error) {
+          console.error('🚨 useTimedAccess: Database error:', error);
+          return;
+        }
+
+        if (!data) {
+          console.log('🚨 useTimedAccess: No matching record found for email:', email);
+          return;
+        }
+
+        console.log('✅ useTimedAccess: Found access data:', data);
+
+        // Check if access has expired
+        if (data.access_expires_at && new Date(data.access_expires_at) <= new Date()) {
+          console.log('⏰ useTimedAccess: Access expired for:', email);
+          setIsExpired(true);
+          return;
+        }
+
+        console.log('✅ useTimedAccess: Setting access data for:', email);
+        setAccessData(data);
+      } catch (error) {
+        console.error('🚨 useTimedAccess: Unexpected error:', error);
+      } finally {
+        if (isMounted) {
           setLoading(false);
         }
-      };
-      
-      checkAccess();
-    }
+      }
+    };
+    
+    checkAccess();
+
+    return () => {
+      isMounted = false;
+    };
   }, [email]);
 
   return {
