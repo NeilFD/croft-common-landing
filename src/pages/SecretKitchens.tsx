@@ -26,6 +26,7 @@ import { PlainImageSlide } from '@/components/slides/PlainImageSlide';
 import { TaproomSlide } from '@/components/slides/TaproomSlide';
 import { SplitLayoutWithTitleSlide } from '@/components/slides/SplitLayoutWithTitleSlide';
 import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
+import { QuestionnaireSlide } from '@/components/slides/QuestionnaireSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { AudioProvider, useAudio } from '@/contexts/AudioContext';
 import MasterAudioControl from '@/components/MasterAudioControl';
@@ -68,7 +69,8 @@ const slideNavigationLabels = [
   'Rooftop Terrace',
   'The Rooftop Bar',
   'Casual Dining',
-  'Croft Common Exterior'
+  'Croft Common Exterior',
+  'Vendor Application'
 ];
 
 // Slide configurations for all slides
@@ -178,7 +180,8 @@ const slideConfigs = [
     rightImage: "/lovable-uploads/11fd165f-dc22-41dc-80f5-8c38cc022923.png"
   },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/0cad0be9-a1f3-4a81-abc6-042496911628.png', alt: 'Casual dining serious craft window signage' },
-  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21b8d579-c2a1-47be-8892-9e87e4dfa27c.png', alt: 'Croft Common exterior at night with illuminated rooftop' }
+  { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21b8d579-c2a1-47be-8892-9e87e4dfa27c.png', alt: 'Croft Common exterior at night with illuminated rooftop' },
+  { type: 'QUESTIONNAIRE' }
 ];
 
 // Sample data for three column slides
@@ -611,6 +614,9 @@ const SecretKitchensContent = () => {
             alt={config.alt}
           />
         );
+      
+      case 'QUESTIONNAIRE':
+        return <QuestionnaireSlide />;
       
       default:
         return (
