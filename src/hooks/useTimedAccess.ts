@@ -66,13 +66,23 @@ export const useTimedAccess = (email: string | null) => {
         .eq('email', userEmail.toLowerCase())
         .eq('is_active', true)
         .select('email, first_access_at, access_expires_at, is_active')
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error recording first access:', error);
         toast({
           title: "Error",
           description: "Failed to initialize access timer.",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      if (!data) {
+        console.error('No matching record found for email:', userEmail);
+        toast({
+          title: "Access Error",
+          description: "Your email is not authorized for access.",
           variant: "destructive"
         });
         return false;
