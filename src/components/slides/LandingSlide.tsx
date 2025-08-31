@@ -51,14 +51,14 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
             Set the Scene
           </Button>
         ) : (
-          <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-col items-center space-y-6 w-full max-w-4xl">
             <SpotifyPlayer 
               playlistId="0IrHtvIi9DVrTcFb1bM3CR"
               isPlaying={isPlaying}
               onToggle={setIsPlaying}
             />
-            <div className="flex flex-col items-center space-y-3">
-              <RestaurantAmbientAudio isPlaying={isPlaying && restaurantAmbienceEnabled} />
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 w-full">
+              <RestaurantAmbientAudio />
               {!restaurantAmbienceEnabled && (
                 <Button
                   onClick={() => setRestaurantAmbienceEnabled(true)}

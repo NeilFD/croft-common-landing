@@ -4,13 +4,7 @@ import { Slider } from '@/components/ui/slider';
 import { Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import { useAudio } from '@/contexts/AudioContext';
 
-interface RestaurantAmbientAudioProps {
-  isPlaying: boolean;
-}
-
-const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({ 
-  isPlaying 
-}) => {
+const RestaurantAmbientAudio: React.FC = () => {
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
   const [volume, setVolume] = useState(0.6);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -20,35 +14,21 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
   const audioUrl = "https://archive.org/download/es-london-pub-crowded-no-music-epidemic-sound/ES_London%2C%20Pub%2C%20Crowded%2C%20No%20Music%20-%20Epidemic%20Sound.mp3";
 
   const toggleAmbient = () => {
-    const newState = !isAmbientPlaying;
-    setIsAmbientPlaying(newState);
-    
-    if (audioRef.current) {
-      if (newState && isPlaying) {
-        audioRef.current.play().catch(console.error);
-      } else {
-        audioRef.current.pause();
-      }
-    }
+    setIsAmbientPlaying(!isAmbientPlaying);
   };
 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
       
-      // When isPlaying becomes true, automatically start the ambience
-      if (isPlaying && !isAmbientPlaying && !isGlobalMuted) {
-        setIsAmbientPlaying(true);
-      }
-      
-      // Control audio playback based on state
-      if (isAmbientPlaying && isPlaying && !isGlobalMuted) {
+      // Simple control: play when ambient is playing and not globally muted
+      if (isAmbientPlaying && !isGlobalMuted) {
         audioRef.current.play().catch(console.error);
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isPlaying, isAmbientPlaying, isGlobalMuted, volume]);
+  }, [isAmbientPlaying, isGlobalMuted, volume]);
 
   const handleVolumeChange = (newVolume: number[]) => {
     setVolume(newVolume[0]);
