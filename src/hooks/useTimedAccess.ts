@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -16,7 +16,7 @@ export const useTimedAccess = (email: string | null) => {
   const { toast } = useToast();
 
   // Check access status
-  const checkAccessStatus = async (userEmail: string) => {
+  const checkAccessStatus = useCallback(async (userEmail: string) => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -49,10 +49,10 @@ export const useTimedAccess = (email: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   // Record first access and set expiration
-  const recordFirstAccess = async (userEmail: string) => {
+  const recordFirstAccess = useCallback(async (userEmail: string) => {
     try {
       const now = new Date();
       const expiresAt = new Date(now.getTime() + (48 * 60 * 60 * 1000)); // 48 hours from now
@@ -99,10 +99,10 @@ export const useTimedAccess = (email: string | null) => {
       console.error('Error in recordFirstAccess:', error);
       return false;
     }
-  };
+  }, [toast]);
 
   // Handle access expiration
-  const handleExpiration = async () => {
+  const handleExpiration = useCallback(async () => {
     setIsExpired(true);
     toast({
       title: "Access Expired",
@@ -110,13 +110,13 @@ export const useTimedAccess = (email: string | null) => {
       variant: "destructive",
       duration: 10000
     });
-  };
+  }, [toast]);
 
   useEffect(() => {
     if (email) {
       checkAccessStatus(email);
     }
-  }, [email]);
+  }, [email, checkAccessStatus]);
 
   return {
     accessData,
