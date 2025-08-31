@@ -114,9 +114,42 @@ export const useTimedAccess = (email: string | null) => {
 
   useEffect(() => {
     if (email) {
-      checkAccessStatus(email);
+      const checkAccess = async () => {
+        try {
+          setLoading(true);
+          const { data, error } = await supabase
+            .from('secret_kitchen_access')
+            .select('email, first_access_at, access_expires_at, is_active')
+            .eq('email', email.toLowerCase())
+            .eq('is_active', true)
+            .maybeSingle();
+
+          if (error) {
+            console.error('Error checking access status:', error);
+            return;
+          }
+
+          if (!data) {
+            return;
+          }
+
+          // Check if access has expired
+          if (data.access_expires_at && new Date(data.access_expires_at) <= new Date()) {
+            setIsExpired(true);
+            return;
+          }
+
+          setAccessData(data);
+        } catch (error) {
+          console.error('Error in checkAccessStatus:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      checkAccess();
     }
-  }, [email, checkAccessStatus]);
+  }, [email]);
 
   return {
     accessData,
