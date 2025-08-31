@@ -1428,8 +1428,10 @@ export type Database = {
           last_name: string | null
           member_since: string
           phone_number: string | null
+          secret_kitchens_access: boolean | null
           updated_at: string
           user_id: string
+          user_type: string | null
         }
         Insert: {
           birthday?: string | null
@@ -1442,8 +1444,10 @@ export type Database = {
           last_name?: string | null
           member_since?: string
           phone_number?: string | null
+          secret_kitchens_access?: boolean | null
           updated_at?: string
           user_id: string
+          user_type?: string | null
         }
         Update: {
           birthday?: string | null
@@ -1456,8 +1460,10 @@ export type Database = {
           last_name?: string | null
           member_since?: string
           phone_number?: string | null
+          secret_kitchens_access?: boolean | null
           updated_at?: string
           user_id?: string
+          user_type?: string | null
         }
         Relationships: []
       }
@@ -2245,6 +2251,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_type: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_week_end_date: {
         Args: { input_date: string }
         Returns: string
@@ -2265,6 +2275,10 @@ export type Database = {
         Args: { email_input: string }
         Returns: boolean
       }
+      is_secret_kitchens_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_within_venue_bounds: {
         Args: { lat: number; lng: number }
         Returns: boolean
@@ -2274,6 +2288,14 @@ export type Database = {
         Returns: {
           access_expires_at: string
           first_access_at: string
+        }[]
+      }
+      validate_secret_kitchen_user: {
+        Args: { user_email: string }
+        Returns: {
+          has_access: boolean
+          is_verified: boolean
+          user_type: string
         }[]
       }
       verify_event_management_token: {

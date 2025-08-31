@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { AuthModal } from "@/components/AuthModal";
+import { SecretKitchensAuthModal } from "@/components/SecretKitchensAuthModal";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
@@ -114,12 +114,10 @@ React.useEffect(() => {
         onClose={() => { reset(); }}
         onSuccess={(email) => { handleLinkSuccess(email); }}
       />
-      <AuthModal
+      <SecretKitchensAuthModal
         isOpen={authOpen}
         onClose={() => { reset(); }}
         onSuccess={handleAuthSuccess}
-        requireAllowedDomain={false}
-        title="Unlock Common Cook Book"
         description="We’ll email you a 6-digit verification code to confirm."
       />
       <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
