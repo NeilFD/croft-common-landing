@@ -1552,30 +1552,36 @@ export type Database = {
       }
       secret_kitchen_access: {
         Row: {
+          access_expires_at: string | null
           business_name: string
           created_at: string
           created_by: string | null
           email: string
+          first_access_at: string | null
           id: string
           is_active: boolean
           name: string
           updated_at: string
         }
         Insert: {
+          access_expires_at?: string | null
           business_name: string
           created_at?: string
           created_by?: string | null
           email: string
+          first_access_at?: string | null
           id?: string
           is_active?: boolean
           name: string
           updated_at?: string
         }
         Update: {
+          access_expires_at?: string | null
           business_name?: string
           created_at?: string
           created_by?: string | null
           email?: string
+          first_access_at?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -2129,6 +2135,16 @@ export type Database = {
           total_check_ins: number
         }[]
       }
+      check_secret_kitchen_access_status: {
+        Args: { user_email: string }
+        Returns: {
+          access_expires_at: string
+          first_access_at: string
+          has_access: boolean
+          is_expired: boolean
+          time_remaining_seconds: number
+        }[]
+      }
       cleanup_expired_otp_codes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -2245,9 +2261,20 @@ export type Database = {
         Args: { email: string }
         Returns: boolean
       }
+      is_secret_kitchen_access_expired: {
+        Args: { email_input: string }
+        Returns: boolean
+      }
       is_within_venue_bounds: {
         Args: { lat: number; lng: number }
         Returns: boolean
+      }
+      update_secret_kitchen_first_access: {
+        Args: { user_email: string }
+        Returns: {
+          access_expires_at: string
+          first_access_at: string
+        }[]
       }
       verify_event_management_token: {
         Args: { event_id_input: string; token_input: string }

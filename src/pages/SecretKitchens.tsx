@@ -30,6 +30,7 @@ import MasterAudioControl from '@/components/MasterAudioControl';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
 import { cn } from '@/lib/utils';
+import SecretKitchensCountdown from '@/components/SecretKitchensCountdown';
 
 // Navigation labels for dropdown (max 3 words each)
 const slideNavigationLabels = [
@@ -211,10 +212,12 @@ const SecretKitchensContent = () => {
 
   // Check if user's email is in secret_kitchen_access table
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [accessExpiresAt, setAccessExpiresAt] = useState<string | null>(null);
+  const [accessExpired, setAccessExpired] = useState(false);
 
   useEffect(() => {
     if (user?.email) {
-      checkEmailAccess(user.email);
+      checkUserAccessStatus(user.email);
     }
   }, [user]);
 
@@ -236,6 +239,39 @@ const SecretKitchensContent = () => {
     } catch (error) {
       console.error('Error checking email access:', error);
       return false;
+    }
+  };
+
+  const checkUserAccessStatus = async (email: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('check_secret_kitchen_access_status', { user_email: email.toLowerCase() });
+
+      if (error) {
+        console.error('Error checking access status:', error);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const status = data[0];
+        if (!status.has_access) {
+          setIsAuthorized(false);
+          return;
+        }
+        
+        if (status.is_expired) {
+          setAccessExpired(true);
+          setIsAuthorized(false);
+          logout();
+          return;
+        }
+
+        if (status.access_expires_at) {
+          setAccessExpiresAt(status.access_expires_at);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking access status:', error);
     }
   };
 
@@ -321,6 +357,20 @@ const SecretKitchensContent = () => {
       }
 
       if (data?.user) {
+        // Update first access and get expiration time
+        try {
+          const { data: accessData, error: accessError } = await supabase
+            .rpc('update_secret_kitchen_first_access', { user_email: email.toLowerCase() });
+
+          if (accessError) {
+            console.error('Error updating first access:', accessError);
+          } else if (accessData && accessData.length > 0) {
+            setAccessExpiresAt(accessData[0].access_expires_at);
+          }
+        } catch (error) {
+          console.error('Error updating first access:', error);
+        }
+
         setIsAuthorized(true);
         toast({
           title: "Authentication Successful",
@@ -350,9 +400,24 @@ const SecretKitchensContent = () => {
     setOtpCode('');
     setOtpSent(false);
     setIsAuthorized(false);
+    setAccessExpiresAt(null);
+    setAccessExpired(false);
+    if (!accessExpired) {
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out."
+      });
+    }
+  };
+
+  const handleAccessExpired = () => {
+    setAccessExpired(true);
+    setIsAuthorized(false);
+    logout();
     toast({
-      title: "Signed Out",
-      description: "You have been successfully signed out."
+      title: "Access Expired",
+      description: "Your 48-hour access has expired. Please contact support if you need extended access.",
+      variant: "destructive"
     });
   };
 
@@ -647,6 +712,14 @@ const SecretKitchensContent = () => {
   // Show slide presentation for authenticated and authorized users
   return (
     <div className="min-h-screen bg-background">
+      {/* Countdown Timer */}
+      {accessExpiresAt && (
+        <SecretKitchensCountdown 
+          expiresAt={accessExpiresAt}
+          onExpired={handleAccessExpired}
+        />
+      )}
+      
       {/* Top controls - logout and master audio */}
       <div className="absolute top-4 left-4 z-20 flex items-center space-x-3">
         <Button 
