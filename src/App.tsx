@@ -48,6 +48,7 @@ const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
 // Optimized imports that load immediately
 import RouteImagePreloader from '@/components/RouteImagePreloader';
 import ScrollToTop from '@/components/ScrollToTop';
+import DomainGuard from '@/components/DomainGuard';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useOptimizedPerformance } from '@/hooks/useOptimizedPerformance';
 import { useWebVitals } from '@/hooks/useWebVitals';
@@ -142,7 +143,7 @@ const App = () => (
                     <Route path="/cocktails" element={<Cocktails />} />
                     <Route path="/beer" element={<Beer />} />
                     <Route path="/kitchens" element={<Kitchens />} />
-                    <Route path="/secretkitchens" element={<SecretKitchens />} />
+                    <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
                     <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
                     <Route path="/hall" element={<Hall />} />
                     <Route path="/community" element={<Community />} />
