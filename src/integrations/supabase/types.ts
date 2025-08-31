@@ -1678,6 +1678,33 @@ export type Database = {
           },
         ]
       }
+      secret_kitchen_email_log: {
+        Row: {
+          access_expires_at: string
+          created_at: string
+          email_type: string
+          id: string
+          sent_at: string
+          user_email: string
+        }
+        Insert: {
+          access_expires_at: string
+          created_at?: string
+          email_type: string
+          id?: string
+          sent_at?: string
+          user_email: string
+        }
+        Update: {
+          access_expires_at?: string
+          created_at?: string
+          email_type?: string
+          id?: string
+          sent_at?: string
+          user_email?: string
+        }
+        Relationships: []
+      }
       secret_kitchen_usage: {
         Row: {
           accessed_at: string

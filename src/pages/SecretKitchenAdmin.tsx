@@ -10,7 +10,7 @@ import { Switch } from '@/components/ui/switch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Trash2, Plus, Edit, Users, Activity, Eye, Download, Filter, TrendingUp, Calendar, CheckCircle, FileText } from 'lucide-react';
+import { Trash2, Plus, Edit, Users, Activity, Eye, Download, Filter, TrendingUp, Calendar, CheckCircle, FileText, Clock, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { ApplicationDetailsModal } from '@/components/ApplicationDetailsModal';
 
@@ -27,6 +27,8 @@ interface AccessUser {
   calendly_booked: boolean;
   calendly_booking_date: string | null;
   application_id: string | null;
+  first_access_at: string | null;
+  access_expires_at: string | null;
   // Application details when joined
   application_business_name?: string;
   application_contact_name?: string;
@@ -394,6 +396,52 @@ export default function SecretKitchenAdmin() {
     return { text: "Not Applied", variant: "outline" as const };
   };
 
+  const getAccessExpiryStatus = (user: AccessUser) => {
+    if (!user.access_expires_at) {
+      return { text: "No Timer Set", variant: "secondary" as const, timeLeft: null, urgent: false };
+    }
+
+    const now = new Date();
+    const expiryTime = new Date(user.access_expires_at);
+    const timeLeft = expiryTime.getTime() - now.getTime();
+    const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+
+    if (timeLeft <= 0) {
+      return { text: "Expired", variant: "destructive" as const, timeLeft: null, urgent: true };
+    } else if (hoursLeft <= 1) {
+      return { 
+        text: `${minutesLeft}m left`, 
+        variant: "destructive" as const, 
+        timeLeft: `${minutesLeft} minutes`,
+        urgent: true
+      };
+    } else if (hoursLeft <= 2) {
+      return { 
+        text: `${hoursLeft}h ${minutesLeft}m left`, 
+        variant: "destructive" as const, 
+        timeLeft: `${hoursLeft} hours ${minutesLeft} minutes`,
+        urgent: true
+      };
+    } else if (hoursLeft <= 6) {
+      return { 
+        text: `${hoursLeft}h left`, 
+        variant: "default" as const, 
+        timeLeft: `${hoursLeft} hours`,
+        urgent: false
+      };
+    } else {
+      const daysLeft = Math.floor(hoursLeft / 24);
+      const remainingHours = hoursLeft % 24;
+      return { 
+        text: daysLeft > 0 ? `${daysLeft}d ${remainingHours}h` : `${hoursLeft}h left`, 
+        variant: "secondary" as const, 
+        timeLeft: daysLeft > 0 ? `${daysLeft} days ${remainingHours} hours` : `${hoursLeft} hours`,
+        urgent: false
+      };
+    }
+  };
+
   const logout = async () => {
     await supabase.auth.signOut();
     setEmail('');
@@ -657,6 +705,7 @@ export default function SecretKitchenAdmin() {
                   <TableHead>Status</TableHead>
                   <TableHead>Application</TableHead>
                   <TableHead>Meeting</TableHead>
+                  <TableHead>Access Expires</TableHead>
                   <TableHead>Added</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -664,6 +713,7 @@ export default function SecretKitchenAdmin() {
               <TableBody>
                 {filteredUsers.map((user) => {
                   const appStatus = getApplicationStatus(user);
+                  const expiryStatus = getAccessExpiryStatus(user);
                   return (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.name}</TableCell>
@@ -693,6 +743,23 @@ export default function SecretKitchenAdmin() {
                             {new Date(user.calendly_booking_date).toLocaleDateString()}
                           </div>
                         )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {expiryStatus.urgent && (
+                            <AlertTriangle className="h-4 w-4 text-destructive" />
+                          )}
+                          <div>
+                            <Badge variant={expiryStatus.variant} className="mb-1">
+                              {expiryStatus.text}
+                            </Badge>
+                            {user.access_expires_at && (
+                              <div className="text-xs text-muted-foreground">
+                                {new Date(user.access_expires_at).toLocaleString()}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </TableCell>
                       <TableCell>
                         {new Date(user.created_at).toLocaleDateString()}
