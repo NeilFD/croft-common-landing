@@ -64,7 +64,7 @@ export const ImageTextSlide: React.FC<ImageTextSlideProps> = ({
   return (
     <div className="relative w-full h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Left Side - Pink Background */}
-      <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[hsl(var(--accent-pink))] text-white p-4 md:p-8 lg:p-12 flex flex-col justify-center">
+      <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[hsl(var(--accent-pink))] text-white pt-28 pb-24 md:p-8 lg:p-12 px-4 md:px-8 lg:px-12 flex flex-col justify-center">
         <h1 className="font-brutalist text-xl md:text-2xl lg:text-4xl leading-tight mb-4 md:mb-6 lg:mb-8 tracking-tight">
           {title}
         </h1>

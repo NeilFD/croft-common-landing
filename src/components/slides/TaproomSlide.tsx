@@ -50,7 +50,7 @@ export const TaproomSlide: React.FC<TaproomSlideProps> = ({
   return (
     <div className="relative w-full h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Left Side - Pink Background with Scrollable Text */}
-      <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[hsl(var(--accent-pink))] text-white p-4 md:p-8 lg:p-12 flex flex-col relative">
+      <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[hsl(var(--accent-pink))] text-white pt-28 pb-24 md:p-8 lg:p-12 px-4 md:px-8 lg:px-12 flex flex-col relative">
         <div className="scroll-container flex-1 overflow-y-auto pr-2 md:pr-4 scrollbar-thin scrollbar-thumb-white/30 scrollbar-track-transparent">
           <div className="text-xs md:text-sm lg:text-base leading-relaxed">
             {formatContent(leftContent)}

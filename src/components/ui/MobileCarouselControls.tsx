@@ -21,23 +21,23 @@ export function MobileCarouselControls({
 }: MobileCarouselControlsProps) {
   return (
     <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
-      <div className="flex items-center gap-4 bg-black/80 backdrop-blur-sm rounded-full px-4 py-2">
+      <div className="flex items-center gap-3 bg-black/40 backdrop-blur-sm rounded-full px-3 py-2">
         {/* Previous Button */}
         <button
           onClick={onPrevious}
           disabled={!canScrollPrev}
           className={cn(
             "p-2 rounded-full transition-all duration-200",
-            "bg-white/10 hover:bg-white/20 active:bg-white/30",
-            "disabled:opacity-30 disabled:cursor-not-allowed",
-            "touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+            "bg-white/5 hover:bg-white/10 active:bg-white/15",
+            "disabled:opacity-20 disabled:cursor-not-allowed",
+            "touch-manipulation min-w-[40px] min-h-[40px] flex items-center justify-center"
           )}
         >
-          <ChevronLeft className="w-5 h-5 text-white" />
+          <ChevronLeft className="w-4 h-4 text-white/80" />
         </button>
 
         {/* Slide Counter */}
-        <div className="text-white text-sm font-medium px-2 min-w-[50px] text-center">
+        <div className="text-white/70 text-xs font-medium px-1 min-w-[40px] text-center">
           {currentSlide + 1} / {totalSlides}
         </div>
 
@@ -47,12 +47,12 @@ export function MobileCarouselControls({
           disabled={!canScrollNext}
           className={cn(
             "p-2 rounded-full transition-all duration-200",
-            "bg-white/10 hover:bg-white/20 active:bg-white/30",
-            "disabled:opacity-30 disabled:cursor-not-allowed",
-            "touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+            "bg-white/5 hover:bg-white/10 active:bg-white/15",
+            "disabled:opacity-20 disabled:cursor-not-allowed",
+            "touch-manipulation min-w-[40px] min-h-[40px] flex items-center justify-center"
           )}
         >
-          <ChevronRight className="w-5 h-5 text-white" />
+          <ChevronRight className="w-4 h-4 text-white/80" />
         </button>
       </div>
     </div>

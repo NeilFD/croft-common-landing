@@ -51,7 +51,7 @@ export const HalfScreenSlide: React.FC<HalfScreenSlideProps> = ({
       </div>
 
       {/* Content Side */}
-      <div className={`w-full md:w-1/2 h-1/2 md:h-full bg-black text-white p-4 md:p-6 lg:p-8 flex flex-col justify-center relative ${imagePosition === 'right' ? 'order-1 md:order-1' : 'order-2 md:order-2'}`}>
+      <div className={`w-full md:w-1/2 h-1/2 md:h-full bg-black text-white pt-28 pb-24 md:p-6 lg:p-8 px-4 md:px-6 lg:px-8 flex flex-col justify-center relative ${imagePosition === 'right' ? 'order-1 md:order-1' : 'order-2 md:order-2'}`}>
         <div className="max-w-full">
           {title && (
             <h1 className="font-brutalist text-lg md:text-2xl lg:text-3xl leading-tight mb-3 md:mb-4 lg:mb-6 tracking-tight">

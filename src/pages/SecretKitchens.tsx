@@ -210,6 +210,7 @@ const SecretKitchensContent = () => {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { isGlobalMuted, toggleGlobalMute } = useAudio();
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -838,8 +839,8 @@ const SecretKitchensContent = () => {
             setCurrentSlide(index);
           }}
           onLogout={logout}
-          isMuted={false}
-          onToggleMute={() => {}}
+          isMuted={isGlobalMuted}
+          onToggleMute={toggleGlobalMute}
         />
       )}
 

@@ -31,37 +31,65 @@ export function MobileNavigationMenu({
   };
 
   return (
-    <div className={cn("fixed top-4 left-4 z-50 md:hidden", className)}>
-      <div className="flex items-center gap-2">
-        {/* Main Menu Button */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsOpen(!isOpen)}
-          className={cn(
-            "bg-black/80 backdrop-blur-sm hover:bg-black/90 text-white",
-            "min-w-[44px] min-h-[44px] rounded-full",
-            "touch-manipulation"
-          )}
-        >
-          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+    <>
+      {/* Left Side Controls - Menu and Audio */}
+      <div className={cn("fixed top-4 left-4 z-50 md:hidden", className)}>
+        <div className="flex items-center gap-2">
+          {/* Main Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(!isOpen)}
+            className={cn(
+              "bg-black/80 backdrop-blur-sm hover:bg-black/90 text-white",
+              "min-w-[44px] min-h-[44px] rounded-full",
+              "touch-manipulation"
+            )}
+          >
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
 
-        {/* Audio Control */}
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onToggleMute}
-          className={cn(
-            "bg-black/80 backdrop-blur-sm hover:bg-black/90 text-white",
-            "min-w-[44px] min-h-[44px] rounded-full",
-            "touch-manipulation"
-          )}
-        >
-          {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </Button>
+          {/* Audio Control */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleMute}
+            className={cn(
+              "bg-black/80 backdrop-blur-sm hover:bg-black/90 text-white",
+              "min-w-[44px] min-h-[44px] rounded-full",
+              "touch-manipulation"
+            )}
+          >
+            {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+          </Button>
+        </div>
 
-        {/* Logout Button */}
+        {/* Slide Navigation Menu */}
+        {isOpen && (
+          <div className="absolute top-14 left-0 bg-black/90 backdrop-blur-sm rounded-lg p-2 min-w-[200px] max-h-[60vh] overflow-y-auto">
+            <div className="space-y-1">
+              {slideLabels.map((label, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSlideSelect(index)}
+                  className={cn(
+                    "w-full text-left px-3 py-2 rounded text-sm transition-colors",
+                    "touch-manipulation min-h-[44px] flex items-center",
+                    currentSlide === index
+                      ? "bg-white/20 text-white font-medium"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Right Side Controls - Logout */}
+      <div className="fixed top-4 right-4 z-50 md:hidden">
         <Button
           variant="ghost"
           size="icon"
@@ -75,29 +103,6 @@ export function MobileNavigationMenu({
           <LogOut className="h-4 w-4" />
         </Button>
       </div>
-
-      {/* Slide Navigation Menu */}
-      {isOpen && (
-        <div className="absolute top-14 left-0 bg-black/90 backdrop-blur-sm rounded-lg p-2 min-w-[200px] max-h-[60vh] overflow-y-auto">
-          <div className="space-y-1">
-            {slideLabels.map((label, index) => (
-              <button
-                key={index}
-                onClick={() => handleSlideSelect(index)}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded text-sm transition-colors",
-                  "touch-manipulation min-h-[44px] flex items-center",
-                  currentSlide === index
-                    ? "bg-white/20 text-white font-medium"
-                    : "text-white/80 hover:bg-white/10 hover:text-white"
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    </>
   );
 }
