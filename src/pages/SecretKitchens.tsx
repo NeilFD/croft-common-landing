@@ -29,8 +29,6 @@ import { AudioProvider, useAudio } from '@/contexts/AudioContext';
 import MasterAudioControl from '@/components/MasterAudioControl';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
-import { SecretKitchensCountdown } from '@/components/SecretKitchensCountdown';
-import { useTimedAccess } from '@/hooks/useTimedAccess';
 import { cn } from '@/lib/utils';
 
 // Navigation labels for dropdown (max 3 words each)
@@ -213,58 +211,33 @@ const SecretKitchensContent = () => {
 
   // Check if user's email is in secret_kitchen_access table
   const [isAuthorized, setIsAuthorized] = useState(false);
-  
-  // Timed access hook for 48-hour countdown
-  const { 
-    accessData, 
-    isExpired, 
-    loading: accessLoading, 
-    checkAccessStatus, 
-    recordFirstAccess, 
-    handleExpiration,
-    setAccessData,
-    setIsExpired,
-    setLoading: setAccessLoading
-  } = useTimedAccess(user?.email || null);
 
-  // Manual access check function
-  const checkEmailAccess = async (email: string) => {
-    try {
-      setAccessLoading(true);
-      const data = await checkAccessStatus(email);
-      
-      if (!data) {
-        setIsAuthorized(false);
-        return false;
-      }
-
-      if ('expired' in data && data.expired) {
-        setIsExpired(true);
-        setIsAuthorized(false);
-        return false;
-      }
-
-      setAccessData(data);
-      setIsAuthorized(true);
-      return true;
-    } catch (error) {
-      console.error('Error checking email access:', error);
-      setIsAuthorized(false);
-      return false;
-    } finally {
-      setAccessLoading(false);
-    }
-  };
-
-  // Check access when user email changes
   useEffect(() => {
     if (user?.email) {
       checkEmailAccess(user.email);
-    } else {
-      setIsAuthorized(false);
-      setAccessData(null);
     }
-  }, [user?.email]);
+  }, [user]);
+
+  const checkEmailAccess = async (email: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('secret_kitchen_access')
+        .select('email')
+        .eq('email', email.toLowerCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking email access:', error);
+        return false;
+      }
+
+      return !!data;
+    } catch (error) {
+      console.error('Error checking email access:', error);
+      return false;
+    }
+  };
 
   const sendOtpCode = async () => {
     if (!email) {
@@ -348,13 +321,6 @@ const SecretKitchensContent = () => {
       }
 
       if (data?.user) {
-        // Check if this is the user's first access
-        const currentAccessData = await checkAccessStatus(email);
-        if (currentAccessData && !currentAccessData.first_access_at) {
-          // Record first access and start 48-hour timer
-          await recordFirstAccess(email);
-        }
-
         setIsAuthorized(true);
         toast({
           title: "Authentication Successful",
@@ -678,18 +644,10 @@ const SecretKitchensContent = () => {
     );
   }
 
-  // Handle access expiration effect
-  useEffect(() => {
-    if (isExpired) {
-      // Force logout when access expires
-      logout();
-    }
-  }, [isExpired]);
-
   // Show slide presentation for authenticated and authorized users
   return (
     <div className="min-h-screen bg-background">
-      {/* Top controls - logout, master audio, and countdown */}
+      {/* Top controls - logout and master audio */}
       <div className="absolute top-4 left-4 z-20 flex items-center space-x-3">
         <Button 
           onClick={logout}
@@ -706,15 +664,6 @@ const SecretKitchensContent = () => {
           Logout
         </Button>
         <MasterAudioControl />
-        
-        {/* Countdown display */}
-        {accessData?.access_expires_at && !isExpired && (
-          <SecretKitchensCountdown
-            expiresAt={accessData.access_expires_at}
-            onExpired={handleExpiration}
-            className="bg-background/95 backdrop-blur-sm"
-          />
-        )}
       </div>
 
       <Carousel

@@ -1552,36 +1552,30 @@ export type Database = {
       }
       secret_kitchen_access: {
         Row: {
-          access_expires_at: string | null
           business_name: string
           created_at: string
           created_by: string | null
           email: string
-          first_access_at: string | null
           id: string
           is_active: boolean
           name: string
           updated_at: string
         }
         Insert: {
-          access_expires_at?: string | null
           business_name: string
           created_at?: string
           created_by?: string | null
           email: string
-          first_access_at?: string | null
           id?: string
           is_active?: boolean
           name: string
           updated_at?: string
         }
         Update: {
-          access_expires_at?: string | null
           business_name?: string
           created_at?: string
           created_by?: string | null
           email?: string
-          first_access_at?: string | null
           id?: string
           is_active?: boolean
           name?: string
@@ -2249,10 +2243,6 @@ export type Database = {
       }
       is_email_domain_allowed: {
         Args: { email: string }
-        Returns: boolean
-      }
-      is_secret_kitchen_access_expired: {
-        Args: { email_input: string }
         Returns: boolean
       }
       is_within_venue_bounds: {
