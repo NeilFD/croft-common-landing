@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import CroftLogo from '@/components/CroftLogo';
 import { LandingSlide } from '@/components/slides/LandingSlide';
@@ -32,6 +33,8 @@ import { AudioProvider, useAudio } from '@/contexts/AudioContext';
 import MasterAudioControl from '@/components/MasterAudioControl';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
+import { MobileNavigationMenu } from '@/components/ui/MobileNavigationMenu';
+import { MobileCarouselControls } from '@/components/ui/MobileCarouselControls';
 import { cn } from '@/lib/utils';
 import SecretKitchensCountdown from '@/components/SecretKitchensCountdown';
 
@@ -206,6 +209,7 @@ const sampleGalleryItems = [
 const SecretKitchensContent = () => {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -804,23 +808,40 @@ const SecretKitchensContent = () => {
       )}
       
       {/* Top controls - logout and master audio */}
-      <div className="absolute top-4 left-4 z-20 flex items-center space-x-3">
-        <Button 
-          onClick={logout}
-          variant="outline" 
-          size="sm" 
-          className={cn(
-            "bg-background/95 backdrop-blur-sm border-2 border-foreground/20",
-            "hover:bg-[hsl(var(--accent-pink))] hover:border-[hsl(var(--accent-pink))]",
-            "hover:text-background transition-all duration-300",
-            "font-brutalist tracking-wider text-xs"
-          )}
-        >
-          <LogOut className="h-4 w-4 mr-2" />
-          Logout
-        </Button>
-        <MasterAudioControl />
-      </div>
+      {!isMobile && (
+        <div className="absolute top-4 left-4 z-20 flex items-center space-x-3">
+          <Button 
+            onClick={logout}
+            variant="outline" 
+            size="sm" 
+            className={cn(
+              "bg-background/95 backdrop-blur-sm border-2 border-foreground/20",
+              "hover:bg-[hsl(var(--accent-pink))] hover:border-[hsl(var(--accent-pink))]",
+              "hover:text-background transition-all duration-300",
+              "font-brutalist tracking-wider text-xs"
+            )}
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Logout
+          </Button>
+          <MasterAudioControl />
+        </div>
+      )}
+
+      {/* Mobile Navigation */}
+      {isMobile && (
+        <MobileNavigationMenu
+          slideLabels={slideNavigationLabels}
+          currentSlide={currentSlide}
+          onSlideSelect={(index) => {
+            api?.scrollTo(index);
+            setCurrentSlide(index);
+          }}
+          onLogout={logout}
+          isMuted={false}
+          onToggleMute={() => {}}
+        />
+      )}
 
       <Carousel
         setApi={setApi}
@@ -839,37 +860,62 @@ const SecretKitchensContent = () => {
           ))}
         </CarouselContent>
         
-        {/* Navigation dropdown - moved to top right */}
-        <div className="absolute top-4 right-20 z-20">
-          <StyledNavigationDropdown
-            currentSlide={currentSlide}
-            labels={slideNavigationLabels}
-            onSlideSelect={(index) => {
-              api?.scrollTo(index);
-              setCurrentSlide(index);
-            }}
-          />
-        </div>
-
-        {/* Slide counter */}
-        <div className="absolute bottom-4 right-4 z-20">
-          <div className="bg-black/60 text-white px-3 py-1 rounded-full text-sm">
-            {currentSlide + 1} / {slideConfigs.length}
+        {/* Desktop Navigation dropdown - moved to top right */}
+        {!isMobile && (
+          <div className="absolute top-4 right-20 z-20">
+            <StyledNavigationDropdown
+              currentSlide={currentSlide}
+              labels={slideNavigationLabels}
+              onSlideSelect={(index) => {
+                api?.scrollTo(index);
+                setCurrentSlide(index);
+              }}
+            />
           </div>
-        </div>
+        )}
 
-        <TransparentCarouselArrows
-          onPrevious={() => {
-            api?.scrollPrev();
-            if (api) setCurrentSlide(api.selectedScrollSnap());
-          }}
-          onNext={() => {
-            api?.scrollNext();
-            if (api) setCurrentSlide(api.selectedScrollSnap());
-          }}
-          canScrollPrev={canScrollPrev}
-          canScrollNext={canScrollNext}
-        />
+        {/* Desktop Slide counter */}
+        {!isMobile && (
+          <div className="absolute bottom-4 right-4 z-20">
+            <div className="bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+              {currentSlide + 1} / {slideConfigs.length}
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Carousel Arrows */}
+        {!isMobile && (
+          <TransparentCarouselArrows
+            onPrevious={() => {
+              api?.scrollPrev();
+              if (api) setCurrentSlide(api.selectedScrollSnap());
+            }}
+            onNext={() => {
+              api?.scrollNext();
+              if (api) setCurrentSlide(api.selectedScrollSnap());
+            }}
+            canScrollPrev={canScrollPrev}
+            canScrollNext={canScrollNext}
+          />
+        )}
+
+        {/* Mobile Carousel Controls */}
+        {isMobile && (
+          <MobileCarouselControls
+            onPrevious={() => {
+              api?.scrollPrev();
+              if (api) setCurrentSlide(api.selectedScrollSnap());
+            }}
+            onNext={() => {
+              api?.scrollNext();
+              if (api) setCurrentSlide(api.selectedScrollSnap());
+            }}
+            canScrollPrev={canScrollPrev}
+            canScrollNext={canScrollNext}
+            currentSlide={currentSlide}
+            totalSlides={slideConfigs.length}
+          />
+        )}
       </Carousel>
     </div>
   );

@@ -62,42 +62,42 @@ export const ImageTextSlide: React.FC<ImageTextSlideProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen flex overflow-hidden">
+    <div className="relative w-full h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Left Side - Pink Background */}
-      <div className="w-1/2 bg-[hsl(var(--accent-pink))] text-white p-8 md:p-12 flex flex-col justify-center">
-        <h1 className="font-brutalist text-2xl md:text-4xl leading-tight mb-6 md:mb-8 tracking-tight">
+      <div className="w-full md:w-1/2 h-1/2 md:h-full bg-[hsl(var(--accent-pink))] text-white p-4 md:p-8 lg:p-12 flex flex-col justify-center">
+        <h1 className="font-brutalist text-xl md:text-2xl lg:text-4xl leading-tight mb-4 md:mb-6 lg:mb-8 tracking-tight">
           {title}
         </h1>
         <div className="relative">
-          <div className="scroll-container max-h-[60vh] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+          <div className="scroll-container max-h-[40vh] md:max-h-[60vh] overflow-y-auto pr-2 md:pr-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
             {formatContent(leftContent)}
           </div>
           {showScrollIndicator && (
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 text-white animate-bounce">
-              <ChevronDown className="h-6 w-6" />
+              <ChevronDown className="h-4 w-4 md:h-6 md:w-6" />
             </div>
           )}
         </div>
       </div>
 
       {/* Right Side - Image */}
-      <div className="w-1/2 relative flex flex-col">
+      <div className="w-full md:w-1/2 h-1/2 md:h-full relative flex flex-col">
         <OptimizedImage
           src={rightImage}
           alt="Cocktail"
           className="w-full h-full object-cover"
         />
         {/* Title overlay - no background box */}
-        <div className="absolute bottom-8 right-8 text-white">
-          <h2 className="font-brutalist text-lg md:text-xl font-bold tracking-tight">
+        <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 text-white">
+          <h2 className="font-brutalist text-sm md:text-lg lg:text-xl font-bold tracking-tight">
             {rightTitle}
           </h2>
         </div>
       </div>
 
       {/* Croft Logo Watermark */}
-      <div className="absolute top-4 right-4 opacity-20 z-10">
-        <CroftLogo className="h-12 w-12 text-white" />
+      <div className="absolute top-2 right-2 md:top-4 md:right-4 opacity-20 z-10">
+        <CroftLogo className="h-8 w-8 md:h-12 md:w-12 text-white" />
       </div>
     </div>
   );
