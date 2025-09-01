@@ -290,7 +290,7 @@ export default function SecretKitchenAdmin() {
 
   const toggleMeetingStatus = async (userEmail: string, currentStatus: boolean) => {
     try {
-      const { data, error } = await supabase.rpc('update_meeting_status', {
+      const { error } = await supabase.rpc('update_meeting_status', {
         user_email: userEmail,
         booking_status: !currentStatus,
         booking_date: !currentStatus ? new Date().toISOString() : null
