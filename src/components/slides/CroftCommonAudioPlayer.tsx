@@ -60,7 +60,7 @@ const CroftCommonAudioPlayer: React.FC<CroftCommonAudioPlayerProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center space-y-4 p-4 bg-black/20 rounded-lg border border-white/20">
       <audio
         ref={audioRef}
         src={audioUrl}
@@ -71,47 +71,45 @@ const CroftCommonAudioPlayer: React.FC<CroftCommonAudioPlayerProps> = ({
         onCanPlay={handleCanPlay}
       />
       
-      <div className="flex flex-col items-center space-y-4 p-4 bg-black/20 rounded-lg border border-white/20">
-        <div className="text-center space-y-2">
-          <h3 className="text-white text-lg font-medium">Croft Common Playlist</h3>
-          <p className="text-white/70 text-sm">Play the Croft Common playlist</p>
-        </div>
+      <div className="text-center space-y-2">
+        <h3 className="text-white text-lg font-medium">Croft Common Playlist</h3>
+        <p className="text-white/70 text-sm">Play the Croft Common playlist</p>
+      </div>
+      
+      <div className="flex items-center space-x-4">
+        <Button
+          onClick={handleToggle}
+          variant="outline"
+          size="sm"
+          className="bg-transparent border-white/50 text-white hover:bg-white/10"
+          disabled={isGlobalMuted || isLoading}
+        >
+          {isLoading ? (
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : isPlaying && !isGlobalMuted ? (
+            <Pause className="h-4 w-4" />
+          ) : (
+            <Play className="h-4 w-4" />
+          )}
+        </Button>
         
-        <div className="flex items-center space-x-4">
-          <Button
-            onClick={handleToggle}
-            variant="outline"
-            size="sm"
-            className="bg-transparent border-white/50 text-white hover:bg-white/10"
-            disabled={isGlobalMuted || isLoading}
-          >
-            {isLoading ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            ) : isPlaying && !isGlobalMuted ? (
-              <Pause className="h-4 w-4" />
-            ) : (
-              <Play className="h-4 w-4" />
-            )}
-          </Button>
-          
-          <div className="flex items-center space-x-2 min-w-32">
-            <VolumeX className="h-4 w-4 text-white/60" />
-            <Slider
-              value={[volume]}
-              onValueChange={handleVolumeChange}
-              max={1}
-              min={0}
-              step={0.1}
-              className="flex-1"
-              disabled={isGlobalMuted}
-            />
-            <Volume2 className="h-4 w-4 text-white/60" />
-          </div>
+        <div className="flex items-center space-x-2 min-w-32">
+          <VolumeX className="h-4 w-4 text-white/60" />
+          <Slider
+            value={[volume]}
+            onValueChange={handleVolumeChange}
+            max={1}
+            min={0}
+            step={0.1}
+            className="flex-1"
+            disabled={isGlobalMuted}
+          />
+          <Volume2 className="h-4 w-4 text-white/60" />
         </div>
       </div>
       
       {isGlobalMuted && (
-        <p className="text-white/50 text-xs text-center">Audio muted globally</p>
+        <p className="text-white/50 text-xs">Audio muted globally</p>
       )}
     </div>
   );
