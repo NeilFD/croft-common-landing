@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Pause } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
-import SpotifyPlayer from './SpotifyPlayer';
+import CroftCommonAudioPlayer from './CroftCommonAudioPlayer';
 import RestaurantAmbientAudio from './RestaurantAmbientAudio';
 
 interface LandingSlideProps {
@@ -54,8 +54,7 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
           <div className="flex flex-col items-center space-y-6 w-full max-w-6xl">
             <div className="flex flex-col lg:flex-row items-center justify-center gap-8 w-full">
               <div className="flex-1 w-full max-w-2xl">
-                <SpotifyPlayer 
-                  playlistId="0IrHtvIi9DVrTcFb1bM3CR"
+                <CroftCommonAudioPlayer 
                   isPlaying={isPlaying}
                   onToggle={setIsPlaying}
                 />
