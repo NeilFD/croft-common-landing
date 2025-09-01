@@ -200,6 +200,3 @@ verify_jwt = false
 
 [functions.calendly-webhook]
 verify_jwt = false
-
-[functions.secret-kitchens-auth]
-verify_jwt = false

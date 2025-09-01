@@ -1732,33 +1732,6 @@ export type Database = {
         }
         Relationships: []
       }
-      secret_kitchens_otp_codes: {
-        Row: {
-          code: string
-          consumed: boolean
-          created_at: string
-          email: string
-          expires_at: string
-          id: string
-        }
-        Insert: {
-          code: string
-          consumed?: boolean
-          created_at?: string
-          email: string
-          expires_at?: string
-          id?: string
-        }
-        Update: {
-          code?: string
-          consumed?: boolean
-          created_at?: string
-          email?: string
-          expires_at?: string
-          id?: string
-        }
-        Relationships: []
-      }
       secret_words: {
         Row: {
           created_at: string
@@ -2289,10 +2262,6 @@ export type Database = {
         }[]
       }
       cleanup_expired_otp_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      cleanup_expired_secret_kitchens_otp_codes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
