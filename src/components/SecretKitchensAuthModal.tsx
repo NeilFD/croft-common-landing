@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -28,27 +27,7 @@ export const SecretKitchensAuthModal = ({
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signup');
-  const [isSignup, setIsSignup] = useState(false);
   const { user, refreshSession } = useAuth();
-
-  const validateSecretKitchensAccess = async (email: string): Promise<boolean> => {
-    const { data, error } = await supabase.rpc('check_secret_kitchen_access_status', {
-      user_email: email
-    });
-    
-    if (error) {
-      console.error('Error validating Secret Kitchens access:', error);
-      return false;
-    }
-    
-    // Parse the response array from the function
-    if (Array.isArray(data) && data.length > 0) {
-      return data[0]?.has_access || false;
-    }
-    
-    return false;
-  };
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,54 +44,24 @@ export const SecretKitchensAuthModal = ({
     setLoading(true);
     
     try {
-      // First validate access for Secret Kitchens
-      const hasAccess = await validateSecretKitchensAccess(email);
-      if (!hasAccess) {
-        toast({
-          title: "Access denied",
-          description: "This email address is not authorized for Secret Kitchens.",
-          variant: "destructive"
-        });
-        setLoading(false);
-        return;
-      }
-
-      const isSignupFlow = activeTab === 'signup';
-      setIsSignup(isSignupFlow);
-
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: isSignupFlow,
-          data: isSignupFlow ? {
-            user_type: 'secret_kitchens'
-          } : undefined
+      // Use the custom Secret Kitchens auth edge function
+      const { data, error } = await supabase.functions.invoke('secret-kitchens-auth', {
+        body: {
+          email,
+          action: 'send_otp'
         }
       });
 
-      if (error) {
+      if (error || !data?.success) {
         console.error('Secret Kitchens OTP send error:', error);
         
-        // Handle specific errors for sign-in vs sign-up
-        if (error.message.includes('User not found') && activeTab === 'signin') {
-          toast({
-            title: "Account not found",
-            description: "This email hasn't signed up yet. Please use the Sign Up tab instead.",
-            variant: "destructive"
-          });
-        } else if (error.message.includes('already registered') && activeTab === 'signup') {
-          toast({
-            title: "Account exists",
-            description: "This email is already registered. Please use the Sign In tab instead.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Authentication failed",
-            description: error.message,
-            variant: "destructive"
-          });
-        }
+        const errorMessage = error?.message || data?.error || 'Failed to send verification code';
+        
+        toast({
+          title: "Authentication failed",
+          description: errorMessage,
+          variant: "destructive"
+        });
       } else {
         setOtpSent(true);
         toast({
@@ -147,26 +96,55 @@ export const SecretKitchensAuthModal = ({
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: 'email'
+      // Use the custom Secret Kitchens auth edge function for verification
+      const { data, error } = await supabase.functions.invoke('secret-kitchens-auth', {
+        body: {
+          email,
+          code: otpCode,
+          action: 'verify_otp'
+        }
       });
 
-      if (error) {
+      if (error || !data?.success) {
         console.error('Secret Kitchens OTP verification error:', error);
+        const errorMessage = error?.message || data?.error || 'Invalid verification code';
+        
         toast({
           title: "Invalid code",
-          description: error.message,
+          description: errorMessage,
           variant: "destructive"
         });
       } else {
-        await refreshSession();
-        toast({
-          title: isSignup ? "Welcome to Secret Kitchens!" : "Welcome back!",
-          description: isSignup ? "Your account has been created successfully." : "You're now signed in.",
-        });
-        onSuccess();
+        // Set the session using the tokens from our custom auth
+        if (data.access_token && data.refresh_token) {
+          const { error: sessionError } = await supabase.auth.setSession({
+            access_token: data.access_token,
+            refresh_token: data.refresh_token
+          });
+          
+          if (sessionError) {
+            console.error('Session setup error:', sessionError);
+            toast({
+              title: "Authentication error",
+              description: "Failed to establish session. Please try again.",
+              variant: "destructive"
+            });
+          } else {
+            await refreshSession();
+            toast({
+              title: "Welcome to Secret Kitchens!",
+              description: "You're now signed in and ready to explore.",
+            });
+            onSuccess();
+          }
+        } else {
+          console.error('No session tokens received from auth function');
+          toast({
+            title: "Authentication error",
+            description: "Failed to establish session. Please try again.",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error('Exception during Secret Kitchens OTP verify:', error);
@@ -184,8 +162,6 @@ export const SecretKitchensAuthModal = ({
     setEmail('');
     setOtpCode('');
     setOtpSent(false);
-    setIsSignup(false);
-    setActiveTab('signup');
     onClose();
   };
 
@@ -250,77 +226,34 @@ export const SecretKitchensAuthModal = ({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription className="space-y-2">
             <p>{description}</p>
-            <p className="text-sm font-medium text-foreground/80">
-              <strong>First time visitor?</strong> Use "Sign Up" to create your account first.
-            </p>
-            <p className="text-sm text-foreground/60">
-              <strong>Returning visitor?</strong> Use "Sign In" to access your existing account.
+            <p className="text-sm text-foreground/70">
+              Enter your email address and we'll send you a 6-digit verification code to access Secret Kitchens.
             </p>
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="signup" className="space-y-4 mt-4">
-            <div className="text-sm text-foreground/70 bg-muted p-3 rounded">
-              <strong>New to Secret Kitchens?</strong> Create your account to access exclusive wood-fired recipes. We'll send you a 6-digit code to verify your email.
-            </div>
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email address</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="your.name@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Creating account...' : 'Create Account'}
-                </Button>
-              </div>
-            </form>
-          </TabsContent>
-          
-          <TabsContent value="signin" className="space-y-4 mt-4">
-            <div className="text-sm text-foreground/70 bg-muted p-3 rounded">
-              <strong>Already have an account?</strong> Sign in with your email address. We'll send you a 6-digit code to verify it's you.
-            </div>
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email address</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  placeholder="your.name@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Sending code...' : 'Send Code'}
-                </Button>
-              </div>
-            </form>
-          </TabsContent>
-        </Tabs>
+        <form onSubmit={handleSendOtp} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="your.name@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="flex-1">
+              {loading ? 'Sending code...' : 'Send Verification Code'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
