@@ -215,8 +215,6 @@ const SecretKitchensContent = () => {
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [activeTab, setActiveTab] = useState<'signup' | 'signin'>('signup');
-  const [isSignup, setIsSignup] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [api, setApi] = useState<any>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -299,7 +297,6 @@ const SecretKitchensContent = () => {
     }
 
     setLoading(true);
-    setIsSignup(activeTab === 'signup');
     
     try {
       // First check if email has access
@@ -314,14 +311,11 @@ const SecretKitchensContent = () => {
         return;
       }
 
-      // Use Supabase's native OTP system (6-digit code)
+      // Use Supabase's native OTP system (6-digit code) - sign in only
       const { error } = await supabase.auth.signInWithOtp({
         email: email.toLowerCase(),
         options: {
-          shouldCreateUser: activeTab === 'signup',
-          data: activeTab === 'signup' ? {
-            user_type: 'secret_kitchens'
-          } : undefined
+          shouldCreateUser: false
         }
       });
 
@@ -342,7 +336,7 @@ const SecretKitchensContent = () => {
         }
       } else {
         setOtpSent(true);
-        const action = activeTab === 'signup' ? 'Account creation code' : 'Verification code';
+        const action = 'Verification code';
         toast({
           title: `${action} Sent`,
           description: "Check your email for a 6-digit verification code."
@@ -405,7 +399,7 @@ const SecretKitchensContent = () => {
         }
 
         setIsAuthorized(true);
-        const action = isSignup ? 'Account created!' : 'Welcome back!';
+        const action = 'Welcome back!';
         toast({
           title: "Authentication Successful",
           description: `${action} Accessing Secret Kitchens...`
@@ -725,70 +719,34 @@ const SecretKitchensContent = () => {
               <Card className="bg-white/10 backdrop-blur-sm border-white/20">
                 <CardHeader className="text-center">
                   <CardTitle className="text-2xl font-bold text-white">Secret Kitchens</CardTitle>
-                  <CardDescription className="text-white/80 space-y-2">
-                    <p className="text-sm font-medium text-white/90">
-                      <strong>First time?</strong> Use Sign Up to create your user, and then Sign-In to access
-                    </p>
-                    <p className="text-sm text-white/70">
-                      <strong>Back again?</strong> Sign-In with a six-digit code to access the Croft Common info.
+                  <CardDescription className="text-white/80">
+                    <p className="text-sm text-white/80">
+                      Enter your registered email address to access exclusive content. We'll send you a 6-digit code to verify it's you.
                     </p>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-white/10">
-                      <TabsTrigger value="signup" className="text-white data-[state=active]:bg-white data-[state=active]:text-[hsl(var(--accent-pink))]">Sign Up</TabsTrigger>
-                      <TabsTrigger value="signin" className="text-white data-[state=active]:bg-white data-[state=active]:text-[hsl(var(--accent-pink))]">Sign In</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="signup" className="space-y-4 mt-4">
-                      <div className="text-sm text-white/80 bg-white/10 p-3 rounded border border-white/20">
-                        Sign-up to create your user, we'll send you a 6-digit code to verify your email.
-                      </div>
-                      <form onSubmit={sendOtpCode} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="signup-email" className="text-white">Email address</Label>
-                          <Input
-                            id="signup-email"
-                            type="email"
-                            placeholder="your.name@company.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            disabled={loading}
-                            required
-                            className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
-                          />
-                        </div>
-                        <Button type="submit" disabled={loading} className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90">
-                          {loading ? 'Creating account...' : 'Create Account'}
-                        </Button>
-                      </form>
-                    </TabsContent>
-                    
-                    <TabsContent value="signin" className="space-y-4 mt-4">
-                      <div className="text-sm text-white/80 bg-white/10 p-3 rounded border border-white/20">
-                        <strong>Already have an account?</strong> Sign in with your email address. We'll send you a 6-digit code to verify it's you.
-                      </div>
-                      <form onSubmit={sendOtpCode} className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="signin-email" className="text-white">Email address</Label>
-                          <Input
-                            id="signin-email"
-                            type="email"
-                            placeholder="your.name@company.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            disabled={loading}
-                            required
-                            className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
-                          />
-                        </div>
-                        <Button type="submit" disabled={loading} className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90">
-                          {loading ? 'Sending code...' : 'Send Code'}
-                        </Button>
-                      </form>
-                    </TabsContent>
-                  </Tabs>
+                  <div className="text-sm text-white/80 bg-white/10 p-3 rounded border border-white/20">
+                    <strong>Authorized access only.</strong> Enter your registered email address. We'll send you a 6-digit code to verify it's you.
+                  </div>
+                  <form onSubmit={sendOtpCode} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-white">Email address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="your.name@company.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={loading}
+                        required
+                        className="bg-white/20 border-white/30 text-white placeholder:text-white/60"
+                      />
+                    </div>
+                    <Button type="submit" disabled={loading} className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90">
+                      {loading ? 'Sending code...' : 'Send Code'}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
             )}
