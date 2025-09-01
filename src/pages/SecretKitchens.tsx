@@ -660,8 +660,9 @@ const SecretKitchensContent = () => {
           {/* Instruction text box - wider */}
           <div className="w-full max-w-2xl bg-[hsl(var(--accent-pink))] border-2 border-white rounded-lg p-6 text-white">
             <div className="space-y-4 text-center">
-              <p className="text-lg leading-relaxed">Welcome. You're one of the few invited behind the curtain at Croft Common.</p>
-              <p className="text-lg leading-relaxed">This page won't last. From the moment you enter, the clock is ticking - 48 hours before it disappears.</p>
+              <p className="text-lg leading-relaxed">Welcome. You're one of the few we have invited behind the curtain at Croft Common.</p>
+              <p className="text-lg leading-relaxed">This page won't last forever. From the moment you first enter, the clock is ticking</p>
+              <p className="text-lg leading-relaxed">- you have 48 hours before it all disappears.</p>
               <p className="text-lg font-brutalist tracking-wider">— Croft Common</p>
             </div>
           </div>
