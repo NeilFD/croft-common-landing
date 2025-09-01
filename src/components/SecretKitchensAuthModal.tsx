@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
@@ -21,15 +20,13 @@ export const SecretKitchensAuthModal = ({
   isOpen, 
   onClose, 
   onSuccess, 
-  title = "Access Secret Kitchens",
-  description = "Sign up or sign in to access exclusive recipes"
+  title = "Sign In to Secret Kitchens",
+  description = "Enter your email address to access exclusive recipes"
 }: SecretKitchensAuthModalProps) => {
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signup');
-  const [isSignup, setIsSignup] = useState(false);
   const { user, refreshSession } = useAuth();
 
   const validateSecretKitchensAccess = async (email: string): Promise<boolean> => {
@@ -77,42 +74,20 @@ export const SecretKitchensAuthModal = ({
         return;
       }
 
-      const isSignupFlow = activeTab === 'signup';
-      setIsSignup(isSignupFlow);
-
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: isSignupFlow,
-          data: isSignupFlow ? {
-            user_type: 'secret_kitchens'
-          } : undefined
+          shouldCreateUser: false
         }
       });
 
       if (error) {
         console.error('Secret Kitchens OTP send error:', error);
-        
-        // Handle specific errors for sign-in vs sign-up
-        if (error.message.includes('User not found') && activeTab === 'signin') {
-          toast({
-            title: "Account not found",
-            description: "This email hasn't signed up yet. Please use the Sign Up tab instead.",
-            variant: "destructive"
-          });
-        } else if (error.message.includes('already registered') && activeTab === 'signup') {
-          toast({
-            title: "Account exists",
-            description: "This email is already registered. Please use the Sign In tab instead.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "Authentication failed",
-            description: error.message,
-            variant: "destructive"
-          });
-        }
+        toast({
+          title: "Authentication failed",
+          description: error.message,
+          variant: "destructive"
+        });
       } else {
         setOtpSent(true);
         toast({
@@ -163,8 +138,8 @@ export const SecretKitchensAuthModal = ({
       } else {
         await refreshSession();
         toast({
-          title: isSignup ? "Welcome to Secret Kitchens!" : "Welcome back!",
-          description: isSignup ? "Your account has been created successfully." : "You're now signed in.",
+          title: "Welcome back!",
+          description: "You're now signed in to Secret Kitchens.",
         });
         onSuccess();
       }
@@ -184,8 +159,6 @@ export const SecretKitchensAuthModal = ({
     setEmail('');
     setOtpCode('');
     setOtpSent(false);
-    setIsSignup(false);
-    setActiveTab('signup');
     onClose();
   };
 
@@ -248,79 +221,37 @@ export const SecretKitchensAuthModal = ({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription className="space-y-2">
-            <p>{description}</p>
-            <p className="text-sm font-medium text-foreground/80">
-              <strong>First time visitor?</strong> Use "Sign Up" to create your account first.
-            </p>
-            <p className="text-sm text-foreground/60">
-              <strong>Returning visitor?</strong> Use "Sign In" to access your existing account.
-            </p>
+          <DialogDescription>
+            {description}
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'signin' | 'signup')} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="signup" className="space-y-4 mt-4">
-            <div className="text-sm text-foreground/70 bg-muted p-3 rounded">
-              <strong>New to Secret Kitchens?</strong> Create your account to access exclusive wood-fired recipes. We'll send you a 6-digit code to verify your email.
-            </div>
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email address</Label>
-                <Input
-                  id="signup-email"
-                  type="email"
-                  placeholder="your.name@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Creating account...' : 'Create Account'}
-                </Button>
-              </div>
-            </form>
-          </TabsContent>
-          
-          <TabsContent value="signin" className="space-y-4 mt-4">
-            <div className="text-sm text-foreground/70 bg-muted p-3 rounded">
-              <strong>Already have an account?</strong> Sign in with your email address. We'll send you a 6-digit code to verify it's you.
-            </div>
-            <form onSubmit={handleSendOtp} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email address</Label>
-                <Input
-                  id="signin-email"
-                  type="email"
-                  placeholder="your.name@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={loading} className="flex-1">
-                  {loading ? 'Sending code...' : 'Send Code'}
-                </Button>
-              </div>
-            </form>
-          </TabsContent>
-        </Tabs>
+        <div className="text-sm text-foreground/70 bg-muted p-3 rounded mb-4">
+          <strong>Authorized access only.</strong> Enter your registered email address. We'll send you a 6-digit code to verify it's you.
+        </div>
+        
+        <form onSubmit={handleSendOtp} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="your.name@company.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+              required
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={loading} className="flex-1">
+              {loading ? 'Sending code...' : 'Send Code'}
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
