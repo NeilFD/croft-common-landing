@@ -203,7 +203,7 @@ export const SecretKitchensAuthModal = ({
               </InputOTP>
             </div>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={handleBackToEmail} disabled={loading}>
+              <Button type="button" variant="outline" onClick={handleBackToEmail} disabled={loading} className="text-[hsl(var(--accent-pink))] border-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))] hover:text-white">
                 Back
               </Button>
               <Button type="submit" disabled={loading || otpCode.length !== 6} className="flex-1">
@@ -244,7 +244,7 @@ export const SecretKitchensAuthModal = ({
             />
           </div>
           <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+            <Button type="button" variant="outline" onClick={handleClose} disabled={loading} className="text-[hsl(var(--accent-pink))] border-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))] hover:text-white">
               Cancel
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
