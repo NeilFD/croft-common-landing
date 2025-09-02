@@ -51,8 +51,8 @@ const slideNavigationLabels = [
   'Venue Spaces',
   'Café & Bar',
   'Morning to Night',
-  'Street Terrace',
   'Coffee Preparation',
+  'Street Terrace',
   'Industrial Loft',
   'The Kitchens',
   'Independent Kitchens',
@@ -114,8 +114,8 @@ const slideConfigs = [
     leftContent: "During the day it's counters will be piled high with tempting pastries, cakes and tarts, along with salads, frittatas, flatbreads and other savoury delights. All food will be made on the premises and all orders will be taken at the counter. People can eat in, grab food to go, or take a moment and enjoy brunch on The Street Terrace.\n\nThe Street Terrace will be a private space, filled with plants under a canvas awning. Fresh and bright in the summer, snug and warm in the winter.\n\nIn a neighbourhood where outdoor seating is hard to come by, the terrace will be a local hotspot, with a lively ambience, attracting locals and passersby to the intrigue of the building.\n\nAs the daytime trade slows, The Café transitions into a Cocktail Bar. The café counter houses the decks, and the music vibe changes. The lighting is dimmed, and the bar counter is lit, ready to serve local spirits and classic cocktails.\n\nOpening is from 7 am every day, except for 10 am on Sunday. Monday to Wednesday it will close at 11 pm, on Thursday at 12am, on Friday and Saturday at 1 am and on Sunday at 11pm.\n\nThe inner and outer space caters for approx. 100 covers with the ability to spill-out into The Courtyard which can accommodate 30 covers.",
     rightImage: '/lovable-uploads/41ae38cd-ab7d-4fea-91e7-cd2dfb8b4b6c.png'
   },
-  { type: 'HERO', title: 'THE STREET TERRACE', backgroundImage: '/lovable-uploads/6508d223-d38b-4548-bb78-f79d3adffc41.png', noOverlay: true },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/2501737a-fee4-46b5-bad4-686fc66ed1dd.png', alt: 'Coffee preparation scene' },
+  { type: 'HERO', title: 'THE STREET TERRACE', backgroundImage: '/lovable-uploads/6508d223-d38b-4548-bb78-f79d3adffc41.png', noOverlay: true },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21d8aba5-3872-43e7-828f-83f8f0a1b842.png', alt: 'Industrial loft space with brick walls and large windows' },
   { type: 'HERO', title: 'THE KITCHENS', backgroundImage: '/lovable-uploads/1a48fdb9-99c5-4afa-bc8b-895586d3e5fb.png', noOverlay: true },
   { 
