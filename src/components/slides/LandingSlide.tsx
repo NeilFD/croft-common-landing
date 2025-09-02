@@ -54,12 +54,18 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
       </div>
 
       {/* Welcome Message */}
-      <div className="text-center mb-12 max-w-3xl px-6">
+      <div className="text-center mb-12 max-w-4xl px-6">
         <p className="text-lg md:text-xl text-white/90 leading-relaxed mb-4">
-          An exciting new launch in Bristol's Stokes Croft, an opportunity for some of Bristol's best operators to join us and deliver exceptional Hospitality in a completely unique setting.
+          Stokes Croft's new centre of gravity. A landmark launch, and a rare chance for Bristol's best operators to step inside and deliver hospitality at its finest.
+        </p>
+        <p className="text-base md:text-lg text-white/80 leading-relaxed mb-4">
+          Rooted in the neighbourhood, alive with the city's energy, Croft Common is where Bristol meets, eats, and stays a little longer than planned. We've reimagined a landmark building as a place to gather, make, eat, drink, and celebrate, from first coffee to last call.
+        </p>
+        <p className="text-base md:text-lg text-white/80 leading-relaxed mb-4">
+          The Kitchens bring together outstanding independent food talent. The Café shifts from morning espresso to late-night vinyl. The Cocktail Bar, Beer Hall, Courtyard, Hall and Rooftop all add their own rhythm. Every detail has been designed to create experiences that feel effortless, social, and unforgettable.
         </p>
         <p className="text-base md:text-lg text-white/80 leading-relaxed">
-          Step into a world where culinary artistry meets intimate atmosphere. Our carefully curated space brings together innovative dining concepts, expertly crafted cocktails, and an ambience that celebrates the vibrant spirit of one of Bristol's most creative neighborhoods. Every element has been thoughtfully designed to create an unforgettable experience.
+          This is Croft Common - a space shaped by Stokes Croft, for Bristol, with you at the centre.
         </p>
       </div>
 
