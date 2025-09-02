@@ -52,11 +52,11 @@ const slideNavigationLabels = [
   'Café & Bar',
   'Morning to Night',
   'Coffee Preparation',
-  'Street Terrace',
   'Industrial Loft',
+  'Street Terrace',
+  'Hospitality Experience',
   'The Kitchens',
   'Independent Kitchens',
-  'Hospitality Experience',
   'The Taproom',
   'Craft Beer Experience',
   'The Courtyard',
@@ -115,21 +115,21 @@ const slideConfigs = [
     rightImage: '/lovable-uploads/41ae38cd-ab7d-4fea-91e7-cd2dfb8b4b6c.png'
   },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/2501737a-fee4-46b5-bad4-686fc66ed1dd.png', alt: 'Coffee preparation scene' },
-  { type: 'HERO', title: 'THE STREET TERRACE', backgroundImage: '/lovable-uploads/6508d223-d38b-4548-bb78-f79d3adffc41.png', noOverlay: true },
   { type: 'PLAIN_IMAGE', backgroundImage: '/lovable-uploads/21d8aba5-3872-43e7-828f-83f8f0a1b842.png', alt: 'Industrial loft space with brick walls and large windows' },
-  { type: 'HERO', title: 'THE KITCHENS', backgroundImage: '/lovable-uploads/1a48fdb9-99c5-4afa-bc8b-895586d3e5fb.png', noOverlay: true },
-  { 
-    type: 'IMAGE_TEXT', 
-    title: 'INDEPENDENT KITCHENS. COLLECTIVE EXPERIENCE.', 
-    rightTitle: 'THE WOODFIRE KITCHEN',
-    leftContent: "The Kitchens are where Bristol's boldest food talent comes together under one roof, a curated collection of four kitchens serving up serious flavour and fierce creativity.\n\nFirst off is The Woodfire, our own signature kitchen, built around a glowing wood-fired oven. From morning through to night, it brings depth, drama and flame-fired theatre to every plate, it sets the tone.\n\nSurrounding it are three of Bristol's most exciting food entrepreneurs: up-and-coming street food stars, pop-up pioneers, and cult favourites, each with their own distinct style. From globally inspired comfort food to next-generation brunches, this is a true showcase of Bristol's food scene, independent, inventive and always evolving.\n\nIt's more than a food hall. It's a launchpad for local talent. A place where new ideas meet hungry crowds, where big names get discovered, and where everything, from the food to the fit-out, reflects the creativity of Stokes Croft.\n\nCommunal tables and open kitchens create a space that's vibrant, social and full of energy. Whether you're meeting friends, grabbing lunch solo, or staying for the evening, it's casual dining with serious intent.\n\nOpen daily from 12pm to 10pm, with The Woodfire serving from 7am, this is where Bristol eats - together.\n\nThe Kitchen offer 80 seats, with 100 more in The Café and Cocktail Bar, 30 in The Courtyard, 60 in the Taproom and 80 across the rooftop terraces, all designed to flow effortlessly into one another, creating a flexible, social space where dining, drinking, and gathering come together.",
-    rightImage: '/lovable-uploads/71adf12c-12fa-4b43-9a36-2668dee03a18.png'
-  },
+  { type: 'HERO', title: 'THE STREET TERRACE', backgroundImage: '/lovable-uploads/6508d223-d38b-4548-bb78-f79d3adffc41.png', noOverlay: true },
   { 
     type: 'SPLIT', 
     title: 'TRULY MEMORABLE HOSPITALITY EXPERIENCES INVARIABLY HAVE AN EXTRAORDINARY PEOPLE EXPERIENCE; NATURAL AND GENEROUS HOSPITALITY IS STILL THE KILLER APP.', 
     leftContent: 'TRULY MEMORABLE HOSPITALITY EXPERIENCES INVARIABLY HAVE AN EXTRAORDINARY PEOPLE EXPERIENCE; NATURAL AND GENEROUS HOSPITALITY IS STILL THE KILLER APP.',
     rightImage: '/lovable-uploads/7afc4c37-6fa4-45c5-97eb-63a174938c51.png'
+  },
+  { type: 'HERO', title: 'THE KITCHENS', backgroundImage: '/lovable-uploads/1a48fdb9-99c5-4afa-bc8b-895586d3e5fb.png', noOverlay: true },
+  { 
+    type: 'IMAGE_TEXT', 
+    title: 'INDEPENDENT KITCHENS. COLLECTIVE EXPERIENCE.', 
+    rightTitle: 'THE WOODFIRE KITCHEN',
+    leftContent: "The Kitchens are where Bristol's boldest food talent comes together under one roof, a curated collection of four kitchens serving up serious flavour and fierce creativity.\n\nFirst off is The Woodfire, our own signature kitchen, built around a glowing wood-fired oven. From morning through to night, it brings depth, drama and flame-fired theatre to every plate, it sets the tone.\n\nSurrounding it are three of Bristol's most exciting food entrepreneurs: up-and-coming street food stars, pop-up pioneers, and cult favourites, each with their own distinct style. From globally inspired comfort food to next-generation brunches, this is a true showcase of Bristol's food scene, independent, inventive and always evolving.\n\nIt's more than a food hall. It's a launchpad for local talent. A place where new ideas meet hungry crowds, where big names get discovered, and where everything, from the food to the fit-out, reflects the creativity of Stokes Croft.\n\nCommunal tables and open kitchens create a space that's vibrant, social and full of energy. Whether you're meeting friends, grabbing lunch solo, or staying for the evening, it's casual dining with serious intent.\n\nOpen daily from 12pm to 10pm, with The Woodfire serving from 7am, this is where Bristol eats - together.\n\nThe Kitchen offer 80 seats, with 100 more in The Café and Cocktial Bar, 30 in The Courtyard, 60 in the Taproom and 80 across the rooftop terraces, all designed to flow effortlessly into one another, creating a flexible, social space where dining, drinking, and gathering come together.",
+    rightImage: '/lovable-uploads/71adf12c-12fa-4b43-9a36-2668dee03a18.png'
   },
   { 
     type: 'HERO', 
