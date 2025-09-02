@@ -846,14 +846,8 @@ const SecretKitchensContent = () => {
         {/* Desktop Carousel Arrows */}
         {!isMobile && (
           <TransparentCarouselArrows
-            onPrevious={() => {
-              api?.scrollPrev();
-              if (api) setCurrentSlide(api.selectedScrollSnap());
-            }}
-            onNext={() => {
-              api?.scrollNext();
-              if (api) setCurrentSlide(api.selectedScrollSnap());
-            }}
+            onPrevious={() => api?.scrollPrev()}
+            onNext={() => api?.scrollNext()}
             canScrollPrev={canScrollPrev}
             canScrollNext={canScrollNext}
           />
@@ -862,14 +856,8 @@ const SecretKitchensContent = () => {
         {/* Mobile Carousel Controls */}
         {isMobile && (
           <MobileCarouselControls
-            onPrevious={() => {
-              api?.scrollPrev();
-              if (api) setCurrentSlide(api.selectedScrollSnap());
-            }}
-            onNext={() => {
-              api?.scrollNext();
-              if (api) setCurrentSlide(api.selectedScrollSnap());
-            }}
+            onPrevious={() => api?.scrollPrev()}
+            onNext={() => api?.scrollNext()}
             canScrollPrev={canScrollPrev}
             canScrollNext={canScrollNext}
             currentSlide={currentSlide}
