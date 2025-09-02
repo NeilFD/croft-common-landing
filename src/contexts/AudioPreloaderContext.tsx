@@ -5,6 +5,7 @@ interface AudioPreloaderContextType {
   isLoading: boolean;
   startAudioPlayback: () => void;
   audioError: string | null;
+  preloadAudio: () => Promise<void>;
 }
 
 const AudioPreloaderContext = createContext<AudioPreloaderContextType | undefined>(undefined);
@@ -94,7 +95,8 @@ export const AudioPreloaderProvider: React.FC<{ children: ReactNode }> = ({ chil
       isAudioReady,
       isLoading,
       startAudioPlayback,
-      audioError
+      audioError,
+      preloadAudio
     }}>
       {children}
     </AudioPreloaderContext.Provider>
@@ -117,28 +119,8 @@ export const useStartAudioPreload = (isAuthorized: boolean) => {
   useEffect(() => {
     if (isAuthorized && !hasStarted && !audioPreloader.isAudioReady && !audioPreloader.isLoading) {
       setHasStarted(true);
-      // Start preloading immediately when authorized
-      const preloadAudio = async () => {
-        try {
-          const croftAudio = new Audio('/lovable-uploads/56ad9830-6a9c-46c6-b84b-7e2f6d4ea91e.mp3');
-          const ambientAudio = new Audio('/lovable-uploads/6c8b8ddc-53cd-4e38-8de7-0b0dae3dc86f.mp3');
-          
-          croftAudio.preload = 'auto';
-          ambientAudio.preload = 'auto';
-          croftAudio.loop = true;
-          ambientAudio.loop = true;
-          croftAudio.volume = 0.7;
-          ambientAudio.volume = 0.3;
-          
-          // Start loading
-          croftAudio.load();
-          ambientAudio.load();
-        } catch (error) {
-          console.error('Failed to start audio preload:', error);
-        }
-      };
-      
-      preloadAudio();
+      console.log('🎵 Starting audio preload immediately after authorization');
+      audioPreloader.preloadAudio();
     }
   }, [isAuthorized, hasStarted, audioPreloader]);
 };
