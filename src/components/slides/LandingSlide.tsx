@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
 import CroftCommonAudioPlayer from './CroftCommonAudioPlayer';
 import RestaurantAmbientAudio from './RestaurantAmbientAudio';
@@ -11,19 +11,34 @@ interface LandingSlideProps {
 
 export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
   const [audioStarted, setAudioStarted] = useState(false);
-  const [cameraAudioLoaded, setCameraAudioLoaded] = useState(false);
-  const [ambientAudioLoaded, setAmbientAudioLoaded] = useState(false);
-  
-  const allAudioLoaded = cameraAudioLoaded && ambientAudioLoaded;
+  const [audioLoaded, setAudioLoaded] = useState({ croft: false, ambient: false });
+  const [audioMounted, setAudioMounted] = useState(false);
+
+  const isAudioReady = audioLoaded.croft && audioLoaded.ambient;
+
+  const handleCroftAudioLoad = () => {
+    setAudioLoaded(prev => ({ ...prev, croft: true }));
+  };
+
+  const handleAmbientAudioLoad = () => {
+    setAudioLoaded(prev => ({ ...prev, ambient: true }));
+  };
 
   const handleEnterCommon = () => {
-    // Start both audio components in background and advance to next slide
+    if (!isAudioReady) return;
+    
+    // Start both audio components and advance to next slide
     setAudioStarted(true);
-    // Small delay to ensure audio components mount and start
+    // Small delay to ensure audio components start playing
     setTimeout(() => {
       onEnter();
     }, 100);
   };
+
+  // Mount audio components immediately to start pre-loading
+  useEffect(() => {
+    setAudioMounted(true);
+  }, []);
 
   return (
     <section className="relative h-screen flex flex-col items-center justify-center bg-black text-white overflow-hidden">
@@ -46,14 +61,14 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
       <div className="flex justify-center mb-12">
         <Button
           onClick={handleEnterCommon}
-          disabled={!allAudioLoaded}
           variant="outline"
           size="lg"
+          disabled={!isAudioReady}
           className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300 px-8 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {!allAudioLoaded ? (
+          {!isAudioReady ? (
             <>
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Loading Audio...
             </>
           ) : (
@@ -62,18 +77,20 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
         </Button>
       </div>
 
-      {/* Pre-loaded Audio Components - Always mounted but hidden until started */}
-      <div className="hidden">
-        <CroftCommonAudioPlayer 
-          isPlaying={audioStarted}
-          onToggle={() => {}}
-          onLoad={() => setCameraAudioLoaded(true)}
-        />
-        <RestaurantAmbientAudio 
-          autoPlay={audioStarted} 
-          onLoad={() => setAmbientAudioLoaded(true)}
-        />
-      </div>
+      {/* Hidden Audio Components - Pre-load immediately, play when audioStarted is true */}
+      {audioMounted && (
+        <div className="hidden">
+          <CroftCommonAudioPlayer 
+            isPlaying={audioStarted}
+            onToggle={() => {}}
+            onLoad={handleCroftAudioLoad}
+          />
+          <RestaurantAmbientAudio 
+            autoPlay={audioStarted} 
+            onLoad={handleAmbientAudioLoad}
+          />
+        </div>
+      )}
 
       {/* Subtle ambient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 pointer-events-none" />
