@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, Loader2 } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
 import CroftCommonAudioPlayer from './CroftCommonAudioPlayer';
 import RestaurantAmbientAudio from './RestaurantAmbientAudio';
@@ -11,6 +11,10 @@ interface LandingSlideProps {
 
 export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
   const [audioStarted, setAudioStarted] = useState(false);
+  const [cameraAudioLoaded, setCameraAudioLoaded] = useState(false);
+  const [ambientAudioLoaded, setAmbientAudioLoaded] = useState(false);
+  
+  const allAudioLoaded = cameraAudioLoaded && ambientAudioLoaded;
 
   const handleEnterCommon = () => {
     // Start both audio components in background and advance to next slide
@@ -42,24 +46,34 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
       <div className="flex justify-center mb-12">
         <Button
           onClick={handleEnterCommon}
+          disabled={!allAudioLoaded}
           variant="outline"
           size="lg"
-          className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300 px-8 py-4 text-lg"
+          className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300 px-8 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Enter Croft Common
+          {!allAudioLoaded ? (
+            <>
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              Loading Audio...
+            </>
+          ) : (
+            'Enter Croft Common'
+          )}
         </Button>
       </div>
 
-      {/* Hidden Audio Components - Auto-start when audioStarted is true */}
-      {audioStarted && (
-        <div className="hidden">
-          <CroftCommonAudioPlayer 
-            isPlaying={true}
-            onToggle={() => {}}
-          />
-          <RestaurantAmbientAudio autoPlay={true} />
-        </div>
-      )}
+      {/* Pre-loaded Audio Components - Always mounted but hidden until started */}
+      <div className="hidden">
+        <CroftCommonAudioPlayer 
+          isPlaying={audioStarted}
+          onToggle={() => {}}
+          onLoad={() => setCameraAudioLoaded(true)}
+        />
+        <RestaurantAmbientAudio 
+          autoPlay={audioStarted} 
+          onLoad={() => setAmbientAudioLoaded(true)}
+        />
+      </div>
 
       {/* Subtle ambient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 pointer-events-none" />
