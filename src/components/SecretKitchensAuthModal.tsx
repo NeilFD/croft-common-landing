@@ -21,7 +21,7 @@ export const SecretKitchensAuthModal = ({
   onClose, 
   onSuccess, 
   title = "Sign In to Secret Kitchens",
-  description = "Enter your email address to access exclusive recipes"
+  description = "Sign in to access Secret Kitchens"
 }: SecretKitchensAuthModalProps) => {
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
@@ -266,7 +266,7 @@ export const SecretKitchensAuthModal = ({
               Cancel
             </Button>
             <Button type="submit" disabled={loading} className="flex-1">
-              {loading ? 'Sending code...' : 'Send Code'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </div>
         </form>
