@@ -31,12 +31,14 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
   }, []);
 
   const handleEnterCommon = () => {
+    console.log('🎵 Enter button clicked, isReady:', isReady);
     if (!isReady) return;
     
-    // Start both audio components in background and advance to next slide
+    console.log('🎵 Setting audioStarted to true');
     setAudioStarted(true);
-    // Small delay to ensure audio components mount and start
+    
     setTimeout(() => {
+      console.log('🎵 Calling onEnter after delay');
       onEnter();
     }, 100);
   };

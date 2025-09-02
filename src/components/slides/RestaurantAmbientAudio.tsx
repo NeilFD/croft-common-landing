@@ -22,13 +22,17 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({ autoPla
   };
 
   useEffect(() => {
+    console.log('🎵 RestaurantAmbientAudio effect - isAmbientPlaying:', isAmbientPlaying, 'isGlobalMuted:', isGlobalMuted);
     if (audioRef.current) {
-      audioRef.current.volume = volume;
+      audioRef.current.volume = isGlobalMuted ? 0 : volume;
       
-      // Simple control: play when ambient is playing and not globally muted
       if (isAmbientPlaying && !isGlobalMuted) {
-        audioRef.current.play().catch(console.error);
+        console.log('🎵 Attempting to play ambient audio');
+        audioRef.current.play()
+          .then(() => console.log('🎵 Ambient audio started successfully'))
+          .catch(error => console.error('🎵 Ambient audio failed to play:', error));
       } else {
+        console.log('🎵 Pausing ambient audio - isAmbientPlaying:', isAmbientPlaying, 'isGlobalMuted:', isGlobalMuted);
         audioRef.current.pause();
       }
     }
