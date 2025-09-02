@@ -137,7 +137,7 @@ React.useEffect(() => {
                 size="icon"
                 onClick={() => setActiveId('cover')}
                 aria-label="Back to cover"
-                className="border-none bg-transparent hover:bg-transparent focus-visible:ring-0 text-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
+                className="border border-[hsl(var(--accent-pink))]/30 bg-[hsl(var(--accent-pink))]/10 hover:bg-[hsl(var(--accent-pink))]/20 focus-visible:ring-1 focus-visible:ring-[hsl(var(--accent-pink))] text-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
               >
                 <ArrowLeft className="h-4 w-4" />
               </Button>
