@@ -30,7 +30,6 @@ import { CourtyardSlide } from '@/components/slides/CourtyardSlide';
 import { QuestionnaireSlide } from '@/components/slides/QuestionnaireSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { AudioProvider, useAudio } from '@/contexts/AudioContext';
-import { AudioPreloaderProvider, useStartAudioPreload } from '@/contexts/AudioPreloaderContext';
 import MasterAudioControl from '@/components/MasterAudioControl';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
@@ -225,9 +224,6 @@ const SecretKitchensContent = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [accessExpiresAt, setAccessExpiresAt] = useState<string | null>(null);
   const [accessExpired, setAccessExpired] = useState(false);
-
-  // Start audio preloading when authorized
-  useStartAudioPreload(isAuthorized);
 
   useEffect(() => {
     if (user?.email) {
@@ -891,9 +887,7 @@ const SecretKitchensContent = () => {
 const SecretKitchens = () => {
   return (
     <AudioProvider>
-      <AudioPreloaderProvider>
-        <SecretKitchensContent />
-      </AudioPreloaderProvider>
+      <SecretKitchensContent />
     </AudioProvider>
   );
 };

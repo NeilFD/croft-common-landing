@@ -1,22 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
-import { useAudioPreloader } from '@/contexts/AudioPreloaderContext';
+import CroftCommonAudioPlayer from './CroftCommonAudioPlayer';
+import RestaurantAmbientAudio from './RestaurantAmbientAudio';
 
 interface LandingSlideProps {
   onEnter: () => void;
 }
 
 export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
-  const { isAudioReady, isLoading, startAudioPlayback, audioError } = useAudioPreloader();
+  const [audioStarted, setAudioStarted] = useState(false);
 
-  const handleEnterCommon = async () => {
-    if (!isAudioReady) return;
-    
-    // Start audio playback and advance to next slide
-    await startAudioPlayback();
-    onEnter();
+  const handleEnterCommon = () => {
+    // Start both audio components in background and advance to next slide
+    setAudioStarted(true);
+    // Small delay to ensure audio components mount and start
+    setTimeout(() => {
+      onEnter();
+    }, 100);
   };
 
   return (
@@ -42,24 +44,20 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
           onClick={handleEnterCommon}
           variant="outline"
           size="lg"
-          disabled={!isAudioReady}
-          className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300 px-8 py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300 px-8 py-4 text-lg"
         >
-          {!isAudioReady ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Setting the scene...
-            </>
-          ) : (
-            'Enter Croft Common'
-          )}
+          Enter Croft Common
         </Button>
       </div>
 
-      {/* Error message if audio fails to load */}
-      {audioError && (
-        <div className="text-red-400 text-sm mt-4">
-          {audioError}
+      {/* Hidden Audio Components - Auto-start when audioStarted is true */}
+      {audioStarted && (
+        <div className="hidden">
+          <CroftCommonAudioPlayer 
+            isPlaying={true}
+            onToggle={() => {}}
+          />
+          <RestaurantAmbientAudio autoPlay={true} />
         </div>
       )}
 

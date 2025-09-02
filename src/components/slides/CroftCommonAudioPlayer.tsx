@@ -7,13 +7,11 @@ import { useAudio } from '@/contexts/AudioContext';
 interface CroftCommonAudioPlayerProps {
   isPlaying: boolean;
   onToggle: (playing: boolean) => void;
-  onLoad?: () => void;
 }
 
 const CroftCommonAudioPlayer: React.FC<CroftCommonAudioPlayerProps> = ({ 
   isPlaying, 
-  onToggle,
-  onLoad
+  onToggle 
 }) => {
   const [volume, setVolume] = useState(0.6);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,31 +26,6 @@ const CroftCommonAudioPlayer: React.FC<CroftCommonAudioPlayerProps> = ({
       onToggle(!isPlaying);
     }
   };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleCanPlayThrough = () => {
-      setIsLoading(false);
-      onLoad?.();
-    };
-
-    const handleLoadStart = () => {
-      setIsLoading(true);
-    };
-
-    audio.addEventListener('canplaythrough', handleCanPlayThrough);
-    audio.addEventListener('loadstart', handleLoadStart);
-
-    // Start loading the audio immediately
-    audio.load();
-
-    return () => {
-      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-      audio.removeEventListener('loadstart', handleLoadStart);
-    };
-  }, [onLoad]);
 
   useEffect(() => {
     if (audioRef.current) {

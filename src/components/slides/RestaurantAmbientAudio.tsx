@@ -6,13 +6,9 @@ import { useAudio } from '@/contexts/AudioContext';
 
 interface RestaurantAmbientAudioProps {
   autoPlay?: boolean;
-  onLoad?: () => void;
 }
 
-const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({ 
-  autoPlay = false,
-  onLoad
-}) => {
+const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({ autoPlay = false }) => {
   const [isAmbientPlaying, setIsAmbientPlaying] = useState(autoPlay);
   const [volume, setVolume] = useState(0.6);
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -24,24 +20,6 @@ const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({
   const toggleAmbient = () => {
     setIsAmbientPlaying(!isAmbientPlaying);
   };
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    const handleCanPlayThrough = () => {
-      onLoad?.();
-    };
-
-    audio.addEventListener('canplaythrough', handleCanPlayThrough);
-    
-    // Start loading the audio immediately
-    audio.load();
-
-    return () => {
-      audio.removeEventListener('canplaythrough', handleCanPlayThrough);
-    };
-  }, [onLoad]);
 
   useEffect(() => {
     if (audioRef.current) {
