@@ -65,7 +65,7 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
       <div className="flex flex-col items-center mb-12">
         {!isReady && (
           <p className="text-white/70 mb-4 text-sm">
-            Setting the scene... ({countdown}s)
+            Setting the scene...
           </p>
         )}
         <Button

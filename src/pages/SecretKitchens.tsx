@@ -41,6 +41,10 @@ import SecretKitchensCountdown from '@/components/SecretKitchensCountdown';
 
 // Navigation labels for dropdown (max 3 words each)
 const slideNavigationLabels = [
+  'Gallery 1',
+  'Gallery 2', 
+  'Gallery 3',
+  'Gallery 4',
   'Welcome',
   'Croft Common',
   'Neighbourhood Energy',
@@ -79,6 +83,26 @@ const slideNavigationLabels = [
 
 // Slide configurations for all slides
 const slideConfigs = [
+  {
+    type: 'PLAIN_IMAGE',
+    backgroundImage: '/lovable-uploads/3c8cd47a-0960-46d8-9e44-7be832e1be69.png',
+    alt: 'Croft Common exterior daytime view'
+  },
+  {
+    type: 'PLAIN_IMAGE', 
+    backgroundImage: '/lovable-uploads/1335be61-5ebe-4f85-8334-cc0b9a283bc0.png',
+    alt: 'Croft Common exterior evening view'
+  },
+  {
+    type: 'PLAIN_IMAGE',
+    backgroundImage: '/lovable-uploads/fd89f766-3a41-4e26-a1da-b6b65101d462.png', 
+    alt: 'Croft Common interior entrance'
+  },
+  {
+    type: 'PLAIN_IMAGE',
+    backgroundImage: '/lovable-uploads/9bb3a2a7-faff-41e8-8f45-0aa5a4c39b6c.png',
+    alt: 'Croft Common exterior night view'
+  },
   { type: 'LANDING' },
   { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
   { type: 'CENTERED', title: 'Rooted in the neighbourhood. Alive with city energy.', subtitle: 'This is Croft Common — where Bristol meets, eats, and stays a little longer than planned...', backgroundColor: 'accent' },
@@ -217,6 +241,7 @@ const SecretKitchensContent = () => {
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(true);
   const [api, setApi] = useState<any>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
@@ -515,14 +540,41 @@ const SecretKitchensContent = () => {
     setCanScrollNext(api.canScrollNext());
   }, [api]);
 
+  // Auto-advance for picture slides and audio preloading
+  useEffect(() => {
+    if (!isAuthorized || !autoAdvanceEnabled) return;
+    
+    // Auto-advance only for the first 4 slides (picture slides)
+    if (currentSlide < 4) {
+      const timer = setTimeout(() => {
+        setCurrentSlide(prev => prev + 1);
+        api?.scrollTo(currentSlide + 1);
+      }, 3000); // 3 seconds per picture slide
+      
+      return () => clearTimeout(timer);
+    } else if (currentSlide === 4) {
+      // Disable auto-advance when reaching the landing slide
+      setAutoAdvanceEnabled(false);
+    }
+  }, [currentSlide, isAuthorized, autoAdvanceEnabled, api]);
+
+  // Start audio preloading immediately when authorized
+  useEffect(() => {
+    if (isAuthorized) {
+      // Trigger audio preloading by dispatching custom event
+      const event = new CustomEvent('startAudioPreload');
+      window.dispatchEvent(event);
+    }
+  }, [isAuthorized]);
+
   const renderSlide = (config: any) => {
     switch (config.type) {
       case 'LANDING':
         return (
           <LandingSlide
             onEnter={() => {
-              api?.scrollTo(1);
-              setCurrentSlide(1);
+              api?.scrollTo(5); // Move to slide 5 (first HERO slide)
+              setCurrentSlide(5);
             }}
           />
         );
