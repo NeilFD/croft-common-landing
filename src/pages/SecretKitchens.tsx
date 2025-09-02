@@ -721,13 +721,13 @@ const SecretKitchensContent = () => {
                   <CardTitle className="text-2xl font-bold text-white">Secret Kitchens</CardTitle>
                   <CardDescription className="text-white/80">
                     <p className="text-sm text-white/80">
-                      Enter your registered email address to access exclusive content. We'll send you a 6-digit code to verify it's you.
+                      Sign in to access exclusive Secret Kitchens content.
                     </p>
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="text-sm text-white/80 bg-white/10 p-3 rounded border border-white/20">
-                    <strong>Authorized access only.</strong> Enter your registered email address. We'll send you a 6-digit code to verify it's you.
+                    <strong>Authorized access only.</strong> First-time sign-ins require a 6-digit verification code sent to your registered email.
                   </div>
                   <form onSubmit={sendOtpCode} className="space-y-4">
                     <div className="space-y-2">
@@ -744,7 +744,7 @@ const SecretKitchensContent = () => {
                       />
                     </div>
                     <Button type="submit" disabled={loading} className="w-full bg-white text-[hsl(var(--accent-pink))] hover:bg-white/90">
-                      {loading ? 'Sending code...' : 'Send Code'}
+                      {loading ? 'Signing in...' : 'Sign In'}
                     </Button>
                   </form>
                 </CardContent>
