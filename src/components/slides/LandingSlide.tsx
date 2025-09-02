@@ -2,43 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
-import CroftCommonAudioPlayer from './CroftCommonAudioPlayer';
-import RestaurantAmbientAudio from './RestaurantAmbientAudio';
+import { useAudioPreloader } from '@/contexts/AudioPreloaderContext';
 
 interface LandingSlideProps {
   onEnter: () => void;
 }
 
 export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
-  const [audioStarted, setAudioStarted] = useState(false);
-  const [audioLoaded, setAudioLoaded] = useState({ croft: false, ambient: false });
-  const [audioMounted, setAudioMounted] = useState(false);
+  const { isAudioReady, isLoading, startAudioPlayback, audioError } = useAudioPreloader();
 
-  const isAudioReady = audioLoaded.croft && audioLoaded.ambient;
-
-  const handleCroftAudioLoad = () => {
-    setAudioLoaded(prev => ({ ...prev, croft: true }));
-  };
-
-  const handleAmbientAudioLoad = () => {
-    setAudioLoaded(prev => ({ ...prev, ambient: true }));
-  };
-
-  const handleEnterCommon = () => {
+  const handleEnterCommon = async () => {
     if (!isAudioReady) return;
     
-    // Start both audio components and advance to next slide
-    setAudioStarted(true);
-    // Small delay to ensure audio components start playing
-    setTimeout(() => {
-      onEnter();
-    }, 100);
+    // Start audio playback and advance to next slide
+    await startAudioPlayback();
+    onEnter();
   };
-
-  // Mount audio components immediately to start pre-loading
-  useEffect(() => {
-    setAudioMounted(true);
-  }, []);
 
   return (
     <section className="relative h-screen flex flex-col items-center justify-center bg-black text-white overflow-hidden">
@@ -69,7 +48,7 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
           {!isAudioReady ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Loading Audio...
+              Setting the scene...
             </>
           ) : (
             'Enter Croft Common'
@@ -77,18 +56,10 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
         </Button>
       </div>
 
-      {/* Hidden Audio Components - Pre-load immediately, play when audioStarted is true */}
-      {audioMounted && (
-        <div className="hidden">
-          <CroftCommonAudioPlayer 
-            isPlaying={audioStarted}
-            onToggle={() => {}}
-            onLoad={handleCroftAudioLoad}
-          />
-          <RestaurantAmbientAudio 
-            autoPlay={audioStarted} 
-            onLoad={handleAmbientAudioLoad}
-          />
+      {/* Error message if audio fails to load */}
+      {audioError && (
+        <div className="text-red-400 text-sm mt-4">
+          {audioError}
         </div>
       )}
 
