@@ -73,7 +73,7 @@ const CroftCommonAudioPlayer: React.FC<CroftCommonAudioPlayerProps> = ({
       
       <div className="text-center space-y-2">
         <h3 className="text-white text-lg font-medium">Croft Common Playlist</h3>
-        <p className="text-white/70 text-sm">Play the Croft Common playlist</p>
+        <p className="text-white/70 text-sm">Croft Common Sounds</p>
       </div>
       
       <div className="flex items-center space-x-4">

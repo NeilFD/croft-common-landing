@@ -45,7 +45,7 @@ const RestaurantAmbientAudio: React.FC = () => {
       />
       
       <div className="text-center space-y-2">
-        <h3 className="text-white text-lg font-medium">Restaurant Ambience</h3>
+        <h3 className="text-white text-lg font-medium">Hospitality Buzz</h3>
         <p className="text-white/70 text-sm">Add some atmosphere</p>
       </div>
       
