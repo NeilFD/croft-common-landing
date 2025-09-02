@@ -85,22 +85,22 @@ const slideNavigationLabels = [
 const slideConfigs = [
   {
     type: 'PLAIN_IMAGE',
-    backgroundImage: '/lovable-uploads/3c8cd47a-0960-46d8-9e44-7be832e1be69.png',
+    backgroundImage: '/croft-common-1.png',
     alt: 'Croft Common exterior daytime view'
   },
   {
     type: 'PLAIN_IMAGE', 
-    backgroundImage: '/lovable-uploads/1335be61-5ebe-4f85-8334-cc0b9a283bc0.png',
+    backgroundImage: '/croft-common-2.png',
     alt: 'Croft Common exterior evening view'
   },
   {
     type: 'PLAIN_IMAGE',
-    backgroundImage: '/lovable-uploads/fd89f766-3a41-4e26-a1da-b6b65101d462.png', 
+    backgroundImage: '/croft-common-3.png', 
     alt: 'Croft Common interior entrance'
   },
   {
     type: 'PLAIN_IMAGE',
-    backgroundImage: '/lovable-uploads/9bb3a2a7-faff-41e8-8f45-0aa5a4c39b6c.png',
+    backgroundImage: '/croft-common-4.png',
     alt: 'Croft Common exterior night view'
   },
   { type: 'LANDING' },
