@@ -85,23 +85,23 @@ const slideNavigationLabels = [
 const slideConfigs = [
   {
     type: 'PLAIN_IMAGE',
-    backgroundImage: '/croft-common-1.png',
+    backgroundImage: '/lovable-uploads/a4d841ba-5a83-4346-bfe0-f79c9c2dcd6e.png',
     alt: 'Croft Common exterior daytime view'
   },
   {
     type: 'PLAIN_IMAGE', 
-    backgroundImage: '/croft-common-2.png',
+    backgroundImage: '/lovable-uploads/dae96997-52dc-47d6-90f8-948b5103770b.png',
     alt: 'Croft Common exterior evening view'
   },
   {
     type: 'PLAIN_IMAGE',
-    backgroundImage: '/croft-common-3.png', 
-    alt: 'Croft Common interior entrance'
+    backgroundImage: '/lovable-uploads/e77e2cf1-0750-4690-a71a-4c766ef7d31f.png', 
+    alt: 'Croft Common exterior night view'
   },
   {
     type: 'PLAIN_IMAGE',
-    backgroundImage: '/croft-common-4.png',
-    alt: 'Croft Common exterior night view'
+    backgroundImage: '/lovable-uploads/9db3b156-75bc-49a9-9293-29c4a9196561.png',
+    alt: 'Croft Common exterior daytime detail'
   },
   { type: 'LANDING' },
   { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
