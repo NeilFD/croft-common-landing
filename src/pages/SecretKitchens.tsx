@@ -31,6 +31,7 @@ import { QuestionnaireSlide } from '@/components/slides/QuestionnaireSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { AudioProvider, useAudio } from '@/contexts/AudioContext';
 import MasterAudioControl from '@/components/MasterAudioControl';
+import AudioPreloader from '@/components/AudioPreloader';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
 import { MobileNavigationMenu } from '@/components/ui/MobileNavigationMenu';
@@ -317,6 +318,13 @@ const SecretKitchensContent = () => {
         // User already has a valid session, sign them in directly
         await refreshSession();
         await checkUserAccessStatus(email.toLowerCase());
+        
+        // Start audio preloading on authorization
+        const audioContext = document.getElementById('audio-preload-trigger');
+        if (audioContext) {
+          audioContext.click();
+        }
+        
         setIsAuthorized(true);
         toast({
           title: "Welcome back!",
@@ -411,6 +419,12 @@ const SecretKitchensContent = () => {
           }
         } catch (error) {
           console.error('Error updating first access:', error);
+        }
+
+        // Start audio preloading on authorization
+        const audioContext = document.getElementById('audio-preload-trigger');
+        if (audioContext) {
+          audioContext.click();
         }
 
         setIsAuthorized(true);
@@ -802,6 +816,20 @@ const SecretKitchensContent = () => {
           <MasterAudioControl />
         </div>
       )}
+
+      {/* Hidden audio preload trigger */}
+      <button 
+        id="audio-preload-trigger"
+        className="hidden"
+        onClick={() => {
+          // Trigger audio preloading by mounting hidden audio components
+          const event = new CustomEvent('startAudioPreload');
+          window.dispatchEvent(event);
+        }}
+      />
+
+      {/* Hidden Audio Components for Preloading */}
+      <AudioPreloader />
 
       {/* Mobile Navigation */}
       {isMobile && (
