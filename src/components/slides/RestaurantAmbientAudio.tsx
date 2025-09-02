@@ -4,8 +4,12 @@ import { Slider } from '@/components/ui/slider';
 import { Volume2, VolumeX, Play, Pause } from 'lucide-react';
 import { useAudio } from '@/contexts/AudioContext';
 
-const RestaurantAmbientAudio: React.FC = () => {
-  const [isAmbientPlaying, setIsAmbientPlaying] = useState(false);
+interface RestaurantAmbientAudioProps {
+  autoPlay?: boolean;
+}
+
+const RestaurantAmbientAudio: React.FC<RestaurantAmbientAudioProps> = ({ autoPlay = false }) => {
+  const [isAmbientPlaying, setIsAmbientPlaying] = useState(autoPlay);
   const [volume, setVolume] = useState(0.6);
   const audioRef = useRef<HTMLAudioElement>(null);
   const { isGlobalMuted } = useAudio();

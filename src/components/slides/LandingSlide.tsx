@@ -10,63 +10,56 @@ interface LandingSlideProps {
 }
 
 export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showSpotify, setShowSpotify] = useState(false);
-  const [restaurantAmbienceEnabled, setRestaurantAmbienceEnabled] = useState(false);
+  const [audioStarted, setAudioStarted] = useState(false);
 
-  const handlePlayMusic = () => {
-    setShowSpotify(true);
-    setIsPlaying(false);
-    // Auto-enable restaurant ambience for full experience
-    setRestaurantAmbienceEnabled(true);
+  const handleEnterCommon = () => {
+    // Start both audio components in background and advance to next slide
+    setAudioStarted(true);
+    // Small delay to ensure audio components mount and start
+    setTimeout(() => {
+      onEnter();
+    }, 100);
   };
 
   return (
     <section className="relative h-screen flex flex-col items-center justify-center bg-black text-white overflow-hidden">
       {/* Header with Logo and Title */}
-      <div className="flex flex-col items-center space-y-4 mb-8">
+      <div className="flex flex-col items-center space-y-6 mb-12">
         <CroftLogo size="lg" className="w-16 h-16" priority />
-        <h1 className="text-4xl md:text-6xl font-brutalist tracking-wider">
-          CROFT COMMON
+        <h1 className="text-4xl md:text-6xl font-brutalist tracking-wider text-center">
+          Welcome to Croft Common
         </h1>
       </div>
 
-      {/* Instructions */}
-      <div className="text-center mb-8 max-w-md">
-        <p className="text-lg md:text-xl text-white/80 leading-relaxed">
-          Before you start, set the scene, turn the sounds on
+      {/* Welcome Message */}
+      <div className="text-center mb-12 max-w-2xl px-6">
+        <p className="text-lg md:text-xl text-white/90 leading-relaxed">
+          An exciting new launch in Bristol's Stokes Croft, an opportunity for some of Bristol's best operators to join us and deliver exceptional Hospitality in a completely unique setting.
         </p>
       </div>
 
-      {/* Music Controls */}
-      <div className="flex flex-col items-center space-y-6 mb-12">
-        {!showSpotify ? (
-          <Button
-            onClick={handlePlayMusic}
-            variant="outline"
-            size="lg"
-            className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300"
-          >
-            <Play className="mr-2 h-5 w-5" />
-            Set the Scene
-          </Button>
-        ) : (
-          <div className="flex flex-col items-center space-y-6 w-full max-w-6xl">
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-8 w-full">
-              <div className="flex-1 w-full max-w-2xl">
-                <CroftCommonAudioPlayer 
-                  isPlaying={isPlaying}
-                  onToggle={setIsPlaying}
-                />
-              </div>
-              <div className="flex-1 w-full max-w-md">
-                <RestaurantAmbientAudio />
-              </div>
-            </div>
-          </div>
-        )}
+      {/* Enter Button */}
+      <div className="flex justify-center mb-12">
+        <Button
+          onClick={handleEnterCommon}
+          variant="outline"
+          size="lg"
+          className="bg-transparent border-white text-white hover:bg-white hover:text-black transition-colors duration-300 px-8 py-4 text-lg"
+        >
+          Enter Croft Common
+        </Button>
       </div>
 
+      {/* Hidden Audio Components - Auto-start when audioStarted is true */}
+      {audioStarted && (
+        <div className="hidden">
+          <CroftCommonAudioPlayer 
+            isPlaying={true}
+            onToggle={() => {}}
+          />
+          <RestaurantAmbientAudio autoPlay={true} />
+        </div>
+      )}
 
       {/* Subtle ambient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 pointer-events-none" />
