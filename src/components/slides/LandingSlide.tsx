@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
-import CroftCommonAudioPlayer from './CroftCommonAudioPlayer';
-import RestaurantAmbientAudio from './RestaurantAmbientAudio';
 
 interface LandingSlideProps {
   onEnter: () => void;
 }
 
 export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
-  const [audioStarted, setAudioStarted] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [countdown, setCountdown] = useState(7);
 
@@ -33,9 +29,6 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
   const handleEnterCommon = () => {
     console.log('🎵 Enter button clicked, isReady:', isReady);
     if (!isReady) return;
-    
-    console.log('🎵 Setting audioStarted to true');
-    setAudioStarted(true);
     
     setTimeout(() => {
       console.log('🎵 Calling onEnter after delay');
@@ -90,17 +83,6 @@ export const LandingSlide: React.FC<LandingSlideProps> = ({ onEnter }) => {
           Enter Croft Common
         </Button>
       </div>
-
-      {/* Hidden Audio Components - Auto-start when audioStarted is true */}
-      {audioStarted && (
-        <div className="hidden">
-          <CroftCommonAudioPlayer 
-            isPlaying={true}
-            onToggle={() => {}}
-          />
-          <RestaurantAmbientAudio autoPlay={true} />
-        </div>
-      )}
 
       {/* Subtle ambient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/50 pointer-events-none" />
