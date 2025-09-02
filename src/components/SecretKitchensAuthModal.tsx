@@ -74,10 +74,28 @@ export const SecretKitchensAuthModal = ({
         return;
       }
 
+      // Check if user already has a valid session with the same email
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email === email) {
+        // User has valid session for this email, sign them in directly
+        toast({
+          title: "Welcome back!",
+          description: "You're now signed in to Secret Kitchens.",
+        });
+        onSuccess();
+        setLoading(false);
+        return;
+      }
+
+      // If no valid session, proceed with OTP
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: false
+          shouldCreateUser: false,
+          // Set session to last 49 hours (176400 seconds)
+          data: {
+            sessionDuration: 176400
+          }
         }
       });
 
@@ -227,7 +245,7 @@ export const SecretKitchensAuthModal = ({
         </DialogHeader>
         
         <div className="text-sm text-foreground/70 bg-muted p-3 rounded mb-4">
-          <strong>Authorized access only.</strong> Enter your registered email address. We'll send you a 6-digit code to verify it's you.
+          <strong>Authorised access only.</strong> First-time sign-ins require a 6-digit verification code. After that, just enter your email to access Croft Common Secret Kitchens.
         </div>
         
         <form onSubmit={handleSendOtp} className="space-y-4">
