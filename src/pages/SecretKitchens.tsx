@@ -207,7 +207,7 @@ const sampleGalleryItems = [
 ];
 
 const SecretKitchensContent = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refreshSession } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { isGlobalMuted, toggleGlobalMute } = useAudio();
@@ -306,6 +306,21 @@ const SecretKitchensContent = () => {
           title: "Access Denied",
           description: "This email is not authorized for Secret Kitchen access.",
           variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Check if user already has a valid session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email === email.toLowerCase()) {
+        // User already has a valid session, sign them in directly
+        await refreshSession();
+        await checkUserAccessStatus(email.toLowerCase());
+        setIsAuthorized(true);
+        toast({
+          title: "Welcome back!",
+          description: "You have been signed in successfully."
         });
         setLoading(false);
         return;
