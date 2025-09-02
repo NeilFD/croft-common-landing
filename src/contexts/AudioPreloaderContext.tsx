@@ -20,13 +20,15 @@ export const AudioPreloaderProvider: React.FC<{ children: ReactNode }> = ({ chil
   }>({ croft: null, ambient: null });
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Preload audio files
+  // Simple, fast audio preload
   const preloadAudio = async () => {
+    if (isLoading || isAudioReady) return;
+    
     setIsLoading(true);
     setAudioError(null);
+    console.log('🎵 Starting fast audio preload...');
 
     try {
-      // Create audio elements
       const croftAudio = new Audio('/lovable-uploads/56ad9830-6a9c-46c6-b84b-7e2f6d4ea91e.mp3');
       const ambientAudio = new Audio('/lovable-uploads/6c8b8ddc-53cd-4e38-8de7-0b0dae3dc86f.mp3');
 
@@ -37,26 +39,37 @@ export const AudioPreloaderProvider: React.FC<{ children: ReactNode }> = ({ chil
       croftAudio.volume = 0.7;
       ambientAudio.volume = 0.3;
 
-      // Wait for both to be ready
-      const loadPromises = [
-        new Promise<void>((resolve, reject) => {
-          croftAudio.addEventListener('canplaythrough', () => resolve(), { once: true });
-          croftAudio.addEventListener('error', reject, { once: true });
-        }),
-        new Promise<void>((resolve, reject) => {
-          ambientAudio.addEventListener('canplaythrough', () => resolve(), { once: true });
-          ambientAudio.addEventListener('error', reject, { once: true });
-        })
-      ];
+      // Simple timeout-based ready check - don't wait for perfect loading
+      let readyCount = 0;
+      const checkReady = () => {
+        readyCount++;
+        if (readyCount >= 2 || croftAudio.readyState >= 3 || ambientAudio.readyState >= 3) {
+          console.log('🎵 Audio ready!');
+          setAudioRefs({ croft: croftAudio, ambient: ambientAudio });
+          setIsAudioReady(true);
+          setIsLoading(false);
+        }
+      };
 
-      await Promise.all(loadPromises);
+      croftAudio.addEventListener('loadeddata', checkReady, { once: true });
+      ambientAudio.addEventListener('loadeddata', checkReady, { once: true });
+      
+      // Force ready after 2 seconds max
+      setTimeout(() => {
+        if (!isAudioReady) {
+          console.log('🎵 Force ready after timeout');
+          setAudioRefs({ croft: croftAudio, ambient: ambientAudio });
+          setIsAudioReady(true);
+          setIsLoading(false);
+        }
+      }, 2000);
 
-      setAudioRefs({ croft: croftAudio, ambient: ambientAudio });
-      setIsAudioReady(true);
+      croftAudio.load();
+      ambientAudio.load();
+      
     } catch (error) {
       console.error('Audio preload failed:', error);
       setAudioError('Failed to load audio');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -111,16 +124,14 @@ export const useAudioPreloader = () => {
   return context;
 };
 
-// Hook to start preloading when authorized
+// Hook to start preloading when authorized - IMMEDIATE START
 export const useStartAudioPreload = (isAuthorized: boolean) => {
-  const [hasStarted, setHasStarted] = useState(false);
   const audioPreloader = useAudioPreloader();
 
   useEffect(() => {
-    if (isAuthorized && !hasStarted && !audioPreloader.isAudioReady && !audioPreloader.isLoading) {
-      setHasStarted(true);
-      console.log('🎵 Starting audio preload immediately after authorization');
+    if (isAuthorized) {
+      console.log('🎵 IMMEDIATE audio preload start');
       audioPreloader.preloadAudio();
     }
-  }, [isAuthorized, hasStarted, audioPreloader]);
+  }, [isAuthorized, audioPreloader]);
 };
