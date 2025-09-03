@@ -250,6 +250,13 @@ const SecretKitchensContent = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [accessExpiresAt, setAccessExpiresAt] = useState<string | null>(null);
   const [accessExpired, setAccessExpired] = useState(false);
+  const [sessionId, setSessionId] = useState<string>('');
+
+  // Generate session ID on component mount
+  useEffect(() => {
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
+  }, []);
 
   useEffect(() => {
     if (user?.email) {
@@ -311,6 +318,35 @@ const SecretKitchensContent = () => {
     }
   };
 
+  const trackUserAccess = async (email: string, eventType: string = 'access') => {
+    try {
+      const { error } = await supabase
+        .from('secret_kitchen_usage')
+        .insert([{
+          email: email.toLowerCase(),
+          session_id: sessionId,
+          accessed_at: new Date().toISOString(),
+          user_agent: navigator.userAgent,
+          event_type: eventType,
+          ip_address: 'client_side', // Will be null, can be populated server-side if needed
+          slide_number: eventType === 'slide_view' ? currentSlide : null,
+          metadata: {
+            timestamp: Date.now(),
+            screen_resolution: `${window.screen.width}x${window.screen.height}`,
+            viewport: `${window.innerWidth}x${window.innerHeight}`
+          }
+        }]);
+
+      if (error) {
+        console.error('Error tracking user access:', error);
+      } else {
+        console.log(`User access tracked: ${eventType} for ${email}`);
+      }
+    } catch (error) {
+      console.error('Error tracking user access:', error);
+    }
+  };
+
   const sendOtpCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -351,6 +387,10 @@ const SecretKitchensContent = () => {
         }
         
         setIsAuthorized(true);
+        
+        // Track user access
+        await trackUserAccess(email.toLowerCase(), 'session_resume');
+        
         toast({
           title: "Welcome back!",
           description: "You have been signed in successfully."
@@ -453,6 +493,10 @@ const SecretKitchensContent = () => {
         }
 
         setIsAuthorized(true);
+        
+        // Track user access
+        await trackUserAccess(email.toLowerCase(), 'new_session');
+        
         const action = 'Welcome back!';
         toast({
           title: "Authentication Successful",
@@ -513,12 +557,18 @@ const SecretKitchensContent = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [api]);
 
-  // Sync carousel state with currentSlide
+  // Sync carousel state with currentSlide and track navigation
   useEffect(() => {
     if (!api) return;
 
     const onSelect = () => {
-      setCurrentSlide(api.selectedScrollSnap());
+      const newSlide = api.selectedScrollSnap();
+      setCurrentSlide(newSlide);
+      
+      // Track slide navigation if user is authorized
+      if (user?.email && isAuthorized) {
+        trackUserAccess(user.email, 'slide_view');
+      }
     };
 
     const onScrollPrev = () => {
@@ -538,7 +588,7 @@ const SecretKitchensContent = () => {
     setCurrentSlide(api.selectedScrollSnap());
     setCanScrollPrev(api.canScrollPrev());
     setCanScrollNext(api.canScrollNext());
-  }, [api]);
+  }, [api, user?.email, isAuthorized, trackUserAccess]);
 
   // Auto-advance for picture slides and audio preloading
   useEffect(() => {
@@ -888,10 +938,14 @@ const SecretKitchensContent = () => {
         <MobileNavigationMenu
           slideLabels={slideNavigationLabels}
           currentSlide={currentSlide}
-          onSlideSelect={(index) => {
-            api?.scrollTo(index);
-            setCurrentSlide(index);
-          }}
+            onSlideSelect={(index) => {
+              api?.scrollTo(index);
+              setCurrentSlide(index);
+              // Track manual slide selection
+              if (user?.email && isAuthorized) {
+                trackUserAccess(user.email, 'manual_slide_select');
+              }
+            }}
           onLogout={logout}
           isMuted={isGlobalMuted}
           onToggleMute={toggleGlobalMute}
@@ -924,6 +978,10 @@ const SecretKitchensContent = () => {
               onSlideSelect={(index) => {
                 api?.scrollTo(index);
                 setCurrentSlide(index);
+                // Track manual slide selection
+                if (user?.email && isAuthorized) {
+                  trackUserAccess(user.email, 'manual_slide_select');
+                }
               }}
             />
           </div>

@@ -50,6 +50,11 @@ interface UsageRecord {
   email: string;
   accessed_at: string;
   session_id: string;
+  event_type?: string;
+  slide_number?: number | null;
+  user_agent?: string;
+  ip_address?: string;
+  metadata?: any;
 }
 
 export default function SecretKitchenAdmin() {
@@ -453,13 +458,22 @@ export default function SecretKitchenAdmin() {
     });
   };
 
-  // Calculate conversion metrics
+  // Calculate conversion metrics and usage analytics
   const totalUsers = accessUsers.length;
   const activeUsers = accessUsers.filter(u => u.is_active).length;
   const appliedUsers = accessUsers.filter(u => u.has_applied).length;
   const meetingBookedUsers = accessUsers.filter(u => u.calendly_booked).length;
   const applicationRate = totalUsers > 0 ? Math.round((appliedUsers / totalUsers) * 100) : 0;
   const meetingRate = appliedUsers > 0 ? Math.round((meetingBookedUsers / appliedUsers) * 100) : 0;
+  
+  // Usage analytics
+  const uniqueSessionCount = new Set(usageRecords.map(r => r.session_id)).size;
+  const slideViewCount = usageRecords.filter(r => r.event_type === 'slide_view').length;
+  const sessionsToday = usageRecords.filter(r => {
+    const recordDate = new Date(r.accessed_at);
+    const today = new Date();
+    return recordDate.toDateString() === today.toDateString();
+  }).length;
 
   if (authLoading) {
     return (
@@ -559,7 +573,7 @@ export default function SecretKitchenAdmin() {
         </div>
 
         {/* Enhanced Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Access</CardTitle>
@@ -604,11 +618,26 @@ export default function SecretKitchenAdmin() {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+              <CardTitle className="text-sm font-medium">Unique Sessions</CardTitle>
               <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{usageRecords.length}</div>
+              <div className="text-2xl font-bold">{uniqueSessionCount}</div>
+              <p className="text-xs text-muted-foreground">
+                {sessionsToday} today
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Slide Views</CardTitle>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{slideViewCount}</div>
+              <p className="text-xs text-muted-foreground">
+                {usageRecords.length} total events
+              </p>
             </CardContent>
           </Card>
           <Card>
@@ -799,31 +828,59 @@ export default function SecretKitchenAdmin() {
         {/* Recent Usage */}
         <Card>
           <CardHeader>
-            <CardTitle>Recent Access Activity</CardTitle>
+            <CardTitle>Recent Access Activity & Usage Analytics</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Live tracking of user interactions and session data
+            </p>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Email</TableHead>
+                  <TableHead>Event Type</TableHead>
                   <TableHead>Accessed</TableHead>
                   <TableHead>Session ID</TableHead>
+                  <TableHead>Slide #</TableHead>
+                  <TableHead>User Agent</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {usageRecords.slice(0, 10).map((record) => (
+                {usageRecords.slice(0, 15).map((record) => (
                   <TableRow key={record.id}>
-                    <TableCell>{record.email}</TableCell>
+                    <TableCell className="font-medium">{record.email}</TableCell>
                     <TableCell>
+                      <Badge variant={
+                        record.event_type === 'new_session' ? 'default' :
+                        record.event_type === 'session_resume' ? 'secondary' :
+                        record.event_type === 'slide_view' ? 'outline' :
+                        record.event_type === 'manual_slide_select' ? 'destructive' :
+                        'outline'
+                      }>
+                        {record.event_type?.replace('_', ' ') || 'access'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-sm">
                       {new Date(record.accessed_at).toLocaleString()}
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {record.session_id.slice(0, 8)}...
+                    <TableCell className="font-mono text-xs">
+                      {record.session_id?.slice(0, 8)}...
+                    </TableCell>
+                    <TableCell className="text-center">
+                      {record.slide_number !== null ? record.slide_number : '-'}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground max-w-xs truncate">
+                      {record.user_agent?.substring(0, 50)}...
                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
+            {usageRecords.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No usage data available yet. Users will appear here once they access the Secret Kitchen content.
+              </div>
+            )}
           </CardContent>
         </Card>
 
