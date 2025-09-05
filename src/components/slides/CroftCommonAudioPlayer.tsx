@@ -28,25 +28,19 @@ const CroftCommonAudioPlayer: React.FC<CroftCommonAudioPlayerProps> = ({
   };
 
   useEffect(() => {
-    console.log('🎵 CroftCommonAudioPlayer effect - isPlaying:', isPlaying, 'isGlobalMuted:', isGlobalMuted);
     if (audioRef.current) {
-      audioRef.current.volume = isGlobalMuted ? 0 : volume;
+      audioRef.current.volume = volume;
       
       if (isPlaying && !isGlobalMuted) {
-        console.log('🎵 Attempting to play Croft Common audio');
         setIsLoading(true);
         audioRef.current.play()
-          .then(() => {
-            console.log('🎵 Croft Common audio started successfully');
-            setIsLoading(false);
-          })
+          .then(() => setIsLoading(false))
           .catch((error) => {
-            console.error('🎵 Croft Common audio failed to play:', error);
+            console.error('Audio playback failed:', error);
             setIsLoading(false);
             onToggle(false);
           });
       } else {
-        console.log('🎵 Pausing Croft Common audio - isPlaying:', isPlaying, 'isGlobalMuted:', isGlobalMuted);
         audioRef.current.pause();
         setIsLoading(false);
       }

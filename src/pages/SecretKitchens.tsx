@@ -31,7 +31,6 @@ import { QuestionnaireSlide } from '@/components/slides/QuestionnaireSlide';
 import { Users, Utensils, Star, Clock, MapPin, Mail, Phone, Crown, Zap, Award, Menu, LogOut, ChevronDown, Volume2, VolumeX } from 'lucide-react';
 import { AudioProvider, useAudio } from '@/contexts/AudioContext';
 import MasterAudioControl from '@/components/MasterAudioControl';
-import AudioPreloader from '@/components/AudioPreloader';
 import { StyledNavigationDropdown } from '@/components/ui/StyledNavigationDropdown';
 import { TransparentCarouselArrows } from '@/components/ui/TransparentCarouselArrows';
 import { MobileNavigationMenu } from '@/components/ui/MobileNavigationMenu';
@@ -41,10 +40,6 @@ import SecretKitchensCountdown from '@/components/SecretKitchensCountdown';
 
 // Navigation labels for dropdown (max 3 words each)
 const slideNavigationLabels = [
-  'Gallery 1',
-  'Gallery 2', 
-  'Gallery 3',
-  'Gallery 4',
   'Welcome',
   'Croft Common',
   'Neighbourhood Energy',
@@ -83,26 +78,6 @@ const slideNavigationLabels = [
 
 // Slide configurations for all slides
 const slideConfigs = [
-  {
-    type: 'PLAIN_IMAGE',
-    backgroundImage: '/lovable-uploads/a4d841ba-5a83-4346-bfe0-f79c9c2dcd6e.png',
-    alt: 'Croft Common exterior daytime view'
-  },
-  {
-    type: 'PLAIN_IMAGE', 
-    backgroundImage: '/lovable-uploads/dae96997-52dc-47d6-90f8-948b5103770b.png',
-    alt: 'Croft Common exterior evening view'
-  },
-  {
-    type: 'PLAIN_IMAGE',
-    backgroundImage: '/lovable-uploads/e77e2cf1-0750-4690-a71a-4c766ef7d31f.png', 
-    alt: 'Croft Common exterior night view'
-  },
-  {
-    type: 'PLAIN_IMAGE',
-    backgroundImage: '/lovable-uploads/9db3b156-75bc-49a9-9293-29c4a9196561.png',
-    alt: 'Croft Common exterior daytime detail'
-  },
   { type: 'LANDING' },
   { type: 'HERO', title: 'CROFT COMMON', subtitle: 'STOKES CROFT, BRISTOL', backgroundImage: '/lovable-uploads/a20eefb2-138d-41f1-9170-f68dd99a63bc.png', noOverlay: true },
   { type: 'CENTERED', title: 'Rooted in the neighbourhood. Alive with city energy.', subtitle: 'This is Croft Common — where Bristol meets, eats, and stays a little longer than planned...', backgroundColor: 'accent' },
@@ -126,7 +101,7 @@ const slideConfigs = [
     title: 'PROMOTION & POSITIONING', 
     backgroundColor: 'accent',
     leftContent: "Marketing and PR for the venue as a whole will be led by the Team at Croft Common. This includes the initial launch campaign, press outreach, brand partnerships and social media. We will also support each vendor's individual story and aim to foster an atmosphere of collaboration between all parties. Our curatorial approach blends high standards with community roots. We want to bring together a collection of food concepts that are both original and accessible, that reflect the vibrancy of the area while elevating the overall customer experience.",
-    rightContent: "If you would like to be considered for one of the three kitchen spaces, we would love to hear from you. We are offering private tours, design walk-throughs and commercial meetings across the coming months. We are also happy to share our projected financials and detailed layout plans.\n\nTo arrange a time to speak or visit the site, please contact:\n\nNeil Fincham-Dukes\nFounding Partner, Croft Common\nneil@croftcommon.co.uk\n\nWe look forward to welcoming the first wave of partners to Croft Common and creating something extraordinary together."
+    rightContent: "If you would like to be considered for one of the three kitchen spaces, we would love to hear from you. We are offering private tours, design walk-throughs and commercial meetings across the coming months. We are also happy to share our projected financials and detailed layout plans.\n\nTo arrange a time to speak or visit the site, please contact:\n\nNeil Fincham-Dukes\nFounding Partner, Croft Common and City & Sanctuary\nneil@cityandsanctuary.com\n\nWe look forward to welcoming the first wave of partners to Croft Common and creating something extraordinary together."
   },
   { type: 'HERO', title: 'WELCOME TO CROFT COMMON.', subtitle: 'A NEW ADDITION TO STOKES CROFT AND MAYBE YOUR NEW FAVOURITE PLACE...', backgroundImage: '/lovable-uploads/b0fe37fa-228e-460f-9c90-99ed660449b6.png' },
   { type: 'HALF_SCREEN', backgroundImage: '/lovable-uploads/a0587370-62e3-43a1-aad1-10c43e42b909.png', content: "Shaped by the streets of Stokes Croft, we've refurbished a landmark building and reimagined it as a space to gather, make, eat, drink, and stay a while. The energy of Stokes Croft has always been there — creative, raw, full of potential. Croft Common is a place that reflects that energy. Somewhere where the atmosphere's easy, the crowd's like-minded, and the experiences just happen.\n\nThis is a venue that moves with you. From weekday mornings to late-night weekends. From spontaneous drop-ins to planned get-togethers. From first coffee to last call.\n\nStart your day with a coffee from The Café, where the counter is piled high with freshly baked breads and pastries from the city's best local bakeries. On your way to work? Grab and go. Or, take a moment — settle in on The Street Terrace and soak up the morning sun as the neighbourhood comes to life.\n\nAs the day unfolds, The Taproom opens its doors, pouring fresh local craft beers. Next door, the Kitchens fire up — a showcase for Bristol's most exciting chefs and emerging foodies, serving up bold flavours and original ideas.\n\nAt the centre of it all is The Courtyard: an open-air space where you can gather with friends over a pint from The Taproom or plates from the kitchens, all under open skies.\n\nAs night falls, The Café shifts gear. The coffee counter clears, the lights dim, and the space transforms into elegant Cocktail bar with a resident DJs setting the tone deep into the night.\n\nUpstairs, an unique event space full of character hosts the city's best moments — from intimate ceremonies to after-hours celebrations. And above it all, Bristol's only rooftop bar invites you to bask in the sun by day and sip cocktails beneath the stars by night." },
@@ -241,7 +216,6 @@ const SecretKitchensContent = () => {
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [autoAdvanceEnabled, setAutoAdvanceEnabled] = useState(true);
   const [api, setApi] = useState<any>(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
@@ -250,13 +224,6 @@ const SecretKitchensContent = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [accessExpiresAt, setAccessExpiresAt] = useState<string | null>(null);
   const [accessExpired, setAccessExpired] = useState(false);
-  const [sessionId, setSessionId] = useState<string>('');
-
-  // Generate session ID on component mount
-  useEffect(() => {
-    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setSessionId(newSessionId);
-  }, []);
 
   useEffect(() => {
     if (user?.email) {
@@ -318,35 +285,6 @@ const SecretKitchensContent = () => {
     }
   };
 
-  const trackUserAccess = async (email: string, eventType: string = 'access') => {
-    try {
-      const { error } = await supabase
-        .from('secret_kitchen_usage')
-        .insert([{
-          email: email.toLowerCase(),
-          session_id: sessionId,
-          accessed_at: new Date().toISOString(),
-          user_agent: navigator.userAgent,
-          event_type: eventType,
-          ip_address: 'client_side', // Will be null, can be populated server-side if needed
-          slide_number: eventType === 'slide_view' ? currentSlide : null,
-          metadata: {
-            timestamp: Date.now(),
-            screen_resolution: `${window.screen.width}x${window.screen.height}`,
-            viewport: `${window.innerWidth}x${window.innerHeight}`
-          }
-        }]);
-
-      if (error) {
-        console.error('Error tracking user access:', error);
-      } else {
-        console.log(`User access tracked: ${eventType} for ${email}`);
-      }
-    } catch (error) {
-      console.error('Error tracking user access:', error);
-    }
-  };
-
   const sendOtpCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) {
@@ -379,18 +317,7 @@ const SecretKitchensContent = () => {
         // User already has a valid session, sign them in directly
         await refreshSession();
         await checkUserAccessStatus(email.toLowerCase());
-        
-        // Start audio preloading on authorization
-        const audioContext = document.getElementById('audio-preload-trigger');
-        if (audioContext) {
-          audioContext.click();
-        }
-        
         setIsAuthorized(true);
-        
-        // Track user access
-        await trackUserAccess(email.toLowerCase(), 'session_resume');
-        
         toast({
           title: "Welcome back!",
           description: "You have been signed in successfully."
@@ -486,17 +413,7 @@ const SecretKitchensContent = () => {
           console.error('Error updating first access:', error);
         }
 
-        // Start audio preloading on authorization
-        const audioContext = document.getElementById('audio-preload-trigger');
-        if (audioContext) {
-          audioContext.click();
-        }
-
         setIsAuthorized(true);
-        
-        // Track user access
-        await trackUserAccess(email.toLowerCase(), 'new_session');
-        
         const action = 'Welcome back!';
         toast({
           title: "Authentication Successful",
@@ -557,18 +474,12 @@ const SecretKitchensContent = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [api]);
 
-  // Sync carousel state with currentSlide and track navigation
+  // Sync carousel state with currentSlide
   useEffect(() => {
     if (!api) return;
 
     const onSelect = () => {
-      const newSlide = api.selectedScrollSnap();
-      setCurrentSlide(newSlide);
-      
-      // Track slide navigation if user is authorized
-      if (user?.email && isAuthorized) {
-        trackUserAccess(user.email, 'slide_view');
-      }
+      setCurrentSlide(api.selectedScrollSnap());
     };
 
     const onScrollPrev = () => {
@@ -588,34 +499,7 @@ const SecretKitchensContent = () => {
     setCurrentSlide(api.selectedScrollSnap());
     setCanScrollPrev(api.canScrollPrev());
     setCanScrollNext(api.canScrollNext());
-  }, [api, user?.email, isAuthorized, trackUserAccess]);
-
-  // Auto-advance for picture slides and audio preloading
-  useEffect(() => {
-    if (!isAuthorized || !autoAdvanceEnabled) return;
-    
-    // Auto-advance only for the first 4 slides (picture slides)
-    if (currentSlide < 4) {
-      const timer = setTimeout(() => {
-        setCurrentSlide(prev => prev + 1);
-        api?.scrollTo(currentSlide + 1);
-      }, 3000); // 3 seconds per picture slide
-      
-      return () => clearTimeout(timer);
-    } else if (currentSlide === 4) {
-      // Disable auto-advance when reaching the landing slide
-      setAutoAdvanceEnabled(false);
-    }
-  }, [currentSlide, isAuthorized, autoAdvanceEnabled, api]);
-
-  // Start audio preloading immediately when authorized
-  useEffect(() => {
-    if (isAuthorized) {
-      // Trigger audio preloading by dispatching custom event
-      const event = new CustomEvent('startAudioPreload');
-      window.dispatchEvent(event);
-    }
-  }, [isAuthorized]);
+  }, [api]);
 
   const renderSlide = (config: any) => {
     switch (config.type) {
@@ -623,8 +507,8 @@ const SecretKitchensContent = () => {
         return (
           <LandingSlide
             onEnter={() => {
-              api?.scrollTo(5); // Move to slide 5 (first HERO slide)
-              setCurrentSlide(5);
+              api?.scrollTo(1);
+              setCurrentSlide(1);
             }}
           />
         );
@@ -919,33 +803,15 @@ const SecretKitchensContent = () => {
         </div>
       )}
 
-      {/* Hidden audio preload trigger */}
-      <button 
-        id="audio-preload-trigger"
-        className="hidden"
-        onClick={() => {
-          // Trigger audio preloading by mounting hidden audio components
-          const event = new CustomEvent('startAudioPreload');
-          window.dispatchEvent(event);
-        }}
-      />
-
-      {/* Hidden Audio Components for Preloading */}
-      <AudioPreloader />
-
       {/* Mobile Navigation */}
       {isMobile && (
         <MobileNavigationMenu
           slideLabels={slideNavigationLabels}
           currentSlide={currentSlide}
-            onSlideSelect={(index) => {
-              api?.scrollTo(index);
-              setCurrentSlide(index);
-              // Track manual slide selection
-              if (user?.email && isAuthorized) {
-                trackUserAccess(user.email, 'manual_slide_select');
-              }
-            }}
+          onSlideSelect={(index) => {
+            api?.scrollTo(index);
+            setCurrentSlide(index);
+          }}
           onLogout={logout}
           isMuted={isGlobalMuted}
           onToggleMute={toggleGlobalMute}
@@ -978,10 +844,6 @@ const SecretKitchensContent = () => {
               onSlideSelect={(index) => {
                 api?.scrollTo(index);
                 setCurrentSlide(index);
-                // Track manual slide selection
-                if (user?.email && isAuthorized) {
-                  trackUserAccess(user.email, 'manual_slide_select');
-                }
               }}
             />
           </div>
