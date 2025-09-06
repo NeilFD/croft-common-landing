@@ -5,10 +5,13 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useFullProfile } from '@/hooks/useFullProfile';
 import { ProfileFormSection } from '@/components/profile/ProfileFormSection';
+import { AvatarUpload } from '@/components/profile/AvatarUpload';
+import { InterestsSelector } from '@/components/profile/InterestsSelector';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { SecureLedgerWrapper } from '@/components/ledger/SecureLedgerWrapper';
 import { Helmet } from 'react-helmet-async';
 import MemberLedger from './MemberLedger';
@@ -22,23 +25,39 @@ const MemberProfile: React.FC = () => {
   const { profile, loading, updateProfile } = useFullProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    birthday: '',
     display_name: '',
     favorite_drink: '',
     favorite_venue: '',
     visit_time_preference: '',
     dietary_notes: '',
-    beer_style_preferences: [] as string[]
+    interests: [] as string[],
+    dietary_preferences: [] as string[],
+    beer_style_preferences: [] as string[],
+    communication_preferences: { push: true, email: true },
+    avatar_url: null as string | null
   });
 
   React.useEffect(() => {
     if (profile) {
       setFormData({
+        first_name: profile.first_name || '',
+        last_name: profile.last_name || '',
+        phone_number: profile.phone_number || '',
+        birthday: profile.birthday || '',
         display_name: profile.display_name || '',
         favorite_drink: profile.favorite_drink || '',
         favorite_venue: profile.favorite_venue || '',
         visit_time_preference: profile.visit_time_preference || '',
         dietary_notes: profile.dietary_notes || '',
-        beer_style_preferences: profile.beer_style_preferences || []
+        interests: profile.interests || [],
+        dietary_preferences: profile.dietary_preferences || [],
+        beer_style_preferences: profile.beer_style_preferences || [],
+        communication_preferences: profile.communication_preferences || { push: true, email: true },
+        avatar_url: profile.avatar_url
       });
     }
   }, [profile]);
@@ -101,9 +120,77 @@ const MemberProfile: React.FC = () => {
 
             <TabsContent value="profile">
               <div className="space-y-6">
+                {/* Avatar Section */}
                 <ProfileFormSection
-                  title="Personal Information"
-                  description="Your basic profile information"
+                  title="Profile Picture"
+                  description="Upload or change your profile picture"
+                >
+                  <AvatarUpload
+                    currentAvatarUrl={formData.avatar_url}
+                    displayName={`${formData.first_name} ${formData.last_name}`.trim()}
+                    onAvatarChange={(newAvatarUrl) => {
+                      setFormData(prev => ({ ...prev, avatar_url: newAvatarUrl }));
+                      if (newAvatarUrl !== formData.avatar_url) {
+                        updateProfile({ avatar_url: newAvatarUrl });
+                      }
+                    }}
+                  />
+                </ProfileFormSection>
+
+                {/* Basic Information */}
+                <ProfileFormSection
+                  title="Basic Information"
+                  description="Your personal details from signup"
+                  isAutopopulated={!!profile?.first_name || !!profile?.last_name}
+                >
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name">First Name</Label>
+                      <Input
+                        id="first_name"
+                        value={formData.first_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                        placeholder="First name"
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name">Last Name</Label>
+                      <Input
+                        id="last_name"
+                        value={formData.last_name}
+                        onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                        placeholder="Last name"
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone_number">Phone Number</Label>
+                      <Input
+                        id="phone_number"
+                        value={formData.phone_number}
+                        onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+                        placeholder="Phone number"
+                        disabled={!isEditing}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="birthday">Birthday</Label>
+                      <Input
+                        id="birthday"
+                        type="date"
+                        value={formData.birthday}
+                        onChange={(e) => setFormData(prev => ({ ...prev, birthday: e.target.value }))}
+                        disabled={!isEditing}
+                      />
+                    </div>
+                  </div>
+                </ProfileFormSection>
+
+                {/* Display Information */}
+                <ProfileFormSection
+                  title="Display Information"
+                  description="How you'd like to appear to others"
                 >
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -129,30 +216,71 @@ const MemberProfile: React.FC = () => {
                   </div>
                 </ProfileFormSection>
 
+                {/* Interests and Preferences */}
                 <ProfileFormSection
-                  title="Preferences"
+                  title="Interests & Preferences"
                   description="Help us personalize your experience"
+                  isAutopopulated={!!(profile?.interests?.length || profile?.favorite_venue)}
+                >
+                  {isEditing ? (
+                    <InterestsSelector
+                      selectedInterests={formData.interests}
+                      onInterestsChange={(interests) => setFormData(prev => ({ ...prev, interests }))}
+                      favoriteVenue={formData.favorite_venue}
+                      onFavoriteVenueChange={(venue) => setFormData(prev => ({ ...prev, favorite_venue: venue }))}
+                      visitTimePreference={formData.visit_time_preference}
+                      onVisitTimeChange={(time) => setFormData(prev => ({ ...prev, visit_time_preference: time }))}
+                      beerStylePreferences={formData.beer_style_preferences}
+                      onBeerStylesChange={(styles) => setFormData(prev => ({ ...prev, beer_style_preferences: styles }))}
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      {formData.interests.length > 0 && (
+                        <div>
+                          <Label className="text-sm font-medium">Interests</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {formData.interests.map(interest => (
+                              <span key={interest} className="bg-primary/10 text-primary px-2 py-1 rounded-md text-sm">
+                                {interest}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {formData.favorite_venue && (
+                        <div>
+                          <Label className="text-sm font-medium">Favorite Venue</Label>
+                          <p className="text-sm text-muted-foreground mt-1">{formData.favorite_venue}</p>
+                        </div>
+                      )}
+                      {formData.visit_time_preference && (
+                        <div>
+                          <Label className="text-sm font-medium">Visit Time Preference</Label>
+                          <p className="text-sm text-muted-foreground mt-1">{formData.visit_time_preference}</p>
+                        </div>
+                      )}
+                      {formData.beer_style_preferences.length > 0 && (
+                        <div>
+                          <Label className="text-sm font-medium">Beer Style Preferences</Label>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {formData.beer_style_preferences.map(style => (
+                              <span key={style} className="bg-secondary/10 text-secondary px-2 py-1 rounded-md text-sm">
+                                {style}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </ProfileFormSection>
+
+                {/* Dietary & Additional */}
+                <ProfileFormSection
+                  title="Dietary & Additional Notes"
+                  description="Any special requirements or notes"
                 >
                   <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="visit_time_preference">Preferred Visit Time</Label>
-                      <Select 
-                        value={formData.visit_time_preference} 
-                        onValueChange={(value) => setFormData(prev => ({ ...prev, visit_time_preference: value }))}
-                        disabled={!isEditing}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="When do you usually visit?" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="morning">Morning (9am-12pm)</SelectItem>
-                          <SelectItem value="afternoon">Afternoon (12pm-5pm)</SelectItem>
-                          <SelectItem value="evening">Evening (5pm-9pm)</SelectItem>
-                          <SelectItem value="late">Late Night (9pm+)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
                     <div className="space-y-2">
                       <Label htmlFor="dietary_notes">Dietary Notes</Label>
                       <Textarea
@@ -163,6 +291,49 @@ const MemberProfile: React.FC = () => {
                         rows={3}
                         disabled={!isEditing}
                       />
+                    </div>
+                  </div>
+                </ProfileFormSection>
+
+                {/* Communication Preferences */}
+                <ProfileFormSection
+                  title="Communication Preferences"
+                  description="How would you like us to contact you?"
+                >
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="push_notifications"
+                        checked={formData.communication_preferences.push}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            communication_preferences: { 
+                              ...prev.communication_preferences, 
+                              push: !!checked 
+                            }
+                          }))
+                        }
+                        disabled={!isEditing}
+                      />
+                      <Label htmlFor="push_notifications">Push Notifications</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="email_notifications"
+                        checked={formData.communication_preferences.email}
+                        onCheckedChange={(checked) => 
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            communication_preferences: { 
+                              ...prev.communication_preferences, 
+                              email: !!checked 
+                            }
+                          }))
+                        }
+                        disabled={!isEditing}
+                      />
+                      <Label htmlFor="email_notifications">Email Updates</Label>
                     </div>
                   </div>
                 </ProfileFormSection>
@@ -184,12 +355,20 @@ const MemberProfile: React.FC = () => {
                           // Reset form data
                           if (profile) {
                             setFormData({
+                              first_name: profile.first_name || '',
+                              last_name: profile.last_name || '',
+                              phone_number: profile.phone_number || '',
+                              birthday: profile.birthday || '',
                               display_name: profile.display_name || '',
                               favorite_drink: profile.favorite_drink || '',
                               favorite_venue: profile.favorite_venue || '',
                               visit_time_preference: profile.visit_time_preference || '',
                               dietary_notes: profile.dietary_notes || '',
-                              beer_style_preferences: profile.beer_style_preferences || []
+                              interests: profile.interests || [],
+                              dietary_preferences: profile.dietary_preferences || [],
+                              beer_style_preferences: profile.beer_style_preferences || [],
+                              communication_preferences: profile.communication_preferences || { push: true, email: true },
+                              avatar_url: profile.avatar_url
                             });
                           }
                         }}
