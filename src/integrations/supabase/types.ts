@@ -654,6 +654,69 @@ export type Database = {
         }
         Relationships: []
       }
+      ledger_password_reset_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          token: string
+          used: boolean
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token: string
+          used?: boolean
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token?: string
+          used?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ledger_passwords: {
+        Row: {
+          created_at: string
+          failed_attempts: number | null
+          id: string
+          last_accessed: string | null
+          locked_until: string | null
+          password_hash: string
+          salt: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          failed_attempts?: number | null
+          id?: string
+          last_accessed?: string | null
+          locked_until?: string | null
+          password_hash: string
+          salt: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          failed_attempts?: number | null
+          id?: string
+          last_accessed?: string | null
+          locked_until?: string | null
+          password_hash?: string
+          salt?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       loyalty_cards: {
         Row: {
           card_type: Database["public"]["Enums"]["loyalty_card_type"]
@@ -803,12 +866,19 @@ export type Database = {
           activity_timestamp: string
           activity_type: string
           amount: number | null
+          category: string | null
           created_at: string
           currency: string | null
           description: string
           id: string
+          location_data: Json | null
           metadata: Json | null
+          notes: string | null
+          payment_method: string | null
           related_id: string | null
+          subcategory: string | null
+          tags: string[] | null
+          transaction_id: string | null
           user_id: string
         }
         Insert: {
@@ -816,12 +886,19 @@ export type Database = {
           activity_timestamp?: string
           activity_type: string
           amount?: number | null
+          category?: string | null
           created_at?: string
           currency?: string | null
           description: string
           id?: string
+          location_data?: Json | null
           metadata?: Json | null
+          notes?: string | null
+          payment_method?: string | null
           related_id?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          transaction_id?: string | null
           user_id: string
         }
         Update: {
@@ -829,12 +906,19 @@ export type Database = {
           activity_timestamp?: string
           activity_type?: string
           amount?: number | null
+          category?: string | null
           created_at?: string
           currency?: string | null
           description?: string
           id?: string
+          location_data?: Json | null
           metadata?: Json | null
+          notes?: string | null
+          payment_method?: string | null
           related_id?: string | null
+          subcategory?: string | null
+          tags?: string[] | null
+          transaction_id?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2424,6 +2508,10 @@ export type Database = {
         Args: { lat: number; lng: number }
         Returns: boolean
       }
+      set_ledger_password: {
+        Args: { password_input: string; user_id_input: string }
+        Returns: boolean
+      }
       update_meeting_status: {
         Args: {
           booking_date?: string
@@ -2437,6 +2525,14 @@ export type Database = {
         Returns: {
           access_expires_at: string
           first_access_at: string
+        }[]
+      }
+      validate_ledger_password: {
+        Args: { password_input: string; user_id_input: string }
+        Returns: {
+          locked: boolean
+          locked_until: string
+          valid: boolean
         }[]
       }
       validate_secret_kitchen_user: {
