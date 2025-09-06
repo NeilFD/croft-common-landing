@@ -232,6 +232,30 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     <div 
       className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4"
       onClick={(e) => { if (showSecret) { e.stopPropagation(); return; } onClose(); }}
+      onTouchStart={(e) => {
+        // Prevent touch events from reaching background elements
+        e.stopPropagation();
+      }}
+      onTouchMove={(e) => {
+        // Prevent touch events from reaching background elements
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      onTouchEnd={(e) => {
+        e.stopPropagation();
+      }}
+      onMouseDown={(e) => {
+        // Only handle backdrop clicks, not gesture events
+        if (e.target === e.currentTarget) {
+          e.stopPropagation();
+        }
+      }}
+      onMouseMove={(e) => {
+        e.stopPropagation();
+      }}
+      onMouseUp={(e) => {
+        e.stopPropagation();
+      }}
     >
       <div 
         ref={containerRef}

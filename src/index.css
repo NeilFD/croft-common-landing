@@ -511,6 +511,13 @@
   touch-action: pan-x pan-y !important;
 }
 
+/* When modal is open, disable background carousel interaction */
+body:has(.gesture-container) .embla,
+body:has(.gesture-container) .carousel-container {
+  pointer-events: none !important;
+  touch-action: none !important;
+}
+
 .gesture-drawing {
   cursor: crosshair !important;
 }
