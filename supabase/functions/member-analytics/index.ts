@@ -60,12 +60,27 @@ Deno.serve(async (req) => {
 
     console.log('✅ User authenticated:', user.email);
 
-    // Check if user is admin
-    console.log('🔒 Checking admin privileges...');
-    const { data: isAdmin, error: adminError } = await supabase.rpc('is_admin_user');
+    // Check if user is admin by checking domain directly
+    console.log('🔒 Checking admin privileges for email:', user.email);
     
-    if (adminError || !isAdmin) {
-      console.error('❌ Admin check failed:', adminError);
+    if (!user.email) {
+      console.error('❌ No email in user object');
+      return new Response(
+        JSON.stringify({ error: 'User email required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check domain directly
+    const userDomain = user.email.split('@')[1];
+    const { data: domainCheck, error: domainError } = await supabase
+      .from('allowed_domains')
+      .select('domain')
+      .eq('domain', userDomain)
+      .single();
+    
+    if (domainError || !domainCheck) {
+      console.error('❌ Domain not allowed:', userDomain, domainError);
       return new Response(
         JSON.stringify({ error: 'Admin access required' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
