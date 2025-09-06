@@ -163,13 +163,13 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
     const rows = filteredAnalytics.map(member => [
       member.display_name || `${member.first_name} ${member.last_name}`,
       member.age || 'N/A',
-      member.total_spend.toFixed(2),
-      member.lifetime_value.toFixed(0),
-      member.total_transactions,
-      member.retention_risk_score,
-      member.visit_frequency.toFixed(1),
-      member.tier_badge,
-      member.active_days,
+      (member.total_spend || 0).toFixed(2),
+      (member.lifetime_value || 0).toFixed(0),
+      member.total_transactions || 0,
+      member.retention_risk_score || 0,
+      (member.visit_frequency || 0).toFixed(1),
+      member.tier_badge || '',
+      member.active_days || 0,
       member.last_visit_date || 'N/A',
       member.interests?.join('; ') || '',
       member.favorite_venues?.join('; ') || '',
@@ -335,7 +335,7 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
                             <div className="space-y-2">
                               <div className="text-2xl font-bold">{segment.member_count}</div>
                               <div className="text-xs text-muted-foreground">{segment.segment_description}</div>
-                              <div className="text-sm">Avg Spend: £{segment.avg_spend.toFixed(0)}</div>
+                              <div className="text-sm">Avg Spend: £{(segment.avg_spend || 0).toFixed(0)}</div>
                             </div>
                           </CardContent>
                         </Card>
