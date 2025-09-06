@@ -56,15 +56,7 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
     return 'Low Risk';
   };
 
-  const getTierBadgeColor = (tier: string) => {
-    switch (tier) {
-      case 'diamond': return 'bg-gradient-to-r from-blue-400 to-purple-600 text-white';
-      case 'platinum': return 'bg-gradient-to-r from-gray-300 to-gray-500 text-white';
-      case 'gold': return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white';
-      case 'silver': return 'bg-gradient-to-r from-gray-200 to-gray-400 text-gray-800';
-      default: return 'bg-gradient-to-r from-amber-600 to-amber-800 text-white';
-    }
-  };
+  // Removed tier badge colors - using plain styling
 
   if (isLoading) {
     return (
@@ -117,13 +109,8 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
                 <tr key={member.user_id} className="border-b hover:bg-muted/50 transition-colors">
                   <td className="p-3">
                     <div className="space-y-1">
-                      <div className="font-medium flex items-center gap-2">
+                      <div className="font-medium">
                         {member.display_name || `${member.first_name} ${member.last_name}`}
-                        <Badge 
-                          className={`text-xs capitalize ${getTierBadgeColor(member.tier_badge)}`}
-                        >
-                          {member.tier_badge}
-                        </Badge>
                       </div>
                       <div className="text-xs text-muted-foreground flex items-center gap-2">
                         {member.age && <span>Age: {member.age}</span>}
@@ -170,31 +157,13 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="flex flex-wrap gap-1 max-w-32">
-                      {member.interests?.slice(0, 3).map((interest) => (
-                        <Badge key={interest} variant="secondary" className="text-xs">
-                          {interest}
-                        </Badge>
-                      ))}
-                      {member.interests?.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{member.interests.length - 3}
-                        </Badge>
-                      )}
+                    <div className="text-sm text-muted-foreground max-w-32">
+                      {member.interests?.join(', ') || 'None'}
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="flex flex-wrap gap-1 max-w-32">
-                      {member.favorite_venues?.slice(0, 2).map((venue) => (
-                        <Badge key={venue} variant="outline" className="text-xs">
-                          {venue.replace('-', ' ')}
-                        </Badge>
-                      ))}
-                      {member.favorite_venues?.length > 2 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{member.favorite_venues.length - 2}
-                        </Badge>
-                      )}
+                    <div className="text-sm text-muted-foreground max-w-32">
+                      {member.favorite_venues?.map(v => v.replace('-', ' ')).join(', ') || 'None'}
                     </div>
                   </td>
                   <td className="text-center p-3">
