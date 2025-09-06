@@ -30,20 +30,34 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
   // Enhanced onClose handler to reset carousel drag states
   const handleClose = useCallback(() => {
-    // Reset any stuck carousel drag states after modal closes
-    setTimeout(() => {
-      // Find all embla instances and reset their drag state
+    // Immediately reset any stuck carousel drag states
+    const resetCarouselStates = () => {
+      // Find all embla instances and aggressively reset their state
       const emblaElements = document.querySelectorAll('.embla');
       emblaElements.forEach(element => {
-        // Force a pointer-up event to release any stuck drag state
-        const pointerUpEvent = new PointerEvent('pointerup', { bubbles: true, cancelable: true });
-        element.dispatchEvent(pointerUpEvent);
+        // Remove any potential drag classes or states
+        element.classList.remove('is-dragging', 'is-draggable');
         
-        // Also dispatch mouse up as fallback
-        const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true });
-        element.dispatchEvent(mouseUpEvent);
+        // Force multiple event types to ensure reset
+        const events = ['pointerup', 'mouseup', 'touchend', 'mouseleave', 'pointerleave'];
+        events.forEach(eventType => {
+          const event = new Event(eventType, { bubbles: true, cancelable: true });
+          element.dispatchEvent(event);
+        });
+        
+        // Reset cursor style
+        (element as HTMLElement).style.cursor = '';
       });
-    }, 50);
+      
+      // Also reset on document body to clear any global drag state
+      document.body.style.cursor = '';
+      document.documentElement.style.cursor = '';
+    };
+    
+    // Reset immediately and after a delay
+    resetCarouselStates();
+    setTimeout(resetCarouselStates, 100);
+    setTimeout(resetCarouselStates, 300);
     
     onClose();
   }, [onClose]);
