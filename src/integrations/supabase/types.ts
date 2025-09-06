@@ -2351,7 +2351,28 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_member_analytics: {
+        Row: {
+          active_days: number | null
+          active_months: number | null
+          avg_transaction: number | null
+          categories: string[] | null
+          currency: string | null
+          current_month_spend: number | null
+          current_month_transactions: number | null
+          current_week_spend: number | null
+          display_name: string | null
+          first_name: string | null
+          first_transaction_date: string | null
+          last_name: string | null
+          last_transaction_date: string | null
+          payment_methods: string[] | null
+          total_spend: number | null
+          total_transactions: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_member_streak: {
