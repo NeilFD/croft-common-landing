@@ -4,40 +4,44 @@ import SolidDice from "./SolidDice";
 
 interface AnimatedDiceProps {
   className?: string;
-  initialFace?: 1 | 2 | 3 | 4 | 5 | 6;
+  pairIndex: 0 | 1; // 0 for left dice, 1 for right dice
   animationDelay?: number;
 }
 
+// Lucky No 7 combinations: [left dice, right dice]
+const LUCKY_SEVEN_PAIRS: Array<[1 | 2 | 3 | 4 | 5 | 6, 1 | 2 | 3 | 4 | 5 | 6]> = [
+  [1, 6],
+  [2, 5], 
+  [3, 4],
+  [4, 3],
+  [5, 2],
+  [6, 1]
+];
+
 const AnimatedDice: React.FC<AnimatedDiceProps> = ({ 
   className, 
-  initialFace = 1,
+  pairIndex,
   animationDelay = 0
 }) => {
-  const [currentFace, setCurrentFace] = useState<1 | 2 | 3 | 4 | 5 | 6>(initialFace);
+  const [currentPairIndex, setCurrentPairIndex] = useState(0);
+  const currentFace = LUCKY_SEVEN_PAIRS[currentPairIndex][pairIndex];
 
   useEffect(() => {
-    // Random interval between 800ms and 1200ms to prevent screenshot timing
-    const getRandomInterval = () => Math.random() * 400 + 800;
+    // Steady interval with slight randomization to prevent predictable patterns
+    const getInterval = () => 2500 + Math.random() * 400; // 2.5-2.9 seconds
     
-    const changeface = () => {
-      // Get a random face different from current one
-      const faces: Array<1 | 2 | 3 | 4 | 5 | 6> = [1, 2, 3, 4, 5, 6];
-      const otherFaces = faces.filter(f => f !== currentFace);
-      const newFace = otherFaces[Math.floor(Math.random() * otherFaces.length)];
-      setCurrentFace(newFace);
+    const cyclePair = () => {
+      setCurrentPairIndex(prev => (prev + 1) % LUCKY_SEVEN_PAIRS.length);
     };
 
     // Initial delay
     const initialTimeout = setTimeout(() => {
-      const interval = setInterval(() => {
-        changeface();
-      }, getRandomInterval());
-
+      const interval = setInterval(cyclePair, getInterval());
       return () => clearInterval(interval);
     }, animationDelay);
 
     return () => clearTimeout(initialTimeout);
-  }, [currentFace, animationDelay]);
+  }, [animationDelay]);
 
   return (
     <div className={cn("anti-screenshot-dice", className)}>

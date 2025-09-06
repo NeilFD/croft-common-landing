@@ -67,15 +67,15 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
                 <div className="micro-tilt">
                   <AnimatedDice 
                     className="text-foreground" 
-                    initialFace={4}
+                    pairIndex={0}
                     animationDelay={100}
                   />
                 </div>
                 <div className="micro-tilt-reverse">
                   <AnimatedDice 
                     className="text-foreground" 
-                    initialFace={3}
-                    animationDelay={300}
+                    pairIndex={1}
+                    animationDelay={100}
                   />
                 </div>
               </div>
