@@ -12,6 +12,7 @@ export const SecureLedgerWrapper: React.FC<SecureLedgerWrapperProps> = ({ childr
   const {
     state,
     loading,
+    initialCheckComplete,
     checkPasswordStatus,
     setPassword,
     validatePassword
@@ -21,8 +22,8 @@ export const SecureLedgerWrapper: React.FC<SecureLedgerWrapperProps> = ({ childr
     checkPasswordStatus();
   }, []);
 
-  // Show loading state while checking password status
-  if (loading && !state.hasPassword && !state.isValidated) {
+  // Show loading state while initial password status check is in progress
+  if (!initialCheckComplete) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />

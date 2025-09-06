@@ -18,11 +18,14 @@ export const useLedgerPassword = () => {
     isLocked: false
   });
   const [loading, setLoading] = useState(false);
+  const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
   const checkPasswordStatus = async () => {
     if (!user) return;
     
     setLoading(true);
+    console.log('Checking password status for user:', user.id);
+    
     try {
       const { data, error } = await supabase
         .from('ledger_passwords')
@@ -32,6 +35,8 @@ export const useLedgerPassword = () => {
 
       if (error) throw error;
 
+      console.log('Password status check result:', data);
+      
       setState(prev => ({
         ...prev,
         hasPassword: !!data,
@@ -43,6 +48,7 @@ export const useLedgerPassword = () => {
       toast.error('Failed to check password status');
     } finally {
       setLoading(false);
+      setInitialCheckComplete(true);
     }
   };
 
@@ -134,6 +140,7 @@ export const useLedgerPassword = () => {
   return {
     state,
     loading,
+    initialCheckComplete,
     checkPasswordStatus,
     setPassword,
     validatePassword,
