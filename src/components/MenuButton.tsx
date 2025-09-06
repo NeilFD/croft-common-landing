@@ -45,33 +45,20 @@ const MenuButton = ({ pageType, menuData, forceCafeAccent }: MenuButtonProps) =>
       <button
         onClick={() => setIsMenuOpen(true)}
         className={cn(
-          "fixed right-8 z-50 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0",
-          pageType === 'community' ? 'bottom-16 md:bottom-20' : 'bottom-20',
-          (pageType === 'community' || pageType === 'common-room')
-            ? 'bg-background/85 backdrop-blur-sm'
-            : 'border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background'
+          "fixed right-8 z-50 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0 border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background",
+          pageType === 'community' ? 'bottom-16 md:bottom-20' : 'bottom-20'
         )}
         style={{
           '--hover-bg': accentColor,
           '--breathing-color': accentColor,
         } as any}
         onMouseEnter={(e) => {
-          if (pageType === 'community' || pageType === 'common-room') {
-            e.currentTarget.style.backgroundColor = accentColor;
-            e.currentTarget.style.borderColor = accentColor;
-          } else {
-            e.currentTarget.style.backgroundColor = accentColor;
-            e.currentTarget.style.borderColor = accentColor;
-          }
+          e.currentTarget.style.backgroundColor = accentColor;
+          e.currentTarget.style.borderColor = accentColor;
         }}
         onMouseLeave={(e) => {
-          if (pageType === 'community' || pageType === 'common-room') {
-            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.85)';
-            e.currentTarget.style.borderColor = '';
-          } else {
-            e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
-            e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
-          }
+          e.currentTarget.style.backgroundColor = 'hsla(0, 0%, 100%, 0.1)';
+          e.currentTarget.style.borderColor = 'hsla(0, 0%, 100%, 0.3)';
         }}
       >
         <CMSText
