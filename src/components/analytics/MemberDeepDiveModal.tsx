@@ -68,6 +68,13 @@ export interface MemberDeepDiveData {
     predicted_monthly_spend: number;
     recommendations: string[];
   };
+  individual_items: Array<{
+    item_name: string;
+    total_quantity: number;
+    total_spent: number;
+    avg_price: number;
+    times_ordered: number;
+  }>;
 }
 
 interface MemberDeepDiveModalProps {
@@ -282,12 +289,12 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
               </CardContent>
             </Card>
 
-            {/* Top Purchased Items - Table of Danger */}
+            {/* Top Purchased Items */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5 text-destructive" />
-                  Table of Danger - Top Purchased Items
+                  Top puRCHASED ITEMS
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -295,36 +302,35 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                   <table className="w-full">
                     <thead>
                       <tr className="border-b">
-                        <th className="text-left py-2 font-medium">Category</th>
-                        <th className="text-right py-2 font-medium">No. Purchases</th>
+                        <th className="text-left py-2 font-medium">Item Name</th>
+                        <th className="text-right py-2 font-medium">Times Ordered</th>
                         <th className="text-right py-2 font-medium">Total Spent</th>
-                        <th className="text-right py-2 font-medium">Avg per Item</th>
+                        <th className="text-right py-2 font-medium">Avg Price</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {categoryData
-                        .sort((a, b) => b.value - a.value)
+                      {(memberData.individual_items || [])
                         .slice(0, 10)
-                        .map((item, index) => (
-                          <tr key={item.name} className="border-b hover:bg-muted/50">
+                        .map((item: any, index: number) => (
+                          <tr key={item.item_name} className="border-b hover:bg-muted/50">
                             <td className="py-3">
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium text-destructive">#{index + 1}</span>
-                                <span className="text-sm">{item.name}</span>
+                                <span className="text-sm font-medium">{item.item_name}</span>
                               </div>
                             </td>
-                            <td className="text-right py-3 font-medium">{item.count}</td>
-                            <td className="text-right py-3 font-bold text-destructive">£{item.value.toFixed(2)}</td>
+                            <td className="text-right py-3 font-medium">{item.times_ordered}</td>
+                            <td className="text-right py-3 font-bold text-destructive">£{Number(item.total_spent).toFixed(2)}</td>
                             <td className="text-right py-3 text-sm text-muted-foreground">
-                              £{(item.value / item.count).toFixed(2)}
+                              £{Number(item.avg_price).toFixed(2)}
                             </td>
                           </tr>
                         ))}
                     </tbody>
                   </table>
-                  {categoryData.length === 0 && (
+                  {(!memberData.individual_items || memberData.individual_items.length === 0) && (
                     <div className="text-center py-8 text-muted-foreground">
-                      No purchase data available
+                      No individual item data available
                     </div>
                   )}
                 </div>

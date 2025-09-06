@@ -129,6 +129,7 @@ Deno.serve(async (req) => {
         engagement_metrics: memberData.engagement_metrics,
         recent_activity: memberData.recent_activity,
         predictive_insights: memberData.predictive_insights,
+        individual_items: memberData.individual_items,
         timestamp: new Date().toISOString()
       }),
       { 

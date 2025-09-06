@@ -2523,6 +2523,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: {
           engagement_metrics: Json
+          individual_items: Json
           predictive_insights: Json
           profile_data: Json
           recent_activity: Json[]
