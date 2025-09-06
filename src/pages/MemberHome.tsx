@@ -186,13 +186,6 @@ const MemberHome: React.FC = () => {
                   Upload
                 </Button>
                 
-                <Link to="/common-room/member/ledger">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
-                    <FileText className="h-4 w-4 mr-1" />
-                    Ledger
-                  </Button>
-                </Link>
-                
                 <Link to="/common-room/member/profile">
                   <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
                     <User className="h-4 w-4 mr-1" />

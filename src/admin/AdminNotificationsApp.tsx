@@ -131,7 +131,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
   const [archivedFilter, setArchivedFilter] = useState<'all' | 'active' | 'archived'>('active');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'queued' | 'sent'>('all');
-  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments'>('history');
+  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments' | 'member-ledger'>('history');
 
   const queryClient = useQueryClient();
 
@@ -395,14 +395,16 @@ export const AdminNotificationsApp: React.FC = () => {
                    rightTab === 'analytics' ? 'Opt-in Analytics' : 
                    rightTab === 'user-analytics' ? 'User Analytics' : 
                    rightTab === 'granular' ? 'Granular Analytics' :
+                   rightTab === 'member-ledger' ? 'Member Spending Database' :
                    rightTab === 'moments' ? 'Member Moments' : 'Subscribers'}
                 </CardTitle>
-                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments')}>
+                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments' | 'member-ledger')}>
                   <TabsList>
                     <TabsTrigger value="history">History</TabsTrigger>
                     <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
                     <TabsTrigger value="user-analytics">User Analytics</TabsTrigger>
                     <TabsTrigger value="granular">Granular</TabsTrigger>
+                    <TabsTrigger value="member-ledger">Member Ledger</TabsTrigger>
                     <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
                     <TabsTrigger value="moments">Moments</TabsTrigger>
                   </TabsList>
@@ -452,6 +454,20 @@ export const AdminNotificationsApp: React.FC = () => {
                 <GranularAnalytics />
               ) : rightTab === 'moments' ? (
                 <MomentsModeration />
+              ) : rightTab === 'member-ledger' ? (
+                <div className="p-4">
+                  <p className="text-muted-foreground mb-4">
+                    Access the comprehensive member spending database for analysis, filtering, and reporting.
+                  </p>
+                  <a 
+                    href="/admin/member-analytics" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+                  >
+                    Open Member Spending Database →
+                  </a>
+                </div>
               ) : (
                 <SubscribersTable />
               )}
