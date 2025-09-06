@@ -157,17 +157,17 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
         }
       });
 
-      if (error) throw error;
-
-      // Check if the response indicates a duplicate receipt
+      // Check for duplicate receipt in the response data first
       if (data && data.error === 'duplicate_receipt') {
         toast({
-          title: "Duplicate Receipt Detected",
+          title: "Receipt Already Uploaded",
           description: data.message,
-          variant: "destructive",
+          variant: "default", // Use default variant instead of destructive for friendlier appearance
         });
         return;
       }
+
+      if (error) throw error;
 
       // Process for streak system if receipt was saved successfully
       console.log('Receipt save response:', data);
@@ -196,13 +196,23 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
       onSuccess();
       handleClose();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving receipt:', error);
-      toast({
-        title: "Save Failed",
-        description: "Failed to save receipt. Please try again.",
-        variant: "destructive"
-      });
+      
+      // Check if this is a duplicate receipt error from the API response
+      if (error.message && error.message.includes('duplicate_receipt')) {
+        toast({
+          title: "Receipt Already Uploaded",
+          description: "This receipt has already been uploaded by a member. Each receipt can only be used once to maintain fair spend tracking.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Save Failed",
+          description: "Failed to save receipt. Please try again.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
     }
