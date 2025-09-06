@@ -217,7 +217,15 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-3">
-              <User className="h-6 w-6" />
+              {memberData.profile.avatar_url ? (
+                <img 
+                  src={memberData.profile.avatar_url} 
+                  alt="Profile avatar" 
+                  className="h-6 w-6 rounded-full object-cover"
+                />
+              ) : (
+                <User className="h-6 w-6" />
+              )}
               {memberData.profile.display_name || `${memberData.profile.first_name} ${memberData.profile.last_name}`}
             </DialogTitle>
             <div className="flex items-center gap-2">
@@ -240,7 +248,15 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
-                    <User className="h-4 w-4" />
+                    {memberData.profile.avatar_url ? (
+                      <img 
+                        src={memberData.profile.avatar_url} 
+                        alt="Profile avatar" 
+                        className="h-4 w-4 rounded-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
                     Profile Info
                   </CardTitle>
                 </CardHeader>
