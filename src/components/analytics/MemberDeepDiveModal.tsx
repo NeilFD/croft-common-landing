@@ -98,12 +98,29 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
   onSendNotification
 }) => {
   const [sortBy, setSortBy] = useState<'spend' | 'count'>('spend');
-  
-  if (!isOpen || !memberId) return null;
 
   // Debug logging to see what's in individual_items
   console.log('MemberDeepDiveModal memberData:', memberData);
   console.log('Individual items:', memberData?.individual_items);
+
+  // Sort individual items based on current sort preference
+  const sortedIndividualItems = useMemo(() => {
+    if (!memberData || !memberData.individual_items || !Array.isArray(memberData.individual_items)) {
+      return [];
+    }
+    
+    const items = [...memberData.individual_items];
+    return items.sort((a, b) => {
+      if (sortBy === 'spend') {
+        return Number(b.total_spent || 0) - Number(a.total_spent || 0);
+      } else {
+        return Number(b.times_ordered || 0) - Number(a.times_ordered || 0);
+      }
+    }).slice(0, 10);
+  }, [memberData, sortBy]);
+
+  // Early returns after all hooks are called
+  if (!isOpen || !memberId) return null;
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -173,20 +190,6 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
     hour: time.hour,
     visits: time.count
   })) || [];
-
-  // Sort individual items based on current sort preference
-  const sortedIndividualItems = useMemo(() => {
-    if (!memberData?.individual_items) return [];
-    
-    const items = [...memberData.individual_items];
-    return items.sort((a, b) => {
-      if (sortBy === 'spend') {
-        return Number(b.total_spent) - Number(a.total_spent);
-      } else {
-        return Number(b.times_ordered) - Number(a.times_ordered);
-      }
-    }).slice(0, 10);
-  }, [memberData?.individual_items, sortBy]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
