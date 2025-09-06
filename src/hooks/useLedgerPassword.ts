@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
@@ -20,8 +20,11 @@ export const useLedgerPassword = () => {
   const [loading, setLoading] = useState(false);
   const [initialCheckComplete, setInitialCheckComplete] = useState(false);
 
-  const checkPasswordStatus = async () => {
-    if (!user) return;
+  const checkPasswordStatus = useCallback(async () => {
+    if (!user) {
+      setInitialCheckComplete(true);
+      return;
+    }
     
     setLoading(true);
     console.log('Checking password status for user:', user.id);
@@ -50,7 +53,7 @@ export const useLedgerPassword = () => {
       setLoading(false);
       setInitialCheckComplete(true);
     }
-  };
+  }, [user]);
 
   const setPassword = async (password: string) => {
     if (!user) return false;

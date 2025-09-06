@@ -20,7 +20,7 @@ export const SecureLedgerWrapper: React.FC<SecureLedgerWrapperProps> = ({ childr
 
   useEffect(() => {
     checkPasswordStatus();
-  }, []);
+  }, [checkPasswordStatus]);
 
   // Show loading state while initial password status check is in progress
   if (!initialCheckComplete) {
