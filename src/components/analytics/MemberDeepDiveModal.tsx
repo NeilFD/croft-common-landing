@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -175,7 +175,7 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
   })) || [];
 
   // Sort individual items based on current sort preference
-  const sortedIndividualItems = React.useMemo(() => {
+  const sortedIndividualItems = useMemo(() => {
     if (!memberData?.individual_items) return [];
     
     const items = [...memberData.individual_items];
