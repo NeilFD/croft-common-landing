@@ -212,3 +212,6 @@ verify_jwt = true
 
 [functions.member-deep-dive]
 verify_jwt = true
+
+[functions.campaign-manager]
+verify_jwt = true

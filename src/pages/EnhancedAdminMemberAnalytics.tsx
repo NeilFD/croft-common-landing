@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { Helmet } from 'react-helmet-async';
-import { Users, Target, BarChart3 } from 'lucide-react';
+import { Users, Target, BarChart3, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { AdvancedFilters } from '@/components/analytics/AdvancedFilters';
 import { EnhancedAnalyticsStats } from '@/components/analytics/EnhancedAnalyticsStats';
 import { MemberAnalyticsTable, EnhancedMemberAnalytics } from '@/components/analytics/MemberAnalyticsTable';
+import { MemberDeepDiveModal, MemberDeepDiveData } from '@/components/analytics/MemberDeepDiveModal';
+import { CampaignManager } from '@/components/analytics/CampaignManager';
 
 interface AdvancedFilters {
   dateStart?: Date;
@@ -37,6 +40,9 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
   const [segments, setSegments] = useState<MemberSegment[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
+  const [memberDeepDive, setMemberDeepDive] = useState<MemberDeepDiveData | null>(null);
+  const [deepDiveLoading, setDeepDiveLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('analytics');
 
   const [filters, setFilters] = useState<AdvancedFilters>({
     interests: [],
@@ -195,11 +201,73 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
     });
   };
 
-  const handleViewMember = (memberId: string) => {
-    // TODO: Open member deep-dive modal or navigate to member detail page
+  const handleViewMember = async (memberId: string) => {
     setSelectedMember(memberId);
-    toast.info(`Opening deep-dive for member ${memberId}`, {
-      description: 'Individual member profiles coming in Phase 2'
+    setDeepDiveLoading(true);
+    
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      console.log('Fetching deep-dive data for member:', memberId);
+      const { data, error } = await supabase.functions.invoke('member-deep-dive', {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+        },
+        body: { memberId }
+      });
+
+      if (error) {
+        console.error('Deep-dive fetch error:', error);
+        throw error;
+      }
+
+      setMemberDeepDive(data);
+    } catch (error) {
+      console.error('Error fetching member deep-dive:', error);
+      toast.error('Failed to load member details');
+    } finally {
+      setDeepDiveLoading(false);
+    }
+  };
+
+  const handleSendCampaign = async (campaign: any) => {
+    try {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      console.log('Sending campaign:', campaign);
+      const { data, error } = await supabase.functions.invoke('campaign-manager', {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: campaign
+      });
+
+      if (error) {
+        console.error('Campaign send error:', error);
+        throw error;
+      }
+
+      toast.success(data.message);
+      console.log('Campaign sent successfully:', data);
+    } catch (error) {
+      console.error('Error sending campaign:', error);
+      throw error;
+    }
+  };
+
+  const handleSendNotification = (memberId: string) => {
+    // TODO: Implement individual member notification
+    toast.info(`Sending notification to member ${memberId}`, {
+      description: 'Individual notifications coming soon'
     });
   };
 
@@ -228,58 +296,96 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
                 Enhanced Member Intelligence Platform
               </CardTitle>
               <p className="text-muted-foreground">
-                Advanced analytics with demographic filters, behavioral insights, risk scoring, and lifetime value predictions
+                Advanced analytics with demographic filters, behavioral insights, risk scoring, and campaign management
               </p>
             </CardHeader>
           </Card>
 
-          {/* Member Segments Overview */}
-          {segments.length > 0 && (
-            <Card className="border-2 border-black">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Member Segments
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {segments.map((segment) => (
-                    <Card key={segment.segment_name} className="border border-muted">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">{segment.segment_name}</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="text-2xl font-bold">{segment.member_count}</div>
-                          <div className="text-xs text-muted-foreground">{segment.segment_description}</div>
-                          <div className="text-sm">Avg Spend: £{segment.avg_spend.toFixed(0)}</div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Main Content Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="analytics" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Member Analytics
+              </TabsTrigger>
+              <TabsTrigger value="campaigns" className="flex items-center gap-2">
+                <MessageSquare className="h-4 w-4" />
+                Campaign Manager
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Enhanced Stats */}
-          <EnhancedAnalyticsStats members={filteredAnalytics} isLoading={loading} />
+            <TabsContent value="analytics" className="space-y-6">
+              {/* Member Segments Overview */}
+              {segments.length > 0 && (
+                <Card className="border-2 border-black">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Member Segments
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      {segments.map((segment) => (
+                        <Card key={segment.segment_name} className="border border-muted">
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm">{segment.segment_name}</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <div className="text-2xl font-bold">{segment.member_count}</div>
+                              <div className="text-xs text-muted-foreground">{segment.segment_description}</div>
+                              <div className="text-sm">Avg Spend: £{segment.avg_spend.toFixed(0)}</div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-          {/* Advanced Filters */}
-          <AdvancedFilters
-            filters={filters}
-            onFiltersChange={handleFiltersChange}
-            onExport={exportToCSV}
-            onClearFilters={handleClearFilters}
-            isLoading={loading}
-          />
+              {/* Enhanced Stats */}
+              <EnhancedAnalyticsStats members={filteredAnalytics} isLoading={loading} />
 
-          {/* Enhanced Analytics Table */}
-          <MemberAnalyticsTable
-            members={filteredAnalytics}
-            onViewMember={handleViewMember}
-            isLoading={loading}
+              {/* Advanced Filters */}
+              <AdvancedFilters
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                onExport={exportToCSV}
+                onClearFilters={handleClearFilters}
+                isLoading={loading}
+              />
+
+              {/* Enhanced Analytics Table */}
+              <MemberAnalyticsTable
+                members={filteredAnalytics}
+                onViewMember={handleViewMember}
+                isLoading={loading}
+              />
+            </TabsContent>
+
+            <TabsContent value="campaigns" className="space-y-6">
+              {/* Campaign Manager */}
+              <CampaignManager
+                segments={segments}
+                isLoading={loading}
+                onSendCampaign={handleSendCampaign}
+              />
+            </TabsContent>
+          </Tabs>
+
+          {/* Member Deep Dive Modal */}
+          <MemberDeepDiveModal
+            isOpen={!!selectedMember}
+            onClose={() => {
+              setSelectedMember(null);
+              setMemberDeepDive(null);
+            }}
+            memberId={selectedMember}
+            memberData={memberDeepDive}
+            isLoading={deepDiveLoading}
+            onSendNotification={handleSendNotification}
           />
         </div>
       </div>
