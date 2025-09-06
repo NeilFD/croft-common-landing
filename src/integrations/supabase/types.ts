@@ -2424,6 +2424,47 @@ export type Database = {
           tickets_left: number
         }[]
       }
+      get_advanced_member_analytics: {
+        Args: {
+          p_date_end?: string
+          p_date_start?: string
+          p_interests?: string[]
+          p_max_age?: number
+          p_max_spend?: number
+          p_min_age?: number
+          p_min_spend?: number
+          p_tier_badges?: string[]
+          p_venue_slugs?: string[]
+        }
+        Returns: {
+          active_days: number
+          active_months: number
+          age: number
+          avg_transaction: number
+          categories: string[]
+          currency: string
+          current_month_spend: number
+          current_month_transactions: number
+          current_week_spend: number
+          display_name: string
+          favorite_venues: string[]
+          first_name: string
+          first_transaction_date: string
+          interests: string[]
+          last_name: string
+          last_transaction_date: string
+          last_visit_date: string
+          lifetime_value: number
+          payment_methods: string[]
+          preferred_visit_times: string[]
+          retention_risk_score: number
+          tier_badge: string
+          total_spend: number
+          total_transactions: number
+          user_id: string
+          visit_frequency: number
+        }[]
+      }
       get_app_setting: {
         Args: { setting_key: string }
         Returns: string
@@ -2476,6 +2517,28 @@ export type Database = {
           total_spend: number
           total_transactions: number
           user_id: string
+        }[]
+      }
+      get_member_deep_dive: {
+        Args: { p_user_id: string }
+        Returns: {
+          engagement_metrics: Json
+          predictive_insights: Json
+          profile_data: Json
+          recent_activity: Json[]
+          spend_breakdown: Json
+          user_id: string
+          visit_patterns: Json
+        }[]
+      }
+      get_member_segments: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          avg_spend: number
+          criteria: Json
+          member_count: number
+          segment_description: string
+          segment_name: string
         }[]
       }
       get_or_create_current_release: {

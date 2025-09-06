@@ -1,0 +1,219 @@
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Eye, TrendingUp, AlertTriangle, Clock } from 'lucide-react';
+
+export interface EnhancedMemberAnalytics {
+  user_id: string;
+  first_name: string;
+  last_name: string;
+  display_name: string;
+  age?: number;
+  interests: string[];
+  tier_badge: string;
+  total_transactions: number;
+  total_spend: number;
+  avg_transaction: number;
+  first_transaction_date: string;
+  last_transaction_date: string;
+  active_months: number;
+  active_days: number;
+  categories: string[];
+  payment_methods: string[];
+  currency: string;
+  current_month_spend: number;
+  current_week_spend: number;
+  current_month_transactions: number;
+  favorite_venues: string[];
+  visit_frequency: number;
+  last_visit_date: string;
+  preferred_visit_times: string[];
+  retention_risk_score: number;
+  lifetime_value: number;
+}
+
+interface MemberAnalyticsTableProps {
+  members: EnhancedMemberAnalytics[];
+  onViewMember: (memberId: string) => void;
+  isLoading?: boolean;
+}
+
+export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
+  members,
+  onViewMember,
+  isLoading = false
+}) => {
+  const getRiskBadgeColor = (score: number) => {
+    if (score >= 70) return 'destructive';
+    if (score >= 40) return 'default';
+    return 'secondary';
+  };
+
+  const getRiskLabel = (score: number) => {
+    if (score >= 70) return 'High Risk';
+    if (score >= 40) return 'Medium Risk';
+    return 'Low Risk';
+  };
+
+  const getTierBadgeColor = (tier: string) => {
+    switch (tier) {
+      case 'diamond': return 'bg-gradient-to-r from-blue-400 to-purple-600 text-white';
+      case 'platinum': return 'bg-gradient-to-r from-gray-300 to-gray-500 text-white';
+      case 'gold': return 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white';
+      case 'silver': return 'bg-gradient-to-r from-gray-200 to-gray-400 text-gray-800';
+      default: return 'bg-gradient-to-r from-amber-600 to-amber-800 text-white';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="border-2 border-black">
+        <CardContent className="p-8">
+          <div className="animate-pulse space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-16 bg-muted rounded"></div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-2 border-black">
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>Enhanced Member Database ({members.length} members)</span>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <AlertTriangle className="h-4 w-4 text-red-500" />
+              High Risk: {members.filter(m => m.retention_risk_score >= 70).length}
+            </div>
+            <div className="flex items-center gap-1">
+              <TrendingUp className="h-4 w-4 text-green-500" />
+              High Value: {members.filter(m => m.lifetime_value > 500).length}
+            </div>
+          </div>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b">
+                <th className="text-left p-3">Member</th>
+                <th className="text-right p-3">Total Spend</th>
+                <th className="text-right p-3">LTV</th>
+                <th className="text-center p-3">Risk</th>
+                <th className="text-center p-3">Frequency</th>
+                <th className="text-left p-3">Interests</th>
+                <th className="text-left p-3">Venues</th>
+                <th className="text-center p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member) => (
+                <tr key={member.user_id} className="border-b hover:bg-muted/50 transition-colors">
+                  <td className="p-3">
+                    <div className="space-y-1">
+                      <div className="font-medium flex items-center gap-2">
+                        {member.display_name || `${member.first_name} ${member.last_name}`}
+                        <Badge 
+                          className={`text-xs capitalize ${getTierBadgeColor(member.tier_badge)}`}
+                        >
+                          {member.tier_badge}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground flex items-center gap-2">
+                        {member.age && <span>Age: {member.age}</span>}
+                        <span>•</span>
+                        <span>{member.active_months} months active</span>
+                        <span>•</span>
+                        <span>{member.total_transactions} transactions</span>
+                      </div>
+                      {member.last_visit_date && (
+                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Last visit: {new Date(member.last_visit_date).toLocaleDateString()}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="text-right p-3">
+                    <div className="space-y-1">
+                      <div className="font-medium">£{member.total_spend.toFixed(2)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        Avg: £{member.avg_transaction?.toFixed(2) || '0.00'}
+                      </div>
+                      <div className="text-xs text-green-600">
+                        This month: £{member.current_month_spend.toFixed(2)}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="text-right p-3">
+                    <div className="font-medium">£{member.lifetime_value.toFixed(0)}</div>
+                    <div className="text-xs text-muted-foreground">Projected</div>
+                  </td>
+                  <td className="text-center p-3">
+                    <Badge variant={getRiskBadgeColor(member.retention_risk_score)}>
+                      {getRiskLabel(member.retention_risk_score)}
+                    </Badge>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Score: {member.retention_risk_score}
+                    </div>
+                  </td>
+                  <td className="text-center p-3">
+                    <div className="font-medium">{member.visit_frequency.toFixed(1)}/week</div>
+                    <div className="text-xs text-muted-foreground">
+                      {member.active_days} days active
+                    </div>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex flex-wrap gap-1 max-w-32">
+                      {member.interests?.slice(0, 3).map((interest) => (
+                        <Badge key={interest} variant="secondary" className="text-xs">
+                          {interest}
+                        </Badge>
+                      ))}
+                      {member.interests?.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{member.interests.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-3">
+                    <div className="flex flex-wrap gap-1 max-w-32">
+                      {member.favorite_venues?.slice(0, 2).map((venue) => (
+                        <Badge key={venue} variant="outline" className="text-xs">
+                          {venue.replace('-', ' ')}
+                        </Badge>
+                      ))}
+                      {member.favorite_venues?.length > 2 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{member.favorite_venues.length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
+                  <td className="text-center p-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onViewMember(member.user_id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Eye className="h-3 w-3" />
+                      View
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};

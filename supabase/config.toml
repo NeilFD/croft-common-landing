@@ -206,3 +206,9 @@ verify_jwt = true
 
 [functions.test-function]
 verify_jwt = false
+
+[functions.advanced-analytics]
+verify_jwt = true
+
+[functions.member-deep-dive]
+verify_jwt = true
