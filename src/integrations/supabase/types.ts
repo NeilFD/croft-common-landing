@@ -1048,6 +1048,7 @@ export type Database = {
       }
       member_receipts: {
         Row: {
+          covers: number | null
           created_at: string
           currency: string
           id: string
@@ -1056,12 +1057,15 @@ export type Database = {
           raw_ocr_data: Json | null
           receipt_date: string
           receipt_image_url: string
+          receipt_number: string | null
+          receipt_time: string | null
           total_amount: number
           updated_at: string
           user_id: string
           venue_location: string | null
         }
         Insert: {
+          covers?: number | null
           created_at?: string
           currency?: string
           id?: string
@@ -1070,12 +1074,15 @@ export type Database = {
           raw_ocr_data?: Json | null
           receipt_date: string
           receipt_image_url: string
+          receipt_number?: string | null
+          receipt_time?: string | null
           total_amount: number
           updated_at?: string
           user_id: string
           venue_location?: string | null
         }
         Update: {
+          covers?: number | null
           created_at?: string
           currency?: string
           id?: string
@@ -1084,6 +1091,8 @@ export type Database = {
           raw_ocr_data?: Json | null
           receipt_date?: string
           receipt_image_url?: string
+          receipt_number?: string | null
+          receipt_time?: string | null
           total_amount?: number
           updated_at?: string
           user_id?: string

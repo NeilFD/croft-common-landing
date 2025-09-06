@@ -67,11 +67,14 @@ serve(async (req) => {
   "total": 0.00,
   "currency": "GBP",
   "venue_location": "venue name or location",
+  "receipt_number": "receipt number if visible",
+  "receipt_time": "HH:MM:SS format if time is visible",
+  "covers": number_of_people_served,
   "items": [
     {"name": "item name", "quantity": 1, "price": 0.00}
   ]
 }
-Be precise with numbers. Use GBP as default currency unless clearly stated otherwise.`
+Be precise with numbers. Use GBP as default currency unless clearly stated otherwise. Look for receipt numbers, transaction times, and covers/people count on the receipt.`
             },
             {
               role: 'user',
@@ -177,6 +180,9 @@ Be precise with numbers. Use GBP as default currency unless clearly stated other
           total_amount: receipt_data.total,
           currency: receipt_data.currency || 'GBP',
           venue_location: receipt_data.venue_location,
+          receipt_number: receipt_data.receipt_number,
+          receipt_time: receipt_data.receipt_time,
+          covers: receipt_data.covers,
           items: receipt_data.items || [],
           raw_ocr_data: receipt_data,
           processing_status: 'completed'

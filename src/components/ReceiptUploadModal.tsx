@@ -20,6 +20,9 @@ interface ExtractedData {
   total: number;
   currency: string;
   venue_location: string;
+  receipt_number?: string;
+  receipt_time?: string;
+  covers?: number;
   items: Array<{
     name: string;
     quantity: number;
@@ -317,6 +320,38 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
                   step="0.01"
                   value={editedData.total}
                   onChange={(e) => setEditedData({ ...editedData, total: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="receipt-number">Receipt Number</Label>
+                <Input
+                  id="receipt-number"
+                  value={editedData.receipt_number || ''}
+                  onChange={(e) => setEditedData({ ...editedData, receipt_number: e.target.value })}
+                  placeholder="e.g. 15849203"
+                />
+              </div>
+              <div>
+                <Label htmlFor="receipt-time">Time</Label>
+                <Input
+                  id="receipt-time"
+                  type="time"
+                  value={editedData.receipt_time || ''}
+                  onChange={(e) => setEditedData({ ...editedData, receipt_time: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="covers">Covers</Label>
+                <Input
+                  id="covers"
+                  type="number"
+                  min="1"
+                  value={editedData.covers || ''}
+                  onChange={(e) => setEditedData({ ...editedData, covers: parseInt(e.target.value) || undefined })}
+                  placeholder="e.g. 2"
                 />
               </div>
             </div>
