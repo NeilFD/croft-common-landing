@@ -50,6 +50,27 @@ export interface MemberDeepDiveData {
       day_of_week: number;
       count: number;
     }>;
+    month_period_breakdown?: Array<{
+      period: string;
+      visit_count: number;
+      percentage: number;
+    }>;
+    time_period_breakdown?: Array<{
+      time_period: string;
+      visit_count: number;
+      percentage: number;
+    }>;
+    visit_consistency?: {
+      avg_gap_days: number;
+      consistency_score: number;
+      last_gap_days: number;
+      is_overdue: boolean;
+    };
+    behavioral_insights?: {
+      most_likely_day: string;
+      most_likely_day_count: number;
+      most_likely_day_percentage: number;
+    };
   };
   engagement_metrics: {
     push_subscriptions: number;
@@ -291,10 +312,11 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  Visit Patterns
+                  Visit Patterns & Behavioral Insights
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
+                {/* Core Visit Stats */}
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold">{memberData.visit_patterns.total_visits}</div>
@@ -309,6 +331,131 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                     <div className="text-sm text-muted-foreground">Longest Streak</div>
                   </div>
                 </div>
+
+                {/* Behavioral Insights */}
+                {memberData.visit_patterns.behavioral_insights && (
+                  <div className="bg-primary/5 rounded-lg p-4">
+                    <h4 className="font-semibold text-primary mb-2 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Most Likely Visit Pattern
+                    </h4>
+                    <p className="text-sm">
+                      <span className="font-medium">{memberData.visit_patterns.behavioral_insights.most_likely_day}</span>
+                      {memberData.visit_patterns.behavioral_insights.most_likely_day_percentage && (
+                        <span className="text-muted-foreground ml-1">
+                          ({memberData.visit_patterns.behavioral_insights.most_likely_day_percentage}% of visits)
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+
+                {/* Time Period Preferences */}
+                {memberData.visit_patterns.time_period_breakdown && memberData.visit_patterns.time_period_breakdown.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Time of Day Preferences
+                    </h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      {memberData.visit_patterns.time_period_breakdown.map((period: any) => (
+                        <div key={period.time_period} className="text-center p-3 bg-secondary/50 rounded-lg">
+                          <div className="font-semibold capitalize">{period.time_period}</div>
+                          <div className="text-sm text-muted-foreground">{period.visit_count} visits</div>
+                          <div className="text-xs text-primary">{period.percentage}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Month Period Analysis */}
+                {memberData.visit_patterns.month_period_breakdown && memberData.visit_patterns.month_period_breakdown.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Month Period Preferences
+                    </h4>
+                    <div className="grid grid-cols-3 gap-3">
+                      {memberData.visit_patterns.month_period_breakdown.map((period: any) => (
+                        <div key={period.period} className="text-center p-3 bg-secondary/50 rounded-lg">
+                          <div className="font-semibold capitalize">{period.period} of Month</div>
+                          <div className="text-sm text-muted-foreground">{period.visit_count} visits</div>
+                          <div className="text-xs text-primary">{period.percentage}%</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Visit Consistency Insights */}
+                {memberData.visit_patterns.visit_consistency && (
+                  <div className="bg-muted/30 rounded-lg p-4">
+                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Visit Consistency Analysis
+                    </h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Average gap:</span>
+                        <span className="ml-1 font-medium">
+                          {memberData.visit_patterns.visit_consistency.avg_gap_days} days
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Consistency score:</span>
+                        <span className="ml-1 font-medium">
+                          {memberData.visit_patterns.visit_consistency.consistency_score}%
+                        </span>
+                      </div>
+                      {memberData.visit_patterns.visit_consistency.last_gap_days && (
+                        <div>
+                          <span className="text-muted-foreground">Days since last visit:</span>
+                          <span className="ml-1 font-medium">
+                            {memberData.visit_patterns.visit_consistency.last_gap_days}
+                          </span>
+                        </div>
+                      )}
+                      {memberData.visit_patterns.visit_consistency.is_overdue && (
+                        <div className="col-span-2">
+                          <span className="text-destructive font-medium">⚠️ Overdue for next visit</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Weekly Pattern */}
+                {memberData.visit_patterns.weekly_pattern && memberData.visit_patterns.weekly_pattern.length > 0 && (
+                  <div>
+                    <h4 className="font-medium mb-3">Weekly Pattern</h4>
+                    <div className="flex gap-2 overflow-x-auto">
+                      {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => {
+                        const dayData = memberData.visit_patterns.weekly_pattern.find((d: any) => d.day_of_week === index);
+                        const count = dayData?.count || 0;
+                        const maxCount = Math.max(...memberData.visit_patterns.weekly_pattern.map((d: any) => d.count));
+                        const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                        
+                        return (
+                          <div key={day} className="flex flex-col items-center flex-1 min-w-[60px]">
+                            <div className="h-20 w-full bg-secondary/30 rounded-t relative flex items-end justify-center">
+                              {height > 0 && (
+                                <div 
+                                  className="bg-primary w-full rounded-t transition-all duration-300"
+                                  style={{ height: `${height}%` }}
+                                />
+                              )}
+                              <span className="absolute top-1 text-xs text-muted-foreground">
+                                {count}
+                              </span>
+                            </div>
+                            <div className="text-xs mt-1 font-medium">{day}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
