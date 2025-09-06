@@ -511,12 +511,22 @@
   touch-action: pan-x pan-y !important;
 }
 
-/* Completely disable carousel interaction when modal is open */
-body:has(.gesture-container) .embla,
-body:has(.gesture-container) .carousel-container {
-  pointer-events: none !important;
-  touch-action: none !important;
-  user-select: none !important;
+/* Create a transparent overlay to block carousel interaction when modal is open */
+body:has(.gesture-container)::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: transparent;
+  pointer-events: auto;
+}
+
+/* Hide the overlay behind the modal */
+body:has(.gesture-container) .gesture-container {
+  z-index: 50;
 }
 
 .gesture-drawing {

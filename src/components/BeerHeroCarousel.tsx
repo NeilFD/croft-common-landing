@@ -76,7 +76,7 @@ const BeerHeroCarousel = () => {
   const currentImage = heroImages[currentSlide];
 
   return (
-    <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
+    <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>
       <div className="flex">
         {heroImages.map((image, index) => (
           <div 

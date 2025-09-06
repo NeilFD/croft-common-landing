@@ -76,7 +76,7 @@ const CafeHeroCarousel = () => {
   }, [emblaApi]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
+    <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>
       <div className="flex">
         {cafeImages.map((image, index) => (
           <div 

@@ -74,7 +74,7 @@ const KitchensHeroCarousel = () => {
   }, [emblaApi]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden" ref={emblaRef}>
+    <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>
       <div className="flex">
         {kitchenImages.map((image, index) => (
           <div 

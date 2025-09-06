@@ -32,32 +32,55 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const handleClose = useCallback(() => {
     // Immediately reset any stuck carousel drag states
     const resetCarouselStates = () => {
-      // Find all embla instances and aggressively reset their state
-      const emblaElements = document.querySelectorAll('.embla');
+      // Find all embla carousel instances by their proper class
+      const emblaElements = document.querySelectorAll('.embla-carousel');
       emblaElements.forEach(element => {
-        // Remove any potential drag classes or states
-        element.classList.remove('is-dragging', 'is-draggable');
+        const emblaContainer = element as HTMLElement;
         
-        // Force multiple event types to ensure reset
-        const events = ['pointerup', 'mouseup', 'touchend', 'mouseleave', 'pointerleave'];
-        events.forEach(eventType => {
-          const event = new Event(eventType, { bubbles: true, cancelable: true });
-          element.dispatchEvent(event);
+        // Remove any potential drag-related CSS classes
+        emblaContainer.classList.remove('is-dragging', 'is-draggable', 'is-pointer-down');
+        
+        // Reset cursor styles
+        emblaContainer.style.cursor = '';
+        emblaContainer.style.userSelect = '';
+        emblaContainer.style.touchAction = '';
+        
+        // Force events to reset internal Embla state
+        const events = [
+          new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: 1 }),
+          new MouseEvent('mouseup', { bubbles: true, cancelable: true }),
+          new TouchEvent('touchend', { bubbles: true, cancelable: true }),
+          new Event('mouseleave', { bubbles: true }),
+          new Event('pointerleave', { bubbles: true }),
+        ];
+        
+        events.forEach(event => {
+          try {
+            emblaContainer.dispatchEvent(event);
+          } catch (e) {
+            // Ignore event dispatch errors
+          }
         });
-        
-        // Reset cursor style
-        (element as HTMLElement).style.cursor = '';
       });
       
-      // Also reset on document body to clear any global drag state
+      // Reset global cursor state
       document.body.style.cursor = '';
       document.documentElement.style.cursor = '';
+      
+      // Clear any lingering mouse capture
+      if (document.exitPointerLock) {
+        try {
+          document.exitPointerLock();
+        } catch (e) {
+          // Ignore errors
+        }
+      }
     };
     
-    // Reset immediately and after a delay
+    // Reset immediately and with delays to ensure complete cleanup
     resetCarouselStates();
-    setTimeout(resetCarouselStates, 100);
-    setTimeout(resetCarouselStates, 300);
+    setTimeout(resetCarouselStates, 50);
+    setTimeout(resetCarouselStates, 200);
     
     onClose();
   }, [onClose]);
