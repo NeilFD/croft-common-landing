@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { SecureLedgerWrapper } from '@/components/ledger/SecureLedgerWrapper';
 import { Helmet } from 'react-helmet-async';
 import MemberLedger from './MemberLedger';
-import { User, Receipt, Settings, ArrowLeft } from 'lucide-react';
+import { User, PoundSterling, Settings, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
@@ -109,7 +109,7 @@ const MemberProfile: React.FC = () => {
                 Profile
               </TabsTrigger>
               <TabsTrigger value="ledger" className="flex items-center gap-2">
-                <Receipt className="h-4 w-4" />
+                <PoundSterling className="h-4 w-4" />
                 Ledger
               </TabsTrigger>
               <TabsTrigger value="settings" className="flex items-center gap-2">
