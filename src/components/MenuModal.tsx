@@ -85,44 +85,91 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   // Enable secret gesture for specific pages only (NEVER for the standalone home menu)
   const isSecretEnabled = !isHomeMenu && (pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails');
   const showGestureIndicator = isSecretEnabled;
-  // Note: Do NOT preventDefault here to keep scrolling/interaction inside the modal.
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
-    if (containerRef.current) containerRef.current.style.userSelect = 'none';
+    
+    // Prevent text selection during gesture
+    event.preventDefault();
+    
+    // Clear any existing text selection
+    try {
+      window.getSelection()?.removeAllRanges();
+    } catch {}
+    
+    if (containerRef.current) {
+      containerRef.current.classList.add('gesture-drawing');
+    }
+    
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isSecretEnabled]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled || !isDrawing) return;
+    
+    // Prevent text selection during gesture drawing
+    event.preventDefault();
+    
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
   }, [getEventPosition, addPoint, isDrawing, isSecretEnabled]);
 
-  const handleTouchEnd = useCallback((_event: React.TouchEvent) => {
+  const handleTouchEnd = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
+    
+    if (isDrawing) {
+      event.preventDefault();
+    }
+    
     endGesture();
-    if (containerRef.current) containerRef.current.style.userSelect = '';
-  }, [endGesture, isSecretEnabled]);
+    
+    if (containerRef.current) {
+      containerRef.current.classList.remove('gesture-drawing');
+    }
+  }, [endGesture, isSecretEnabled, isDrawing]);
 
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
     if (!isSecretEnabled) return;
-    if (containerRef.current) containerRef.current.style.userSelect = 'none';
+    
+    // Prevent text selection during gesture
+    event.preventDefault();
+    
+    // Clear any existing text selection
+    try {
+      window.getSelection()?.removeAllRanges();
+    } catch {}
+    
+    if (containerRef.current) {
+      containerRef.current.classList.add('gesture-drawing');
+    }
+    
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isSecretEnabled]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     if (!isSecretEnabled || !isDrawing) return;
+    
+    // Prevent text selection during gesture drawing
+    event.preventDefault();
+    
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
   }, [getEventPosition, addPoint, isDrawing, isSecretEnabled]);
 
-  const handleMouseUp = useCallback((_event: React.MouseEvent) => {
+  const handleMouseUp = useCallback((event: React.MouseEvent) => {
     if (!isSecretEnabled) return;
+    
+    if (isDrawing) {
+      event.preventDefault();
+    }
+    
     endGesture();
-    if (containerRef.current) containerRef.current.style.userSelect = '';
-  }, [endGesture, isSecretEnabled]);
+    
+    if (containerRef.current) {
+      containerRef.current.classList.remove('gesture-drawing');
+    }
+  }, [endGesture, isSecretEnabled, isDrawing]);
 
   if (!isOpen) return null;
 
@@ -190,9 +237,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         ref={containerRef}
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
           pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
-        }${isSecretEnabled && isDrawing ? ' select-none' : ''}`}
+        }${isSecretEnabled ? ' gesture-container' : ''}`}
         onClick={(e) => e.stopPropagation()}
         onDragStart={(e) => e.preventDefault()}
+        onContextMenu={(e) => isSecretEnabled && isDrawing ? e.preventDefault() : undefined}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

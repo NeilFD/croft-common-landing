@@ -101,7 +101,14 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
     
-    // Don't prevent default - allow normal touch behavior initially
+    // Prevent text selection and context menus
+    event.preventDefault();
+    
+    // Clear any existing text selection
+    try {
+      window.getSelection()?.removeAllRanges();
+    } catch {}
+    
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isInteractiveElement]);
@@ -113,22 +120,12 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
     
-    // Only prevent default if we have multiple points and movement is gesture-like
-    if (points.length > 2) {
-      const currentPos = getEventPosition(event);
-      const firstPoint = points[0];
-      const totalDeltaX = Math.abs(currentPos.x - firstPoint.x);
-      const totalDeltaY = Math.abs(currentPos.y - firstPoint.y);
-      
-      // If horizontal movement is significant, treat as gesture
-      if (totalDeltaX > 30 || (totalDeltaX > totalDeltaY * 0.5)) {
-        event.preventDefault();
-      }
-    }
+    // Always prevent default during gesture drawing to avoid text selection
+    event.preventDefault();
     
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
-  }, [getEventPosition, addPoint, isDrawing, isInteractiveElement, points]);
+  }, [getEventPosition, addPoint, isDrawing, isInteractiveElement]);
 
   const handleTouchEnd = useCallback((event: React.TouchEvent) => {
     // Allow interactive elements to function normally
@@ -143,22 +140,38 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
 
   // Mouse events (desktop)
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
+    // Allow interactive elements to function normally
+    if (isInteractiveElement(event.target)) return;
+    
     event.preventDefault();
+    
+    // Clear any existing text selection
+    try {
+      window.getSelection()?.removeAllRanges();
+    } catch {}
+    
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
-  }, [getEventPosition, startGesture]);
+  }, [getEventPosition, startGesture, isInteractiveElement]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     if (!isDrawing) return;
+    
+    // Allow interactive elements to function normally
+    if (isInteractiveElement(event.target)) return;
+    
     event.preventDefault();
     const { x, y } = getEventPosition(event);
     addPoint(x, y);
-  }, [getEventPosition, addPoint, isDrawing]);
+  }, [getEventPosition, addPoint, isDrawing, isInteractiveElement]);
 
   const handleMouseUp = useCallback((event: React.MouseEvent) => {
+    // Allow interactive elements to function normally
+    if (isInteractiveElement(event.target)) return;
+    
     event.preventDefault();
     endGesture();
-  }, [endGesture]);
+  }, [endGesture, isInteractiveElement]);
 
   // Attach listeners to provided container instead of overlay
   useEffect(() => {
@@ -169,17 +182,26 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
     const prevWebkitTouchCallout = (el.style as any).webkitTouchCallout;
     
-    // Allow normal touch behavior for scrolling
-    el.style.touchAction = 'auto';
+    // Enhanced anti-selection CSS
+    el.style.touchAction = 'manipulation';
     el.style.userSelect = 'none';
     (el.style as any).webkitUserSelect = 'none';
     (el.style as any).webkitTouchCallout = 'none';
+    (el.style as any).webkitTapHighlightColor = 'transparent';
+    el.classList.add('gesture-container');
 
     const ts = (e: TouchEvent) => {
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Don't prevent default - allow normal touch behavior initially
+      // Prevent text selection and context menus
+      e.preventDefault();
+      
+      // Clear any existing text selection
+      try {
+        window.getSelection()?.removeAllRanges();
+      } catch {}
+      
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
@@ -190,18 +212,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Only prevent default if we have multiple points and movement is gesture-like
-      if (points.length > 2) {
-        const currentPos = getEventPosition(e);
-        const firstPoint = points[0];
-        const totalDeltaX = Math.abs(currentPos.x - firstPoint.x);
-        const totalDeltaY = Math.abs(currentPos.y - firstPoint.y);
-        
-        // If horizontal movement is significant, treat as gesture
-        if (totalDeltaX > 30 || (totalDeltaX > totalDeltaY * 0.5)) {
-          e.preventDefault();
-        }
-      }
+      // Always prevent default during gesture drawing to avoid text selection
+      e.preventDefault();
       
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
@@ -222,6 +234,12 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       if (isInteractiveElement(e.target)) return;
       
       e.preventDefault();
+      
+      // Clear any existing text selection
+      try {
+        window.getSelection()?.removeAllRanges();
+      } catch {}
+      
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
@@ -255,6 +273,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       el.style.userSelect = prevUserSelect;
       (el.style as any).webkitUserSelect = prevWebkitUserSelect;
       (el.style as any).webkitTouchCallout = prevWebkitTouchCallout;
+      el.classList.remove('gesture-container');
       el.removeEventListener('touchstart', ts);
       el.removeEventListener('touchmove', tm);
       el.removeEventListener('touchend', te);
@@ -272,18 +291,21 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-40 bg-transparent select-none"
+      className="fixed inset-0 z-40 bg-transparent gesture-container"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
+      onDragStart={(e) => e.preventDefault()}
+      onContextMenu={(e) => e.preventDefault()}
       style={{ 
-        touchAction: 'auto',
+        touchAction: 'manipulation',
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
-        userSelect: 'none'
+        userSelect: 'none',
+        WebkitTapHighlightColor: 'transparent'
       }}
     />
   );
