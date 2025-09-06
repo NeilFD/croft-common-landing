@@ -56,8 +56,6 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
     return 'Low Risk';
   };
 
-  // Removed tier badge colors - using plain styling
-
   if (isLoading) {
     return (
       <Card className="border-2 border-black">
@@ -76,7 +74,7 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
     <Card className="border-2 border-black">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Enhanced Member Database ({members.length} members)</span>
+          <span>Active Member Database ({members.length} members)</span>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <AlertTriangle className="h-4 w-4 text-red-500" />
@@ -157,13 +155,13 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="text-sm text-muted-foreground max-w-32">
+                    <div className="text-sm max-w-40 truncate" title={member.interests?.join(', ')}>
                       {member.interests?.join(', ') || 'None'}
                     </div>
                   </td>
                   <td className="p-3">
-                    <div className="text-sm text-muted-foreground max-w-32">
-                      {member.favorite_venues?.map(v => v.replace('-', ' ')).join(', ') || 'None'}
+                    <div className="text-sm max-w-40 truncate" title={member.favorite_venues?.map(venue => venue.replace('-', ' ')).join(', ')}>
+                      {member.favorite_venues?.map(venue => venue.replace('-', ' ')).join(', ') || 'None'}
                     </div>
                   </td>
                   <td className="text-center p-3">
