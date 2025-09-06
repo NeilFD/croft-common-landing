@@ -409,10 +409,6 @@
 }
 
 /* BUTTON BREATHING ANIMATION */
-.button-breathing {
-  position: relative;
-}
-
 .button-breathing::before {
   background-color: var(--breathing-color, hsl(var(--accent-pink)));
 }
