@@ -81,7 +81,7 @@ const CommonRoomHeroCarousel = () => {
       <BookFloatingButton />
 
       {/* Menu Button */}
-      <MenuButton pageType="common-room" menuData={commonRoomMenuData} forceCafeAccent />
+      <MenuButton pageType="common-room" menuData={commonRoomMenuData} />
 
       {/* Gesture Detection - attach to container for touch events */}
       <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
