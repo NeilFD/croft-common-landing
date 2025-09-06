@@ -118,6 +118,7 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
   onSendNotification
 }) => {
   const [sortBy, setSortBy] = useState<'spend' | 'count'>('spend');
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   // Debug logging to see what's in individual_items
   console.log('MemberDeepDiveModal memberData:', memberData);
@@ -212,7 +213,8 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
   })) || [];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh]">
         <DialogHeader>
           <div className="flex items-center justify-between">
@@ -221,7 +223,8 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                 <img 
                   src={memberData.profile.avatar_url} 
                   alt="Profile avatar" 
-                  className="h-6 w-6 rounded-full object-cover"
+                  className="h-6 w-6 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setShowAvatarModal(true)}
                 />
               ) : (
                 <User className="h-6 w-6" />
@@ -252,7 +255,8 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                       <img 
                         src={memberData.profile.avatar_url} 
                         alt="Profile avatar" 
-                        className="h-4 w-4 rounded-full object-cover"
+                        className="h-4 w-4 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setShowAvatarModal(true)}
                       />
                     ) : (
                       <User className="h-4 w-4" />
@@ -639,6 +643,35 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
           </div>
         </div>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+
+      {/* Avatar Modal */}
+      {memberData.profile.avatar_url && (
+        <Dialog open={showAvatarModal} onOpenChange={setShowAvatarModal}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-center">
+                {memberData.profile.display_name || `${memberData.profile.first_name} ${memberData.profile.last_name}`}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col items-center space-y-4 p-4">
+              <img 
+                src={memberData.profile.avatar_url} 
+                alt="Profile avatar" 
+                className="w-64 h-64 rounded-full object-cover"
+              />
+              <div className="text-center space-y-2">
+                <p className="font-medium">
+                  {memberData.profile.first_name} {memberData.profile.last_name}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Member since {new Date(memberData.profile.member_since).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 };
