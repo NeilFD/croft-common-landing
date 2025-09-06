@@ -265,9 +265,6 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  {memberData.profile.age && memberData.profile.age > 0 && (
-                    <div className="text-sm">Age: {memberData.profile.age}</div>
-                  )}
                   <div className="text-sm">Member since: {new Date(memberData.profile.member_since).toLocaleDateString()}</div>
                   {memberData.profile.favorite_venue && (
                     <div className="text-sm">Favorite venue: {memberData.profile.favorite_venue}</div>
