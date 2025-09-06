@@ -70,9 +70,25 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get member ID from request
-    const url = new URL(req.url);
-    const memberId = url.searchParams.get('memberId');
+    // Get member ID from request body (POST) or URL parameters (GET)
+    let memberId: string | null = null;
+    
+    if (req.method === 'POST') {
+      try {
+        const body = await req.json();
+        memberId = body.memberId;
+        console.log('👤 Received member ID via POST:', memberId);
+      } catch (e) {
+        console.error('❌ Failed to parse POST body:', e);
+      }
+    }
+    
+    // Fallback to URL parameter if POST body doesn't contain memberId
+    if (!memberId) {
+      const url = new URL(req.url);
+      memberId = url.searchParams.get('memberId');
+      console.log('👤 Received member ID via URL parameter:', memberId);
+    }
     
     if (!memberId) {
       return new Response(
