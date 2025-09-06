@@ -2456,6 +2456,28 @@ export type Database = {
         Args: { month_start: string }
         Returns: string
       }
+      get_member_analytics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_days: number
+          active_months: number
+          avg_transaction: number
+          categories: string[]
+          currency: string
+          current_month_spend: number
+          current_month_transactions: number
+          current_week_spend: number
+          display_name: string
+          first_name: string
+          first_transaction_date: string
+          last_name: string
+          last_transaction_date: string
+          payment_methods: string[]
+          total_spend: number
+          total_transactions: number
+          user_id: string
+        }[]
+      }
       get_or_create_current_release: {
         Args: Record<PropertyKey, never>
         Returns: {

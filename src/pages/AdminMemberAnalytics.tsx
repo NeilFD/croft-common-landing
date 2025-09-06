@@ -51,13 +51,22 @@ const AdminMemberAnalytics: React.FC = () => {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('admin_member_analytics')
-        .select('*');
+      
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        toast.error('Authentication required');
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke('member-analytics', {
+        headers: {
+          Authorization: `Bearer ${session.session.access_token}`
+        }
+      });
 
       if (error) throw error;
       
-      setAnalytics(data || []);
+      setAnalytics(data.analytics || []);
     } catch (error) {
       console.error('Error fetching analytics:', error);
       toast.error('Failed to load member analytics');
