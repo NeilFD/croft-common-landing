@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import CroftLogo from "@/components/CroftLogo";
 import { AuthModal } from "@/components/AuthModal";
-import { Dice4, Dice3 } from "lucide-react";
+import AnimatedDice from "@/components/graphics/AnimatedDice";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
@@ -65,10 +65,18 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
             <div className="flex items-center justify-center py-4 select-none">
               <div className="flex items-center gap-6">
                 <div className="micro-tilt">
-                  <Dice4 className="w-24 h-24 text-foreground" />
+                  <AnimatedDice 
+                    className="text-foreground" 
+                    initialFace={4}
+                    animationDelay={100}
+                  />
                 </div>
                 <div className="micro-tilt-reverse">
-                  <Dice3 className="w-24 h-24 text-foreground" />
+                  <AnimatedDice 
+                    className="text-foreground" 
+                    initialFace={3}
+                    animationDelay={300}
+                  />
                 </div>
               </div>
             </div>
