@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TrendingUp, Users, DollarSign, AlertTriangle, Star, Clock } from 'lucide-react';
+import { TrendingUp, Users, PoundSterling, AlertTriangle, Star, Clock } from 'lucide-react';
 import { EnhancedMemberAnalytics } from './MemberAnalyticsTable';
 
 interface EnhancedAnalyticsStatsProps {
@@ -70,7 +70,7 @@ export const EnhancedAnalyticsStats: React.FC<EnhancedAnalyticsStatsProps> = ({
       <Card className="border-2 border-black">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-green-600" />
+            <PoundSterling className="h-4 w-4 text-green-600" />
             Total Spend
           </CardTitle>
         </CardHeader>
