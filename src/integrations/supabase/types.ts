@@ -2572,6 +2572,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_representative_item_name: {
+        Args: { names: string[] }
+        Returns: string
+      }
       get_subscriber_for_unsubscribe: {
         Args: { token_input: string }
         Returns: {
@@ -2595,6 +2599,26 @@ export type Database = {
         Args: { input_date: string }
         Returns: string
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -2615,9 +2639,25 @@ export type Database = {
         Args: { lat: number; lng: number }
         Returns: boolean
       }
+      normalize_item_name: {
+        Args: { item_name: string }
+        Returns: string
+      }
       set_ledger_password: {
         Args: { password_input: string; user_id_input: string }
         Returns: boolean
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
       update_meeting_status: {
         Args: {
