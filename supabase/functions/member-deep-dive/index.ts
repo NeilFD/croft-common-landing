@@ -117,6 +117,7 @@ Deno.serve(async (req) => {
     }
 
     console.log('✅ Deep-dive data retrieved for member:', memberId);
+    console.log('📊 Member data structure:', JSON.stringify(deepDiveData[0], null, 2));
 
     const memberData = deepDiveData[0];
 
