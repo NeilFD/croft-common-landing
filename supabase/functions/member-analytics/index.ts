@@ -86,10 +86,9 @@ Deno.serve(async (req) => {
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    console.log('✅ Domain allowed:', userDomain);
 
-    console.log('✅ Admin access confirmed');
-
-    // Query member analytics data
+    // Query member analytics data using service role to bypass RLS
     console.log('📊 Fetching member analytics data...');
     const { data: analytics, error } = await supabase.rpc('get_member_analytics');
 

@@ -69,10 +69,18 @@ const AdminMemberAnalytics: React.FC = () => {
 
       console.log('Function response:', { data, error });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Function error details:', error);
+        // Try the test function to check if edge functions are working
+        console.log('Testing edge function connectivity...');
+        const { data: testData, error: testError } = await supabase.functions.invoke('test-function');
+        console.log('Test function response:', { testData, testError });
+        
+        throw new Error(`Function error: ${error.message || JSON.stringify(error)}`);
+      }
       
-      console.log('Analytics data received:', data.analytics?.length || 0, 'members');
-      setAnalytics(data.analytics || []);
+      console.log('Analytics data received:', data?.analytics?.length || 0, 'members');
+      setAnalytics(data?.analytics || []);
     } catch (error) {
       console.error('Error fetching analytics:', error);
       toast.error('Failed to load member analytics');
