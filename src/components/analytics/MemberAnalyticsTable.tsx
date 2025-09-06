@@ -111,8 +111,6 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
                         {member.display_name || `${member.first_name} ${member.last_name}`}
                       </div>
                       <div className="text-xs text-muted-foreground flex items-center gap-2">
-                        {member.age && <span>Age: {member.age}</span>}
-                        <span>•</span>
                         <span>{member.active_months} months active</span>
                         <span>•</span>
                         <span>{member.total_transactions} transactions</span>
