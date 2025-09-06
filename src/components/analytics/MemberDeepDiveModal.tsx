@@ -169,9 +169,6 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
             <DialogTitle className="flex items-center gap-3">
               <User className="h-6 w-6" />
               {memberData.profile.display_name || `${memberData.profile.first_name} ${memberData.profile.last_name}`}
-              <Badge className={`${getTierBadgeColor(memberData.profile.tier_badge)} capitalize`}>
-                {memberData.profile.tier_badge}
-              </Badge>
             </DialogTitle>
             <div className="flex items-center gap-2">
               {onSendNotification && (
@@ -281,6 +278,55 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                     <div className="text-2xl font-bold">{memberData.visit_patterns.longest_streak}</div>
                     <div className="text-sm text-muted-foreground">Longest Streak</div>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Top Purchased Items - Table of Danger */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
+                  Table of Danger - Top Purchased Items
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 font-medium">Category</th>
+                        <th className="text-right py-2 font-medium">No. Purchases</th>
+                        <th className="text-right py-2 font-medium">Total Spent</th>
+                        <th className="text-right py-2 font-medium">Avg per Item</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {categoryData
+                        .sort((a, b) => b.value - a.value)
+                        .slice(0, 10)
+                        .map((item, index) => (
+                          <tr key={item.name} className="border-b hover:bg-muted/50">
+                            <td className="py-3">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-destructive">#{index + 1}</span>
+                                <span className="text-sm">{item.name}</span>
+                              </div>
+                            </td>
+                            <td className="text-right py-3 font-medium">{item.count}</td>
+                            <td className="text-right py-3 font-bold text-destructive">£{item.value.toFixed(2)}</td>
+                            <td className="text-right py-3 text-sm text-muted-foreground">
+                              £{(item.value / item.count).toFixed(2)}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                  {categoryData.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No purchase data available
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
