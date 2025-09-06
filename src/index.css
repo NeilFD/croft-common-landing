@@ -512,7 +512,7 @@
 }
 
 /* Create a transparent overlay to block carousel interaction when modal is open */
-body:has(.gesture-container)::before {
+body:has([data-radix-dialog-overlay])::before {
   content: '';
   position: fixed;
   top: 0;
@@ -525,7 +525,7 @@ body:has(.gesture-container)::before {
 }
 
 /* Hide the overlay behind the modal */
-body:has(.gesture-container) .gesture-container {
+body:has([data-radix-dialog-overlay]) .gesture-container {
   z-index: 50;
 }
 
