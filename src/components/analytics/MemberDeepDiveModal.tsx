@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   User, TrendingUp, Clock, MapPin, Heart, ShoppingBag, 
-  AlertTriangle, Star, Calendar, Activity, X 
+  AlertTriangle, Star, Calendar, Activity, X, ArrowUpDown 
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 // import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
@@ -97,7 +97,13 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
   isLoading = false,
   onSendNotification
 }) => {
+  const [sortBy, setSortBy] = useState<'spend' | 'count'>('spend');
+  
   if (!isOpen || !memberId) return null;
+
+  // Debug logging to see what's in individual_items
+  console.log('MemberDeepDiveModal memberData:', memberData);
+  console.log('Individual items:', memberData?.individual_items);
 
   const getRiskColor = (risk: string) => {
     switch (risk) {
@@ -167,6 +173,20 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
     hour: time.hour,
     visits: time.count
   })) || [];
+
+  // Sort individual items based on current sort preference
+  const sortedIndividualItems = React.useMemo(() => {
+    if (!memberData?.individual_items) return [];
+    
+    const items = [...memberData.individual_items];
+    return items.sort((a, b) => {
+      if (sortBy === 'spend') {
+        return Number(b.total_spent) - Number(a.total_spent);
+      } else {
+        return Number(b.times_ordered) - Number(a.times_ordered);
+      }
+    }).slice(0, 10);
+  }, [memberData?.individual_items, sortBy]);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -292,10 +312,32 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
             {/* Top Purchased Items */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  Top puRCHASED ITEMS
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <ShoppingBag className="h-5 w-5" />
+                    Top Purchased Items
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant={sortBy === 'spend' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSortBy('spend')}
+                      className="text-xs"
+                    >
+                      <ArrowUpDown className="h-3 w-3 mr-1" />
+                      By Spend
+                    </Button>
+                    <Button
+                      variant={sortBy === 'count' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setSortBy('count')}
+                      className="text-xs"
+                    >
+                      <ArrowUpDown className="h-3 w-3 mr-1" />
+                      By Count
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -309,9 +351,7 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                       </tr>
                     </thead>
                     <tbody>
-                      {(memberData.individual_items || [])
-                        .slice(0, 10)
-                        .map((item: any, index: number) => (
+                      {sortedIndividualItems.map((item: any, index: number) => (
                           <tr key={item.item_name} className="border-b hover:bg-muted/50">
                             <td className="py-3">
                               <div className="flex items-center gap-2">
@@ -328,9 +368,14 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                         ))}
                     </tbody>
                   </table>
-                  {(!memberData.individual_items || memberData.individual_items.length === 0) && (
+                  {sortedIndividualItems.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
                       No individual item data available
+                      {memberData?.individual_items && (
+                        <div className="text-xs mt-2">
+                          Raw data length: {memberData.individual_items.length}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
