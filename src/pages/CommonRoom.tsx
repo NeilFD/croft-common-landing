@@ -11,6 +11,7 @@ import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { BRAND_LOGO } from '@/data/brand';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+
 const CommonRoom = () => {
   const navigate = useNavigate();
   const containerRef = useRef<HTMLElement>(null);
