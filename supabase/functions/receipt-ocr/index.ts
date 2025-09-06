@@ -170,6 +170,48 @@ Be precise with numbers. Use GBP as default currency unless clearly stated other
         )
       }
 
+      // Check for duplicate receipts BEFORE saving
+      if (receipt_data.receipt_number && receipt_data.date) {
+        console.log('🔍 Checking for duplicate receipt:', { 
+          receipt_number: receipt_data.receipt_number, 
+          date: receipt_data.date, 
+          time: receipt_data.receipt_time 
+        });
+        
+        let duplicateQuery = supabase
+          .from('member_receipts')
+          .select('id, user_id, receipt_date, receipt_number, receipt_time')
+          .eq('receipt_number', receipt_data.receipt_number)
+          .eq('receipt_date', receipt_data.date);
+
+        // Add time condition if receipt_time is available
+        if (receipt_data.receipt_time) {
+          duplicateQuery = duplicateQuery.eq('receipt_time', receipt_data.receipt_time);
+        }
+
+        const { data: duplicateReceipts, error: duplicateError } = await duplicateQuery;
+        
+        if (duplicateError) {
+          console.error('❌ Error checking for duplicates:', duplicateError);
+        }
+
+        if (duplicateReceipts && duplicateReceipts.length > 0) {
+          console.log('🚫 Duplicate receipt found:', duplicateReceipts[0]);
+          return new Response(JSON.stringify({
+            error: 'duplicate_receipt',
+            message: `This receipt (${receipt_data.receipt_number}) from ${receipt_data.date} has already been uploaded by a member. Each receipt can only be used once to maintain fair spend tracking.`,
+            details: {
+              receipt_number: receipt_data.receipt_number,
+              receipt_date: receipt_data.date,
+              receipt_time: receipt_data.receipt_time
+            }
+          }), {
+            status: 409,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+      }
+
       // Save receipt to database (triggers will handle ledger entry)
       const { data: newReceipt, error: receiptError } = await supabase
         .from('member_receipts')

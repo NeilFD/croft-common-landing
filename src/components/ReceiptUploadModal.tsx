@@ -159,6 +159,16 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
 
       if (error) throw error;
 
+      // Check if the response indicates a duplicate receipt
+      if (data && data.error === 'duplicate_receipt') {
+        toast({
+          title: "Duplicate Receipt Detected",
+          description: data.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Process for streak system if receipt was saved successfully
       console.log('Receipt save response:', data);
       if (data?.receipt?.id) {
