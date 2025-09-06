@@ -27,6 +27,26 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const [showMembership, setShowMembership] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Enhanced onClose handler to reset carousel drag states
+  const handleClose = useCallback(() => {
+    // Reset any stuck carousel drag states after modal closes
+    setTimeout(() => {
+      // Find all embla instances and reset their drag state
+      const emblaElements = document.querySelectorAll('.embla');
+      emblaElements.forEach(element => {
+        // Force a pointer-up event to release any stuck drag state
+        const pointerUpEvent = new PointerEvent('pointerup', { bubbles: true, cancelable: true });
+        element.dispatchEvent(pointerUpEvent);
+        
+        // Also dispatch mouse up as fallback
+        const mouseUpEvent = new MouseEvent('mouseup', { bubbles: true, cancelable: true });
+        element.dispatchEvent(mouseUpEvent);
+      });
+    }, 50);
+    
+    onClose();
+  }, [onClose]);
   const secretWord = useSecretWordOfTheDay();
 
   useEffect(() => {
@@ -46,13 +66,13 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const handleSecretSuccess = useCallback(() => {
     try { window.getSelection()?.removeAllRanges(); } catch {}
     if (pageType === 'community') {
-      onClose();
+      handleClose();
       toast({ title: 'Access granted', description: 'Common Good Fund unlocked', duration: 1800 });
       navigate('/common-good');
     } else {
       setShowSecret(true);
     }
-  }, [navigate, onClose, pageType]);
+  }, [navigate, handleClose, pageType]);
 
   const {
     isDrawing,
@@ -231,7 +251,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   return (
     <div 
       className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4"
-      onClick={(e) => { if (showSecret) { e.stopPropagation(); return; } onClose(); }}
+      onClick={(e) => { if (showSecret) { e.stopPropagation(); return; } handleClose(); }}
       onTouchStart={(e) => {
         // Prevent touch events from reaching background elements
         e.stopPropagation();
@@ -285,7 +305,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           <div className="flex items-center gap-1">
             <GuideArrows contrast="neutral" className="hidden md:flex mr-3" />
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className={`w-10 h-10 rounded-full border border-background/30 interactive-element
                 ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
                 transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
@@ -343,7 +363,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                                 className={`font-industrial text-lg ${isNeutral ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} hover:underline transition-all duration-300 cursor-pointer text-left`}
                                 onClick={() => {
                                   if (item.name.includes('Take a look')) {
-                                    onClose();
+                                    handleClose();
                                     navigate('/calendar');
                                   } else if (item.name.toLowerCase().includes('common membership')) {
                                     setShowMembership(true);

@@ -511,9 +511,9 @@
   touch-action: pan-x pan-y !important;
 }
 
-/* When modal is open, disable background carousel interaction */
-body:has(.gesture-container) .embla,
-body:has(.gesture-container) .carousel-container {
+/* Only disable carousel interaction during active gesture drawing */
+body:has(.gesture-drawing) .embla,
+body:has(.gesture-drawing) .carousel-container {
   pointer-events: none !important;
   touch-action: none !important;
 }
