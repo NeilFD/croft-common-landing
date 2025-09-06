@@ -88,11 +88,11 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <AlertTriangle className="h-4 w-4 text-red-500" />
-              High Risk: {members.filter(m => m.retention_risk_score >= 70).length}
+              High Risk: {members.filter(m => (m.retention_risk_score || 0) >= 70).length}
             </div>
             <div className="flex items-center gap-1">
               <TrendingUp className="h-4 w-4 text-green-500" />
-              High Value: {members.filter(m => m.lifetime_value > 500).length}
+              High Value: {members.filter(m => (m.lifetime_value || 0) > 500).length}
             </div>
           </div>
         </CardTitle>
@@ -142,31 +142,31 @@ export const MemberAnalyticsTable: React.FC<MemberAnalyticsTableProps> = ({
                   </td>
                   <td className="text-right p-3">
                     <div className="space-y-1">
-                      <div className="font-medium">£{member.total_spend.toFixed(2)}</div>
+                      <div className="font-medium">£{(member.total_spend || 0).toFixed(2)}</div>
                       <div className="text-xs text-muted-foreground">
-                        Avg: £{member.avg_transaction?.toFixed(2) || '0.00'}
+                        Avg: £{(member.avg_transaction || 0).toFixed(2)}
                       </div>
                       <div className="text-xs text-green-600">
-                        This month: £{member.current_month_spend.toFixed(2)}
+                        This month: £{(member.current_month_spend || 0).toFixed(2)}
                       </div>
                     </div>
                   </td>
                   <td className="text-right p-3">
-                    <div className="font-medium">£{member.lifetime_value.toFixed(0)}</div>
+                    <div className="font-medium">£{(member.lifetime_value || 0).toFixed(0)}</div>
                     <div className="text-xs text-muted-foreground">Projected</div>
                   </td>
                   <td className="text-center p-3">
-                    <Badge variant={getRiskBadgeColor(member.retention_risk_score)}>
-                      {getRiskLabel(member.retention_risk_score)}
+                    <Badge variant={getRiskBadgeColor(member.retention_risk_score || 0)}>
+                      {getRiskLabel(member.retention_risk_score || 0)}
                     </Badge>
                     <div className="text-xs text-muted-foreground mt-1">
-                      Score: {member.retention_risk_score}
+                      Score: {member.retention_risk_score || 0}
                     </div>
                   </td>
                   <td className="text-center p-3">
-                    <div className="font-medium">{member.visit_frequency.toFixed(1)}/week</div>
+                    <div className="font-medium">{(member.visit_frequency || 0).toFixed(1)}/week</div>
                     <div className="text-xs text-muted-foreground">
-                      {member.active_days} days active
+                      {member.active_days || 0} days active
                     </div>
                   </td>
                   <td className="p-3">

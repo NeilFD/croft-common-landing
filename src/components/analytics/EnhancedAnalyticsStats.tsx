@@ -26,13 +26,13 @@ export const EnhancedAnalyticsStats: React.FC<EnhancedAnalyticsStatsProps> = ({
       };
     }
 
-    const totalSpend = members.reduce((sum, member) => sum + member.total_spend, 0);
-    const totalTransactions = members.reduce((sum, member) => sum + member.total_transactions, 0);
-    const totalLTV = members.reduce((sum, member) => sum + member.lifetime_value, 0);
-    const highRiskMembers = members.filter(m => m.retention_risk_score >= 70).length;
-    const highValueMembers = members.filter(m => m.lifetime_value > 500).length;
-    const activeThisMonth = members.filter(m => m.current_month_spend > 0).length;
-    const totalVisitFrequency = members.reduce((sum, member) => sum + member.visit_frequency, 0);
+    const totalSpend = members.reduce((sum, member) => sum + (member.total_spend || 0), 0);
+    const totalTransactions = members.reduce((sum, member) => sum + (member.total_transactions || 0), 0);
+    const totalLTV = members.reduce((sum, member) => sum + (member.lifetime_value || 0), 0);
+    const highRiskMembers = members.filter(m => (m.retention_risk_score || 0) >= 70).length;
+    const highValueMembers = members.filter(m => (m.lifetime_value || 0) > 500).length;
+    const activeThisMonth = members.filter(m => (m.current_month_spend || 0) > 0).length;
+    const totalVisitFrequency = members.reduce((sum, member) => sum + (member.visit_frequency || 0), 0);
 
     return {
       totalSpend,
