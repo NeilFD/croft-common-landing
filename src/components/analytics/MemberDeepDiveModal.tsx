@@ -354,15 +354,15 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                 {memberData.visit_patterns.time_period_breakdown && memberData.visit_patterns.time_period_breakdown.length > 0 && (
                   <div>
                     <h4 className="font-medium mb-3 flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
+                      <Clock className="h-4 w-4 text-blue-600" />
                       Time of Day Preferences
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
                       {memberData.visit_patterns.time_period_breakdown.map((period: any) => (
-                        <div key={period.time_period} className="text-center p-3 bg-secondary/50 rounded-lg">
-                          <div className="font-semibold capitalize">{period.time_period}</div>
-                          <div className="text-sm text-muted-foreground">{period.visit_count} visits</div>
-                          <div className="text-xs text-primary">{period.percentage}%</div>
+                        <div key={period.time_period} className="text-center p-4 bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-200 rounded-lg shadow-sm">
+                          <div className="font-semibold capitalize text-slate-800">{period.time_period}</div>
+                          <div className="text-sm text-slate-600 mt-1">{period.visit_count} visits</div>
+                          <div className="text-xs text-blue-600 font-medium mt-1">{period.percentage}%</div>
                         </div>
                       ))}
                     </div>
@@ -373,15 +373,15 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                 {memberData.visit_patterns.month_period_breakdown && memberData.visit_patterns.month_period_breakdown.length > 0 && (
                   <div>
                     <h4 className="font-medium mb-3 flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                      <Calendar className="h-4 w-4 text-green-600" />
                       Month Period Preferences
                     </h4>
                     <div className="grid grid-cols-3 gap-3">
                       {memberData.visit_patterns.month_period_breakdown.map((period: any) => (
-                        <div key={period.period} className="text-center p-3 bg-secondary/50 rounded-lg">
-                          <div className="font-semibold capitalize">{period.period} of Month</div>
-                          <div className="text-sm text-muted-foreground">{period.visit_count} visits</div>
-                          <div className="text-xs text-primary">{period.percentage}%</div>
+                        <div key={period.period} className="text-center p-4 bg-gradient-to-br from-green-50 to-slate-50 border border-green-200 rounded-lg shadow-sm">
+                          <div className="font-semibold capitalize text-slate-800">{period.period} of Month</div>
+                          <div className="text-sm text-slate-600 mt-1">{period.visit_count} visits</div>
+                          <div className="text-xs text-green-600 font-medium mt-1">{period.percentage}%</div>
                         </div>
                       ))}
                     </div>
@@ -390,35 +390,35 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
 
                 {/* Visit Consistency Insights */}
                 {memberData.visit_patterns.visit_consistency && (
-                  <div className="bg-muted/30 rounded-lg p-4">
+                  <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-lg p-4 shadow-sm">
                     <h4 className="font-medium mb-3 flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4" />
+                      <TrendingUp className="h-4 w-4 text-amber-600" />
                       Visit Consistency Analysis
                     </h4>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Average gap:</span>
-                        <span className="ml-1 font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-600">Average gap:</span>
+                        <span className="font-medium text-slate-800 bg-white px-2 py-1 rounded border">
                           {memberData.visit_patterns.visit_consistency.avg_gap_days} days
                         </span>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground">Consistency score:</span>
-                        <span className="ml-1 font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="text-slate-600">Consistency score:</span>
+                        <span className="font-medium text-slate-800 bg-white px-2 py-1 rounded border">
                           {memberData.visit_patterns.visit_consistency.consistency_score}%
                         </span>
                       </div>
                       {memberData.visit_patterns.visit_consistency.last_gap_days && (
-                        <div>
-                          <span className="text-muted-foreground">Days since last visit:</span>
-                          <span className="ml-1 font-medium">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-600">Days since last visit:</span>
+                          <span className="font-medium text-slate-800 bg-white px-2 py-1 rounded border">
                             {memberData.visit_patterns.visit_consistency.last_gap_days}
                           </span>
                         </div>
                       )}
                       {memberData.visit_patterns.visit_consistency.is_overdue && (
                         <div className="col-span-2">
-                          <span className="text-destructive font-medium">⚠️ Overdue for next visit</span>
+                          <span className="text-red-600 font-medium bg-red-50 px-3 py-2 rounded border border-red-200">⚠️ Overdue for next visit</span>
                         </div>
                       )}
                     </div>
@@ -428,28 +428,29 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                 {/* Weekly Pattern */}
                 {memberData.visit_patterns.weekly_pattern && memberData.visit_patterns.weekly_pattern.length > 0 && (
                   <div>
-                    <h4 className="font-medium mb-3">Weekly Pattern</h4>
-                    <div className="flex gap-2 overflow-x-auto">
+                    <h4 className="font-medium mb-3 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-purple-600" />
+                      Weekly Pattern
+                    </h4>
+                    <div className="flex gap-3 overflow-x-auto p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200">
                       {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => {
                         const dayData = memberData.visit_patterns.weekly_pattern.find((d: any) => d.day_of_week === index);
                         const count = dayData?.count || 0;
                         const maxCount = Math.max(...memberData.visit_patterns.weekly_pattern.map((d: any) => d.count));
-                        const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                        const height = maxCount > 0 ? Math.max(20, (count / maxCount) * 60) : 20;
+                        const intensity = maxCount > 0 ? count / maxCount : 0;
                         
                         return (
-                          <div key={day} className="flex flex-col items-center flex-1 min-w-[60px]">
-                            <div className="h-20 w-full bg-secondary/30 rounded-t relative flex items-end justify-center">
-                              {height > 0 && (
-                                <div 
-                                  className="bg-primary w-full rounded-t transition-all duration-300"
-                                  style={{ height: `${height}%` }}
-                                />
-                              )}
-                              <span className="absolute top-1 text-xs text-muted-foreground">
-                                {count}
-                              </span>
-                            </div>
-                            <div className="text-xs mt-1 font-medium">{day}</div>
+                          <div key={day} className="flex flex-col items-center min-w-16">
+                            <div 
+                              className="w-12 rounded-t shadow-sm border-b-2 border-purple-300"
+                              style={{ 
+                                height: `${height}px`,
+                                background: `linear-gradient(to top, hsl(262, ${60 + intensity * 40}%, ${85 - intensity * 20}%), hsl(262, ${40 + intensity * 30}%, ${90 - intensity * 15}%))`
+                              }}
+                            />
+                            <div className="text-xs mt-2 font-medium text-slate-700">{day}</div>
+                            <div className="text-xs text-purple-600 font-medium bg-white px-1 rounded border">{count}</div>
                           </div>
                         );
                       })}
@@ -460,11 +461,11 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
             </Card>
 
             {/* Top Purchased Items */}
-            <Card>
-              <CardHeader>
+            <Card className="border-slate-200 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingBag className="h-5 w-5" />
+                  <CardTitle className="flex items-center gap-2 text-slate-800">
+                    <ShoppingBag className="h-5 w-5 text-emerald-600" />
                     Top Purchased Items
                   </CardTitle>
                   <div className="flex items-center gap-2">
@@ -472,7 +473,7 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                       variant={sortBy === 'spend' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setSortBy('spend')}
-                      className="text-xs"
+                      className={`text-xs ${sortBy === 'spend' ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}`}
                     >
                       <ArrowUpDown className="h-3 w-3 mr-1" />
                       By Spend
@@ -481,7 +482,7 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                       variant={sortBy === 'count' ? 'default' : 'outline'}
                       size="sm"
                       onClick={() => setSortBy('count')}
-                      className="text-xs"
+                      className={`text-xs ${sortBy === 'count' ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-300 text-emerald-700 hover:bg-emerald-50'}`}
                     >
                       <ArrowUpDown className="h-3 w-3 mr-1" />
                       By Count
@@ -489,37 +490,29 @@ export const MemberDeepDiveModal: React.FC<MemberDeepDiveModalProps> = ({
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2 font-medium">Item Name</th>
-                        <th className="text-right py-2 font-medium">Times Ordered</th>
-                        <th className="text-right py-2 font-medium">Total Spent</th>
-                        <th className="text-right py-2 font-medium">Avg Price</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedIndividualItems.map((item: any, index: number) => (
-                          <tr key={item.item_name} className="border-b hover:bg-muted/50">
-                            <td className="py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm font-medium text-destructive">#{index + 1}</span>
-                                <span className="text-sm font-medium">{item.item_name}</span>
-                              </div>
-                            </td>
-                            <td className="text-right py-3 font-medium">{item.times_ordered}</td>
-                            <td className="text-right py-3 font-bold text-destructive">£{Number(item.total_spent).toFixed(2)}</td>
-                            <td className="text-right py-3 text-sm text-muted-foreground">
-                              £{Number(item.avg_price).toFixed(2)}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
+              <CardContent className="p-4">
+                <div className="space-y-3">
+                  {sortedIndividualItems.map((item: any, index: number) => (
+                    <div key={item.item_name} className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-200 rounded-lg shadow-sm hover:shadow-md transition-all duration-200">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">#{index + 1}</span>
+                          <span className="font-medium text-slate-800">{item.item_name}</span>
+                        </div>
+                        <div className="text-sm text-slate-600 mt-2 flex gap-2">
+                          <span className="bg-white px-2 py-1 rounded border text-xs">{item.times_ordered} orders</span>
+                          <span className="bg-white px-2 py-1 rounded border text-xs">£{Number(item.avg_price).toFixed(2)} avg</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-bold text-lg text-emerald-700 bg-emerald-50 px-3 py-2 rounded border border-emerald-200">
+                          £{Number(item.total_spent).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                   {sortedIndividualItems.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
+                    <div className="text-center py-8 text-slate-500 bg-slate-50 rounded-lg border border-slate-200">
                       No individual item data available
                       {memberData?.individual_items && (
                         <div className="text-xs mt-2">
