@@ -79,7 +79,12 @@ const MenuButton = ({ pageType, menuData, forceCafeAccent }: MenuButtonProps) =>
           section="buttons"
           contentKey="open"
           fallback="OPEN"
-          className="relative z-10 font-brutalist tracking-wider text-xs text-background select-none"
+          className={cn(
+            "relative z-10 font-brutalist tracking-wider text-xs select-none",
+            (pageType === 'community' || pageType === 'common-room')
+              ? 'text-background'
+              : 'text-foreground'
+          )}
         />
       </button>
 

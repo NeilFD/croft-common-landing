@@ -408,6 +408,15 @@
   opacity: 0.8;
 }
 
+/* BUTTON BREATHING ANIMATION */
+.button-breathing {
+  position: relative;
+}
+
+.button-breathing::before {
+  background-color: var(--breathing-color, hsl(var(--accent-pink)));
+}
+
 /* HIGH CONTRAST MODE SUPPORT */
 @media (prefers-contrast: high) {
   :root {
