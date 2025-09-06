@@ -37,6 +37,7 @@ const CommonGoodMessage = lazy(() => import("./pages/CommonGoodMessage"));
 const CroftCommonDateTime = lazy(() => import("./pages/CroftCommonDateTime"));
 const Book = lazy(() => import("./pages/Book"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminMemberAnalytics = lazy(() => import("./pages/AdminMemberAnalytics"));
 const CMSFAQPage = lazy(() => import("./pages/CMSFAQPage"));
 const CMS = lazy(() => import("./pages/CMS"));
 const CMSLogin = lazy(() => import("./pages/CMSLogin"));
@@ -170,6 +171,8 @@ const App = () => (
                     <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
                     <Route path="/book" element={<Book />} />
                     <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin/member-analytics" element={<AdminMemberAnalytics />} />
+                    <Route path="/profile" element={<MemberProfile />} />
                     <Route path="/cms/login" element={<CMSLogin />} />
                     <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
                     <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
