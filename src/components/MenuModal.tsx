@@ -142,8 +142,38 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   // Enable secret gesture for specific pages only (NEVER for the standalone home menu)
   const isSecretEnabled = !isHomeMenu && (pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails');
   const showGestureIndicator = isSecretEnabled;
+  const isInteractiveElement = useCallback((target: EventTarget | null): boolean => {
+    if (!target || !(target instanceof Element)) return false;
+    
+    // Check if the target is an interactive element or its child
+    const interactiveSelectors = [
+      'button',
+      'a',
+      'input',
+      'select',
+      'textarea',
+      '[role="button"]',
+      '.interactive-element',
+      '.close-button'
+    ];
+    
+    for (const selector of interactiveSelectors) {
+      if (target.matches(selector) || target.closest(selector)) {
+        return true;
+      }
+    }
+    
+    return false;
+  }, []);
+
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
+    
+    // Don't interfere with interactive elements
+    if (isInteractiveElement(event.target)) {
+      console.log('Touch blocked: Interactive element detected');
+      return;
+    }
     
     // Prevent text selection during gesture
     event.preventDefault();
@@ -159,7 +189,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
-  }, [getEventPosition, startGesture, isSecretEnabled]);
+  }, [getEventPosition, startGesture, isSecretEnabled, isInteractiveElement]);
 
   const handleTouchMove = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled || !isDrawing) return;
@@ -188,6 +218,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
     if (!isSecretEnabled) return;
     
+    // Don't interfere with interactive elements
+    if (isInteractiveElement(event.target)) {
+      console.log('Mouse down blocked: Interactive element detected');
+      return;
+    }
+    
     // Prevent text selection during gesture
     event.preventDefault();
     
@@ -202,7 +238,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
-  }, [getEventPosition, startGesture, isSecretEnabled]);
+  }, [getEventPosition, startGesture, isSecretEnabled, isInteractiveElement]);
 
   const handleMouseMove = useCallback((event: React.MouseEvent) => {
     if (!isSecretEnabled || !isDrawing) return;
@@ -343,13 +379,24 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
             <GuideArrows contrast="neutral" className="hidden md:flex mr-3" />
             <button
               onClick={(e) => {
+                console.log('Close button clicked in production');
                 e.preventDefault();
                 e.stopPropagation();
                 handleClose();
               }}
-              className={`w-10 h-10 rounded-full border border-background/30 interactive-element
+              onMouseDown={(e) => {
+                console.log('Close button mouse down');
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onTouchStart={(e) => {
+                console.log('Close button touch start');
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className={`w-10 h-10 rounded-full border border-background/30 interactive-element close-button
                 ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
-                transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
+                transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2 z-50 relative`}
             >
               <X className="w-5 h-5 text-foreground" />
             </button>
