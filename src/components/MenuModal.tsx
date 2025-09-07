@@ -142,6 +142,10 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   // Enable secret gesture for specific pages only (NEVER for the standalone home menu)
   const isSecretEnabled = !isHomeMenu && (pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'community' || pageType === 'hall' || pageType === 'cocktails');
   const showGestureIndicator = isSecretEnabled;
+
+  // Safari detection
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
   const isInteractiveElement = useCallback((target: EventTarget | null): boolean => {
     if (!target || !(target instanceof Element)) return false;
     
@@ -154,7 +158,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       'textarea',
       '[role="button"]',
       '.interactive-element',
-      '.close-button'
+      '.close-button',
+      '[data-interactive]'
     ];
     
     for (const selector of interactiveSelectors) {
@@ -163,8 +168,66 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       }
     }
     
+    // Create exclusion zone around close button (Safari specific)
+    if (isSafari && target instanceof Element) {
+      const closeButton = target.closest('.modal-header')?.querySelector('.close-button');
+      if (closeButton) {
+        const rect = closeButton.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const buffer = 20; // 20px buffer zone
+        
+        if (
+          targetRect.left >= rect.left - buffer &&
+          targetRect.right <= rect.right + buffer &&
+          targetRect.top >= rect.top - buffer &&
+          targetRect.bottom <= rect.bottom + buffer
+        ) {
+          return true;
+        }
+      }
+    }
+    
     return false;
-  }, []);
+  }, [isSafari]);
+
+  // Escape key handler
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        console.log('Escape key pressed - closing modal');
+        handleClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [isOpen, handleClose]);
+
+  // Safari-specific event capture handler
+  useEffect(() => {
+    if (!isSafari || !isOpen || !isSecretEnabled) return;
+
+    const handleCaptureEvent = (event: Event) => {
+      if (isInteractiveElement(event.target)) {
+        // Stop gesture detection from interfering with interactive elements
+        event.stopImmediatePropagation();
+        console.log('Safari: Blocked gesture event on interactive element');
+      }
+    };
+
+    const modalElement = document.querySelector('[data-modal="menu-modal"]');
+    if (modalElement) {
+      modalElement.addEventListener('touchstart', handleCaptureEvent, { capture: true });
+      modalElement.addEventListener('mousedown', handleCaptureEvent, { capture: true });
+      
+      return () => {
+        modalElement.removeEventListener('touchstart', handleCaptureEvent, { capture: true });
+        modalElement.removeEventListener('mousedown', handleCaptureEvent, { capture: true });
+      };
+    }
+  }, [isSafari, isOpen, isSecretEnabled, isInteractiveElement]);
 
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
@@ -352,6 +415,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     >
       <div 
         ref={containerRef}
+        data-modal="menu-modal"
         className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
           pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
         }${isSecretEnabled ? ' gesture-container' : ''}`}
@@ -366,7 +430,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         onMouseUp={handleMouseUp}
       >
         {/* Header */}
-        <div className="bg-background border-b border-steel/20 p-4 md:p-6 flex items-center justify-between">
+        <div className="bg-background border-b border-steel/20 p-4 md:p-6 flex items-center justify-between modal-header">
           <div className="flex items-center space-x-2 md:space-x-4 flex-1 min-w-0">
             <div className="text-foreground flex-shrink-0">
               <CroftLogo size="lg" />
@@ -378,25 +442,55 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           <div className="flex items-center gap-1">
             <GuideArrows contrast="neutral" className="hidden md:flex mr-3" />
             <button
+              data-interactive="true"
               onClick={(e) => {
-                console.log('Close button clicked in production');
+                console.log('Safari close button clicked:', { isSafari, userAgent: navigator.userAgent });
                 e.preventDefault();
                 e.stopPropagation();
+                const nativeEvent = e.nativeEvent;
+                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
+                  nativeEvent.stopImmediatePropagation();
+                }
                 handleClose();
               }}
               onMouseDown={(e) => {
-                console.log('Close button mouse down');
+                console.log('Safari close button mouse down');
                 e.preventDefault();
                 e.stopPropagation();
+                const nativeEvent = e.nativeEvent;
+                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
+                  nativeEvent.stopImmediatePropagation();
+                }
               }}
               onTouchStart={(e) => {
-                console.log('Close button touch start');
+                console.log('Safari close button touch start');
                 e.preventDefault();
                 e.stopPropagation();
+                const nativeEvent = e.nativeEvent;
+                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
+                  nativeEvent.stopImmediatePropagation();
+                }
+              }}
+              onPointerDown={(e) => {
+                console.log('Safari close button pointer down');
+                e.preventDefault();
+                e.stopPropagation();
+                const nativeEvent = e.nativeEvent;
+                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
+                  nativeEvent.stopImmediatePropagation();
+                }
+              }}
+              style={{
+                WebkitTouchCallout: 'none',
+                WebkitUserSelect: 'none',
+                userSelect: 'none',
+                pointerEvents: 'auto',
+                zIndex: 9999,
+                position: 'relative'
               }}
               className={`w-10 h-10 rounded-full border border-background/30 interactive-element close-button
                 ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
-                transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2 z-50 relative`}
+                transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
             >
               <X className="w-5 h-5 text-foreground" />
             </button>
