@@ -33,7 +33,7 @@ const CommonRoom = () => {
     <div className="min-h-screen bg-white">
       {!isCMSMode && <Navigation />}
       {/* Hero area with watermark */}
-      <main ref={containerRef} className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-40 md:pt-32 px-4">
+      <main ref={containerRef} className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-40 md:pt-32 px-4 overflow-y-auto">
         {/* Page Title - responsive positioning */}
         <div className="absolute top-40 left-1/2 transform -translate-x-1/2 md:top-24 md:left-[106px] md:transform-none z-20">
           <CMSText
@@ -66,7 +66,13 @@ const CommonRoom = () => {
         </div>
       </main>
       {!isCMSMode && <Footer />}
-      <GestureOverlay onGestureComplete={handleGestureComplete} containerRef={containerRef} />
+      {/* Only apply gesture overlay when not in CMS mode and only for gesture detection, not scrolling prevention */}
+      {!isCMSMode && (
+        <GestureOverlay 
+          onGestureComplete={handleGestureComplete} 
+          containerRef={containerRef} 
+        />
+      )}
       <BiometricUnlockModal
         isOpen={bioOpen}
         onClose={() => { reset(); }}
