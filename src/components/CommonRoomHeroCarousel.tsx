@@ -33,7 +33,7 @@ const CommonRoomHeroCarousel = () => {
   const gestureState = useGestureDetection(handleGestureComplete);
   
   return (
-    <div ref={containerRef} className="relative h-screen">
+    <div ref={containerRef} className="relative min-h-screen">
       {/* Single Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"

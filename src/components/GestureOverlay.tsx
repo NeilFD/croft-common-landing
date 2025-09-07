@@ -203,14 +203,14 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     };
     
     const tm = (e: TouchEvent) => {
-      // Allow scrolling if not drawing a gesture
+      // Allow scrolling if not drawing a gesture  
       if (!isDrawing) return;
       
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Only prevent default during active gesture drawing
-      e.preventDefault();
+      // Don't prevent default to allow scrolling even during gesture
+      // This means gestures and scrolling can happen simultaneously
       
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
@@ -220,10 +220,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Only prevent default if we were actively drawing
-      if (isDrawing) {
-        e.preventDefault();
-      }
+      // Don't prevent default to allow natural touch behavior
       endGesture();
     };
 
@@ -263,8 +260,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
 
     // Use passive listeners for touch events to allow natural scrolling
     el.addEventListener('touchstart', ts, { passive: true });
-    el.addEventListener('touchmove', tm, { passive: false }); // Non-passive only for touchmove when drawing
-    el.addEventListener('touchend', te, { passive: false });
+    el.addEventListener('touchmove', tm, { passive: true }); // Make touchmove passive too for scrolling
+    el.addEventListener('touchend', te, { passive: true });
     el.addEventListener('mousedown', md);
     el.addEventListener('mousemove', mm);
     el.addEventListener('mouseup', mu);
