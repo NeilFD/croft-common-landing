@@ -62,7 +62,7 @@ const CommonRoomMain = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-auto" style={{ touchAction: 'manipulation' }}>
+    <div className="min-h-screen relative" style={{ touchAction: 'pan-y pinch-zoom' }}>
       {/* Fixed background image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
@@ -72,7 +72,7 @@ const CommonRoomMain = () => {
       />
       
       {/* Scrollable content */}
-      <div className="relative z-10 min-h-screen overflow-auto">
+      <div className="relative z-10 min-h-screen overflow-y-auto">
         {!isCMSMode && <Navigation />}
         <CommonRoomHeroCarousel />
         <section className="py-24 bg-background">
