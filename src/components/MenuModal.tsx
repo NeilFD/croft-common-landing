@@ -342,7 +342,11 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           <div className="flex items-center gap-1">
             <GuideArrows contrast="neutral" className="hidden md:flex mr-3" />
             <button
-              onClick={handleClose}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleClose();
+              }}
               className={`w-10 h-10 rounded-full border border-background/30 interactive-element
                 ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
                 transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
