@@ -62,7 +62,14 @@ const CommonRoomMain = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-y-auto" style={{ touchAction: 'pan-y pinch-zoom' }}>
+    <div 
+      className="min-h-screen relative overflow-y-auto" 
+      style={{ 
+        touchAction: 'pan-y pinch-zoom',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain'
+      }}
+    >
       {/* Fixed background image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
