@@ -101,8 +101,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
     
-    // Prevent text selection and context menus
-    event.preventDefault();
+    // Don't prevent default on touchstart - this allows scrolling
+    // Only prevent default later if we determine it's actually a gesture
     
     // Clear any existing text selection
     try {
@@ -182,8 +182,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
     const prevWebkitTouchCallout = (el.style as any).webkitTouchCallout;
     
-    // Enhanced anti-selection CSS
-    el.style.touchAction = 'manipulation';
+    // Enhanced anti-selection CSS - allow scrolling by using 'pan-y' for vertical scrolling
+    el.style.touchAction = 'pan-y pinch-zoom';
     el.style.userSelect = 'none';
     (el.style as any).webkitUserSelect = 'none';
     (el.style as any).webkitTouchCallout = 'none';
@@ -194,8 +194,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Prevent text selection and context menus
-      e.preventDefault();
+      // Don't prevent default on touchstart - this allows scrolling
+      // Only prevent default later if we determine it's actually a gesture
       
       // Clear any existing text selection
       try {
