@@ -31,9 +31,9 @@ const OptimizedImage = ({
   const imgRef = useRef<HTMLImageElement | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
-  // Mobile optimization detection
-  const isMobile = window.innerWidth < 768;
-  const connection = (navigator as any).connection;
+  // Mobile optimization detection (safe for SSR)
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;
+  const connection = typeof window !== 'undefined' ? (navigator as any).connection : null;
   const isSlowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g');
 
   useEffect(() => {
