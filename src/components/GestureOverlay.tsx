@@ -101,8 +101,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
     
-    // Don't prevent default on touchstart - this allows scrolling
-    // Only prevent default later if we determine it's actually a gesture
+    // Don't prevent default on touchstart - this allows natural scrolling
     
     // Clear any existing text selection
     try {
@@ -182,8 +181,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
     const prevWebkitTouchCallout = (el.style as any).webkitTouchCallout;
     
-    // Enhanced anti-selection CSS - allow scrolling by using 'pan-y' for vertical scrolling
-    el.style.touchAction = 'pan-y pinch-zoom';
+    // Allow natural scrolling - don't override touchAction, let parent handle it
     el.style.userSelect = 'none';
     (el.style as any).webkitUserSelect = 'none';
     (el.style as any).webkitTouchCallout = 'none';
@@ -194,9 +192,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Don't prevent default on touchstart - this allows scrolling
-      // Only prevent default later if we determine it's actually a gesture
-      
+      // Use passive listener - don't prevent default, allow natural scrolling
       // Clear any existing text selection
       try {
         window.getSelection()?.removeAllRanges();
@@ -205,6 +201,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
+    
     const tm = (e: TouchEvent) => {
       // Allow scrolling if not drawing a gesture
       if (!isDrawing) return;
@@ -212,17 +209,18 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Always prevent default during gesture drawing to avoid text selection
+      // Only prevent default during active gesture drawing
       e.preventDefault();
       
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
     };
+    
     const te = (e: TouchEvent) => {
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
       
-      // Only prevent default if we were drawing
+      // Only prevent default if we were actively drawing
       if (isDrawing) {
         e.preventDefault();
       }
@@ -243,6 +241,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
+    
     const mm = (e: MouseEvent) => {
       if (!isDrawing) return;
       
@@ -253,6 +252,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
     };
+    
     const mu = (e: MouseEvent) => {
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
@@ -261,15 +261,15 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       endGesture();
     };
 
-    el.addEventListener('touchstart', ts, { passive: false });
-    el.addEventListener('touchmove', tm, { passive: false });
+    // Use passive listeners for touch events to allow natural scrolling
+    el.addEventListener('touchstart', ts, { passive: true });
+    el.addEventListener('touchmove', tm, { passive: false }); // Non-passive only for touchmove when drawing
     el.addEventListener('touchend', te, { passive: false });
     el.addEventListener('mousedown', md);
     el.addEventListener('mousemove', mm);
     el.addEventListener('mouseup', mu);
 
     return () => {
-      el.style.touchAction = prevTouchAction;
       el.style.userSelect = prevUserSelect;
       (el.style as any).webkitUserSelect = prevWebkitUserSelect;
       (el.style as any).webkitTouchCallout = prevWebkitTouchCallout;
@@ -301,7 +301,6 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       onDragStart={(e) => e.preventDefault()}
       onContextMenu={(e) => e.preventDefault()}
       style={{ 
-        touchAction: 'manipulation',
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none',
