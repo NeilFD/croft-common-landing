@@ -10,6 +10,7 @@ import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
 import BookFloatingButton from './BookFloatingButton';
 import { useOptimizedPerformance } from '@/hooks/useOptimizedPerformance';
+import { useChromeOptimizations } from '@/hooks/useChromeOptimizations';
 
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
@@ -17,6 +18,9 @@ const HeroCarousel = () => {
   const isMobile = useIsMobile();
   const { isSlowConnection } = useConnectionSpeed();
   const performance = useOptimizedPerformance();
+  
+  // Apply Chrome-specific optimizations
+  useChromeOptimizations();
   
   // Fetch CMS images with fallback to static images
   const { images: heroImages, loading: imagesLoading } = useCMSImages(

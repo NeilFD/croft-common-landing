@@ -10,32 +10,45 @@ interface WebVitalsMetrics {
 
 export const useWebVitals = () => {
   useEffect(() => {
+    let debounceTimer: NodeJS.Timeout;
+    let metricsQueue: WebVitalsMetrics[] = [];
+    
     const trackMetrics = (metrics: WebVitalsMetrics) => {
-      console.log('🎯 WEB VITALS:', metrics);
+      metricsQueue.push(metrics);
       
-      // Track performance metrics
-      if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-          // Send to analytics if needed
-          const performanceData = {
-            timestamp: Date.now(),
-            url: window.location.pathname,
-            ...metrics
-          };
-          
-          // Store in sessionStorage for now
-          try {
-            const existingMetrics = JSON.parse(sessionStorage.getItem('webVitals') || '[]');
-            existingMetrics.push(performanceData);
-            sessionStorage.setItem('webVitals', JSON.stringify(existingMetrics.slice(-10))); // Keep last 10
-          } catch (error) {
-            console.warn('Failed to store web vitals:', error);
-          }
-        });
-      }
+      // Debounce metrics tracking to reduce overhead
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (metricsQueue.length === 0) return;
+        
+        // Only log significant metrics
+        const significantMetrics = metricsQueue[metricsQueue.length - 1];
+        if (significantMetrics.lcp && significantMetrics.lcp > 4000) {
+          console.warn('⚠️ Poor LCP:', significantMetrics.lcp + 'ms');
+        }
+        
+        // Store efficiently
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => {
+            try {
+              const performanceData = {
+                timestamp: Date.now(),
+                url: window.location.pathname,
+                ...significantMetrics
+              };
+              
+              sessionStorage.setItem('lastWebVitals', JSON.stringify(performanceData));
+            } catch (error) {
+              // Silently fail to avoid console noise
+            }
+          });
+        }
+        
+        metricsQueue = [];
+      }, 1000);
     };
 
-    // Track Core Web Vitals
+    // Track Core Web Vitals with reduced frequency
     const observer = new PerformanceObserver((list) => {
       const metrics: WebVitalsMetrics = {};
       
@@ -47,14 +60,23 @@ export const useWebVitals = () => {
             }
             break;
           case 'largest-contentful-paint':
-            metrics.lcp = entry.startTime;
+            // Only track if significantly poor
+            if (entry.startTime > 2500) {
+              metrics.lcp = entry.startTime;
+            }
             break;
           case 'first-input':
-            metrics.fid = (entry as any).processingStart - entry.startTime;
+            const fid = (entry as any).processingStart - entry.startTime;
+            if (fid > 100) { // Only track poor FID
+              metrics.fid = fid;
+            }
             break;
           case 'layout-shift':
             if (!(entry as any).hadRecentInput) {
-              metrics.cls = (metrics.cls || 0) + (entry as any).value;
+              const clsValue = (entry as any).value;
+              if (clsValue > 0.1) { // Only track significant shifts
+                metrics.cls = (metrics.cls || 0) + clsValue;
+              }
             }
             break;
           case 'navigation':
@@ -77,15 +99,16 @@ export const useWebVitals = () => {
 
     return () => {
       observer.disconnect();
+      clearTimeout(debounceTimer);
     };
   }, []);
 
   return {
     getMetrics: () => {
       try {
-        return JSON.parse(sessionStorage.getItem('webVitals') || '[]');
+        return JSON.parse(sessionStorage.getItem('lastWebVitals') || '{}');
       } catch {
-        return [];
+        return {};
       }
     }
   };

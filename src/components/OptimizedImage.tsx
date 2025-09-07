@@ -27,7 +27,9 @@ const OptimizedImage = ({
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [isBroken, setIsBroken] = useState(false);
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
   // Mobile optimization detection
   const isMobile = window.innerWidth < 768;
@@ -45,6 +47,11 @@ const OptimizedImage = ({
   useEffect(() => {
     setIsLoaded(false);
     setRetryCount(0);
+    setIsBroken(false);
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
   }, [src]);
 
   const buildBypassUrl = (u: string, r: number) => {
@@ -77,28 +84,43 @@ const OptimizedImage = ({
     : sizes;
 
   const handleLoad = () => {
-    console.log('✅ [OptimizedImage] Successfully loaded:', src);
     setIsLoaded(true);
+    setIsBroken(false);
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
     onLoad?.();
   };
 
   const handleError = (error: any) => {
-    console.error('🚨 [OptimizedImage] Failed to load:', {
-      src: computedSrc,
-      originalSrc: src,
-      retryCount,
-      error: error?.target?.error || 'Unknown error'
-    });
+    // Only log critical errors, not every retry
+    if (retryCount === 0) {
+      console.warn('🚨 [OptimizedImage] Failed to load:', {
+        src: computedSrc,
+        originalSrc: src,
+        error: error?.target?.error || 'Unknown error'
+      });
+    }
     
-    // Retry up to 2 times with backoff
-    if (retryCount < 2) {
-      const delay = retryCount === 0 ? 600 : 1500;
-      console.log(`🔄 [OptimizedImage] Retrying in ${delay}ms (attempt ${retryCount + 1}/2)`);
-      window.setTimeout(() => setRetryCount((c) => c + 1), delay);
+    // Circuit breaker - if retries exceed limit, mark as permanently broken
+    if (retryCount >= 2) {
+      setIsBroken(true);
+      console.error('❌ [OptimizedImage] Permanently failed:', src);
       return;
     }
-    console.error('❌ [OptimizedImage] Max retries exceeded for:', src);
-    // After retries, keep skeleton hidden state (do not flip to an error panel)
+    
+    // Exponential backoff: 500ms, 2000ms
+    const delay = retryCount === 0 ? 500 : 2000;
+    
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+    }
+    
+    retryTimeoutRef.current = setTimeout(() => {
+      setRetryCount((c) => c + 1);
+      retryTimeoutRef.current = null;
+    }, delay);
   };
 
   return (
@@ -107,7 +129,7 @@ const OptimizedImage = ({
         <Skeleton className="absolute inset-0 bg-muted/20" />
       )}
       
-      {retryCount >= 2 && !isLoaded && (
+      {isBroken && !isLoaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted/10">
           <div className="text-center text-muted-foreground text-sm">
             <div className="text-2xl mb-2">📷</div>
@@ -116,7 +138,8 @@ const OptimizedImage = ({
         </div>
       )}
       
-      <img
+      {!isBroken && (
+        <img
         ref={imgRef}
         src={computedSrc}
         alt={alt}
@@ -129,9 +152,10 @@ const OptimizedImage = ({
           'absolute inset-0 w-full h-full object-cover transition-opacity duration-500',
           isLoaded ? 'opacity-100' : 'opacity-0'
         )}
-        onLoad={handleLoad}
-        onError={handleError}
-      />
+          onLoad={handleLoad}
+          onError={handleError}
+        />
+      )}
     </div>
   );
 };

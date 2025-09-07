@@ -57,13 +57,17 @@ export const useOptimizedPerformance = (): PerformanceOptimizer => {
     // Only the first instance should initialize global behavior
     if (instanceId.current === 1) {
       const handleLoad = () => {
-        isPageLoaded.current = true;
-        resumeAnimations();
+        // Defer to avoid blocking main thread
+        setTimeout(() => {
+          isPageLoaded.current = true;
+          resumeAnimations();
+        }, 100);
       };
 
       if (document.readyState !== 'complete') {
-        pauseAnimations();
-        window.addEventListener('load', handleLoad);
+        // Defer initial pause to avoid blocking render
+        setTimeout(() => pauseAnimations(), 50);
+        window.addEventListener('load', handleLoad, { passive: true });
         
         return () => {
           window.removeEventListener('load', handleLoad);
