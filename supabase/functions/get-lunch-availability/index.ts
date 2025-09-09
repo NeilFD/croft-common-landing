@@ -37,7 +37,14 @@ serve(async (req) => {
 
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      {
+        global: {
+          headers: {
+            Authorization: req.headers.get('Authorization') ?? '',
+          },
+        },
+      }
     );
 
     console.log('🔧 get-lunch-availability: Supabase client created');
@@ -107,6 +114,8 @@ serve(async (req) => {
     // Check user's existing orders for the date (max 2 per day)
     let userOrderCount = 0;
     if (userId) {
+      console.log('🔧 get-lunch-availability: Checking user orders for userId:', userId, 'date:', date);
+      
       const { data: userOrders, error: ordersError } = await supabaseClient
         .from("lunch_orders")
         .select("items")
@@ -114,13 +123,30 @@ serve(async (req) => {
         .eq("order_date", date)
         .neq("status", "cancelled");
 
-      if (ordersError) throw ordersError;
+      if (ordersError) {
+        console.error('❌ get-lunch-availability: Error fetching user orders:', ordersError);
+        throw ordersError;
+      }
+
+      console.log('🔧 get-lunch-availability: Found user orders:', userOrders);
 
       // Count total sandwiches ordered (not total orders)
       userOrderCount = userOrders?.reduce((total, order) => {
-        const sandwiches = order.items?.filter((item: any) => item.category === 'sandwich') || [];
-        return total + sandwiches.reduce((sum: number, item: any) => sum + (item.quantity || 0), 0);
+        console.log('🔧 get-lunch-availability: Processing order items:', order.items);
+        const sandwiches = order.items?.filter((item: any) => {
+          console.log('🔧 get-lunch-availability: Item category:', item.category);
+          return item.category === 'sandwich';
+        }) || [];
+        console.log('🔧 get-lunch-availability: Found sandwiches:', sandwiches);
+        const orderSandwichCount = sandwiches.reduce((sum: number, item: any) => {
+          console.log('🔧 get-lunch-availability: Sandwich quantity:', item.quantity);
+          return sum + (item.quantity || 0);
+        }, 0);
+        console.log('🔧 get-lunch-availability: Order sandwich count:', orderSandwichCount);
+        return total + orderSandwichCount;
       }, 0) || 0;
+      
+      console.log('🔧 get-lunch-availability: Final user sandwich count:', userOrderCount);
     }
 
     // Calculate total sandwiches ordered for the day
