@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { useLunchRun } from '@/hooks/useLunchRun';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -39,54 +39,15 @@ interface OrderItem extends MenuItem {
 export default function LunchRun() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { loading, menu, availability, submitting, orderDate, submitOrder } = useLunchRun();
 
-  const [loading, setLoading] = useState(true);
-  const [menu, setMenu] = useState<{ sandwiches: MenuItem[], beverages: MenuItem[] }>({ sandwiches: [], beverages: [] });
-  const [availability, setAvailability] = useState<any>(null);
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>('');
   const [cart, setCart] = useState<OrderItem[]>([]);
   const [memberName, setMemberName] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
   const [notes, setNotes] = useState('');
   const [orderStep, setOrderStep] = useState<'time' | 'menu' | 'details' | 'confirm'>('time');
-  const [submitting, setSubmitting] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
-
-  const orderDate = new Date().toISOString().split('T')[0];
-
-  useEffect(() => {
-    if (user) {
-      loadMenuAndAvailability();
-    }
-  }, [user]);
-
-  const loadMenuAndAvailability = async () => {
-    try {
-      setLoading(true);
-      
-      // Load menu
-      const { data: menuData, error: menuError } = await supabase.functions.invoke('get-lunch-menu');
-      if (menuError) throw menuError;
-      setMenu(menuData);
-
-      // Load availability
-      const { data: availData, error: availError } = await supabase.functions.invoke('get-lunch-availability', {
-        body: { date: orderDate, userId: user?.id }
-      });
-      if (availError) throw availError;
-      setAvailability(availData);
-
-    } catch (error: any) {
-      console.error('Error loading lunch data:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load lunch menu. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const addToCart = (item: MenuItem, quantity: number = 1) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -137,47 +98,22 @@ export default function LunchRun() {
     return memberName.trim() && memberPhone.trim() && cart.length > 0;
   };
 
-  const submitOrder = async () => {
+  const handleSubmitOrder = async () => {
     if (!canSubmitOrder()) return;
 
-    try {
-      setSubmitting(true);
+    const orderData = {
+      orderDate,
+      collectionTime: selectedTimeSlot,
+      items: cart,
+      totalAmount: getCartTotal(),
+      memberName: memberName.trim(),
+      memberPhone: memberPhone.trim(),
+      notes: notes.trim() || undefined
+    };
 
-      const orderData = {
-        orderDate,
-        collectionTime: selectedTimeSlot,
-        items: cart,
-        totalAmount: getCartTotal(),
-        memberName: memberName.trim(),
-        memberPhone: memberPhone.trim(),
-        notes: notes.trim() || undefined
-      };
-
-      const { data, error } = await supabase.functions.invoke('create-lunch-order', {
-        body: orderData
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        setOrderComplete(true);
-        toast({
-          title: "Order Placed!",
-          description: "Your lunch order has been confirmed.",
-        });
-      } else {
-        throw new Error(data.error || 'Failed to place order');
-      }
-
-    } catch (error: any) {
-      console.error('Error submitting order:', error);
-      toast({
-        title: "Order Failed",
-        description: error.message || "Failed to place order. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSubmitting(false);
+    const result = await submitOrder(orderData);
+    if (result?.success) {
+      setOrderComplete(true);
     }
   };
 
@@ -514,7 +450,7 @@ export default function LunchRun() {
                   Back
                 </Button>
                 <Button 
-                  onClick={submitOrder}
+                  onClick={handleSubmitOrder}
                   disabled={submitting}
                   className="flex-1"
                 >
