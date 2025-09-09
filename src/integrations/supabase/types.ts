@@ -791,6 +791,156 @@ export type Database = {
           },
         ]
       }
+      lunch_availability: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          is_active: boolean
+          max_orders: number
+          orders_count: number
+          slot_time: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number
+          orders_count?: number
+          slot_time: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number
+          orders_count?: number
+          slot_time?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lunch_menu: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          is_available: boolean
+          name: string
+          price: number
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name: string
+          price: number
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_available?: boolean
+          name?: string
+          price?: number
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      lunch_orders: {
+        Row: {
+          collection_slot_id: string | null
+          collection_time: string
+          created_at: string
+          id: string
+          items: Json
+          member_name: string
+          member_phone: string
+          notes: string | null
+          order_date: string
+          payment_status: string
+          status: string
+          stripe_session_id: string | null
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          collection_slot_id?: string | null
+          collection_time: string
+          created_at?: string
+          id?: string
+          items?: Json
+          member_name: string
+          member_phone: string
+          notes?: string | null
+          order_date: string
+          payment_status?: string
+          status?: string
+          stripe_session_id?: string | null
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          collection_slot_id?: string | null
+          collection_time?: string
+          created_at?: string
+          id?: string
+          items?: Json
+          member_name?: string
+          member_phone?: string
+          notes?: string | null
+          order_date?: string
+          payment_status?: string
+          status?: string
+          stripe_session_id?: string | null
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lunch_time_slots: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          max_orders: number
+          slot_time: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number
+          slot_time: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_orders?: number
+          slot_time?: string
+        }
+        Relationships: []
+      }
       mailchimp_sync_jobs: {
         Row: {
           completed_at: string | null

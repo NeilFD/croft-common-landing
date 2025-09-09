@@ -21,6 +21,7 @@ const Community = lazy(() => import("./pages/Community"));
 const CommonRoom = lazy(() => import("./pages/CommonRoom"));
 const CommonRoomMain = lazy(() => import("./pages/CommonRoomMain"));
 const MemberHome = lazy(() => import("./pages/MemberHome"));
+const LunchRun = lazy(() => import("./pages/LunchRun"));
 const MemberLedger = lazy(() => import("./pages/MemberLedger"));
 const MemberProfile = lazy(() => import("./pages/MemberProfile"));
 const MemberDashboard = lazy(() => import("./pages/MemberDashboard"));
@@ -154,6 +155,7 @@ const App = () => (
                     <Route path="/common-room" element={<CommonRoom />} />
                     <Route path="/common-room/main" element={<CommonRoomMain />} />
                     <Route path="/common-room/member" element={<MemberHome />} />
+                    <Route path="/common-room/member/lunch-run" element={<LunchRun />} />
                     <Route path="/common-room/member/ledger" element={<MemberLedger />} />
                     <Route path="/common-room/member/profile" element={<MemberProfile />} />
                     <Route path="/common-room/member/dashboard" element={<MemberDashboard />} />

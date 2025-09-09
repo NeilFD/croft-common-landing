@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, Gamepad2, CalendarDays, Camera, Sparkles } from 'lucide-react';
+import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, Gamepad2, CalendarDays, Camera, Sparkles, Coffee } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import Navigation from '@/components/Navigation';
@@ -185,6 +185,13 @@ const MemberHome: React.FC = () => {
                   <Upload className="h-4 w-4 mr-1" />
                   Upload
                 </Button>
+                
+                <Link to="/common-room/member/lunch-run">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
+                    <Coffee className="h-4 w-4 mr-1" />
+                    Lunch Run
+                  </Button>
+                </Link>
                 
                 <Link to="/common-room/member/profile">
                   <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
