@@ -76,6 +76,8 @@ export default function LunchRun() {
     const fetchUserProfile = async () => {
       if (!user?.id) return;
       
+      console.log('User metadata:', user?.user_metadata); // Debug log
+      
       setProfileLoading(true);
       try {
         // Try to get display name from profile
@@ -89,34 +91,28 @@ export default function LunchRun() {
           console.error('Error fetching profile:', error);
           // Fallback to auth user metadata if profile query fails
           if (user?.user_metadata) {
-            // Prioritize full_name from auth metadata, then first_name + last_name
-            const fullName = user.user_metadata.full_name || '';
-            if (fullName.trim()) {
-              setMemberName(fullName.trim());
-            } else {
-              const firstName = user.user_metadata.first_name || '';
-              const lastName = user.user_metadata.last_name || '';
-              if (firstName || lastName) {
-                setMemberName(`${firstName} ${lastName}`.trim());
-              }
+            const firstName = user.user_metadata.first_name || '';
+            const lastName = user.user_metadata.last_name || '';
+            if (firstName && lastName) {
+              setMemberName(`${firstName} ${lastName}`);
+            } else if (firstName) {
+              setMemberName(firstName);
             }
           }
+          setProfileLoading(false);
           return;
         }
 
         if (profile?.display_name) {
           setMemberName(profile.display_name);
         } else if (user?.user_metadata) {
-          // Prioritize full_name from auth metadata, then first_name + last_name
-          const fullName = user.user_metadata.full_name || '';
-          if (fullName.trim()) {
-            setMemberName(fullName.trim());
-          } else {
-            const firstName = user.user_metadata.first_name || '';
-            const lastName = user.user_metadata.last_name || '';
-            if (firstName || lastName) {
-              setMemberName(`${firstName} ${lastName}`.trim());
-            }
+          // Use first_name + last_name from auth metadata
+          const firstName = user.user_metadata.first_name || '';
+          const lastName = user.user_metadata.last_name || '';
+          if (firstName && lastName) {
+            setMemberName(`${firstName} ${lastName}`);
+          } else if (firstName) {
+            setMemberName(firstName);
           }
         }
       } catch (error) {
@@ -126,11 +122,11 @@ export default function LunchRun() {
       }
     };
 
-    // Only fetch if we don't already have a name
-    if (!memberName) {
+    // Only fetch if we don't already have a name and user exists
+    if (!memberName && user?.id) {
       fetchUserProfile();
     }
-  }, [user?.id, memberName]); // Include memberName to prevent refetch when it's already set
+  }, [user?.id]); // Only depend on user.id, not memberName
 
   const addToCart = (item: MenuItem, quantity: number = 1) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
