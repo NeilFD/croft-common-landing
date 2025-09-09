@@ -69,7 +69,7 @@ export default function LunchRun() {
   // Fetch user profile data when component mounts
   React.useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!user?.id) return;
+      if (!user?.id || memberName) return; // Don't fetch if we already have memberName
       
       setProfileLoading(true);
       try {
@@ -84,7 +84,7 @@ export default function LunchRun() {
           return;
         }
 
-        if (profile?.display_name && !memberName) {
+        if (profile?.display_name) {
           setMemberName(profile.display_name);
         }
       } catch (error) {
@@ -95,7 +95,7 @@ export default function LunchRun() {
     };
 
     fetchUserProfile();
-  }, [user?.id, memberName]);
+  }, [user?.id]); // Remove memberName from dependencies to prevent infinite loop
 
   const addToCart = (item: MenuItem, quantity: number = 1) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
