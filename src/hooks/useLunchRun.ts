@@ -85,83 +85,34 @@ export const useLunchRun = () => {
       
       setMenu({ sandwiches, beverages });
 
-      // For now, let's create a simple availability response until we fix the edge function
-      console.log('⏰ Creating availability data...');
+      // Call the get-lunch-availability edge function to get real availability data
+      console.log('📡 Calling get-lunch-availability edge function...');
       
-      // Get time slots from database  
-      const { data: timeSlots, error: timeSlotsError } = await supabase
-        .from('lunch_time_slots')
-        .select('*')
-        .eq('is_active', true)
-        .order('slot_time');
+      const { data: availabilityData, error: availabilityError } = await supabase.functions.invoke('get-lunch-availability', {
+        body: { 
+          date: orderDate,
+          userId: user?.id 
+        }
+      });
 
-      if (timeSlotsError) {
-        console.error('❌ Time slots error:', timeSlotsError);
-        throw timeSlotsError;
+      if (availabilityError) {
+        console.error('❌ Availability function error:', availabilityError);
+        throw new Error(`Failed to get lunch availability: ${availabilityError.message}`);
       }
 
-      console.log('⏰ Time slots received:', timeSlots?.length || 0, 'slots');
-
-      // Check if it's a weekday
-      const today = new Date();
-      const dayOfWeek = today.getDay();
-      const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5; // Monday to Friday
-
-      console.log('📅 Today is day', dayOfWeek, 'isWeekday:', isWeekday);
-
-      // Check if it's past 3 PM cutoff
-      const now = new Date();
-      const cutoffTime = new Date();
-      cutoffTime.setHours(15, 0, 0, 0); // 3 PM
-      const isPastCutoff = now > cutoffTime;
-
-      console.log('🕐 Current time:', now.toISOString(), 'Past cutoff:', isPastCutoff);
-
-      if (!isWeekday) {
-        setAvailability({
-          available: false,
-          reason: "Lunch Run is only available Monday to Friday",
-          totalSandwichesLeft: 0,
-          userCanOrder: false,
-          userSandwichCount: 0,
-          timeSlots: [],
-          orderDate
-        });
-        return;
+      if (!availabilityData) {
+        throw new Error('No availability data received from function');
       }
 
-      if (isPastCutoff) {
-        setAvailability({
-          available: false,
-          reason: "Orders must be placed before 3:00 PM",
-          totalSandwichesLeft: 0,
-          userCanOrder: false,
-          userSandwichCount: 0,
-          timeSlots: [],
-          orderDate
-        });
-        return;
-      }
-
-      // Create available time slots (simplified - assume all slots are available for now)
-      const availableTimeSlots = timeSlots?.map(slot => ({
-        id: slot.id,
-        time: slot.slot_time,
-        displayTime: formatTime(slot.slot_time),
-        available: true,
-        ordersCount: 0,
-        maxOrders: slot.max_orders,
-        spotsLeft: slot.max_orders
-      })) || [];
-
-      console.log('✅ Available time slots:', availableTimeSlots.length);
+      console.log('✅ Availability data received:', availabilityData);
 
       setAvailability({
-        available: true,
-        totalSandwichesLeft: 60,
-        userCanOrder: true,
-        userSandwichCount: 0,
-        timeSlots: availableTimeSlots,
+        available: availabilityData.available,
+        reason: availabilityData.reason,
+        totalSandwichesLeft: availabilityData.totalSandwichesLeft,
+        userCanOrder: availabilityData.userCanOrder,
+        userSandwichCount: availabilityData.userSandwichCount,
+        timeSlots: availabilityData.timeSlots,
         orderDate
       });
 
