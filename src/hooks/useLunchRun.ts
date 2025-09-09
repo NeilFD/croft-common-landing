@@ -60,6 +60,7 @@ export const useLunchRun = () => {
     try {
       setLoading(true);
       console.log('🍽️ Starting to load lunch data...');
+      console.log('🔍 User ID:', user?.id);
       
       // Load menu from database directly since the edge function might be having issues
       console.log('📋 Fetching menu from database...');
@@ -76,6 +77,7 @@ export const useLunchRun = () => {
       }
 
       console.log('✅ Menu items received:', menuItems?.length || 0, 'items');
+      console.log('📋 Menu items data:', menuItems);
       
       // Group items by category
       const sandwiches = menuItems?.filter(item => item.category === 'sandwich') || [];
@@ -85,36 +87,51 @@ export const useLunchRun = () => {
       
       setMenu({ sandwiches, beverages });
 
-      // Call the get-lunch-availability edge function to get real availability data
-      console.log('📡 Calling get-lunch-availability edge function...');
-      
-      const { data: availabilityData, error: availabilityError } = await supabase.functions.invoke('get-lunch-availability', {
-        body: { 
-          date: orderDate,
-          userId: user?.id 
+      // Only try to get availability if user is authenticated
+      if (user?.id) {
+        // Call the get-lunch-availability edge function to get real availability data
+        console.log('📡 Calling get-lunch-availability edge function...');
+        
+        const { data: availabilityData, error: availabilityError } = await supabase.functions.invoke('get-lunch-availability', {
+          body: { 
+            date: orderDate,
+            userId: user?.id 
+          }
+        });
+
+        if (availabilityError) {
+          console.error('❌ Availability function error:', availabilityError);
+          throw new Error(`Failed to get lunch availability: ${availabilityError.message}`);
         }
-      });
 
-      if (availabilityError) {
-        console.error('❌ Availability function error:', availabilityError);
-        throw new Error(`Failed to get lunch availability: ${availabilityError.message}`);
+        if (!availabilityData) {
+          throw new Error('No availability data received from function');
+        }
+
+        console.log('✅ Availability data received:', availabilityData);
+
+        setAvailability({
+          available: availabilityData.available,
+          reason: availabilityData.reason,
+          totalSandwichesLeft: availabilityData.totalSandwichesLeft,
+          userCanOrder: availabilityData.userCanOrder,
+          userSandwichCount: availabilityData.userSandwichCount,
+          timeSlots: availabilityData.timeSlots,
+          orderDate
+        });
+      } else {
+        console.log('📝 No user authenticated, setting default unavailable state');
+        // Set default unavailable state for non-authenticated users
+        setAvailability({
+          available: false,
+          reason: "Orders close at 11:00 AM, but here's what we'll be serving today",
+          totalSandwichesLeft: 0,
+          userCanOrder: false,
+          userSandwichCount: 0,
+          timeSlots: [],
+          orderDate
+        });
       }
-
-      if (!availabilityData) {
-        throw new Error('No availability data received from function');
-      }
-
-      console.log('✅ Availability data received:', availabilityData);
-
-      setAvailability({
-        available: availabilityData.available,
-        reason: availabilityData.reason,
-        totalSandwichesLeft: availabilityData.totalSandwichesLeft,
-        userCanOrder: availabilityData.userCanOrder,
-        userSandwichCount: availabilityData.userSandwichCount,
-        timeSlots: availabilityData.timeSlots,
-        orderDate
-      });
 
       console.log('🎉 Lunch data loaded successfully!');
 
