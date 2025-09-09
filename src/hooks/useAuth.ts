@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -7,6 +7,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const lastAutoLinkAttempt = useRef<number>(0);
 
   useEffect(() => {
     let mounted = true;
@@ -33,7 +34,9 @@ export const useAuth = () => {
           setLoading(false);
 
           // Also try auto-linking on initial load if user is already signed in
-          if (session?.user) {
+          // But only if it hasn't been attempted recently (prevent spam)
+          if (session?.user && Date.now() - lastAutoLinkAttempt.current > 30000) { // 30 seconds cooldown
+            lastAutoLinkAttempt.current = Date.now();
             setTimeout(async () => {
               try {
                 const { data } = await supabase.functions.invoke('auto-link-push-subscription');
@@ -66,8 +69,9 @@ export const useAuth = () => {
           });
           
           // Log any potential redirects
-          if (event === 'SIGNED_IN' && session) {
+          if (event === 'SIGNED_IN' && session && Date.now() - lastAutoLinkAttempt.current > 30000) {
             console.log('✅ User successfully signed in:', session.user.email);
+            lastAutoLinkAttempt.current = Date.now();
             
             // Auto-link push subscriptions when user signs in
             setTimeout(async () => {

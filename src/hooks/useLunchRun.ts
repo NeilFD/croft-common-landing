@@ -51,10 +51,10 @@ export const useLunchRun = () => {
   const orderDate = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    if (user) {
+    if (user?.id) {
       loadMenuAndAvailability();
     }
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the entire user object
 
   const loadMenuAndAvailability = async () => {
     try {

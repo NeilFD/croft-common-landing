@@ -76,8 +76,6 @@ export default function LunchRun() {
     const fetchUserProfile = async () => {
       if (!user?.id) return;
       
-      console.log('User metadata:', user?.user_metadata); // Debug log
-      
       setProfileLoading(true);
       try {
         // Try to get display name from profile
