@@ -696,7 +696,6 @@ export default function LunchRun() {
             </DialogContent>
           </Dialog>
         </div>
-        </div>
       </div>
       {!isCMSMode && <OptimizedFooter />}
     </div>
