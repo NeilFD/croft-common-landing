@@ -212,7 +212,7 @@ export default function LunchRun() {
     return (
       <div className="min-h-screen">
         {!isCMSMode && <OptimizedNavigation />}
-        <div className="container mx-auto px-4 py-6 pt-24 md:pt-28">
+        <div className="container mx-auto px-4 py-6 pt-36 md:pt-28">
           <div className="max-w-2xl mx-auto text-center">
             <h1 className="text-2xl md:text-3xl font-bold mb-4">The Lunch Run</h1>
             <Card>
@@ -233,7 +233,7 @@ export default function LunchRun() {
   return (
     <div className="min-h-screen">
       {!isCMSMode && <OptimizedNavigation />}
-      <div className="container mx-auto px-4 py-6 pt-24 md:pt-28 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 pt-36 md:pt-28 max-w-6xl">
         <div className="text-center mb-6">
           <h1 className="text-2xl md:text-4xl font-bold mb-2">The Lunch Run</h1>
           <p className="text-base md:text-lg text-muted-foreground">
