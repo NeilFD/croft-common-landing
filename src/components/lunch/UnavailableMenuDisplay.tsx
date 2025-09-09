@@ -1,68 +1,43 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-
-interface MenuItemProps {
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-}
-
-const menuItems: MenuItemProps[] = [
-  {
-    name: "The Deli",
-    description: "Mortadella, salami, prosciutto. Provolone. Roasted peppers. Sharp oregano oil. Proper Italian stacked in a focaccia roll.",
-    price: 9.50,
-    category: "sandwich"
-  },
-  {
-    name: "The Reuben", 
-    description: "Salt beef. Swiss. Sauerkraut. Russian dressing. Griddled rye. New York in a handful.",
-    price: 9.50,
-    category: "sandwich"
-  },
-  {
-    name: "The Med",
-    description: "Chargrilled courgette, aubergine and pepper. Whipped feta, lemon, rocket. Black olive tapenade on ciabatta.",
-    price: 8.50,
-    category: "sandwich"
-  },
-  {
-    name: "The Club",
-    description: "Roast chicken, bacon, lettuce, tomato. Mayo on toasted sourdough. Simple, classic, perfect.",
-    price: 9.00,
-    category: "sandwich"
-  }
-];
-
-const drinkItems: MenuItemProps[] = [
-  {
-    name: "Fresh Orange Juice",
-    description: "Freshly squeezed Valencia oranges",
-    price: 3.50,
-    category: "drink"
-  },
-  {
-    name: "Craft Coffee",
-    description: "Single origin Ethiopian beans, expertly roasted",
-    price: 2.80,
-    category: "drink"
-  },
-  {
-    name: "Sparkling Water",
-    description: "Natural mineral water with bubbles",
-    price: 2.00,
-    category: "drink"
-  },
-  {
-    name: "Homemade Lemonade", 
-    description: "Fresh lemons, mint, and a touch of honey",
-    price: 3.20,
-    category: "drink"
-  }
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import OptimizedImage from "@/components/OptimizedImage";
+import { useLunchRun } from "@/hooks/useLunchRun";
+import { useEffect } from "react";
 
 export const UnavailableMenuDisplay = () => {
+  const { menu, loading, loadMenuAndAvailability } = useLunchRun();
+
+  useEffect(() => {
+    loadMenuAndAvailability();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="text-center mb-8">
+          <Skeleton className="h-8 w-48 mx-auto mb-2" />
+          <Skeleton className="h-4 w-96 mx-auto" />
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="h-full">
+              <Skeleton className="h-48 w-full rounded-t-lg" />
+              <CardContent className="p-6">
+                <Skeleton className="h-6 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const sandwiches = menu.sandwiches || [];
+  const beverages = menu.beverages || [];
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="text-center mb-8">
@@ -73,52 +48,78 @@ export const UnavailableMenuDisplay = () => {
       </div>
 
       {/* Sandwiches */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 mb-4">
-          <h3 className="text-xl font-semibold">Sandwiches</h3>
-          <Badge variant="secondary">Four builds available</Badge>
+      {sandwiches.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-xl font-semibold">Sandwiches</h3>
+            <Badge variant="secondary">{sandwiches.length} available</Badge>
+          </div>
+          
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
+            {sandwiches.map((item) => (
+              <Card key={item.id} className="h-full overflow-hidden">
+                {item.image_url && (
+                  <div className="aspect-[4/3] relative">
+                    <OptimizedImage
+                      src={item.image_url}
+                      alt={`${item.name} sandwich`}
+                      className="w-full h-full"
+                      mobileOptimized={true}
+                      priority={false}
+                    />
+                  </div>
+                )}
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-semibold text-lg leading-tight">{item.name}</h4>
+                    <span className="font-bold text-primary text-lg">£{item.price.toFixed(2)}</span>
+                  </div>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-        
-        <div className="grid md:grid-cols-2 gap-4">
-          {menuItems.map((item, index) => (
-            <Card key={index} className="h-full">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-lg">{item.name}</h4>
-                  <span className="font-bold text-primary">£{item.price.toFixed(2)}</span>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      )}
 
-      {/* Drinks */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 mb-4">
-          <h3 className="text-xl font-semibold">Drinks</h3>
-          <Badge variant="secondary">Fresh selections</Badge>
+      {/* Beverages */}
+      {beverages.length > 0 && (
+        <div className="space-y-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-xl font-semibold">Beverages</h3>
+            <Badge variant="secondary">{beverages.length} available</Badge>
+          </div>
+          
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {beverages.map((item) => (
+              <Card key={item.id} className="h-full overflow-hidden">
+                {item.image_url && (
+                  <div className="aspect-[4/3] relative">
+                    <OptimizedImage
+                      src={item.image_url}
+                      alt={`${item.name} beverage`}
+                      className="w-full h-full"
+                      mobileOptimized={true}
+                      priority={false}
+                    />
+                  </div>
+                )}
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-semibold text-lg leading-tight">{item.name}</h4>
+                    <span className="font-bold text-primary text-lg">£{item.price.toFixed(2)}</span>
+                  </div>
+                  <p className="text-muted-foreground text-sm leading-relaxed">
+                    {item.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
-        
-        <div className="grid md:grid-cols-2 gap-4">
-          {drinkItems.map((item, index) => (
-            <Card key={index} className="h-full">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-semibold text-lg">{item.name}</h4>
-                  <span className="font-bold text-primary">£{item.price.toFixed(2)}</span>
-                </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {item.description}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
+      )}
 
       <div className="text-center pt-6 border-t">
         <p className="text-sm text-muted-foreground">
