@@ -59,29 +59,53 @@ export const useLunchRun = () => {
   const loadMenuAndAvailability = async () => {
     try {
       setLoading(true);
+      console.log('🍽️ Loading lunch menu and availability...');
       
       // Load menu
+      console.log('📋 Fetching menu...');
       const { data: menuData, error: menuError } = await supabase.functions.invoke('get-lunch-menu');
-      if (menuError) throw menuError;
+      if (menuError) {
+        console.error('❌ Menu error:', menuError);
+        throw menuError;
+      }
+      console.log('✅ Menu data received:', menuData);
       setMenu(menuData);
 
-      // Load availability - pass parameters as query params
-      const params = new URLSearchParams({
-        date: orderDate,
-        ...(user?.id && { userId: user.id })
-      });
-      
-      const { data: availData, error: availError } = await supabase.functions.invoke(
-        `get-lunch-availability?${params.toString()}`
+      // Load availability - use GET request with query parameters
+      console.log('⏰ Fetching availability for date:', orderDate, 'user:', user?.id);
+      const response = await fetch(
+        `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/get-lunch-availability?date=${encodeURIComponent(orderDate)}&userId=${encodeURIComponent(user?.id || '')}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU`,
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU',
+            'Content-Type': 'application/json',
+          },
+        }
       );
-      if (availError) throw availError;
+      
+      console.log('📡 Availability response status:', response.status);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Availability HTTP error:', response.status, errorText);
+        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      }
+      
+      const availData = await response.json();
+      console.log('✅ Availability data received:', availData);
+      
+      if (availData.error) {
+        throw new Error(availData.error);
+      }
       setAvailability(availData);
 
     } catch (error: any) {
-      console.error('Error loading lunch data:', error);
+      console.error('💥 Error loading lunch data:', error);
       toast({
         title: "Error",
-        description: "Failed to load lunch menu. Please try again.",
+        description: `Failed to load lunch menu. ${error.message || 'Please try again.'}`,
         variant: "destructive",
       });
     } finally {

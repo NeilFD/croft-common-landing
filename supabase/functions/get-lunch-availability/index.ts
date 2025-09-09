@@ -12,11 +12,16 @@ serve(async (req) => {
   }
 
   try {
+    console.log('🔧 get-lunch-availability: Starting request...');
+    
     const url = new URL(req.url);
     const date = url.searchParams.get("date");
     const userId = url.searchParams.get("userId");
 
+    console.log('🔧 get-lunch-availability: Parameters - date:', date, 'userId:', userId);
+
     if (!date) {
+      console.error('❌ get-lunch-availability: Date parameter is required');
       throw new Error("Date parameter is required");
     }
 
@@ -25,12 +30,17 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_ANON_KEY") ?? ""
     );
 
+    console.log('🔧 get-lunch-availability: Supabase client created');
+
     // Check if it's a weekday (Monday = 1, Friday = 5)
     const orderDate = new Date(date);
     const dayOfWeek = orderDate.getDay();
     const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
 
+    console.log('🔧 get-lunch-availability: Day of week:', dayOfWeek, 'isWeekday:', isWeekday);
+
     if (!isWeekday) {
+      console.log('🔧 get-lunch-availability: Not a weekday, returning unavailable');
       return new Response(
         JSON.stringify({
           available: false,
@@ -50,7 +60,10 @@ serve(async (req) => {
     const cutoffTime = new Date(`${today}T15:00:00`);
     const isPastCutoff = date === today && now > cutoffTime;
 
+    console.log('🔧 get-lunch-availability: Current time:', now, 'cutoff:', cutoffTime, 'isPastCutoff:', isPastCutoff);
+
     if (isPastCutoff) {
+      console.log('🔧 get-lunch-availability: Past cutoff time, returning unavailable');
       return new Response(
         JSON.stringify({
           available: false,
