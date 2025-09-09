@@ -66,6 +66,11 @@ export default function LunchRun() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
 
+  // Scroll to top when order step changes
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [orderStep]);
+
   // Fetch user profile data when component mounts
   React.useEffect(() => {
     const fetchUserProfile = async () => {
@@ -73,19 +78,35 @@ export default function LunchRun() {
       
       setProfileLoading(true);
       try {
+        // Try to get display name from profile
         const { data: profile, error } = await supabase
           .from('member_profiles_extended')
           .select('display_name')
           .eq('user_id', user.id)
-          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching profile:', error);
+          // Fallback to auth user metadata if profile query fails
+          if (user?.user_metadata) {
+            const firstName = user.user_metadata.first_name || '';
+            const lastName = user.user_metadata.last_name || '';
+            if (firstName || lastName) {
+              setMemberName(`${firstName} ${lastName}`.trim());
+            }
+          }
           return;
         }
 
         if (profile?.display_name) {
           setMemberName(profile.display_name);
+        } else if (user?.user_metadata) {
+          // Fallback to auth metadata if no display_name
+          const firstName = user.user_metadata.first_name || '';
+          const lastName = user.user_metadata.last_name || '';
+          if (firstName || lastName) {
+            setMemberName(`${firstName} ${lastName}`.trim());
+          }
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
