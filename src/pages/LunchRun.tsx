@@ -4,6 +4,7 @@ import { useLunchRun } from '@/hooks/useLunchRun';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import OptimizedNavigation from '@/components/OptimizedNavigation';
 import OptimizedFooter from '@/components/OptimizedFooter';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -63,6 +64,38 @@ export default function LunchRun() {
   const [notes, setNotes] = useState('');
   const [orderStep, setOrderStep] = useState<'time' | 'menu' | 'details' | 'confirm'>('time');
   const [orderComplete, setOrderComplete] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Fetch user profile data when component mounts
+  React.useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user?.id) return;
+      
+      setProfileLoading(true);
+      try {
+        const { data: profile, error } = await supabase
+          .from('member_profiles_extended')
+          .select('display_name')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return;
+        }
+
+        if (profile?.display_name && !memberName) {
+          setMemberName(profile.display_name);
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, [user?.id, memberName]);
 
   const addToCart = (item: MenuItem, quantity: number = 1) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
