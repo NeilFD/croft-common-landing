@@ -14,9 +14,19 @@ serve(async (req) => {
   try {
     console.log('🔧 get-lunch-availability: Starting request...');
     
-    const url = new URL(req.url);
-    const date = url.searchParams.get("date");
-    const userId = url.searchParams.get("userId");
+    let date, userId;
+    
+    // Try to get parameters from URL first (GET request), then from body (POST request)
+    if (req.method === 'GET') {
+      const url = new URL(req.url);
+      date = url.searchParams.get("date");
+      userId = url.searchParams.get("userId");
+    } else {
+      // POST request - read from body
+      const body = await req.json();
+      date = body.date;
+      userId = body.userId;
+    }
 
     console.log('🔧 get-lunch-availability: Parameters - date:', date, 'userId:', userId);
 
