@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLunchRun } from '@/hooks/useLunchRun';
 import { useCMSMode } from '@/contexts/CMSModeContext';
@@ -52,6 +53,7 @@ interface OrderItem extends MenuItem {
 }
 
 export default function LunchRun() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const { isCMSMode } = useCMSMode();
@@ -653,7 +655,7 @@ export default function LunchRun() {
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-end">
-                <Button onClick={() => window.history.back()}>
+                <Button onClick={() => navigate('/common-room/member')}>
                   Back to Member Area
                 </Button>
               </div>
