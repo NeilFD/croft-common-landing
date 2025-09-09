@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import OptimizedImage from "@/components/OptimizedImage";
+
 import { useLunchRun } from "@/hooks/useLunchRun";
 import { useEffect } from "react";
 
@@ -62,10 +62,11 @@ export const UnavailableMenuDisplay = () => {
             {sandwiches.map((item) => (
               <Card key={item.id} className="h-full overflow-hidden">
                 <div className="aspect-[4/3] relative bg-muted">
-                  <OptimizedImage
+                  <img
                     src={item.image_url || ''}
                     alt={`${item.name} sandwich`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <CardContent className="p-4 sm:p-6">
@@ -95,10 +96,11 @@ export const UnavailableMenuDisplay = () => {
             {beverages.map((item) => (
               <Card key={item.id} className="h-full overflow-hidden">
                 <div className="aspect-[4/3] relative bg-muted">
-                  <OptimizedImage
+                  <img
                     src={item.image_url || ''}
                     alt={`${item.name} beverage`}
                     className="w-full h-full object-cover"
+                    loading="lazy"
                   />
                 </div>
                 <CardContent className="p-4 sm:p-6">
