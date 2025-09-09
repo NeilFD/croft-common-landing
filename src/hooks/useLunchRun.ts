@@ -65,10 +65,15 @@ export const useLunchRun = () => {
       if (menuError) throw menuError;
       setMenu(menuData);
 
-      // Load availability
-      const { data: availData, error: availError } = await supabase.functions.invoke('get-lunch-availability', {
-        body: { date: orderDate, userId: user?.id }
+      // Load availability - pass parameters as query params
+      const params = new URLSearchParams({
+        date: orderDate,
+        ...(user?.id && { userId: user.id })
       });
+      
+      const { data: availData, error: availError } = await supabase.functions.invoke(
+        `get-lunch-availability?${params.toString()}`
+      );
       if (availError) throw availError;
       setAvailability(availData);
 
