@@ -77,7 +77,7 @@ export default function LunchRun() {
           .from('member_profiles_extended')
           .select('display_name')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle(); // Use maybeSingle instead of single to avoid errors
 
         if (error) {
           console.error('Error fetching profile:', error);
@@ -375,20 +375,53 @@ export default function LunchRun() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {menu.beverages.map((beverage) => (
-                      <div key={beverage.id} className="border rounded-lg p-3 text-center">
-                        <h4 className="font-medium mb-1">{beverage.name}</h4>
-                        <Badge variant="outline" className="mb-2">£{beverage.price.toFixed(2)}</Badge>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => addToCart(beverage)}
-                          className="w-full"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                    ))}
+                    {menu.beverages.map((beverage) => {
+                      const inCart = cart.find(item => item.id === beverage.id);
+                      const quantity = inCart?.quantity || 0;
+                      
+                      return (
+                        <div key={beverage.id} className={`border rounded-lg p-3 text-center relative ${quantity > 0 ? 'ring-2 ring-primary' : ''}`}>
+                          {quantity > 0 && (
+                            <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs">
+                              {quantity}
+                            </div>
+                          )}
+                          <h4 className="font-medium mb-1">{beverage.name}</h4>
+                          <Badge variant="outline" className="mb-2">£{beverage.price.toFixed(2)}</Badge>
+                          
+                          {quantity > 0 ? (
+                            <div className="flex items-center gap-1 justify-center">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateCartQuantity(beverage.id, quantity - 1)}
+                                className="w-8 h-8 p-0"
+                              >
+                                -
+                              </Button>
+                              <span className="font-medium text-xs px-2">{quantity}</span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateCartQuantity(beverage.id, quantity + 1)}
+                                className="w-8 h-8 p-0"
+                              >
+                                +
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => addToCart(beverage)}
+                              className="w-full"
+                            >
+                              Add
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
