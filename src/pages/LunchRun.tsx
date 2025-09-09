@@ -74,7 +74,7 @@ export default function LunchRun() {
   // Fetch user profile data when component mounts
   React.useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!user?.id || memberName.trim()) return; // Don't fetch if we already have memberName
+      if (!user?.id) return;
       
       setProfileLoading(true);
       try {
@@ -89,10 +89,16 @@ export default function LunchRun() {
           console.error('Error fetching profile:', error);
           // Fallback to auth user metadata if profile query fails
           if (user?.user_metadata) {
-            const firstName = user.user_metadata.first_name || '';
-            const lastName = user.user_metadata.last_name || '';
-            if (firstName || lastName) {
-              setMemberName(`${firstName} ${lastName}`.trim());
+            // Prioritize full_name from auth metadata, then first_name + last_name
+            const fullName = user.user_metadata.full_name || '';
+            if (fullName.trim()) {
+              setMemberName(fullName.trim());
+            } else {
+              const firstName = user.user_metadata.first_name || '';
+              const lastName = user.user_metadata.last_name || '';
+              if (firstName || lastName) {
+                setMemberName(`${firstName} ${lastName}`.trim());
+              }
             }
           }
           return;
@@ -101,11 +107,16 @@ export default function LunchRun() {
         if (profile?.display_name) {
           setMemberName(profile.display_name);
         } else if (user?.user_metadata) {
-          // Fallback to auth metadata if no display_name
-          const firstName = user.user_metadata.first_name || '';
-          const lastName = user.user_metadata.last_name || '';
-          if (firstName || lastName) {
-            setMemberName(`${firstName} ${lastName}`.trim());
+          // Prioritize full_name from auth metadata, then first_name + last_name
+          const fullName = user.user_metadata.full_name || '';
+          if (fullName.trim()) {
+            setMemberName(fullName.trim());
+          } else {
+            const firstName = user.user_metadata.first_name || '';
+            const lastName = user.user_metadata.last_name || '';
+            if (firstName || lastName) {
+              setMemberName(`${firstName} ${lastName}`.trim());
+            }
           }
         }
       } catch (error) {
@@ -115,8 +126,11 @@ export default function LunchRun() {
       }
     };
 
-    fetchUserProfile();
-  }, [user?.id]); // Remove memberName from dependencies to prevent infinite loop
+    // Only fetch if we don't already have a name
+    if (!memberName) {
+      fetchUserProfile();
+    }
+  }, [user?.id, memberName]); // Include memberName to prevent refetch when it's already set
 
   const addToCart = (item: MenuItem, quantity: number = 1) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);

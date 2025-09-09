@@ -166,7 +166,17 @@ serve(async (req) => {
 
     if (orderError) {
       console.error("Order creation error:", orderError);
-      throw new Error("Failed to create order");
+      
+      // Provide more specific error messages
+      if (orderError.message?.includes('duplicate key') || orderError.code === '23505') {
+        if (orderError.message?.includes('unique_receipt_ledger_entry')) {
+          throw new Error("Duplicate order detected. Please refresh and try again.");
+        } else {
+          throw new Error("You already have an order for this time slot today");
+        }
+      } else {
+        throw new Error(`Failed to create order: ${orderError.message || 'Unknown error'}`);
+      }
     }
 
     console.log("Order created successfully:", order.id);
