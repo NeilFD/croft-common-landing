@@ -16,6 +16,17 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Clock, Users, ShoppingCart, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
+// Sandwich images mapping
+const getSandwichImage = (sandwichName: string) => {
+  const imageMap: { [key: string]: string } = {
+    'The Med': '/lovable-uploads/35ecafad-f268-4164-9069-284e858ea4d3.png',
+    'The Reuben': '/lovable-uploads/d5333fba-f3da-4177-8a9c-ff249b061320.png',
+    'The Capo': '/lovable-uploads/87a8b2d5-1d02-499b-8bfb-322d4b602944.png',
+    'The Deli': '/lovable-uploads/464c5a05-161f-4732-b508-f8c7df8c7b7b.png'
+  };
+  return imageMap[sandwichName];
+};
+
 interface MenuItem {
   id: string;
   name: string;
@@ -252,27 +263,41 @@ export default function LunchRun() {
                   <CardTitle>Sandwiches</CardTitle>
                   <CardDescription>Choose up to 2 sandwiches (you have {2 - getSandwichCount()} remaining)</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {menu.sandwiches.map((sandwich) => (
-                      <div key={sandwich.id} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-semibold text-lg">{sandwich.name}</h3>
-                          <Badge variant="secondary">£{sandwich.price.toFixed(2)}</Badge>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {menu.sandwiches.map((sandwich) => {
+                    const sandwichImage = getSandwichImage(sandwich.name);
+                    return (
+                      <div key={sandwich.id} className="border rounded-lg overflow-hidden">
+                        {sandwichImage && (
+                          <div className="aspect-video w-full">
+                            <img
+                              src={sandwichImage}
+                              alt={sandwich.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-semibold text-lg">{sandwich.name}</h3>
+                            <Badge variant="secondary">£{sandwich.price.toFixed(2)}</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-4">{sandwich.description}</p>
+                          <Button
+                            size="sm"
+                            onClick={() => addToCart(sandwich)}
+                            disabled={getSandwichCount() >= 2}
+                            className="w-full"
+                          >
+                            Add to Order
+                          </Button>
                         </div>
-                        <p className="text-sm text-muted-foreground mb-4">{sandwich.description}</p>
-                        <Button
-                          size="sm"
-                          onClick={() => addToCart(sandwich)}
-                          disabled={getSandwichCount() >= 2}
-                          className="w-full"
-                        >
-                          Add to Order
-                        </Button>
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
+                    );
+                  })}
+                </div>
+              </CardContent>
               </Card>
 
               {/* Beverages */}
