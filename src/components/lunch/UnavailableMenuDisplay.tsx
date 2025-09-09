@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLunchRun } from "@/hooks/useLunchRun";
 import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const UnavailableMenuDisplay = () => {
   const { menu, loading, loadMenuAndAvailability } = useLunchRun();
@@ -38,8 +39,8 @@ export const UnavailableMenuDisplay = () => {
   const sandwiches = menu.sandwiches || [];
   const beverages = menu.beverages || [];
 
-  // Helper function to convert relative URLs to absolute URLs
-  const getAbsoluteImageUrl = (imageUrl: string | null): string | null => {
+  // Helper function to convert image URLs to proper Supabase storage URLs
+  const getStorageImageUrl = (imageUrl: string | null): string | null => {
     if (!imageUrl) return null;
     
     // If already absolute URL, return as is
@@ -47,7 +48,15 @@ export const UnavailableMenuDisplay = () => {
       return imageUrl;
     }
     
-    // Convert relative path to absolute URL
+    // Convert lovable-uploads path to Supabase storage URL
+    if (imageUrl.startsWith('/lovable-uploads/')) {
+      const fileName = imageUrl.replace('/lovable-uploads/', '');
+      const { data } = supabase.storage.from('lunch-images').getPublicUrl(fileName);
+      console.log('🔗 Converting storage URL:', { original: imageUrl, converted: data.publicUrl });
+      return data.publicUrl;
+    }
+    
+    // Convert relative path to absolute URL as fallback
     if (imageUrl.startsWith('/')) {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
       return `${baseUrl}${imageUrl}`;
@@ -62,7 +71,7 @@ export const UnavailableMenuDisplay = () => {
     console.log('🥪 Sandwich image URLs:', sandwiches.map(s => ({ 
       name: s.name, 
       original: s.image_url, 
-      resolved: getAbsoluteImageUrl(s.image_url) 
+      resolved: getStorageImageUrl(s.image_url) 
     })));
   }
 
@@ -85,18 +94,18 @@ export const UnavailableMenuDisplay = () => {
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
             {sandwiches.map((item) => {
-              const absoluteImageUrl = getAbsoluteImageUrl(item.image_url);
+              const storageImageUrl = getStorageImageUrl(item.image_url);
               return (
                 <Card key={item.id} className="h-full overflow-hidden">
-                  {absoluteImageUrl && (
+                  {storageImageUrl && (
                     <div className="aspect-[4/3] relative">
                       <img
-                        src={absoluteImageUrl}
+                        src={storageImageUrl}
                         alt={`${item.name} sandwich`}
                         className="w-full h-full object-cover"
-                        onLoad={() => console.log('✅ Sandwich image loaded:', absoluteImageUrl)}
+                        onLoad={() => console.log('✅ Sandwich image loaded:', storageImageUrl)}
                         onError={(e) => {
-                          console.error('❌ Sandwich image failed to load:', absoluteImageUrl);
+                          console.error('❌ Sandwich image failed to load:', storageImageUrl);
                           console.error('Original URL:', item.image_url);
                           console.error('Error details:', e);
                         }}
@@ -129,18 +138,18 @@ export const UnavailableMenuDisplay = () => {
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {beverages.map((item) => {
-              const absoluteImageUrl = getAbsoluteImageUrl(item.image_url);
+              const storageImageUrl = getStorageImageUrl(item.image_url);
               return (
                 <Card key={item.id} className="h-full overflow-hidden">
-                  {absoluteImageUrl && (
+                  {storageImageUrl && (
                     <div className="aspect-[4/3] relative">
                       <img
-                        src={absoluteImageUrl}
+                        src={storageImageUrl}
                         alt={`${item.name} beverage`}
                         className="w-full h-full object-cover"
-                        onLoad={() => console.log('✅ Beverage image loaded:', absoluteImageUrl)}
+                        onLoad={() => console.log('✅ Beverage image loaded:', storageImageUrl)}
                         onError={(e) => {
-                          console.error('❌ Beverage image failed to load:', absoluteImageUrl);
+                          console.error('❌ Beverage image failed to load:', storageImageUrl);
                           console.error('Original URL:', item.image_url);
                           console.error('Error details:', e);
                         }}
