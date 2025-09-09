@@ -9,9 +9,8 @@ export const UnavailableMenuDisplay = () => {
   const { menu, loading, loadMenuAndAvailability } = useLunchRun();
 
   useEffect(() => {
-    // Always load menu data regardless of authentication status
     loadMenuAndAvailability();
-  }, [loadMenuAndAvailability]);
+  }, []);
 
   if (loading) {
     return (

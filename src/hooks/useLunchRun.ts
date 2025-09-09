@@ -51,10 +51,9 @@ export const useLunchRun = () => {
   const orderDate = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    if (user?.id) {
-      loadMenuAndAvailability();
-    }
-  }, [user?.id]); // Only depend on user.id, not the entire user object
+    // Load menu data on component mount
+    loadMenuAndAvailability();
+  }, []); // Remove user.id dependency since we now handle non-authenticated users
 
   const loadMenuAndAvailability = async () => {
     try {
