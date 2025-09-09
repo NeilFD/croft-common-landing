@@ -297,14 +297,14 @@ export default function LunchRun() {
                   <CardDescription>Choose up to 2 sandwiches (you have {2 - getSandwichCount()} remaining)</CardDescription>
                 </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-2 gap-6 md:items-stretch">
                   {menu.sandwiches.map((sandwich) => {
                     const sandwichImage = getSandwichImage(sandwich.name);
                     const inCart = cart.find(item => item.id === sandwich.id);
                     const quantity = inCart?.quantity || 0;
                     
                     return (
-                      <div key={sandwich.id} className={`border rounded-lg overflow-hidden relative h-full ${quantity > 0 ? 'ring-2 ring-primary' : ''}`}>
+                      <div key={sandwich.id} className={`border rounded-lg overflow-hidden flex flex-col ${quantity > 0 ? 'ring-2 ring-primary' : ''}`}>
                         {sandwichImage && (
                           <div className="aspect-video w-full relative">
                             <img
@@ -319,7 +319,7 @@ export default function LunchRun() {
                             )}
                           </div>
                         )}
-                        <div className="p-4 flex flex-col h-full">
+                        <div className="p-4 flex flex-col flex-grow">
                           <div className="flex justify-between items-start mb-2">
                             <h3 className="font-semibold text-lg">{sandwich.name}</h3>
                             <Badge variant="secondary">£{sandwich.price.toFixed(2)}</Badge>
