@@ -9,6 +9,7 @@ export const UnavailableMenuDisplay = () => {
   const { menu, loading, loadMenuAndAvailability } = useLunchRun();
 
   useEffect(() => {
+    console.log('📱 UnavailableMenuDisplay mounted, calling loadMenuAndAvailability');
     loadMenuAndAvailability();
   }, []);
 

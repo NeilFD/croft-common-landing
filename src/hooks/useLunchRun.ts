@@ -60,6 +60,7 @@ export const useLunchRun = () => {
       setLoading(true);
       console.log('🍽️ Starting to load lunch data...');
       console.log('🔍 User ID:', user?.id);
+      console.log('🔄 Loading state set to true');
       
       // Load menu from database directly since the edge function might be having issues
       console.log('📋 Fetching menu from database...');
