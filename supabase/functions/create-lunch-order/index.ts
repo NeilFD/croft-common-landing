@@ -133,6 +133,20 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
+    // Check if order already exists to prevent duplicates
+    const { data: existingOrder } = await supabaseService
+      .from("lunch_orders")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("order_date", orderData.orderDate)
+      .eq("collection_time", orderData.collectionTime)
+      .eq("status", "confirmed")
+      .maybeSingle();
+
+    if (existingOrder) {
+      throw new Error("You already have an order for this time slot today");
+    }
+
     const { data: order, error: orderError } = await supabaseService
       .from("lunch_orders")
       .insert({

@@ -74,7 +74,7 @@ export default function LunchRun() {
   // Fetch user profile data when component mounts
   React.useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!user?.id || memberName) return; // Don't fetch if we already have memberName
+      if (!user?.id || memberName.trim()) return; // Don't fetch if we already have memberName
       
       setProfileLoading(true);
       try {
