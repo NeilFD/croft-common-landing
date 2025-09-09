@@ -38,13 +38,32 @@ export const UnavailableMenuDisplay = () => {
   const sandwiches = menu.sandwiches || [];
   const beverages = menu.beverages || [];
 
+  // Helper function to convert relative URLs to absolute URLs
+  const getAbsoluteImageUrl = (imageUrl: string | null): string | null => {
+    if (!imageUrl) return null;
+    
+    // If already absolute URL, return as is
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
+    }
+    
+    // Convert relative path to absolute URL
+    if (imageUrl.startsWith('/')) {
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+      return `${baseUrl}${imageUrl}`;
+    }
+    
+    return imageUrl;
+  };
+
   // Debug logging for menu data and image URLs
   console.log('🍽️ Menu data loaded:', { sandwiches: sandwiches.length, beverages: beverages.length });
   if (sandwiches.length > 0) {
-    console.log('🥪 Sandwich image URLs:', sandwiches.map(s => ({ name: s.name, url: s.image_url })));
-  }
-  if (beverages.length > 0) {
-    console.log('🥤 Beverage image URLs:', beverages.map(b => ({ name: b.name, url: b.image_url })));
+    console.log('🥪 Sandwich image URLs:', sandwiches.map(s => ({ 
+      name: s.name, 
+      original: s.image_url, 
+      resolved: getAbsoluteImageUrl(s.image_url) 
+    })));
   }
 
   return (
@@ -65,33 +84,37 @@ export const UnavailableMenuDisplay = () => {
           </div>
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
-            {sandwiches.map((item) => (
-              <Card key={item.id} className="h-full overflow-hidden">
-                {item.image_url && (
-                  <div className="aspect-[4/3] relative">
-                    <img
-                      src={item.image_url}
-                      alt={`${item.name} sandwich`}
-                      className="w-full h-full object-cover"
-                      onLoad={() => console.log('✅ Sandwich image loaded:', item.image_url)}
-                      onError={(e) => {
-                        console.error('❌ Sandwich image failed to load:', item.image_url);
-                        console.error('Error details:', e);
-                      }}
-                    />
-                  </div>
-                )}
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-semibold text-lg leading-tight">{item.name}</h4>
-                    <span className="font-bold text-primary text-lg">£{item.price.toFixed(2)}</span>
-                  </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {item.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {sandwiches.map((item) => {
+              const absoluteImageUrl = getAbsoluteImageUrl(item.image_url);
+              return (
+                <Card key={item.id} className="h-full overflow-hidden">
+                  {absoluteImageUrl && (
+                    <div className="aspect-[4/3] relative">
+                      <img
+                        src={absoluteImageUrl}
+                        alt={`${item.name} sandwich`}
+                        className="w-full h-full object-cover"
+                        onLoad={() => console.log('✅ Sandwich image loaded:', absoluteImageUrl)}
+                        onError={(e) => {
+                          console.error('❌ Sandwich image failed to load:', absoluteImageUrl);
+                          console.error('Original URL:', item.image_url);
+                          console.error('Error details:', e);
+                        }}
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-semibold text-lg leading-tight">{item.name}</h4>
+                      <span className="font-bold text-primary text-lg">£{item.price.toFixed(2)}</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {item.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
@@ -105,33 +128,37 @@ export const UnavailableMenuDisplay = () => {
           </div>
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {beverages.map((item) => (
-              <Card key={item.id} className="h-full overflow-hidden">
-                {item.image_url && (
-                  <div className="aspect-[4/3] relative">
-                    <img
-                      src={item.image_url}
-                      alt={`${item.name} beverage`}
-                      className="w-full h-full object-cover"
-                      onLoad={() => console.log('✅ Beverage image loaded:', item.image_url)}
-                      onError={(e) => {
-                        console.error('❌ Beverage image failed to load:', item.image_url);
-                        console.error('Error details:', e);
-                      }}
-                    />
-                  </div>
-                )}
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="font-semibold text-lg leading-tight">{item.name}</h4>
-                    <span className="font-bold text-primary text-lg">£{item.price.toFixed(2)}</span>
-                  </div>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {item.description}
-                  </p>
-                </CardContent>
-              </Card>
-            ))}
+            {beverages.map((item) => {
+              const absoluteImageUrl = getAbsoluteImageUrl(item.image_url);
+              return (
+                <Card key={item.id} className="h-full overflow-hidden">
+                  {absoluteImageUrl && (
+                    <div className="aspect-[4/3] relative">
+                      <img
+                        src={absoluteImageUrl}
+                        alt={`${item.name} beverage`}
+                        className="w-full h-full object-cover"
+                        onLoad={() => console.log('✅ Beverage image loaded:', absoluteImageUrl)}
+                        onError={(e) => {
+                          console.error('❌ Beverage image failed to load:', absoluteImageUrl);
+                          console.error('Original URL:', item.image_url);
+                          console.error('Error details:', e);
+                        }}
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-4 sm:p-6">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="font-semibold text-lg leading-tight">{item.name}</h4>
+                      <span className="font-bold text-primary text-lg">£{item.price.toFixed(2)}</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {item.description}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       )}
