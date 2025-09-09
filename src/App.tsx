@@ -18,7 +18,7 @@ const Beer = lazy(() => import("./pages/Beer"));
 const Kitchens = lazy(() => import("./pages/Kitchens"));
 const Hall = lazy(() => import("./pages/Hall"));
 const Community = lazy(() => import("./pages/Community"));
-const CommonRoom = lazy(() => import("./pages/CommonRoom"));
+import CommonRoom from "./pages/CommonRoom";
 const CommonRoomMain = lazy(() => import("./pages/CommonRoomMain"));
 const MemberHome = lazy(() => import("./pages/MemberHome"));
 const LunchRun = lazy(() => import("./pages/LunchRun"));
