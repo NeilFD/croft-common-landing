@@ -299,6 +299,7 @@ export default function LunchRun() {
           </div>
         </div>
 
+        <div className="space-y-6">
           {/* Step 1: Time Selection */}
           {orderStep === 'time' && (
             <Card>
@@ -695,10 +696,11 @@ export default function LunchRun() {
             </DialogContent>
           </Dialog>
         </div>
+        </div>
       </div>
       {!isCMSMode && <OptimizedFooter />}
     </div>
   );
 }
 
-// Mobile optimized lunch run interface - v2
+// Mobile optimized lunch run interface
