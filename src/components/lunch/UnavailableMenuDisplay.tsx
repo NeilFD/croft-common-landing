@@ -38,45 +38,45 @@ export const UnavailableMenuDisplay = () => {
   const sandwiches = menu.sandwiches || [];
   const beverages = menu.beverages || [];
 
-  // Helper function to convert image URLs to proper absolute URLs
-  const getProperImageUrl = (imageUrl: string | null): string | null => {
+  // Helper function to try multiple URL formats until one works
+  const getWorkingImageUrl = (imageUrl: string | null): string | null => {
     if (!imageUrl) return null;
     
-    console.log('🔍 Processing image URL:', imageUrl);
+    console.log('🔍 Original image URL:', imageUrl);
     
     // If already absolute URL, return as is
     if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-      console.log('✅ Already absolute URL:', imageUrl);
       return imageUrl;
     }
     
-    // For lovable-uploads paths, convert to absolute URL
+    // For lovable-uploads, try multiple formats
     if (imageUrl.startsWith('/lovable-uploads/')) {
       const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const absoluteUrl = `${baseUrl}${imageUrl}`;
-      console.log('🔗 Converting lovable-uploads URL:', { original: imageUrl, absolute: absoluteUrl });
-      return absoluteUrl;
+      
+      // Try different possible URL formats
+      const possibleUrls = [
+        `${baseUrl}${imageUrl}`, // Direct path
+        imageUrl, // Relative path (let browser resolve)
+        `https://lovable.dev${imageUrl}`, // Lovable CDN
+        `https://cdn.lovable.dev${imageUrl}`, // Potential CDN
+      ];
+      
+      console.log('🧪 Will try these URLs:', possibleUrls);
+      return possibleUrls[0]; // Start with the first one
     }
     
-    // Convert any relative path to absolute URL
-    if (imageUrl.startsWith('/')) {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      const absoluteUrl = `${baseUrl}${imageUrl}`;
-      console.log('🔗 Converting relative URL:', { original: imageUrl, absolute: absoluteUrl });
-      return absoluteUrl;
-    }
-    
-    console.log('📝 Returning URL unchanged:', imageUrl);
     return imageUrl;
   };
 
   // Debug logging for menu data and image URLs
   console.log('🍽️ Menu data loaded:', { sandwiches: sandwiches.length, beverages: beverages.length });
+  console.log('🌐 Current window location:', typeof window !== 'undefined' ? window.location.href : 'server-side');
+  
   if (sandwiches.length > 0) {
     console.log('🥪 Sandwich image URLs:', sandwiches.map(s => ({ 
       name: s.name, 
       original: s.image_url, 
-      resolved: getProperImageUrl(s.image_url) 
+      resolved: getWorkingImageUrl(s.image_url) 
     })));
   }
 
@@ -99,22 +99,53 @@ export const UnavailableMenuDisplay = () => {
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
             {sandwiches.map((item) => {
-              const properImageUrl = getProperImageUrl(item.image_url);
+              const imageUrl = getWorkingImageUrl(item.image_url);
               return (
                 <Card key={item.id} className="h-full overflow-hidden">
-                  {properImageUrl && (
-                    <div className="aspect-[4/3] relative">
-                      <img
-                        src={properImageUrl}
-                        alt={`${item.name} sandwich`}
-                        className="w-full h-full object-cover"
-                        onLoad={() => console.log('✅ Sandwich image loaded:', properImageUrl)}
-                        onError={(e) => {
-                          console.error('❌ Sandwich image failed to load:', properImageUrl);
-                          console.error('Original URL:', item.image_url);
-                          console.error('Error details:', e);
-                        }}
-                      />
+                  {item.image_url ? (
+                    <div className="aspect-[4/3] relative bg-muted">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={`${item.name} sandwich`}
+                          className="w-full h-full object-cover"
+                          onLoad={() => {
+                            console.log('✅ SUCCESS: Image loaded for', item.name);
+                          }}
+                          onError={(e) => {
+                            console.error('❌ FAILED: Image load failed for', item.name);
+                            console.error('URL that failed:', imageUrl);
+                            console.error('Original URL:', item.image_url);
+                            
+                            // Show visible error info
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            
+                            // Add debug info to parent
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `
+                                <div class="p-4 text-xs text-red-600 bg-red-50">
+                                  <div><strong>Image Load Failed</strong></div>
+                                  <div>Original: ${item.image_url}</div>
+                                  <div>Tried: ${imageUrl}</div>
+                                </div>
+                              `;
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-sm">
+                          <div className="text-center">
+                            <div>No image URL</div>
+                            <div className="text-xs mt-1">Original: {item.image_url}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+                      <span className="text-muted-foreground">No image</span>
                     </div>
                   )}
                   <CardContent className="p-4 sm:p-6">
@@ -143,22 +174,53 @@ export const UnavailableMenuDisplay = () => {
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {beverages.map((item) => {
-              const properImageUrl = getProperImageUrl(item.image_url);
+              const imageUrl = getWorkingImageUrl(item.image_url);
               return (
                 <Card key={item.id} className="h-full overflow-hidden">
-                  {properImageUrl && (
-                    <div className="aspect-[4/3] relative">
-                      <img
-                        src={properImageUrl}
-                        alt={`${item.name} beverage`}
-                        className="w-full h-full object-cover"
-                        onLoad={() => console.log('✅ Beverage image loaded:', properImageUrl)}
-                        onError={(e) => {
-                          console.error('❌ Beverage image failed to load:', properImageUrl);
-                          console.error('Original URL:', item.image_url);
-                          console.error('Error details:', e);
-                        }}
-                      />
+                  {item.image_url ? (
+                    <div className="aspect-[4/3] relative bg-muted">
+                      {imageUrl ? (
+                        <img
+                          src={imageUrl}
+                          alt={`${item.name} beverage`}
+                          className="w-full h-full object-cover"
+                          onLoad={() => {
+                            console.log('✅ SUCCESS: Beverage image loaded for', item.name);
+                          }}
+                          onError={(e) => {
+                            console.error('❌ FAILED: Beverage image load failed for', item.name);
+                            console.error('URL that failed:', imageUrl);
+                            console.error('Original URL:', item.image_url);
+                            
+                            // Show visible error info
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            
+                            // Add debug info to parent
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML = `
+                                <div class="p-4 text-xs text-red-600 bg-red-50">
+                                  <div><strong>Beverage Image Failed</strong></div>
+                                  <div>Original: ${item.image_url}</div>
+                                  <div>Tried: ${imageUrl}</div>
+                                </div>
+                              `;
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-sm">
+                          <div className="text-center">
+                            <div>No image URL</div>
+                            <div className="text-xs mt-1">Original: {item.image_url}</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="aspect-[4/3] bg-muted flex items-center justify-center">
+                      <span className="text-muted-foreground">No image</span>
                     </div>
                   )}
                   <CardContent className="p-4 sm:p-6">
