@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Clock, Users, ShoppingCart, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { UnavailableMenuDisplay } from '@/components/lunch/UnavailableMenuDisplay';
 
 // Sandwich images mapping
 const getSandwichImage = (sandwichName: string) => {
@@ -213,7 +214,7 @@ export default function LunchRun() {
       <div className="min-h-screen">
         {!isCMSMode && <OptimizedNavigation />}
         <div className="container mx-auto px-4 py-6 pt-36 md:pt-28">
-          <div className="max-w-2xl mx-auto text-center">
+          <div className="max-w-2xl mx-auto text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold mb-4">The Lunch Run</h1>
             <Card>
               <CardContent className="p-6 md:p-8">
@@ -224,6 +225,8 @@ export default function LunchRun() {
               </CardContent>
             </Card>
           </div>
+          
+          <UnavailableMenuDisplay />
         </div>
         {!isCMSMode && <OptimizedFooter />}
       </div>
