@@ -300,15 +300,23 @@ export default function LunchRun() {
                 <div className="grid md:grid-cols-2 gap-6">
                   {menu.sandwiches.map((sandwich) => {
                     const sandwichImage = getSandwichImage(sandwich.name);
+                    const inCart = cart.find(item => item.id === sandwich.id);
+                    const quantity = inCart?.quantity || 0;
+                    
                     return (
-                      <div key={sandwich.id} className="border rounded-lg overflow-hidden">
+                      <div key={sandwich.id} className={`border rounded-lg overflow-hidden relative ${quantity > 0 ? 'ring-2 ring-primary' : ''}`}>
                         {sandwichImage && (
-                          <div className="aspect-video w-full">
+                          <div className="aspect-video w-full relative">
                             <img
                               src={sandwichImage}
                               alt={sandwich.name}
                               className="w-full h-full object-cover"
                             />
+                            {quantity > 0 && (
+                              <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                                {quantity}
+                              </div>
+                            )}
                           </div>
                         )}
                         <div className="p-4">
@@ -317,14 +325,40 @@ export default function LunchRun() {
                             <Badge variant="secondary">£{sandwich.price.toFixed(2)}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground mb-4">{sandwich.description}</p>
-                          <Button
-                            size="sm"
-                            onClick={() => addToCart(sandwich)}
-                            disabled={getSandwichCount() >= 2}
-                            className="w-full"
-                          >
-                            Add to Order
-                          </Button>
+                          
+                          {quantity > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateCartQuantity(sandwich.id, quantity - 1)}
+                                className="flex-shrink-0"
+                              >
+                                -
+                              </Button>
+                              <span className="font-medium text-center min-w-[3rem]">
+                                {quantity} in cart
+                              </span>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateCartQuantity(sandwich.id, quantity + 1)}
+                                disabled={getSandwichCount() >= 2}
+                                className="flex-shrink-0"
+                              >
+                                +
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              size="sm"
+                              onClick={() => addToCart(sandwich)}
+                              disabled={getSandwichCount() >= 2}
+                              className="w-full"
+                            >
+                              Add to Order
+                            </Button>
+                          )}
                         </div>
                       </div>
                     );
