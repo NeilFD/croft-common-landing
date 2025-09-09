@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import OptimizedImage from "@/components/OptimizedImage";
 import { useLunchRun } from "@/hooks/useLunchRun";
 import { useEffect } from "react";
 
@@ -39,6 +38,15 @@ export const UnavailableMenuDisplay = () => {
   const sandwiches = menu.sandwiches || [];
   const beverages = menu.beverages || [];
 
+  // Debug logging for menu data and image URLs
+  console.log('🍽️ Menu data loaded:', { sandwiches: sandwiches.length, beverages: beverages.length });
+  if (sandwiches.length > 0) {
+    console.log('🥪 Sandwich image URLs:', sandwiches.map(s => ({ name: s.name, url: s.image_url })));
+  }
+  if (beverages.length > 0) {
+    console.log('🥤 Beverage image URLs:', beverages.map(b => ({ name: b.name, url: b.image_url })));
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="text-center mb-8">
@@ -61,12 +69,15 @@ export const UnavailableMenuDisplay = () => {
               <Card key={item.id} className="h-full overflow-hidden">
                 {item.image_url && (
                   <div className="aspect-[4/3] relative">
-                    <OptimizedImage
+                    <img
                       src={item.image_url}
                       alt={`${item.name} sandwich`}
-                      className="w-full h-full"
-                      mobileOptimized={true}
-                      priority={false}
+                      className="w-full h-full object-cover"
+                      onLoad={() => console.log('✅ Sandwich image loaded:', item.image_url)}
+                      onError={(e) => {
+                        console.error('❌ Sandwich image failed to load:', item.image_url);
+                        console.error('Error details:', e);
+                      }}
                     />
                   </div>
                 )}
@@ -98,12 +109,15 @@ export const UnavailableMenuDisplay = () => {
               <Card key={item.id} className="h-full overflow-hidden">
                 {item.image_url && (
                   <div className="aspect-[4/3] relative">
-                    <OptimizedImage
+                    <img
                       src={item.image_url}
                       alt={`${item.name} beverage`}
-                      className="w-full h-full"
-                      mobileOptimized={true}
-                      priority={false}
+                      className="w-full h-full object-cover"
+                      onLoad={() => console.log('✅ Beverage image loaded:', item.image_url)}
+                      onError={(e) => {
+                        console.error('❌ Beverage image failed to load:', item.image_url);
+                        console.error('Error details:', e);
+                      }}
                     />
                   </div>
                 )}
