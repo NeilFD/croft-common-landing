@@ -212,13 +212,13 @@ export default function LunchRun() {
     return (
       <div className="min-h-screen">
         {!isCMSMode && <OptimizedNavigation />}
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-6">
           <div className="max-w-2xl mx-auto text-center">
-            <h1 className="text-3xl font-bold mb-4">The Lunch Run</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">The Lunch Run</h1>
             <Card>
-              <CardContent className="p-8">
-                <p className="text-lg mb-4">{availability?.reason || 'Lunch Run is not available'}</p>
-                <p className="text-muted-foreground">
+              <CardContent className="p-6 md:p-8">
+                <p className="text-base md:text-lg mb-4">{availability?.reason || 'Lunch Run is not available'}</p>
+                <p className="text-sm md:text-base text-muted-foreground">
                   Monday to Friday. Sixty sandwiches. Four builds. Order by 11am. Collect from the counter. Easy.
                 </p>
               </CardContent>
@@ -233,49 +233,71 @@ export default function LunchRun() {
   return (
     <div className="min-h-screen">
       {!isCMSMode && <OptimizedNavigation />}
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-2">The Lunch Run</h1>
-            <p className="text-lg text-muted-foreground">
-              Monday to Friday. Sixty sandwiches. Four builds. Order by 11am. Collect from the counter. Easy.
-            </p>
-            <div className="flex justify-center gap-4 mt-4">
-              <Badge variant="outline">
-                <Users className="w-4 h-4 mr-1" />
-                {availability.totalSandwichesLeft} left today
-              </Badge>
-              <Badge variant="outline">
-                <ShoppingCart className="w-4 h-4 mr-1" />
-                {availability.userSandwichCount}/2 ordered
-              </Badge>
-            </div>
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl md:text-4xl font-bold mb-2">The Lunch Run</h1>
+          <p className="text-base md:text-lg text-muted-foreground">
+            Monday to Friday. Sixty sandwiches. Four builds. Order by 11am. Collect from the counter. Easy.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 mt-4">
+            <Badge variant="outline" className="text-xs md:text-sm">
+              <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+              {availability.totalSandwichesLeft} left today
+            </Badge>
+            <Badge variant="outline" className="text-xs md:text-sm">
+              <ShoppingCart className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+              {availability.userSandwichCount}/2 ordered
+            </Badge>
+          </div>
+        </div>
+
+        {/* Mobile-Optimized Order Steps */}
+        <div className="mb-6">
+          {/* Desktop Progress Steps */}
+          <div className="hidden md:flex items-center justify-center space-x-4">
+            {['time', 'menu', 'details', 'confirm'].map((step, index) => (
+              <React.Fragment key={step}>
+                <div className={`flex items-center space-x-2 ${
+                  orderStep === step ? 'text-primary' : 
+                  ['time', 'menu', 'details', 'confirm'].indexOf(orderStep) > index ? 'text-green-600' : 'text-muted-foreground'
+                }`}>
+                  <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${
+                    orderStep === step ? 'border-primary bg-primary text-primary-foreground' :
+                    ['time', 'menu', 'details', 'confirm'].indexOf(orderStep) > index ? 'border-green-600 bg-green-600 text-white' : 'border-muted-foreground'
+                  }`}>
+                    {['time', 'menu', 'details', 'confirm'].indexOf(orderStep) > index ? 
+                      <CheckCircle className="w-4 h-4" /> : index + 1
+                    }
+                  </div>
+                  <span className="capitalize font-medium">{step === 'time' ? 'Collection Time' : step}</span>
+                </div>
+                {index < 3 && <div className="w-8 h-px bg-muted-foreground"></div>}
+              </React.Fragment>
+            ))}
           </div>
 
-          {/* Order Steps */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center space-x-4">
-              {['time', 'menu', 'details', 'confirm'].map((step, index) => (
-                <React.Fragment key={step}>
-                  <div className={`flex items-center space-x-2 ${
-                    orderStep === step ? 'text-primary' : 
-                    ['time', 'menu', 'details', 'confirm'].indexOf(orderStep) > index ? 'text-green-600' : 'text-muted-foreground'
-                  }`}>
-                    <div className={`w-8 h-8 rounded-full border flex items-center justify-center ${
-                      orderStep === step ? 'border-primary bg-primary text-primary-foreground' :
-                      ['time', 'menu', 'details', 'confirm'].indexOf(orderStep) > index ? 'border-green-600 bg-green-600 text-white' : 'border-muted-foreground'
-                    }`}>
-                      {['time', 'menu', 'details', 'confirm'].indexOf(orderStep) > index ? 
-                        <CheckCircle className="w-4 h-4" /> : index + 1
-                      }
-                    </div>
-                    <span className="capitalize font-medium">{step === 'time' ? 'Collection Time' : step}</span>
-                  </div>
-                  {index < 3 && <div className="w-8 h-px bg-muted-foreground"></div>}
-                </React.Fragment>
-              ))}
-            </div>
+          {/* Mobile Progress Dots */}
+          <div className="md:hidden flex items-center justify-center space-x-2">
+            {['time', 'menu', 'details', 'confirm'].map((step, index) => (
+              <div key={step} className={`w-3 h-3 rounded-full ${
+                orderStep === step ? 'bg-primary' : 
+                ['time', 'menu', 'details', 'confirm'].indexOf(orderStep) > index ? 'bg-green-600' : 'bg-muted-foreground'
+              }`}>
+              </div>
+            ))}
           </div>
+          
+          {/* Mobile Step Title */}
+          <div className="md:hidden text-center mt-2">
+            <span className="text-sm font-medium text-primary capitalize">
+              Step {['time', 'menu', 'details', 'confirm'].indexOf(orderStep) + 1}: {
+                orderStep === 'time' ? 'Collection Time' : 
+                orderStep === 'menu' ? 'Menu Selection' :
+                orderStep === 'details' ? 'Your Details' : 'Confirm Order'
+              }
+            </span>
+          </div>
+        </div>
 
           {/* Step 1: Time Selection */}
           {orderStep === 'time' && (
@@ -290,26 +312,27 @@ export default function LunchRun() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                   {availability.timeSlots?.map((slot: TimeSlot) => (
                     <Button
                       key={slot.id}
                       variant={selectedTimeSlot === slot.time ? "default" : "outline"}
-                      className="h-auto p-4 flex flex-col"
+                      className="h-auto p-3 flex flex-col text-center"
                       disabled={!slot.available}
                       onClick={() => setSelectedTimeSlot(slot.time)}
                     >
-                      <div className="font-semibold">{slot.displayTime}</div>
-                      <div className="text-xs mt-1">
-                        {slot.spotsLeft} spots left
-                      </div>
+                      <span className="font-semibold text-sm md:text-base">{slot.displayTime}</span>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        {slot.available ? `${slot.spotsLeft} spots left` : 'Full'}
+                      </span>
                     </Button>
                   ))}
                 </div>
-                <div className="mt-6 flex justify-end">
+                <div className="flex justify-end mt-6">
                   <Button 
                     onClick={() => setOrderStep('menu')}
                     disabled={!canProceedToMenu()}
+                    className="w-full sm:w-auto"
                   >
                     Continue to Menu
                   </Button>
@@ -328,7 +351,7 @@ export default function LunchRun() {
                   <CardDescription>Choose up to 2 sandwiches (you have {2 - getSandwichCount()} remaining)</CardDescription>
                 </CardHeader>
               <CardContent>
-                <div className="grid md:grid-cols-2 gap-6 md:items-stretch">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {menu.sandwiches.map((sandwich) => {
                     const sandwichImage = getSandwichImage(sandwich.name);
                     const inCart = cart.find(item => item.id === sandwich.id);
@@ -337,14 +360,14 @@ export default function LunchRun() {
                     return (
                       <div key={sandwich.id} className={`border rounded-lg overflow-hidden flex flex-col ${quantity > 0 ? 'ring-2 ring-primary' : ''}`}>
                         {sandwichImage && (
-                          <div className="aspect-video w-full relative">
+                          <div className="aspect-[4/3] w-full relative">
                             <img
                               src={sandwichImage}
                               alt={sandwich.name}
                               className="w-full h-full object-cover"
                             />
                             {quantity > 0 && (
-                              <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center font-bold text-sm">
+                              <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center font-bold text-sm">
                                 {quantity}
                               </div>
                             )}
@@ -352,10 +375,10 @@ export default function LunchRun() {
                         )}
                         <div className="p-4 flex flex-col flex-grow">
                           <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-lg">{sandwich.name}</h3>
-                            <Badge variant="secondary">£{sandwich.price.toFixed(2)}</Badge>
+                            <h3 className="font-semibold text-base md:text-lg">{sandwich.name}</h3>
+                            <Badge variant="secondary" className="ml-2 shrink-0">£{sandwich.price.toFixed(2)}</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground mb-4 flex-grow">{sandwich.description}</p>
+                          <p className="text-xs md:text-sm text-muted-foreground mb-4 flex-grow leading-relaxed">{sandwich.description}</p>
                           
                           {quantity > 0 ? (
                             <div className="flex items-center gap-2">
@@ -363,11 +386,11 @@ export default function LunchRun() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateCartQuantity(sandwich.id, quantity - 1)}
-                                className="flex-shrink-0"
+                                className="flex-shrink-0 w-8 h-8 p-0"
                               >
                                 -
                               </Button>
-                              <span className="font-medium text-center min-w-[3rem]">
+                              <span className="font-medium text-center text-sm min-w-[4rem]">
                                 {quantity} in cart
                               </span>
                               <Button
@@ -375,7 +398,7 @@ export default function LunchRun() {
                                 variant="outline"
                                 onClick={() => updateCartQuantity(sandwich.id, quantity + 1)}
                                 disabled={getSandwichCount() >= 2}
-                                className="flex-shrink-0"
+                                className="flex-shrink-0 w-8 h-8 p-0"
                               >
                                 +
                               </Button>
@@ -405,7 +428,7 @@ export default function LunchRun() {
                   <CardDescription>Add some drinks to your order</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                     {menu.beverages.map((beverage) => {
                       const inCart = cart.find(item => item.id === beverage.id);
                       const quantity = inCart?.quantity || 0;
@@ -413,12 +436,12 @@ export default function LunchRun() {
                       return (
                         <div key={beverage.id} className={`border rounded-lg p-3 text-center relative ${quantity > 0 ? 'ring-2 ring-primary' : ''}`}>
                           {quantity > 0 && (
-                            <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center font-bold text-xs">
+                            <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center font-bold text-xs">
                               {quantity}
                             </div>
                           )}
-                          <h4 className="font-medium mb-1">{beverage.name}</h4>
-                          <Badge variant="outline" className="mb-2">£{beverage.price.toFixed(2)}</Badge>
+                          <h4 className="font-medium mb-1 text-sm">{beverage.name}</h4>
+                          <Badge variant="outline" className="mb-2 text-xs">£{beverage.price.toFixed(2)}</Badge>
                           
                           {quantity > 0 ? (
                             <div className="flex items-center gap-1 justify-center">
@@ -426,16 +449,16 @@ export default function LunchRun() {
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateCartQuantity(beverage.id, quantity - 1)}
-                                className="w-8 h-8 p-0"
+                                className="w-7 h-7 p-0 text-xs"
                               >
                                 -
                               </Button>
-                              <span className="font-medium text-xs px-2">{quantity}</span>
+                              <span className="font-medium text-xs px-1 min-w-[1.5rem]">{quantity}</span>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateCartQuantity(beverage.id, quantity + 1)}
-                                className="w-8 h-8 p-0"
+                                className="w-7 h-7 p-0 text-xs"
                               >
                                 +
                               </Button>
@@ -445,7 +468,7 @@ export default function LunchRun() {
                               size="sm"
                               variant="outline"
                               onClick={() => addToCart(beverage)}
-                              className="w-full"
+                              className="w-full text-xs h-7"
                             >
                               Add
                             </Button>
@@ -464,37 +487,39 @@ export default function LunchRun() {
                     <CardTitle>Your Order</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2 mb-4">
+                    <div className="space-y-3 mb-4">
                       {cart.map((item) => (
-                        <div key={item.id} className="flex justify-between items-center">
-                          <div>
-                            <span className="font-medium">{item.name}</span>
-                            <div className="flex items-center gap-2 mt-1">
+                        <div key={item.id} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                          <div className="flex-1">
+                            <span className="font-medium text-sm md:text-base">{item.name}</span>
+                            <div className="flex items-center gap-2 mt-2">
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
+                                className="w-7 h-7 p-0"
                               >
                                 -
                               </Button>
-                              <span>{item.quantity}</span>
+                              <span className="text-sm min-w-[1.5rem] text-center">{item.quantity}</span>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
                                 disabled={item.category === 'sandwich' && getSandwichCount() >= 2}
+                                className="w-7 h-7 p-0"
                               >
                                 +
                               </Button>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div>£{(item.price * item.quantity).toFixed(2)}</div>
+                          <div className="text-right ml-4">
+                            <div className="font-medium">£{(item.price * item.quantity).toFixed(2)}</div>
                             <Button
                               size="sm"
                               variant="ghost"
                               onClick={() => removeFromCart(item.id)}
-                              className="text-destructive hover:text-destructive"
+                              className="text-destructive hover:text-destructive text-xs h-6 mt-1 p-1"
                             >
                               Remove
                             </Button>
@@ -507,8 +532,8 @@ export default function LunchRun() {
                       <span>Total</span>
                       <span>£{getCartTotal().toFixed(2)}</span>
                     </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button variant="outline" onClick={() => setOrderStep('time')}>
+                    <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                      <Button variant="outline" onClick={() => setOrderStep('time')} className="w-full sm:w-auto">
                         Back
                       </Button>
                       <Button 
@@ -533,23 +558,25 @@ export default function LunchRun() {
                 <CardDescription>We need your details for order collection</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="memberName">Full Name *</Label>
-                  <Input
-                    id="memberName"
-                    value={memberName}
-                    onChange={(e) => setMemberName(e.target.value)}
-                    placeholder="Your full name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="memberPhone">Phone Number *</Label>
-                  <Input
-                    id="memberPhone"
-                    value={memberPhone}
-                    onChange={(e) => setMemberPhone(e.target.value)}
-                    placeholder="Your phone number"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="memberName">Full Name *</Label>
+                    <Input
+                      id="memberName"
+                      value={memberName}
+                      onChange={(e) => setMemberName(e.target.value)}
+                      placeholder="Your full name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="memberPhone">Phone Number *</Label>
+                    <Input
+                      id="memberPhone"
+                      value={memberPhone}
+                      onChange={(e) => setMemberPhone(e.target.value)}
+                      placeholder="Your phone number"
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="notes">Special Instructions (Optional)</Label>
@@ -561,8 +588,8 @@ export default function LunchRun() {
                     rows={3}
                   />
                 </div>
-                <div className="flex gap-2 pt-4">
-                  <Button variant="outline" onClick={() => setOrderStep('menu')}>
+                <div className="flex flex-col sm:flex-row gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setOrderStep('menu')} className="w-full sm:w-auto">
                     Back to Menu
                   </Button>
                   <Button 
@@ -585,38 +612,44 @@ export default function LunchRun() {
                 <CardDescription>Please review your order before submitting</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <h3 className="font-semibold mb-2">Collection Details</h3>
-                  <p>Time: {availability.timeSlots?.find((slot: TimeSlot) => slot.time === selectedTimeSlot)?.displayTime}</p>
-                  <p>Date: {new Date(orderDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-                
-                <div>
-                  <h3 className="font-semibold mb-2">Member Details</h3>
-                  <p>Name: {memberName}</p>
-                  <p>Phone: {memberPhone}</p>
-                  {notes && <p>Notes: {notes}</p>}
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold mb-2 text-sm md:text-base">Collection Details</h3>
+                    <div className="text-sm space-y-1">
+                      <p><span className="font-medium">Time:</span> {availability.timeSlots?.find((slot: TimeSlot) => slot.time === selectedTimeSlot)?.displayTime}</p>
+                      <p><span className="font-medium">Date:</span> {new Date(orderDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="font-semibold mb-2 text-sm md:text-base">Member Details</h3>
+                    <div className="text-sm space-y-1">
+                      <p><span className="font-medium">Name:</span> {memberName}</p>
+                      <p><span className="font-medium">Phone:</span> {memberPhone}</p>
+                      {notes && <p><span className="font-medium">Notes:</span> {notes}</p>}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold mb-2 text-sm md:text-base">Order Summary</h3>
+                    <div className="space-y-2">
+                      {cart.map((item) => (
+                        <div key={item.id} className="flex justify-between text-sm p-2 bg-muted/50 rounded">
+                          <span>{item.quantity}x {item.name}</span>
+                          <span className="font-medium">£{(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Separator className="my-3" />
+                    <div className="flex justify-between font-semibold text-base md:text-lg">
+                      <span>Total</span>
+                      <span>£{getCartTotal().toFixed(2)}</span>
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <h3 className="font-semibold mb-2">Order Summary</h3>
-                  <div className="space-y-1">
-                    {cart.map((item) => (
-                      <div key={item.id} className="flex justify-between">
-                        <span>{item.quantity}x {item.name}</span>
-                        <span>£{(item.price * item.quantity).toFixed(2)}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <Separator className="my-2" />
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Total</span>
-                    <span>£{getCartTotal().toFixed(2)}</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setOrderStep('details')}>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button variant="outline" onClick={() => setOrderStep('details')} className="w-full sm:w-auto">
                     Back
                   </Button>
                   <Button 
@@ -640,22 +673,22 @@ export default function LunchRun() {
 
           {/* Order Complete Dialog */}
           <Dialog open={orderComplete} onOpenChange={setOrderComplete}>
-            <DialogContent>
+            <DialogContent className="mx-4 max-w-md">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
+                <DialogTitle className="flex items-center gap-2 text-base md:text-lg">
                   <CheckCircle className="w-5 h-5 text-green-600" />
                   Order Confirmed!
                 </DialogTitle>
-                <DialogDescription className="space-y-2">
+                <DialogDescription className="space-y-2 text-sm">
                   <p>Your lunch order has been placed successfully.</p>
-                  <p>Collection: {availability.timeSlots?.find((slot: TimeSlot) => slot.time === selectedTimeSlot)?.displayTime}</p>
-                  <p className="text-sm text-muted-foreground mt-4">
+                  <p><span className="font-medium">Collection:</span> {availability.timeSlots?.find((slot: TimeSlot) => slot.time === selectedTimeSlot)?.displayTime}</p>
+                  <p className="text-xs text-muted-foreground mt-4">
                     You will receive a confirmation and we'll have your order ready for collection at the counter.
                   </p>
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-end">
-                <Button onClick={() => navigate('/common-room/member')}>
+                <Button onClick={() => navigate('/common-room/member')} className="w-full sm:w-auto">
                   Back to Member Area
                 </Button>
               </div>
@@ -667,3 +700,5 @@ export default function LunchRun() {
     </div>
   );
 }
+
+// Mobile optimized lunch run interface - v2
