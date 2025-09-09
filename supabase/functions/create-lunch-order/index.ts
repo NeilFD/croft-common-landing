@@ -65,13 +65,13 @@ serve(async (req) => {
       throw new Error("Orders can only be placed for weekdays");
     }
 
-    // Check cutoff time (11 AM)
+    // Check cutoff time (3 PM for testing)
     const now = new Date();
     const today = now.toISOString().split('T')[0];
-    const cutoffTime = new Date(`${today}T11:00:00`);
+    const cutoffTime = new Date(`${today}T15:00:00`);
     
     if (orderData.orderDate === today && now > cutoffTime) {
-      throw new Error("Orders must be placed before 11:00 AM");
+      throw new Error("Orders must be placed before 3:00 PM");
     }
 
     // Count sandwiches in order
