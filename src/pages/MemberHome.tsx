@@ -187,21 +187,21 @@ const MemberHome: React.FC = () => {
                 </Button>
                 
                 <Link to="/common-room/member/lunch-run">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
                     <Coffee className="h-4 w-4 mr-1" />
                     Lunch Run
                   </Button>
                 </Link>
                 
                 <Link to="/common-room/member/profile">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
                     <User className="h-4 w-4 mr-1" />
                     Profile
                   </Button>
                 </Link>
                 
                 <Link to="/common-room/member/moments">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:border-pink-500 hover:text-pink-500 transition-all duration-200">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
                     <Camera className="h-4 w-4 mr-1" />
                     Moments
                   </Button>
