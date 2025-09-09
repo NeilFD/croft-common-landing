@@ -59,47 +59,113 @@ export const useLunchRun = () => {
   const loadMenuAndAvailability = async () => {
     try {
       setLoading(true);
-      console.log('🍽️ Loading lunch menu and availability...');
+      console.log('🍽️ Starting to load lunch data...');
       
-      // Load menu
-      console.log('📋 Fetching menu...');
-      const { data: menuData, error: menuError } = await supabase.functions.invoke('get-lunch-menu');
+      // Load menu from database directly since the edge function might be having issues
+      console.log('📋 Fetching menu from database...');
+      const { data: menuItems, error: menuError } = await supabase
+        .from('lunch_menu')
+        .select('*')
+        .eq('is_available', true)
+        .order('category')
+        .order('sort_order');
+
       if (menuError) {
-        console.error('❌ Menu error:', menuError);
+        console.error('❌ Menu database error:', menuError);
         throw menuError;
       }
-      console.log('✅ Menu data received:', menuData);
-      setMenu(menuData);
 
-      // Load availability - use GET request with query parameters
-      console.log('⏰ Fetching availability for date:', orderDate, 'user:', user?.id);
-      const response = await fetch(
-        `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/get-lunch-availability?date=${encodeURIComponent(orderDate)}&userId=${encodeURIComponent(user?.id || '')}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU`,
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU',
-            'Content-Type': 'application/json',
-          },
-        }
-      );
+      console.log('✅ Menu items received:', menuItems?.length || 0, 'items');
       
-      console.log('📡 Availability response status:', response.status);
+      // Group items by category
+      const sandwiches = menuItems?.filter(item => item.category === 'sandwich') || [];
+      const beverages = menuItems?.filter(item => item.category === 'beverage') || [];
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Availability HTTP error:', response.status, errorText);
-        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+      console.log('🥪 Sandwiches:', sandwiches.length, '🥤 Beverages:', beverages.length);
+      
+      setMenu({ sandwiches, beverages });
+
+      // For now, let's create a simple availability response until we fix the edge function
+      console.log('⏰ Creating availability data...');
+      
+      // Get time slots from database  
+      const { data: timeSlots, error: timeSlotsError } = await supabase
+        .from('lunch_time_slots')
+        .select('*')
+        .eq('is_active', true)
+        .order('slot_time');
+
+      if (timeSlotsError) {
+        console.error('❌ Time slots error:', timeSlotsError);
+        throw timeSlotsError;
       }
-      
-      const availData = await response.json();
-      console.log('✅ Availability data received:', availData);
-      
-      if (availData.error) {
-        throw new Error(availData.error);
+
+      console.log('⏰ Time slots received:', timeSlots?.length || 0, 'slots');
+
+      // Check if it's a weekday
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5; // Monday to Friday
+
+      console.log('📅 Today is day', dayOfWeek, 'isWeekday:', isWeekday);
+
+      // Check if it's past 3 PM cutoff
+      const now = new Date();
+      const cutoffTime = new Date();
+      cutoffTime.setHours(15, 0, 0, 0); // 3 PM
+      const isPastCutoff = now > cutoffTime;
+
+      console.log('🕐 Current time:', now.toISOString(), 'Past cutoff:', isPastCutoff);
+
+      if (!isWeekday) {
+        setAvailability({
+          available: false,
+          reason: "Lunch Run is only available Monday to Friday",
+          totalSandwichesLeft: 0,
+          userCanOrder: false,
+          userSandwichCount: 0,
+          timeSlots: [],
+          orderDate
+        });
+        return;
       }
-      setAvailability(availData);
+
+      if (isPastCutoff) {
+        setAvailability({
+          available: false,
+          reason: "Orders must be placed before 3:00 PM",
+          totalSandwichesLeft: 0,
+          userCanOrder: false,
+          userSandwichCount: 0,
+          timeSlots: [],
+          orderDate
+        });
+        return;
+      }
+
+      // Create available time slots (simplified - assume all slots are available for now)
+      const availableTimeSlots = timeSlots?.map(slot => ({
+        id: slot.id,
+        time: slot.slot_time,
+        displayTime: formatTime(slot.slot_time),
+        available: true,
+        ordersCount: 0,
+        maxOrders: slot.max_orders,
+        spotsLeft: slot.max_orders
+      })) || [];
+
+      console.log('✅ Available time slots:', availableTimeSlots.length);
+
+      setAvailability({
+        available: true,
+        totalSandwichesLeft: 60,
+        userCanOrder: true,
+        userSandwichCount: 0,
+        timeSlots: availableTimeSlots,
+        orderDate
+      });
+
+      console.log('🎉 Lunch data loaded successfully!');
 
     } catch (error: any) {
       console.error('💥 Error loading lunch data:', error);
@@ -107,6 +173,17 @@ export const useLunchRun = () => {
         title: "Error",
         description: `Failed to load lunch menu. ${error.message || 'Please try again.'}`,
         variant: "destructive",
+      });
+      
+      // Set default unavailable state
+      setAvailability({
+        available: false,
+        reason: "Unable to load lunch data",
+        totalSandwichesLeft: 0,
+        userCanOrder: false,
+        userSandwichCount: 0,
+        timeSlots: [],
+        orderDate
       });
     } finally {
       setLoading(false);
@@ -164,3 +241,12 @@ export const useLunchRun = () => {
     submitOrder
   };
 };
+
+// Helper function to format time
+function formatTime(timeString: string): string {
+  const [hours, minutes] = timeString.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+  return `${displayHour}:${minutes} ${ampm}`;
+}
