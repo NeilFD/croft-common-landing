@@ -171,7 +171,7 @@ const MemberHome: React.FC = () => {
                   Welcome back, {memberStats.user.first_name || 'Member'}!
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                  {memberStats.profile.tier_badge} member since {new Date(memberStats.profile.join_date).toLocaleDateString()}
+                  Member since {new Date(memberStats.profile.join_date).toLocaleDateString()}
                 </p>
               </div>
               
