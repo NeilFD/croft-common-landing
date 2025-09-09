@@ -38,7 +38,7 @@ export const UnavailableMenuDisplay = () => {
   const sandwiches = menu.sandwiches || [];
   const beverages = menu.beverages || [];
 
-  // Helper function to try multiple URL formats until one works
+  // Helper function to get the correct Lovable upload URL
   const getWorkingImageUrl = (imageUrl: string | null): string | null => {
     if (!imageUrl) return null;
     
@@ -49,20 +49,12 @@ export const UnavailableMenuDisplay = () => {
       return imageUrl;
     }
     
-    // For lovable-uploads, try multiple formats
+    // For lovable-uploads, use the sandbox domain directly
     if (imageUrl.startsWith('/lovable-uploads/')) {
-      const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-      
-      // Try different possible URL formats
-      const possibleUrls = [
-        `${baseUrl}${imageUrl}`, // Direct path
-        imageUrl, // Relative path (let browser resolve)
-        `https://lovable.dev${imageUrl}`, // Lovable CDN
-        `https://cdn.lovable.dev${imageUrl}`, // Potential CDN
-      ];
-      
-      console.log('🧪 Will try these URLs:', possibleUrls);
-      return possibleUrls[0]; // Start with the first one
+      // Use the current sandbox domain from the browser
+      const sandboxUrl = `https://410602d4-4805-4fdf-8c51-900e548d9b20.sandbox.lovable.dev${imageUrl}`;
+      console.log('🔧 Resolved to sandbox URL:', sandboxUrl);
+      return sandboxUrl;
     }
     
     return imageUrl;
