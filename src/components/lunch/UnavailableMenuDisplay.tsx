@@ -11,7 +11,7 @@ export const UnavailableMenuDisplay = () => {
   useEffect(() => {
     console.log('📱 UnavailableMenuDisplay mounted, calling loadMenuAndAvailability');
     loadMenuAndAvailability();
-  }, []);
+  }, [loadMenuAndAvailability]);
 
   if (loading) {
     return (

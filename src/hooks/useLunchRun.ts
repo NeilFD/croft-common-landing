@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -50,12 +50,7 @@ export const useLunchRun = () => {
 
   const orderDate = new Date().toISOString().split('T')[0];
 
-  useEffect(() => {
-    // Load menu data on component mount
-    loadMenuAndAvailability();
-  }, []); // Remove user.id dependency since we now handle non-authenticated users
-
-  const loadMenuAndAvailability = async () => {
+  const loadMenuAndAvailability = useCallback(async () => {
     try {
       setLoading(true);
       console.log('🍽️ Starting to load lunch data...');
@@ -156,7 +151,12 @@ export const useLunchRun = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id, orderDate, toast]);
+
+  useEffect(() => {
+    // Load menu data on component mount
+    loadMenuAndAvailability();
+  }, [loadMenuAndAvailability]);
 
   const submitOrder = async (orderData: {
     orderDate: string;
