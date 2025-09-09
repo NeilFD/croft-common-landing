@@ -44,17 +44,17 @@ serve(async (req) => {
       );
     }
 
-    // Check if it's past 11 AM cutoff
+    // Check if it's past 3 PM cutoff
     const now = new Date();
     const today = now.toISOString().split('T')[0];
-    const cutoffTime = new Date(`${today}T11:00:00`);
+    const cutoffTime = new Date(`${today}T15:00:00`);
     const isPastCutoff = date === today && now > cutoffTime;
 
     if (isPastCutoff) {
       return new Response(
         JSON.stringify({
           available: false,
-          reason: "Orders must be placed before 11:00 AM",
+          reason: "Orders must be placed before 3:00 PM",
           timeSlots: []
         }),
         {
