@@ -1,7 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-
 import { useLunchRun } from "@/hooks/useLunchRun";
 import { useEffect } from "react";
 
@@ -38,8 +37,6 @@ export const UnavailableMenuDisplay = () => {
 
   const sandwiches = menu.sandwiches || [];
   const beverages = menu.beverages || [];
-
-
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
