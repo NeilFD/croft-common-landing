@@ -16,7 +16,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Marinated Gordal Olives, Orange Zest",
         description: "plump, green, briny.",
-        price: "£4"
+        price: "£6"
       },
       {
         name: "Wood Oven Flatbread, Smoked Butter",
