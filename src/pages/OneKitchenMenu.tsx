@@ -37,37 +37,37 @@ const OneKitchenMenu = () => {
         </section>
 
         {/* Menu Content */}
-        <main className="container mx-auto px-4 py-12 md:py-16">
-          <div className="max-w-4xl mx-auto space-y-16">
+        <main className="container mx-auto px-4 py-8 md:py-12">
+          <div className="max-w-4xl mx-auto space-y-12">
             {oneKitchenMenuData.map((section, sectionIndex) => (
-              <section key={section.title} className="space-y-8">
+              <section key={section.title} className="space-y-6">
                 {/* Section Title */}
-                <div className="text-center">
-                  <h3 className="font-brutalist text-3xl md:text-4xl tracking-wider uppercase text-foreground mb-6">
+                <div className="text-left">
+                  <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
                     {section.title}
                   </h3>
-                  <div className="w-16 h-0.5 bg-accent-pink mx-auto"></div>
+                  <div className="w-12 h-0.5 bg-accent-pink"></div>
                 </div>
 
                 {/* Menu Items */}
-                <div className="space-y-6">
+                <div className="space-y-3">
                   {section.items.map((item, itemIndex) => (
                     <div 
                       key={itemIndex}
-                      className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 pb-4 border-b border-border/30 last:border-b-0"
+                      className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
                     >
-                      <div className="flex-1 space-y-1">
-                        <h4 className="font-industrial text-lg md:text-xl font-medium text-foreground leading-tight">
+                      <div className="flex-1 space-y-0.5">
+                        <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
                           {item.name}
                         </h4>
                         {item.description && (
-                          <p className="font-industrial text-sm md:text-base text-muted-foreground italic">
+                          <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
                             {item.description}
                           </p>
                         )}
                       </div>
-                      <div className="flex-shrink-0 md:ml-4">
-                        <span className="font-brutalist text-lg md:text-xl font-bold text-accent-pink">
+                      <div className="flex-shrink-0 ml-6">
+                        <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
                           {item.price}
                         </span>
                       </div>
@@ -77,8 +77,8 @@ const OneKitchenMenu = () => {
 
                 {/* Section Divider */}
                 {sectionIndex < oneKitchenMenuData.length - 1 && (
-                  <div className="flex justify-center pt-8">
-                    <div className="w-32 h-0.5 bg-border"></div>
+                  <div className="flex justify-start pt-6">
+                    <div className="w-24 h-0.5 bg-border/40"></div>
                   </div>
                 )}
               </section>
