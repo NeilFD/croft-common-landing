@@ -21,7 +21,7 @@ const OneKitchenMenu = () => {
         <Navigation />
         
         {/* Hero Section */}
-        <section className="relative bg-[hsl(var(--accent-pink))] py-16 md:py-24">
+        <section className="relative bg-[hsl(var(--accent-pink))] pt-20 pb-16 md:py-24">
           <div className="container mx-auto px-4">
             <div className="text-center text-white">
               <div className="w-24 h-0.5 bg-white mx-auto mb-8"></div>
