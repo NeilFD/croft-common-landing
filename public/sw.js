@@ -50,17 +50,19 @@ self.addEventListener('fetch', event => {
 
   // Handle same-origin requests
   if (url.origin === self.location.origin) {
-    // Dynamic images strategy (uploads): stale-while-revalidate
+    // Dynamic images strategy (uploads): network-first for fresh CMS content
     if (url.pathname.startsWith('/lovable-uploads/')) {
       event.respondWith(
-        caches.open(CACHE_NAME).then(cache => {
-          return cache.match(event.request).then(cachedResponse => {
-            const fetchPromise = fetch(event.request).then(networkResponse => {
-              cache.put(event.request, networkResponse.clone());
-              return networkResponse;
-            }).catch(() => cachedResponse);
-            
-            return cachedResponse || fetchPromise;
+        fetch(event.request).then(networkResponse => {
+          // Successfully fetched from network - cache and return
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+          });
+          return networkResponse;
+        }).catch(() => {
+          // Network failed - try cache as fallback
+          return caches.open(CACHE_NAME).then(cache => {
+            return cache.match(event.request);
           });
         })
       );
