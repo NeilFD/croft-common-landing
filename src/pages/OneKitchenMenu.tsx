@@ -26,19 +26,16 @@ const OneKitchenMenu = () => {
             <div className="text-center text-white">
               <div className="w-24 h-0.5 bg-white mx-auto mb-8"></div>
               <h1 className="font-brutalist text-4xl md:text-6xl lg:text-7xl tracking-wider uppercase mb-4">
-                OneKitchen
+                Croft Common Kitchen
               </h1>
-              <h2 className="font-brutalist text-2xl md:text-3xl tracking-wider uppercase mb-8">
-                Menu
-              </h2>
               <div className="w-24 h-0.5 bg-white mx-auto"></div>
             </div>
           </div>
         </section>
 
         {/* Menu Content */}
-        <main className="container mx-auto px-4 py-8 md:py-12">
-          <div className="max-w-4xl mx-auto space-y-12">
+        <main className="px-4 py-8 md:py-12">
+          <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
             {oneKitchenMenuData.map((section, sectionIndex) => (
               <section key={section.title} className="space-y-6">
                 {/* Section Title */}
