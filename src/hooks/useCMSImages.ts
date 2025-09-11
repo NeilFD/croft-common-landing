@@ -43,16 +43,29 @@ export const useCMSImages = (
         }
 
         if (data && data.length > 0) {
-          // Transform CMS data to HeroImage format
-          const transformedImages: HeroImage[] = data.map((item: any) => ({
-            src: item.image_url,
-            type: item.metadata?.type || 'dark',
-            overlay: item.metadata?.overlay || '',
-            backgroundPosition: item.metadata?.backgroundPosition,
-            backgroundSize: item.metadata?.backgroundSize,
-          }));
+          // Transform CMS data to HeroImage format with validation
+          const transformedImages: HeroImage[] = [];
+          
+          for (const item of data) {
+            // Validate image URL exists and is accessible
+            if (item.image_url && item.image_url.trim()) {
+              const metadata = item.metadata as any;
+              transformedImages.push({
+                src: item.image_url,
+                type: metadata?.type || 'dark',
+                overlay: metadata?.overlay || 'bg-void/20', // Default overlay for CMS images
+                backgroundPosition: metadata?.backgroundPosition,
+                backgroundSize: metadata?.backgroundSize,
+              });
+            }
+          }
 
-          setImages(transformedImages);
+          if (transformedImages.length > 0) {
+            setImages(transformedImages);
+          } else if (options.fallbackImages) {
+            // Use fallback if no valid CMS images
+            setImages(options.fallbackImages);
+          }
         } else if (options.fallbackImages) {
           // Use fallback images if no CMS images found
           setImages(options.fallbackImages);

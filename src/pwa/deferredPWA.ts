@@ -10,6 +10,20 @@ export const initializePWA = async () => {
     return;
   }
   
+  // Force cache refresh by updating cache version
+  if ('caches' in window) {
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames
+          .filter(name => name.includes('images-mobile-v') || name.includes('hero-images'))
+          .map(name => caches.delete(name))
+      );
+    } catch (e) {
+      console.warn('Cache refresh failed:', e);
+    }
+  }
+  
   // Preload critical brand assets
   const link = document.createElement('link');
   link.rel = 'preload';
