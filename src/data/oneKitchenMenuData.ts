@@ -51,7 +51,7 @@ export const oneKitchenMenuData: MenuSection[] = [
     ]
   },
   {
-    title: "Small",
+    title: "Small Plates",
     items: [
       {
         name: "Charred Octopus, Potato, Aioli",
