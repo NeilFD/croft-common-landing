@@ -47,6 +47,7 @@ const CMSVisual = lazy(() => import("./pages/CMSVisual"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const SecretKitchens = lazy(() => import("./pages/SecretKitchens"));
 const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
+const OneKitchenMenu = lazy(() => import("./pages/OneKitchenMenu"));
 
 // Optimized imports that load immediately
 import RouteImagePreloader from '@/components/RouteImagePreloader';
@@ -148,6 +149,7 @@ const App = () => (
                     <Route path="/cocktails" element={<Cocktails />} />
                     <Route path="/beer" element={<Beer />} />
                     <Route path="/kitchens" element={<Kitchens />} />
+                    <Route path="/onekitchen-menu" element={<OneKitchenMenu />} />
                     <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
                     <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
                     <Route path="/hall" element={<Hall />} />
