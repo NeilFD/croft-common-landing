@@ -11,7 +11,7 @@ import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler
 import NudgeFloatingButton from './components/NudgeFloatingButton';
 
 // Lazy load pages for better performance
-const Index = lazy(() => import("./pages/Index"));
+import Index from "./pages/Index";
 const Cafe = lazy(() => import("./pages/Cafe"));
 const Cocktails = lazy(() => import("./pages/Cocktails"));
 const Beer = lazy(() => import("./pages/Beer"));

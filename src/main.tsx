@@ -28,8 +28,13 @@ if (
   createRoot(document.getElementById("root")!).render(<App />);
   
   // Initialize PWA earlier and with better timing
-  requestAnimationFrame(async () => {
-    const { initializePWA } = await import('./pwa/deferredPWA');
-    initializePWA();
+  requestAnimationFrame(() => {
+    import('./pwa/deferredPWA')
+      .then(({ initializePWA }) => {
+        if (typeof initializePWA === 'function') initializePWA();
+      })
+      .catch((err) => {
+        console.warn('PWA init skipped:', err);
+      });
   });
 }
