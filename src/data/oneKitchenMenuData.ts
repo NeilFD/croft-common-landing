@@ -451,7 +451,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Croft Common Full English",
         description: "rare breed sausage, smoked bacon, fried egg, tomato, mushroom, beans, sourdough.",
-        price: "£12"
+        price: "£14"
       },
       {
         name: "Veggie English",
@@ -461,27 +461,27 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Eggs Benedict",
         description: "poached eggs, ham hock, hollandaise, muffin.",
-        price: "£10"
+        price: "£12"
       },
       {
         name: "Eggs Florentine",
         description: "poached eggs, spinach, hollandaise, muffin.",
-        price: "£9"
+        price: "£10"
       },
       {
         name: "Shakshuka",
         description: "spiced tomato, baked eggs, yoghurt, flatbread.",
-        price: "£9"
+        price: "£10"
       },
       {
         name: "Avocado & Poached Egg",
         description: "chilli, lime, pumpkin seeds, sourdough.",
-        price: "£9"
+        price: "£12"
       },
       {
         name: "Overnight Oats",
         description: "rolled oats, almond milk, berries, toasted seeds.",
-        price: "£6"
+        price: "£8"
       },
       {
         name: "Greek Yoghurt Bowl",
@@ -496,22 +496,22 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Butter Croissant",
         description: "classic, flaky, French butter.",
-        price: "£3"
+        price: "£4"
       },
       {
         name: "Pain au Chocolat",
         description: "dark chocolate, laminated pastry.",
-        price: "£3.50"
+        price: "£4.5"
       },
       {
         name: "Almond Croissant",
         description: "filled, dusted, rich.",
-        price: "£4"
+        price: "£4.50"
       },
       {
         name: "Cinnamon Swirl",
         description: "buttery roll, sugar crust.",
-        price: "£3.50"
+        price: "£4.50"
       },
       {
         name: "Morning Bun",
@@ -531,7 +531,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Reuben",
         description: "salt beef, sauerkraut, Swiss cheese, Russian dressing, rye.",
-        price: "£10"
+        price: "£12"
       },
       {
         name: "Caprese",
@@ -546,7 +546,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Roast Chicken Caesar",
         description: "chicken, anchovy mayo, parmesan, cos lettuce, sourdough.",
-        price: "£9"
+        price: "£10"
       }
     ]
   },
@@ -571,7 +571,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Heritage Tomato & Burrata",
         description: "ripe tomatoes, creamy burrata, basil oil, sourdough crumbs.",
-        price: "£10"
+        price: "£12"
       },
       {
         name: "Sesame Soba Noodles",
@@ -621,7 +621,7 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Pistachio & Rose Cake",
         description: "nutty, floral, light sponge.",
-        price: "£5"
+        price: "£6"
       },
       {
         name: "Chocolate Babka",
