@@ -969,11 +969,12 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Organiser selects 3 starters, 3 mains, 3 desserts. Guests pre-order. Individually priced, spend builds per guest.",
         description: ""
-      },
-      {
-        name: "Starters",
-        description: ""
-      },
+      }
+    ]
+  },
+  {
+    title: "Starters",
+    items: [
       { name: "Charred Octopus, Potato, Aioli", price: "£12" },
       { name: "Beef Short Rib Croquettes", price: "£10" },
       { name: "Wood-Roast Aubergine, Miso Glaze", price: "£9" },
@@ -981,11 +982,12 @@ export const oneKitchenMenuData: MenuSection[] = [
       { name: "Heritage Tomato & Burrata", price: "£10" },
       { name: "Roast Beetroot, Whipped Goat's Cheese, Walnuts", price: "£9" },
       { name: "Karaage Fried Chicken, Yuzu Mayo", price: "£9" },
-      { name: "Chorizo al Vino", price: "£8" },
-      {
-        name: "Mains",
-        description: ""
-      },
+      { name: "Chorizo al Vino", price: "£8" }
+    ]
+  },
+  {
+    title: "Mains",
+    items: [
       { name: "Ribeye Steak, Smoked Shallot", price: "£36" },
       { name: "Roast Cod, Brown Shrimp Butter", price: "£26" },
       { name: "Braised Beef Short Rib, Mash, Charred Carrot", price: "£24" },
@@ -993,11 +995,12 @@ export const oneKitchenMenuData: MenuSection[] = [
       { name: "Iberico Pork Chop, Apple & Mustard", price: "£28" },
       { name: "Wood Oven Gnocchi, Mushrooms, Parmesan", price: "£20" },
       { name: "Confit Duck Leg, White Beans & Sausage", price: "£22" },
-      { name: "Charred Aubergine, Tahini & Pomegranate", price: "£18" },
-      {
-        name: "Desserts",
-        description: ""
-      },
+      { name: "Charred Aubergine, Tahini & Pomegranate", price: "£18" }
+    ]
+  },
+  {
+    title: "Desserts",
+    items: [
       { name: "Basque Cheesecake, Burnt Top", price: "£9" },
       { name: "Wood Oven Brownie, Vanilla Ice Cream", price: "£9" },
       { name: "Churros, Dark Chocolate", price: "£8" },
