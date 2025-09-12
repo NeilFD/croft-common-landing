@@ -67,6 +67,13 @@ React.useEffect(() => {
     | 'beef-short-rib-croquettes'
     | 'wood-roast-aubergine'
     | 'chorizo-al-vino'
+    | 'grilled-sardines'
+    | 'lamb-sweetbreads'
+    | 'duck-leg-confit-salad'
+    | 'scallops-cauliflower-pancetta'
+    | 'beetroot-goats-cheese-walnut'
+    | 'korean-fried-chicken-wings'
+    | 'pork-belly-kimchi'
     | 'smoked-bone-marrow'
     | 'king-oyster-mushroom'
     | 'crispy-squid'
@@ -532,6 +539,338 @@ React.useEffect(() => {
                     <p className="font-industrial text-foreground/90 leading-relaxed">Simmer octopus with bay and onion in salted water for 40–45 mins until tender. Cool slightly. Slice into chunks. Boil potatoes 15 mins, slice thick. Whisk egg yolk, garlic, lemon, then drizzle in oil to make aioli. Heat griddle pan, char octopus and potatoes in oil. Scatter with paprika, serve with aioli.</p>
                   </div>
                   <p className="font-industrial text-steel text-sm">Allergens: egg, mollusc</p>
+                </div>
+              )}
+
+              {activeId === 'beef-short-rib-croquettes' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">BEEF SHORT RIB CROQUETTES, HORSERADISH</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 2 hrs plus chilling</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Slow-cooked rib meat. Crisp shell. Sharp horseradish kick.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>400g cooked beef short rib, shredded</li>
+                      <li>60g butter</li>
+                      <li>60g plain flour</li>
+                      <li>400ml beef stock</li>
+                      <li>2 eggs, beaten</li>
+                      <li>100g flour (coating)</li>
+                      <li>150g breadcrumbs</li>
+                      <li>2 tbsp fresh horseradish, grated</li>
+                      <li>Oil for frying</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Make thick roux with butter, flour, stock. Fold in shredded beef. Chill until firm. Shape into balls, coat in flour, egg, breadcrumbs. Fry until golden. Serve with horseradish cream.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, egg, milk</p>
+                </div>
+              )}
+
+              {activeId === 'wood-roast-aubergine' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WOOD ROAST AUBERGINE, POMEGRANATE, TAHINI</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Smoky aubergine. Creamy tahini. Jewel-bright pomegranate.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 large aubergines</li>
+                      <li>3 tbsp tahini</li>
+                      <li>Juice of 1 lemon</li>
+                      <li>2 garlic cloves, crushed</li>
+                      <li>Seeds of 1 pomegranate</li>
+                      <li>Olive oil, salt</li>
+                      <li>Fresh mint leaves</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Roast whole aubergines at 220°C for 35 mins until collapsed. Scoop flesh, mash roughly. Mix tahini, lemon, garlic with water until smooth. Fold through aubergine. Top with pomegranate seeds, mint, oil drizzle.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: sesame</p>
+                </div>
+              )}
+
+              {activeId === 'chorizo-al-vino' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CHORIZO AL VINO</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Spanish chorizo. Red wine reduction. Simple perfection.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>300g cooking chorizo, sliced</li>
+                      <li>200ml red wine</li>
+                      <li>1 bay leaf</li>
+                      <li>Crusty bread to serve</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Fry chorizo slices until oils release. Add wine and bay, simmer until wine reduces and glazes chorizo. Serve with bread.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten</p>
+                </div>
+              )}
+
+              {activeId === 'grilled-sardines' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">GRILLED SARDINES, SALSA VERDE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 20 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Fresh sardines. Char-grilled. Bright green herb sauce.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>8 fresh sardines, cleaned</li>
+                      <li>Olive oil, salt, pepper</li>
+                      <li>For salsa verde: parsley, mint, basil, capers, anchovies, garlic, olive oil, lemon juice</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Blend herbs, capers, anchovies, garlic with oil and lemon for salsa verde. Brush sardines with oil, season. Grill 3 mins each side. Spoon salsa verde over.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: fish</p>
+                </div>
+              )}
+
+              {activeId === 'lamb-sweetbreads' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">LAMB SWEETBREADS, PANCETTA, PEA PUREE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 1 hr</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Crispy sweetbreads. Salty pancetta. Sweet pea base.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>400g lamb sweetbreads, cleaned</li>
+                      <li>100g pancetta, diced</li>
+                      <li>300g frozen peas</li>
+                      <li>50g butter</li>
+                      <li>100ml chicken stock</li>
+                      <li>Flour for dusting</li>
+                      <li>Olive oil</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Blanch sweetbreads 3 mins, cool, slice thick. Cook peas in stock, blend with butter for puree. Crisp pancetta. Dust sweetbreads in flour, fry until golden. Serve on pea puree with crispy pancetta.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
+              {activeId === 'duck-leg-confit-salad' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">DUCK LEG CONFIT SALAD, CHERRY, HAZELNUT</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 30 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Rich duck. Sweet cherries. Crunchy hazelnuts. Fresh leaves.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 duck leg confits, shredded</li>
+                      <li>Mixed salad leaves</li>
+                      <li>100g fresh cherries, pitted</li>
+                      <li>50g toasted hazelnuts</li>
+                      <li>2 tbsp sherry vinegar</li>
+                      <li>3 tbsp olive oil</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Crisp duck confit in pan until golden. Whisk vinegar and oil for dressing. Toss leaves with dressing, top with warm duck, cherries, hazelnuts.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: nuts</p>
+                </div>
+              )}
+
+              {activeId === 'scallops-cauliflower-pancetta' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">SCALLOPS, CAULIFLOWER PUREE, CRISPY PANCETTA</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 30 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Seared scallops. Silky cauliflower. Crisp pancetta contrast.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>8 large scallops</li>
+                      <li>1 cauliflower head, chopped</li>
+                      <li>100g pancetta, diced</li>
+                      <li>100ml double cream</li>
+                      <li>50g butter</li>
+                      <li>Olive oil</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Boil cauliflower until soft, blend with cream and butter until smooth. Crisp pancetta. Pat scallops dry, sear 2 mins each side in hot oil. Serve on cauliflower puree with crispy pancetta.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk, mollusc</p>
+                </div>
+              )}
+
+              {activeId === 'beetroot-goats-cheese-walnut' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">BEETROOT, GOAT'S CHEESE, CANDIED WALNUT</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 1 hr</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Earthy beetroot. Creamy goat's cheese. Sweet candied walnuts.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 beetroots, different colors</li>
+                      <li>150g soft goat's cheese</li>
+                      <li>50g walnuts</li>
+                      <li>2 tbsp honey</li>
+                      <li>Rocket leaves</li>
+                      <li>Balsamic vinegar</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Roast beetroots wrapped in foil 45 mins until tender. Cool, peel, slice. Toss walnuts with honey, roast until caramelized. Arrange beetroot with goat's cheese, rocket, candied walnuts. Drizzle balsamic.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk, nuts</p>
+                </div>
+              )}
+
+              {activeId === 'korean-fried-chicken-wings' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">KOREAN FRIED CHICKEN WINGS</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Double-fried wings. Sweet and spicy Korean glaze.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>12 chicken wings</li>
+                      <li>100g cornstarch</li>
+                      <li>3 tbsp gochujang</li>
+                      <li>2 tbsp soy sauce</li>
+                      <li>2 tbsp honey</li>
+                      <li>1 tbsp rice vinegar</li>
+                      <li>2 garlic cloves, minced</li>
+                      <li>Oil for frying</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Coat wings in cornstarch. Fry at 160°C for 10 mins, then 180°C for 5 mins until crispy. Mix gochujang, soy, honey, vinegar, garlic for glaze. Toss hot wings in glaze.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, soy</p>
+                </div>
+              )}
+
+              {activeId === 'pork-belly-kimchi' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">PORK BELLY, KIMCHI, SESAME</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 2 hrs</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Slow-cooked pork belly. Fermented kimchi heat. Nutty sesame.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>600g pork belly, skin on</li>
+                      <li>150g kimchi</li>
+                      <li>2 tbsp sesame oil</li>
+                      <li>1 tbsp sesame seeds</li>
+                      <li>2 spring onions, sliced</li>
+                      <li>Steamed rice to serve</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Slow roast pork belly at 140°C for 1.5 hrs until tender. Crisp skin under grill. Slice thick. Serve with kimchi, drizzle sesame oil, scatter sesame seeds and spring onions.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: sesame, soy</p>
                 </div>
               )}
 
