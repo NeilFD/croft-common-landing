@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getKitchensTabData } from '@/data/kitchensModalMenuData';
+import { getKitchensTabData, MenuSection } from '@/data/kitchensModalMenuData';
 
 interface KitchensModalContentProps {
   accentColor: string;
@@ -10,7 +10,7 @@ interface KitchensModalContentProps {
 const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor, isNeutral }) => {
   const [activeTab, setActiveTab] = useState('main');
 
-  const renderMenuSection = (sections: any[], tabName: string) => (
+  const renderMenuSection = (sections: MenuSection[], tabName: string) => (
     <div className="space-y-10">
       {sections.map((section, sectionIndex) => {
         const isMajorSection = ['PIZZA - WOOD-FIRED', 'GRILL', 'MEXICAN', 'ASIAN STREET FOOD', 'Wood-Fired Pizzas', 'Charcoal Grill', 'Sunday Roasts'].includes(section.title);
@@ -25,7 +25,7 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
               {section.title}
             </h2>
             <div className="space-y-3">
-              {section.items.map((item: any, itemIndex: number) => (
+              {section.items.map((item, itemIndex: number) => (
                 <div key={`${tabName}-${sectionIndex}-${itemIndex}`} className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
                     <h3 
