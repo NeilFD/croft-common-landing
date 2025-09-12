@@ -922,33 +922,41 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Taken from the Café menu. Delivered as platters, bowls, boxes. Charged per head.",
         description: ""
-      },
-      {
-        name: "Sandwiches (choose three)",
-        description: ""
-      },
+      }
+    ]
+  },
+  {
+    title: "Sandwiches (Choose Three)",
+    items: [
       { name: "Italian Deli", description: "salami, mortadella, provolone, pickles, ciabatta" },
       { name: "Reuben", description: "salt beef, sauerkraut, Swiss cheese, Russian dressing, rye" },
       { name: "Caprese", description: "buffalo mozzarella, heritage tomato, basil, focaccia" },
       { name: "The Med", description: "roast vegetables, hummus, feta, ciabatta" },
-      { name: "Roast Chicken Caesar", description: "chicken, anchovy mayo, parmesan, cos lettuce, sourdough" },
-      {
-        name: "Salads (choose three)",
-        description: ""
-      },
+      { name: "Roast Chicken Caesar", description: "chicken, anchovy mayo, parmesan, cos lettuce, sourdough" }
+    ]
+  },
+  {
+    title: "Salads (Choose Three)",
+    items: [
       { name: "Roast Cauliflower, Tahini, Pomegranate" },
       { name: "Freekeh & Squash Grain Salad" },
       { name: "Charred Broccoli & Almond" },
       { name: "Heritage Tomato & Burrata" },
-      { name: "Sesame Soba Noodles" },
-      {
-        name: "Sweets (choose two)",
-        description: ""
-      },
+      { name: "Sesame Soba Noodles" }
+    ]
+  },
+  {
+    title: "Sweets (Choose Two)",
+    items: [
       { name: "Polenta & Orange Cake" },
       { name: "Pistachio & Rose Cake" },
       { name: "Chocolate Babka" },
-      { name: "Date & Walnut Slice" },
+      { name: "Date & Walnut Slice" }
+    ]
+  },
+  {
+    title: "Deli Style Pricing",
+    items: [
       {
         name: "Price: £22 per head",
         description: ""
