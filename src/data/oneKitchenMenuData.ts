@@ -749,23 +749,23 @@ export const oneKitchenMenuData: MenuSection[] = [
     title: "Sunday Roasts",
     items: [
       {
-        name: "Rib of Beef",
-        description: "rare, carved thick, horseradish cream. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        name: "Rib of Beef, Horseradish Cream",
+        description: "All the trimmings.",
         price: "£24"
       },
       {
-        name: "Roast Chicken",
-        description: "half bird, lemon, thyme, bread sauce. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        name: "Roast Chicken, Bread Sauce",
+        description: "All the trimmings.",
         price: "£18"
       },
       {
         name: "Roast of the Week",
-        description: "lamb with mint sauce, or pork with crackling & apple. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        description: "lamb with mint sauce, or pork with apple sauce. All the trimmings.",
         price: "£20"
       },
       {
-        name: "Vegetarian Roast",
-        description: "nut roast, root veg, mushroom gravy. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        name: "Vegetarian Roast, Mushroom Gravy",
+        description: "All the trimmings.",
         price: "£16"
       }
     ]
