@@ -114,6 +114,24 @@ React.useEffect(() => {
     | 't-bone';
 
   const [activeId, setActiveId] = React.useState<RecipeId>('cover');
+  const [activeCategory, setActiveCategory] = React.useState<string>('');
+
+  // Helper function to get category for a recipe
+  const getCategoryForRecipe = (recipeId: RecipeId): string => {
+    if (bitesItems.some(item => item.id === recipeId)) return 'bites';
+    if (smallPlatesItems.some(item => item.id === recipeId)) return 'small-plates';
+    if (pizzaItems.some(item => item.id === recipeId)) return 'pizzas';
+    if (largePlatesItems.some(item => item.id === recipeId)) return 'large-plates';
+    if (charcoalGrillItems.some(item => item.id === recipeId)) return 'charcoal-grill';
+    return '';
+  };
+
+  // Update active category when activeId changes
+  React.useEffect(() => {
+    if (activeId !== 'cover') {
+      setActiveCategory(getCategoryForRecipe(activeId));
+    }
+  }, [activeId]);
 
   const bitesItems: { id: RecipeId; title: string }[] = [
     { id: 'marinated-gordal-olives', title: 'MARINATED GORDAL OLIVES, ORANGE ZEST' },
@@ -1457,93 +1475,122 @@ React.useEffect(() => {
 
             {/* Navigation sidebar */}
             <aside className="space-y-4">
+              {/* Recipe Book Cover Button - Always visible at top */}
+              <div className="pb-2 border-b border-border">
+                <button
+                  onClick={() => setActiveId('cover')}
+                  className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider ${
+                    activeId === 'cover' ? 'text-foreground' : 'text-foreground/70'
+                  }`}
+                >
+                  RECIPE BOOK COVER
+                </button>
+              </div>
+
               <nav className="space-y-2">
-                <h2 className="font-brutalist text-foreground text-lg tracking-wider">BITES</h2>
-                <ul className="space-y-1">
-                  {bitesItems.map((item) => (
-                    <li key={item.id}>
-                      <button
-                        onClick={() => setActiveId(item.id)}
-                        className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
-                          activeId === item.id ? 'text-foreground' : 'text-foreground/60'
-                        }`}
-                      >
-                        {item.title}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                {/* BITES Section */}
+                <div className={activeCategory === 'bites' || activeId === 'cover' ? '' : 'opacity-60'}>
+                  <h2 className="font-brutalist text-foreground text-lg tracking-wider">BITES</h2>
+                  {(activeCategory === 'bites' || activeId === 'cover') && (
+                    <ul className="space-y-1 mt-2">
+                      {bitesItems.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveId(item.id)}
+                            className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
+                              activeId === item.id ? 'text-foreground' : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
 
-                <div className="pt-4">
+                {/* SMALL PLATES Section */}
+                <div className={`pt-4 ${activeCategory === 'small-plates' || activeId === 'cover' ? '' : 'opacity-60'}`}>
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">SMALL PLATES</h2>
-                  <ul className="space-y-1 mt-2">
-                    {smallPlatesItems.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          onClick={() => setActiveId(item.id)}
-                          className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
-                            activeId === item.id ? 'text-foreground' : 'text-foreground/60'
-                          }`}
-                        >
-                          {item.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  {(activeCategory === 'small-plates' || activeId === 'cover') && (
+                    <ul className="space-y-1 mt-2">
+                      {smallPlatesItems.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveId(item.id)}
+                            className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
+                              activeId === item.id ? 'text-foreground' : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
-                <div className="pt-4">
+                {/* WOOD-FIRED PIZZAS Section */}
+                <div className={`pt-4 ${activeCategory === 'pizzas' || activeId === 'cover' ? '' : 'opacity-60'}`}>
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">WOOD-FIRED PIZZAS</h2>
-                  <ul className="space-y-1 mt-2">
-                    {pizzaItems.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          onClick={() => setActiveId(item.id)}
-                          className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
-                            activeId === item.id ? 'text-foreground' : 'text-foreground/60'
-                          }`}
-                        >
-                          {item.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  {(activeCategory === 'pizzas' || activeId === 'cover') && (
+                    <ul className="space-y-1 mt-2">
+                      {pizzaItems.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveId(item.id)}
+                            className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
+                              activeId === item.id ? 'text-foreground' : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
-                <div className="pt-4">
+                {/* LARGE PLATES Section */}
+                <div className={`pt-4 ${activeCategory === 'large-plates' || activeId === 'cover' ? '' : 'opacity-60'}`}>
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">LARGE PLATES</h2>
-                  <ul className="space-y-1 mt-2">
-                    {largePlatesItems.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          onClick={() => setActiveId(item.id)}
-                          className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
-                            activeId === item.id ? 'text-foreground' : 'text-foreground/60'
-                          }`}
-                        >
-                          {item.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  {(activeCategory === 'large-plates' || activeId === 'cover') && (
+                    <ul className="space-y-1 mt-2">
+                      {largePlatesItems.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveId(item.id)}
+                            className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
+                              activeId === item.id ? 'text-foreground' : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
-                <div className="pt-4">
+                {/* CHARCOAL GRILL Section */}
+                <div className={`pt-4 ${activeCategory === 'charcoal-grill' || activeId === 'cover' ? '' : 'opacity-60'}`}>
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">CHARCOAL GRILL</h2>
-                  <ul className="space-y-1 mt-2">
-                    {charcoalGrillItems.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          onClick={() => setActiveId(item.id)}
-                          className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
-                            activeId === item.id ? 'text-foreground' : 'text-foreground/60'
-                          }`}
-                        >
-                          {item.title}
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
+                  {(activeCategory === 'charcoal-grill' || activeId === 'cover') && (
+                    <ul className="space-y-1 mt-2">
+                      {charcoalGrillItems.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveId(item.id)}
+                            className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
+                              activeId === item.id ? 'text-foreground' : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.title}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </nav>
             </aside>
