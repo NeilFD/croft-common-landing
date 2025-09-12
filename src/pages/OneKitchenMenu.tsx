@@ -150,7 +150,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(9, 16).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(9, 15).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
@@ -210,7 +210,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(15, 23).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(15, 21).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
@@ -270,7 +270,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(23, 30).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(0, 0).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
@@ -332,7 +332,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(30).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(21).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
