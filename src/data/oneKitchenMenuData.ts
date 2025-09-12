@@ -444,5 +444,195 @@ export const oneKitchenMenuData: MenuSection[] = [
         price: "£7"
       }
     ]
+  },
+  {
+    title: "Breakfast",
+    items: [
+      {
+        name: "Croft Common Full English",
+        description: "rare breed sausage, smoked bacon, fried egg, tomato, mushroom, beans, sourdough.",
+        price: "£12"
+      },
+      {
+        name: "Veggie English",
+        description: "field mushroom, halloumi, avocado, roast tomato, beans, sourdough.",
+        price: "£11"
+      },
+      {
+        name: "Eggs Benedict",
+        description: "poached eggs, ham hock, hollandaise, muffin.",
+        price: "£10"
+      },
+      {
+        name: "Eggs Florentine",
+        description: "poached eggs, spinach, hollandaise, muffin.",
+        price: "£9"
+      },
+      {
+        name: "Shakshuka",
+        description: "spiced tomato, baked eggs, yoghurt, flatbread.",
+        price: "£9"
+      },
+      {
+        name: "Avocado & Poached Egg",
+        description: "chilli, lime, pumpkin seeds, sourdough.",
+        price: "£9"
+      },
+      {
+        name: "Overnight Oats",
+        description: "rolled oats, almond milk, berries, toasted seeds.",
+        price: "£6"
+      },
+      {
+        name: "Greek Yoghurt Bowl",
+        description: "granola, honey, figs, pistachio.",
+        price: "£7"
+      }
+    ]
+  },
+  {
+    title: "Pastries",
+    items: [
+      {
+        name: "Butter Croissant",
+        description: "classic, flaky, French butter.",
+        price: "£3"
+      },
+      {
+        name: "Pain au Chocolat",
+        description: "dark chocolate, laminated pastry.",
+        price: "£3.50"
+      },
+      {
+        name: "Almond Croissant",
+        description: "filled, dusted, rich.",
+        price: "£4"
+      },
+      {
+        name: "Cinnamon Swirl",
+        description: "buttery roll, sugar crust.",
+        price: "£3.50"
+      },
+      {
+        name: "Morning Bun",
+        description: "orange zest, sugar crust, croissant dough.",
+        price: "£4"
+      }
+    ]
+  },
+  {
+    title: "Sandwiches",
+    items: [
+      {
+        name: "Italian Deli",
+        description: "salami, mortadella, provolone, pickles, ciabatta.",
+        price: "£9"
+      },
+      {
+        name: "Reuben",
+        description: "salt beef, sauerkraut, Swiss cheese, Russian dressing, rye.",
+        price: "£10"
+      },
+      {
+        name: "Caprese",
+        description: "buffalo mozzarella, heritage tomato, basil, focaccia.",
+        price: "£8"
+      },
+      {
+        name: "The Med",
+        description: "roast vegetables, hummus, feta, ciabatta.",
+        price: "£8"
+      },
+      {
+        name: "Roast Chicken Caesar",
+        description: "chicken, anchovy mayo, parmesan, cos lettuce, sourdough.",
+        price: "£9"
+      }
+    ]
+  },
+  {
+    title: "Salads & Bowls",
+    items: [
+      {
+        name: "Roast Cauliflower, Tahini, Pomegranate",
+        description: "spiced cauliflower, golden raisins, herbs, pistachio crunch.",
+        price: "£9"
+      },
+      {
+        name: "Freekeh & Squash Grain Salad",
+        description: "charred butternut, pomegranate seeds, mint, green grains.",
+        price: "£9"
+      },
+      {
+        name: "Charred Broccoli & Almond",
+        description: "tenderstem broccoli, chilli oil, garlic yoghurt, toasted nuts.",
+        price: "£8"
+      },
+      {
+        name: "Heritage Tomato & Burrata",
+        description: "ripe tomatoes, creamy burrata, basil oil, sourdough crumbs.",
+        price: "£10"
+      },
+      {
+        name: "Sesame Soba Noodles",
+        description: "chilled noodles, pak choi, cucumber, sesame peanut dressing.",
+        price: "£9"
+      },
+      {
+        name: "Salad Counter Plate",
+        description: "choose any three of the above, generous plate.",
+        price: "£12"
+      }
+    ]
+  },
+  {
+    title: "Plates & Counter",
+    items: [
+      {
+        name: "Frittata of the Day",
+        description: "seasonal veg, herbs, cheese.",
+        price: "£7"
+      },
+      {
+        name: "Wood Oven Flatbread, Labneh, Za'atar Oil",
+        description: "soft, blistered, tangy.",
+        price: "£6"
+      },
+      {
+        name: "Seasonal Tartlet",
+        description: "roast tomato, ricotta, basil.",
+        price: "£6"
+      },
+      {
+        name: "Soup of the Day, Sourdough",
+        description: "always fresh, always changing.",
+        price: "£7"
+      }
+    ]
+  },
+  {
+    title: "Sweets & Cakes",
+    items: [
+      {
+        name: "Polenta & Orange Cake",
+        description: "moist, citrus sharp, almond bite.",
+        price: "£5"
+      },
+      {
+        name: "Pistachio & Rose Cake",
+        description: "nutty, floral, light sponge.",
+        price: "£5"
+      },
+      {
+        name: "Chocolate Babka",
+        description: "dark, glossy, indulgent.",
+        price: "£4"
+      },
+      {
+        name: "Date & Walnut Slice",
+        description: "sticky, rich, wholesome.",
+        price: "£4"
+      }
+    ]
   }
 ];
