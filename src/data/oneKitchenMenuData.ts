@@ -879,7 +879,7 @@ export const oneKitchenMenuData: MenuSection[] = [
     ]
   },
   {
-    title: "BOXED MAINS",
+    title: "MAINS",
     items: [
       { name: "Flat Iron Steak, Chimichurri", description: "sliced", price: "£22" },
       { name: "Half Roast Chicken, Garlic & Lemon", price: "£18" },
