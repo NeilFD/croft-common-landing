@@ -1,6 +1,6 @@
 export interface MenuItem {
   name: string;
-  description: string;
+  description?: string;
   price: string;
 }
 
@@ -843,6 +843,75 @@ export const oneKitchenMenuData: MenuSection[] = [
         description: "sharp fruit, buttery topping.",
         price: "£7"
       }
+    ]
+  },
+
+  // The Hideout - Private Dining
+  {
+    title: "HOW IT WORKS",
+    items: [
+      { name: "For groups of 10+ only.", price: "" },
+      { name: "Pre-order in advance.", price: "" },
+      { name: "Takeaway style. Roof terrace vibes.", price: "" },
+      { name: "Order individual dishes, or go easy with a full per-head pack.", price: "" }
+    ]
+  },
+  {
+    title: "BITES & SMALL PLATES",
+    items: [
+      { name: "Padron Peppers, Sea Salt", price: "£6" },
+      { name: "Jamón Croquetas", price: "£9" },
+      { name: "Sticky Pork Belly, Burnt Pineapple", price: "£9" },
+      { name: "Karaage Fried Chicken, Yuzu Mayo", price: "£9" },
+      { name: "Crispy Squid, Lemon, Seaweed Salt", price: "£11" },
+      { name: "Wood-Roast Aubergine, Miso Glaze", price: "£8" }
+    ]
+  },
+  {
+    title: "PIZZAS",
+    items: [
+      { name: "Margherita", price: "£12" },
+      { name: "Nduja, Ricotta, Hot Honey", price: "£15" },
+      { name: "Prosciutto & Rocket", price: "£15" },
+      { name: "Vegetale", price: "£13" },
+      { name: "Korean BBQ Beef", price: "£18" },
+      { name: "All pizzas boxed, sliced, and good to go.", price: "" }
+    ]
+  },
+  {
+    title: "BOXED MAINS",
+    items: [
+      { name: "Flat Iron Steak, Chimichurri", description: "sliced", price: "£22" },
+      { name: "Half Roast Chicken, Garlic & Lemon", price: "£18" },
+      { name: "Iberico Pork Chop, Apple & Mustard", description: "sliced", price: "£28" },
+      { name: "Miso Glazed Salmon, Sesame Greens", price: "£28" },
+      { name: "Wood Oven Gnocchi, Wild Mushrooms, Parmesan", price: "£20" }
+    ]
+  },
+  {
+    title: "SIDES",
+    items: [
+      { name: "Rosemary Fries", price: "£5" },
+      { name: "Wood Oven Potatoes", price: "£6" },
+      { name: "Charred Corn, Chilli Butter", price: "£5" },
+      { name: "Kimchi Slaw", price: "£5" }
+    ]
+  },
+  {
+    title: "DESSERTS",
+    items: [
+      { name: "Churros & Chocolate", price: "£6" },
+      { name: "Wood Oven Brownie, Vanilla Ice Cream", price: "£7" },
+      { name: "Polenta & Orange Cake", price: "£5" }
+    ]
+  },
+  {
+    title: "PRE-BUILT (PER HEAD)",
+    items: [
+      { name: "Pizza & Small Plates", description: "Mixed pizzas, pork belly, karaage chicken, squid, aubergine, fries, corn, slaw, churros.", price: "£28pp" },
+      { name: "The Big Grill", description: "Steak, chicken, pork, salmon, gnocchi, potatoes, greens, slaw, brownies.", price: "£36pp" },
+      { name: "The Roast", description: "Beef, chicken, roast of the week, all trimmings, apple pie, jam roly poly.", price: "£32pp" },
+      { name: "The Hideout All-In", description: "A bit of everything — pizzas, small plates, grill mains, sides, and a mix of desserts.", price: "£40pp" }
     ]
   }
 ];
