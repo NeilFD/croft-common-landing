@@ -18,6 +18,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [points, setPoints] = useState<Point[]>([]);
   const [isComplete, setIsComplete] = useState(false);
+  const [lastGestureTime, setLastGestureTime] = useState(0);
   const gestureTimeoutRef = useRef<NodeJS.Timeout>();
   const attemptStartTime = useRef<number | null>(null);
   const { trackSecretGesture } = useAnalytics();
@@ -121,21 +122,28 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   }, [isValid7Shape, onGestureComplete, clearGesture]);
 
   const startGesture = useCallback((x: number, y: number) => {
+    // Add debouncing to prevent rapid re-attempts
+    const now = Date.now();
+    if (now - lastGestureTime < 1000) {
+      return; // Ignore gesture if less than 1 second since last attempt
+    }
+    
+    setLastGestureTime(now);
     clearGesture();
     setIsDrawing(true);
     addPoint(x, y);
-    attemptStartTime.current = Date.now();
+    attemptStartTime.current = now;
     
     // Track gesture attempt
     trackSecretGesture('attempt', 'seven_gesture', {
-      points: [{ x, y, timestamp: Date.now() }]
+      points: [{ x, y, timestamp: now }]
     });
     
     // Set timeout to clear gesture if not completed
     gestureTimeoutRef.current = setTimeout(() => {
       clearGesture();
     }, 8000);
-  }, [addPoint, clearGesture, trackSecretGesture]);
+  }, [addPoint, clearGesture, trackSecretGesture, lastGestureTime]);
 
   const endGesture = useCallback(() => {
     if (isDrawing && !isComplete) {

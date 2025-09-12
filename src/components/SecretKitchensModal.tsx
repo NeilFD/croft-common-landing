@@ -7,6 +7,8 @@ import { SecretKitchensAuthModal } from "@/components/SecretKitchensAuthModal";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
+import { forceRelease } from "@/lib/webauthnOrchestrator";
+import { clearRecentBio } from "@/hooks/useRecentBiometric";
 
 interface SecretKitchensModalProps {
   open: boolean;
@@ -24,6 +26,10 @@ const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, ha
 const contentRef = React.useRef<HTMLDivElement>(null);
 
   const handleCloseAll = () => {
+    // Force release any stuck WebAuthn processes
+    forceRelease();
+    // Clear recent biometric state to allow fresh attempts
+    clearRecentBio();
     reset();
     onClose();
   };

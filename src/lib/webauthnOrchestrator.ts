@@ -27,6 +27,13 @@ function release() {
   }
 }
 
+// Force release for cleanup when processes are abandoned
+export function forceRelease() {
+  console.debug('[webauthn-orchestrator] force releasing lock');
+  locked = false;
+  queue.splice(0); // Clear the queue
+}
+
 export async function runExclusive<T>(label: string, fn: () => Promise<T>): Promise<T> {
   await acquire();
   const start = Date.now();
