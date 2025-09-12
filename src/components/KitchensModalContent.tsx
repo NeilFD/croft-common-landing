@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getKitchensTabData, MenuSection } from '@/data/kitchensModalMenuData';
+import { getKitchensTabData, KitchensMenuSection } from '@/data/kitchensModalMenuData';
 
 interface KitchensModalContentProps {
   accentColor: string;
@@ -10,7 +10,7 @@ interface KitchensModalContentProps {
 const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor, isNeutral }) => {
   const [activeTab, setActiveTab] = useState('main');
 
-  const renderMenuSection = (sections: MenuSection[], tabName: string) => (
+  const renderMenuSection = (sections: KitchensMenuSection[], tabName: string) => (
     <div className="space-y-10">
       {sections.map((section, sectionIndex) => {
         const isMajorSection = ['PIZZA - WOOD-FIRED', 'GRILL', 'MEXICAN', 'ASIAN STREET FOOD', 'Wood-Fired Pizzas', 'Charcoal Grill', 'Sunday Roasts'].includes(section.title);

@@ -1,16 +1,16 @@
-export interface MenuItem {
+export interface KitchensMenuItem {
   name: string;
   description?: string;
   price?: string;
 }
 
-export interface MenuSection {
+export interface KitchensMenuSection {
   title: string;
-  items: MenuItem[];
+  items: KitchensMenuItem[];
 }
 
 // Independent menu data for Kitchens Modal (copied from oneKitchenMenuData for independence)
-export const kitchensModalMenuData: MenuSection[] = [
+export const kitchensModalMenuData: KitchensMenuSection[] = [
   {
     title: "Bites",
     items: [
@@ -979,7 +979,7 @@ export const kitchensModalMenuData: MenuSection[] = [
 ];
 
 // Tab data slices for the Kitchens modal
-export const getKitchensTabData = (tabName: string): MenuSection[] => {
+export const getKitchensTabData = (tabName: string): KitchensMenuSection[] => {
   switch (tabName) {
     case 'main':
       // MAIN: Bites through Pudding (sections 0-8)
