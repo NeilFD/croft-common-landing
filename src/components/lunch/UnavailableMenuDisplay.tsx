@@ -102,21 +102,7 @@ export const UnavailableMenuDisplay = () => {
           
           <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {beverages.map((item) => (
-              <Card key={item.id} className="h-full overflow-hidden">
-                <div className="aspect-[4/3] relative bg-muted">
-                  {item.image_url ? (
-                    <OptimizedImage
-                      src={item.image_url}
-                      alt={`${item.name} beverage`}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                      No image available
-                    </div>
-                  )}
-                </div>
+              <Card key={item.id} className="h-full">
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex justify-between items-start mb-3">
                     <h4 className="font-semibold text-lg leading-tight">{item.name}</h4>
