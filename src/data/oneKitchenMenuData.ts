@@ -925,16 +925,30 @@ export const oneKitchenMenuData: MenuSection[] = [
       },
       {
         name: "Sandwiches (choose three)",
-        description: "Italian Deli — salami, mortadella, provolone, pickles, ciabatta | Reuben — salt beef, sauerkraut, Swiss cheese, Russian dressing, rye | Caprese — buffalo mozzarella, heritage tomato, basil, focaccia | The Med — roast vegetables, hummus, feta, ciabatta | Roast Chicken Caesar — chicken, anchovy mayo, parmesan, cos lettuce, sourdough"
+        description: ""
       },
+      { name: "Italian Deli", description: "salami, mortadella, provolone, pickles, ciabatta" },
+      { name: "Reuben", description: "salt beef, sauerkraut, Swiss cheese, Russian dressing, rye" },
+      { name: "Caprese", description: "buffalo mozzarella, heritage tomato, basil, focaccia" },
+      { name: "The Med", description: "roast vegetables, hummus, feta, ciabatta" },
+      { name: "Roast Chicken Caesar", description: "chicken, anchovy mayo, parmesan, cos lettuce, sourdough" },
       {
         name: "Salads (choose three)",
-        description: "Roast Cauliflower, Tahini, Pomegranate | Freekeh & Squash Grain Salad | Charred Broccoli & Almond | Heritage Tomato & Burrata | Sesame Soba Noodles"
+        description: ""
       },
+      { name: "Roast Cauliflower, Tahini, Pomegranate" },
+      { name: "Freekeh & Squash Grain Salad" },
+      { name: "Charred Broccoli & Almond" },
+      { name: "Heritage Tomato & Burrata" },
+      { name: "Sesame Soba Noodles" },
       {
         name: "Sweets (choose two)",
-        description: "Polenta & Orange Cake | Pistachio & Rose Cake | Chocolate Babka | Date & Walnut Slice"
+        description: ""
       },
+      { name: "Polenta & Orange Cake" },
+      { name: "Pistachio & Rose Cake" },
+      { name: "Chocolate Babka" },
+      { name: "Date & Walnut Slice" },
       {
         name: "Price: £22 per head",
         description: ""
@@ -950,16 +964,40 @@ export const oneKitchenMenuData: MenuSection[] = [
       },
       {
         name: "Starters",
-        description: "Charred Octopus, Potato, Aioli £12 | Beef Short Rib Croquettes £10 | Wood-Roast Aubergine, Miso Glaze £9 | Crispy Squid, Lemon, Seaweed Salt £11 | Heritage Tomato & Burrata £10 | Roast Beetroot, Whipped Goat's Cheese, Walnuts £9 | Karaage Fried Chicken, Yuzu Mayo £9 | Chorizo al Vino £8"
+        description: ""
       },
+      { name: "Charred Octopus, Potato, Aioli", price: "£12" },
+      { name: "Beef Short Rib Croquettes", price: "£10" },
+      { name: "Wood-Roast Aubergine, Miso Glaze", price: "£9" },
+      { name: "Crispy Squid, Lemon, Seaweed Salt", price: "£11" },
+      { name: "Heritage Tomato & Burrata", price: "£10" },
+      { name: "Roast Beetroot, Whipped Goat's Cheese, Walnuts", price: "£9" },
+      { name: "Karaage Fried Chicken, Yuzu Mayo", price: "£9" },
+      { name: "Chorizo al Vino", price: "£8" },
       {
         name: "Mains",
-        description: "Ribeye Steak, Smoked Shallot £36 | Roast Cod, Brown Shrimp Butter £26 | Braised Beef Short Rib, Mash, Charred Carrot £24 | Miso Glazed Salmon, Sesame Greens £28 | Iberico Pork Chop, Apple & Mustard £28 | Wood Oven Gnocchi, Mushrooms, Parmesan £20 | Confit Duck Leg, White Beans & Sausage £22 | Charred Aubergine, Tahini & Pomegranate £18"
+        description: ""
       },
+      { name: "Ribeye Steak, Smoked Shallot", price: "£36" },
+      { name: "Roast Cod, Brown Shrimp Butter", price: "£26" },
+      { name: "Braised Beef Short Rib, Mash, Charred Carrot", price: "£24" },
+      { name: "Miso Glazed Salmon, Sesame Greens", price: "£28" },
+      { name: "Iberico Pork Chop, Apple & Mustard", price: "£28" },
+      { name: "Wood Oven Gnocchi, Mushrooms, Parmesan", price: "£20" },
+      { name: "Confit Duck Leg, White Beans & Sausage", price: "£22" },
+      { name: "Charred Aubergine, Tahini & Pomegranate", price: "£18" },
       {
         name: "Desserts",
-        description: "Basque Cheesecake, Burnt Top £9 | Wood Oven Brownie, Vanilla Ice Cream £9 | Churros, Dark Chocolate £8 | Sticky Toffee Pudding, Salted Caramel £9 | Apple Pie & Custard £7 | Lemon Tart, Crème Fraîche £8 | Jam Roly Poly & Custard £7 | Bread & Butter Pudding £7"
-      }
+        description: ""
+      },
+      { name: "Basque Cheesecake, Burnt Top", price: "£9" },
+      { name: "Wood Oven Brownie, Vanilla Ice Cream", price: "£9" },
+      { name: "Churros, Dark Chocolate", price: "£8" },
+      { name: "Sticky Toffee Pudding, Salted Caramel", price: "£9" },
+      { name: "Apple Pie & Custard", price: "£7" },
+      { name: "Lemon Tart, Crème Fraîche", price: "£8" },
+      { name: "Jam Roly Poly & Custard", price: "£7" },
+      { name: "Bread & Butter Pudding", price: "£7" }
     ]
   },
   {
@@ -970,20 +1008,26 @@ export const oneKitchenMenuData: MenuSection[] = [
         description: ""
       },
       {
-        name: "The Common Table",
-        description: "Starters: Padron Peppers, Jamón Croquetas, Whipped Cod Roe, Flatbread | Mains: Half Roast Chickens, Flat Iron Steak, Charred Broccoli & Almond, Roast Potatoes | Desserts: Churros & Chocolate, Wood Oven Brownie",
-        price: "£35pp"
+        name: "The Common Table — £35pp",
+        description: ""
       },
+      { name: "Starters", description: "Padron Peppers, Jamón Croquetas, Whipped Cod Roe, Flatbread" },
+      { name: "Mains", description: "Half Roast Chickens, Flat Iron Steak, Charred Broccoli & Almond, Roast Potatoes" },
+      { name: "Desserts", description: "Churros & Chocolate, Wood Oven Brownie" },
       {
-        name: "The Boards",
-        description: "Starters: Crispy Squid, Karaage Chicken, Aubergine with Miso, Heritage Tomato & Burrata | Mains: Iberico Pork Chops, Miso Salmon, Wood Oven Gnocchi, Seasonal Greens, Fries | Desserts: Basque Cheesecake, Sticky Toffee Pudding, Lemon Tart",
-        price: "£50pp"
+        name: "The Boards — £50pp",
+        description: ""
       },
+      { name: "Starters", description: "Crispy Squid, Karaage Chicken, Aubergine with Miso, Heritage Tomato & Burrata" },
+      { name: "Mains", description: "Iberico Pork Chops, Miso Salmon, Wood Oven Gnocchi, Seasonal Greens, Fries" },
+      { name: "Desserts", description: "Basque Cheesecake, Sticky Toffee Pudding, Lemon Tart" },
       {
-        name: "The Feast",
-        description: "Starters: Octopus & Aioli, Lamb Chops, Roast Beetroot & Goat's Cheese, Charred Cauliflower Salad | Mains: Ribeye Steak, Whole Seabass, Confit Duck, Charred Aubergine with Tahini | Desserts: Apple Pie & Custard, Treacle Sponge, Polenta & Orange Cake, Artisan Cheese Board",
-        price: "£70pp"
-      }
+        name: "The Feast — £70pp",
+        description: ""
+      },
+      { name: "Starters", description: "Octopus & Aioli, Lamb Chops, Roast Beetroot & Goat's Cheese, Charred Cauliflower Salad" },
+      { name: "Mains", description: "Ribeye Steak, Whole Seabass, Confit Duck, Charred Aubergine with Tahini" },
+      { name: "Desserts", description: "Apple Pie & Custard, Treacle Sponge, Polenta & Orange Cake, Artisan Cheese Board" }
     ]
   },
   {

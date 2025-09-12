@@ -74,7 +74,7 @@ const OneKitchenMenu = () => {
                 </TabsList>
               </div>
 
-              {/* Main Menu Tab */}
+                {/* Main Menu Tab */}
               <TabsContent value="main" className="space-y-0">
                 <div className="text-center space-y-6 mb-12">
                   <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
@@ -90,7 +90,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(0, 10).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(0, 9).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
@@ -124,7 +124,7 @@ const OneKitchenMenu = () => {
                         ))}
                       </div>
 
-                      {sectionIndex < 9 && (
+                      {sectionIndex < 8 && (
                         <div className="flex justify-start pt-6">
                           <div className="w-24 h-0.5 bg-border/40"></div>
                         </div>
@@ -150,67 +150,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(10, 16).map((section, sectionIndex) => (
-                    <section key={section.title} className="space-y-6">
-                      <div className="text-left">
-                        <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
-                          {section.title}
-                        </h3>
-                        <div className="w-12 h-0.5 bg-accent-pink"></div>
-                      </div>
-
-                      <div className="space-y-3">
-                        {section.items.map((item, itemIndex) => (
-                          <div 
-                            key={itemIndex}
-                            className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
-                          >
-                            <div className="flex-1 space-y-0.5">
-                              <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
-                                {item.name}
-                              </h4>
-                              {item.description && (
-                                <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
-                                  {item.description}
-                                </p>
-                              )}
-                            </div>
-                            <div className="flex-shrink-0 ml-6">
-                              <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
-                                {item.price}
-                              </span>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-
-                      {sectionIndex < 5 && (
-                        <div className="flex justify-start pt-6">
-                          <div className="w-24 h-0.5 bg-border/40"></div>
-                        </div>
-                      )}
-                    </section>
-                  ))}
-                </div>
-              </TabsContent>
-
-              {/* Sunday Menu Tab */}
-              <TabsContent value="sunday" className="space-y-0">
-                <div className="text-center space-y-6 mb-12">
-                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
-                  <div className="space-y-2">
-                    <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                      Croft Common Sunday
-                    </h2>
-                    <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
-                      Breakfast. Brunch. Roasts.
-                    </p>
-                  </div>
-                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
-                </div>
-
-                <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(16, 23).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(9, 16).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
@@ -254,6 +194,66 @@ const OneKitchenMenu = () => {
                 </div>
               </TabsContent>
 
+              {/* Sunday Menu Tab */}
+              <TabsContent value="sunday" className="space-y-0">
+                <div className="text-center space-y-6 mb-12">
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                  <div className="space-y-2">
+                    <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
+                      Croft Common Sunday
+                    </h2>
+                    <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
+                      Breakfast. Brunch. Roasts.
+                    </p>
+                  </div>
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                </div>
+
+                <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
+                  {oneKitchenMenuData.slice(15, 23).map((section, sectionIndex) => (
+                    <section key={section.title} className="space-y-6">
+                      <div className="text-left">
+                        <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
+                          {section.title}
+                        </h3>
+                        <div className="w-12 h-0.5 bg-accent-pink"></div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {section.items.map((item, itemIndex) => (
+                          <div 
+                            key={itemIndex}
+                            className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
+                          >
+                            <div className="flex-1 space-y-0.5">
+                              <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
+                                {item.name}
+                              </h4>
+                              {item.description && (
+                                <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex-shrink-0 ml-6">
+                              <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
+                                {item.price}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {sectionIndex < 7 && (
+                        <div className="flex justify-start pt-6">
+                          <div className="w-24 h-0.5 bg-border/40"></div>
+                        </div>
+                      )}
+                    </section>
+                  ))}
+                </div>
+              </TabsContent>
+
               {/* The Hideout Menu Tab */}
               <TabsContent value="hideout" className="space-y-0">
                 <div className="text-center space-y-6 mb-12">
@@ -270,7 +270,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(23).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(23, 30).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
@@ -306,7 +306,7 @@ const OneKitchenMenu = () => {
                         ))}
                       </div>
 
-                      {sectionIndex < oneKitchenMenuData.slice(23).length - 1 && (
+                      {sectionIndex < 6 && (
                         <div className="flex justify-start pt-6">
                           <div className="w-24 h-0.5 bg-border/40"></div>
                         </div>
@@ -332,7 +332,7 @@ const OneKitchenMenu = () => {
                 </div>
 
                 <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-                  {oneKitchenMenuData.slice(29).map((section, sectionIndex) => (
+                  {oneKitchenMenuData.slice(30).map((section, sectionIndex) => (
                     <section key={section.title} className="space-y-6">
                       <div className="text-left">
                         <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
@@ -368,7 +368,7 @@ const OneKitchenMenu = () => {
                         ))}
                       </div>
 
-                      {sectionIndex < oneKitchenMenuData.slice(29).length - 1 && (
+                      {sectionIndex < 3 && (
                         <div className="flex justify-start pt-6">
                           <div className="w-24 h-0.5 bg-border/40"></div>
                         </div>
