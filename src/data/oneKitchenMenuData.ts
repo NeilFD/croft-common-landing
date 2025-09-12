@@ -910,7 +910,7 @@ export const oneKitchenMenuData: MenuSection[] = [
     items: [
       { name: "Pizza & Small Plates", description: "Mixed pizzas, pork belly, karaage chicken, squid, aubergine, fries, corn, slaw, churros.", price: "£28pp" },
       { name: "The Big Grill", description: "Steak, chicken, pork, salmon, gnocchi, potatoes, greens, slaw, brownies.", price: "£36pp" },
-      { name: "The Roast", description: "Beef, chicken, roast of the week, all trimmings, apple pie, jam roly poly.", price: "£32pp" },
+      { name: "The Roast (Sundays Only)", description: "Beef, chicken, roast of the week, all trimmings, apple pie, jam roly poly.", price: "£32pp" },
       { name: "The Hideout All-In", description: "A bit of everything — pizzas, small plates, grill mains, sides, and a mix of desserts.", price: "£40pp" }
     ]
   },
