@@ -13,6 +13,7 @@ import CommonMembershipModal from '@/components/CommonMembershipModal';
 import { toast } from '@/hooks/use-toast';
 import SecretCinemaModal from '@/components/SecretCinemaModal';
 import SecretLuckySevenModal from './SecretLuckySevenModal';
+import KitchensModalContent from './KitchensModalContent';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -513,8 +514,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
               />
             </div>
           )}
-          {false ? (
-            <div></div>
+          {/* Conditional render: Tabbed interface for kitchens, regular menu for others */}
+          {pageType === 'kitchens' ? (
+            <KitchensModalContent 
+              accentColor={accentColor}
+              isNeutral={isNeutral}
+            />
           ) : (
             <div className="space-y-10">
               {menuData.map((section, sectionIndex) => {
