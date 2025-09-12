@@ -24,8 +24,8 @@ export const oneKitchenMenuData: MenuSection[] = [
         price: "£5"
       },
       {
-        name: "Padron Peppers, Sea Salt, Ndjua",
-        description: "",
+        name: "Padron Peppers, Sea Salt, Nduja",
+        description: "charred, salted, hidden heat.",
         price: "£8"
       },
       {
@@ -47,6 +47,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         name: "Smoked Almonds",
         description: "deep roast, sea salt.",
         price: "£4"
+      },
+      {
+        name: "Edamame, Chilli Salt",
+        description: "steamed, tossed hot.",
+        price: "£5"
       }
     ]
   },
@@ -89,6 +94,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         price: "£11"
       },
       {
+        name: "Thai Spiced Fishcakes, Sweet Chilli Dip",
+        description: "aromatic, punchy, bright.",
+        price: "£8"
+      },
+      {
         name: "Cauliflower, Harissa Yoghurt, Almond",
         description: "scorched edges, sweet heat.",
         price: "£7"
@@ -107,6 +117,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         name: "Seared Scallop, Brown Butter, Garlic Crumb",
         description: "West Country scallops, caramelised.",
         price: "£5 each"
+      },
+      {
+        name: "Karaage Fried Chicken, Yuzu Mayo",
+        description: "crisp fry, citrus lift.",
+        price: "£9"
       }
     ]
   },
@@ -139,6 +154,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         price: "£14"
       },
       {
+        name: "Korean BBQ Beef",
+        description: "gochujang glaze, spring onion, sesame.",
+        price: "£18"
+      },
+      {
         name: "Clam Pizza",
         description: "garlic butter, fresh clams, chilli, lemon.",
         price: "£19"
@@ -156,6 +176,46 @@ export const oneKitchenMenuData: MenuSection[] = [
       {
         name: "Truffle Mushroom",
         description: "garlic cream, porcini, truffle oil, parmesan.",
+        price: "£20"
+      }
+    ]
+  },
+  {
+    title: "Large Plates",
+    items: [
+      {
+        name: "Braised Beef Short Rib, Red Wine, Mash, Charred Carrot",
+        description: "slow-cooked, falling apart, deep sauce.",
+        price: "£24"
+      },
+      {
+        name: "Confit Duck Leg, White Beans, Smoked Sausage, Gremolata",
+        description: "cassoulet style, rich and rustic.",
+        price: "£22"
+      },
+      {
+        name: "Roast Cod, Brown Shrimp Butter, Spinach, Potato",
+        description: "clean white fish, nutty butter sauce.",
+        price: "£26"
+      },
+      {
+        name: "Monkfish Tail, Tomato & Saffron Stew, Aioli",
+        description: "Basque style, bold and bright.",
+        price: "£28"
+      },
+      {
+        name: "Wood Oven Gnocchi, Wild Mushrooms, Aged Parmesan",
+        description: "pillowy, earthy, fire-licked.",
+        price: "£20"
+      },
+      {
+        name: "Charred Aubergine, Tahini, Pomegranate, Flatbread",
+        description: "smoky, rich, sharp edge.",
+        price: "£18"
+      },
+      {
+        name: "Katsu Cauliflower, Curry Sauce, Pickles, Rice",
+        description: "crisp fry, aromatic sauce.",
         price: "£20"
       }
     ]
@@ -194,6 +254,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         price: "£36"
       },
       {
+        name: "Miso Glazed Salmon, Sesame Greens",
+        description: "sweet-savory glaze, charred edges.",
+        price: "£28"
+      },
+      {
         name: "Welsh Salt Marsh Lamb Rump, Harissa & Mint",
         description: "fire, spice, sweet lamb.",
         price: "£32"
@@ -224,12 +289,17 @@ export const oneKitchenMenuData: MenuSection[] = [
         price: "£40"
       },
       {
-        name: "Churrasco Feast",
+        name: "Churrasco Board",
         description: "lamb ribs, chicken thighs, beef, chilli sauces.",
         price: "£75"
       },
       {
-        name: "Seafood Board",
+        name: "Asian Board",
+        description: "Korean short ribs, Thai fishcakes, miso salmon, kimchi slaw.",
+        price: "£85"
+      },
+      {
+        name: "Seafood Platter",
         description: "octopus, squid, prawns, scallops, aioli, bread.",
         price: "£90"
       },
@@ -267,6 +337,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         name: "Soft Pretzel, Beer Cheese Dip",
         description: "warm, salty, molten dip.",
         price: "£6"
+      },
+      {
+        name: "Bao Bun, Crispy Pork, Hoisin, Pickles",
+        description: "soft, rich, sharp.",
+        price: "£9"
       },
       {
         name: "Smash Burger, Pickles, American Cheese",
@@ -322,6 +397,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         name: "Mac & Cheese, Toasted Crumb",
         description: "oven-baked, rich.",
         price: "£7"
+      },
+      {
+        name: "Kimchi Slaw",
+        description: "sharp, hot, fermented crunch.",
+        price: "£5"
       }
     ]
   },
@@ -357,6 +437,11 @@ export const oneKitchenMenuData: MenuSection[] = [
         name: "Sticky Toffee Pudding, Salted Caramel, Ice Cream",
         description: "indulgent, soft sponge.",
         price: "£9"
+      },
+      {
+        name: "Mochi Ice Cream Trio",
+        description: "matcha, mango, chocolate.",
+        price: "£7"
       }
     ]
   }
