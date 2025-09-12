@@ -158,9 +158,9 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       'select',
       'textarea',
       '[role="button"]',
+      '[role="tab"]',
       '.interactive-element',
-      '.close-button',
-      '[data-interactive]'
+      '.close-button'
     ];
     
     for (const selector of interactiveSelectors) {

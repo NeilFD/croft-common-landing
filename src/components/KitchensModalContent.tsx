@@ -56,7 +56,6 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList 
-        data-interactive="true" 
         className={`grid w-full grid-cols-5 mb-8 bg-background border border-steel/20 ${
           isNeutral ? 'data-[state=active]:bg-foreground/10' : ''
         }`}
