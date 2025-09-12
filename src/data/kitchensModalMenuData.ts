@@ -982,26 +982,26 @@ export const kitchensModalMenuData: MenuSection[] = [
 export const getKitchensTabData = (tabName: string): MenuSection[] => {
   switch (tabName) {
     case 'main':
-      // MAIN: Bites through Pudding (first 10 sections)
-      return kitchensModalMenuData.slice(0, 10);
+      // MAIN: Bites through Pudding (sections 0-8)
+      return kitchensModalMenuData.slice(0, 9);
     
     case 'cafe':
-      // CAFÉ: Breakfast through Sweets & Cakes (sections 10-16)
-      return kitchensModalMenuData.slice(10, 17);
+      // CAFÉ: Breakfast through Sweets & Cakes (sections 9-14)
+      return kitchensModalMenuData.slice(9, 15);
     
     case 'sunday':
-      // SUNDAY: Breakfast & Brunch through Sunday Puddings (sections 17-21)
-      return kitchensModalMenuData.slice(17, 21);
+      // SUNDAY: Breakfast & Brunch through Sunday Puddings (sections 15-18)
+      return kitchensModalMenuData.slice(15, 19);
     
     case 'hideout':
-      // HIDEOUT: HOW IT WORKS through PRE-BUILT (sections 21-28)
-      return kitchensModalMenuData.slice(21, 28);
+      // HIDEOUT: HOW IT WORKS through PRE-BUILT (sections 19-25)
+      return kitchensModalMenuData.slice(19, 26);
     
     case 'halls':
-      // HALLS: Deli Style through Bespoke Events (sections 28+)
-      return kitchensModalMenuData.slice(28);
+      // HALLS: Deli Style through Bespoke Events (sections 26+)
+      return kitchensModalMenuData.slice(26);
     
     default:
-      return kitchensModalMenuData.slice(0, 10); // Default to MAIN
+      return kitchensModalMenuData.slice(0, 9); // Default to MAIN
   }
 };
