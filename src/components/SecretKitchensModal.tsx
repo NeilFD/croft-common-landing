@@ -907,7 +907,6 @@ React.useEffect(() => {
                 </div>
               )}
 
-              {/* NDUJA PIZZA */}
               {activeId === 'nduja' && (
                 <div className="space-y-3">
                   <h3 className="font-brutalist text-foreground text-xl tracking-wider">NDUJA</h3>
@@ -941,38 +940,142 @@ React.useEffect(() => {
                 </div>
               )}
 
-              {/* FLAT IRON STEAK */}
-              {activeId === 'flat-iron-steak' && (
+              {activeId === 'bianca' && (
                 <div className="space-y-3">
-                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">FLAT IRON STEAK, CHIMICHURRI</h3>
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">BIANCA</h3>
                   <div className="font-industrial text-foreground/80">
-                    <p>Serves: 2</p>
-                    <p>Time: 25 mins</p>
+                    <p>Serves: 1</p>
+                    <p>Time: 8 mins</p>
                   </div>
                   <Separator />
                   <div className="space-y-2">
                     <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
-                    <p className="font-industrial text-foreground/90 leading-relaxed">Rare breed beef. Seared hot. Green herb punch.</p>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">No tomato. White base. Ricotta, mozzarella, garlic oil.</p>
                   </div>
                   <Separator />
                   <div className="space-y-2">
                     <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
                     <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
-                      <li>400g flat iron steak</li>
-                      <li>Olive oil, salt, black pepper</li>
-                      <li>For chimichurri: 1 bunch parsley, 3 garlic cloves, 1 red chilli, 100ml olive oil, 2 tbsp red wine vinegar, pinch salt</li>
+                      <li>1 dough ball</li>
+                      <li>80g ricotta</li>
+                      <li>80g mozzarella, torn</li>
+                      <li>2 garlic cloves, sliced thin</li>
+                      <li>3 tbsp olive oil</li>
+                      <li>Fresh thyme</li>
+                      <li>Black pepper</li>
                     </ul>
                   </div>
                   <Separator />
                   <div className="space-y-2">
                     <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
-                    <p className="font-industrial text-foreground/90 leading-relaxed">Blend parsley, garlic, chilli, oil, vinegar for chimichurri. Rub steak with oil, salt, pepper. Grill 3–4 mins each side for medium rare. Rest 5 mins. Slice against grain. Spoon chimichurri over.</p>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Brush dough with garlic oil. Dot ricotta and mozzarella. Scatter thyme. Bake until golden. Crack black pepper over.</p>
                   </div>
-                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
                 </div>
               )}
 
-              {/* BRAISED BEEF SHORT RIB */}
+              {activeId === 'prosciutto' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">PROSCIUTTO</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 10 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">San Daniele ham. Rocket peppery bite. Simple elegance.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>80g tomato passata</li>
+                      <li>100g mozzarella</li>
+                      <li>60g prosciutto San Daniele</li>
+                      <li>Rocket leaves</li>
+                      <li>Parmesan shavings</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Base with tomato and mozzarella. Bake until crisp. Top with prosciutto, rocket, parmesan shavings after cooking.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
+              {activeId === 'four-cheese' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">FOUR CHEESE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 10 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Mozzarella base. Gorgonzola punch. Parmesan sharp. Ricotta smooth.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>60g mozzarella</li>
+                      <li>40g gorgonzola, crumbled</li>
+                      <li>30g parmesan, grated</li>
+                      <li>40g ricotta</li>
+                      <li>Fresh thyme</li>
+                      <li>Honey drizzle</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Scatter all cheeses evenly. Add thyme. Bake until melted and bubbling. Drizzle honey over gorgonzola areas.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
+              {activeId === 'korean-bbq-beef' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">KOREAN BBQ BEEF</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Marinated beef. Gochujang heat. Sesame finish. East meets wood fire.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>2 tbsp gochujang</li>
+                      <li>120g ribeye, thinly sliced</li>
+                      <li>80g mozzarella</li>
+                      <li>1 spring onion, sliced</li>
+                      <li>1 tsp sesame seeds</li>
+                      <li>Sesame oil drizzle</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Brush base with gochujang. Add mozzarella, raw beef slices. Bake until beef cooks through. Top with spring onions, sesame seeds, sesame oil.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, sesame, soy</p>
+                </div>
+              )}
+
+              {/* LARGE PLATES SECTION */}
               {activeId === 'braised-beef-short-rib' && (
                 <div className="space-y-3">
                   <h3 className="font-brutalist text-foreground text-xl tracking-wider">BRAISED BEEF SHORT RIB, RED WINE, MASH, CHARRED CARROT</h3>
@@ -1014,7 +1117,311 @@ React.useEffect(() => {
                 </div>
               )}
 
-              {/* T-BONE */}
+              {activeId === 'confit-duck-leg' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CONFIT DUCK LEG, LENTILS, PANCETTA</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 3 hrs plus overnight salt</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Duck legs slow-cooked in their own fat. Earthy lentils. Crispy pancetta contrast.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 duck legs</li>
+                      <li>4 tbsp sea salt</li>
+                      <li>2 bay leaves</li>
+                      <li>4 thyme sprigs</li>
+                      <li>Duck fat to cover</li>
+                      <li>250g Puy lentils</li>
+                      <li>100g pancetta, diced</li>
+                      <li>1 carrot, diced</li>
+                      <li>1 celery stick, diced</li>
+                      <li>500ml chicken stock</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Salt duck legs overnight. Rinse, pat dry. Submerge in duck fat with herbs. Cook at 90°C for 2.5 hrs. Fry pancetta until crisp. Cook lentils with veg in stock 25 mins. Crisp duck skin under grill. Serve on lentils with pancetta.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'roast-cod' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">ROAST COD, JERUSALEM ARTICHOKE, BROWN BUTTER</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Thick cod fillet. Sweet Jerusalem artichoke. Nutty brown butter finish.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 cod fillets, 150g each</li>
+                      <li>600g Jerusalem artichokes</li>
+                      <li>100g butter</li>
+                      <li>2 tbsp capers</li>
+                      <li>Lemon juice</li>
+                      <li>Fresh parsley</li>
+                      <li>Olive oil, salt, pepper</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Roast artichokes at 200°C for 30 mins until tender. Season cod, sear skin-down 4 mins, flip 2 mins. Heat butter until foaming and brown, add capers. Serve cod on artichokes, spoon brown butter over, finish with parsley and lemon.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: fish, milk</p>
+                </div>
+              )}
+
+              {activeId === 'monkfish-tail' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">MONKFISH TAIL, CHORIZO, CHICKPEA STEW</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 1 hr</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Meaty monkfish. Smoky chorizo. Comforting chickpea base.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>600g monkfish tail, skinned</li>
+                      <li>150g cooking chorizo, sliced</li>
+                      <li>400g tin chickpeas, drained</li>
+                      <li>1 onion, diced</li>
+                      <li>3 garlic cloves</li>
+                      <li>400g tin tomatoes</li>
+                      <li>200ml white wine</li>
+                      <li>1 tsp smoked paprika</li>
+                      <li>Fresh parsley</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Fry chorizo until crisp, remove. Cook onion, garlic in chorizo oil. Add tomatoes, wine, paprika, chickpeas. Simmer 20 mins. Nestle monkfish pieces in stew, cover, cook 15 mins. Scatter chorizo and parsley.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: fish</p>
+                </div>
+              )}
+
+              {activeId === 'wood-oven-gnocchi' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WOOD OVEN GNOCCHI, WILD MUSHROOM, SAGE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 2 hrs plus chilling</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Hand-made gnocchi. Wood oven char. Earthy mushrooms. Crispy sage.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>800g floury potatoes</li>
+                      <li>200g 00 flour</li>
+                      <li>1 egg yolk</li>
+                      <li>300g mixed wild mushrooms</li>
+                      <li>100g butter</li>
+                      <li>12 sage leaves</li>
+                      <li>50g parmesan, grated</li>
+                      <li>Olive oil, salt, pepper</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Boil potatoes until tender, pass through ricer. Mix with flour, egg yolk, season. Roll into sausages, cut gnocchi, mark with fork. Boil until they float. Sear mushrooms in hot oil. Crisp sage in butter until golden. Toss gnocchi with mushrooms, sage butter, parmesan.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, egg, milk</p>
+                </div>
+              )}
+
+              {/* CHARCOAL GRILL SECTION */}
+              {activeId === 'flat-iron-steak' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">FLAT IRON STEAK, CHIMICHURRI</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2</p>
+                    <p>Time: 25 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Rare breed beef. Seared hot. Green herb punch.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>400g flat iron steak</li>
+                      <li>Olive oil, salt, black pepper</li>
+                      <li>For chimichurri: 1 bunch parsley, 3 garlic cloves, 1 red chilli, 100ml olive oil, 2 tbsp red wine vinegar, pinch salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Blend parsley, garlic, chilli, oil, vinegar for chimichurri. Rub steak with oil, salt, pepper. Grill 3–4 mins each side for medium rare. Rest 5 mins. Slice against grain. Spoon chimichurri over.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'iberico-pork-chop' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">IBERICO PORK CHOP, APPLE SAUCE, CRACKLING</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Spanish black pig. Sweet apple contrast. Crispy crackling crunch.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 Iberico pork chops, bone-in</li>
+                      <li>3 Bramley apples, peeled, chopped</li>
+                      <li>2 tbsp sugar</li>
+                      <li>1 tbsp butter</li>
+                      <li>Pork skin for crackling</li>
+                      <li>Sea salt, olive oil</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Score pork skin, rub with salt, roast at 220°C until crackling. Cook apples with sugar and butter until soft sauce. Season chops, grill 6 mins each side. Rest 5 mins. Serve with apple sauce and crackling pieces.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk</p>
+                </div>
+              )}
+
+              {activeId === 'half-chicken' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">HALF CHICKEN, LEMON, HERBS</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2</p>
+                    <p>Time: 1 hr</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Free range bird. Charcoal smoke. Fresh herb marinade. Lemon brightness.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 free range chicken, halved</li>
+                      <li>2 lemons, zested and juiced</li>
+                      <li>4 garlic cloves, crushed</li>
+                      <li>Fresh thyme, rosemary, oregano</li>
+                      <li>4 tbsp olive oil</li>
+                      <li>Sea salt, black pepper</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Marinate chicken halves in lemon, herbs, garlic, oil for 2 hrs. Grill skin-side down 20 mins until crispy. Flip, cook 15 mins more until cooked through. Rest 10 mins. Serve with lemon wedges.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'whole-seabass' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WHOLE SEABASS, SEA SALT, FENNEL</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2–3</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Whole fish. Sea salt crust. Wild fennel aromatics. Simple perfection.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 whole seabass, 1.2kg, scaled, gutted</li>
+                      <li>500g coarse sea salt</li>
+                      <li>3 egg whites</li>
+                      <li>Fresh fennel fronds</li>
+                      <li>1 lemon, sliced</li>
+                      <li>Olive oil</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Stuff fish cavity with fennel and lemon. Mix salt with egg whites. Cover fish completely with salt mix. Bake at 200°C for 35 mins. Crack salt crust to serve. Drizzle with oil.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: fish, egg</p>
+                </div>
+              )}
+
+              {activeId === 'ribeye' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">RIBEYE, BONE MARROW BUTTER</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2</p>
+                    <p>Time: 30 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Prime ribeye. Rich marrow butter. Charcoal char. Pure indulgence.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 ribeye steak, 600g, 2 inches thick</li>
+                      <li>100g soft butter</li>
+                      <li>2 tbsp roasted bone marrow, chopped</li>
+                      <li>1 garlic clove, minced</li>
+                      <li>Fresh thyme</li>
+                      <li>Sea salt, cracked black pepper</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Mix butter with marrow, garlic, thyme. Season steak generously. Grill 4–5 mins each side for medium rare. Rest 10 mins. Slice thick, top with marrow butter melting over.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk</p>
+                </div>
+              )}
+
               {activeId === 't-bone' && (
                 <div className="space-y-3">
                   <h3 className="font-brutalist text-foreground text-xl tracking-wider">T-BONE, AS IS</h3>
@@ -1044,16 +1451,7 @@ React.useEffect(() => {
                 </div>
               )}
 
-              {/* Add placeholder for sections coming soon */}
-              {(largePlatesItems.slice(1).some(item => activeId === item.id) || 
-                smallPlatesItems.slice(1).some(item => activeId === item.id) ||
-                pizzaItems.slice(1).some(item => activeId === item.id && activeId !== 'margherita' && activeId !== 'nduja') ||
-                charcoalGrillItems.slice(1).some(item => activeId === item.id && activeId !== 'flat-iron-steak' && activeId !== 't-bone')) && (
-                <div className="flex flex-col items-center text-center py-12">
-                  <h3 className="font-brutalist text-foreground text-2xl tracking-wider mb-4">Recipe Coming Soon</h3>
-                  <p className="font-industrial text-foreground/60">This recipe is being perfected in our kitchen.</p>
-                </div>
-              )}
+              {/* Remove placeholder logic since all recipes are now implemented */}
 
             </article>
 
