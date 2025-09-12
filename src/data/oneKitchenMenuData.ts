@@ -1,7 +1,7 @@
 export interface MenuItem {
   name: string;
   description?: string;
-  price: string;
+  price?: string;
 }
 
 export interface MenuSection {
@@ -912,6 +912,87 @@ export const oneKitchenMenuData: MenuSection[] = [
       { name: "The Big Grill", description: "Steak, chicken, pork, salmon, gnocchi, potatoes, greens, slaw, brownies.", price: "£36pp" },
       { name: "The Roast", description: "Beef, chicken, roast of the week, all trimmings, apple pie, jam roly poly.", price: "£32pp" },
       { name: "The Hideout All-In", description: "A bit of everything — pizzas, small plates, grill mains, sides, and a mix of desserts.", price: "£40pp" }
+    ]
+  },
+
+  // The Halls - Events Menu
+  {
+    title: "Deli Style — Meetings & Conference Lunch",
+    items: [
+      {
+        name: "Taken from the Café menu. Delivered as platters, bowls, boxes. Charged per head.",
+        description: ""
+      },
+      {
+        name: "Sandwiches (choose three)",
+        description: "Italian Deli — salami, mortadella, provolone, pickles, ciabatta | Reuben — salt beef, sauerkraut, Swiss cheese, Russian dressing, rye | Caprese — buffalo mozzarella, heritage tomato, basil, focaccia | The Med — roast vegetables, hummus, feta, ciabatta | Roast Chicken Caesar — chicken, anchovy mayo, parmesan, cos lettuce, sourdough"
+      },
+      {
+        name: "Salads (choose three)",
+        description: "Roast Cauliflower, Tahini, Pomegranate | Freekeh & Squash Grain Salad | Charred Broccoli & Almond | Heritage Tomato & Burrata | Sesame Soba Noodles"
+      },
+      {
+        name: "Sweets (choose two)",
+        description: "Polenta & Orange Cake | Pistachio & Rose Cake | Chocolate Babka | Date & Walnut Slice"
+      },
+      {
+        name: "Price: £22 per head",
+        description: ""
+      }
+    ]
+  },
+  {
+    title: "Plated Three Course",
+    items: [
+      {
+        name: "Organiser selects 3 starters, 3 mains, 3 desserts. Guests pre-order. Individually priced, spend builds per guest.",
+        description: ""
+      },
+      {
+        name: "Starters",
+        description: "Charred Octopus, Potato, Aioli £12 | Beef Short Rib Croquettes £10 | Wood-Roast Aubergine, Miso Glaze £9 | Crispy Squid, Lemon, Seaweed Salt £11 | Heritage Tomato & Burrata £10 | Roast Beetroot, Whipped Goat's Cheese, Walnuts £9 | Karaage Fried Chicken, Yuzu Mayo £9 | Chorizo al Vino £8"
+      },
+      {
+        name: "Mains",
+        description: "Ribeye Steak, Smoked Shallot £36 | Roast Cod, Brown Shrimp Butter £26 | Braised Beef Short Rib, Mash, Charred Carrot £24 | Miso Glazed Salmon, Sesame Greens £28 | Iberico Pork Chop, Apple & Mustard £28 | Wood Oven Gnocchi, Mushrooms, Parmesan £20 | Confit Duck Leg, White Beans & Sausage £22 | Charred Aubergine, Tahini & Pomegranate £18"
+      },
+      {
+        name: "Desserts",
+        description: "Basque Cheesecake, Burnt Top £9 | Wood Oven Brownie, Vanilla Ice Cream £9 | Churros, Dark Chocolate £8 | Sticky Toffee Pudding, Salted Caramel £9 | Apple Pie & Custard £7 | Lemon Tart, Crème Fraîche £8 | Jam Roly Poly & Custard £7 | Bread & Butter Pudding £7"
+      }
+    ]
+  },
+  {
+    title: "Feast Style — Served Down The Table",
+    items: [
+      {
+        name: "Boards of starters, mains and desserts. Big, social, abundant. Priced per head.",
+        description: ""
+      },
+      {
+        name: "The Common Table",
+        description: "Starters: Padron Peppers, Jamón Croquetas, Whipped Cod Roe, Flatbread | Mains: Half Roast Chickens, Flat Iron Steak, Charred Broccoli & Almond, Roast Potatoes | Desserts: Churros & Chocolate, Wood Oven Brownie",
+        price: "£35pp"
+      },
+      {
+        name: "The Boards",
+        description: "Starters: Crispy Squid, Karaage Chicken, Aubergine with Miso, Heritage Tomato & Burrata | Mains: Iberico Pork Chops, Miso Salmon, Wood Oven Gnocchi, Seasonal Greens, Fries | Desserts: Basque Cheesecake, Sticky Toffee Pudding, Lemon Tart",
+        price: "£50pp"
+      },
+      {
+        name: "The Feast",
+        description: "Starters: Octopus & Aioli, Lamb Chops, Roast Beetroot & Goat's Cheese, Charred Cauliflower Salad | Mains: Ribeye Steak, Whole Seabass, Confit Duck, Charred Aubergine with Tahini | Desserts: Apple Pie & Custard, Treacle Sponge, Polenta & Orange Cake, Artisan Cheese Board",
+        price: "£70pp"
+      }
+    ]
+  },
+  {
+    title: "Bespoke Events",
+    items: [
+      {
+        name: "Bespoke curated party and event food available. We're here to deliver, we love a challenge.",
+        description: ""
+      }
     ]
   }
 ];
