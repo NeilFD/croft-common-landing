@@ -2,6 +2,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { oneKitchenMenuData } from '@/data/oneKitchenMenuData';
 
 const OneKitchenMenu = () => {
@@ -11,7 +12,7 @@ const OneKitchenMenu = () => {
         <title>OneKitchen Menu - Croft</title>
         <meta 
           name="description" 
-          content="Explore OneKitchen's full menu featuring bites, small plates, wood-fired pizzas, charcoal grill dishes, sharing boards, beer food, sides and puddings, plus our daytime café menu with breakfast, pastries, sandwiches and salads." 
+          content="Explore OneKitchen's complete menu collection: Main dining with wood-fired pizzas and charcoal grill, Café for breakfast and lunch, Sunday roasts and brunch, plus The Hideout private dining experience." 
         />
         <meta name="keywords" content="OneKitchen, menu, wood-fired pizza, charcoal grill, restaurant, Croft" />
         <link rel="canonical" href="/onekitchen-menu" />
@@ -35,240 +36,280 @@ const OneKitchenMenu = () => {
 
         {/* Menu Content */}
         <main className="px-4 py-8 md:py-12">
-          <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
-            {/* Main Menu Sections */}
-            {oneKitchenMenuData.slice(0, 10).map((section, sectionIndex) => (
-              <section key={section.title} className="space-y-6">
-                {/* Section Title */}
-                <div className="text-left">
-                  <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
-                    {section.title}
-                  </h3>
-                  <div className="w-12 h-0.5 bg-accent-pink"></div>
-                </div>
-
-                {/* Menu Items */}
-                <div className="space-y-3">
-                  {section.items.map((item, itemIndex) => (
-                    <div 
-                      key={itemIndex}
-                      className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
-                    >
-                      <div className="flex-1 space-y-0.5">
-                        <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
-                          {item.name}
-                        </h4>
-                        {item.description && (
-                          <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0 ml-6">
-                        <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
-                          {item.price}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Section Divider */}
-                {sectionIndex < 9 && (
-                  <div className="flex justify-start pt-6">
-                    <div className="w-24 h-0.5 bg-border/40"></div>
-                  </div>
-                )}
-              </section>
-            ))}
-
-            {/* Cafe Section Break */}
-            <div className="py-16 border-t-2 border-border/30 mt-16">
-              <div className="text-center space-y-6">
-                <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
-                <div className="space-y-2">
-                  <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                    Croft Common Café
-                  </h2>
-                  <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
-                    Daytime. Bright. Vibrant.
-                  </p>
-                </div>
-                <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+          <div className="max-w-6xl mx-auto">
+            <Tabs defaultValue="main" className="w-full">
+              {/* Tab Navigation */}
+              <div className="sticky top-20 z-10 bg-background/95 backdrop-blur-sm pb-6 mb-8">
+                <TabsList className="grid w-full grid-cols-4 max-w-2xl mx-auto h-12">
+                  <TabsTrigger 
+                    value="main" 
+                    className="font-brutalist text-sm md:text-base tracking-wide data-[state=active]:bg-accent-pink data-[state=active]:text-white"
+                  >
+                    MAIN
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="cafe" 
+                    className="font-brutalist text-sm md:text-base tracking-wide data-[state=active]:bg-accent-pink data-[state=active]:text-white"
+                  >
+                    CAFÉ
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="sunday" 
+                    className="font-brutalist text-sm md:text-base tracking-wide data-[state=active]:bg-accent-pink data-[state=active]:text-white"
+                  >
+                    SUNDAY
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="hideout" 
+                    className="font-brutalist text-sm md:text-base tracking-wide data-[state=active]:bg-accent-pink data-[state=active]:text-white"
+                  >
+                    HIDEOUT
+                  </TabsTrigger>
+                </TabsList>
               </div>
-            </div>
 
-            {/* Cafe Menu Sections */}
-            {oneKitchenMenuData.slice(10, 16).map((section, sectionIndex) => (
-              <section key={section.title} className="space-y-6">
-                {/* Section Title */}
-                <div className="text-left">
-                  <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
-                    {section.title}
-                  </h3>
-                  <div className="w-12 h-0.5 bg-accent-pink"></div>
-                </div>
-
-                {/* Menu Items */}
-                <div className="space-y-3">
-                  {section.items.map((item, itemIndex) => (
-                    <div 
-                      key={itemIndex}
-                      className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
-                    >
-                      <div className="flex-1 space-y-0.5">
-                        <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
-                          {item.name}
-                        </h4>
-                        {item.description && (
-                          <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex-shrink-0 ml-6">
-                        <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
-                          {item.price}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Section Divider */}
-                {sectionIndex < 5 && (
-                  <div className="flex justify-start pt-6">
-                    <div className="w-24 h-0.5 bg-border/40"></div>
+              {/* Main Menu Tab */}
+              <TabsContent value="main" className="space-y-0">
+                <div className="text-center space-y-6 mb-12">
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                  <div className="space-y-2">
+                    <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
+                      Croft Common Kitchen
+                    </h2>
+                    <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
+                      Evening. Dark. Bold.
+                    </p>
                   </div>
-                )}
-              </section>
-            ))}
-
-            {/* Sunday Section Break */}
-            <div className="py-16 border-t-2 border-border/30 mt-16">
-              <div className="text-center space-y-6">
-                <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
-                <div className="space-y-2">
-                  <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                    Croft Common Sunday
-                  </h2>
-                  <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
-                    Breakfast. Brunch. Roasts.
-                  </p>
-                </div>
-                <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
-              </div>
-            </div>
-
-            {/* Sunday Menu Sections */}
-            {oneKitchenMenuData.slice(16, 29).map((section, sectionIndex) => (
-              <section key={section.title} className="space-y-6">
-                {/* Section Title */}
-                <div className="text-left">
-                  <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
-                    {section.title}
-                  </h3>
-                  <div className="w-12 h-0.5 bg-accent-pink"></div>
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
                 </div>
 
-                {/* Menu Items */}
-                <div className="space-y-3">
-                  {section.items.map((item, itemIndex) => (
-                    <div 
-                      key={itemIndex}
-                      className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
-                    >
-                      <div className="flex-1 space-y-0.5">
-                        <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
-                          {item.name}
-                        </h4>
-                        {item.description && (
-                          <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
-                            {item.description}
-                          </p>
-                        )}
+                <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
+                  {oneKitchenMenuData.slice(0, 10).map((section, sectionIndex) => (
+                    <section key={section.title} className="space-y-6">
+                      <div className="text-left">
+                        <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
+                          {section.title}
+                        </h3>
+                        <div className="w-12 h-0.5 bg-accent-pink"></div>
                       </div>
-                      <div className="flex-shrink-0 ml-6">
-                        <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
-                          {item.price}
-                        </span>
+
+                      <div className="space-y-3">
+                        {section.items.map((item, itemIndex) => (
+                          <div 
+                            key={itemIndex}
+                            className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
+                          >
+                            <div className="flex-1 space-y-0.5">
+                              <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
+                                {item.name}
+                              </h4>
+                              {item.description && (
+                                <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex-shrink-0 ml-6">
+                              <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
+                                {item.price}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
 
-                {/* Section Divider */}
-                {sectionIndex < 12 && (
-                  <div className="flex justify-start pt-6">
-                    <div className="w-24 h-0.5 bg-border/40"></div>
-                  </div>
-                )}
-              </section>
-            ))}
-
-            {/* The Hideout Section Break */}
-            <div className="py-16 border-t-2 border-border/30 mt-16">
-              <div className="text-center space-y-6">
-                <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
-                <div className="space-y-2">
-                  <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                    The Hideout
-                  </h2>
-                  <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
-                    Private. Elevated. Off the radar.
-                  </p>
-                </div>
-                <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
-              </div>
-            </div>
-
-            {/* The Hideout Menu Sections */}
-            {oneKitchenMenuData.slice(29).map((section, sectionIndex) => (
-              <section key={section.title} className="space-y-6">
-                {/* Section Title */}
-                <div className="text-left">
-                  <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
-                    {section.title}
-                  </h3>
-                  <div className="w-12 h-0.5 bg-accent-pink"></div>
-                </div>
-
-                {/* Menu Items */}
-                <div className="space-y-3">
-                  {section.items.map((item, itemIndex) => (
-                    <div 
-                      key={itemIndex}
-                      className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
-                    >
-                      <div className="flex-1 space-y-0.5">
-                        <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
-                          {item.name}
-                        </h4>
-                        {item.description && (
-                          <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
-                            {item.description}
-                          </p>
-                        )}
-                      </div>
-                      {item.price && (
-                        <div className="flex-shrink-0 ml-6">
-                          <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
-                            {item.price}
-                          </span>
+                      {sectionIndex < 9 && (
+                        <div className="flex justify-start pt-6">
+                          <div className="w-24 h-0.5 bg-border/40"></div>
                         </div>
                       )}
-                    </div>
+                    </section>
                   ))}
                 </div>
+              </TabsContent>
 
-                {/* Section Divider */}
-                {sectionIndex < oneKitchenMenuData.slice(29).length - 1 && (
-                  <div className="flex justify-start pt-6">
-                    <div className="w-24 h-0.5 bg-border/40"></div>
+              {/* Cafe Menu Tab */}
+              <TabsContent value="cafe" className="space-y-0">
+                <div className="text-center space-y-6 mb-12">
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                  <div className="space-y-2">
+                    <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
+                      Croft Common Café
+                    </h2>
+                    <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
+                      Daytime. Bright. Vibrant.
+                    </p>
                   </div>
-                )}
-              </section>
-            ))}
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                </div>
+
+                <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
+                  {oneKitchenMenuData.slice(10, 16).map((section, sectionIndex) => (
+                    <section key={section.title} className="space-y-6">
+                      <div className="text-left">
+                        <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
+                          {section.title}
+                        </h3>
+                        <div className="w-12 h-0.5 bg-accent-pink"></div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {section.items.map((item, itemIndex) => (
+                          <div 
+                            key={itemIndex}
+                            className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
+                          >
+                            <div className="flex-1 space-y-0.5">
+                              <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
+                                {item.name}
+                              </h4>
+                              {item.description && (
+                                <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex-shrink-0 ml-6">
+                              <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
+                                {item.price}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {sectionIndex < 5 && (
+                        <div className="flex justify-start pt-6">
+                          <div className="w-24 h-0.5 bg-border/40"></div>
+                        </div>
+                      )}
+                    </section>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* Sunday Menu Tab */}
+              <TabsContent value="sunday" className="space-y-0">
+                <div className="text-center space-y-6 mb-12">
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                  <div className="space-y-2">
+                    <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
+                      Croft Common Sunday
+                    </h2>
+                    <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
+                      Breakfast. Brunch. Roasts.
+                    </p>
+                  </div>
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                </div>
+
+                <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
+                  {oneKitchenMenuData.slice(16, 23).map((section, sectionIndex) => (
+                    <section key={section.title} className="space-y-6">
+                      <div className="text-left">
+                        <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
+                          {section.title}
+                        </h3>
+                        <div className="w-12 h-0.5 bg-accent-pink"></div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {section.items.map((item, itemIndex) => (
+                          <div 
+                            key={itemIndex}
+                            className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
+                          >
+                            <div className="flex-1 space-y-0.5">
+                              <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
+                                {item.name}
+                              </h4>
+                              {item.description && (
+                                <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="flex-shrink-0 ml-6">
+                              <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
+                                {item.price}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {sectionIndex < 6 && (
+                        <div className="flex justify-start pt-6">
+                          <div className="w-24 h-0.5 bg-border/40"></div>
+                        </div>
+                      )}
+                    </section>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* The Hideout Menu Tab */}
+              <TabsContent value="hideout" className="space-y-0">
+                <div className="text-center space-y-6 mb-12">
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                  <div className="space-y-2">
+                    <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
+                      The Hideout
+                    </h2>
+                    <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
+                      Private. Elevated. Off the radar.
+                    </p>
+                  </div>
+                  <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
+                </div>
+
+                <div className="max-w-4xl space-y-12 ml-4 md:ml-8 lg:ml-12">
+                  {oneKitchenMenuData.slice(23).map((section, sectionIndex) => (
+                    <section key={section.title} className="space-y-6">
+                      <div className="text-left">
+                        <h3 className="font-brutalist text-2xl md:text-3xl tracking-wide uppercase text-foreground mb-4">
+                          {section.title}
+                        </h3>
+                        <div className="w-12 h-0.5 bg-accent-pink"></div>
+                      </div>
+
+                      <div className="space-y-3">
+                        {section.items.map((item, itemIndex) => (
+                          <div 
+                            key={itemIndex}
+                            className="flex justify-between items-start gap-4 pb-2 border-b border-border/20 last:border-b-0"
+                          >
+                            <div className="flex-1 space-y-0.5">
+                              <h4 className="font-industrial text-base md:text-lg font-medium text-foreground leading-snug">
+                                {item.name}
+                              </h4>
+                              {item.description && (
+                                <p className="font-industrial text-sm text-muted-foreground italic leading-tight">
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                            {item.price && (
+                              <div className="flex-shrink-0 ml-6">
+                                <span className="font-brutalist text-base md:text-lg font-bold text-accent-pink">
+                                  {item.price}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      {sectionIndex < oneKitchenMenuData.slice(23).length - 1 && (
+                        <div className="flex justify-start pt-6">
+                          <div className="w-24 h-0.5 bg-border/40"></div>
+                        </div>
+                      )}
+                    </section>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
 
