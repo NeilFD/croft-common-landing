@@ -62,7 +62,7 @@ export const UnavailableMenuDisplay = () => {
               <Card key={item.id} className="h-full overflow-hidden">
                 <div className="aspect-[4/3] relative bg-muted">
                   {(() => {
-                    const imageSrc = item.image_url || getLunchRunImage(item.name);
+                    const imageSrc = getLunchRunImage(item.name) || item.image_url;
                     return imageSrc ? (
                       <OptimizedImage
                         src={imageSrc}
