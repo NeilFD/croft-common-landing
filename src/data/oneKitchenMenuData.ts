@@ -634,5 +634,215 @@ export const oneKitchenMenuData: MenuSection[] = [
         price: "£4"
       }
     ]
+  },
+  {
+    title: "Breakfast & Brunch",
+    items: [
+      {
+        name: "Croft Common Full English",
+        description: "rare breed sausage, smoked bacon, fried egg, tomato, mushroom, beans, sourdough.",
+        price: "£12"
+      },
+      {
+        name: "Veggie English",
+        description: "field mushroom, halloumi, avocado, roast tomato, beans, sourdough.",
+        price: "£11"
+      },
+      {
+        name: "Breakfast Pizza",
+        description: "sourdough base, bacon, sausage, black pudding, egg, mozzarella, tomato.",
+        price: "£14"
+      },
+      {
+        name: "Eggs Benedict",
+        description: "poached eggs, ham hock, hollandaise, muffin.",
+        price: "£10"
+      },
+      {
+        name: "Eggs Florentine",
+        description: "poached eggs, spinach, hollandaise, muffin.",
+        price: "£9"
+      },
+      {
+        name: "Eggs Royale",
+        description: "poached eggs, smoked salmon, hollandaise, muffin.",
+        price: "£11"
+      },
+      {
+        name: "Shakshuka",
+        description: "spiced tomato, baked eggs, yoghurt, flatbread.",
+        price: "£9"
+      },
+      {
+        name: "Avocado & Poached Egg",
+        description: "chilli, lime, pumpkin seeds, sourdough.",
+        price: "£9"
+      },
+      {
+        name: "Overnight Oats",
+        description: "rolled oats, almond milk, berries, toasted seeds.",
+        price: "£6"
+      },
+      {
+        name: "Greek Yoghurt Bowl",
+        description: "granola, honey, figs, pistachio.",
+        price: "£7"
+      },
+      {
+        name: "Oysters on Ice",
+        description: "lemon, shallot vinegar, tabasco.",
+        price: "£3 each"
+      },
+      {
+        name: "Bloody Mary",
+        description: "house mix, spice, celery.",
+        price: "£8"
+      }
+    ]
+  },
+  {
+    title: "Small Plates",
+    items: [
+      {
+        name: "Charred Octopus, Potato, Aioli",
+        description: "Galician style, tender with smoke.",
+        price: "£10"
+      },
+      {
+        name: "Beef Short Rib Croquettes",
+        description: "rich, slow-cooked beef, crisp outside.",
+        price: "£11"
+      },
+      {
+        name: "Wood-Roast Aubergine, White Miso Glaze, Sesame",
+        description: "umami depth, fire char.",
+        price: "£8"
+      },
+      {
+        name: "Crispy Squid, Lemon, Seaweed Salt",
+        description: "light fry, fresh squeeze.",
+        price: "£11"
+      },
+      {
+        name: "Karaage Fried Chicken, Yuzu Mayo",
+        description: "crisp fry, citrus lift.",
+        price: "£9"
+      },
+      {
+        name: "Chorizo al Vino",
+        description: "Rioja reduction, garlic, heat.",
+        price: "£8"
+      },
+      {
+        name: "Welsh Salt Marsh Lamb Chops",
+        description: "flame-licked, smoked salt, mint.",
+        price: "£14"
+      },
+      {
+        name: "Heritage Tomato & Burrata",
+        description: "ripe tomatoes, creamy burrata, basil oil, sourdough crumbs.",
+        price: "£10"
+      }
+    ]
+  },
+  {
+    title: "Sunday Roasts",
+    items: [
+      {
+        name: "Rib of Beef",
+        description: "rare, carved thick, horseradish cream. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        price: "£24"
+      },
+      {
+        name: "Roast Chicken",
+        description: "half bird, lemon, thyme, bread sauce. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        price: "£18"
+      },
+      {
+        name: "Roast of the Week",
+        description: "lamb with mint sauce, or pork with crackling & apple. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        price: "£20"
+      },
+      {
+        name: "Vegetarian Roast",
+        description: "nut roast, root veg, mushroom gravy. All served with: roast potatoes, pigs in blankets, roast carrots, cauliflower cheese, Yorkshire pudding, seasonal greens, jugs of proper gravy.",
+        price: "£16"
+      }
+    ]
+  },
+  {
+    title: "All In Sharing Board (For Two)",
+    items: [
+      {
+        name: "A little of everything",
+        description: "rib of beef, roast chicken, roast of the week. all the trimmings, family-style, served on boards and stands.",
+        price: "£45"
+      }
+    ]
+  },
+  {
+    title: "Large Plates",
+    items: [
+      {
+        name: "Miso Glazed Salmon, Sesame Greens",
+        description: "sweet-savory glaze, charred edges.",
+        price: "£28"
+      },
+      {
+        name: "Wood Oven Gnocchi, Wild Mushrooms, Aged Parmesan",
+        description: "pillowy, earthy, fire-licked.",
+        price: "£20"
+      },
+      {
+        name: "Braised Beef Short Rib, Red Wine, Mash, Charred Carrot",
+        description: "slow-cooked, falling apart, deep sauce.",
+        price: "£24"
+      },
+      {
+        name: "Confit Duck Leg, White Beans, Smoked Sausage, Gremolata",
+        description: "cassoulet style, rustic and rich.",
+        price: "£22"
+      },
+      {
+        name: "Charred Aubergine, Tahini, Pomegranate, Flatbread",
+        description: "smoky, rich, sharp edge.",
+        price: "£18"
+      }
+    ]
+  },
+  {
+    title: "Sunday Puddings",
+    items: [
+      {
+        name: "Apple Pie & Custard",
+        description: "buttery pastry, soft apples.",
+        price: "£7"
+      },
+      {
+        name: "Jam Roly Poly & Custard",
+        description: "warm, nostalgic, steamed roll.",
+        price: "£7"
+      },
+      {
+        name: "Bread & Butter Pudding, Raisins, Cream",
+        description: "soft layers, caramelised top.",
+        price: "£7"
+      },
+      {
+        name: "Sticky Toffee Pudding, Salted Caramel, Ice Cream",
+        description: "indulgent, soft sponge.",
+        price: "£9"
+      },
+      {
+        name: "Treacle Sponge & Custard",
+        description: "steamed, golden syrup, light sponge.",
+        price: "£7"
+      },
+      {
+        name: "Rhubarb Crumble & Custard",
+        description: "sharp fruit, buttery topping.",
+        price: "£7"
+      }
+    ]
   }
 ];
