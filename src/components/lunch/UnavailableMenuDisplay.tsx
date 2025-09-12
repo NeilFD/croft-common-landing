@@ -2,6 +2,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLunchRun } from "@/hooks/useLunchRun";
+import OptimizedImage from "@/components/OptimizedImage";
+import { getLunchRunImage } from "@/data/lunchRunImages";
 import { useEffect } from "react";
 
 export const UnavailableMenuDisplay = () => {
@@ -59,12 +61,21 @@ export const UnavailableMenuDisplay = () => {
             {sandwiches.map((item) => (
               <Card key={item.id} className="h-full overflow-hidden">
                 <div className="aspect-[4/3] relative bg-muted">
-                  <img
-                    src={item.image_url || ''}
-                    alt={`${item.name} sandwich`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
+                  {(() => {
+                    const imageSrc = item.image_url || getLunchRunImage(item.name);
+                    return imageSrc ? (
+                      <OptimizedImage
+                        src={imageSrc}
+                        alt={`${item.name} sandwich`}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                        No image available
+                      </div>
+                    );
+                  })()}
                 </div>
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex justify-between items-start mb-3">
@@ -93,12 +104,18 @@ export const UnavailableMenuDisplay = () => {
             {beverages.map((item) => (
               <Card key={item.id} className="h-full overflow-hidden">
                 <div className="aspect-[4/3] relative bg-muted">
-                  <img
-                    src={item.image_url || ''}
-                    alt={`${item.name} beverage`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
+                  {item.image_url ? (
+                    <OptimizedImage
+                      src={item.image_url}
+                      alt={`${item.name} beverage`}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                      No image available
+                    </div>
+                  )}
                 </div>
                 <CardContent className="p-4 sm:p-6">
                   <div className="flex justify-between items-start mb-3">

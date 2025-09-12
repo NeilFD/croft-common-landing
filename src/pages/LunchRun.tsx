@@ -19,16 +19,7 @@ import { Loader2, Clock, Users, ShoppingCart, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { UnavailableMenuDisplay } from '@/components/lunch/UnavailableMenuDisplay';
 
-// Sandwich images mapping
-const getSandwichImage = (sandwichName: string) => {
-  const imageMap: { [key: string]: string } = {
-    'The Med': '/lovable-uploads/35ecafad-f268-4164-9069-284e858ea4d3.png',
-    'The Reuben': '/lovable-uploads/d5333fba-f3da-4177-8a9c-ff249b061320.png',
-    'The Capo': '/lovable-uploads/87a8b2d5-1d02-499b-8bfb-322d4b602944.png',
-    'The Deli': '/lovable-uploads/464c5a05-161f-4732-b508-f8c7df8c7b7b.png'
-  };
-  return imageMap[sandwichName];
-};
+import { getLunchRunImage } from '@/data/lunchRunImages';
 
 interface MenuItem {
   id: string;
@@ -357,7 +348,7 @@ export default function LunchRun() {
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {menu.sandwiches.map((sandwich) => {
-                    const sandwichImage = getSandwichImage(sandwich.name);
+                    const sandwichImage = getLunchRunImage(sandwich.name);
                     const inCart = cart.find(item => item.id === sandwich.id);
                     const quantity = inCart?.quantity || 0;
                     
