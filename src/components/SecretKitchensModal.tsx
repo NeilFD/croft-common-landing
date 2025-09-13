@@ -2516,12 +2516,17 @@ React.useEffect(() => {
               {/* Recipe Book Cover Button - Sticky at top */}
                 <div className="sticky -top-6 z-40 bg-background border-b border-border pt-6 pb-3">
                 <button
-                  onClick={() => setActiveId('cover')}
+                  onClick={() => {
+                    setActiveId('cover');
+                    if (contentRef.current) {
+                      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
                   className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider ${
                     activeId === 'cover' ? 'text-foreground' : 'text-foreground/70'
                   }`}
                 >
-                  RECIPE BOOK COVER
+                  Back to Top
                 </button>
               </div>
 
