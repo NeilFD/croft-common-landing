@@ -276,15 +276,26 @@ React.useEffect(() => {
           {/* Navigation buttons */}
           <div className="flex items-center gap-4">
             {activeId !== 'cover' && (
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setActiveId('cover')}
-                aria-label="Back to cover"
-                className="border border-[hsl(var(--accent-pink))]/30 bg-[hsl(var(--accent-pink))]/10 hover:bg-[hsl(var(--accent-pink))]/20 focus-visible:ring-1 focus-visible:ring-[hsl(var(--accent-pink))] text-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setActiveId('cover')}
+                  aria-label="Back to cover"
+                  className="border border-[hsl(var(--accent-pink))]/30 bg-[hsl(var(--accent-pink))]/10 hover:bg-[hsl(var(--accent-pink))]/20 focus-visible:ring-1 focus-visible:ring-[hsl(var(--accent-pink))] text-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+                
+                {/* Croft Common Kitchens branding */}
+                <div className="flex items-center gap-3">
+                  <CroftLogo size="sm" className="w-8 h-8" />
+                  <div className="flex flex-col">
+                    <h2 className="font-brutalist text-foreground text-lg tracking-wider leading-none">CROFT COMMON</h2>
+                    <p className="font-industrial text-foreground/70 text-sm leading-none">KITCHENS</p>
+                  </div>
+                </div>
+              </>
             )}
           </div>
 
