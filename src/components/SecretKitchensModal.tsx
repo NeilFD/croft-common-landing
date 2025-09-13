@@ -892,6 +892,305 @@ React.useEffect(() => {
                 </div>
               )}
 
+              {activeId === 'smoked-bone-marrow' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">SMOKED BONE MARROW, TOAST, PARSLEY</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 20 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Rich marrow, smoke and salt. Crisp toast. Fresh herb to cut.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 beef marrow bones, split lengthways</li>
+                      <li>2 tbsp olive oil</li>
+                      <li>Sea salt</li>
+                      <li>4 slices sourdough bread</li>
+                      <li>1 bunch flat-leaf parsley, chopped</li>
+                      <li>1 shallot, finely diced</li>
+                      <li>1 tsp capers, chopped</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Heat oven to 220°C. Roast marrow bones 15 mins until soft inside. Toast bread. Mix parsley, shallot, capers. Scoop marrow onto toast, sprinkle parsley mix.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten</p>
+                </div>
+              )}
+
+              {activeId === 'king-oyster-mushroom' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">KING OYSTER MUSHROOM, CHIMICHURRI</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2</p>
+                    <p>Time: 20 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Meaty mushroom, green herb sharpness.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 large king oyster mushrooms, sliced lengthways</li>
+                      <li>2 tbsp olive oil</li>
+                      <li>Sea salt</li>
+                      <li>For chimichurri: 1 bunch parsley, 2 garlic cloves, 1 red chilli, 100ml olive oil, 2 tbsp red wine vinegar, salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Blitz parsley, garlic, chilli, oil, vinegar to chimichurri. Heat griddle pan, brush mushrooms with oil. Char 3–4 mins each side. Salt, then spoon chimichurri over.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'crispy-squid' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CRISPY SQUID, LEMON, SEAWEED SALT</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 25 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Light fry. Squeeze of lemon. Umami salt.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>400g squid, cleaned, cut into rings</li>
+                      <li>100g plain flour</li>
+                      <li>50g cornflour</li>
+                      <li>1 tsp seaweed flakes (nori or wakame), crushed</li>
+                      <li>1 lemon, quartered</li>
+                      <li>Oil for frying</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Mix flours and seaweed with pinch salt. Toss squid to coat. Fry at 180°C until golden and crisp. Drain. Serve with lemon wedges.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, mollusc</p>
+                </div>
+              )}
+
+              {activeId === 'thai-spiced-fishcakes' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">THAI SPICED FISHCAKES, SWEET CHILLI DIP</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4 (8 cakes)</p>
+                    <p>Time: 35 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Aromatic, punchy, bright. Thai street corner in your kitchen.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>400g white fish fillet, skin off</li>
+                      <li>2 tbsp Thai red curry paste</li>
+                      <li>1 egg</li>
+                      <li>1 tbsp fish sauce</li>
+                      <li>4 kaffir lime leaves, shredded</li>
+                      <li>2 tbsp green beans, finely chopped</li>
+                      <li>Oil for frying</li>
+                      <li>Sweet chilli sauce to serve</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Blend fish with curry paste, egg, fish sauce. Stir in lime leaves and beans. Shape patties. Fry in shallow oil 2–3 mins each side until golden. Serve hot with sweet chilli dip.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: fish, egg, soy</p>
+                </div>
+              )}
+
+              {activeId === 'cauliflower-harissa' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CAULIFLOWER, HARISSA YOGHURT, ALMOND</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 40 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Scorched edges. Sweet heat. Cream cool. Crunch of almond.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 medium cauliflower, cut into florets</li>
+                      <li>2 tbsp olive oil</li>
+                      <li>2 tbsp rose harissa</li>
+                      <li>150g Greek yoghurt</li>
+                      <li>40g flaked almonds, toasted</li>
+                      <li>Juice of ½ lemon</li>
+                      <li>Salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Heat oven to 200°C. Toss cauliflower with oil, salt. Roast 30 mins until charred. Mix yoghurt with harissa, lemon. Spoon onto plate, pile cauliflower on top. Scatter almonds.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk, nuts</p>
+                </div>
+              )}
+
+              {activeId === 'sticky-pork-belly' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">STICKY PORK BELLY, BURNT PINEAPPLE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 2.5 hrs</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Sweet fat. Pineapple acid. Char to balance.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>800g pork belly, cut into 4cm cubes</li>
+                      <li>3 tbsp soy sauce</li>
+                      <li>2 tbsp honey</li>
+                      <li>2 tbsp rice vinegar</li>
+                      <li>1 pineapple, peeled, sliced thick</li>
+                      <li>1 tbsp brown sugar</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Roast pork belly at 160°C for 2 hrs until tender. Mix soy, honey, vinegar. Toss pork, roast again 20 mins at 200°C to glaze. Grill pineapple slices until black lines appear, dust with sugar to caramelise. Serve pork with pineapple.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: soy</p>
+                </div>
+              )}
+
+              {activeId === 'welsh-salt-marsh-lamb-chops' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WELSH SALT MARSH LAMB CHOPS, MINT, SMOKED SALT</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 20 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Tender lamb. Flame lick. Mint to freshen, smoked salt to finish.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>8 lamb chops</li>
+                      <li>2 tbsp olive oil</li>
+                      <li>1 tsp smoked sea salt</li>
+                      <li>1 bunch mint leaves, chopped</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Heat grill or barbecue. Rub lamb with oil. Cook 3–4 mins each side for pink. Rest 5 mins. Scatter with mint and smoked salt.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'seared-scallop' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">SEARED SCALLOP, BROWN BUTTER, GARLIC CRUMB</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2 (4 scallops)</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">West Country scallops. Caramelised butter. Crunch crumb.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 large scallops, roe removed</li>
+                      <li>40g butter</li>
+                      <li>1 garlic clove, minced</li>
+                      <li>40g panko breadcrumbs</li>
+                      <li>1 tbsp olive oil</li>
+                      <li>Squeeze of lemon</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Fry breadcrumbs in oil with garlic until golden. Dry scallops, season. Sear in hot pan with butter 1–2 mins each side until caramelised. Add lemon. Serve with crumb scattered over.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: mollusc, milk, gluten</p>
+                </div>
+              )}
+
+              {activeId === 'karaage-fried-chicken' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">KARAAGE FRIED CHICKEN, YUZU MAYO</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Japanese-style fried chicken. Citrus mayo lift.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>500g boneless chicken thigh, cut bite-size</li>
+                      <li>2 tbsp soy sauce</li>
+                      <li>1 tbsp sake (or dry sherry)</li>
+                      <li>1 tsp grated ginger</li>
+                      <li>1 clove garlic, grated</li>
+                      <li>100g potato starch or cornflour</li>
+                      <li>Oil for frying</li>
+                      <li>For mayo: 100g mayonnaise, 1 tsp yuzu juice</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Marinate chicken in soy, sake, ginger, garlic 20 mins. Toss in starch. Fry at 180°C until golden and crisp. Mix mayo with yuzu. Serve hot chicken with dip.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: soy, egg</p>
+                </div>
+              )}
+
               {/* WOOD-FIRED PIZZAS SECTION */}
               {activeId === 'margherita' && (
                 <div className="space-y-3">
