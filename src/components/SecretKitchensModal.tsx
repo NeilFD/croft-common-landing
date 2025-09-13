@@ -1999,7 +1999,7 @@ React.useEffect(() => {
             {/* Navigation sidebar */}
             <aside className="flex flex-col">
               {/* Recipe Book Cover Button - Sticky at top */}
-              <div className="sticky top-0 z-30 bg-background border-b border-border py-3">
+                <div className="sticky top-0 -mt-6 pt-6 z-30 bg-background border-b border-border pb-3">
                 <button
                   onClick={() => setActiveId('cover')}
                   className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider ${
