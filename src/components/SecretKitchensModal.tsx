@@ -228,7 +228,7 @@ React.useEffect(() => {
         ref={contentRef}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
-        className="w-[92vw] sm:w-[86vw] md:max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-[85vh] overflow-y-auto border border-border bg-background"
+        className="w-[92vw] sm:w-[86vw] md:max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-[80vh] mt-[10vh] overflow-y-auto border border-border bg-background"
       >
         <div className="space-y-6">
           {/* Brand + Back */}
