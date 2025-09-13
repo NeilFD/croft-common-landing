@@ -54,7 +54,15 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
   );
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <div className="space-y-6">
+      {/* Modal Title */}
+      <div className="text-center border-b border-steel/20 pb-4">
+        <h1 className="font-brutalist text-foreground tracking-wider text-2xl md:text-3xl leading-none">
+          CROFT COMMON KITCHEN
+        </h1>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList 
         className={`grid w-full grid-cols-5 mb-8 bg-background border border-steel/20 ${
           isNeutral ? 'data-[state=active]:bg-foreground/10' : ''
@@ -126,7 +134,8 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
       <TabsContent value="halls" className="mt-0">
         {renderMenuSection(getKitchensTabData('halls'), 'halls')}
       </TabsContent>
-    </Tabs>
+      </Tabs>
+    </div>
   );
 };
 
