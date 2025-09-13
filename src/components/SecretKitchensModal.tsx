@@ -111,7 +111,23 @@ React.useEffect(() => {
     | 'ribeye'
     | 'miso-glazed-salmon'
     | 'welsh-salt-marsh-lamb-rump'
-    | 't-bone';
+    | 't-bone'
+    // Sides
+    | 'rosemary-fries'
+    | 'wood-oven-potatoes'
+    | 'seasonal-greens'
+    | 'charred-corn'
+    | 'tomato-salad'
+    | 'mac-cheese'
+    | 'kimchi-slaw'
+    // Puddings
+    | 'basque-cheesecake'
+    | 'wood-oven-brownie'
+    | 'churros'
+    | 'affogato'
+    | 'lemon-tart'
+    | 'sticky-toffee-pudding'
+    | 'mochi-ice-cream';
 
   const [activeId, setActiveId] = React.useState<RecipeId>('cover');
   const [activeCategory, setActiveCategory] = React.useState<string>('');
@@ -123,6 +139,8 @@ React.useEffect(() => {
     if (pizzaItems.some(item => item.id === recipeId)) return 'pizzas';
     if (largePlatesItems.some(item => item.id === recipeId)) return 'large-plates';
     if (charcoalGrillItems.some(item => item.id === recipeId)) return 'charcoal-grill';
+    if (sidesItems.some(item => item.id === recipeId)) return 'sides';
+    if (puddingsItems.some(item => item.id === recipeId)) return 'puddings';
     return '';
   };
 
@@ -193,6 +211,26 @@ React.useEffect(() => {
     { id: 'miso-glazed-salmon', title: 'MISO GLAZED SALMON, SESAME GREENS' },
     { id: 'welsh-salt-marsh-lamb-rump', title: 'WELSH SALT MARSH LAMB RUMP, HARISSA & MINT' },
     { id: 't-bone', title: 'T-BONE, AS IS' },
+  ];
+
+  const sidesItems: { id: RecipeId; title: string }[] = [
+    { id: 'rosemary-fries', title: 'ROSEMARY FRIES' },
+    { id: 'wood-oven-potatoes', title: 'WOOD OVEN POTATOES, GARLIC & HERB' },
+    { id: 'seasonal-greens', title: 'SEASONAL GREENS, LEMON OIL' },
+    { id: 'charred-corn', title: 'CHARRED CORN, CHILLI BUTTER' },
+    { id: 'tomato-salad', title: 'TOMATO SALAD, BASIL, OLIVE OIL' },
+    { id: 'mac-cheese', title: 'MAC & CHEESE, TOASTED CRUMB' },
+    { id: 'kimchi-slaw', title: 'KIMCHI SLAW' },
+  ];
+
+  const puddingsItems: { id: RecipeId; title: string }[] = [
+    { id: 'basque-cheesecake', title: 'BASQUE CHEESECAKE, BURNT TOP' },
+    { id: 'wood-oven-brownie', title: 'WOOD OVEN BROWNIE, VANILLA ICE CREAM' },
+    { id: 'churros', title: 'CHURROS, DARK CHOCOLATE' },
+    { id: 'affogato', title: 'AFFOGATO, AMARETTO' },
+    { id: 'lemon-tart', title: 'LEMON TART, CRÈME FRAÎCHE' },
+    { id: 'sticky-toffee-pudding', title: 'STICKY TOFFEE PUDDING, SALTED CARAMEL, ICE CREAM' },
+    { id: 'mochi-ice-cream', title: 'MOCHI ICE CREAM TRIO' },
   ];
 
 
@@ -1897,6 +1935,465 @@ React.useEffect(() => {
                 </div>
               )}
 
+              {/* SIDES SECTION */}
+              {activeId === 'rosemary-fries' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">ROSEMARY FRIES</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Crisp outside. Fluffy inside. Salt and rosemary to finish.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>800g Maris Piper potatoes</li>
+                      <li>2 sprigs rosemary, leaves finely chopped</li>
+                      <li>Vegetable oil, for frying</li>
+                      <li>Sea salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Cut potatoes into fries. Rinse, dry well. Fry once at 150°C until pale, about 5–6 mins. Drain, cool. Fry again at 190°C until golden and crisp. Drain on paper, toss with rosemary and salt.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'wood-oven-potatoes' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WOOD OVEN POTATOES, GARLIC & HERB</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 1 hr</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Golden skins. Garlic heat. Herb lift.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>800g small potatoes, halved</li>
+                      <li>4 garlic cloves, smashed</li>
+                      <li>2 sprigs rosemary</li>
+                      <li>2 sprigs thyme</li>
+                      <li>3 tbsp olive oil</li>
+                      <li>Sea salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Heat oven to 200°C. Toss potatoes with oil, garlic, herbs, salt. Roast 45–50 mins, turning halfway, until blistered and crisp. Serve hot.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'seasonal-greens' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">SEASONAL GREENS, LEMON OIL</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Fresh, sharp, clean.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>300g seasonal greens (beans, broccoli, peas)</li>
+                      <li>2 tbsp olive oil</li>
+                      <li>Juice of ½ lemon</li>
+                      <li>Pinch sea salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Blanch greens in salted water 2–3 mins until tender but bright. Drain. Toss with oil, lemon juice, pinch of salt. Serve immediately.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'charred-corn' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CHARRED CORN, CHILLI BUTTER</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 20 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Sweet corn. Charred heat. Butter to coat.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>4 corn cobs</li>
+                      <li>50g butter, softened</li>
+                      <li>1 tsp chilli flakes</li>
+                      <li>Pinch sea salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Mix butter with chilli and salt. Grill corn, turning, until kernels are blistered and charred. Brush with chilli butter while hot.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk</p>
+                </div>
+              )}
+
+              {activeId === 'tomato-salad' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">TOMATO SALAD, BASIL, OLIVE OIL</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 10 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Ripe tomato. Basil torn fresh. Oil gloss.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>400g ripe tomatoes, mixed varieties</li>
+                      <li>1 small bunch basil, leaves picked</li>
+                      <li>3 tbsp olive oil</li>
+                      <li>Sea salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Slice tomatoes thick. Arrange on a plate. Scatter basil leaves, drizzle olive oil. Finish with a pinch of salt. Serve at room temperature.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'mac-cheese' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">MAC & CHEESE, TOASTED CRUMB</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Rich, bubbling pasta. Golden crumbed top.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>300g macaroni</li>
+                      <li>50g butter</li>
+                      <li>50g plain flour</li>
+                      <li>600ml whole milk</li>
+                      <li>150g mature Cheddar, grated</li>
+                      <li>50g Parmesan, grated</li>
+                      <li>1 tsp Dijon mustard</li>
+                      <li>50g panko breadcrumbs</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Cook pasta al dente. Melt butter, stir flour, cook 2 mins. Whisk in milk until thick. Stir in Cheddar, mustard. Combine with pasta. Pour into dish. Mix Parmesan with breadcrumbs, scatter over. Bake 200°C for 20 mins until bubbling and golden.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, mustard</p>
+                </div>
+              )}
+
+              {activeId === 'kimchi-slaw' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">KIMCHI SLAW</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Sharp crunch. Fermented fire.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>200g white cabbage, shredded</li>
+                      <li>100g carrot, grated</li>
+                      <li>100g kimchi, chopped</li>
+                      <li>2 tbsp mayonnaise</li>
+                      <li>1 tbsp rice vinegar</li>
+                      <li>Pinch sesame seeds (optional)</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Mix cabbage, carrot, kimchi. Stir through mayo and vinegar. Chill briefly. Sprinkle sesame seeds if using.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: egg (mayo), soy, sesame (optional)</p>
+                </div>
+              )}
+
+              {/* PUDDINGS SECTION */}
+              {activeId === 'basque-cheesecake' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">BASQUE CHEESECAKE, BURNT TOP</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 8</p>
+                    <p>Time: 1.5 hrs plus cooling</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Burnt top. Cream within. Basque brilliance.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>600g cream cheese</li>
+                      <li>300g caster sugar</li>
+                      <li>4 eggs</li>
+                      <li>300ml double cream</li>
+                      <li>30g plain flour</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Heat oven to 200°C. Beat cheese and sugar smooth. Add eggs, then cream, then flour. Line tin with baking paper, let it crinkle up the sides. Bake 55–60 mins until top is blackened, centre still wobbles. Cool fully. Slice and serve at room temp.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk, egg, gluten</p>
+                </div>
+              )}
+
+              {activeId === 'wood-oven-brownie' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WOOD OVEN BROWNIE, VANILLA ICE CREAM</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 6</p>
+                    <p>Time: 50 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Dark and rich. Molten at centre. Cold cream alongside.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>200g dark chocolate</li>
+                      <li>200g butter</li>
+                      <li>250g caster sugar</li>
+                      <li>3 eggs + 1 yolk</li>
+                      <li>120g plain flour</li>
+                      <li>Vanilla ice cream</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Melt chocolate, butter. Whisk eggs, yolk, sugar until pale. Fold in chocolate, then flour. Pour into lined tin. Bake 180°C for 25 mins until crust formed, centre fudgy. Cool slightly. Serve warm with ice cream.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, egg</p>
+                </div>
+              )}
+
+              {activeId === 'churros' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CHURROS, DARK CHOCOLATE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 6</p>
+                    <p>Time: 45 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Golden ridges. Cinnamon sugar. Dark chocolate dip.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>250ml water</li>
+                      <li>50g butter</li>
+                      <li>1 tbsp sugar</li>
+                      <li>150g plain flour</li>
+                      <li>Pinch salt</li>
+                      <li>2 eggs</li>
+                      <li>Oil for frying</li>
+                      <li>For chocolate: 100g dark chocolate, 100ml double cream</li>
+                      <li>Sugar + cinnamon for dusting</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Boil water, butter, sugar. Stir in flour, salt. Beat until smooth dough. Cool slightly, beat in eggs. Pipe into hot oil, fry until golden. Roll in cinnamon sugar. Heat cream, pour over chocolate to melt. Serve with churros.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, egg</p>
+                </div>
+              )}
+
+              {activeId === 'affogato' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">AFFOGATO, AMARETTO</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 5 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Gelato drowned. Espresso heat. Amaretto finish.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 scoops vanilla gelato</li>
+                      <li>1 shot hot espresso</li>
+                      <li>25ml Amaretto</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Scoop gelato into glass. Pour over espresso. Add Amaretto. Serve fast, before it melts.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk, nuts (Amaretto)</p>
+                </div>
+              )}
+
+              {activeId === 'lemon-tart' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">LEMON TART, CRÈME FRAÎCHE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 8</p>
+                    <p>Time: 1.5 hrs</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Sharp lemon set. Buttery case. Cream edge.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>Sweet pastry case (23cm)</li>
+                      <li>6 eggs</li>
+                      <li>250g caster sugar</li>
+                      <li>150ml double cream</li>
+                      <li>Juice and zest of 4 lemons</li>
+                      <li>Crème fraîche to serve</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Bake pastry case blind at 180°C until golden. Whisk eggs, sugar, cream, lemon juice and zest. Pour into case. Bake 150°C for 30–35 mins until just set. Cool. Slice and serve with crème fraîche.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, egg</p>
+                </div>
+              )}
+
+              {activeId === 'sticky-toffee-pudding' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">STICKY TOFFEE PUDDING, SALTED CARAMEL, ICE CREAM</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 6</p>
+                    <p>Time: 1.5 hrs</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Date sponge. Salted caramel. Ice cream to cut.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>200g dates, chopped</li>
+                      <li>250ml boiling water</li>
+                      <li>1 tsp bicarb soda</li>
+                      <li>100g butter</li>
+                      <li>150g brown sugar</li>
+                      <li>2 eggs</li>
+                      <li>175g self-raising flour</li>
+                      <li>For caramel: 150g butter, 150g brown sugar, 300ml double cream, 1 tsp sea salt</li>
+                      <li>Vanilla ice cream</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Soak dates in boiling water with bicarb. Beat butter, sugar, eggs. Fold in flour, then date mix. Bake 180°C for 35–40 mins. For caramel: melt butter, sugar, cream, salt, simmer 5 mins. Pour over sponge. Serve hot with ice cream.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, egg</p>
+                </div>
+              )}
+
+              {activeId === 'mochi-ice-cream' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">MOCHI ICE CREAM TRIO</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 6 (18 pieces)</p>
+                    <p>Time: 2 hrs inc. chilling</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Chewy shell. Frozen core. Three flavours, three moods.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>100g glutinous rice flour</li>
+                      <li>200ml water</li>
+                      <li>50g sugar</li>
+                      <li>Cornflour, for dusting</li>
+                      <li>6 scoops each: matcha, mango, chocolate ice cream</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Scoop ice cream into balls, freeze solid. Mix rice flour, water, sugar. Microwave 2 mins, stir, repeat until sticky dough. Dust board with cornflour, roll dough thin. Cut circles. Wrap around frozen scoops, pinch closed. Freeze until firm.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk, soy (depending on ice cream flavour)</p>
+                </div>
+              )}
+
               {activeId === 'miso-glazed-salmon' && (
                 <div className="space-y-3">
                   <h3 className="font-brutalist text-foreground text-xl tracking-wider">MISO GLAZED SALMON, SESAME GREENS</h3>
@@ -2094,6 +2591,44 @@ React.useEffect(() => {
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">CHARCOAL GRILL</h2>
                   <ul className="space-y-1 mt-2">
                       {charcoalGrillItems.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveId(item.id)}
+                            className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
+                              activeId === item.id ? 'text-foreground' : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.title}
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+
+                {/* SIDES Section */}
+                <div className="pt-4">
+                  <h2 className="font-brutalist text-foreground text-lg tracking-wider">SIDES</h2>
+                  <ul className="space-y-1 mt-2">
+                      {sidesItems.map((item) => (
+                        <li key={item.id}>
+                          <button
+                            onClick={() => setActiveId(item.id)}
+                            className={`text-left font-industrial text-sm w-full hover:text-foreground transition-colors ${
+                              activeId === item.id ? 'text-foreground' : 'text-foreground/60'
+                            }`}
+                          >
+                            {item.title}
+                          </button>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+
+                {/* PUDDINGS Section */}
+                <div className="pt-4">
+                  <h2 className="font-brutalist text-foreground text-lg tracking-wider">PUDDINGS</h2>
+                  <ul className="space-y-1 mt-2">
+                      {puddingsItems.map((item) => (
                         <li key={item.id}>
                           <button
                             onClick={() => setActiveId(item.id)}
