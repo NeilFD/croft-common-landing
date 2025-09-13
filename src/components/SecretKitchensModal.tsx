@@ -230,7 +230,14 @@ React.useEffect(() => {
         onEscapeKeyDown={(e) => e.preventDefault()}
         className="w-[92vw] sm:w-[86vw] md:max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-[80vh] mt-[10vh] overflow-y-auto border border-border bg-background"
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6">
+          {/* Modal Title */}
+          <div className="text-center border-b border-border pb-4">
+            <h1 className="font-brutalist text-foreground tracking-wider text-2xl md:text-3xl leading-none">
+              CROFT COMMON KITCHEN
+            </h1>
+          </div>
+
           {/* Brand + Back */}
           <div className="flex items-center gap-4">
             {activeId !== 'cover' && (
