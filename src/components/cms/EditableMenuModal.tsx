@@ -4,6 +4,7 @@ import CroftLogo from '../CroftLogo';
 import { MenuSection } from '@/data/menuData';
 import { CMSText } from './CMSText';
 import { useEditMode } from '@/contexts/EditModeContext';
+import KitchensModalContent from '../KitchensModalContent';
 
 interface EditableMenuModalProps {
   isOpen: boolean;
@@ -119,8 +120,13 @@ const EditableMenuModal = ({ isOpen, onClose, pageType, menuData }: EditableMenu
           pageType === 'community' || pageType === 'common-room' ? 'max-h-[calc(90vh-120px)]' : 'max-h-[calc(95vh-120px)]'
         }`}>
           <div className="space-y-10">
-            {/* Special handling for Hall and Community - plain text descriptions */}
-            {(pageType === 'hall' || pageType === 'community') ? (
+            {/* Special handling for Kitchens - use tabbed interface */}
+            {pageType === 'kitchens' ? (
+              <KitchensModalContent 
+                accentColor={accentColor}
+                isNeutral={isNeutral}
+              />
+            ) : (pageType === 'hall' || pageType === 'community') ? (
               <div className="space-y-6">
                 {pageType === 'hall' ? (
                   /* Use actual menu data for Hall with CMSText for editability */

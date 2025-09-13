@@ -128,21 +128,12 @@ const CMSMenuModal = () => {
                   <CMSModeProvider isCMSMode={true}>
                     <div className="h-full flex items-center justify-center">
                       <div className="w-full h-full relative">
-                        {page === 'kitchens' ? (
-                          <MenuModal
-                            isOpen={true}
-                            onClose={handleClose}
-                            pageType={'kitchens'}
-                            menuData={getMenuData()}
-                          />
-                        ) : (
-                          <EditableMenuModal
-                            isOpen={true}
-                            onClose={handleClose}
-                            pageType={pageType}
-                            menuData={getMenuData()}
-                          />
-                        )}
+                        <EditableMenuModal
+                          isOpen={true}
+                          onClose={handleClose}
+                          pageType={pageType}
+                          menuData={getMenuData()}
+                        />
                       </div>
                     </div>
                   </CMSModeProvider>
