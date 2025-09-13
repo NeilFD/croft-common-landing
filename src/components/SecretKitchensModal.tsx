@@ -195,10 +195,6 @@ React.useEffect(() => {
     { id: 't-bone', title: 'T-BONE, AS IS' },
   ];
 
-  React.useEffect(() => {
-    // Scroll to top when switching pages
-    contentRef.current?.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-  }, [activeId]);
 
   return (
     <>
@@ -231,12 +227,6 @@ React.useEffect(() => {
         className="w-[92vw] sm:w-[86vw] md:max-w-3xl lg:max-w-5xl xl:max-w-6xl max-h-[85vh] overflow-y-auto border border-border bg-background"
       >
         <div className="space-y-6 p-6">
-          {/* Modal Title */}
-          <div className="text-center border-b border-border pb-4">
-            <h1 className="font-brutalist text-foreground tracking-wider text-2xl md:text-3xl leading-none">
-              CROFT COMMON KITCHEN
-            </h1>
-          </div>
 
           {/* Navigation buttons */}
           <div className="flex items-center gap-4">
@@ -2008,20 +1998,21 @@ React.useEffect(() => {
 
             {/* Navigation sidebar */}
             <aside className="flex flex-col overflow-hidden">
-              <div className="flex-1 overflow-y-auto">
-                {/* Recipe Book Cover Button - Sticky inside scroll container */}
-                <div className="sticky top-0 z-20 bg-background border-b border-border py-3 mb-4">
-                  <button
-                    onClick={() => setActiveId('cover')}
-                    className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider ${
-                      activeId === 'cover' ? 'text-foreground' : 'text-foreground/70'
-                    }`}
-                  >
-                    RECIPE BOOK COVER
-                  </button>
-                </div>
+              {/* Recipe Book Cover Button - Sticky at top */}
+              <div className="sticky top-0 z-30 bg-background border-b border-border py-3">
+                <button
+                  onClick={() => setActiveId('cover')}
+                  className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider ${
+                    activeId === 'cover' ? 'text-foreground' : 'text-foreground/70'
+                  }`}
+                >
+                  RECIPE BOOK COVER
+                </button>
+              </div>
 
-                <nav className="space-y-2">
+              {/* Scrollable navigation content */}
+              <div className="flex-1 overflow-y-auto">
+                <nav className="space-y-2 pt-4">
                 {/* BITES Section */}
                 <div>
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">BITES</h2>
