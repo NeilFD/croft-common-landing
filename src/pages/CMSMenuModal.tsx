@@ -1,10 +1,13 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { CMSLayout } from '@/components/cms/CMSLayout';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { CMSSidebar } from '@/components/cms/CMSSidebar';
 import { CMSVisualHeader } from '@/components/cms/CMSVisualHeader';
+import { CMSErrorBoundary } from '@/components/cms/CMSErrorBoundary';
 import { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { useDraftContent } from '@/hooks/useDraftContent';
 import { useEditMode } from '@/contexts/EditModeContext';
+import { EditModeProvider } from '@/contexts/EditModeContext';
 import { CMSModeProvider } from '@/contexts/CMSModeContext';
 import EditableMenuModal from '@/components/cms/EditableMenuModal';
 import MenuModal from '@/components/MenuModal';
@@ -107,29 +110,49 @@ const CMSMenuModal = () => {
   const pageType = page as 'cafe' | 'cocktails' | 'beer' | 'kitchens' | 'hall' | 'community' | 'common-room';
 
   return (
-    <div className="flex-1 overflow-hidden bg-muted/20">
-      <CMSModeProvider isCMSMode={true}>
-        <div className="h-full flex items-center justify-center">
-          <div className="w-full h-full relative">
-            {page === 'kitchens' ? (
-              <MenuModal
-                isOpen={true}
-                onClose={handleClose}
-                pageType={'kitchens'}
-                menuData={getMenuData()}
-              />
-            ) : (
-              <EditableMenuModal
-                isOpen={true}
-                onClose={handleClose}
-                pageType={pageType}
-                menuData={getMenuData()}
-              />
-            )}
+    <CMSErrorBoundary>
+      <EditModeProvider>
+        <SidebarProvider defaultOpen={false}>
+          <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
+            <CMSVisualHeader 
+              currentPage={getPageTitle()}
+              onPublish={handlePublish}
+              onViewLive={handleViewLive}
+              isPublishing={isPublishing}
+              draftCount={draftCount}
+            />
+            <div className="flex flex-1 min-h-0">
+              <CMSSidebar />
+              <main className="flex-1 min-w-0 overflow-auto">
+                <div className="flex-1 overflow-hidden bg-muted/20">
+                  <CMSModeProvider isCMSMode={true}>
+                    <div className="h-full flex items-center justify-center">
+                      <div className="w-full h-full relative">
+                        {page === 'kitchens' ? (
+                          <MenuModal
+                            isOpen={true}
+                            onClose={handleClose}
+                            pageType={'kitchens'}
+                            menuData={getMenuData()}
+                          />
+                        ) : (
+                          <EditableMenuModal
+                            isOpen={true}
+                            onClose={handleClose}
+                            pageType={pageType}
+                            menuData={getMenuData()}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </CMSModeProvider>
+                </div>
+              </main>
+            </div>
           </div>
-        </div>
-      </CMSModeProvider>
-    </div>
+        </SidebarProvider>
+      </EditModeProvider>
+    </CMSErrorBoundary>
   );
 };
 
