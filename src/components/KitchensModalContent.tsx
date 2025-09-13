@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getKitchensTabData, KitchensMenuSection } from '@/data/kitchensModalMenuData';
+import { useKitchensMenuData, KitchensMenuSection as CMSKitchensMenuSection } from '@/hooks/useKitchensCMSData';
 
 interface KitchensModalContentProps {
   accentColor: string;
@@ -9,6 +10,18 @@ interface KitchensModalContentProps {
 
 const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor, isNeutral }) => {
   const [activeTab, setActiveTab] = useState('main');
+  
+  // Fetch CMS data for the active tab
+  const { data: cmsData, loading: cmsLoading, error: cmsError } = useKitchensMenuData(activeTab);
+  
+  // Use CMS data if available, otherwise fall back to static data
+  const getMenuSections = (tabName: string): KitchensMenuSection[] => {
+    if (tabName === activeTab && cmsData && cmsData.length > 0 && !cmsError) {
+      return cmsData as KitchensMenuSection[];
+    }
+    // Fallback to static data
+    return getKitchensTabData(tabName);
+  };
 
   const renderMenuSection = (sections: KitchensMenuSection[], tabName: string) => (
     <div className="space-y-10">
@@ -116,23 +129,27 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
       </TabsList>
 
       <TabsContent value="main" className="mt-0">
-        {renderMenuSection(getKitchensTabData('main'), 'main')}
+        {cmsLoading && activeTab === 'main' ? (
+          <div className="text-center py-8 text-foreground/70">Loading menu...</div>
+        ) : (
+          renderMenuSection(getMenuSections('main'), 'main')
+        )}
       </TabsContent>
 
       <TabsContent value="cafe" className="mt-0">
-        {renderMenuSection(getKitchensTabData('cafe'), 'cafe')}
+        {renderMenuSection(getMenuSections('cafe'), 'cafe')}
       </TabsContent>
 
       <TabsContent value="sunday" className="mt-0">
-        {renderMenuSection(getKitchensTabData('sunday'), 'sunday')}
+        {renderMenuSection(getMenuSections('sunday'), 'sunday')}
       </TabsContent>
 
       <TabsContent value="hideout" className="mt-0">
-        {renderMenuSection(getKitchensTabData('hideout'), 'hideout')}
+        {renderMenuSection(getMenuSections('hideout'), 'hideout')}
       </TabsContent>
 
       <TabsContent value="halls" className="mt-0">
-        {renderMenuSection(getKitchensTabData('halls'), 'halls')}
+        {renderMenuSection(getMenuSections('halls'), 'halls')}
       </TabsContent>
       </Tabs>
     </div>

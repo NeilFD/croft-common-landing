@@ -44,6 +44,7 @@ const CMSFAQPage = lazy(() => import("./pages/CMSFAQPage"));
 const CMS = lazy(() => import("./pages/CMS"));
 const CMSLogin = lazy(() => import("./pages/CMSLogin"));
 const CMSVisual = lazy(() => import("./pages/CMSVisual"));
+const CMSKitchens = lazy(() => import("./pages/CMSKitchens"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const SecretKitchens = lazy(() => import("./pages/SecretKitchens"));
 const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
@@ -178,6 +179,7 @@ const App = () => (
                 <Route path="/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
                     <Route path="/profile" element={<MemberProfile />} />
                     <Route path="/cms/login" element={<CMSLogin />} />
+                    <Route path="/cms/kitchens" element={<CMSKitchens />} />
                     <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
                     <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
                     <Route path="/cms/*" element={<CMS />} />
