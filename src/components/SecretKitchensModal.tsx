@@ -2007,9 +2007,9 @@ React.useEffect(() => {
             </article>
 
             {/* Navigation sidebar */}
-            <aside className="space-y-4">
-              {/* Recipe Book Cover Button - Always visible at top */}
-              <div className="pb-2 border-b border-border">
+            <aside className="flex flex-col">
+              {/* Recipe Book Cover Button - Sticky at top */}
+              <div className="sticky top-0 bg-background z-10 pb-2 border-b border-border mb-4">
                 <button
                   onClick={() => setActiveId('cover')}
                   className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider ${
@@ -2020,7 +2020,9 @@ React.useEffect(() => {
                 </button>
               </div>
 
-              <nav className="space-y-2">
+              {/* Scrollable navigation content */}
+              <div className="flex-1 overflow-y-auto">
+                <nav className="space-y-2">
                 {/* BITES Section */}
                 <div>
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">BITES</h2>
@@ -2116,6 +2118,7 @@ React.useEffect(() => {
                   </ul>
                 </div>
               </nav>
+              </div>
             </aside>
           </div>
         </div>
