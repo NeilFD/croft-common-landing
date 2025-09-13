@@ -1,56 +1,100 @@
 // Service Worker for Croft App
 // Handles caching, push notifications, and app communication
 
-const CACHE_NAME = 'croft-v3';
-const DEBUG_BYPASS = false; // Set to true to bypass all caching for troubleshooting
+// Cache names for versioning
+const CACHE_NAME = 'croft-app-v1.5';
+const CMS_CACHE_NAME = 'cms-images-v1.0';
 
-// Install event - immediately activate
+// Install event - cache essential assets
 self.addEventListener('install', event => {
-  console.log('🔔 SW: Installing service worker');
-  self.skipWaiting();
+  console.log('🔔 SW: Installing optimized service worker');
+  
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('🔔 SW: Caching essential assets');
+        return cache.addAll(['/']);
+      })
+      .then(() => {
+        console.log('🔔 SW: Assets cached successfully');
+        self.skipWaiting();
+      })
+      .catch((error) => {
+        console.error('🔔 SW: Error caching assets:', error);
+      })
+  );
 });
 
-// Activate event - take control of clients
+// Activate event - clean up old caches but preserve CMS cache
 self.addEventListener('activate', event => {
-  console.log('🔔 SW: Activating service worker');
+  console.log('🔔 SW: Activating optimized service worker');
   
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== CMS_CACHE_NAME) {
             console.log('🔔 SW: Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
+      console.log('🔔 SW: Optimized service worker activated');
       return self.clients.claim();
     })
   );
 });
 
-// Fetch event - handle caching
+// Fetch event - optimized caching strategy
 self.addEventListener('fetch', event => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
-  
-  // Bypass caching for debugging if enabled
-  if (DEBUG_BYPASS) {
-    console.log('🔔 SW: Debug bypass enabled, skipping cache');
-    return;
-  }
 
   const url = new URL(event.request.url);
 
-  // Skip caching for brand assets to ensure they're always fresh
-  if (url.pathname.includes('/brand/')) {
+  // Skip caching for uploads and dynamic content
+  if (url.pathname.includes('/uploads/') || 
+      url.pathname.includes('/api/') ||
+      url.pathname.includes('/auth/') ||
+      url.search.includes('bypass-cache=true')) {
+    return;
+  }
+
+  // Aggressive CMS image caching
+  if (url.pathname.includes('cms_images') || 
+      (url.search.includes('from=cms_images') && event.request.method === 'GET')) {
+    event.respondWith(
+      caches.open(CMS_CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cachedResponse => {
+          if (cachedResponse) {
+            // Serve from cache immediately, update in background
+            fetch(event.request)
+              .then(networkResponse => {
+                if (networkResponse.status === 200) {
+                  cache.put(event.request, networkResponse.clone());
+                }
+              })
+              .catch(() => {}); // Silent fail
+            return cachedResponse;
+          }
+          
+          // Not in cache, fetch and cache
+          return fetch(event.request).then(networkResponse => {
+            if (networkResponse.status === 200) {
+              cache.put(event.request, networkResponse.clone());
+            }
+            return networkResponse;
+          });
+        });
+      })
+    );
     return;
   }
 
   // Handle same-origin requests
   if (url.origin === self.location.origin) {
-    // Dynamic images strategy (uploads): network-first for fresh CMS content
+    // Dynamic images strategy (uploads): network-first for fresh content
     if (url.pathname.startsWith('/lovable-uploads/')) {
       event.respondWith(
         fetch(event.request).then(networkResponse => {
@@ -75,16 +119,14 @@ self.addEventListener('fetch', event => {
         caches.open(CACHE_NAME).then(cache => {
           return cache.match(event.request).then(cachedResponse => {
             if (cachedResponse) {
-              // Serve from cache and update in background
-              fetch(event.request).then(networkResponse => {
-                cache.put(event.request, networkResponse.clone());
-              }).catch(() => {});
               return cachedResponse;
             }
             
             // Not in cache, fetch and cache
             return fetch(event.request).then(networkResponse => {
-              cache.put(event.request, networkResponse.clone());
+              if (networkResponse.status === 200) {
+                cache.put(event.request, networkResponse.clone());
+              }
               return networkResponse;
             });
           });

@@ -55,8 +55,7 @@ import ScrollToTop from '@/components/ScrollToTop';
 import DomainGuard from '@/components/DomainGuard';
 import ReverseDomainGuard from '@/components/ReverseDomainGuard';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import { useOptimizedPerformance } from '@/hooks/useOptimizedPerformance';
-import { useWebVitals } from '@/hooks/useWebVitals';
+import { useConsolidatedPerformance } from '@/hooks/useConsolidatedPerformance';
 
 const queryClient = new QueryClient();
 
@@ -64,8 +63,7 @@ const queryClient = new QueryClient();
 // Single performance and notification handler
 const GlobalHandlers = () => {
   // Call hooks at the top level (Rules of Hooks)
-  useOptimizedPerformance();
-  useWebVitals();
+  useConsolidatedPerformance(); // Consolidates all performance optimizations
   useAnalytics();
   
   // Handle nudge notifications

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useNudgeNotification } from '@/contexts/NudgeNotificationContext';
-import { useOptimizedPerformance } from './useOptimizedPerformance';
+import { useConsolidatedPerformance } from './useConsolidatedPerformance';
 
 export const useNudgeNotificationHandler = () => {
   const { setNudgeUrl, nudgeUrl, nudgeClicked, clearNudge } = useNudgeNotification();
   const location = useLocation();
-  const performance = useOptimizedPerformance();
+  const performance = useConsolidatedPerformance();
 
   useEffect(() => {
     // Only initialize nudge handler after page is loaded

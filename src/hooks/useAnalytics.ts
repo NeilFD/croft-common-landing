@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { useOptimizedPerformance } from './useOptimizedPerformance';
+import { useConsolidatedPerformance } from './useConsolidatedPerformance';
 
 // Generate or retrieve session ID
 const getSessionId = (): string => {
@@ -43,7 +43,7 @@ const getDeviceInfo = () => {
 export const useAnalytics = () => {
   const location = useLocation();
   const { user } = useAuth();
-  const performance = useOptimizedPerformance();
+  const performance = useConsolidatedPerformance();
   const sessionId = getSessionId();
   const pageStartTime = useRef<number>(Date.now());
   const lastPagePath = useRef<string>('');

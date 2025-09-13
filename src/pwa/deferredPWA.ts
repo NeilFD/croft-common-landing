@@ -10,7 +10,7 @@ export const initializePWA = async () => {
     return;
   }
   
-  // Force cache refresh for PWA image issues
+  // Clear only problematic caches, keep CMS image cache
   if ('caches' in window) {
     try {
       const cacheNames = await caches.keys();
@@ -19,11 +19,11 @@ export const initializePWA = async () => {
           .filter(name => 
             name.includes('images-mobile-v') || 
             name.includes('hero-images') ||
-            name.startsWith('croft-v') // Clear main PWA cache to fix image caching issues
+            (name.startsWith('croft-v') && !name.includes('cms-images'))
           )
           .map(name => caches.delete(name))
       );
-      console.log('PWA: Cleared image caches for fresh content loading');
+      console.log('PWA: Cleared problematic caches, kept CMS cache');
     } catch (e) {
       console.warn('Cache refresh failed:', e);
     }

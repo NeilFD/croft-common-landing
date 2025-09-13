@@ -51,32 +51,19 @@ const NotificationsHeroCarousel = () => {
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    const firstUrl = heroImages[0]?.src;
-    let cancelled = false;
-    let timeoutId: number | undefined;
-    if (autoplay.current && emblaApi) {
-      try { autoplay.current.stop(); } catch {}
-    }
-    const proceed = () => {
-      if (cancelled) return;
+    if (!emblaApi) return;
+    
+    // Start autoplay immediately without waiting for image decode
+    const timeoutId = setTimeout(() => {
       setIsFirstReady(true);
-      try { autoplay.current?.play?.(); } catch {}
-    };
-    if (!firstUrl) {
-      proceed();
-      return;
-    }
-    const img = new Image();
-    img.src = firstUrl;
-    // Try to decode ASAP, but also attach onload/onerror for wider support
-    // @ts-ignore
-    (img as any).decode?.().then(proceed).catch(proceed);
-    img.onload = proceed;
-    img.onerror = proceed;
-    // Safety: start anyway after 4.5s
-    // @ts-ignore
-    timeoutId = setTimeout(proceed, 4500);
-    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
+      try { 
+        autoplay.current?.play?.(); 
+      } catch (e) {
+        // Silent fail
+      }
+    }, 100); // Much faster start
+    
+    return () => clearTimeout(timeoutId);
   }, [emblaApi]);
 
   return (
