@@ -111,7 +111,7 @@ const CMSMenuModal = () => {
 
   return (
     <CMSErrorBoundary>
-      <EditModeProvider>
+      <EditModeProvider initialEditMode={true}>
         <SidebarProvider defaultOpen={false}>
           <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
             <CMSVisualHeader 

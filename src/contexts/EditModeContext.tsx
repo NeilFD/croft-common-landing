@@ -35,10 +35,11 @@ export const useEditMode = (): EditModeContextType => {
 
 interface EditModeProviderProps {
   children: ReactNode;
+  initialEditMode?: boolean;
 }
 
-export const EditModeProvider = ({ children }: EditModeProviderProps) => {
-  const [isEditMode, setIsEditMode] = useState(false);
+export const EditModeProvider = ({ children, initialEditMode = false }: EditModeProviderProps) => {
+  const [isEditMode, setIsEditMode] = useState(initialEditMode);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [pendingChanges, setPendingChanges] = useState(0);
 
