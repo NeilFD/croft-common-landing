@@ -1392,6 +1392,140 @@ React.useEffect(() => {
                 </div>
               )}
 
+              {activeId === 'clam-pizza' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CLAM PIZZA</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Garlic butter base. Fresh clams. Chilli and lemon bite.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>40g butter</li>
+                      <li>2 garlic cloves, minced</li>
+                      <li>200g fresh clams, scrubbed</li>
+                      <li>1 red chilli, sliced</li>
+                      <li>Zest of ½ lemon</li>
+                      <li>Handful parsley, chopped</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Steam clams in splash of water 3–4 mins until open. Remove meat. Melt butter with garlic. Spread on dough. Scatter clams, chilli, parsley. Bake 6–7 mins. Finish with lemon zest.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk, mollusc</p>
+                </div>
+              )}
+
+              {activeId === 'vegetale' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">VEGETALE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Charred vegetables. Tomato base. Simple, bright.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>80g tomato passata</li>
+                      <li>40g mozzarella</li>
+                      <li>½ aubergine, diced and roasted</li>
+                      <li>½ courgette, sliced and roasted</li>
+                      <li>½ red pepper, roasted, sliced</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Spread passata, scatter mozzarella. Add roasted veg. Bake until crust crisp and cheese bubbling.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
+              {activeId === 'carne' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CARNE</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 15 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Meat feast, Croft style. Beef rib, smoke, heat.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>80g tomato passata</li>
+                      <li>40g mozzarella</li>
+                      <li>100g cooked beef short rib, shredded</li>
+                      <li>½ red onion, thinly sliced</li>
+                      <li>1 tsp smoked chilli flakes</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Spread passata, scatter mozzarella, beef, onion, chilli. Bake 7–8 mins until crust blisters.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
+              {activeId === 'truffle-mushroom' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">TRUFFLE MUSHROOM</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 1</p>
+                    <p>Time: 12 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Porcini depth. Garlic cream. Truffle scent rising from heat.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>1 dough ball</li>
+                      <li>60ml double cream</li>
+                      <li>1 garlic clove, grated</li>
+                      <li>40g porcini mushrooms, rehydrated, chopped</li>
+                      <li>40g mozzarella</li>
+                      <li>20g Parmesan, grated</li>
+                      <li>1 tsp truffle oil</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Spread garlic cream on dough. Scatter porcini, mozzarella, Parmesan. Bake until bubbling. Drizzle truffle oil after cooking.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: gluten, milk</p>
+                </div>
+              )}
+
               {/* LARGE PLATES SECTION */}
               {activeId === 'braised-beef-short-rib' && (
                 <div className="space-y-3">
@@ -1883,10 +2017,9 @@ React.useEffect(() => {
 
               <nav className="space-y-2">
                 {/* BITES Section */}
-                <div className={activeCategory === 'bites' || activeId === 'cover' ? '' : 'opacity-60'}>
+                <div>
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">BITES</h2>
-                  {(activeCategory === 'bites' || activeId === 'cover') && (
-                    <ul className="space-y-1 mt-2">
+                  <ul className="space-y-1 mt-2">
                       {bitesItems.map((item) => (
                         <li key={item.id}>
                           <button
@@ -1900,14 +2033,12 @@ React.useEffect(() => {
                         </li>
                       ))}
                     </ul>
-                  )}
                 </div>
 
                 {/* SMALL PLATES Section */}
-                <div className={`pt-4 ${activeCategory === 'small-plates' || activeId === 'cover' ? '' : 'opacity-60'}`}>
+                <div className="pt-4">
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">SMALL PLATES</h2>
-                  {(activeCategory === 'small-plates' || activeId === 'cover') && (
-                    <ul className="space-y-1 mt-2">
+                  <ul className="space-y-1 mt-2">
                       {smallPlatesItems.map((item) => (
                         <li key={item.id}>
                           <button
@@ -1921,14 +2052,13 @@ React.useEffect(() => {
                         </li>
                       ))}
                     </ul>
-                  )}
+                  </ul>
                 </div>
 
                 {/* WOOD-FIRED PIZZAS Section */}
-                <div className={`pt-4 ${activeCategory === 'pizzas' || activeId === 'cover' ? '' : 'opacity-60'}`}>
+                <div className="pt-4">
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">WOOD-FIRED PIZZAS</h2>
-                  {(activeCategory === 'pizzas' || activeId === 'cover') && (
-                    <ul className="space-y-1 mt-2">
+                  <ul className="space-y-1 mt-2">
                       {pizzaItems.map((item) => (
                         <li key={item.id}>
                           <button
@@ -1942,14 +2072,13 @@ React.useEffect(() => {
                         </li>
                       ))}
                     </ul>
-                  )}
+                  </ul>
                 </div>
 
                 {/* LARGE PLATES Section */}
-                <div className={`pt-4 ${activeCategory === 'large-plates' || activeId === 'cover' ? '' : 'opacity-60'}`}>
+                <div className="pt-4">
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">LARGE PLATES</h2>
-                  {(activeCategory === 'large-plates' || activeId === 'cover') && (
-                    <ul className="space-y-1 mt-2">
+                  <ul className="space-y-1 mt-2">
                       {largePlatesItems.map((item) => (
                         <li key={item.id}>
                           <button
@@ -1962,15 +2091,13 @@ React.useEffect(() => {
                           </button>
                         </li>
                       ))}
-                    </ul>
-                  )}
+                  </ul>
                 </div>
 
                 {/* CHARCOAL GRILL Section */}
-                <div className={`pt-4 ${activeCategory === 'charcoal-grill' || activeId === 'cover' ? '' : 'opacity-60'}`}>
+                <div className="pt-4">
                   <h2 className="font-brutalist text-foreground text-lg tracking-wider">CHARCOAL GRILL</h2>
-                  {(activeCategory === 'charcoal-grill' || activeId === 'cover') && (
-                    <ul className="space-y-1 mt-2">
+                  <ul className="space-y-1 mt-2">
                       {charcoalGrillItems.map((item) => (
                         <li key={item.id}>
                           <button
@@ -1983,8 +2110,7 @@ React.useEffect(() => {
                           </button>
                         </li>
                       ))}
-                    </ul>
-                  )}
+                  </ul>
                 </div>
               </nav>
             </aside>
