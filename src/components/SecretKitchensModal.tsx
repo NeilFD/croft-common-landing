@@ -1997,7 +1997,7 @@ React.useEffect(() => {
             </article>
 
             {/* Navigation sidebar */}
-            <aside className="flex flex-col overflow-hidden">
+            <aside className="flex flex-col">
               {/* Recipe Book Cover Button - Sticky at top */}
               <div className="sticky top-0 z-30 bg-background border-b border-border py-3">
                 <button
