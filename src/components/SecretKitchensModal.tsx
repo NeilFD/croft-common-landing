@@ -1469,7 +1469,102 @@ React.useEffect(() => {
                 </div>
               )}
 
-              {/* Remove placeholder logic since all recipes are now implemented */}
+              {activeId === 'miso-glazed-salmon' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">MISO GLAZED SALMON, SESAME GREENS</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2</p>
+                    <p>Time: 25 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Sweet-savoury glaze. Salmon char. Greens bright.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 salmon fillets, skin on</li>
+                      <li>2 tbsp white miso paste</li>
+                      <li>1 tbsp honey</li>
+                      <li>1 tbsp soy sauce</li>
+                      <li>200g tenderstem broccoli</li>
+                      <li>1 tsp sesame oil</li>
+                      <li>1 tsp sesame seeds, toasted</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Mix miso, honey, soy. Brush salmon. Grill skin-side down 4–5 mins, flip 2–3 mins. Blanch broccoli, toss with sesame oil. Serve salmon with greens, sprinkle sesame seeds.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: fish, soy, sesame</p>
+                </div>
+              )}
+
+              {activeId === 'welsh-salt-marsh-lamb-rump' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">WELSH SALT MARSH LAMB RUMP, HARISSA & MINT</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 2</p>
+                    <p>Time: 35 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Sweet lamb. Fire heat. Fresh mint.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 lamb rumps</li>
+                      <li>2 tbsp rose harissa</li>
+                      <li>2 tbsp olive oil</li>
+                      <li>Handful mint leaves, chopped</li>
+                      <li>Salt, pepper</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Rub lamb with harissa, oil, salt. Grill 6–8 mins each side until medium rare. Rest 10 mins. Slice, scatter mint.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: none</p>
+                </div>
+              )}
+
+              {activeId === 'charred-hispi-cabbage' && (
+                <div className="space-y-3">
+                  <h3 className="font-brutalist text-foreground text-xl tracking-wider">CHARRED HISPI CABBAGE, BLACK GARLIC BUTTER</h3>
+                  <div className="font-industrial text-foreground/80">
+                    <p>Serves: 4</p>
+                    <p>Time: 20 mins</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Idea</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Caramelised layers. Deep umami. Butter to coat.</p>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">You'll Need</h4>
+                    <ul className="font-industrial text-foreground/90 leading-relaxed space-y-1 list-disc pl-5">
+                      <li>2 hispi (pointed) cabbages, halved</li>
+                      <li>50g butter, softened</li>
+                      <li>2 cloves black garlic, mashed</li>
+                      <li>Olive oil, salt</li>
+                    </ul>
+                  </div>
+                  <Separator />
+                  <div className="space-y-2">
+                    <h4 className="font-brutalist text-foreground tracking-wider">The Cook</h4>
+                    <p className="font-industrial text-foreground/90 leading-relaxed">Mix butter with black garlic. Rub cabbage halves with oil, salt. Grill cut-side down until charred, 6–8 mins. Turn, cook until tender. Spread with garlic butter while hot.</p>
+                  </div>
+                  <p className="font-industrial text-steel text-sm">Allergens: milk</p>
+                </div>
+              )}
 
             </article>
 
