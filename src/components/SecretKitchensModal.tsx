@@ -9,6 +9,7 @@ import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
 import { forceRelease } from "@/lib/webauthnOrchestrator";
 import { clearRecentBio } from "@/hooks/useRecentBiometric";
+import { useKitchensRecipeData } from "@/hooks/useKitchensCMSData";
 
 interface SecretKitchensModalProps {
   open: boolean;
