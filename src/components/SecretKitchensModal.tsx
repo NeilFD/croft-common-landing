@@ -2051,7 +2051,6 @@ React.useEffect(() => {
                           </button>
                         </li>
                       ))}
-                    </ul>
                   </ul>
                 </div>
 
@@ -2071,7 +2070,6 @@ React.useEffect(() => {
                           </button>
                         </li>
                       ))}
-                    </ul>
                   </ul>
                 </div>
 
