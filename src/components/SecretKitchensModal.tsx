@@ -2007,21 +2007,20 @@ React.useEffect(() => {
             </article>
 
             {/* Navigation sidebar */}
-            <aside className="flex flex-col">
-              {/* Recipe Book Cover Button - Sticky at top with full backdrop coverage */}
-              <div className="sticky top-0 bg-background z-20 pb-4 border-b border-border mb-4 shadow-sm -mt-4 pt-4">
-                <button
-                  onClick={() => setActiveId('cover')}
-                  className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider py-2 bg-background ${
-                    activeId === 'cover' ? 'text-foreground' : 'text-foreground/70'
-                  }`}
-                >
-                  RECIPE BOOK COVER
-                </button>
-              </div>
-
-              {/* Scrollable navigation content */}
+            <aside className="flex flex-col overflow-hidden">
               <div className="flex-1 overflow-y-auto">
+                {/* Recipe Book Cover Button - Sticky inside scroll container */}
+                <div className="sticky top-0 z-20 bg-background border-b border-border py-3 mb-4">
+                  <button
+                    onClick={() => setActiveId('cover')}
+                    className={`text-left font-brutalist text-lg w-full hover:text-foreground transition-colors tracking-wider ${
+                      activeId === 'cover' ? 'text-foreground' : 'text-foreground/70'
+                    }`}
+                  >
+                    RECIPE BOOK COVER
+                  </button>
+                </div>
+
                 <nav className="space-y-2">
                 {/* BITES Section */}
                 <div>
