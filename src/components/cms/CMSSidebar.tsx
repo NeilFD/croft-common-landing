@@ -86,7 +86,7 @@ const pageStructure = [
     path: '/cms/visual/kitchens',
     icon: ChefHat,
     sections: [
-      { name: 'Menu', path: '/cms/visual/kitchens/menu' },
+      { name: 'Menu', path: '/cms/kitchens' },
       { name: 'FAQ', path: '/cms/faq/kitchens' }
     ]
   },
