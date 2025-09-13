@@ -132,6 +132,13 @@ React.useEffect(() => {
   const [activeId, setActiveId] = React.useState<RecipeId>('cover');
   const [activeCategory, setActiveCategory] = React.useState<string>('');
 
+  // Scroll to top when recipe changes
+  React.useEffect(() => {
+    if (contentRef.current && activeId !== 'cover') {
+      contentRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [activeId]);
+
   // Helper function to get category for a recipe
   const getCategoryForRecipe = (recipeId: RecipeId): string => {
     if (bitesItems.some(item => item.id === recipeId)) return 'bites';
