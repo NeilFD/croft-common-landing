@@ -30,13 +30,13 @@ interface CMSMenuSection {
 }
 
 // Hook to fetch menu data from CMS
-export const useKitchensMenuData = (tabName: string) => {
+export const useKitchensMenuData = (tabName: string, showDrafts: boolean = false) => {
   const pageKey = `kitchens-${tabName}`;
   
   const { data: sections, isLoading: sectionsLoading, error: sectionsError } = useQuery({
-    queryKey: ['kitchens-menu-sections', pageKey],
+    queryKey: ['kitchens-menu-sections', pageKey, showDrafts],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('cms_menu_sections')
         .select(`
           id,
@@ -47,12 +47,18 @@ export const useKitchensMenuData = (tabName: string) => {
             item_name,
             description,
             price,
-            sort_order
+            sort_order,
+            published
           )
         `)
         .eq('page', pageKey)
-        .eq('published', true)
         .order('sort_order');
+
+      if (!showDrafts) {
+        query = query.eq('published', true).eq('cms_menu_items.published', true);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as (CMSMenuSection & { cms_menu_items: CMSMenuItem[] })[];

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getKitchensTabData, KitchensMenuSection } from '@/data/kitchensModalMenuData';
 import { useKitchensMenuData, KitchensMenuSection as CMSKitchensMenuSection } from '@/hooks/useKitchensCMSData';
+import { CMSText } from '@/components/cms/CMSText';
+import { useCMSMode } from '@/contexts/CMSModeContext';
 
 interface KitchensModalContentProps {
   accentColor: string;
@@ -10,9 +12,10 @@ interface KitchensModalContentProps {
 
 const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor, isNeutral }) => {
   const [activeTab, setActiveTab] = useState('main');
+  const { isCMSMode } = useCMSMode();
   
-  // Fetch CMS data for the active tab
-  const { data: cmsData, loading: cmsLoading, error: cmsError } = useKitchensMenuData(activeTab);
+  // Fetch CMS data for the active tab (include drafts in CMS mode)
+  const { data: cmsData, loading: cmsLoading, error: cmsError } = useKitchensMenuData(activeTab, isCMSMode);
   
   // Use CMS data if available, otherwise fall back to static data
   const getMenuSections = (tabName: string): KitchensMenuSection[] => {
@@ -30,32 +33,51 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
         
         return (
           <div key={`${tabName}-${sectionIndex}`} className="space-y-4">
-            <h2 className={`font-brutalist tracking-wider border-b border-steel/20 pb-3 ${
-              isMajorSection 
-                ? `text-2xl md:text-3xl ${isNeutral ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} mb-6` 
-                : `text-lg md:text-xl ${isNeutral ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} mb-4`
-            }`}>
-              {section.title}
-            </h2>
+            <CMSText
+              page="kitchens"
+              section={`menu-${tabName}`}
+              contentKey={`section_${sectionIndex}_title`}
+              fallback={section.title}
+              as="h2"
+              className={`font-brutalist tracking-wider border-b border-steel/20 pb-3 ${
+                isMajorSection 
+                  ? `text-2xl md:text-3xl ${isNeutral ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} mb-6` 
+                  : `text-lg md:text-xl ${isNeutral ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} mb-4`
+              }`}
+            />
             <div className="space-y-3">
               {section.items.map((item, itemIndex: number) => (
                 <div key={`${tabName}-${sectionIndex}-${itemIndex}`} className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
-                    <h3 
+                    <CMSText
+                      page="kitchens"
+                      section={`menu-${tabName}`}
+                      contentKey={`section_${sectionIndex}_item_${itemIndex}_name`}
+                      fallback={item.name}
+                      as="h3"
                       className="font-industrial text-lg text-foreground"
-                      dangerouslySetInnerHTML={{ __html: item.name }}
                     />
                     {item.description && (
-                      <p className="font-industrial text-steel text-sm mt-1">
-                        {item.description}
-                      </p>
+                      <CMSText
+                        page="kitchens"
+                        section={`menu-${tabName}`}
+                        contentKey={`section_${sectionIndex}_item_${itemIndex}_description`}
+                        fallback={item.description}
+                        as="p"
+                        className="font-industrial text-steel text-sm mt-1"
+                      />
                     )}
                   </div>
                   {item.price && (
-                    <div className={`font-industrial text-base font-bold ${isNeutral ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} 
-                      flex-shrink-0 text-right`}>
-                      {item.price}
-                    </div>
+                    <CMSText
+                      page="kitchens"
+                      section={`menu-${tabName}`}
+                      contentKey={`section_${sectionIndex}_item_${itemIndex}_price`}
+                      fallback={item.price}
+                      as="div"
+                      className={`font-industrial text-base font-bold ${isNeutral ? 'text-foreground' : `text-[hsl(var(--${accentColor}))]`} 
+                        flex-shrink-0 text-right`}
+                    />
                   )}
                 </div>
               ))}

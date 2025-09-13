@@ -7,6 +7,7 @@ import { useDraftContent } from '@/hooks/useDraftContent';
 import { useEditMode } from '@/contexts/EditModeContext';
 import { CMSModeProvider } from '@/contexts/CMSModeContext';
 import EditableMenuModal from '@/components/cms/EditableMenuModal';
+import MenuModal from '@/components/MenuModal';
 import { 
   cafeMenuData, 
   cocktailsMenuData, 
@@ -110,12 +111,21 @@ const CMSMenuModal = () => {
       <CMSModeProvider isCMSMode={true}>
         <div className="h-full flex items-center justify-center">
           <div className="w-full h-full relative">
-            <EditableMenuModal
-              isOpen={true}
-              onClose={handleClose}
-              pageType={pageType}
-              menuData={getMenuData()}
-            />
+            {page === 'kitchens' ? (
+              <MenuModal
+                isOpen={true}
+                onClose={handleClose}
+                pageType={'kitchens'}
+                menuData={getMenuData()}
+              />
+            ) : (
+              <EditableMenuModal
+                isOpen={true}
+                onClose={handleClose}
+                pageType={pageType}
+                menuData={getMenuData()}
+              />
+            )}
           </div>
         </div>
       </CMSModeProvider>
