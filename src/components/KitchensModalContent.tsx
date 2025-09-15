@@ -64,7 +64,7 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
                         contentKey={`section_${sectionIndex}_item_${itemIndex}_description`}
                         fallback={item.description}
                         as="p"
-                        className="font-industrial text-steel text-sm mt-1"
+                        className="font-industrial text-lg text-foreground mt-1"
                       />
                     )}
                   </div>
