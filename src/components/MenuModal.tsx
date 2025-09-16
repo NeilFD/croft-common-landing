@@ -457,7 +457,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         </div>
 
         {/* Scrollable Content */}
-        <div className={`overflow-y-auto p-6 relative gesture-content ${
+        <div className={`overflow-y-auto px-6 pt-6 pb-12 relative gesture-content ${
           pageType === 'community' || pageType === 'common-room' ? 'max-h-[calc(90vh-120px)]' : 'max-h-[calc(95vh-120px)]'
         }`}>
           {/* Secret gesture indicator in top-right corner of content */}
