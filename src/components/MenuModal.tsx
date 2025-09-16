@@ -387,7 +387,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
   return (
     <div 
-      className="fixed inset-0 z-[10000] bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4 pt-20"
+      className="fixed inset-0 z-[10000] bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4 pt-32"
       onClick={(e) => { if (showSecret) { e.stopPropagation(); return; } handleClose(); }}
       onTouchStart={(e) => {
         // Prevent touch events from reaching background elements
