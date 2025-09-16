@@ -18,7 +18,7 @@ import {
 
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
-  const { isFullyAuthenticated } = useMembershipAuth();
+  const { isFullyAuthenticated, refreshMembershipStatus } = useMembershipAuth();
   const navigate = useNavigate();
   const membershipGate = useMembershipGate();
 
@@ -31,6 +31,8 @@ export const UserMenu = () => {
         variant: "destructive"
       });
     } else {
+      membershipGate.reset();
+      refreshMembershipStatus();
       toast({
         title: "Signed out successfully",
         description: "You have been signed out.",
@@ -39,13 +41,17 @@ export const UserMenu = () => {
   };
 
   const handleMemberLogin = () => {
-    membershipGate.start();
+    membershipGate.startWithOtp();
   };
 
   const handleCloseAll = () => {
     membershipGate.reset();
   };
 
+  const handleOtpAuthSuccess = () => {
+    membershipGate.handleAuthSuccess();
+    refreshMembershipStatus();
+  };
   const memberMenuItems = [
     { icon: Home, label: "My Home", path: "/common-room/member" },
     { icon: LayoutDashboard, label: "Dashboard", path: "/common-room/member/dashboard" },
@@ -69,12 +75,6 @@ export const UserMenu = () => {
         </Button>
 
         {/* Authentication Modals */}
-        <BiometricUnlockModal
-          isOpen={membershipGate.bioOpen}
-          onClose={handleCloseAll}
-          onSuccess={membershipGate.handleBioSuccess}
-          onFallback={membershipGate.handleBioFallback}
-        />
         <MembershipLinkModal
           open={membershipGate.linkOpen}
           onClose={handleCloseAll}

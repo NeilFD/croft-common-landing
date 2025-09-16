@@ -12,12 +12,14 @@ interface UseMembershipGate {
   allowed: boolean;
   checking: boolean;
   start: () => void;
+  startWithOtp: () => void; // Force open OTP/password (no magic link)
   reset: () => void;
   handleBioSuccess: () => Promise<void>;
   handleBioFallback: () => void;
   handleLinkSuccess: (email: string) => void;
   handleAuthSuccess: () => void;
 }
+
 
 export function useMembershipGate(): UseMembershipGate {
   const [bioOpen, setBioOpen] = useState(false);
@@ -107,6 +109,26 @@ export function useMembershipGate(): UseMembershipGate {
         inFlightRef.current = false;
       }
     })();
+  }, []);
+
+  // Force the OTP/password flow directly (no biometric, no magic link)
+  const startWithOtp = useCallback(() => {
+    const now = Date.now();
+    if (inFlightRef.current) {
+      console.debug('[gate] startWithOtp skipped: in-flight');
+      return;
+    }
+    if (now - lastStartTsRef.current < 200) {
+      console.debug('[gate] startWithOtp skipped: debounced');
+      return;
+    }
+    lastStartTsRef.current = now;
+
+    setAllowed(false);
+    setChecking(false);
+    setBioOpen(false);
+    setLinkOpen(false);
+    setAuthOpen(true); // open the code/password modal
   }, []);
 
   const handleBioSuccess = useCallback(async () => {
@@ -213,6 +235,7 @@ export function useMembershipGate(): UseMembershipGate {
     allowed,
     checking,
     start,
+    startWithOtp,
     reset,
     handleBioSuccess,
     handleBioFallback,
