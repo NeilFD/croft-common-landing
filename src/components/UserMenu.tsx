@@ -75,15 +75,11 @@ export const UserMenu = () => {
         </Button>
 
         {/* Authentication Modals */}
-        <MembershipLinkModal
-          open={membershipGate.linkOpen}
-          onClose={handleCloseAll}
-          onSuccess={membershipGate.handleLinkSuccess}
-        />
         <AuthModal
           isOpen={membershipGate.authOpen}
           onClose={handleCloseAll}
-          onSuccess={membershipGate.handleAuthSuccess}
+          onSuccess={handleOtpAuthSuccess}
+          requireAllowedDomain={false}
         />
       </>
     );
@@ -145,7 +141,8 @@ export const UserMenu = () => {
       <AuthModal
         isOpen={membershipGate.authOpen}
         onClose={handleCloseAll}
-        onSuccess={membershipGate.handleAuthSuccess}
+        onSuccess={handleOtpAuthSuccess}
+        requireAllowedDomain={false}
       />
     </>
   );

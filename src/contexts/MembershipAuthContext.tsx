@@ -86,22 +86,19 @@ export const MembershipAuthProvider: React.FC<{ children: React.ReactNode }> = (
 
   // Handle successful membership linking
   useEffect(() => {
-    if (membershipGate.allowed && user) {
+    // Treat successful Supabase sign-in via header as linking membership for this device
+    if (user) {
       const expiry = Date.now() + MEMBERSHIP_TTL;
-      
       try {
         localStorage.setItem(MEMBERSHIP_LINK_KEY, 'true');
         localStorage.setItem(MEMBERSHIP_EXPIRY_KEY, expiry.toString());
-        
-        // Store user handle if available
+        // Preserve any existing user handle if present (set elsewhere when passkey is created)
         const storedHandle = localStorage.getItem(USER_HANDLE_KEY);
         if (storedHandle) {
           localStorage.setItem(USER_HANDLE_KEY, storedHandle);
         }
-        
-        // Mark long-term biometric success
+        // Mark long-term trust (so gestures skip re-auth)
         markBioLongSuccess();
-        
         setMembershipState(prev => ({
           ...prev,
           isMembershipLinked: true,
@@ -111,7 +108,7 @@ export const MembershipAuthProvider: React.FC<{ children: React.ReactNode }> = (
         console.warn('Failed to store membership status:', error);
       }
     }
-  }, [membershipGate.allowed, user]);
+  }, [user]);
 
   const login = useCallback(() => {
     membershipGate.start();
