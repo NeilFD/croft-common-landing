@@ -87,7 +87,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
-          shouldCreateUser: true
+          shouldCreateUser: true,
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
 
@@ -145,9 +146,12 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
       if (error) {
         console.error('🚨 OTP verification error:', error);
+        const isNetwork = (error as any)?.status === 0 || (error as any)?.message?.includes('Failed to fetch');
         toast({
-          title: "Invalid code",
-          description: error.message,
+          title: isNetwork ? "Network error" : "Invalid code",
+          description: isNetwork
+            ? "Could not reach Supabase. Check Authentication > URL Configuration for Site/Redirect URLs to include this domain."
+            : (error as any).message,
           variant: "destructive"
         });
       } else {
