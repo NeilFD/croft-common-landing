@@ -387,7 +387,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
   return (
     <div 
-      className="fixed inset-0 z-50 bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4"
+      className="fixed inset-0 z-[10000] bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4 pt-20"
       onClick={(e) => { if (showSecret) { e.stopPropagation(); return; } handleClose(); }}
       onTouchStart={(e) => {
         // Prevent touch events from reaching background elements
@@ -443,55 +443,11 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           <div className="flex items-center gap-1">
             <GuideArrows contrast="neutral" className="hidden md:flex mr-3" />
             <button
-              data-interactive="true"
-              onClick={(e) => {
-                console.log('Safari close button clicked:', { isSafari, userAgent: navigator.userAgent });
-                e.preventDefault();
-                e.stopPropagation();
-                const nativeEvent = e.nativeEvent;
-                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
-                  nativeEvent.stopImmediatePropagation();
-                }
-                handleClose();
-              }}
-              onMouseDown={(e) => {
-                console.log('Safari close button mouse down');
-                e.preventDefault();
-                e.stopPropagation();
-                const nativeEvent = e.nativeEvent;
-                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
-                  nativeEvent.stopImmediatePropagation();
-                }
-              }}
-              onTouchStart={(e) => {
-                console.log('Safari close button touch start');
-                e.preventDefault();
-                e.stopPropagation();
-                const nativeEvent = e.nativeEvent;
-                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
-                  nativeEvent.stopImmediatePropagation();
-                }
-              }}
-              onPointerDown={(e) => {
-                console.log('Safari close button pointer down');
-                e.preventDefault();
-                e.stopPropagation();
-                const nativeEvent = e.nativeEvent;
-                if (nativeEvent && nativeEvent.stopImmediatePropagation) {
-                  nativeEvent.stopImmediatePropagation();
-                }
-              }}
-              style={{
-                WebkitTouchCallout: 'none',
-                WebkitUserSelect: 'none',
-                userSelect: 'none',
-                pointerEvents: 'auto',
-                zIndex: 9999,
-                position: 'relative'
-              }}
+              onClick={handleClose}
               className={`w-10 h-10 rounded-full border border-background/30 interactive-element close-button
                 ${pageType === 'hall' ? 'hover:border-steel hover:bg-steel/10' : `hover:border-${accentColor} hover:bg-${accentColor}/10`} 
-                transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2`}
+                transition-all duration-300 flex items-center justify-center flex-shrink-0 ml-2 cursor-pointer`}
+              type="button"
             >
               <X className="w-5 h-5 text-foreground" />
             </button>
