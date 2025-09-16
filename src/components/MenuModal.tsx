@@ -33,56 +33,96 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const handleClose = useCallback(() => {
     // Immediately reset any stuck carousel drag states
     const resetCarouselStates = () => {
-      // Find all embla carousel instances by their proper class
-      const emblaElements = document.querySelectorAll('.embla-carousel');
-      emblaElements.forEach(element => {
-        const emblaContainer = element as HTMLElement;
-        
-        // Remove any potential drag-related CSS classes
-        emblaContainer.classList.remove('is-dragging', 'is-draggable', 'is-pointer-down');
-        
-        // Reset cursor styles
-        emblaContainer.style.cursor = '';
-        emblaContainer.style.userSelect = '';
-        emblaContainer.style.touchAction = '';
-        
-        // Force events to reset internal Embla state
-        const events = [
-          new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: 1 }),
-          new MouseEvent('mouseup', { bubbles: true, cancelable: true }),
-          new TouchEvent('touchend', { bubbles: true, cancelable: true }),
-          new Event('mouseleave', { bubbles: true }),
-          new Event('pointerleave', { bubbles: true }),
-        ];
-        
-        events.forEach(event => {
-          try {
-            emblaContainer.dispatchEvent(event);
-          } catch (e) {
-            // Ignore event dispatch errors
+      try {
+        // Find all embla carousel instances by their proper class
+        const emblaElements = document.querySelectorAll('.embla-carousel');
+        emblaElements.forEach(element => {
+          const emblaContainer = element as HTMLElement;
+          
+          // Remove any potential drag-related CSS classes
+          emblaContainer.classList.remove('is-dragging', 'is-draggable', 'is-pointer-down');
+          
+          // Reset cursor styles
+          emblaContainer.style.cursor = '';
+          emblaContainer.style.userSelect = '';
+          emblaContainer.style.touchAction = '';
+          
+          // Force events to reset internal Embla state - Safari-safe version
+          const events = [];
+          
+          // Add PointerEvent only if supported
+          if (typeof PointerEvent !== 'undefined') {
+            try {
+              events.push(new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerId: 1 }));
+              events.push(new Event('pointerleave', { bubbles: true }));
+            } catch (e) {
+              // Safari fallback - PointerEvent constructor failed
+            }
           }
+          
+          // Add MouseEvent (universally supported)
+          try {
+            events.push(new MouseEvent('mouseup', { bubbles: true, cancelable: true }));
+            events.push(new Event('mouseleave', { bubbles: true }));
+          } catch (e) {
+            // Ignore mouse event errors
+          }
+          
+          // Add TouchEvent with Safari-safe fallback
+          if (typeof TouchEvent !== 'undefined') {
+            try {
+              events.push(new TouchEvent('touchend', { bubbles: true, cancelable: true }));
+            } catch (e) {
+              // Safari desktop fallback - TouchEvent constructor not supported
+              events.push(new Event('touchend', { bubbles: true }));
+            }
+          } else {
+            // Fallback for browsers without TouchEvent
+            events.push(new Event('touchend', { bubbles: true }));
+          }
+          
+          events.forEach(event => {
+            try {
+              emblaContainer.dispatchEvent(event);
+            } catch (e) {
+              // Ignore event dispatch errors
+            }
+          });
         });
-      });
-      
-      // Reset global cursor state
-      document.body.style.cursor = '';
-      document.documentElement.style.cursor = '';
-      
-      // Clear any lingering mouse capture
-      if (document.exitPointerLock) {
-        try {
-          document.exitPointerLock();
-        } catch (e) {
-          // Ignore errors
+        
+        // Reset global cursor state
+        document.body.style.cursor = '';
+        document.documentElement.style.cursor = '';
+        
+        // Clear any lingering mouse capture
+        if (document.exitPointerLock) {
+          try {
+            document.exitPointerLock();
+          } catch (e) {
+            // Ignore errors
+          }
         }
+      } catch (e) {
+        // If carousel reset fails completely, don't block modal closing
+        console.warn('Carousel reset failed:', e);
       }
     };
     
     // Reset immediately and with delays to ensure complete cleanup
-    resetCarouselStates();
-    setTimeout(resetCarouselStates, 50);
-    setTimeout(resetCarouselStates, 200);
+    try {
+      resetCarouselStates();
+      setTimeout(() => {
+        try { resetCarouselStates(); } catch (e) {}
+      }, 50);
+      setTimeout(() => {
+        try { resetCarouselStates(); } catch (e) {}
+      }, 200);
+    } catch (e) {
+      // Don't let carousel reset errors block modal closing
+      console.warn('Failed to schedule carousel resets:', e);
+    }
     
+    // Always call onClose, even if carousel reset fails
     onClose();
   }, [onClose]);
   const secretWord = useSecretWordOfTheDay();
