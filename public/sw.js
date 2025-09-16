@@ -46,18 +46,24 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - optimized caching strategy
+// Fetch event - mobile-optimized caching strategy
 self.addEventListener('fetch', event => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
 
-  // Skip caching for uploads and dynamic content
-  if (url.pathname.includes('/uploads/') || 
+  // NEVER cache Supabase API requests - let them go direct to network
+  if (url.hostname.includes('supabase.') || 
+      url.hostname.includes('supabase') || 
+      url.pathname.includes('/functions/v1/') ||
+      url.pathname.includes('/auth/v1/') ||
+      url.pathname.includes('/rest/v1/') ||
+      url.pathname.includes('/storage/v1/') ||
+      url.pathname.includes('/uploads/') || 
       url.pathname.includes('/api/') ||
-      url.pathname.includes('/auth/') ||
       url.search.includes('bypass-cache=true')) {
+    console.log('🔔 SW: Bypassing cache for:', url.href);
     return;
   }
 
@@ -92,8 +98,50 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Handle same-origin requests
+  // Handle same-origin requests with mobile-friendly strategy
   if (url.origin === self.location.origin) {
+    // Network-first for HTML pages (prevents stale app issues on mobile)
+    if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+      event.respondWith(
+        fetch(event.request, { cache: 'no-cache' }).then(networkResponse => {
+          // Cache successful response for offline fallback
+          if (networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, networkResponse.clone());
+            });
+          }
+          return networkResponse;
+        }).catch(() => {
+          // Network failed - try cache as fallback
+          return caches.open(CACHE_NAME).then(cache => {
+            return cache.match(event.request) || Response.error();
+          });
+        })
+      );
+      return;
+    }
+
+    // Network-first for JS/CSS (prevents stale app bundle issues)
+    if (url.pathname.match(/\.(js|css)$/)) {
+      event.respondWith(
+        fetch(event.request).then(networkResponse => {
+          // Cache successful response
+          if (networkResponse.status === 200) {
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, networkResponse.clone());
+            });
+          }
+          return networkResponse;
+        }).catch(() => {
+          // Network failed - try cache as fallback
+          return caches.open(CACHE_NAME).then(cache => {
+            return cache.match(event.request);
+          });
+        })
+      );
+      return;
+    }
+
     // Dynamic images strategy (uploads): network-first for fresh content
     if (url.pathname.startsWith('/lovable-uploads/')) {
       event.respondWith(
@@ -113,8 +161,8 @@ self.addEventListener('fetch', event => {
       return;
     }
 
-    // Built assets and other images: cache first with SWR
-    if (url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
+    // Static assets (images, fonts): cache first
+    if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
       event.respondWith(
         caches.open(CACHE_NAME).then(cache => {
           return cache.match(event.request).then(cachedResponse => {

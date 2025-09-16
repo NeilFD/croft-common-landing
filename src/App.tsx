@@ -3,8 +3,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
-import { useEffect, Suspense, lazy } from "react";
+import { useEffect, Suspense, lazy, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { TransitionProvider } from "@/contexts/TransitionContext";
 import { MembershipAuthProvider } from "@/contexts/MembershipAuthContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
@@ -119,12 +120,39 @@ const LowercasePathGuard = () => {
   return null;
 };
  
-// Loading fallback component
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-  </div>
-);
+// Loading fallback component with escape hatch for PWA issues
+const PageLoader = () => {
+  const [showReloadButton, setShowReloadButton] = useState(false);
+  
+  useEffect(() => {
+    // Show reload button after 10 seconds of loading
+    const timer = setTimeout(() => {
+      setShowReloadButton(true);
+    }, 10000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const handleReload = () => {
+    // Force reload to bypass service worker cache
+    window.location.href = window.location.href + '?bypass-cache=true';
+  };
+  
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mb-4"></div>
+      <p className="text-muted-foreground mb-4">Loading...</p>
+      {showReloadButton && (
+        <div className="text-center space-y-2">
+          <p className="text-sm text-muted-foreground">Taking longer than expected?</p>
+          <Button onClick={handleReload} variant="outline">
+            Reload App
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const App = () => (
   <HelmetProvider>

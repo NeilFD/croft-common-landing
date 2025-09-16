@@ -10,7 +10,7 @@ export const initializePWA = async () => {
     return;
   }
   
-  // Clear only problematic caches, keep CMS image cache
+  // Less aggressive cache clearing - only clear truly problematic ones
   if ('caches' in window) {
     try {
       const cacheNames = await caches.keys();
@@ -18,12 +18,12 @@ export const initializePWA = async () => {
         cacheNames
           .filter(name => 
             name.includes('images-mobile-v') || 
-            name.includes('hero-images') ||
-            (name.startsWith('croft-v') && !name.includes('cms-images'))
+            name.includes('hero-images')
+            // Keep most caches to avoid loading delays
           )
           .map(name => caches.delete(name))
       );
-      console.log('PWA: Cleared problematic caches, kept CMS cache');
+      console.log('PWA: Cleared only problematic image caches');
     } catch (e) {
       console.warn('Cache refresh failed:', e);
     }
@@ -38,10 +38,14 @@ export const initializePWA = async () => {
   document.head.appendChild(link);
   
   const reg = await registerServiceWorker();
-  if (!isStandalone) {
-    mountInstallOverlay();
-  }
-  mountNotificationsOverlay(reg);
+  
+  // Defer non-critical PWA UI to improve load times
+  setTimeout(() => {
+    if (!isStandalone) {
+      mountInstallOverlay();
+    }
+    mountNotificationsOverlay(reg);
+  }, 2000);
 
   // Opportunistic linking
   try {

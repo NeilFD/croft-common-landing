@@ -84,7 +84,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithOtp({
+      // Add timeout wrapper for mobile networks
+      const otpPromise = supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: true,
@@ -92,8 +93,63 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         }
       });
 
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout - please check your connection')), 10000);
+      });
+
+      const { error } = await Promise.race([otpPromise, timeoutPromise]) as { error: any };
+
       if (error) {
         console.error('🚨 OTP send error:', error);
+        
+        // Check if it's a timeout or network error
+        const isTimeout = error.message.includes('timeout');
+        const isNetwork = error.message.includes('Failed to fetch') || error.message.includes('Network');
+        
+        if (isTimeout || isNetwork) {
+          // Auto-retry once for network issues
+          console.log('🔄 Retrying OTP send due to network issue...');
+          
+          setTimeout(async () => {
+            try {
+              const { error: retryError } = await supabase.auth.signInWithOtp({
+                email,
+                options: {
+                  shouldCreateUser: true,
+                  emailRedirectTo: `${window.location.origin}/`
+                }
+              });
+              
+              if (!retryError) {
+                console.log('✅ OTP sent successfully on retry to:', email);
+                if (onCodeSent) {
+                  try { onCodeSent(); } catch {}
+                } else {
+                  setOtpSent(true);
+                }
+                toast({
+                  title: toastTitle || "Code sent!",
+                  description: toastDescription || "Check your email for the 6-digit verification code.",
+                });
+              } else {
+                toast({
+                  title: "Connection issue",
+                  description: "Please check your internet connection and try again.",
+                  variant: "destructive"
+                });
+              }
+            } catch (retryErr) {
+              toast({
+                title: "Connection issue", 
+                description: "Please check your internet connection and try again.",
+                variant: "destructive"
+              });
+            }
+            setLoading(false);
+          }, 2000);
+          return; // Don't set loading to false yet
+        }
+        
         toast({
           title: "Authentication failed",
           description: error.message,
@@ -113,9 +169,13 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       }
     } catch (error) {
       console.error('🚨 Exception during OTP send:', error);
+      const isTimeout = error.message.includes('timeout');
+      
       toast({
-        title: "Unexpected error",
-        description: "An unexpected error occurred. Please try again.",
+        title: isTimeout ? "Request timeout" : "Unexpected error",
+        description: isTimeout 
+          ? "The request took too long. Please check your connection and try again."
+          : "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     }
