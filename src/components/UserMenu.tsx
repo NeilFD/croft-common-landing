@@ -5,6 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { useMembershipAuth } from '@/contexts/MembershipAuthContext';
+import { useFullProfile } from '@/hooks/useFullProfile';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
@@ -19,6 +20,7 @@ import {
 export const UserMenu = () => {
   const { user, signOut } = useAuth();
   const { isFullyAuthenticated, refreshMembershipStatus } = useMembershipAuth();
+  const { profile } = useFullProfile();
   const navigate = useNavigate();
   const membershipGate = useMembershipGate();
 
@@ -94,11 +96,13 @@ export const UserMenu = () => {
             <Button
               variant="ghost"
               size="sm"
-              className={`gap-2 text-xs ${isFullyAuthenticated() ? 'text-accent-lime' : 'text-foreground'}`}
+              className={`gap-2 text-xs ${isFullyAuthenticated() ? 'text-accent-pink' : 'text-foreground'}`}
             >
               <User className="h-4 w-4" />
               <span className="hidden sm:inline">
-                {isFullyAuthenticated() ? 'Member ✓' : 'Member'}
+                {isFullyAuthenticated() 
+                  ? `${profile?.first_name || 'Member'} ✓` 
+                  : profile?.first_name || 'Member'}
               </span>
               <ChevronDown className="h-3 w-3" />
             </Button>
