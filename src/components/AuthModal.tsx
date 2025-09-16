@@ -39,8 +39,6 @@ const validateEmailDomain = async (email: string): Promise<boolean> => {
 export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = true, title, description, onCodeSent, emailSentTitle, emailSentDescription, toastTitle, toastDescription, emailSentInstructions }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [password, setPassword] = useState('');
-  const [method, setMethod] = useState<'code' | 'password'>('code');
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const { user, refreshSession } = useAuth();
@@ -125,27 +123,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     setLoading(false);
   };
 
-  const handlePasswordSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      toast({ title: "Email and password required", variant: "destructive" });
-      return;
-    }
-    setLoading(true);
-    try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
-      } else {
-        await refreshSession();
-        toast({ title: "Signed in successfully!", description: "Welcome back." });
-        onSuccess();
-      }
-    } catch (err) {
-      toast({ title: "Unexpected error", description: "Please try again.", variant: "destructive" });
-    }
-    setLoading(false);
-  };
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -283,49 +260,20 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>
           <DialogDescription>
-            {method === 'code'
-              ? (description ?? "Enter your email address and we'll send you a 6-digit verification code to sign in.")
-              : 'Enter your email and password to sign in.'}
+            {description ?? "Enter your email address and we'll send you a 6-digit verification code to sign in."}
           </DialogDescription>
         </DialogHeader>
 
-        {/* Method Switcher */}
-        <div className="flex gap-2 mb-2">
-          <Button type="button" variant={method === 'code' ? 'default' : 'outline'} size="sm" onClick={() => setMethod('code')} disabled={loading}>
-            Use 6-digit code
-          </Button>
-          <Button type="button" variant={method === 'password' ? 'default' : 'outline'} size="sm" onClick={() => setMethod('password')} disabled={loading}>
-            Use password
-          </Button>
-        </div>
-
-        {method === 'password' ? (
-          <form onSubmit={handlePasswordSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
-              <Input id="email" type="email" placeholder="your.name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} disabled={loading} required />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>Cancel</Button>
-              <Button type="submit" disabled={loading} className="flex-1">{loading ? 'Signing in…' : 'Sign in'}</Button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleSendOtp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
-              <Input id="email" type="email" placeholder="your.name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} required />
-            </div>
-            <div className="flex gap-2">
-              <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>Cancel</Button>
-              <Button type="submit" disabled={loading} className="flex-1">{loading ? 'Sending…' : 'Send code'}</Button>
-            </div>
-          </form>
-        )}
+        <form onSubmit={handleSendOtp} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input id="email" type="email" placeholder="your.name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} required />
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>Cancel</Button>
+            <Button type="submit" disabled={loading} className="flex-1">{loading ? 'Sending…' : 'Send code'}</Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
