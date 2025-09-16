@@ -11,6 +11,7 @@ import CroftLogo from '@/components/CroftLogo';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useMembershipAuth } from '@/contexts/MembershipAuthContext';
 interface LoyaltyCardModalProps {
   open: boolean;
   onClose: () => void;
@@ -18,6 +19,7 @@ interface LoyaltyCardModalProps {
 
 const LoyaltyCardModal: React.FC<LoyaltyCardModalProps> = ({ open, onClose }) => {
   const { user } = useAuth();
+  const { isFullyAuthenticated } = useMembershipAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const [showCard, setShowCard] = useState(false);
   const [completedCount, setCompletedCount] = useState<number | null>(null);
@@ -47,6 +49,12 @@ useEffect(() => {
     return;
   }
 
+  // Check global membership authentication first
+  if (isFullyAuthenticated()) {
+    setShowCard(true);
+    return;
+  }
+
   if (user) {
     setShowCard(true);
     return;
@@ -55,7 +63,7 @@ useEffect(() => {
   // No user: show auth modal
   setAuthOpen(true);
   setShowCard(false);
-}, [open, user]);
+}, [open, user, isFullyAuthenticated]);
 
 // Detect unlock of the 7th box for regular cards
 useEffect(() => {

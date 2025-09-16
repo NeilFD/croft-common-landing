@@ -176,6 +176,9 @@ const Navigation = () => {
             );
           })}
 
+          <div className="pt-4 border-t border-charcoal">
+            <UserMenu />
+          </div>
         </div>
       </div>
     </nav>

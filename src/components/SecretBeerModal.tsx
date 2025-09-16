@@ -5,6 +5,7 @@ import { AuthModal } from "@/components/AuthModal";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
+import { useMembershipAuth } from "@/contexts/MembershipAuthContext";
 
 interface SecretBeerModalProps {
   open: boolean;
@@ -13,12 +14,26 @@ interface SecretBeerModalProps {
 }
 
 const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secretWord }) => {
+  const { isFullyAuthenticated } = useMembershipAuth();
   const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
 
+  // Check if user is already fully authenticated, if so skip to content
+  const showContent = isFullyAuthenticated() || allowed;
+
   useEffect(() => {
-    if (!open) { reset(); return; }
+    if (!open) { 
+      reset(); 
+      return; 
+    }
+    
+    // If already fully authenticated, don't trigger gate
+    if (isFullyAuthenticated()) {
+      return;
+    }
+    
+    // Otherwise start the membership gate process
     start();
-  }, [open, start, reset]);
+  }, [open, start, reset, isFullyAuthenticated]);
 
   const handleCloseAll = () => {
     reset();
@@ -49,7 +64,7 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
         title="Unlock Secret Beer"
         description="We’ll email you a 6-digit verification code to confirm."
       />
-      <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
+      <Dialog open={open && showContent} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
           <div className="space-y-4">
             <div className="flex items-center gap-3">

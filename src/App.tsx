@@ -6,6 +6,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { useEffect, Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { TransitionProvider } from "@/contexts/TransitionContext";
+import { MembershipAuthProvider } from "@/contexts/MembershipAuthContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
 import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
 import NudgeFloatingButton from './components/NudgeFloatingButton';
@@ -141,8 +142,9 @@ const App = () => (
               <NudgeFloatingButton />
               
               <TransitionProvider>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
+                <MembershipAuthProvider>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/cafe" element={<Cafe />} />
                     <Route path="/cocktails" element={<Cocktails />} />
@@ -185,8 +187,9 @@ const App = () => (
                     <Route path="/cms/*" element={<CMS />} />
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
+                    </Routes>
+                  </Suspense>
+                </MembershipAuthProvider>
               </TransitionProvider>
             </BrowserRouter>
         </NudgeNotificationProvider>

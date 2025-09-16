@@ -7,6 +7,7 @@ import { SecretKitchensAuthModal } from "@/components/SecretKitchensAuthModal";
 import BiometricUnlockModal from "@/components/BiometricUnlockModal";
 import MembershipLinkModal from "@/components/MembershipLinkModal";
 import { useMembershipGate } from "@/hooks/useMembershipGate";
+import { useMembershipAuth } from "@/contexts/MembershipAuthContext";
 import { forceRelease } from "@/lib/webauthnOrchestrator";
 import { clearRecentBio } from "@/hooks/useRecentBiometric";
 import { useKitchensRecipeData } from "@/hooks/useKitchensCMSData";
@@ -23,8 +24,10 @@ const Separator = () => (
 );
 
 const SecretKitchensModal: React.FC<SecretKitchensModalProps> = ({ open, onClose }) => {
+const { isFullyAuthenticated } = useMembershipAuth();
 const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
 const contentRef = React.useRef<HTMLDivElement>(null);
+const showContent = isFullyAuthenticated() || allowed;
 
   const handleCloseAll = () => {
     // Force release any stuck WebAuthn processes
@@ -45,11 +48,22 @@ const contentRef = React.useRef<HTMLDivElement>(null);
 
 React.useEffect(() => {
   if (!open) {
+    // Force release any stuck WebAuthn processes
+    forceRelease();
+    // Clear recent biometric state to allow fresh attempts
+    clearRecentBio();
     reset();
     return;
   }
+  
+  // If already fully authenticated, don't trigger gate
+  if (isFullyAuthenticated()) {
+    return;
+  }
+  
+  // Otherwise start the membership gate process
   start();
-}, [open]);
+}, [open, start, reset, isFullyAuthenticated]);
 
 
   type RecipeId =
@@ -265,7 +279,7 @@ React.useEffect(() => {
         title="Unlock Secret Kitchens"
         description="We'll email you a 6-digit verification code to confirm."
       />
-      <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
+      <Dialog open={open && showContent} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent
         ref={contentRef}
         onInteractOutside={(e) => e.preventDefault()}
