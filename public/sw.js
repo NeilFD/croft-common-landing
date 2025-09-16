@@ -66,6 +66,16 @@ self.addEventListener('fetch', event => {
     console.log('🔔 SW: Bypassing cache for:', url.href);
     return;
   }
+  // SPA navigation: always serve fresh index.html (network-first) for any route
+  if (event.request.mode === 'navigate' && url.origin === self.location.origin) {
+    event.respondWith(
+      fetch('/', { cache: 'no-cache' }).catch(async () => {
+        const cache = await caches.open(CACHE_NAME);
+        return (await cache.match('/')) || Response.error();
+      })
+    );
+    return;
+  }
 
   // Aggressive CMS image caching
   if (url.pathname.includes('cms_images') || 
