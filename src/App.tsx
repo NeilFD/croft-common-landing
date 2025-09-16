@@ -14,10 +14,10 @@ import NudgeFloatingButton from './components/NudgeFloatingButton';
 
 // Lazy load pages for better performance
 import Index from "./pages/Index";
-const Cafe = lazy(() => import("./pages/Cafe"));
-const Cocktails = lazy(() => import("./pages/Cocktails"));
-const Beer = lazy(() => import("./pages/Beer"));
-const Kitchens = lazy(() => import("./pages/Kitchens"));
+import Cafe from "./pages/Cafe";
+import Cocktails from "./pages/Cocktails";
+import Beer from "./pages/Beer";
+import Kitchens from "./pages/Kitchens";
 const Hall = lazy(() => import("./pages/Hall"));
 const Community = lazy(() => import("./pages/Community"));
 import CommonRoom from "./pages/CommonRoom";
