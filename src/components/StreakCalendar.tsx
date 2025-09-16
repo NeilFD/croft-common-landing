@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { Calendar, CheckCircle, Circle, Clock, Target, Gift, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -9,11 +9,19 @@ import { useReceiptDots } from '@/hooks/useReceiptDots';
 import { ReceiptDotsLayer } from './ReceiptDotsLayer';
 import { WeekCompletionLayer } from './WeekCompletionLayer';
 import { StreakCalendarDebug } from './StreakCalendarDebug';
+import { StreakSaveModal } from './StreakSaveModal';
+import { StreakEmergencyBanner } from './StreakEmergencyBanner';
+import { MissedWeekAlert } from './MissedWeekAlert';
+import { useToast } from '@/hooks/use-toast';
 
 const StreakCalendar: React.FC = () => {
-  const { dashboardData, loading: dashboardLoading } = useStreakDashboard();
+  const { dashboardData, loading: dashboardLoading, refetch } = useStreakDashboard();
   const { weekCompletions, loading: weekLoading } = useWeekCompletion();
   const { receiptDots, loading: receiptLoading } = useReceiptDots();
+  const { toast } = useToast();
+
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [selectedMissedWeek, setSelectedMissedWeek] = useState<any>(null);
 
   const loading = dashboardLoading || weekLoading || receiptLoading;
 
@@ -64,8 +72,19 @@ const StreakCalendar: React.FC = () => {
   );
 
   // Memoized dashboard data destructuring
-  const { current_week, current_set, rewards } = useMemo(() => 
-    dashboardData || { current_week: null, current_set: null, rewards: { available_discount: 0 } }, 
+  const { current_week, current_set, rewards, opportunities, calendar_weeks } = useMemo(() => 
+    dashboardData || { 
+      current_week: null, 
+      current_set: null, 
+      rewards: { available_discount: 0 },
+      opportunities: { 
+        grace_weeks_available: 0, 
+        makeup_available: false,
+        makeup_details: undefined,
+        grace_details: []
+      },
+      calendar_weeks: []
+    }, 
     [dashboardData]
   );
 
@@ -119,8 +138,94 @@ const StreakCalendar: React.FC = () => {
     return days;
   }, [receiptDots]);
 
+  // Calculate streak save data
+  const streakSaveData = useMemo(() => {
+    if (!calendar_weeks || !current_week) return null;
+
+    const missedWeeks = calendar_weeks.filter(week => 
+      !week.is_complete && !week.is_current && !week.is_future && week.receipts_count < 2
+    );
+
+    const currentWeekDaysLeft = (() => {
+      const today = new Date();
+      const weekEnd = new Date(current_week.week_end);
+      const diffTime = weekEnd.getTime() - today.getTime();
+      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    })();
+
+    const isCurrentWeekAtRisk = current_week.receipts_count < current_week.receipts_needed && currentWeekDaysLeft <= 4;
+
+    return {
+      missedWeeks,
+      isCurrentWeekAtRisk,
+      currentWeekDaysLeft,
+      graceWeeksAvailable: opportunities?.grace_weeks_available || 0,
+      makeupOpportunity: opportunities?.makeup_available ? opportunities.makeup_details : null,
+    };
+  }, [calendar_weeks, current_week, opportunities]);
+
+  // Handlers for streak save actions
+  const handleSaveStreak = (missedWeek: any) => {
+    setSelectedMissedWeek(missedWeek);
+    setSaveModalOpen(true);
+  };
+
+  const handleRequestGrace = async () => {
+    // This would call an edge function to apply grace week
+    toast({
+      title: "Grace Week Applied",
+      description: "Your streak has been protected using a grace week.",
+    });
+    await refetch();
+  };
+
+  const handleTripleChallenge = () => {
+    // This would start tracking the triple visit challenge
+    toast({
+      title: "Challenge Started!",
+      description: "Get 3 receipts this week to recover your missed week!",
+    });
+  };
+
+  const handleUploadReceipt = () => {
+    // This would open the receipt upload modal/page
+    toast({
+      title: "Upload Receipt",
+      description: "Please upload your receipt to continue your streak.",
+    });
+  };
+
   return (
-    <div className="space-y-4">{/* Container for multiple cards */}
+    <div className="space-y-4">
+      {/* Streak Emergency Banner */}
+      {streakSaveData?.isCurrentWeekAtRisk && current_week && (
+        <StreakEmergencyBanner
+          currentWeek={current_week}
+          daysLeft={streakSaveData.currentWeekDaysLeft}
+          onUploadReceipt={handleUploadReceipt}
+        />
+      )}
+
+      {/* Missed Week Alert */}
+      {streakSaveData?.missedWeeks && streakSaveData.missedWeeks.length > 0 && (
+        <MissedWeekAlert
+          missedWeeks={streakSaveData.missedWeeks}
+          graceWeeksAvailable={streakSaveData.graceWeeksAvailable}
+          makeupOpportunityAvailable={!!streakSaveData.makeupOpportunity}
+          onSaveStreak={handleSaveStreak}
+        />
+      )}
+
+      {/* Streak Save Modal */}
+      <StreakSaveModal
+        isOpen={saveModalOpen}
+        onClose={() => setSaveModalOpen(false)}
+        missedWeek={selectedMissedWeek}
+        graceWeeksAvailable={streakSaveData?.graceWeeksAvailable || 0}
+        makeupOpportunity={streakSaveData?.makeupOpportunity}
+        onRequestGrace={handleRequestGrace}
+        onStartTripleChallenge={handleTripleChallenge}
+      />
     <Card className="w-full bg-background border border-border">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
