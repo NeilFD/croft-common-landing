@@ -191,44 +191,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
     return false;
   }, [isSafari]);
 
-  // Escape key handler
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
-        console.log('Escape key pressed - closing modal');
-        handleClose();
-      }
-    };
+  // Removed Safari capture to ensure interactive elements receive events
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [isOpen, handleClose]);
-
-  // Safari-specific event capture handler
-  useEffect(() => {
-    if (!isSafari || !isOpen || !isSecretEnabled) return;
-
-    const handleCaptureEvent = (event: Event) => {
-      if (isInteractiveElement(event.target)) {
-        // Stop gesture detection from interfering with interactive elements
-        event.stopImmediatePropagation();
-        console.log('Safari: Blocked gesture event on interactive element');
-      }
-    };
-
-    const modalElement = document.querySelector('[data-modal="menu-modal"]');
-    if (modalElement) {
-      modalElement.addEventListener('touchstart', handleCaptureEvent, { capture: true });
-      modalElement.addEventListener('mousedown', handleCaptureEvent, { capture: true });
-      
-      return () => {
-        modalElement.removeEventListener('touchstart', handleCaptureEvent, { capture: true });
-        modalElement.removeEventListener('mousedown', handleCaptureEvent, { capture: true });
-      };
-    }
-  }, [isSafari, isOpen, isSecretEnabled, isInteractiveElement]);
 
   const handleTouchStart = useCallback((event: React.TouchEvent) => {
     if (!isSecretEnabled) return;
@@ -399,19 +363,17 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
         e.stopPropagation();
       }}
       onTouchEnd={(e) => {
+        if (e.target === e.currentTarget && !showSecret) {
+          e.preventDefault();
+          handleClose();
+        }
         e.stopPropagation();
       }}
       onMouseDown={(e) => {
-        // Only handle backdrop clicks, not gesture events
-        if (e.target === e.currentTarget) {
-          e.stopPropagation();
+        // Close on backdrop mousedown (Safari reliability)
+        if (e.target === e.currentTarget && !showSecret) {
+          handleClose();
         }
-      }}
-      onMouseMove={(e) => {
-        e.stopPropagation();
-      }}
-      onMouseUp={(e) => {
-        e.stopPropagation();
       }}
     >
       <div 
