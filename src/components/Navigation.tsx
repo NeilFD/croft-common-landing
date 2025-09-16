@@ -141,14 +141,17 @@ const Navigation = () => {
           <UserMenu />
         </div>
         
-        {/* Mobile menu button */}
-        <button 
-          onClick={toggleMobileMenu}
-          className="md:hidden font-industrial text-sm text-foreground p-2 hover:scale-105 transition-transform duration-200"
-          aria-label="Toggle mobile menu"
-        >
-          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
+        {/* Mobile header items */}
+        <div className="md:hidden flex items-center gap-2">
+          <UserMenu />
+          <button 
+            onClick={toggleMobileMenu}
+            className="font-industrial text-sm text-foreground p-2 hover:scale-105 transition-transform duration-200"
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+        </div>
       </div>
       
       {/* Mobile Navigation Menu */}
@@ -176,9 +179,6 @@ const Navigation = () => {
             );
           })}
 
-          <div className="pt-4 border-t border-charcoal">
-            <UserMenu />
-          </div>
         </div>
       </div>
     </nav>
