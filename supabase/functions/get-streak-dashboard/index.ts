@@ -70,7 +70,7 @@ serve(async (req: Request) => {
     console.log('🎯 First receipt date:', firstReceiptDate);
 
     // If user has no receipts, use current week as starting point
-    const streakStartDate = firstReceiptDate || currentWeekStartDate;
+    const streakStartDate = firstReceiptDate || getCurrentWeekStart();
     const streakStartWeek = getMonday(new Date(streakStartDate)).toISOString().split('T')[0];
     
     console.log('🎯 Streak starting week:', streakStartWeek);
@@ -164,7 +164,7 @@ serve(async (req: Request) => {
         .insert({
           user_id: user.id,
           grace_type: 'baseline',
-          week_start_date: null, // Not tied to a specific week
+          week_start_date: getCurrentWeekStart(), // Baseline ties to current week start
           is_used: false,
           expires_date: expireDate.toISOString()
         })
