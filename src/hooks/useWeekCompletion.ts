@@ -39,29 +39,34 @@ export const useWeekCompletion = () => {
       setLoading(true);
       setError(null);
 
-      // Get receipts from the last 16 weeks
-      const sixteenWeeksAgo = new Date();
-      sixteenWeeksAgo.setDate(sixteenWeeksAgo.getDate() - (16 * 7));
-
+      // Get all receipts for this user to find first visit
       const { data: receipts, error: receiptError } = await supabase
         .from('member_receipts')
         .select('receipt_date, total_amount')
         .eq('user_id', user.id)
-        .gte('receipt_date', sixteenWeeksAgo.toISOString().split('T')[0])
         .order('receipt_date', { ascending: true });
 
       if (receiptError) throw receiptError;
 
-      // Generate 16 weeks of calendar data
+      if (!receipts || receipts.length === 0) {
+        setWeekCompletions([]);
+        return;
+      }
+
+      // Find the first receipt date to determine streak start
+      const firstReceiptDate = new Date(receipts[0].receipt_date);
+      const firstWeekStart = getWeekStart(new Date(firstReceiptDate));
+      
+      // Generate weeks from first receipt until now (up to 16 weeks max)
       const weeks: WeekCompletion[] = [];
       const today = new Date();
       const currentWeekStart = getWeekStart(new Date(today));
-
-      for (let i = 15; i >= 0; i--) {
-        const weekStart = new Date(currentWeekStart);
-        weekStart.setDate(currentWeekStart.getDate() - (i * 7));
+      
+      let weekStart = new Date(firstWeekStart);
+      let weekIndex = 0;
+      
+      while (weekStart <= currentWeekStart && weekIndex < 16) {
         const weekEnd = getWeekEnd(new Date(weekStart));
-
         const weekStartStr = weekStart.toISOString().split('T')[0];
         const weekEndStr = weekEnd.toISOString().split('T')[0];
 
@@ -85,6 +90,10 @@ export const useWeekCompletion = () => {
           isCurrent,
           totalAmount,
         });
+
+        // Move to next week
+        weekStart.setDate(weekStart.getDate() + 7);
+        weekIndex++;
       }
 
       setWeekCompletions(weeks);

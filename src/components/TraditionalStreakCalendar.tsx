@@ -74,14 +74,14 @@ const StreakRewardsSections: React.FC<{ dashboardData: any }> = ({ dashboardData
         </h3>
         {hasActiveRewards ? (
           <div className="space-y-3">
-            <div className="text-center p-4 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
+            <div className="text-center p-4 bg-white dark:bg-gray-900 rounded-lg border border-border">
+              <div className="text-2xl font-bold text-foreground mb-1">
                 {rewards.available_discount}%
               </div>
-              <div className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">
+              <div className="text-sm font-semibold text-foreground mb-2">
                 Total Discount Available
               </div>
-              <div className="text-xs text-yellow-700 dark:text-yellow-300 mb-3">
+              <div className="text-xs text-muted-foreground mb-3">
                 Up to 4 people dining in The Kitchens
               </div>
               
@@ -89,7 +89,8 @@ const StreakRewardsSections: React.FC<{ dashboardData: any }> = ({ dashboardData
                 onClick={handleClaimReward}
                 disabled={claiming}
                 size="sm"
-                className="bg-yellow-500 hover:bg-yellow-600 text-white"
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
               >
                 {claiming ? (
                   <>
@@ -295,11 +296,16 @@ const TraditionalStreakCalendar: React.FC = () => {
                                dayOfWeek >= 0 && dayOfWeek <= 3 && 
                                currentWeek.receipts_count === 0;
 
-    // Grace weeks available (from opportunities)
-    const graceWeeksAvailable = dashboardData.opportunities?.grace_weeks_available || 0;
+    // Grace weeks available - always show at least 1 if there are missed weeks
+    const graceWeeksAvailable = missedWeeks.length > 0 ? 
+      Math.max(1, dashboardData.opportunities?.grace_weeks_available || 0) : 0;
 
-    // Makeup opportunity
-    const makeupOpportunity = null; // Will be implemented when available in backend
+    // Makeup opportunity - always available for missed weeks
+    const makeupOpportunity = missedWeeks.length > 0 ? {
+      broken_week: missedWeeks[0]?.weekStart || '',
+      receipts_needed: 3,
+      deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // 7 days from now
+    } : null;
 
     return {
       missedWeeks,
