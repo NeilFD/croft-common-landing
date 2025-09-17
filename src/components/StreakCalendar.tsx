@@ -138,31 +138,42 @@ const StreakCalendar: React.FC = () => {
     return days;
   }, [receiptDots]);
 
-  // Calculate streak save data
+  // Simplified streak save data - directly check weekCompletions for actionable situations
   const streakSaveData = useMemo(() => {
-    if (!calendar_weeks || !current_week) return null;
+    // Find any past incomplete weeks (missed opportunities)
+    const missedWeeks = weekCompletions.filter(week => 
+      !week.isCurrent && !week.isComplete && week.receiptCount < 2
+    ).map(week => ({
+      week_start: week.weekStart,
+      week_end: week.weekEnd,
+      receipts_count: week.receiptCount,
+      is_complete: week.isComplete
+    }));
 
-    const missedWeeks = calendar_weeks.filter(week => 
-      !week.is_complete && !week.is_current && !week.is_future && week.receipts_count < 2
-    );
-
-    const currentWeekDaysLeft = (() => {
+    // Current week risk assessment - simple logic
+    const currentWeekDaysLeft = currentWeek ? (() => {
       const today = new Date();
-      const weekEnd = new Date(current_week.week_end);
+      const weekEnd = new Date(currentWeek.weekEnd);
       const diffTime = weekEnd.getTime() - today.getTime();
-      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    })();
+      return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    })() : 0;
 
-    const isCurrentWeekAtRisk = current_week.receipts_count < current_week.receipts_needed && currentWeekDaysLeft <= 4;
+    // Show emergency banner if current week needs receipts and has time left
+    const isCurrentWeekAtRisk = currentWeek && currentWeek.receiptCount < 2 && currentWeekDaysLeft > 0;
 
     return {
       missedWeeks,
       isCurrentWeekAtRisk,
       currentWeekDaysLeft,
       graceWeeksAvailable: opportunities?.grace_weeks_available || 0,
-      makeupOpportunity: opportunities?.makeup_available ? opportunities.makeup_details : null,
+      makeupOpportunity: opportunities?.makeup_available ? opportunities.makeup_details : {
+        // Always offer triple challenge as backup option
+        challenge_type: 'triple_visits',
+        deadline: currentWeek ? currentWeek.weekEnd : null,
+        description: 'Complete 3 visits this week to recover your streak'
+      },
     };
-  }, [calendar_weeks, current_week, opportunities]);
+  }, [weekCompletions, currentWeek, opportunities]);
 
   // Handlers for streak save actions
   const handleSaveStreak = (missedWeek: any) => {
@@ -197,22 +208,30 @@ const StreakCalendar: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {/* Streak Emergency Banner */}
-      {streakSaveData?.isCurrentWeekAtRisk && current_week && (
+      {/* Streak Emergency Banner - Show when current week needs receipts */}
+      {streakSaveData?.isCurrentWeekAtRisk && currentWeek && (
         <StreakEmergencyBanner
-          currentWeek={current_week}
+          currentWeek={{
+            week_start: currentWeek.weekStart,
+            week_end: currentWeek.weekEnd,
+            receipts_count: currentWeek.receiptCount,
+            receipts_needed: 2
+          }}
           daysLeft={streakSaveData.currentWeekDaysLeft}
           onUploadReceipt={handleUploadReceipt}
         />
       )}
 
-      {/* Missed Week Alert */}
+      {/* Missed Week Alert - Show for any incomplete past weeks */}
       {streakSaveData?.missedWeeks && streakSaveData.missedWeeks.length > 0 && (
         <MissedWeekAlert
           missedWeeks={streakSaveData.missedWeeks}
           graceWeeksAvailable={streakSaveData.graceWeeksAvailable}
-          makeupOpportunityAvailable={!!streakSaveData.makeupOpportunity}
-          onSaveStreak={handleSaveStreak}
+          makeupOpportunityAvailable={true}
+          onSaveStreak={(missedWeek) => {
+            setSelectedMissedWeek(missedWeek);
+            setSaveModalOpen(true);
+          }}
         />
       )}
 
