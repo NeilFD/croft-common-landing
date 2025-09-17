@@ -578,6 +578,7 @@ const TraditionalStreakCalendar: React.FC = () => {
           <div className="flex justify-center">
             <Calendar
               mode="single"
+              weekStartsOn={1}
               className="rounded-md border-0 shadow-none bg-transparent"
               classNames={{
                 months: "flex flex-col space-y-4",
