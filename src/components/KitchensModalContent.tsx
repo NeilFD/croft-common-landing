@@ -55,7 +55,7 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
                       contentKey={`section_${sectionIndex}_item_${itemIndex}_name`}
                       fallback={item.name}
                       as="h3"
-                      className="font-industrial text-lg text-foreground"
+                      className="font-industrial text-xl font-semibold text-foreground"
                     />
                     {item.description && (
                       <CMSText
@@ -64,7 +64,7 @@ const KitchensModalContent: React.FC<KitchensModalContentProps> = ({ accentColor
                         contentKey={`section_${sectionIndex}_item_${itemIndex}_description`}
                         fallback={item.description}
                         as="p"
-                        className="font-industrial text-lg text-foreground mt-1"
+                        className="font-industrial text-base text-foreground/80 mt-1"
                       />
                     )}
                   </div>
