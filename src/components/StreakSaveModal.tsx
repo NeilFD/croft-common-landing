@@ -109,21 +109,21 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
 
           {/* Grace Week Option */}
           {graceWeeksAvailable > 0 && (
-            <div className="p-4 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800">
+            <div className="p-4 border border-border rounded-lg bg-background">
               <div className="flex items-center gap-2 mb-2">
-                <Gift className="h-4 w-4 text-blue-600" />
-                <h3 className="font-semibold text-blue-800 dark:text-blue-200">
+                <Gift className="h-4 w-4 text-accent-pink" />
+                <h3 className="font-semibold text-foreground">
                   Use Grace Week
                 </h3>
               </div>
-              <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
+              <p className="text-sm text-muted-foreground mb-3">
                 Apply one of your {graceWeeksAvailable} earned grace weeks to protect this streak.
               </p>
               <Button
                 onClick={handleRequestGrace}
                 disabled={requesting}
                 variant="outline"
-                className="w-full border-blue-300 text-blue-700 hover:bg-blue-100"
+                className="w-full border-accent-pink/30 text-accent-pink hover:bg-accent-pink/10 hover:text-accent-pink"
               >
                 {requesting ? (
                   <>
@@ -142,24 +142,24 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
 
           {/* Triple Visit Challenge */}
           {makeupOpportunity && (
-            <div className="p-4 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-800">
+            <div className="p-4 border border-border rounded-lg bg-background">
               <div className="flex items-center gap-2 mb-2">
-                <Target className="h-4 w-4 text-green-600" />
-                <h3 className="font-semibold text-green-800 dark:text-green-200">
+                <Target className="h-4 w-4 text-accent-pink" />
+                <h3 className="font-semibold text-foreground">
                   Win Back Week Challenge
                 </h3>
               </div>
-              <p className="text-sm text-green-700 dark:text-green-300 mb-2">
+              <p className="text-sm text-muted-foreground mb-2">
                 Get {makeupOpportunity.receipts_needed} receipts this week to recover your missed week.
               </p>
               <div className="flex items-center gap-2 mb-3">
-                <Badge variant="outline" className="text-green-700 border-green-300">
+                <Badge variant="outline" className="text-accent-pink border-accent-pink/30">
                   {getDaysUntilDeadline(makeupOpportunity.deadline)} days left
                 </Badge>
               </div>
               <Button
                 onClick={handleTripleChallenge}
-                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                className="w-full bg-accent-pink hover:bg-accent-pink/80 text-white"
               >
                 <Target className="h-4 w-4 mr-2" />
                 Start Challenge

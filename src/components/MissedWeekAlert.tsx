@@ -32,15 +32,15 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
   const hasRecoveryOptions = graceWeeksAvailable > 0 || makeupOpportunityAvailable;
 
   return (
-    <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-800">
-      <AlertCircle className="h-4 w-4 text-orange-600" />
+    <Alert className="border-border bg-background">
+      <AlertCircle className="h-4 w-4 text-accent-pink" />
       <AlertDescription>
         <div className="space-y-3">
           <div>
-            <div className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
+            <div className="font-semibold text-foreground mb-1">
               {missedWeeks.length > 1 ? 'Weeks Missed' : 'Week Missed'}
             </div>
-            <div className="text-sm text-orange-700 dark:text-orange-300">
+            <div className="text-sm text-muted-foreground">
               {missedWeeks.length > 1 ? 'Multiple weeks' : 'One week'} in your streak {missedWeeks.length > 1 ? 'were' : 'was'} incomplete
             </div>
           </div>
@@ -63,7 +63,7 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
                     onClick={() => onSaveStreak(week)}
                     size="sm"
                     variant="outline"
-                    className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                    className="border-accent-pink/30 text-accent-pink hover:bg-accent-pink/10 hover:text-accent-pink"
                   >
                     <LifeBuoy className="h-3 w-3 mr-1" />
                     Save Streak
@@ -83,14 +83,14 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
           {/* Recovery options summary */}
           {hasRecoveryOptions && (
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-orange-700 dark:text-orange-300">Recovery options:</span>
+              <span className="text-foreground">Recovery options:</span>
               {graceWeeksAvailable > 0 && (
-                <Badge variant="outline" className="text-orange-700 border-orange-300">
+                <Badge variant="outline" className="text-accent-pink border-accent-pink/30">
                   {graceWeeksAvailable} grace week{graceWeeksAvailable !== 1 ? 's' : ''}
                 </Badge>
               )}
               {makeupOpportunityAvailable && (
-                <Badge variant="outline" className="text-orange-700 border-orange-300">
+                <Badge variant="outline" className="text-accent-pink border-accent-pink/30">
                   <Target className="h-3 w-3 mr-1" />
                   Triple challenge
                 </Badge>
@@ -99,7 +99,7 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
           )}
 
           {!hasRecoveryOptions && (
-            <div className="text-sm text-orange-700 dark:text-orange-300">
+            <div className="text-sm text-muted-foreground">
               No recovery options available. Start fresh with your next visit!
             </div>
           )}
