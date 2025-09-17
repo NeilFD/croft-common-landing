@@ -454,15 +454,7 @@ const TraditionalStreakCalendar: React.FC = () => {
           {day.getDate()}
         </span>
         {hasReceipt && (
-          <div 
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center animate-pulse"
-            style={{
-              backgroundColor: '#ef4444',
-              border: '3px solid #facc15',
-              boxShadow: '0 0 15px rgba(239, 68, 68, 0.9)',
-              zIndex: 20
-            }}
-          >
+          <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center animate-pulse bg-destructive border-4 border-yellow-400 shadow-lg z-20">
             <span className="text-white text-xs font-bold">●</span>
           </div>
         )}
