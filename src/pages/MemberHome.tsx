@@ -14,7 +14,7 @@ import PongHighScoresWidget from '@/components/PongHighScoresWidget';
 import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
 import PongGame from '@/components/PongGame';
-import StreakCalendar from '@/components/StreakCalendar';
+import TraditionalStreakCalendar from '@/components/TraditionalStreakCalendar';
 import { MobileErrorBoundary } from '@/components/MobileErrorBoundary';
 
 interface MemberStats {
@@ -218,7 +218,7 @@ const MemberHome: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
           {/* Left Column - Calendar and Quick Actions */}
           <div className="space-y-6">
-            <StreakCalendar />
+            <TraditionalStreakCalendar />
             
           </div>
 

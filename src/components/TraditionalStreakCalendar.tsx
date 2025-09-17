@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Calendar as CalendarIcon, CheckCircle, Target, Dot, Gift, Trophy, Star, Clock, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { useStreakDashboard } from '@/hooks/useStreakDashboard';
+import { useWeekCompletion } from '@/hooks/useWeekCompletion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { StreakEmergencyBanner } from '@/components/StreakEmergencyBanner';
+import { MissedWeekAlert } from '@/components/MissedWeekAlert';
+import { StreakSaveModal } from '@/components/StreakSaveModal';
 
 // Component to render the streak reward sections
 const StreakRewardsSections: React.FC<{ dashboardData: any }> = ({ dashboardData }) => {
@@ -253,8 +257,88 @@ const StreakRewardsSections: React.FC<{ dashboardData: any }> = ({ dashboardData
 };
 
 const TraditionalStreakCalendar: React.FC = () => {
-  const { dashboardData, loading } = useStreakDashboard();
+  const { dashboardData, loading, refetch } = useStreakDashboard();
+  const { weekCompletions } = useWeekCompletion();
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [selectedMissedWeek, setSelectedMissedWeek] = useState<any>(null);
+  const { toast } = useToast();
+
+  // Current week data
+  const currentWeek = useMemo(() => {
+    if (!dashboardData?.current_week) return null;
+    return dashboardData.current_week;
+  }, [dashboardData]);
+
+  // Calculate missed weeks and streak save data
+  const streakSaveData = useMemo(() => {
+    if (!weekCompletions || !dashboardData) {
+      return {
+        missedWeeks: [],
+        isCurrentWeekAtRisk: false,
+        graceWeeksAvailable: 0,
+        makeupOpportunity: null
+      };
+    }
+
+    // Find incomplete weeks that are in the past
+    const today = new Date();
+    const missedWeeks = weekCompletions.filter(week => {
+      const weekEnd = new Date(week.weekEnd);
+      return !week.isComplete && weekEnd < today;
+    }).slice(-3); // Show last 3 missed weeks
+
+    // Check if current week is at risk (Sunday-Wednesday with no receipts)
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0 = Sunday, 6 = Saturday
+    const isCurrentWeekAtRisk = currentWeek && !currentWeek.is_complete && 
+                               dayOfWeek >= 0 && dayOfWeek <= 3 && 
+                               currentWeek.receipts_count === 0;
+
+    // Grace weeks available (from opportunities)
+    const graceWeeksAvailable = dashboardData.opportunities?.grace_weeks_available || 0;
+
+    // Makeup opportunity
+    const makeupOpportunity = null; // Will be implemented when available in backend
+
+    return {
+      missedWeeks,
+      isCurrentWeekAtRisk,
+      graceWeeksAvailable,
+      makeupOpportunity
+    };
+  }, [weekCompletions, dashboardData, currentWeek]);
+
+  // Handlers for streak save actions
+  const handleSaveStreak = (missedWeek?: any) => {
+    if (missedWeek) {
+      setSelectedMissedWeek(missedWeek);
+    }
+    setSaveModalOpen(true);
+  };
+
+  const handleRequestGrace = async () => {
+    // Simulate grace week application
+    toast({
+      title: "🛡️ Grace Week Applied!",
+      description: "Your streak has been saved using a grace week.",
+    });
+    await refetch();
+  };
+
+  const handleTripleChallenge = () => {
+    toast({
+      title: "🎯 Challenge Started!",
+      description: "Get 3 receipts this week to save your streak!",
+    });
+  };
+
+  const handleUploadReceipt = () => {
+    toast({
+      title: "📱 Upload Receipt",
+      description: "Opening receipt upload interface...",
+    });
+  };
 
   if (loading) {
     return (
@@ -311,11 +395,11 @@ const TraditionalStreakCalendar: React.FC = () => {
   console.log('🔍 TRADITIONAL CALENDAR: Looking for 2025-08-27:', receiptDates.has('2025-08-27'));
   console.log('🔍 TRADITIONAL CALENDAR: Has any August dates:', Array.from(receiptDates).filter(d => d.includes('2025-08')));
 
-  // Create week completion map
-  const weekCompletions = new Map();
+  // Create week completion map from calendar_weeks
+  const weekCompletionsMap = new Map();
   calendar_weeks.forEach((week: any) => {
     const weekEnd = new Date(week.week_end);
-    weekCompletions.set(weekEnd.toISOString().split('T')[0], week.is_complete);
+    weekCompletionsMap.set(weekEnd.toISOString().split('T')[0], week.is_complete);
   });
 
   // Custom day renderer for calendar
@@ -338,7 +422,7 @@ const TraditionalStreakCalendar: React.FC = () => {
     
     // Check if this day is at the end of a completed week (Sunday)
     const isWeekEnd = day.getDay() === 0; // Sunday
-    const isWeekComplete = weekCompletions.get(dateStr);
+    const isWeekComplete = weekCompletionsMap.get(dateStr);
 
     return (
       <div className="relative w-full h-full flex items-center justify-center">
@@ -370,6 +454,44 @@ const TraditionalStreakCalendar: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {/* Emergency Banner for current week at risk */}
+      {streakSaveData.isCurrentWeekAtRisk && (
+        <StreakEmergencyBanner
+          currentWeek={currentWeek}
+          daysLeft={7 - new Date().getDay()}
+          onUploadReceipt={handleUploadReceipt}
+        />
+      )}
+
+      {/* Missed Week Alert */}
+      {streakSaveData.missedWeeks.length > 0 && (
+        <MissedWeekAlert
+          missedWeeks={streakSaveData.missedWeeks.map(week => ({
+            week_start: week.weekStart,
+            week_end: week.weekEnd,
+            receipts_count: week.receiptCount
+          }))}
+          graceWeeksAvailable={streakSaveData.graceWeeksAvailable}
+          makeupOpportunityAvailable={!!streakSaveData.makeupOpportunity}
+          onSaveStreak={() => handleSaveStreak(streakSaveData.missedWeeks[0])}
+        />
+      )}
+
+      {/* Streak Save Modal */}
+      <StreakSaveModal
+        isOpen={saveModalOpen}
+        onClose={() => setSaveModalOpen(false)}
+        missedWeek={selectedMissedWeek ? {
+          week_start: selectedMissedWeek.weekStart,
+          week_end: selectedMissedWeek.weekEnd,
+          receipts_count: selectedMissedWeek.receiptCount
+        } : undefined}
+        graceWeeksAvailable={streakSaveData.graceWeeksAvailable}
+        makeupOpportunity={streakSaveData.makeupOpportunity}
+        onRequestGrace={handleRequestGrace}
+        onStartTripleChallenge={handleTripleChallenge}
+      />
+
       <Card className="w-full bg-background border border-border">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
