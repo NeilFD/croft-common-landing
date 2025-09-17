@@ -26,39 +26,100 @@ export const cafeMenu: MenuSection[] = [
     ]
   },
   {
-    title: "PASTRIES",
+    title: "PIZZA - WOOD-FIRED",
     items: [
-      { name: "Butter Croissant", price: "3.6" },
-      { name: "Almond", price: "4.0" },
-      { name: "Dirty Chocolate Cookie", price: "3.8" },
-      { name: "Banana Bread, Warm", price: "4.2" },
+      { name: "Margherita", price: "12" },
+      { name: "Hot Honey & Goat Cheese", price: "14" },
+      { name: "Nduja & Ricotta", price: "15" },
+      { name: "Anchovy, Olive, Caper", price: "14" },
+      { name: "Mushroom, Sage, Taleggio", price: "15" },
+      { name: "Add Burrata", description: "4" },
     ]
   },
   {
-    title: "QUICHE",
+    title: "WOOD-FIRED MAINS",
     items: [
-      { name: "Spinach & Feta Quiche", price: "7.5" },
-      { name: "Leek & Gruyère Quiche", price: "8.0" },
-      { name: "Ham, Egg, Mustard Quiche", price: "8.0" },
-      { name: "Served cold. Eat warm.", description: "" },
+      { name: "Whole Cauliflower, Harissa & Tahini", price: "15" },
+      { name: "Porchetta Roll, Sage Apricots", price: "18" },
+      { name: "Wood-roasted Chicken Thighs, Herbs", price: "16" },
+      { name: "Smoked Salmon Fillet, Dill Cream", price: "19" },
+      { name: "Maple Pork Belly, Apple Slaw", price: "18" },
+      { name: "Charred Corn, Lime Mayo", price: "9" },
     ]
   },
   {
-    title: "SALADS",
+    title: "SIDES",
     items: [
-      { name: "Roast Beet, Whipped Feta, Hazelnut", price: "10.0" },
-      { name: "Cauli, Curry Mayo, Coriander, Seeds", price: "10.5" },
-      { name: "Grains, Greens, Citrus", price: "9.5" },
-      { name: "Add Chicken", description: "4.0" },
-      { name: "Add Hot Egg", description: "2.0" },
+      { name: "Wood fired roast Potatoes, Garlic Butter", price: "5" },
+      { name: "Flatbread, Olive Oil & Salt", price: "4" },
+      { name: "Grilled Tenderstem, Sesame & Chili", price: "5" },
+      { name: "Burnt Leek & Herb Slaw", price: "4" },
+      { name: "Ember-baked Beetroot, Labneh", price: "5" },
     ]
   },
   {
-    title: "SANDWICHES",
+    title: "GRILL",
     items: [
-      { name: "Toastie: Cheese, Onion, Mustard", price: "9.0" },
-      { name: "Ciabatta: Mortadella, Pickles", price: "9.5" },
-      { name: "Focaccia: Tomatoes, Pesto, Mozz", price: "8.5" },
+      { name: "Bavette, Rare", price: "20" },
+      { name: "Ribeye, 30-day", price: "26" },
+      { name: "Flat Iron, Chimichurri", price: "21" },
+      { name: "Lamb Rump, Harissa", price: "23" },
+      { name: "Pork Chop, Apple Slaw", price: "22" },
+      { name: "Half Chicken, Charred Lemon", price: "20" },
+      { name: "Grilled Halloumi, Salsa Verde", price: "18" },
+      { name: "Whole Seabream, Chilli Butter", price: "24" },
+      { name: "BBQ Jackfruit Skewer, Mint Yogurt", price: "17" },
+    ]
+  },
+  {
+    title: "MEXICAN",
+    items: [
+      { name: "TACOS (2 per order)", description: "" },
+      { name: "Beef Barbacoa", price: "12" },
+      { name: "Chicken Mole", price: "12" },
+      { name: "Carnitas, Salsa Roja", price: "12" },
+      { name: "Sweet Potato, Salsa Verde", price: "11" },
+      { name: "Fish Tempura, Chipotle Mayo", price: "13" },
+      { name: "Jackfruit, Lime Crema", price: "11" },
+    ]
+  },
+  {
+    title: "QUESADILLAS & MAINS",
+    items: [
+      { name: "Quesadilla, Cheese Pull", price: "12" },
+      { name: "Chorizo Quesadilla", price: "13" },
+      { name: "Mexican Rice Bowl, Pickles", price: "14" },
+      { name: "Tostadas - Crab, Avocado", price: "15" },
+    ]
+  },
+  {
+    title: "ASIAN STREET FOOD",
+    items: [
+      { name: "BAO BUNS", description: "" },
+      { name: "Pork Belly, Pickles", price: "11" },
+      { name: "Fried Tofu, Sweet Soy", price: "10" },
+      { name: "Korean Chicken, Gochujang", price: "11" },
+      { name: "Shiitake, Black Garlic Mayo", price: "10" },
+    ]
+  },
+  {
+    title: "NOODLES",
+    items: [
+      { name: "Chilli Garlic Ramen, Soft Egg", price: "13" },
+      { name: "Beef Brisket Pho", price: "15" },
+      { name: "Miso Udon, Crispy Tofu", price: "12" },
+      { name: "Dan Dan Noodles, Pork & Peanut", price: "13" },
+    ]
+  },
+  {
+    title: "RICE & MAINS",
+    items: [
+      { name: "Karaage Chicken Bowl", price: "13" },
+      { name: "Tofu & Aubergine Mapo", price: "13" },
+      { name: "Sticky Pork Belly, Greens", price: "14" },
+      { name: "Beef Bulgogi, Kimchi", price: "15" },
+      { name: "Thai Green Curry, Jasmine Rice", price: "14" },
+      { name: "Soy Braised Mushrooms", price: "13" },
     ]
   }
 ];
