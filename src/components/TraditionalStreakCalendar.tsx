@@ -262,6 +262,88 @@ const TraditionalStreakCalendar: React.FC = () => {
   const [selectedMissedWeek, setSelectedMissedWeek] = useState<any>(null);
   const { toast } = useToast();
 
+  // Move all hooks before any early returns to ensure consistent hook calls
+  // Streak save logic - detect missed weeks and current week risks
+  const streakSaveData = useMemo(() => {
+    if (!dashboardData) return null;
+    
+    const { calendar_weeks, current_week, opportunities } = dashboardData;
+    
+    // Find any incomplete past weeks (missed opportunities)
+    const missedWeeks = calendar_weeks?.filter((week: any) => 
+      !week.is_current && !week.is_complete && !week.is_future && week.receipts_count < 2
+    ).map((week: any) => ({
+      week_start: week.week_start,
+      week_end: week.week_end,
+      receipts_count: week.receipts_count,
+      is_complete: week.is_complete
+    })) || [];
+
+    // Current week risk assessment
+    const currentWeekDaysLeft = current_week ? (() => {
+      const today = new Date();
+      const weekEnd = new Date(current_week.week_end);
+      const diffTime = weekEnd.getTime() - today.getTime();
+      return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+    })() : 0;
+
+    // Show emergency banner if current week needs receipts and has time left
+    const isCurrentWeekAtRisk = current_week && current_week.receipts_count < 2 && currentWeekDaysLeft > 0;
+
+    return {
+      missedWeeks,
+      isCurrentWeekAtRisk,
+      currentWeekDaysLeft,
+      graceWeeksAvailable: opportunities?.grace_weeks_available || 0,
+      makeupOpportunity: opportunities?.makeup_available ? opportunities.makeup_details : {
+        receipts_needed: 3,
+        deadline: current_week?.week_end,
+        broken_week: missedWeeks[0]?.week_start
+      },
+    };
+  }, [dashboardData]);
+
+  // Handlers for streak save actions
+  const handleSaveStreak = useCallback((missedWeek: any) => {
+    setSelectedMissedWeek(missedWeek);
+    setSaveModalOpen(true);
+  }, []);
+
+  const handleRequestGrace = useCallback(async () => {
+    try {
+      // This would call an edge function to apply grace week
+      toast({
+        title: "🛡️ Grace Week Applied!",
+        description: "Your streak has been protected using a grace week.",
+      });
+      await refetch();
+      setSaveModalOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to apply grace week. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [toast, refetch]);
+
+  const handleTripleChallenge = useCallback(() => {
+    // This would start tracking the triple visit challenge
+    toast({
+      title: "🎯 Challenge Started!",
+      description: "Get 3 receipts this week to recover your missed week!",
+    });
+    setSaveModalOpen(false);
+  }, [toast]);
+
+  const handleUploadReceipt = useCallback(() => {
+    // This would navigate to receipt upload
+    toast({
+      title: "📷 Upload Receipt",
+      description: "Please upload your receipt to continue your streak.",
+    });
+  }, [toast]);
+
   if (loading) {
     return (
       <Card className="w-full bg-background border border-border">
@@ -372,83 +454,6 @@ const TraditionalStreakCalendar: React.FC = () => {
         )}
       </div>
     );
-  };
-
-  // Streak save logic - detect missed weeks and current week risks
-  const streakSaveData = useMemo(() => {
-    // Find any incomplete past weeks (missed opportunities)
-    const missedWeeks = calendar_weeks?.filter((week: any) => 
-      !week.is_current && !week.is_complete && !week.is_future && week.receipts_count < 2
-    ).map((week: any) => ({
-      week_start: week.week_start,
-      week_end: week.week_end,
-      receipts_count: week.receipts_count,
-      is_complete: week.is_complete
-    })) || [];
-
-    // Current week risk assessment
-    const currentWeekDaysLeft = current_week ? (() => {
-      const today = new Date();
-      const weekEnd = new Date(current_week.week_end);
-      const diffTime = weekEnd.getTime() - today.getTime();
-      return Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
-    })() : 0;
-
-    // Show emergency banner if current week needs receipts and has time left
-    const isCurrentWeekAtRisk = current_week && current_week.receipts_count < 2 && currentWeekDaysLeft > 0;
-
-    return {
-      missedWeeks,
-      isCurrentWeekAtRisk,
-      currentWeekDaysLeft,
-      graceWeeksAvailable: opportunities?.grace_weeks_available || 0,
-      makeupOpportunity: opportunities?.makeup_available ? opportunities.makeup_details : {
-        receipts_needed: 3,
-        deadline: current_week?.week_end,
-        broken_week: missedWeeks[0]?.week_start
-      },
-    };
-  }, [calendar_weeks, current_week, opportunities]);
-
-  // Handlers for streak save actions
-  const handleSaveStreak = useCallback((missedWeek: any) => {
-    setSelectedMissedWeek(missedWeek);
-    setSaveModalOpen(true);
-  }, []);
-
-  const handleRequestGrace = async () => {
-    try {
-      // This would call an edge function to apply grace week
-      toast({
-        title: "🛡️ Grace Week Applied!",
-        description: "Your streak has been protected using a grace week.",
-      });
-      await refetch();
-      setSaveModalOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to apply grace week. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleTripleChallenge = () => {
-    // This would start tracking the triple visit challenge
-    toast({
-      title: "🎯 Challenge Started!",
-      description: "Get 3 receipts this week to recover your missed week!",
-    });
-    setSaveModalOpen(false);
-  };
-
-  const handleUploadReceipt = () => {
-    // This would navigate to receipt upload
-    toast({
-      title: "📷 Upload Receipt",
-      description: "Please upload your receipt to continue your streak.",
-    });
   };
 
   return (
