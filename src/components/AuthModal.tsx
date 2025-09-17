@@ -255,7 +255,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   if (otpSent) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] z-[10002]">
           <DialogHeader>
             <DialogTitle className="text-black font-bold">
               {emailSentTitle ?? (requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Enter verification code')}
@@ -316,7 +316,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] z-[10002]">
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>
           <DialogDescription>

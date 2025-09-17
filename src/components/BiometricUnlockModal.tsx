@@ -119,7 +119,7 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
 
   return (
     <Dialog open={isOpen} onOpenChange={(v) => { if (!v) onClose(); }}>
-      <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
+      <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background z-[10002]">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <CroftLogo size="sm" />

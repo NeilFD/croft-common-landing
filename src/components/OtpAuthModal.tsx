@@ -151,7 +151,7 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
   if (otpSent) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] z-[10002]">
           <DialogHeader>
             <DialogTitle>Enter verification code</DialogTitle>
             <DialogDescription>
@@ -193,7 +193,7 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] z-[10002]">
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in to your loyalty card'}</DialogTitle>
           <DialogDescription>

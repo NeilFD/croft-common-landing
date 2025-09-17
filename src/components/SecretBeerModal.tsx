@@ -65,7 +65,7 @@ const SecretBeerModal: React.FC<SecretBeerModalProps> = ({ open, onClose, secret
         description="We’ll email you a 6-digit verification code to confirm."
       />
       <Dialog open={open && showContent} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
-        <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
+        <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background z-[10001]">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <CroftLogo size="sm" />
