@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { StreakSaveModal } from './StreakSaveModal';
 import { StreakEmergencyBanner } from './StreakEmergencyBanner';
 import { MissedWeekAlert } from './MissedWeekAlert';
+import { supabase } from '@/integrations/supabase/client';
 
 // Component to render the streak reward sections
 const StreakRewardsSections: React.FC<{ dashboardData: any }> = ({ dashboardData }) => {
@@ -310,22 +311,38 @@ const TraditionalStreakCalendar: React.FC = () => {
   }, []);
 
   const handleRequestGrace = useCallback(async () => {
+    if (!selectedMissedWeek) {
+      toast({
+        title: "Error",
+        description: "No missed week selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      // This would call an edge function to apply grace week
+      const { data, error } = await supabase.functions.invoke('apply-grace-week', {
+        body: { missedWeekStart: selectedMissedWeek.week_start }
+      });
+
+      if (error) throw error;
+
       toast({
         title: "🛡️ Grace Week Applied!",
         description: "Your streak has been protected using a grace week.",
       });
-      await refetch();
+      
       setSaveModalOpen(false);
+      await refetch();
     } catch (error) {
+      console.error('Grace week application failed:', error);
       toast({
         title: "Error",
         description: "Failed to apply grace week. Please try again.",
         variant: "destructive",
       });
     }
-  }, [toast, refetch]);
+  }, [selectedMissedWeek, toast, refetch]);
 
   const handleTripleChallenge = useCallback(() => {
     // This would start tracking the triple visit challenge

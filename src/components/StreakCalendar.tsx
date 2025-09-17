@@ -8,6 +8,7 @@ import { useWeekCompletion } from '@/hooks/useWeekCompletion';
 import { useReceiptDots } from '@/hooks/useReceiptDots';
 import { ReceiptDotsLayer } from './ReceiptDotsLayer';
 import { WeekCompletionLayer } from './WeekCompletionLayer';
+import { supabase } from '@/integrations/supabase/client';
 import { StreakCalendarDebug } from './StreakCalendarDebug';
 import { StreakSaveModal } from './StreakSaveModal';
 import { StreakEmergencyBanner } from './StreakEmergencyBanner';
@@ -182,12 +183,37 @@ const StreakCalendar: React.FC = () => {
   };
 
   const handleRequestGrace = async () => {
-    // This would call an edge function to apply grace week
-    toast({
-      title: "Grace Week Applied",
-      description: "Your streak has been protected using a grace week.",
-    });
-    await refetch();
+    if (!selectedMissedWeek) {
+      toast({
+        title: "Error",
+        description: "No missed week selected.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.functions.invoke('apply-grace-week', {
+        body: { missedWeekStart: selectedMissedWeek.week_start }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "🛡️ Grace Week Applied!",
+        description: "Your streak has been protected using a grace week.",
+      });
+      
+      setSaveModalOpen(false);
+      await refetch();
+    } catch (error) {
+      console.error('Grace week application failed:', error);
+      toast({
+        title: "Error",
+        description: "Failed to apply grace week. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleTripleChallenge = () => {

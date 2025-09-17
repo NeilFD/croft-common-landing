@@ -218,3 +218,6 @@ verify_jwt = true
 
 [functions.seed-baseline-grace-week]
 verify_jwt = true
+
+[functions.apply-grace-week]
+verify_jwt = true
