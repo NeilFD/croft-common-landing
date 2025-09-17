@@ -388,10 +388,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
   const accentColor = getAccentColor();
   const isNeutral = pageType === 'beer' || pageType === 'kitchens' || pageType === 'cafe' || pageType === 'hall';
+  // When a secret or membership modal is active, this modal should be visually replaced
+  const replaced = showSecret || showMembership;
 
   return (
     <div 
-      className="fixed inset-0 z-[10000] bg-void/50 backdrop-blur-sm animate-fade-in flex items-center justify-center p-4 pt-32"
+      className={`fixed inset-0 ${replaced ? 'z-[1] bg-transparent backdrop-blur-0 pointer-events-none' : 'z-[10000] bg-void/50 backdrop-blur-sm'} animate-fade-in flex items-center justify-center p-4 pt-32`}
       onClick={(e) => { if (showSecret) { e.stopPropagation(); return; } handleClose(); }}
       onTouchStart={(e) => {
         // Prevent touch events from reaching background elements
@@ -419,7 +421,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       <div 
         ref={containerRef}
         data-modal="menu-modal"
-        className={`bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
+        aria-hidden={replaced}
+        className={`${replaced ? 'hidden' : ''} bg-background border border-steel/30 rounded-lg w-full overflow-hidden shadow-2xl ${
           pageType === 'community' || pageType === 'common-room' ? 'max-w-7xl max-h-[90vh]' : 'max-w-5xl max-h-[95vh]'
         }${isSecretEnabled ? ' gesture-container' : ''}`}
         onClick={(e) => e.stopPropagation()}
