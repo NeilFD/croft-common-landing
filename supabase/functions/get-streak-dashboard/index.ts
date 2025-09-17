@@ -246,7 +246,8 @@ serve(async (req: Request) => {
       opportunities: {
         makeup_available: makeupOpportunity.available,
         makeup_details: makeupOpportunity.details,
-        grace_weeks_available: availableGrace.length,
+        // Enforce a single-grace budget per user for now: available = max(0, 1 - used)
+        grace_weeks_available: Math.max(0, Math.min(1 - (usedGrace?.length || 0), (availableGrace?.length || 0))),
         grace_details: availableGrace.map(g => ({
           type: g.grace_type,
           week_start: g.week_start_date,
