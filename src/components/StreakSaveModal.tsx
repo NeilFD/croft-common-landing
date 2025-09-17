@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Clock, Target, Gift, X } from 'lucide-react';
+import { AlertTriangle, Clock, Target, Gift, X, Shield } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -108,36 +108,43 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
           </Alert>
 
           {/* Grace Week Option */}
-          {graceWeeksAvailable > 0 && (
-            <div className="p-4 border-2 border-primary rounded-lg bg-background">
-              <div className="flex items-center gap-2 mb-2">
-                <Gift className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold text-primary">
-                  Use Grace Week
-                </h3>
-              </div>
-              <p className="text-sm text-foreground mb-3">
-                Apply one of your {graceWeeksAvailable} earned grace weeks to protect this streak.
-              </p>
-              <Button
-                onClick={handleRequestGrace}
-                disabled={requesting}
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white border-2 border-primary"
-              >
-                {requesting ? (
-                  <>
-                    <Clock className="h-4 w-4 mr-2 animate-spin" />
-                    Applying...
-                  </>
-                ) : (
-                  <>
-                    <Gift className="h-4 w-4 mr-2" />
-                    Use Grace Week
-                  </>
-                )}
-              </Button>
+          <div className={`p-4 border-2 rounded-lg ${graceWeeksAvailable > 0 ? 'border-primary bg-background' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-4 w-4 text-primary" />
+              <h3 className={`font-semibold ${graceWeeksAvailable > 0 ? 'text-primary' : 'text-gray-500'}`}>
+                {graceWeeksAvailable > 0 ? 'Use Grace Week' : 'Grace Week Used'}
+              </h3>
             </div>
-          )}
+            <p className="text-sm text-foreground mb-3">
+              {graceWeeksAvailable > 0 ? (
+                <>Apply one of your {graceWeeksAvailable} earned grace weeks to protect this streak.</>
+              ) : (
+                <>You have no grace weeks available. Grace weeks can only be used once per set of 4 weeks.</>
+              )}
+            </p>
+            <Button
+              onClick={handleRequestGrace}
+              disabled={requesting || graceWeeksAvailable === 0}
+              className={`w-full ${graceWeeksAvailable > 0 ? 'bg-pink-500 hover:bg-pink-600 text-white border-2 border-primary' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+            >
+              {requesting ? (
+                <>
+                  <Clock className="h-4 w-4 mr-2 animate-spin" />
+                  Applying...
+                </>
+              ) : graceWeeksAvailable > 0 ? (
+                <>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Use Grace Week
+                </>
+              ) : (
+                <>
+                  <Shield className="h-4 w-4 mr-2" />
+                  Grace Week Used
+                </>
+              )}
+            </Button>
+          </div>
 
           {/* Triple Visit Challenge */}
           {makeupOpportunity && (

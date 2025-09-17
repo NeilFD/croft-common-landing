@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { Calendar, CheckCircle, Circle, Clock, Target, Gift, Trophy } from 'lucide-react';
+import { Calendar, CheckCircle, Circle, Clock, Target, Gift, Trophy, Shield } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -419,18 +419,23 @@ const StreakCalendar: React.FC = () => {
                             </div>
                           </div>
                           
-                           <div className="text-xs">
-                             {/* Grace protection indicator */}
-                             {(() => {
-                               const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === week.weekStart);
-                               if (calendarWeek?.protected_by_grace) {
-                                 return <Badge variant="secondary" className="text-xs mb-1">🛡️ Saved by Grace</Badge>;
-                               }
-                               return week.isCurrent ? `${week.receiptCount}/2` : 
-                                      week.isComplete ? 'Complete' :
-                                      week.receiptCount > 0 ? `${week.receiptCount} visit${week.receiptCount > 1 ? 's' : ''}` : 'No visits';
-                             })()}
-                           </div>
+                            <div className="text-xs">
+                              {/* Grace protection indicator */}
+                              {(() => {
+                                const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === week.weekStart);
+                                if (calendarWeek?.protected_by_grace) {
+                                  return (
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-md mb-1">
+                                      <Shield className="w-3 h-3 text-blue-600" />
+                                      <span className="text-blue-700 font-semibold text-xs">🛡️ Saved by Grace</span>
+                                    </div>
+                                  );
+                                }
+                                return week.isCurrent ? `${week.receiptCount}/2` : 
+                                       week.isComplete ? 'Complete' :
+                                       week.receiptCount > 0 ? `${week.receiptCount} visit${week.receiptCount > 1 ? 's' : ''}` : 'No visits';
+                              })()}
+                            </div>
 
                           {/* Mini calendar for the week */}
                           <div className="grid grid-cols-7 gap-0.5 mt-2">

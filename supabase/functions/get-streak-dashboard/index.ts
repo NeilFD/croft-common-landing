@@ -161,6 +161,9 @@ serve(async (req: Request) => {
     const usedGrace = usedGracePeriods.data || []; // NEW: Extract used grace periods
     const receipts = recentReceipts.data || [];
 
+    // Add detailed logging for grace week calculation
+    console.log(`🎯 Grace weeks - Total available: ${availableGrace.length}, Total used: ${usedGrace.length}`);
+
     // Stop auto-creating grace weeks to prevent replenishment after use
 
     // Calculate current week progress with unique receipt days
