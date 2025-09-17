@@ -149,8 +149,35 @@ serve(async (req: Request) => {
     const streakSets = streakSetsResult.data || [];
     const activeRewards = activeRewardsResult.data || [];
     const badges = badgesResult.data || [];
-    const availableGrace = gracePeriods.data || [];
+    let availableGrace = gracePeriods.data || [];
     const receipts = recentReceipts.data || [];
+
+    // Ensure every user has 1 baseline grace week available
+    if (availableGrace.length === 0) {
+      console.log('🎯 No grace weeks found for user, creating baseline grace week');
+      
+      const expireDate = new Date();
+      expireDate.setMonth(expireDate.getMonth() + 6); // 6 months from now
+      
+      const { data: newGracePeriod, error: graceError } = await serviceSupabase
+        .from('streak_grace_periods')
+        .insert({
+          user_id: user.id,
+          grace_type: 'baseline',
+          week_start_date: null, // Not tied to a specific week
+          is_used: false,
+          expires_date: expireDate.toISOString()
+        })
+        .select()
+        .single();
+
+      if (!graceError && newGracePeriod) {
+        availableGrace = [newGracePeriod];
+        console.log('✅ Created baseline grace week for user');
+      } else {
+        console.error('❌ Failed to create baseline grace week:', graceError);
+      }
+    }
 
     // Calculate current week progress with unique receipt days
     const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
