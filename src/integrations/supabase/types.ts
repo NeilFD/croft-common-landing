@@ -2068,6 +2068,7 @@ export type Database = {
           is_used: boolean
           used_date: string | null
           user_id: string
+          week_applied_to: string | null
           week_start_date: string
         }
         Insert: {
@@ -2078,6 +2079,7 @@ export type Database = {
           is_used?: boolean
           used_date?: string | null
           user_id: string
+          week_applied_to?: string | null
           week_start_date: string
         }
         Update: {
@@ -2088,6 +2090,7 @@ export type Database = {
           is_used?: boolean
           used_date?: string | null
           user_id?: string
+          week_applied_to?: string | null
           week_start_date?: string
         }
         Relationships: []

@@ -86,6 +86,7 @@ serve(async (req: Request) => {
       activeRewardsResult,
       badgesResult,
       gracePeriods,
+      usedGracePeriods, // NEW: Get used grace periods for calendar display
       recentReceipts
     ] = await Promise.all([
       // Member streaks summary
@@ -135,6 +136,13 @@ serve(async (req: Request) => {
         .eq('is_used', false)
         .gt('expires_date', new Date().toISOString()),
 
+      // Used grace periods for calendar display
+      serviceSupabase
+        .from('streak_grace_periods')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_used', true),
+
       // Recent receipts for context - get ALL receipts, don't filter by date
       serviceSupabase
         .from('member_receipts')
@@ -150,6 +158,7 @@ serve(async (req: Request) => {
     const activeRewards = activeRewardsResult.data || [];
     const badges = badgesResult.data || [];
     let availableGrace = gracePeriods.data || [];
+    const usedGrace = usedGracePeriods.data || []; // NEW: Extract used grace periods
     const receipts = recentReceipts.data || [];
 
     // Ensure every user has 1 baseline grace week available
@@ -212,7 +221,7 @@ serve(async (req: Request) => {
     const makeupOpportunity = await checkMakeupOpportunity(serviceSupabase, user.id, streakWeeks);
 
     // Generate calendar data starting from user's first receipt week
-    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries, receipts, firstReceiptDate ? streakStartWeek : null);
+    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries, receipts, firstReceiptDate ? streakStartWeek : null, usedGrace);
 
     // Calculate streak statistics
     const stats = calculateStreakStats(streakWeeks, streakSets, activeRewards);
@@ -293,7 +302,7 @@ serve(async (req: Request) => {
   }
 });
 
-function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, receipts: any[] = [], userStartWeek: string | null = null) {
+function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, receipts: any[] = [], userStartWeek: string | null = null, usedGrace: any[] = []) {
   const weeks = [];
   
   // Use user's start week if available, otherwise use 16 weeks ago as fallback
@@ -316,15 +325,21 @@ function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, r
     const isCurrent = weekStart === currentWeekStartDate;
     const isFuture = new Date(weekStart) > new Date();
     
+    // Check if this week is protected by a grace period
+    const graceProtection = usedGrace.find(g => g.week_applied_to === weekStart);
+    const isProtectedByGrace = !!graceProtection;
+    
     // Calculate unique receipt days for this week from actual receipt data
     const weekReceipts = receipts.filter(r => {
       const receiptDate = r.receipt_date;
       return receiptDate >= weekStart && receiptDate <= weekEnd;
     });
     const uniqueReceiptDays = new Set(weekReceipts.map(r => r.receipt_date)).size;
-    const weekComplete = uniqueReceiptDays >= 2;
     
-    console.log(`📅 Week ${weekStart}: weekData=${!!weekData}, complete=${weekComplete}, unique_days=${uniqueReceiptDays}`);
+    // A week is complete if it has 2+ unique receipt days OR is protected by grace
+    const weekComplete = uniqueReceiptDays >= 2 || isProtectedByGrace;
+    
+    console.log(`📅 Week ${weekStart}: weekData=${!!weekData}, complete=${weekComplete}, unique_days=${uniqueReceiptDays}, graced=${isProtectedByGrace}`);
     
     weeks.push({
       week_start: weekStart,
@@ -333,11 +348,13 @@ function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, r
       is_complete: weekComplete,
       is_current: isCurrent,
       is_future: isFuture,
-      completed_at: weekData?.completed_at || null
+      completed_at: weekData?.completed_at || (isProtectedByGrace ? graceProtection.used_date : null),
+      protected_by_grace: isProtectedByGrace,
+      grace_applied_date: isProtectedByGrace ? graceProtection.used_date : null
     });
   }
   
-  console.log('📅 Generated calendar weeks with unique days:', weeks.filter(w => w.receipts_count > 0 || w.is_complete));
+  console.log('📅 Generated calendar weeks with grace protection:', weeks.filter(w => w.receipts_count > 0 || w.is_complete));
   return weeks;
 }
 

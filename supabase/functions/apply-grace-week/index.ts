@@ -87,6 +87,26 @@ Deno.serve(async (req) => {
       throw updateError;
     }
 
+    console.log('✅ APPLY GRACE: Grace week marked as used');
+
+    // Also mark the missed week as complete in streak_weeks
+    const { error: streakWeekError } = await serviceRoleClient
+      .from('streak_weeks')
+      .upsert({
+        user_id: user.id,
+        week_start: missedWeekStart,
+        is_complete: true,
+        completed_at: new Date().toISOString(),
+        protected_by_grace: true
+      }, {
+        onConflict: 'user_id,week_start'
+      });
+
+    if (streakWeekError) {
+      console.error('❌ APPLY GRACE: Failed to mark week as complete:', streakWeekError);
+      throw streakWeekError;
+    }
+
     console.log('✅ APPLY GRACE: Successfully applied grace week to', missedWeekStart);
 
     return new Response(

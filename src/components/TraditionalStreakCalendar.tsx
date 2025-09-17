@@ -325,8 +325,27 @@ const TraditionalStreakCalendar: React.FC = () => {
         body: { missedWeekStart: selectedMissedWeek.week_start }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Grace request failed:', error);
+        toast({
+          title: "Unable to Apply Grace Week",
+          description: error.message || "Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!data || !data.success) {
+        console.error('❌ Grace request unsuccessful:', data);
+        toast({
+          title: "Unable to Apply Grace Week", 
+          description: data?.error || "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
+      console.log('✅ Grace applied successfully:', data);
       toast({
         title: "🛡️ Grace Week Applied!",
         description: "Your streak has been protected using a grace week.",
@@ -334,11 +353,11 @@ const TraditionalStreakCalendar: React.FC = () => {
       
       setSaveModalOpen(false);
       await refetch();
-    } catch (error) {
-      console.error('Grace week application failed:', error);
+    } catch (error: any) {
+      console.error('❌ Unexpected error applying grace:', error);
       toast({
         title: "Error",
-        description: "Failed to apply grace week. Please try again.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     }
