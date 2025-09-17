@@ -117,6 +117,18 @@ export const useStreakDashboard = () => {
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
       
+      // First, ensure user has a baseline grace week
+      console.log('🌱 HOOK: Seeding baseline grace week');
+      try {
+        await supabase.functions.invoke('seed-baseline-grace-week', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      } catch (seedError) {
+        console.warn('⚠️ HOOK: Grace week seeding failed, continuing:', seedError);
+      }
+      
       console.log('🔑 HOOK: Calling edge function');
 
       const { data, error } = await supabase.functions.invoke('get-streak-dashboard', {

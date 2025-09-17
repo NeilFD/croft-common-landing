@@ -215,3 +215,6 @@ verify_jwt = true
 
 [functions.campaign-manager]
 verify_jwt = true
+
+[functions.seed-baseline-grace-week]
+verify_jwt = true
