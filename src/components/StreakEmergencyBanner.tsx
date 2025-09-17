@@ -33,7 +33,7 @@ export const StreakEmergencyBanner: React.FC<StreakEmergencyBannerProps> = ({
       case 'warning':
         return 'border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800';
       default:
-        return 'border-border bg-background';
+        return 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800';
     }
   };
 
@@ -44,7 +44,7 @@ export const StreakEmergencyBanner: React.FC<StreakEmergencyBannerProps> = ({
       case 'warning':
         return <Clock className="h-4 w-4 text-amber-600" />;
       default:
-        return <Clock className="h-4 w-4 text-accent-pink" />;
+        return <Clock className="h-4 w-4 text-blue-600" />;
     }
   };
 
