@@ -58,7 +58,22 @@ serve(async (req: Request) => {
       }
     );
 
-    console.log(`Fetching streak dashboard for user ${user.id}`);
+    // Get user's first receipt to determine streak starting point
+    const { data: firstReceiptResult } = await serviceSupabase
+      .from('member_receipts')
+      .select('receipt_date')
+      .eq('user_id', user.id)
+      .order('receipt_date', { ascending: true })
+      .limit(1);
+
+    const firstReceiptDate = firstReceiptResult?.[0]?.receipt_date;
+    console.log('🎯 First receipt date:', firstReceiptDate);
+
+    // If user has no receipts, use current week as starting point
+    const streakStartDate = firstReceiptDate || currentWeekStartDate;
+    const streakStartWeek = getMonday(new Date(streakStartDate)).toISOString().split('T')[0];
+    
+    console.log('🎯 Streak starting week:', streakStartWeek);
 
     // Get current week boundaries
     const { data: currentWeekBoundaries } = await serviceSupabase.rpc('get_current_week_boundaries');
@@ -80,12 +95,12 @@ serve(async (req: Request) => {
         .eq('user_id', user.id)
         .single(),
 
-      // Streak weeks (last 12 weeks for calendar display)
+      // Streak weeks (all weeks since user's first receipt)
       serviceSupabase
         .from('streak_weeks')
         .select('*')
         .eq('user_id', user.id)
-        .gte('week_start_date', getDateMinusWeeks(new Date(), 12))
+        .gte('week_start_date', firstReceiptDate ? streakStartWeek : getDateMinusWeeks(new Date(), 12))
         .order('week_start_date', { ascending: true }),
 
       // Current and recent streak sets
@@ -112,7 +127,7 @@ serve(async (req: Request) => {
         .order('earned_date', { ascending: false })
         .limit(10),
 
-      // Available grace periods
+      // Available grace periods - include ALL unexpired grace weeks (not just future ones)
       serviceSupabase
         .from('streak_grace_periods')
         .select('*')
@@ -169,8 +184,8 @@ serve(async (req: Request) => {
     // Check for make-up opportunities
     const makeupOpportunity = await checkMakeupOpportunity(serviceSupabase, user.id, streakWeeks);
 
-    // Generate calendar data (12 weeks) with receipt data for accurate counting
-    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries, receipts);
+    // Generate calendar data starting from user's first receipt week
+    const calendarWeeks = generateCalendarWeeks(streakWeeks, currentWeekBoundaries, receipts, firstReceiptDate ? streakStartWeek : null);
 
     // Calculate streak statistics
     const stats = calculateStreakStats(streakWeeks, streakSets, activeRewards);
@@ -221,7 +236,8 @@ serve(async (req: Request) => {
         grace_details: availableGrace.map(g => ({
           type: g.grace_type,
           week_start: g.week_start_date,
-          expires: g.expires_date
+          expires: g.expires_date,
+          can_apply_retrospectively: true // Allow retrospective application
         }))
       },
       recent_activity: receipts.map(r => ({
@@ -250,13 +266,22 @@ serve(async (req: Request) => {
   }
 });
 
-function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, receipts: any[] = []) {
+function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, receipts: any[] = [], userStartWeek: string | null = null) {
   const weeks = [];
-  const startDate = getDateMinusWeeks(new Date(), 16);
+  
+  // Use user's start week if available, otherwise use 16 weeks ago as fallback
+  const startDate = userStartWeek ? new Date(userStartWeek) : getDateMinusWeeks(new Date(), 16);
   const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
   
-  for (let i = 0; i < 16; i++) {
-    const weekStart = getDatePlusWeeks(startDate, i);
+  // Calculate number of weeks to generate based on start date
+  const weeksToGenerate = userStartWeek 
+    ? Math.ceil((new Date(currentWeekStartDate).getTime() - new Date(userStartWeek).getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
+    : 16;
+    
+  console.log(`📅 Generating ${weeksToGenerate} weeks starting from ${startDate.toISOString().split('T')[0]}`);
+  
+  for (let i = 0; i < weeksToGenerate; i++) {
+    const weekStart = getDatePlusWeeks(startDate.toISOString().split('T')[0], i);
     const weekEnd = getDatePlusWeeks(weekStart, 0, 6); // Add 6 days
     
     // Find matching week data by comparing week_start_date from database

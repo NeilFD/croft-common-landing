@@ -96,7 +96,7 @@ export const StreakEmergencyBanner: React.FC<StreakEmergencyBannerProps> = ({
               <Button 
                 onClick={onUploadReceipt} 
                 size="sm"
-                className="bg-accent-pink hover:bg-accent-pink-dark text-white border-2 border-primary"
+                className="bg-pink-500 hover:bg-pink-600 text-white border-2 border-primary"
               >
                 <Camera className="h-4 w-4 mr-2" />
                 Upload Receipt

@@ -62,7 +62,7 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
                   <Button
                     onClick={() => onSaveStreak(week)}
                     size="sm"
-                    className="bg-accent-pink hover:bg-accent-pink-dark text-white border-2 border-primary"
+                    className="bg-pink-500 hover:bg-pink-600 text-white border-2 border-primary"
                   >
                     <LifeBuoy className="h-3 w-3 mr-1" />
                     Save Streak

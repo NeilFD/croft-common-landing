@@ -122,7 +122,7 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
               <Button
                 onClick={handleRequestGrace}
                 disabled={requesting}
-                className="w-full bg-accent-pink hover:bg-accent-pink-dark text-white border-2 border-primary"
+                className="w-full bg-pink-500 hover:bg-pink-600 text-white border-2 border-primary"
               >
                 {requesting ? (
                   <>
@@ -158,7 +158,7 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
               </div>
               <Button
                 onClick={handleTripleChallenge}
-                className="w-full bg-accent-pink hover:bg-accent-pink-dark text-white border-2 border-primary"
+                className="w-full bg-pink-500 hover:bg-pink-600 text-white border-2 border-primary"
               >
                 <Target className="h-4 w-4 mr-2" />
                 Start Challenge
