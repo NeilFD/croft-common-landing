@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy } from 'react';
 import { useEditMode } from '@/contexts/EditModeContext';
 import { CMSModeProvider } from '@/contexts/CMSModeContext';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Eye, Edit as EditIcon, Globe, Save, RefreshCw } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
-// Import all page components
+// Import all page components - use lazy imports for consistency with App.tsx
 import Cafe from '@/pages/Cafe';
 import Cocktails from '@/pages/Cocktails';
 import Beer from '@/pages/Beer';
@@ -14,7 +14,7 @@ import Kitchens from '@/pages/Kitchens';
 import Hall from '@/pages/Hall';
 import Community from '@/pages/Community';
 import CommonRoom from '@/pages/CommonRoom';
-import CommonRoomMain from '@/pages/CommonRoomMain';
+const CommonRoomMain = lazy(() => import('@/pages/CommonRoomMain'));
 import Index from '@/pages/Index';
 import Book from '@/pages/Book';
 import Calendar from '@/pages/Calendar';
