@@ -141,10 +141,12 @@ const StreakCalendar: React.FC = () => {
 
   // Simplified streak save data - directly check weekCompletions for actionable situations
   const streakSaveData = useMemo(() => {
-    // Find any past incomplete weeks (missed opportunities)
-    const missedWeeks = weekCompletions.filter(week => 
-      !week.isCurrent && !week.isComplete && week.receiptCount < 2
-    ).map(week => ({
+    // Find any past incomplete weeks (missed opportunities) - exclude grace-protected weeks
+    const missedWeeks = weekCompletions.filter(week => {
+      const weekStart = week.weekStart;
+      const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === weekStart);
+      return !week.isCurrent && !week.isComplete && week.receiptCount < 2 && !calendarWeek?.protected_by_grace;
+    }).map(week => ({
       week_start: week.weekStart,
       week_end: week.weekEnd,
       receipts_count: week.receiptCount,
@@ -417,11 +419,18 @@ const StreakCalendar: React.FC = () => {
                             </div>
                           </div>
                           
-                          <div className="text-xs">
-                            {week.isCurrent ? `${week.receiptCount}/2` : 
-                             week.isComplete ? 'Complete' :
-                             week.receiptCount > 0 ? `${week.receiptCount} visit${week.receiptCount > 1 ? 's' : ''}` : 'No visits'}
-                          </div>
+                           <div className="text-xs">
+                             {/* Grace protection indicator */}
+                             {(() => {
+                               const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === week.weekStart);
+                               if (calendarWeek?.protected_by_grace) {
+                                 return <Badge variant="secondary" className="text-xs mb-1">🛡️ Saved by Grace</Badge>;
+                               }
+                               return week.isCurrent ? `${week.receiptCount}/2` : 
+                                      week.isComplete ? 'Complete' :
+                                      week.receiptCount > 0 ? `${week.receiptCount} visit${week.receiptCount > 1 ? 's' : ''}` : 'No visits';
+                             })()}
+                           </div>
 
                           {/* Mini calendar for the week */}
                           <div className="grid grid-cols-7 gap-0.5 mt-2">

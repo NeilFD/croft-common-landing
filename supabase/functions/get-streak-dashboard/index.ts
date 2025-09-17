@@ -161,32 +161,7 @@ serve(async (req: Request) => {
     const usedGrace = usedGracePeriods.data || []; // NEW: Extract used grace periods
     const receipts = recentReceipts.data || [];
 
-    // Ensure every user has 1 baseline grace week available
-    if (availableGrace.length === 0) {
-      console.log('🎯 No grace weeks found for user, creating baseline grace week');
-      
-      const expireDate = new Date();
-      expireDate.setMonth(expireDate.getMonth() + 6); // 6 months from now
-      
-      const { data: newGracePeriod, error: graceError } = await serviceSupabase
-        .from('streak_grace_periods')
-        .insert({
-          user_id: user.id,
-          grace_type: 'baseline',
-          week_start_date: getCurrentWeekStart(), // Baseline ties to current week start
-          is_used: false,
-          expires_date: expireDate.toISOString()
-        })
-        .select()
-        .single();
-
-      if (!graceError && newGracePeriod) {
-        availableGrace = [newGracePeriod];
-        console.log('✅ Created baseline grace week for user');
-      } else {
-        console.error('❌ Failed to create baseline grace week:', graceError);
-      }
-    }
+    // Stop auto-creating grace weeks to prevent replenishment after use
 
     // Calculate current week progress with unique receipt days
     const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;

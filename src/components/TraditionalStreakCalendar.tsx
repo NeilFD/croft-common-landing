@@ -270,9 +270,9 @@ const TraditionalStreakCalendar: React.FC = () => {
     
     const { calendar_weeks, current_week, opportunities } = dashboardData;
     
-    // Find any incomplete past weeks (missed opportunities)
+    // Find any incomplete past weeks (missed opportunities) - exclude grace-protected weeks
     const missedWeeks = calendar_weeks?.filter((week: any) => 
-      !week.is_current && !week.is_complete && !week.is_future && week.receipts_count < 2
+      !week.is_current && !week.is_complete && !week.is_future && week.receipts_count < 2 && !week.protected_by_grace
     ).map((week: any) => ({
       week_start: week.week_start,
       week_end: week.week_end,
@@ -442,7 +442,14 @@ const TraditionalStreakCalendar: React.FC = () => {
     weekCompletions.set(weekEnd.toISOString().split('T')[0], week.is_complete);
   });
 
-  // Custom day renderer for calendar
+  // Helper function to get Monday of a given date
+  const getMonday = (date: Date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    return d;
+  };
   const dayRenderer = (day: Date) => {
     // Use local timezone formatting instead of UTC to avoid date shifting
     const dateStr = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
@@ -477,6 +484,18 @@ const TraditionalStreakCalendar: React.FC = () => {
             <span className="text-white text-xs font-bold">●</span>
           </div>
         )}
+        
+        {/* Grace week shield indicator */}
+        {(() => {
+          const weekStart = getMonday(day).toISOString().split('T')[0];
+          const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === weekStart);
+          return calendarWeek?.protected_by_grace && (
+            <div className="absolute -top-0.5 -right-0.5 text-blue-500 text-xs z-20" title="Saved by Grace">
+              🛡️
+            </div>
+          );
+        })()}
+        
         {isWeekEnd && isWeekComplete && (
           <CheckCircle className="absolute -bottom-1 -right-1 h-3 w-3 text-green-500" />
         )}
@@ -594,6 +613,10 @@ const TraditionalStreakCalendar: React.FC = () => {
             <div className="flex items-center gap-1">
               <CheckCircle className="h-3 w-3 text-green-500" />
               Week completed
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-blue-500">🛡️</span>
+              Saved by Grace
             </div>
           </div>
 

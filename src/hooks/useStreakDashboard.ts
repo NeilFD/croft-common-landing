@@ -11,6 +11,8 @@ interface WeekProgress {
   is_current: boolean;
   is_future: boolean;
   completed_at?: string;
+  protected_by_grace?: boolean;
+  grace_applied_date?: string;
 }
 
 interface CurrentSet {
@@ -117,17 +119,7 @@ export const useStreakDashboard = () => {
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
       
-      // First, ensure user has a baseline grace week
-      console.log('🌱 HOOK: Seeding baseline grace week');
-      try {
-        await supabase.functions.invoke('seed-baseline-grace-week', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      } catch (seedError) {
-        console.warn('⚠️ HOOK: Grace week seeding failed, continuing:', seedError);
-      }
+      // Remove auto-seeding to prevent grace week replenishment
       
       console.log('🔑 HOOK: Calling edge function');
 
