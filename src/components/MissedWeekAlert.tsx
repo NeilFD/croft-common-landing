@@ -32,25 +32,25 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
   const hasRecoveryOptions = graceWeeksAvailable > 0 || makeupOpportunityAvailable;
 
   return (
-    <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-900/20 dark:border-orange-800">
-      <AlertCircle className="h-4 w-4 text-orange-600" />
+    <Alert className="bg-background border-2 border-primary">
+      <AlertCircle className="h-4 w-4 text-primary" />
       <AlertDescription>
         <div className="space-y-3">
           <div>
-            <div className="font-semibold text-orange-800 dark:text-orange-200 mb-1">
+            <div className="font-semibold text-primary mb-1">
               {missedWeeks.length > 1 ? 'Weeks Missed' : 'Week Missed'}
             </div>
-            <div className="text-sm text-orange-700 dark:text-orange-300">
+            <div className="text-sm text-foreground">
               {missedWeeks.length > 1 ? 'Multiple weeks' : 'One week'} in your streak {missedWeeks.length > 1 ? 'were' : 'was'} incomplete
             </div>
           </div>
 
           {/* Show most recent missed week */}
-          <div className="bg-white/50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2">
+          <div className="bg-muted/30 rounded-lg p-3 space-y-2">
             {missedWeeks.slice(0, 2).map((week, index) => (
               <div key={week.week_start} className="flex items-center justify-between">
                 <div>
-                  <div className="text-sm font-medium">
+                  <div className="text-sm font-medium text-foreground">
                     {formatWeekRange(week.week_start, week.week_end)}
                   </div>
                   <div className="text-xs text-muted-foreground">
@@ -62,8 +62,7 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
                   <Button
                     onClick={() => onSaveStreak(week)}
                     size="sm"
-                    variant="outline"
-                    className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                    className="bg-accent-pink hover:bg-accent-pink-dark text-white border-2 border-primary"
                   >
                     <LifeBuoy className="h-3 w-3 mr-1" />
                     Save Streak
@@ -74,7 +73,7 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
             ))}
             
             {missedWeeks.length > 2 && (
-              <div className="text-xs text-muted-foreground border-t pt-2">
+              <div className="text-xs text-muted-foreground border-t border-primary pt-2">
                 +{missedWeeks.length - 2} more missed week{missedWeeks.length - 2 !== 1 ? 's' : ''}
               </div>
             )}
@@ -83,14 +82,14 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
           {/* Recovery options summary */}
           {hasRecoveryOptions && (
             <div className="flex items-center gap-2 text-sm">
-              <span className="text-orange-700 dark:text-orange-300">Recovery options:</span>
+              <span className="text-foreground">Recovery options:</span>
               {graceWeeksAvailable > 0 && (
-                <Badge variant="outline" className="text-orange-700 border-orange-300">
+                <Badge variant="outline" className="text-primary border-primary">
                   {graceWeeksAvailable} grace week{graceWeeksAvailable !== 1 ? 's' : ''}
                 </Badge>
               )}
               {makeupOpportunityAvailable && (
-                <Badge variant="outline" className="text-orange-700 border-orange-300">
+                <Badge variant="outline" className="text-primary border-primary">
                   <Target className="h-3 w-3 mr-1" />
                   Triple challenge
                 </Badge>
@@ -99,7 +98,7 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
           )}
 
           {!hasRecoveryOptions && (
-            <div className="text-sm text-orange-700 dark:text-orange-300">
+            <div className="text-sm text-muted-foreground">
               No recovery options available. Start fresh with your next visit!
             </div>
           )}

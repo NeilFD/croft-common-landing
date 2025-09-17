@@ -40,11 +40,11 @@ export const StreakEmergencyBanner: React.FC<StreakEmergencyBannerProps> = ({
   const getUrgencyIcon = () => {
     switch (urgencyLevel) {
       case 'critical':
-        return <AlertTriangle className="h-4 w-4 text-red-600" />;
+        return <AlertTriangle className="h-4 w-4 text-accent-pink" />;
       case 'warning':
-        return <Clock className="h-4 w-4 text-amber-600" />;
+        return <Clock className="h-4 w-4 text-accent-pink" />;
       default:
-        return <Clock className="h-4 w-4 text-blue-600" />;
+        return <Clock className="h-4 w-4 text-primary" />;
     }
   };
 
@@ -68,24 +68,24 @@ export const StreakEmergencyBanner: React.FC<StreakEmergencyBannerProps> = ({
   };
 
   return (
-    <Alert className={`${getUrgencyStyles()} border-l-4`}>
+    <Alert className="bg-background border-2 border-primary">
       {getUrgencyIcon()}
       <AlertDescription>
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <div className="font-semibold mb-1">
+            <div className="font-semibold mb-1 text-primary">
               {getUrgencyText()}
             </div>
-            <div className="text-sm">
+            <div className="text-sm text-foreground">
               You need <strong>{receiptsNeeded} more receipt{receiptsNeeded > 1 ? 's' : ''}</strong> before{' '}
               <strong>{formatDate(currentWeek.week_end)}</strong> to complete this week.
             </div>
             <div className="flex items-center gap-2 mt-2">
-              <Badge variant={urgencyLevel === 'critical' ? 'destructive' : 'secondary'}>
+              <Badge variant={urgencyLevel === 'critical' ? 'destructive' : 'secondary'} className="border-primary">
                 <Clock className="h-3 w-3 mr-1" />
                 {daysLeft} day{daysLeft !== 1 ? 's' : ''} left
               </Badge>
-              <Badge variant="outline">
+              <Badge variant="outline" className="border-primary">
                 {currentWeek.receipts_count}/{currentWeek.receipts_needed} receipts
               </Badge>
             </div>
@@ -96,7 +96,7 @@ export const StreakEmergencyBanner: React.FC<StreakEmergencyBannerProps> = ({
               <Button 
                 onClick={onUploadReceipt} 
                 size="sm"
-                variant={urgencyLevel === 'critical' ? 'destructive' : 'default'}
+                className="bg-accent-pink hover:bg-accent-pink-dark text-white border-2 border-primary"
               >
                 <Camera className="h-4 w-4 mr-2" />
                 Upload Receipt
