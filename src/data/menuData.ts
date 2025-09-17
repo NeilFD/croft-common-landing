@@ -26,100 +26,71 @@ export const cafeMenu: MenuSection[] = [
     ]
   },
   {
-    title: "PIZZA - WOOD-FIRED",
+    title: "Croft Common Café",
     items: [
-      { name: "Margherita", price: "12" },
-      { name: "Hot Honey & Goat Cheese", price: "14" },
-      { name: "Nduja & Ricotta", price: "15" },
-      { name: "Anchovy, Olive, Caper", price: "14" },
-      { name: "Mushroom, Sage, Taleggio", price: "15" },
-      { name: "Add Burrata", description: "4" },
+      { name: "Daytime. Bright. Vibrant.", description: "" }
     ]
   },
   {
-    title: "WOOD-FIRED MAINS",
+    title: "Breakfast",
     items: [
-      { name: "Whole Cauliflower, Harissa & Tahini", price: "15" },
-      { name: "Porchetta Roll, Sage Apricots", price: "18" },
-      { name: "Wood-roasted Chicken Thighs, Herbs", price: "16" },
-      { name: "Smoked Salmon Fillet, Dill Cream", price: "19" },
-      { name: "Maple Pork Belly, Apple Slaw", price: "18" },
-      { name: "Charred Corn, Lime Mayo", price: "9" },
+      { name: "Croft Common Full English", description: "rare breed sausage, smoked bacon, fried egg, tomato, mushroom, beans, sourdough.", price: "14" },
+      { name: "Veggie English", description: "field mushroom, halloumi, avocado, roast tomato, beans, sourdough.", price: "11" },
+      { name: "Eggs Benedict", description: "poached eggs, ham hock, hollandaise, muffin.", price: "12" },
+      { name: "Eggs Florentine", description: "poached eggs, spinach, hollandaise, muffin.", price: "10" },
+      { name: "Shakshuka", description: "spiced tomato, baked eggs, yoghurt, flatbread.", price: "10" },
+      { name: "Avocado & Poached Egg", description: "chilli, lime, pumpkin seeds, sourdough.", price: "12" },
+      { name: "Overnight Oats", description: "rolled oats, almond milk, berries, toasted seeds.", price: "8" },
+      { name: "Greek Yoghurt Bowl", description: "granola, honey, figs, pistachio.", price: "7" }
     ]
   },
   {
-    title: "SIDES",
+    title: "Pastries",
     items: [
-      { name: "Wood fired roast Potatoes, Garlic Butter", price: "5" },
-      { name: "Flatbread, Olive Oil & Salt", price: "4" },
-      { name: "Grilled Tenderstem, Sesame & Chili", price: "5" },
-      { name: "Burnt Leek & Herb Slaw", price: "4" },
-      { name: "Ember-baked Beetroot, Labneh", price: "5" },
+      { name: "Butter Croissant", description: "classic, flaky, French butter.", price: "4" },
+      { name: "Pain au Chocolat", description: "dark chocolate, laminated pastry.", price: "4.5" },
+      { name: "Almond Croissant", description: "filled, dusted, rich.", price: "4.50" },
+      { name: "Cinnamon Swirl", description: "buttery roll, sugar crust.", price: "4.50" },
+      { name: "Morning Bun", description: "orange zest, sugar crust, croissant dough.", price: "4" }
     ]
   },
   {
-    title: "GRILL",
+    title: "Sandwiches",
     items: [
-      { name: "Bavette, Rare", price: "20" },
-      { name: "Ribeye, 30-day", price: "26" },
-      { name: "Flat Iron, Chimichurri", price: "21" },
-      { name: "Lamb Rump, Harissa", price: "23" },
-      { name: "Pork Chop, Apple Slaw", price: "22" },
-      { name: "Half Chicken, Charred Lemon", price: "20" },
-      { name: "Grilled Halloumi, Salsa Verde", price: "18" },
-      { name: "Whole Seabream, Chilli Butter", price: "24" },
-      { name: "BBQ Jackfruit Skewer, Mint Yogurt", price: "17" },
+      { name: "Italian Deli", description: "salami, mortadella, provolone, pickles, ciabatta.", price: "9" },
+      { name: "Reuben", description: "salt beef, sauerkraut, Swiss cheese, Russian dressing, rye.", price: "12" },
+      { name: "Caprese", description: "buffalo mozzarella, heritage tomato, basil, focaccia.", price: "8" },
+      { name: "The Med", description: "roast vegetables, hummus, feta, ciabatta.", price: "8" },
+      { name: "Roast Chicken Caesar", description: "chicken, anchovy mayo, parmesan, cos lettuce, sourdough.", price: "10" }
     ]
   },
   {
-    title: "MEXICAN",
+    title: "Salads & Bowls",
     items: [
-      { name: "TACOS (2 per order)", description: "" },
-      { name: "Beef Barbacoa", price: "12" },
-      { name: "Chicken Mole", price: "12" },
-      { name: "Carnitas, Salsa Roja", price: "12" },
-      { name: "Sweet Potato, Salsa Verde", price: "11" },
-      { name: "Fish Tempura, Chipotle Mayo", price: "13" },
-      { name: "Jackfruit, Lime Crema", price: "11" },
+      { name: "Roast Cauliflower, Tahini, Pomegranate", description: "spiced cauliflower, golden raisins, herbs, pistachio crunch.", price: "9" },
+      { name: "Freekeh & Squash Grain Salad", description: "charred butternut, pomegranate seeds, mint, green grains.", price: "9" },
+      { name: "Charred Broccoli & Almond", description: "tenderstem broccoli, chilli oil, garlic yoghurt, toasted nuts.", price: "8" },
+      { name: "Heritage Tomato & Burrata", description: "ripe tomatoes, creamy burrata, basil oil, sourdough crumbs.", price: "12" },
+      { name: "Sesame Soba Noodles", description: "chilled noodles, pak choi, cucumber, sesame peanut dressing.", price: "9" },
+      { name: "Salad Counter Plate", description: "choose any three of the above, generous plate.", price: "12" }
     ]
   },
   {
-    title: "QUESADILLAS & MAINS",
+    title: "Plates & Counter",
     items: [
-      { name: "Quesadilla, Cheese Pull", price: "12" },
-      { name: "Chorizo Quesadilla", price: "13" },
-      { name: "Mexican Rice Bowl, Pickles", price: "14" },
-      { name: "Tostadas - Crab, Avocado", price: "15" },
+      { name: "Frittata of the Day", description: "seasonal veg, herbs, cheese.", price: "7" },
+      { name: "Wood Oven Flatbread, Labneh, Za'atar Oil", description: "soft, blistered, tangy.", price: "6" },
+      { name: "Seasonal Tartlet", description: "roast tomato, ricotta, basil.", price: "6" },
+      { name: "Soup of the Day, Sourdough", description: "always fresh, always changing.", price: "7" }
     ]
   },
   {
-    title: "ASIAN STREET FOOD",
+    title: "Sweets & Cakes",
     items: [
-      { name: "BAO BUNS", description: "" },
-      { name: "Pork Belly, Pickles", price: "11" },
-      { name: "Fried Tofu, Sweet Soy", price: "10" },
-      { name: "Korean Chicken, Gochujang", price: "11" },
-      { name: "Shiitake, Black Garlic Mayo", price: "10" },
-    ]
-  },
-  {
-    title: "NOODLES",
-    items: [
-      { name: "Chilli Garlic Ramen, Soft Egg", price: "13" },
-      { name: "Beef Brisket Pho", price: "15" },
-      { name: "Miso Udon, Crispy Tofu", price: "12" },
-      { name: "Dan Dan Noodles, Pork & Peanut", price: "13" },
-    ]
-  },
-  {
-    title: "RICE & MAINS",
-    items: [
-      { name: "Karaage Chicken Bowl", price: "13" },
-      { name: "Tofu & Aubergine Mapo", price: "13" },
-      { name: "Sticky Pork Belly, Greens", price: "14" },
-      { name: "Beef Bulgogi, Kimchi", price: "15" },
-      { name: "Thai Green Curry, Jasmine Rice", price: "14" },
-      { name: "Soy Braised Mushrooms", price: "13" },
+      { name: "Polenta & Orange Cake", description: "moist, citrus sharp, almond bite.", price: "5" },
+      { name: "Pistachio & Rose Cake", description: "nutty, floral, light sponge.", price: "6" },
+      { name: "Chocolate Babka", description: "dark, glossy, indulgent.", price: "4" },
+      { name: "Date & Walnut Slice", description: "sticky, rich, wholesome.", price: "4" }
     ]
   }
 ];
