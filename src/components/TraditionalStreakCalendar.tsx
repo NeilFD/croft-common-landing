@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Calendar as CalendarIcon, CheckCircle, Target, Dot, Gift, Trophy, Star, Clock, AlertCircle, AlertTriangle } from 'lucide-react';
+import { Calendar as CalendarIcon, CheckCircle, Target, Dot, Gift, Trophy, Star, Clock, AlertCircle, AlertTriangle, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -491,8 +491,8 @@ const TraditionalStreakCalendar: React.FC = () => {
           const weekStart = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`; // local date string to avoid TZ shift
           const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === weekStart);
           return calendarWeek?.protected_by_grace && (
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-accent border-2 border-white rounded-full flex items-center justify-center z-20 shadow-md" title="Saved by Grace">
-              <span className="text-white text-xs font-bold">💖</span>
+            <div className="absolute -top-1 -right-1 z-20" title="Saved by Grace">
+              <Heart className="w-4 h-4 text-accent fill-accent" />
             </div>
           );
         })()}
