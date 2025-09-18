@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useState } from 'react';
-import { Calendar, CheckCircle, Circle, Clock, Target, Gift, Trophy, Shield } from 'lucide-react';
+import { Calendar, CheckCircle, Circle, Clock, Target, Gift, Trophy, Heart } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -221,7 +221,7 @@ const StreakCalendar: React.FC = () => {
 
       console.log('✅ Grace applied successfully:', data);
       toast({
-        title: "🛡️ Grace Week Applied!",
+        title: "💖 Grace Week Applied!",
         description: "Your streak has been protected using a grace week.",
       });
       
@@ -425,9 +425,9 @@ const StreakCalendar: React.FC = () => {
                                 const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === week.weekStart);
                                 if (calendarWeek?.protected_by_grace) {
                                   return (
-                                    <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 border border-blue-200 rounded-md mb-1">
-                                      <Shield className="w-3 h-3 text-blue-600" />
-                                      <span className="text-blue-700 font-semibold text-xs">🛡️ Saved by Grace</span>
+                                    <div className="flex items-center gap-1 px-2 py-1 bg-pink-50 border border-pink-200 rounded-md mb-1">
+                                      <Heart className="w-3 h-3 text-accent fill-accent" />
+                                      <span className="text-pink-700 font-semibold text-xs">💖 Saved by Grace</span>
                                     </div>
                                   );
                                 }
