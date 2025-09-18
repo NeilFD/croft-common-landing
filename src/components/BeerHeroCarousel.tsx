@@ -9,6 +9,7 @@ import { ArrowBox } from '@/components/ui/ArrowBox';
 import { beerMenu } from '@/data/menuData';
 import { beerHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
+import { useCMSMenuData } from '@/hooks/useCMSMenuData';
 import CroftLogo from './CroftLogo';
 
 const BeerHeroCarousel = () => {
@@ -18,6 +19,9 @@ const BeerHeroCarousel = () => {
     'beer_hero', 
     { fallbackImages: fallbackHeroImages }
   );
+  
+  // Fetch CMS menu data with fallback to static data
+  const { data: cmsMenuData, loading: menuLoading } = useCMSMenuData('beer', false);
   
   const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -150,7 +154,7 @@ const BeerHeroCarousel = () => {
       <BookFloatingButton />
 
       {/* Menu Button */}
-      <MenuButton pageType="beer" menuData={beerMenu} forceCafeAccent />
+      <MenuButton pageType="beer" menuData={cmsMenuData.length > 0 ? cmsMenuData : beerMenu} forceCafeAccent />
     </div>
   );
 };
