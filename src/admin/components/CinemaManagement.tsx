@@ -126,7 +126,7 @@ export const CinemaManagement: React.FC = () => {
 
   const createReleaseMutation = useMutation({
     mutationFn: async (monthKey: string) => {
-      // Calculate the last Thursday of the month
+      // Calculate the last Thursday of the month (timezone-safe)
       const date = new Date(monthKey);
       const year = date.getFullYear();
       const month = date.getMonth();
@@ -134,13 +134,17 @@ export const CinemaManagement: React.FC = () => {
       const lastThursday = new Date(lastDay);
       lastThursday.setDate(lastDay.getDate() - ((lastDay.getDay() + 3) % 7));
 
+      const toYMD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
       const { error } = await supabase
         .from("cinema_releases")
-        .insert([{
-          month_key: monthKey,
-          screening_date: lastThursday.toISOString().split('T')[0],
-        }]);
-      
+        .insert([
+          {
+            month_key: monthKey,
+            screening_date: toYMD(lastThursday),
+          },
+        ]);
+
       if (error) throw error;
     },
     onSuccess: () => {
@@ -249,26 +253,33 @@ export const CinemaManagement: React.FC = () => {
   };
 
   const generateAvailableMonths = () => {
-    const months = [];
+    const months = [] as { key: string; display: string }[];
     const today = new Date();
-    
+
+    // Helper to build YYYY-MM-01 without timezone pitfalls
+    const buildMonthKey = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
+
     // Only show future months starting from next month
     for (let i = 1; i <= 12; i++) {
       const month = new Date(today.getFullYear(), today.getMonth() + i, 1);
-      const monthKey = month.toISOString().split('T')[0].substring(0, 7) + '-01';
-      
-      const exists = releases?.some(r => r.month_key === monthKey);
+      const monthKey = buildMonthKey(month);
+
+      const exists = releases?.some((r) => r.month_key === monthKey);
       if (!exists) {
         months.push({
           key: monthKey,
-          display: month.toLocaleDateString('en-GB', { 
-            month: 'long', 
-            year: 'numeric' 
+          display: month.toLocaleDateString("en-GB", {
+            month: "long",
+            year: "numeric",
           }),
         });
       }
     }
-    
+
+    // Debug: surface what we computed
+    console.log("Create Releases options:", months.map((m) => m.key));
+
     return months;
   };
 
