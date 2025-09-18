@@ -3,6 +3,7 @@ import Footer from '@/components/Footer';
 import HallHeroCarousel from '@/components/HallHeroCarousel';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { CMSText } from '@/components/cms/CMSText';
+import { FAQSection } from '@/components/SEO/FAQSection';
 
 const Hall = () => {
   const { isCMSMode } = useCMSMode();
@@ -31,7 +32,17 @@ const Hall = () => {
           />
         </div>
       </section>
-      {!isCMSMode && <Footer />}
+      
+      {!isCMSMode && (
+        <>
+          <FAQSection 
+            page="hall"
+            title="Hall FAQ"
+            className="bg-muted/30"
+          />
+          <Footer />
+        </>
+      )}
     </div>
   );
 };
