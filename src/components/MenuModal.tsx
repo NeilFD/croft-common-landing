@@ -455,7 +455,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
                 className="px-4 py-2 rounded-full bg-accent-pink text-background font-brutalist text-sm tracking-wider hover:bg-accent-pink/90 transition-all duration-300 mr-2"
                 type="button"
               >
-                MENU
+                MENUS
               </button>
             )}
             <GuideArrows contrast="neutral" className="hidden md:flex mr-3" />
