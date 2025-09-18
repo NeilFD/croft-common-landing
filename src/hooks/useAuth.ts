@@ -59,40 +59,41 @@ export const useAuth = () => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (mounted) {
-          console.log('🔐 Auth state change:', {
-            event,
-            user: session?.user?.email,
-            timestamp: new Date().toISOString(),
-            url: window.location.href
-          });
+      (event, session) => {
+        if (!mounted) return;
+        
+        console.log('🔐 Auth state change:', {
+          event,
+          user: session?.user?.email,
+          timestamp: new Date().toISOString(),
+          url: window.location.href
+        });
+        
+        // Only synchronous state updates here
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+        
+        // Defer any Supabase calls with setTimeout to prevent deadlocks
+        if (event === 'SIGNED_IN' && session && Date.now() - lastAutoLinkAttempt.current > 30000) {
+          console.log('✅ User successfully signed in:', session.user.email);
+          lastAutoLinkAttempt.current = Date.now();
           
-          // Log any potential redirects
-          if (event === 'SIGNED_IN' && session && Date.now() - lastAutoLinkAttempt.current > 30000) {
-            console.log('✅ User successfully signed in:', session.user.email);
-            lastAutoLinkAttempt.current = Date.now();
-            
-            // Auto-link push subscriptions when user signs in
-            setTimeout(async () => {
-              try {
-                const { data } = await supabase.functions.invoke('auto-link-push-subscription');
+          setTimeout(() => {
+            supabase.functions.invoke('auto-link-push-subscription')
+              .then(({ data }) => {
                 if (data?.linked) {
                   console.log('🔗 Push subscription automatically linked');
                 }
-              } catch (error) {
+              })
+              .catch((error) => {
                 console.log('Auto-link failed (this is normal if no subscriptions exist):', error);
-              }
-            }, 1000); // Small delay to ensure auth is fully established
-          } else if (event === 'SIGNED_OUT') {
-            console.log('🚪 User signed out');
-          } else if (event === 'TOKEN_REFRESHED') {
-            console.log('🔄 Token refreshed');
-          }
-          
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
+              });
+          }, 0);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('🚪 User signed out');
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token refreshed');
         }
       }
     );
