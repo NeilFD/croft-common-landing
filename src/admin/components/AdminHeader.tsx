@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
-import { AdminHeader } from './AdminHeader';
+import { useAuth } from '@/hooks/useAuth';
 
 export const AdminHeader = () => {
   const { user, signOut } = useAuth();
