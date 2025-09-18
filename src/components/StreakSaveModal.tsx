@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertTriangle, Clock, Target, Gift, X, Shield } from 'lucide-react';
+import { AlertTriangle, Clock, Target, Gift, X, Heart } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -60,7 +60,7 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
       setRequesting(true);
       await onRequestGrace();
       toast({
-        title: "🛡️ Grace Week Applied!",
+        title: "💖 Grace Week Applied!",
         description: "Your streak has been saved using a grace week.",
       });
       onClose();
@@ -110,8 +110,8 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
           {/* Grace Week Option */}
           <div className={`p-4 border-2 rounded-lg ${graceWeeksAvailable > 0 ? 'border-primary bg-background' : 'border-gray-200 bg-gray-50 opacity-60'}`}>
             <div className="flex items-center gap-2 mb-2">
-              <Shield className="h-4 w-4 text-primary" />
-              <h3 className={`font-semibold ${graceWeeksAvailable > 0 ? 'text-primary' : 'text-gray-500'}`}>
+              <Heart className="h-4 w-4 text-accent-pink" />
+              <h3 className={`font-semibold ${graceWeeksAvailable > 0 ? 'text-accent-pink-dark' : 'text-gray-500'}`}>
                 {graceWeeksAvailable > 0 ? 'Use Grace Week' : 'Grace Week Used'}
               </h3>
             </div>
@@ -125,7 +125,7 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
             <Button
               onClick={handleRequestGrace}
               disabled={requesting || graceWeeksAvailable === 0}
-              className={`w-full ${graceWeeksAvailable > 0 ? 'bg-pink-500 hover:bg-pink-600 text-white border-2 border-primary' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+              className={`w-full ${graceWeeksAvailable > 0 ? 'bg-accent-pink hover:bg-accent-pink-dark text-white border-2 border-accent-pink' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
             >
               {requesting ? (
                 <>
@@ -134,12 +134,12 @@ export const StreakSaveModal: React.FC<StreakSaveModalProps> = ({
                 </>
               ) : graceWeeksAvailable > 0 ? (
                 <>
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Heart className="h-4 w-4 mr-2" />
                   Use Grace Week
                 </>
               ) : (
                 <>
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Heart className="h-4 w-4 mr-2" />
                   Grace Week Used
                 </>
               )}
