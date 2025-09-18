@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Edit2, Save, X, Calendar, Clock, Users } from "lucide-react";
+import { Edit2, Save, X, Calendar, Clock, Users, AlertTriangle } from "lucide-react";
+import { format } from "date-fns";
 
 type CinemaRelease = {
   id: string;
@@ -22,9 +23,23 @@ type CinemaRelease = {
   created_at: string;
 };
 
+type EditingFields = {
+  title: string;
+  screening_date: string;
+  doors_time: string;
+  screening_time: string;
+  capacity: string;
+};
+
 export const CinemaManagement: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState("");
+  const [editingFields, setEditingFields] = useState<EditingFields>({
+    title: "",
+    screening_date: "",
+    doors_time: "",
+    screening_time: "",
+    capacity: "",
+  });
   const queryClient = useQueryClient();
 
   const { data: releases, isLoading } = useQuery({
@@ -40,29 +55,60 @@ export const CinemaManagement: React.FC = () => {
     },
   });
 
-  const updateTitleMutation = useMutation({
-    mutationFn: async ({ id, title }: { id: string; title: string }) => {
-      const { error } = await supabase
-        .from("cinema_releases")
-        .update({ title: title.trim() || null })
-        .eq("id", id);
+  // Get current bookings for capacity validation
+  const { data: bookingCounts } = useQuery({
+    queryKey: ["cinema-booking-counts"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("cinema_bookings")
+        .select("release_id, quantity")
+        .in("release_id", releases?.map(r => r.id) || []);
       
       if (error) throw error;
+      
+      const counts: Record<string, number> = {};
+      data.forEach(booking => {
+        counts[booking.release_id] = (counts[booking.release_id] || 0) + booking.quantity;
+      });
+      return counts;
     },
-    onSuccess: () => {
+    enabled: !!releases?.length,
+  });
+
+  const updateReleaseMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<CinemaRelease> }) => {
+      console.log("Updating cinema release:", id, updates);
+      
+      const { error, data } = await supabase
+        .from("cinema_releases")
+        .update(updates)
+        .eq("id", id)
+        .select();
+      
+      if (error) {
+        console.error("Database error:", error);
+        throw error;
+      }
+      
+      console.log("Update successful:", data);
+      return data;
+    },
+    onSuccess: (data) => {
+      console.log("Mutation success, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ["cinema-releases"] });
+      queryClient.invalidateQueries({ queryKey: ["cinema-booking-counts"] });
       setEditingId(null);
-      setEditTitle("");
+      resetEditingFields();
       toast({
-        title: "Film title updated",
-        description: "The film title has been successfully updated.",
+        title: "Release updated",
+        description: "The cinema release has been successfully updated.",
       });
     },
-    onError: (error) => {
-      console.error("Error updating film title:", error);
+    onError: (error: any) => {
+      console.error("Error updating release:", error);
       toast({
-        title: "Error updating film",
-        description: "Failed to update the film title. Please try again.",
+        title: "Error updating release",
+        description: error.message || "Failed to update the release. Please try again.",
         variant: "destructive",
       });
     },
@@ -106,33 +152,106 @@ export const CinemaManagement: React.FC = () => {
 
   const startEdit = (release: CinemaRelease) => {
     setEditingId(release.id);
-    setEditTitle(release.title || "");
+    setEditingFields({
+      title: release.title || "",
+      screening_date: release.screening_date,
+      doors_time: release.doors_time,
+      screening_time: release.screening_time,
+      capacity: release.capacity.toString(),
+    });
+  };
+
+  const resetEditingFields = () => {
+    setEditingFields({
+      title: "",
+      screening_date: "",
+      doors_time: "",
+      screening_time: "",
+      capacity: "",
+    });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
-    setEditTitle("");
+    resetEditingFields();
   };
 
-  const saveEdit = () => {
-    if (editingId) {
-      updateTitleMutation.mutate({ id: editingId, title: editTitle });
+  const validateAndSave = () => {
+    if (!editingId) return;
+    
+    const release = releases?.find(r => r.id === editingId);
+    if (!release) return;
+    
+    // Validation
+    const newCapacity = parseInt(editingFields.capacity);
+    const currentBookings = bookingCounts?.[editingId] || 0;
+    
+    if (isNaN(newCapacity) || newCapacity < 1) {
+      toast({
+        title: "Invalid capacity",
+        description: "Capacity must be a positive number.",
+        variant: "destructive",
+      });
+      return;
     }
+    
+    if (newCapacity < currentBookings) {
+      toast({
+        title: "Capacity too low",
+        description: `Cannot set capacity below current bookings (${currentBookings}).`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate times
+    if (editingFields.doors_time >= editingFields.screening_time) {
+      toast({
+        title: "Invalid times",
+        description: "Doors time must be before screening time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate date is in correct month
+    const screeningDate = new Date(editingFields.screening_date);
+    const monthKey = new Date(release.month_key);
+    if (screeningDate.getMonth() !== monthKey.getMonth() || 
+        screeningDate.getFullYear() !== monthKey.getFullYear()) {
+      toast({
+        title: "Invalid date",
+        description: "Screening date must be within the correct month.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const updates = {
+      title: editingFields.title.trim() || null,
+      screening_date: editingFields.screening_date,
+      doors_time: editingFields.doors_time,
+      screening_time: editingFields.screening_time,
+      capacity: newCapacity,
+    };
+    
+    updateReleaseMutation.mutate({ id: editingId, updates });
   };
 
-  const generateFutureMonths = () => {
+  const generateAvailableMonths = () => {
     const months = [];
     const today = new Date();
     
-    for (let i = 0; i < 12; i++) {
-      const futureMonth = new Date(today.getFullYear(), today.getMonth() + i, 1);
-      const monthKey = futureMonth.toISOString().split('T')[0].substring(0, 7) + '-01';
+    // Include past 3 months and future 12 months
+    for (let i = -3; i < 12; i++) {
+      const month = new Date(today.getFullYear(), today.getMonth() + i, 1);
+      const monthKey = month.toISOString().split('T')[0].substring(0, 7) + '-01';
       
       const exists = releases?.some(r => r.month_key === monthKey);
       if (!exists) {
         months.push({
           key: monthKey,
-          display: futureMonth.toLocaleDateString('en-GB', { 
+          display: month.toLocaleDateString('en-GB', { 
             month: 'long', 
             year: 'numeric' 
           }),
@@ -168,7 +287,7 @@ export const CinemaManagement: React.FC = () => {
     );
   }
 
-  const futureMonths = generateFutureMonths();
+  const availableMonths = generateAvailableMonths();
 
   return (
     <div className="space-y-6">
@@ -181,15 +300,15 @@ export const CinemaManagement: React.FC = () => {
         </div>
       </div>
 
-      {/* Add future months if needed */}
-      {futureMonths.length > 0 && (
+      {/* Add available months if needed */}
+      {availableMonths.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Create Future Releases</CardTitle>
+            <CardTitle className="text-base">Create Releases</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {futureMonths.slice(0, 6).map((month) => (
+              {availableMonths.slice(0, 6).map((month) => (
                 <Button
                   key={month.key}
                   variant="outline"
@@ -207,96 +326,167 @@ export const CinemaManagement: React.FC = () => {
 
       {/* Existing releases */}
       <div className="space-y-4">
-        {releases?.map((release) => (
-          <Card key={release.id}>
-            <CardContent className="pt-6">
-              <div className="flex items-start gap-4">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Month & Date */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{formatMonth(release.month_key)}</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(release.screening_date)}
-                    </p>
+        {releases?.map((release) => {
+          const currentBookings = bookingCounts?.[release.id] || 0;
+          const isEditing = editingId === release.id;
+          
+          return (
+            <Card key={release.id}>
+              <CardContent className="pt-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{formatMonth(release.month_key)}</span>
+                    {currentBookings > 0 && (
+                      <Badge variant="secondary">{currentBookings} booked</Badge>
+                    )}
                   </div>
-
-                  {/* Time & Capacity */}
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">
-                        Doors {release.doors_time} • Screen {release.screening_time}
-                      </span>
+                  
+                  {isEditing ? (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={validateAndSave}
+                        disabled={updateReleaseMutation.isPending}
+                      >
+                        <Save className="h-3 w-3 mr-1" />
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={cancelEdit}
+                        disabled={updateReleaseMutation.isPending}
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Cancel
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Capacity: {release.capacity}</span>
-                    </div>
-                  </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => startEdit(release)}
+                    >
+                      <Edit2 className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
 
-                  {/* Film Title */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {/* Screening Date */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium">Film Title</span>
-                      {editingId === release.id ? (
-                        <div className="flex gap-1">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={saveEdit}
-                            disabled={updateTitleMutation.isPending}
-                          >
-                            <Save className="h-3 w-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={cancelEdit}
-                            disabled={updateTitleMutation.isPending}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => startEdit(release)}
-                        >
-                          <Edit2 className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                    
-                    {editingId === release.id ? (
+                    <label className="text-sm font-medium">Screening Date</label>
+                    {isEditing ? (
                       <Input
-                        value={editTitle}
-                        onChange={(e) => setEditTitle(e.target.value)}
-                        placeholder="Enter film title..."
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') saveEdit();
-                          if (e.key === 'Escape') cancelEdit();
-                        }}
-                        autoFocus
+                        type="date"
+                        value={editingFields.screening_date}
+                        onChange={(e) => setEditingFields(prev => ({ ...prev, screening_date: e.target.value }))}
+                        className="mt-1"
                       />
                     ) : (
-                      <div className="min-h-[40px] flex items-center">
-                        {release.title ? (
-                          <span className="text-sm">{release.title}</span>
-                        ) : (
-                          <Badge variant="secondary">No title set</Badge>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {formatDate(release.screening_date)}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Doors Time */}
+                  <div>
+                    <label className="text-sm font-medium">Doors Time</label>
+                    {isEditing ? (
+                      <Input
+                        type="time"
+                        value={editingFields.doors_time}
+                        onChange={(e) => setEditingFields(prev => ({ ...prev, doors_time: e.target.value }))}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {release.doors_time}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Screening Time */}
+                  <div>
+                    <label className="text-sm font-medium">Screening Time</label>
+                    {isEditing ? (
+                      <Input
+                        type="time"
+                        value={editingFields.screening_time}
+                        onChange={(e) => setEditingFields(prev => ({ ...prev, screening_time: e.target.value }))}
+                        className="mt-1"
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {release.screening_time}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Capacity */}
+                  <div>
+                    <label className="text-sm font-medium">Capacity</label>
+                    {isEditing ? (
+                      <div className="mt-1">
+                        <Input
+                          type="number"
+                          min={currentBookings || 1}
+                          value={editingFields.capacity}
+                          onChange={(e) => setEditingFields(prev => ({ ...prev, capacity: e.target.value }))}
+                        />
+                        {currentBookings > 0 && (
+                          <div className="flex items-center gap-1 mt-1">
+                            <AlertTriangle className="h-3 w-3 text-amber-500" />
+                            <span className="text-xs text-amber-600">
+                              Min: {currentBookings} (current bookings)
+                            </span>
+                          </div>
                         )}
                       </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {release.capacity} seats
+                        {currentBookings > 0 && (
+                          <span className="text-amber-600 ml-2">
+                            ({currentBookings} booked)
+                          </span>
+                        )}
+                      </p>
                     )}
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+
+                {/* Film Title - Full Width */}
+                <div className="mt-4">
+                  <label className="text-sm font-medium">Film Title</label>
+                  {isEditing ? (
+                    <Input
+                      value={editingFields.title}
+                      onChange={(e) => setEditingFields(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Enter film title..."
+                      className="mt-1"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') validateAndSave();
+                        if (e.key === 'Escape') cancelEdit();
+                      }}
+                    />
+                  ) : (
+                    <div className="mt-1">
+                      {release.title ? (
+                        <span className="text-sm font-medium">{release.title}</span>
+                      ) : (
+                        <Badge variant="secondary">No title set</Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {!releases || releases.length === 0 ? (
