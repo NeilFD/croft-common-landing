@@ -68,7 +68,7 @@ export const StreakEmergencyBanner: React.FC<StreakEmergencyBannerProps> = ({
   };
 
   return (
-    <Alert className="bg-background border-2 border-primary">
+    <Alert className="bg-background border-2 border-black hover:border-pink-500 transition-all duration-300">
       {getUrgencyIcon()}
       <AlertDescription>
         <div className="flex items-center justify-between">

@@ -382,7 +382,7 @@ const TraditionalStreakCalendar: React.FC = () => {
 
   if (loading) {
     return (
-      <Card className="w-full bg-background border border-border">
+      <Card className="w-full bg-background border-2 border-black hover:border-pink-500 transition-all duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
@@ -401,7 +401,7 @@ const TraditionalStreakCalendar: React.FC = () => {
 
   if (!dashboardData) {
     return (
-      <Card className="w-full bg-background border border-border">
+      <Card className="w-full bg-background border-2 border-black hover:border-pink-500 transition-all duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />
@@ -539,7 +539,7 @@ const TraditionalStreakCalendar: React.FC = () => {
         onStartTripleChallenge={handleTripleChallenge}
       />
 
-      <Card className="w-full bg-background border border-border">
+      <Card className="w-full bg-background border-2 border-black hover:border-pink-500 transition-all duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5" />

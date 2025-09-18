@@ -32,7 +32,7 @@ export const MissedWeekAlert: React.FC<MissedWeekAlertProps> = ({
   const hasRecoveryOptions = graceWeeksAvailable > 0 || makeupOpportunityAvailable;
 
   return (
-    <Alert className="bg-background border-2 border-primary">
+    <Alert className="bg-background border-2 border-black hover:border-pink-500 transition-all duration-300">
       <AlertCircle className="h-4 w-4 text-primary" />
       <AlertDescription>
         <div className="space-y-3">
