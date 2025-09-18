@@ -98,13 +98,36 @@ export const CinemaManagement: React.FC = () => {
       console.log("✅ Update successful:", data[0]);
       return data[0];
     },
-    onSuccess: (data) => {
+    onMutate: async ({ id, updates }) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["cinema-releases"] });
+      
+      // Snapshot the previous value
+      const previousReleases = queryClient.getQueryData<CinemaRelease[]>(["cinema-releases"]);
+      
+      // Optimistically update to the new value
+      if (previousReleases) {
+        const optimisticReleases = previousReleases.map(release =>
+          release.id === id ? { ...release, ...updates } : release
+        );
+        queryClient.setQueryData<CinemaRelease[]>(["cinema-releases"], optimisticReleases);
+      }
+      
+      return { previousReleases };
+    },
+    onSuccess: async (data) => {
       console.log("🎉 Mutation success, updated data:", data);
       console.log("🔄 Invalidating queries...");
       
-      // Force refetch of data
-      queryClient.invalidateQueries({ queryKey: ["cinema-releases"] });
-      queryClient.invalidateQueries({ queryKey: ["cinema-booking-counts"] });
+      // Force immediate refetch of data
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cinema-releases"],
+        refetchType: 'active'
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cinema-booking-counts"],
+        refetchType: 'active'
+      });
       
       setEditingId(null);
       resetEditingFields();
@@ -114,8 +137,14 @@ export const CinemaManagement: React.FC = () => {
         description: `Film title "${data.title || 'No title'}" has been saved successfully.`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
       console.error("Error updating release:", error);
+      
+      // Rollback optimistic update
+      if (context?.previousReleases) {
+        queryClient.setQueryData<CinemaRelease[]>(["cinema-releases"], context.previousReleases);
+      }
+      
       toast({
         title: "Error updating release",
         description: error.message || "Failed to update the release. Please try again.",
@@ -126,6 +155,8 @@ export const CinemaManagement: React.FC = () => {
 
   const createReleaseMutation = useMutation({
     mutationFn: async (monthKey: string) => {
+      console.log("🎬 Creating cinema release for month:", monthKey);
+      
       // Calculate the last Thursday of the month (timezone-safe)
       const date = new Date(monthKey);
       const year = date.getFullYear();
@@ -136,26 +167,90 @@ export const CinemaManagement: React.FC = () => {
 
       const toYMD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from("cinema_releases")
         .insert([
           {
             month_key: monthKey,
             screening_date: toYMD(lastThursday),
+            doors_time: "19:00",
+            screening_time: "19:30",
+            capacity: 100,
+            is_active: true
           },
-        ]);
+        ])
+        .select("*");
 
-      if (error) throw error;
+      if (error) {
+        console.error("❌ Database error creating release:", error);
+        throw error;
+      }
+      
+      console.log("✅ Create successful:", data);
+      return data[0];
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["cinema-releases"] });
+    onMutate: async (monthKey) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["cinema-releases"] });
+      
+      // Snapshot the previous value
+      const previousReleases = queryClient.getQueryData<CinemaRelease[]>(["cinema-releases"]);
+      
+      // Create optimistic new release
+      const date = new Date(monthKey);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const lastDay = new Date(year, month + 1, 0);
+      const lastThursday = new Date(lastDay);
+      lastThursday.setDate(lastDay.getDate() - ((lastDay.getDay() + 3) % 7));
+      const toYMD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      
+      const optimisticRelease: CinemaRelease = {
+        id: `temp-${Date.now()}`,
+        month_key: monthKey,
+        screening_date: toYMD(lastThursday),
+        doors_time: "19:00",
+        screening_time: "19:30",
+        capacity: 100,
+        title: null,
+        description: null,
+        poster_url: null,
+        is_active: true,
+        created_at: new Date().toISOString()
+      };
+      
+      // Optimistically update to the new value
+      if (previousReleases) {
+        const optimisticReleases = [...previousReleases, optimisticRelease]
+          .sort((a, b) => b.month_key.localeCompare(a.month_key));
+        queryClient.setQueryData<CinemaRelease[]>(["cinema-releases"], optimisticReleases);
+      }
+      
+      return { previousReleases };
+    },
+    onSuccess: async (data) => {
+      console.log("🎉 Create mutation success:", data);
+      console.log("🔄 Invalidating queries...");
+      
+      // Force immediate refetch of data
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cinema-releases"],
+        refetchType: 'active'
+      });
+      
       toast({
         title: "New release created",
         description: "A new cinema release has been created.",
       });
     },
-    onError: (error) => {
+    onError: (error, variables, context) => {
       console.error("Error creating release:", error);
+      
+      // Rollback optimistic update
+      if (context?.previousReleases) {
+        queryClient.setQueryData<CinemaRelease[]>(["cinema-releases"], context.previousReleases);
+      }
+      
       toast({
         title: "Error creating release",
         description: "Failed to create a new release. Please try again.",
