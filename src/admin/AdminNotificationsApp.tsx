@@ -19,6 +19,7 @@ import { UserAnalytics } from "./components/UserAnalytics";
 import { SubscribersTable } from "./components/SubscribersTable";
 import MomentsModeration from "./components/MomentsModeration";
 import { GranularAnalytics } from "./components/GranularAnalytics";
+import { CinemaManagement } from "./components/CinemaManagement";
 
 type NotificationRow = {
   id: string;
@@ -131,7 +132,7 @@ export const AdminNotificationsApp: React.FC = () => {
   const [filterMode, setFilterMode] = useState<'all' | 'live' | 'dry'>('all');
   const [archivedFilter, setArchivedFilter] = useState<'all' | 'active' | 'archived'>('active');
   const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'queued' | 'sent'>('all');
-  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments' | 'member-ledger'>('history');
+  const [rightTab, setRightTab] = useState<'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments' | 'member-ledger' | 'cinema'>('history');
 
   const queryClient = useQueryClient();
 
@@ -396,9 +397,10 @@ export const AdminNotificationsApp: React.FC = () => {
                    rightTab === 'user-analytics' ? 'User Analytics' : 
                    rightTab === 'granular' ? 'Granular Analytics' :
                    rightTab === 'member-ledger' ? 'Member Spending Database' :
-                   rightTab === 'moments' ? 'Member Moments' : 'Subscribers'}
+                   rightTab === 'moments' ? 'Member Moments' : 
+                   rightTab === 'cinema' ? 'Secret Cinema Management' : 'Subscribers'}
                 </CardTitle>
-                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments' | 'member-ledger')}>
+                <Tabs value={rightTab} onValueChange={(v) => setRightTab(v as 'history' | 'analytics' | 'user-analytics' | 'granular' | 'subscribers' | 'moments' | 'member-ledger' | 'cinema')}>
                   <TabsList>
                     <TabsTrigger value="history">History</TabsTrigger>
                     <TabsTrigger value="analytics">Opt‑in</TabsTrigger>
@@ -407,6 +409,7 @@ export const AdminNotificationsApp: React.FC = () => {
                     <TabsTrigger value="member-ledger">Member Ledger</TabsTrigger>
                     <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
                     <TabsTrigger value="moments">Moments</TabsTrigger>
+                    <TabsTrigger value="cinema">Cinema</TabsTrigger>
                   </TabsList>
                 </Tabs>
               </div>
@@ -468,6 +471,8 @@ export const AdminNotificationsApp: React.FC = () => {
                     Open Member Spending Database →
                   </a>
                 </div>
+              ) : rightTab === 'cinema' ? (
+                <CinemaManagement />
               ) : (
                 <SubscribersTable />
               )}
