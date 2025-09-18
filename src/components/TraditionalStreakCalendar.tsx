@@ -485,15 +485,13 @@ const TraditionalStreakCalendar: React.FC = () => {
           </div>
         )}
         
-        {/* Grace week heart indicator */}
+        {/* Grace week pink dot indicator */}
         {(() => {
           const monday = getMonday(day);
           const weekStart = `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`; // local date string to avoid TZ shift
           const calendarWeek = calendar_weeks?.find((cw: any) => cw.week_start === weekStart);
           return calendarWeek?.protected_by_grace && (
-            <div className="absolute -top-1 -right-1 z-20" title="Saved by Grace">
-              <Heart className="w-4 h-4 text-accent fill-accent" />
-            </div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-500 rounded-full z-20" title="Saved by Grace" />
           );
         })()}
         
