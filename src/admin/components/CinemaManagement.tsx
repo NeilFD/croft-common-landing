@@ -77,31 +77,41 @@ export const CinemaManagement: React.FC = () => {
 
   const updateReleaseMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<CinemaRelease> }) => {
-      console.log("Updating cinema release:", id, updates);
+      console.log("🎬 Updating cinema release:", { id, updates });
       
       const { error, data } = await supabase
         .from("cinema_releases")
         .update(updates)
         .eq("id", id)
-        .select();
+        .select("*");
       
       if (error) {
-        console.error("Database error:", error);
+        console.error("❌ Database error:", error);
         throw error;
       }
       
-      console.log("Update successful:", data);
-      return data;
+      if (!data || data.length === 0) {
+        console.error("❌ No data returned from update");
+        throw new Error("Update failed - no data returned");
+      }
+      
+      console.log("✅ Update successful:", data[0]);
+      return data[0];
     },
     onSuccess: (data) => {
-      console.log("Mutation success, invalidating queries");
+      console.log("🎉 Mutation success, updated data:", data);
+      console.log("🔄 Invalidating queries...");
+      
+      // Force refetch of data
       queryClient.invalidateQueries({ queryKey: ["cinema-releases"] });
       queryClient.invalidateQueries({ queryKey: ["cinema-booking-counts"] });
+      
       setEditingId(null);
       resetEditingFields();
+      
       toast({
         title: "Release updated",
-        description: "The cinema release has been successfully updated.",
+        description: `Film title "${data.title || 'No title'}" has been saved successfully.`,
       });
     },
     onError: (error: any) => {
@@ -242,8 +252,8 @@ export const CinemaManagement: React.FC = () => {
     const months = [];
     const today = new Date();
     
-    // Include past 3 months and future 12 months
-    for (let i = -3; i < 12; i++) {
+    // Only show future months starting from next month
+    for (let i = 1; i <= 12; i++) {
       const month = new Date(today.getFullYear(), today.getMonth() + i, 1);
       const monthKey = month.toISOString().split('T')[0].substring(0, 7) + '-01';
       
