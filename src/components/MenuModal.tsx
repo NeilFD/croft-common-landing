@@ -14,6 +14,7 @@ import { toast } from '@/hooks/use-toast';
 import SecretCinemaModal from '@/components/SecretCinemaModal';
 import SecretLuckySevenModal from './SecretLuckySevenModal';
 import KitchensModalContent from './KitchensModalContent';
+import HallMenuModal from './HallMenuModal';
 
 interface MenuModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
   const navigate = useNavigate();
   const [showSecret, setShowSecret] = useState(false);
   const [showMembership, setShowMembership] = useState(false);
+  const [showHallMenu, setShowHallMenu] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -134,6 +136,7 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       document.body.style.overflow = 'unset';
       setShowSecret(false);
       setShowMembership(false);
+      setShowHallMenu(false);
     }
 
     return () => {
@@ -446,6 +449,15 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
             </h1>
           </div>
           <div className="flex items-center gap-1">
+            {pageType === 'hall' && (
+              <button
+                onClick={() => setShowHallMenu(true)}
+                className="px-4 py-2 rounded-full bg-accent-pink text-background font-brutalist text-sm tracking-wider hover:bg-accent-pink/90 transition-all duration-300 mr-2"
+                type="button"
+              >
+                MENU
+              </button>
+            )}
             <GuideArrows contrast="neutral" className="hidden md:flex mr-3" />
             <button
               onClick={handleClose}
@@ -588,6 +600,12 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
           onClose={() => setShowSecret(false)}
         />
       )}
+      
+      {/* Hall Menu Modal */}
+      <HallMenuModal
+        isOpen={showHallMenu}
+        onClose={() => setShowHallMenu(false)}
+      />
     </div>
   );
 };
