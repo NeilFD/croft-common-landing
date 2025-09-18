@@ -204,7 +204,7 @@ const App = () => (
                     <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
                     <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
                     <Route path="/book" element={<Book />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin/*" element={<Admin />} />
                 <Route path="/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
                 <Route path="/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
                     <Route path="/profile" element={<MemberProfile />} />
