@@ -19,6 +19,7 @@ import {
   hallMenuData, 
   communityMenuData 
 } from '@/data/menuData';
+import { useCMSMenuData } from '@/hooks/useCMSMenuData';
 
 const CMSMenuModal = () => {
   const navigate = useNavigate();
@@ -69,6 +70,9 @@ const CMSMenuModal = () => {
     window.open(liveUrl, '_blank');
   };
 
+  // Use CMS data for beer menu, static data for others
+  const { data: beerCMSData, loading: beerLoading } = useCMSMenuData('beer', true);
+  
   const getMenuData = () => {
     switch (page) {
       case 'cafe':
@@ -76,7 +80,7 @@ const CMSMenuModal = () => {
       case 'cocktails':
         return cocktailsMenuData;
       case 'beer':
-        return beerMenuData;
+        return beerCMSData.length > 0 ? beerCMSData : beerMenuData;
       case 'kitchens':
         return kitchensMenuData;
       case 'hall':
