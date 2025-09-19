@@ -104,10 +104,27 @@ Deno.serve(async (req) => {
       p_min_age: filters.minAge || null,
       p_max_age: filters.maxAge || null,
       p_interests: filters.interests?.length ? filters.interests : null,
+      p_interests_logic: 'match_any',
       p_venue_slugs: filters.venueAreas?.length ? filters.venueAreas : null,
+      p_venue_logic: 'match_any',
       p_min_spend: filters.minSpend || null,
       p_max_spend: filters.maxSpend || null,
-      p_tier_badges: filters.tierBadges?.length ? filters.tierBadges : null
+      p_tier_badges: filters.tierBadges?.length ? filters.tierBadges : null,
+      // Additional logic params (defaults)
+      p_receipt_activity_period: null,
+      p_visit_frequency: null,
+      p_recent_activity: null,
+      p_activity_logic: 'any_match',
+      p_preferred_visit_days: null,
+      p_visit_timing: null,
+      p_avg_spend_per_visit: null,
+      p_behavior_logic: 'any_match',
+      p_demographics_logic: 'any_match',
+      p_has_uploaded_receipts: null,
+      p_push_notifications_enabled: null,
+      p_loyalty_engagement: null,
+      p_member_status_logic: 'any_match',
+      p_master_logic: 'any_section'
     });
 
     if (error) {
