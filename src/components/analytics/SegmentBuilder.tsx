@@ -595,7 +595,7 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
                   <div className="flex items-center space-x-2">
                     <span className="text-xs text-muted-foreground">Match:</span>
                     <Select
-                      value={filters.interestsLogic || 'match_all'}
+                      value={filters.interestsLogic || 'match_any'}
                       onValueChange={(value: 'match_all' | 'match_any') => updateFilter('interestsLogic', value)}
                     >
                       <SelectTrigger className="w-24 h-6 text-xs">
@@ -626,7 +626,7 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
                           updateFilter('interests', [...(filters.interests || []), interest]);
                           // Set default logic if first interest selected
                           if (!filters.interestsLogic) {
-                            updateFilter('interestsLogic', 'match_all');
+                            updateFilter('interestsLogic', 'match_any');
                           }
                         } else {
                           updateFilter('interests', filters.interests?.filter(i => i !== interest) || []);
@@ -647,7 +647,7 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
                   <div className="flex items-center space-x-2">
                     <span className="text-xs text-muted-foreground">Match:</span>
                     <Select
-                      value={filters.venuePreferencesLogic || 'match_all'}
+                      value={filters.venuePreferencesLogic || 'match_any'}
                       onValueChange={(value: 'match_all' | 'match_any') => updateFilter('venuePreferencesLogic', value)}
                     >
                       <SelectTrigger className="w-24 h-6 text-xs">
@@ -678,7 +678,7 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
                           updateFilter('venuePreferences', [...(filters.venuePreferences || []), venue]);
                           // Set default logic if first venue selected
                           if (!filters.venuePreferencesLogic) {
-                            updateFilter('venuePreferencesLogic', 'match_all');
+                            updateFilter('venuePreferencesLogic', 'match_any');
                           }
                         } else {
                           updateFilter('venuePreferences', filters.venuePreferences?.filter(v => v !== venue) || []);

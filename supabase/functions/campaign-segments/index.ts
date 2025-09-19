@@ -310,7 +310,7 @@ Deno.serve(async (req) => {
 async function previewSegment(supabase: any, filters: SegmentFilters): Promise<number> {
   try {
     // Call the enhanced analytics function with filters including hierarchical logic
-    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+    const args = {
       // Date filters
       p_date_start: filters.dateRange?.start || null,
       p_date_end: filters.dateRange?.end || null,
@@ -355,7 +355,12 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
       
       // Master logic control
       p_master_logic: filters.masterLogic || 'any_section'
-    });
+    };
+
+    console.log('📥 Segment preview filters:', filters);
+    console.log('🧮 RPC args (preview):', args);
+
+    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', args);
 
     if (error) {
       console.error('Error in segment preview:', error);
@@ -371,7 +376,7 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
 
 async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters): Promise<number> {
   try {
-    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+    const args = {
       // Date filters
       p_date_start: filters.dateRange?.start || null,
       p_date_end: filters.dateRange?.end || null,
@@ -416,7 +421,12 @@ async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters):
       
       // Master logic control
       p_master_logic: filters.masterLogic || 'any_section'
-    });
+    };
+
+    console.log('📥 Segment filters (avg spend):', filters);
+    console.log('🧮 RPC args (avg spend):', args);
+
+    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', args);
 
     if (error || !analytics || analytics.length === 0) {
       return 0;
@@ -439,7 +449,7 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
       .eq('segment_id', segmentId);
 
     // Get filtered members
-    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+    const args = {
       // Date filters
       p_date_start: filters.dateRange?.start || null,
       p_date_end: filters.dateRange?.end || null,
@@ -484,7 +494,12 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
       
       // Master logic control
       p_master_logic: filters.masterLogic || 'any_section'
-    });
+    };
+
+    console.log('📥 Segment filters (generate members):', filters);
+    console.log('🧮 RPC args (generate members):', args);
+
+    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', args);
 
     if (error || !analytics) {
       console.error('Error getting analytics for segment members:', error);
