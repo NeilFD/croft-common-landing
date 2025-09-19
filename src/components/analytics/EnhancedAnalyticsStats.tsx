@@ -18,6 +18,7 @@ export const EnhancedAnalyticsStats: React.FC<EnhancedAnalyticsStatsProps> = ({
         totalSpend: 0,
         totalTransactions: 0,
         avgSpendPerMember: 0,
+        avgTransactionValue: 0,
         avgLifetimeValue: 0,
         highRiskMembers: 0,
         highValueMembers: 0,
@@ -38,6 +39,7 @@ export const EnhancedAnalyticsStats: React.FC<EnhancedAnalyticsStatsProps> = ({
       totalSpend,
       totalTransactions,
       avgSpendPerMember: totalSpend / members.length,
+      avgTransactionValue: totalTransactions > 0 ? totalSpend / totalTransactions : 0,
       avgLifetimeValue: totalLTV / members.length,
       highRiskMembers,
       highValueMembers,
@@ -178,18 +180,18 @@ export const EnhancedAnalyticsStats: React.FC<EnhancedAnalyticsStatsProps> = ({
         </CardContent>
       </Card>
 
-      {/* Member Count */}
+      {/* Avg Transaction Value */}
       <Card className="border-2 border-black">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Users className="h-4 w-4 text-gray-600" />
-            Total Members
+            <PoundSterling className="h-4 w-4 text-emerald-600" />
+            Avg Transaction Value
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{members.length}</div>
+          <div className="text-2xl font-bold">£{stats.avgTransactionValue.toFixed(2)}</div>
           <p className="text-xs text-muted-foreground">
-            In current filter
+            Per transaction across all members
           </p>
         </CardContent>
       </Card>

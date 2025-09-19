@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
     // Temporarily use basic analytics function since advanced has conflicts
     const { data: basicAnalytics, error } = await supabase.rpc('get_member_analytics');
     
-    // Transform basic analytics to match expected format with proper visit frequency
+    // Transform basic analytics to match expected format with proper visit frequency and LTV
     const analytics = basicAnalytics?.map(async (member: any) => {
       // Calculate visit frequency for each member
       const { data: checkIns } = await supabase
@@ -118,6 +118,28 @@ Deno.serve(async (req) => {
         const weeksDiff = Math.max(daysDiff / 7, 1);
         visitFrequency = Math.round((checkIns.length / weeksDiff) * 100) / 100;
       }
+      
+      // Calculate proper LTV and churn risk
+      const now = new Date();
+      const firstTransactionDate = member.first_transaction_date ? new Date(member.first_transaction_date) : now;
+      const lastTransactionDate = member.last_transaction_date ? new Date(member.last_transaction_date) : now;
+      
+      // Calculate activity period in months
+      const activityPeriodMs = lastTransactionDate.getTime() - firstTransactionDate.getTime();
+      const activityPeriodMonths = Math.max(activityPeriodMs / (30 * 24 * 60 * 60 * 1000), 1);
+      
+      // Calculate monthly spend rate
+      const monthlySpendRate = (member.total_spend || 0) / activityPeriodMonths;
+      
+      // Expected lifespan: 12 months
+      const expectedLifespanMonths = 12;
+      
+      // LTV = Monthly rate × Expected lifespan
+      const lifetimeValue = monthlySpendRate * expectedLifespanMonths;
+      
+      // Churn risk calculation (60 days = 100% risk)
+      const daysSinceLastActivity = (now.getTime() - lastTransactionDate.getTime()) / (24 * 60 * 60 * 1000);
+      const churnRiskScore = Math.min(daysSinceLastActivity / 60 * 100, 100);
       
       return {
         user_id: member.user_id,
@@ -144,8 +166,8 @@ Deno.serve(async (req) => {
         visit_frequency: visitFrequency,
         last_visit_date: member.last_transaction_date,
         preferred_visit_times: [],
-        retention_risk_score: 0.1,
-        lifetime_value: member.total_spend
+        retention_risk_score: Math.round(churnRiskScore),
+        lifetime_value: Math.round(lifetimeValue * 100) / 100
       };
     }) || [];
     
