@@ -1,42 +1,46 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { 
-  Target, Users, Send, Settings, Clock, TrendingUp, 
-  MessageSquare, Eye, BarChart3, Calendar, Filter
-} from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { SegmentBuilder } from './SegmentBuilder';
+import { supabase } from '@/integrations/supabase/client';
 
-export interface MemberSegment {
+interface MemberSegment {
   segment_name: string;
   segment_description: string;
   member_count: number;
   avg_spend: number;
-  criteria: any;
+  criteria?: any;
 }
 
-export interface CampaignTemplate {
+interface SavedSegment {
+  id: string;
+  name: string;
+  description?: string;
+  member_count: number;
+  avg_spend: number;
+  filters: any;
+  created_at: string;
+}
+
+interface CampaignTemplate {
   id: string;
   name: string;
   message: string;
   category: 'engagement' | 'retention' | 'upsell' | 'event';
   personalizable: boolean;
-}
-
-interface CampaignManagerProps {
-  segments: MemberSegment[];
-  isLoading?: boolean;
-  onSendCampaign?: (campaign: any) => void;
 }
 
 const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
@@ -84,324 +88,498 @@ const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
   }
 ];
 
-export const CampaignManager: React.FC<CampaignManagerProps> = ({
-  segments,
-  isLoading = false,
-  onSendCampaign
-}) => {
-  const [selectedSegment, setSelectedSegment] = useState<string>('');
-  const [selectedTemplate, setSelectedTemplate] = useState<string>('');
-  const [customMessage, setCustomMessage] = useState('');
-  const [campaignTitle, setCampaignTitle] = useState('');
-  const [scheduleTime, setScheduleTime] = useState<string>('now');
-  const [scheduledDate, setScheduledDate] = useState('');
-  const [scheduledTime, setScheduledTimeValue] = useState('');
-  const [testMode, setTestMode] = useState(true);
-  const [personalizeMessages, setPersonalizeMessages] = useState(true);
-  const [isCreatingCampaign, setIsCreatingCampaign] = useState(false);
+interface CampaignManagerProps {
+  segments: MemberSegment[];
+  onSendCampaign: (campaignData: any) => Promise<void>;
+  isLoading?: boolean;
+}
 
-  const selectedSegmentData = segments.find(s => s.segment_name === selectedSegment);
-  const selectedTemplateData = CAMPAIGN_TEMPLATES.find(t => t.id === selectedTemplate);
+export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampaign, isLoading: externalLoading }) => {
+  const [savedSegments, setSavedSegments] = useState<SavedSegment[]>([]);
+  const [isLoadingSegments, setIsLoadingSegments] = useState(true);
+  const [showSegmentBuilder, setShowSegmentBuilder] = useState(false);
+  const [editingSegment, setEditingSegment] = useState<SavedSegment | null>(null);
+  const [activeTab, setActiveTab] = useState('create');
+
+  const [selectedSegment, setSelectedSegment] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [campaignTitle, setCampaignTitle] = useState('');
+  const [campaignMessage, setCampaignMessage] = useState('');
+  const [personalize, setPersonalize] = useState(false);
+  const [testMode, setTestMode] = useState(false);
+  const [scheduleType, setScheduleType] = useState('now');
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledTime, setScheduledTime] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [customFilters, setCustomFilters] = useState<any>(null);
+
+  // Load saved segments on mount
+  useEffect(() => {
+    loadSavedSegments();
+  }, []);
+
+  const loadSavedSegments = async () => {
+    setIsLoadingSegments(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('campaign-segments');
+      
+      if (error) throw error;
+      
+      setSavedSegments(data.segments || []);
+    } catch (error) {
+      console.error('Error loading segments:', error);
+      toast.error('Failed to load segments');
+    }
+    setIsLoadingSegments(false);
+  };
+
+  // Calculate estimated reach based on selected segment or custom filters
+  const getEstimatedReach = () => {
+    if (testMode) return 1;
+    
+    if (customFilters?.memberCount) {
+      return customFilters.memberCount;
+    }
+    
+    const selectedSegmentData = savedSegments.find(s => s.id === selectedSegment) ||
+      segments.find(s => s.segment_name === selectedSegment);
+    
+    return selectedSegmentData?.member_count || 0;
+  };
+
+  const estimatedReach = getEstimatedReach();
 
   const handleTemplateSelect = (templateId: string) => {
     setSelectedTemplate(templateId);
     const template = CAMPAIGN_TEMPLATES.find(t => t.id === templateId);
     if (template) {
-      setCustomMessage(template.message);
+      setCampaignMessage(template.message);
       setCampaignTitle(template.name);
     }
   };
 
-  const getEstimatedReach = () => {
-    if (!selectedSegmentData) return 0;
-    return selectedSegmentData.member_count;
-  };
-
-  const getOptimalSendTime = () => {
-    const hour = new Date().getHours();
-    if (hour >= 17 && hour <= 21) return 'Excellent time (Evening peak)';
-    if (hour >= 12 && hour <= 14) return 'Good time (Lunch hour)';
-    if (hour >= 9 && hour <= 11) return 'Good time (Morning)';
-    return 'Consider scheduling for peak hours (12-2pm or 5-9pm)';
+  const handleSegmentCreate = (segmentData: any) => {
+    if (segmentData.filters) {
+      setCustomFilters(segmentData);
+      setSelectedSegment('custom');
+    } else {
+      // Segment was saved, reload the list
+      loadSavedSegments();
+    }
+    setShowSegmentBuilder(false);
   };
 
   const handleSendCampaign = async () => {
-    if (!selectedSegment || !customMessage || !campaignTitle) {
-      toast.error('Please fill in all required fields');
+    if (!campaignTitle || !campaignMessage) {
+      toast.error('Please fill in campaign title and message');
       return;
     }
 
-    setIsCreatingCampaign(true);
+    if (!selectedSegment && !customFilters) {
+      toast.error('Please select a target segment or create custom filters');
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      const campaign = {
+      // Find the selected segment
+      const segmentData = savedSegments.find(s => s.id === selectedSegment) ||
+        segments.find(s => s.segment_name === selectedSegment);
+
+      const campaignData = {
         title: campaignTitle,
-        message: customMessage,
-        segment: selectedSegment,
+        message: campaignMessage,
+        segment_id: (segmentData as SavedSegment)?.id || null,
+        segment_filters: selectedSegment === 'custom' ? customFilters?.filters : null,
         template_id: selectedTemplate,
-        personalize: personalizeMessages,
+        personalize,
         test_mode: testMode,
-        schedule_type: scheduleTime,
-        scheduled_date: scheduleTime === 'scheduled' ? scheduledDate : null,
-        scheduled_time: scheduleTime === 'scheduled' ? scheduledTime : null,
-        estimated_reach: getEstimatedReach()
+        schedule_type: scheduleType,
+        scheduled_date: scheduledDate,
+        scheduled_time: scheduledTime,
+        estimated_reach: estimatedReach,
       };
 
-      if (onSendCampaign) {
-        await onSendCampaign(campaign);
-      }
+      // Use enhanced campaign manager
+      const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
+        body: campaignData
+      });
 
-      toast.success(testMode ? 'Test campaign sent successfully!' : 'Campaign scheduled successfully!');
-      
-      // Reset form
+      if (error) throw error;
+
+      // Reset form after successful send
+      setCampaignTitle('');
+      setCampaignMessage('');
       setSelectedSegment('');
       setSelectedTemplate('');
-      setCustomMessage('');
-      setCampaignTitle('');
-      setScheduleTime('now');
-      setTestMode(true);
+      setPersonalize(false);
+      setTestMode(false);
+      setScheduleType('now');
+      setScheduledDate('');
+      setScheduledTime('');
+      setCustomFilters(null);
+
+      toast.success(data.message || 'Campaign sent successfully!');
     } catch (error) {
+      console.error('Campaign send error:', error);
       toast.error('Failed to send campaign');
-    } finally {
-      setIsCreatingCampaign(false);
     }
+
+    setIsLoading(false);
   };
 
   return (
-    <Card className="border-2 border-black">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Target className="h-5 w-5" />
-          Push Notification Campaign Manager
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Segment Selection */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Target Audience</Label>
-          <Select value={selectedSegment} onValueChange={setSelectedSegment}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select member segment" />
-            </SelectTrigger>
-            <SelectContent>
-              {segments.map((segment) => (
-                <SelectItem key={segment.segment_name} value={segment.segment_name}>
-                  <div className="flex items-center justify-between w-full">
-                    <span>{segment.segment_name}</span>
-                    <Badge variant="secondary" className="ml-2">
-                      {segment.member_count} members
-                    </Badge>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Send className="h-5 w-5" />
+            Enhanced Campaign Manager
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="create">Create Campaign</TabsTrigger>
+              <TabsTrigger value="segments">Manage Segments</TabsTrigger>
+              <TabsTrigger value="history">Campaign History</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="create" className="space-y-6 mt-6">
+              {/* Target Audience */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="segment">Target Audience</Label>
+                  <div className="flex gap-2">
+                    <Dialog open={showSegmentBuilder} onOpenChange={setShowSegmentBuilder}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                          <Plus className="h-4 w-4 mr-1" />
+                          Create Segment
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Create Audience Segment</DialogTitle>
+                        </DialogHeader>
+                        <SegmentBuilder onSegmentCreate={handleSegmentCreate} />
+                      </DialogContent>
+                    </Dialog>
                   </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          {selectedSegmentData && (
-            <div className="p-3 bg-muted rounded-lg">
-              <div className="text-sm">
-                <strong>{selectedSegmentData.segment_name}</strong>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {selectedSegmentData.segment_description}
-              </div>
-              <div className="text-xs mt-1">
-                {selectedSegmentData.member_count} members • Avg spend: £{selectedSegmentData.avg_spend.toFixed(0)}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Template Selection */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Message Template</Label>
-          <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
-            <SelectTrigger>
-              <SelectValue placeholder="Choose a template or start from scratch" />
-            </SelectTrigger>
-            <SelectContent>
-              {CAMPAIGN_TEMPLATES.map((template) => (
-                <SelectItem key={template.id} value={template.id}>
-                  <div>
-                    <span>{template.name}</span>
-                    <Badge variant="outline" className="ml-2 capitalize">
-                      {template.category}
-                    </Badge>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Campaign Details */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Campaign Title</Label>
-            <Input
-              placeholder="Enter campaign name"
-              value={campaignTitle}
-              onChange={(e) => setCampaignTitle(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label className="text-sm font-medium">Message Content</Label>
-            <Textarea
-              placeholder="Write your notification message..."
-              value={customMessage}
-              onChange={(e) => setCustomMessage(e.target.value)}
-              rows={4}
-            />
-            <div className="text-xs text-muted-foreground">
-              Character count: {customMessage.length}/500
-              {personalizeMessages && (
-                <span className="ml-4">Available variables: {'{name}'}, {'{tier}'}, {'{event_name}'}</span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Campaign Options */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">Personalize Messages</Label>
-              <div className="text-xs text-muted-foreground">
-                Replace placeholders with member-specific data
-              </div>
-            </div>
-            <Switch 
-              checked={personalizeMessages} 
-              onCheckedChange={setPersonalizeMessages}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium">Test Mode</Label>
-              <div className="text-xs text-muted-foreground">
-                Send to admin users only for testing
-              </div>
-            </div>
-            <Switch 
-              checked={testMode} 
-              onCheckedChange={setTestMode}
-            />
-          </div>
-        </div>
-
-        {/* Scheduling */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Send Schedule</Label>
-          <Select value={scheduleTime} onValueChange={setScheduleTime}>
-            <SelectTrigger>
-              <SelectValue placeholder="When to send" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="now">Send Now</SelectItem>
-              <SelectItem value="optimal">Send at Optimal Time</SelectItem>
-              <SelectItem value="scheduled">Schedule for Later</SelectItem>
-            </SelectContent>
-          </Select>
-          
-          {scheduleTime === 'optimal' && (
-            <div className="p-3 bg-blue-50 rounded-lg border">
-              <div className="text-sm font-medium text-blue-800">Optimal Send Time</div>
-              <div className="text-xs text-blue-600">{getOptimalSendTime()}</div>
-            </div>
-          )}
-          
-          {scheduleTime === 'scheduled' && (
-            <div className="grid md:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs">Date</Label>
-                <Input
-                  type="date"
-                  value={scheduledDate}
-                  onChange={(e) => setScheduledDate(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label className="text-xs">Time</Label>
-                <Input
-                  type="time"
-                  value={scheduledTime}
-                  onChange={(e) => setScheduledTimeValue(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Campaign Preview */}
-        {selectedSegment && customMessage && (
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">Campaign Preview</Label>
-            <div className="border rounded-lg p-4 bg-muted/50">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm font-medium">Push Notification</span>
                 </div>
-                <Badge variant="outline">
-                  {getEstimatedReach()} recipients
-                </Badge>
+                
+                <Select value={selectedSegment} onValueChange={setSelectedSegment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select audience segment or create new" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* Legacy segments */}
+                    {segments.map((segment) => (
+                      <SelectItem key={segment.segment_name} value={segment.segment_name}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{segment.segment_name}</span>
+                          <Badge variant="secondary" className="ml-2">
+                            {segment.member_count} members
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    
+                    {/* Saved segments */}
+                    {savedSegments.map((segment) => (
+                      <SelectItem key={segment.id} value={segment.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{segment.name}</span>
+                          <Badge variant="secondary" className="ml-2">
+                            {segment.member_count} members
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                    
+                    {/* Custom filters option */}
+                    {customFilters && (
+                      <SelectItem value="custom">
+                        <div className="flex items-center justify-between w-full">
+                          <span>Custom Audience</span>
+                          <Badge variant="secondary" className="ml-2">
+                            {customFilters.memberCount} members
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+                
+                {(selectedSegment === 'custom' && customFilters) && (
+                  <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
+                    Using custom audience filters with {customFilters.memberCount} members
+                  </div>
+                )}
               </div>
-              <div className="text-sm bg-white p-3 rounded border">
-                {personalizeMessages 
-                  ? customMessage.replace('{name}', 'John')
-                  : customMessage
-                }
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Campaign Metrics Preview */}
-        {selectedSegmentData && (
-          <div className="grid md:grid-cols-3 gap-4">
-            <div className="text-center p-3 border rounded-lg">
-              <div className="text-2xl font-bold">{getEstimatedReach()}</div>
-              <div className="text-xs text-muted-foreground">Estimated Reach</div>
-            </div>
-            <div className="text-center p-3 border rounded-lg">
-              <div className="text-2xl font-bold">
-                {Math.round(getEstimatedReach() * 0.15)}
+              {/* Message Template */}
+              <div className="space-y-2">
+                <Label htmlFor="template">Message Template (Optional)</Label>
+                <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a template or create custom message" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAMPAIGN_TEMPLATES.map((template) => (
+                      <SelectItem key={template.id} value={template.id}>
+                        <div>
+                          <div className="font-medium">{template.name}</div>
+                          <div className="text-xs text-muted-foreground truncate max-w-xs">
+                            {template.message}
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="text-xs text-muted-foreground">Expected Opens (15%)</div>
-            </div>
-            <div className="text-center p-3 border rounded-lg">
-              <div className="text-2xl font-bold">
-                {Math.round(getEstimatedReach() * 0.03)}
-              </div>
-              <div className="text-xs text-muted-foreground">Expected Actions (3%)</div>
-            </div>
-          </div>
-        )}
 
-        {/* Send Button */}
-        <div className="flex items-center justify-between pt-4 border-t">
-          <div className="text-sm text-muted-foreground">
-            {testMode ? 'Test campaign will be sent to admin users only' : 'Campaign will be sent to all selected members'}
-          </div>
-          <Button 
-            onClick={handleSendCampaign}
-            disabled={!selectedSegment || !customMessage || !campaignTitle || isCreatingCampaign}
-            className="flex items-center gap-2"
-          >
-            <Send className="h-4 w-4" />
-            {isCreatingCampaign 
-              ? 'Sending...' 
-              : testMode 
-                ? 'Send Test Campaign' 
-                : scheduleTime === 'now' 
-                  ? 'Send Campaign' 
-                  : 'Schedule Campaign'
-            }
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+              {/* Campaign Title */}
+              <div className="space-y-2">
+                <Label htmlFor="title">Campaign Title</Label>
+                <Input
+                  id="title"
+                  value={campaignTitle}
+                  onChange={(e) => setCampaignTitle(e.target.value)}
+                  placeholder="Enter campaign title"
+                />
+              </div>
+
+              {/* Campaign Message */}
+              <div className="space-y-2">
+                <Label htmlFor="message">Campaign Message</Label>
+                <Textarea
+                  id="message"
+                  value={campaignMessage}
+                  onChange={(e) => setCampaignMessage(e.target.value)}
+                  placeholder="Enter your campaign message"
+                  rows={4}
+                />
+              </div>
+
+              <Separator />
+
+              {/* Campaign Options */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Campaign Options</h3>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="personalize"
+                    checked={personalize}
+                    onCheckedChange={(checked) => setPersonalize(checked === true)}
+                  />
+                  <Label htmlFor="personalize">Personalize messages with member names</Label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="testMode"
+                    checked={testMode}
+                    onCheckedChange={(checked) => setTestMode(checked === true)}
+                  />
+                  <Label htmlFor="testMode">Test mode (send to admin users only)</Label>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Scheduling Options */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Scheduling</h3>
+                
+                <RadioGroup value={scheduleType} onValueChange={setScheduleType}>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="now" id="now" />
+                    <Label htmlFor="now">Send immediately</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="scheduled" id="scheduled" />
+                    <Label htmlFor="scheduled">Schedule for later</Label>
+                  </div>
+                </RadioGroup>
+
+                {scheduleType === 'scheduled' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="date">Date</Label>
+                      <Input
+                        id="date"
+                        type="date"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="time">Time</Label>
+                      <Input
+                        id="time"
+                        type="time"
+                        value={scheduledTime}
+                        onChange={(e) => setScheduledTime(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Campaign Preview */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Campaign Preview</h3>
+                
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-2xl font-bold">{estimatedReach.toLocaleString()}</div>
+                    <div className="text-sm text-muted-foreground">Estimated Reach</div>
+                  </div>
+                  
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <Eye className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-2xl font-bold">{Math.round(estimatedReach * 0.15)}</div>
+                    <div className="text-sm text-muted-foreground">Expected Opens</div>
+                  </div>
+                  
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <MousePointer className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-2xl font-bold">{Math.round(estimatedReach * 0.03)}</div>
+                    <div className="text-sm text-muted-foreground">Expected Actions</div>
+                  </div>
+                  
+                  <div className="text-center p-4 bg-muted rounded-lg">
+                    <Zap className="h-6 w-6 mx-auto mb-2 text-primary" />
+                    <div className="text-2xl font-bold">
+                      £{customFilters?.avgSpend ? customFilters.avgSpend.toFixed(0) : 
+                        (savedSegments.find(s => s.id === selectedSegment) ||
+                         segments.find(s => s.segment_name === selectedSegment))?.avg_spend.toFixed(0) || 'N/A'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Avg. Member Value</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Send Button */}
+              <Button 
+                onClick={handleSendCampaign}
+                disabled={isLoading || !campaignTitle || !campaignMessage || (!selectedSegment && !customFilters)}
+                className="w-full"
+                size="lg"
+              >
+                {isLoading ? (
+                  'Sending...'
+                ) : testMode ? (
+                  <>
+                    <TestTube className="mr-2 h-4 w-4" />
+                    Send Test Campaign
+                  </>
+                ) : scheduleType === 'scheduled' ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4" />
+                    Schedule Campaign
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Campaign Now
+                  </>
+                )}
+              </Button>
+            </TabsContent>
+
+            <TabsContent value="segments" className="space-y-4 mt-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Saved Audience Segments</h3>
+                <Button onClick={() => setShowSegmentBuilder(true)}>
+                  <Plus className="h-4 w-4 mr-1" />
+                  New Segment
+                </Button>
+              </div>
+              
+              {isLoadingSegments ? (
+                <div className="text-center py-8">Loading segments...</div>
+              ) : savedSegments.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No saved segments yet. Create your first audience segment to get started.
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {savedSegments.map((segment) => (
+                    <Card key={segment.id}>
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h4 className="font-semibold">{segment.name}</h4>
+                            {segment.description && (
+                              <p className="text-sm text-muted-foreground">{segment.description}</p>
+                            )}
+                            <div className="flex gap-4 mt-2">
+                              <Badge variant="secondary">
+                                <Users className="h-3 w-3 mr-1" />
+                                {segment.member_count} members
+                              </Badge>
+                              <Badge variant="outline">
+                                £{segment.avg_spend.toFixed(0)} avg spend
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Dialog open={editingSegment?.id === segment.id} onOpenChange={(open) => setEditingSegment(open ? segment : null)}>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                                <DialogHeader>
+                                  <DialogTitle>Edit Segment: {segment.name}</DialogTitle>
+                                </DialogHeader>
+                                <SegmentBuilder 
+                                  editingSegment={segment}
+                                  initialFilters={segment.filters}
+                                  onSegmentCreate={(data) => {
+                                    loadSavedSegments();
+                                    setEditingSegment(null);
+                                  }}
+                                />
+                              </DialogContent>
+                            </Dialog>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                setSelectedSegment(segment.id);
+                                setActiveTab('create');
+                              }}
+                            >
+                              <Target className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="history" className="space-y-4 mt-6">
+              <h3 className="text-lg font-semibold">Campaign History</h3>
+              <div className="text-center py-8 text-muted-foreground">
+                Campaign history will be displayed here once campaigns are sent.
+              </div>
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
