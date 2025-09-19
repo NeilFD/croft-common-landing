@@ -10,7 +10,10 @@ interface SegmentFilters {
   dateRange?: { start: string; end: string };
   ageRange?: { min: number; max: number };
   interests?: string[];
+  interestsLogic?: 'match_all' | 'match_any';
   venueAreas?: string[];
+  venuePreferences?: string[];
+  venuePreferencesLogic?: 'match_all' | 'match_any';
   spendRange?: { min: number; max: number };
   tierBadges?: string[];
   visitHistory?: {

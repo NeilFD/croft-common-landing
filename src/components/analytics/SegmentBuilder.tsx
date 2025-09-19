@@ -27,7 +27,9 @@ interface SegmentFilters {
   // Demographics (optional)
   ageRange?: { min: number; max: number };
   interests?: string[];
+  interestsLogic?: 'match_all' | 'match_any';
   venuePreferences?: string[];
+  venuePreferencesLogic?: 'match_all' | 'match_any';
   
   // Member status
   hasUploadedReceipts?: boolean;
@@ -479,8 +481,32 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
 
             {/* Interests */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Interests</Label>
-              <p className="text-xs text-muted-foreground">What are they interested in?</p>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Interests</Label>
+                {filters.interests && filters.interests.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-muted-foreground">Match:</span>
+                    <Select
+                      value={filters.interestsLogic || 'match_all'}
+                      onValueChange={(value: 'match_all' | 'match_any') => updateFilter('interestsLogic', value)}
+                    >
+                      <SelectTrigger className="w-24 h-6 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="match_all">ALL</SelectItem>
+                        <SelectItem value="match_any">ANY</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {filters.interests && filters.interests.length > 0 
+                  ? `Must have ${filters.interestsLogic === 'match_any' ? 'ANY' : 'ALL'} of the selected interests`
+                  : 'What are they interested in?'
+                }
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-w-2xl">
                 {INTEREST_OPTIONS.map(interest => (
                   <div key={interest} className="flex items-center space-x-2">
@@ -490,6 +516,10 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
                       onCheckedChange={(checked) => {
                         if (checked) {
                           updateFilter('interests', [...(filters.interests || []), interest]);
+                          // Set default logic if first interest selected
+                          if (!filters.interestsLogic) {
+                            updateFilter('interestsLogic', 'match_all');
+                          }
                         } else {
                           updateFilter('interests', filters.interests?.filter(i => i !== interest) || []);
                         }
@@ -503,8 +533,32 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
 
             {/* Venue Preferences */}
             <div className="space-y-3">
-              <Label className="text-sm font-medium">Venue Preferences</Label>
-              <p className="text-xs text-muted-foreground">Which areas do they prefer?</p>
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-medium">Venue Preferences</Label>
+                {filters.venuePreferences && filters.venuePreferences.length > 0 && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-xs text-muted-foreground">Match:</span>
+                    <Select
+                      value={filters.venuePreferencesLogic || 'match_all'}
+                      onValueChange={(value: 'match_all' | 'match_any') => updateFilter('venuePreferencesLogic', value)}
+                    >
+                      <SelectTrigger className="w-24 h-6 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="match_all">ALL</SelectItem>
+                        <SelectItem value="match_any">ANY</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {filters.venuePreferences && filters.venuePreferences.length > 0 
+                  ? `Must have ${filters.venuePreferencesLogic === 'match_any' ? 'ANY' : 'ALL'} of the selected preferences`
+                  : 'Which areas do they prefer?'
+                }
+              </p>
               <div className="flex flex-wrap gap-2">
                 {VENUE_PREFERENCES.map(venue => (
                   <div key={venue} className="flex items-center space-x-2">
@@ -514,6 +568,10 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
                       onCheckedChange={(checked) => {
                         if (checked) {
                           updateFilter('venuePreferences', [...(filters.venuePreferences || []), venue]);
+                          // Set default logic if first venue selected
+                          if (!filters.venuePreferencesLogic) {
+                            updateFilter('venuePreferencesLogic', 'match_all');
+                          }
                         } else {
                           updateFilter('venuePreferences', filters.venuePreferences?.filter(v => v !== venue) || []);
                         }
