@@ -7,26 +7,32 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Users, TrendingUp, X, Plus, Filter } from 'lucide-react';
-import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
+import { Users, TrendingUp, X, Filter, Calendar, Clock, Coins } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { INTEREST_OPTIONS, VENUE_PREFERENCES } from '@/data/interests';
 
 interface SegmentFilters {
-  dateRange?: { start: string; end: string };
+  // Activity-based filters
+  receiptActivityPeriod?: 'last_30_days' | 'last_60_days' | 'last_90_days' | 'last_6_months' | 'last_1_year';
+  visitFrequency?: 'never' | '1_to_2' | '3_to_5' | '6_to_10' | '10_plus';
+  totalSpendRange?: { min: number; max: number };
+  recentActivity?: 'active_7_days' | 'active_14_days' | 'active_30_days' | 'inactive_30_plus';
+  
+  // Behavioral patterns
+  preferredVisitDays?: string[];
+  visitTiming?: ('early_month' | 'mid_month' | 'end_month')[];
+  avgSpendPerVisit?: 'under_10' | '10_to_20' | '20_to_30' | '30_to_50' | '50_plus';
+  
+  // Demographics (optional)
   ageRange?: { min: number; max: number };
   interests?: string[];
-  venueAreas?: string[];
-  spendRange?: { min: number; max: number };
-  tierBadges?: string[];
-  visitHistory?: {
-    dayOfWeek?: string[];
-    timeOfMonth?: string[];
-    frequency?: { min: number; max: number };
-  };
+  venuePreferences?: string[];
+  
+  // Member status
+  hasUploadedReceipts?: boolean;
+  pushNotificationsEnabled?: boolean;
+  loyaltyEngagement?: 'has_card' | 'completed_cards' | 'high_punches';
 }
 
 interface SegmentPreview {
@@ -53,10 +59,38 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
   const [isSaving, setIsSaving] = useState(false);
 
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  const timesOfMonth = ['beginning', 'middle', 'end'];
-  const tierBadges = ['bronze', 'silver', 'gold', 'platinum'];
-  const interests = ['Beer', 'Wine', 'Cocktails', 'Food', 'Events', 'Sports', 'Music', 'Art'];
-  const venueAreas = ['Bar Area', 'Restaurant', 'Outdoor Seating', 'Private Room', 'Rooftop'];
+  const activityPeriods = [
+    { value: 'last_30_days', label: 'Last 30 days' },
+    { value: 'last_60_days', label: 'Last 60 days' },
+    { value: 'last_90_days', label: 'Last 90 days' },
+    { value: 'last_6_months', label: 'Last 6 months' },
+    { value: 'last_1_year', label: 'Last 1 year' }
+  ];
+  const visitFrequencies = [
+    { value: 'never', label: 'Never visited' },
+    { value: '1_to_2', label: '1-2 visits' },
+    { value: '3_to_5', label: '3-5 visits' },
+    { value: '6_to_10', label: '6-10 visits' },
+    { value: '10_plus', label: '10+ visits' }
+  ];
+  const spendingHabits = [
+    { value: 'under_10', label: 'Under £10' },
+    { value: '10_to_20', label: '£10-£20' },
+    { value: '20_to_30', label: '£20-£30' },
+    { value: '30_to_50', label: '£30-£50' },
+    { value: '50_plus', label: '£50+' }
+  ];
+  const recentActivities = [
+    { value: 'active_7_days', label: 'Active in last 7 days' },
+    { value: 'active_14_days', label: 'Active in last 14 days' },
+    { value: 'active_30_days', label: 'Active in last 30 days' },
+    { value: 'inactive_30_plus', label: 'Inactive for 30+ days' }
+  ];
+  const monthPeriods = [
+    { value: 'early_month', label: 'Early month (1st-10th)' },
+    { value: 'mid_month', label: 'Mid month (11th-20th)' },
+    { value: 'end_month', label: 'End of month (21st-31st)' }
+  ];
 
   // Debounced preview update
   useEffect(() => {
@@ -211,188 +245,337 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
             )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Date Range */}
-          <div className="space-y-2">
-            <Label>Date Range</Label>
-            <div className="flex gap-2 items-center">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <CalendarIcon className="h-4 w-4 mr-1" />
-                    {filters.dateRange?.start ? format(new Date(filters.dateRange.start), 'MMM dd, yyyy') : 'Start Date'}
+        <CardContent className="space-y-8">
+          {/* Activity-Based Filters */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              Activity-Based Filters
+            </div>
+            <Separator />
+
+            {/* Receipt Activity Period */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Receipt Activity Period</Label>
+              <p className="text-xs text-muted-foreground">When did members last upload receipts?</p>
+              <Select
+                value={filters.receiptActivityPeriod || ''}
+                onValueChange={(value) => updateFilter('receiptActivityPeriod', value as any)}
+              >
+                <SelectTrigger className="w-full max-w-xs">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activityPeriods.map((period) => (
+                    <SelectItem key={period.value} value={period.value}>
+                      {period.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {filters.receiptActivityPeriod && (
+                <Button variant="ghost" size="sm" onClick={() => removeFilter('receiptActivityPeriod')}>
+                  <X className="h-4 w-4 mr-1" />
+                  Remove
+                </Button>
+              )}
+            </div>
+
+            {/* Visit Frequency */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Visit Frequency</Label>
+              <p className="text-xs text-muted-foreground">How many times have they visited?</p>
+              <Select
+                value={filters.visitFrequency || ''}
+                onValueChange={(value) => updateFilter('visitFrequency', value as any)}
+              >
+                <SelectTrigger className="w-full max-w-xs">
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {visitFrequencies.map((freq) => (
+                    <SelectItem key={freq.value} value={freq.value}>
+                      {freq.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Total Spending Range */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Total Lifetime Spending</Label>
+              <p className="text-xs text-muted-foreground">Total amount spent across all visits</p>
+              <div className="flex gap-2 items-center max-w-md">
+                <Input
+                  type="number"
+                  placeholder="Min £"
+                  value={filters.totalSpendRange?.min || ''}
+                  onChange={(e) => updateFilter('totalSpendRange', {
+                    ...filters.totalSpendRange,
+                    min: parseFloat(e.target.value) || undefined
+                  })}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">to</span>
+                <Input
+                  type="number"
+                  placeholder="Max £"
+                  value={filters.totalSpendRange?.max || ''}
+                  onChange={(e) => updateFilter('totalSpendRange', {
+                    ...filters.totalSpendRange,
+                    max: parseFloat(e.target.value) || undefined
+                  })}
+                  className="w-24"
+                />
+                {filters.totalSpendRange && (
+                  <Button variant="ghost" size="sm" onClick={() => removeFilter('totalSpendRange')}>
+                    <X className="h-4 w-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={filters.dateRange?.start ? new Date(filters.dateRange.start) : undefined}
-                    onSelect={(date) => updateFilter('dateRange', {
-                      ...filters.dateRange,
-                      start: date?.toISOString().split('T')[0]
-                    })}
-                  />
-                </PopoverContent>
-              </Popover>
-              <span>to</span>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <CalendarIcon className="h-4 w-4 mr-1" />
-                    {filters.dateRange?.end ? format(new Date(filters.dateRange.end), 'MMM dd, yyyy') : 'End Date'}
+                )}
+              </div>
+            </div>
+
+            {/* Recent Activity Status */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Recent Activity Status</Label>
+              <p className="text-xs text-muted-foreground">How recently have they been active?</p>
+              <Select
+                value={filters.recentActivity || ''}
+                onValueChange={(value) => updateFilter('recentActivity', value as any)}
+              >
+                <SelectTrigger className="w-full max-w-xs">
+                  <SelectValue placeholder="Select activity status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {recentActivities.map((activity) => (
+                    <SelectItem key={activity.value} value={activity.value}>
+                      {activity.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Behavioral Patterns */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              Behavioral Patterns
+            </div>
+            <Separator />
+
+            {/* Preferred Visit Days */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Preferred Visit Days</Label>
+              <p className="text-xs text-muted-foreground">Which days do they usually visit?</p>
+              <div className="flex flex-wrap gap-2">
+                {daysOfWeek.map(day => (
+                  <div key={day} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`day-${day}`}
+                      checked={filters.preferredVisitDays?.includes(day) || false}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          updateFilter('preferredVisitDays', [...(filters.preferredVisitDays || []), day]);
+                        } else {
+                          updateFilter('preferredVisitDays', filters.preferredVisitDays?.filter(d => d !== day) || []);
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`day-${day}`} className="text-sm">{day}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Visit Timing */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Visit Timing (Month Period)</Label>
+              <p className="text-xs text-muted-foreground">When in the month do they typically visit?</p>
+              <div className="flex flex-wrap gap-2">
+                {monthPeriods.map(period => (
+                  <div key={period.value} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`timing-${period.value}`}
+                      checked={filters.visitTiming?.includes(period.value as any) || false}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          updateFilter('visitTiming', [...(filters.visitTiming || []), period.value as any]);
+                        } else {
+                          updateFilter('visitTiming', filters.visitTiming?.filter(t => t !== period.value) || []);
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`timing-${period.value}`} className="text-sm">{period.label}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Average Spend Per Visit */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Average Spend Per Visit</Label>
+              <p className="text-xs text-muted-foreground">How much do they typically spend per visit?</p>
+              <Select
+                value={filters.avgSpendPerVisit || ''}
+                onValueChange={(value) => updateFilter('avgSpendPerVisit', value as any)}
+              >
+                <SelectTrigger className="w-full max-w-xs">
+                  <SelectValue placeholder="Select spend range" />
+                </SelectTrigger>
+                <SelectContent>
+                  {spendingHabits.map((habit) => (
+                    <SelectItem key={habit.value} value={habit.value}>
+                      {habit.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Demographics (Optional) */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Users className="h-4 w-4" />
+              Demographics (Optional)
+            </div>
+            <Separator />
+
+            {/* Age Range */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Age Range</Label>
+              <div className="flex gap-2 items-center max-w-md">
+                <Input
+                  type="number"
+                  placeholder="Min age"
+                  value={filters.ageRange?.min || ''}
+                  onChange={(e) => updateFilter('ageRange', {
+                    ...filters.ageRange,
+                    min: parseInt(e.target.value) || undefined
+                  })}
+                  className="w-24"
+                />
+                <span className="text-sm text-muted-foreground">to</span>
+                <Input
+                  type="number"
+                  placeholder="Max age"
+                  value={filters.ageRange?.max || ''}
+                  onChange={(e) => updateFilter('ageRange', {
+                    ...filters.ageRange,
+                    max: parseInt(e.target.value) || undefined
+                  })}
+                  className="w-24"
+                />
+                {filters.ageRange && (
+                  <Button variant="ghost" size="sm" onClick={() => removeFilter('ageRange')}>
+                    <X className="h-4 w-4" />
                   </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar
-                    mode="single"
-                    selected={filters.dateRange?.end ? new Date(filters.dateRange.end) : undefined}
-                    onSelect={(date) => updateFilter('dateRange', {
-                      ...filters.dateRange,
-                      end: date?.toISOString().split('T')[0]
-                    })}
-                  />
-                </PopoverContent>
-              </Popover>
-              {filters.dateRange && (
-                <Button variant="ghost" size="sm" onClick={() => removeFilter('dateRange')}>
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
+                )}
+              </div>
+            </div>
+
+            {/* Interests */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Interests</Label>
+              <p className="text-xs text-muted-foreground">What are they interested in?</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-w-2xl">
+                {INTEREST_OPTIONS.map(interest => (
+                  <div key={interest} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`interest-${interest}`}
+                      checked={filters.interests?.includes(interest) || false}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          updateFilter('interests', [...(filters.interests || []), interest]);
+                        } else {
+                          updateFilter('interests', filters.interests?.filter(i => i !== interest) || []);
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`interest-${interest}`} className="text-sm">{interest}</Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Venue Preferences */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Venue Preferences</Label>
+              <p className="text-xs text-muted-foreground">Which areas do they prefer?</p>
+              <div className="flex flex-wrap gap-2">
+                {VENUE_PREFERENCES.map(venue => (
+                  <div key={venue} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`venue-${venue}`}
+                      checked={filters.venuePreferences?.includes(venue) || false}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          updateFilter('venuePreferences', [...(filters.venuePreferences || []), venue]);
+                        } else {
+                          updateFilter('venuePreferences', filters.venuePreferences?.filter(v => v !== venue) || []);
+                        }
+                      }}
+                    />
+                    <Label htmlFor={`venue-${venue}`} className="text-sm">{venue}</Label>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Age Range */}
-          <div className="space-y-2">
-            <Label>Age Range</Label>
-            <div className="flex gap-2 items-center">
-              <Input
-                type="number"
-                placeholder="Min age"
-                value={filters.ageRange?.min || ''}
-                onChange={(e) => updateFilter('ageRange', {
-                  ...filters.ageRange,
-                  min: parseInt(e.target.value) || undefined
-                })}
-                className="w-24"
-              />
-              <span>to</span>
-              <Input
-                type="number"
-                placeholder="Max age"
-                value={filters.ageRange?.max || ''}
-                onChange={(e) => updateFilter('ageRange', {
-                  ...filters.ageRange,
-                  max: parseInt(e.target.value) || undefined
-                })}
-                className="w-24"
-              />
-              {filters.ageRange && (
-                <Button variant="ghost" size="sm" onClick={() => removeFilter('ageRange')}>
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
+          {/* Member Status */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <Coins className="h-4 w-4" />
+              Member Status
             </div>
-          </div>
+            <Separator />
 
-          {/* Spend Range */}
-          <div className="space-y-2">
-            <Label>Spend Range (£)</Label>
-            <div className="flex gap-2 items-center">
-              <Input
-                type="number"
-                placeholder="Min spend"
-                value={filters.spendRange?.min || ''}
-                onChange={(e) => updateFilter('spendRange', {
-                  ...filters.spendRange,
-                  min: parseFloat(e.target.value) || undefined
-                })}
-                className="w-32"
-              />
-              <span>to</span>
-              <Input
-                type="number"
-                placeholder="Max spend"
-                value={filters.spendRange?.max || ''}
-                onChange={(e) => updateFilter('spendRange', {
-                  ...filters.spendRange,
-                  max: parseFloat(e.target.value) || undefined
-                })}
-                className="w-32"
-              />
-              {filters.spendRange && (
-                <Button variant="ghost" size="sm" onClick={() => removeFilter('spendRange')}>
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Has Uploaded Receipts */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="hasReceipts"
+                  checked={filters.hasUploadedReceipts === true}
+                  onCheckedChange={(checked) => {
+                    updateFilter('hasUploadedReceipts', checked ? true : undefined);
+                  }}
+                />
+                <Label htmlFor="hasReceipts" className="text-sm">Has uploaded receipts</Label>
+              </div>
+
+              {/* Push Notifications Enabled */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="pushEnabled"
+                  checked={filters.pushNotificationsEnabled === true}
+                  onCheckedChange={(checked) => {
+                    updateFilter('pushNotificationsEnabled', checked ? true : undefined);
+                  }}
+                />
+                <Label htmlFor="pushEnabled" className="text-sm">Push notifications enabled</Label>
+              </div>
             </div>
-          </div>
 
-          {/* Tier Badges */}
-          <div className="space-y-2">
-            <Label>Member Tiers</Label>
-            <div className="flex flex-wrap gap-2">
-              {tierBadges.map(tier => (
-                <div key={tier} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`tier-${tier}`}
-                    checked={filters.tierBadges?.includes(tier) || false}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        updateFilter('tierBadges', [...(filters.tierBadges || []), tier]);
-                      } else {
-                        updateFilter('tierBadges', filters.tierBadges?.filter(t => t !== tier) || []);
-                      }
-                    }}
-                  />
-                  <Label htmlFor={`tier-${tier}`} className="capitalize">{tier}</Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Interests */}
-          <div className="space-y-2">
-            <Label>Interests</Label>
-            <div className="flex flex-wrap gap-2">
-              {interests.map(interest => (
-                <div key={interest} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`interest-${interest}`}
-                    checked={filters.interests?.includes(interest) || false}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        updateFilter('interests', [...(filters.interests || []), interest]);
-                      } else {
-                        updateFilter('interests', filters.interests?.filter(i => i !== interest) || []);
-                      }
-                    }}
-                  />
-                  <Label htmlFor={`interest-${interest}`}>{interest}</Label>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Venue Areas */}
-          <div className="space-y-2">
-            <Label>Preferred Venue Areas</Label>
-            <div className="flex flex-wrap gap-2">
-              {venueAreas.map(area => (
-                <div key={area} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`area-${area}`}
-                    checked={filters.venueAreas?.includes(area) || false}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        updateFilter('venueAreas', [...(filters.venueAreas || []), area]);
-                      } else {
-                        updateFilter('venueAreas', filters.venueAreas?.filter(a => a !== area) || []);
-                      }
-                    }}
-                  />
-                  <Label htmlFor={`area-${area}`}>{area}</Label>
-                </div>
-              ))}
+            {/* Loyalty Engagement */}
+            <div className="space-y-3">
+              <Label className="text-sm font-medium">Loyalty Engagement</Label>
+              <Select
+                value={filters.loyaltyEngagement || ''}
+                onValueChange={(value) => updateFilter('loyaltyEngagement', value as any)}
+              >
+                <SelectTrigger className="w-full max-w-xs">
+                  <SelectValue placeholder="Select loyalty level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="has_card">Has loyalty card</SelectItem>
+                  <SelectItem value="completed_cards">Completed loyalty cards</SelectItem>
+                  <SelectItem value="high_punches">High punch count</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
