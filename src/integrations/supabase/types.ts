@@ -2773,17 +2773,31 @@ export type Database = {
         }[]
       }
       get_advanced_member_analytics: {
-        Args: {
-          p_date_end?: string
-          p_date_start?: string
-          p_interests?: string[]
-          p_max_age?: number
-          p_max_spend?: number
-          p_min_age?: number
-          p_min_spend?: number
-          p_tier_badges?: string[]
-          p_venue_slugs?: string[]
-        }
+        Args:
+          | {
+              p_date_end?: string
+              p_date_start?: string
+              p_interests?: string[]
+              p_interests_logic?: string
+              p_max_age?: number
+              p_max_spend?: number
+              p_min_age?: number
+              p_min_spend?: number
+              p_tier_badges?: string[]
+              p_venue_logic?: string
+              p_venue_slugs?: string[]
+            }
+          | {
+              p_date_end?: string
+              p_date_start?: string
+              p_interests?: string[]
+              p_max_age?: number
+              p_max_spend?: number
+              p_min_age?: number
+              p_min_spend?: number
+              p_tier_badges?: string[]
+              p_venue_slugs?: string[]
+            }
         Returns: {
           active_days: number
           active_months: number

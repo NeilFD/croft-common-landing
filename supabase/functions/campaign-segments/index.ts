@@ -292,7 +292,9 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
       p_min_age: filters.ageRange?.min || null,
       p_max_age: filters.ageRange?.max || null,
       p_interests: filters.interests || null,
-      p_venue_slugs: filters.venueAreas || null,
+      p_interests_logic: filters.interestsLogic || 'match_any',
+      p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
+      p_venue_logic: filters.venuePreferencesLogic || 'match_any',
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
       p_tier_badges: filters.tierBadges || null
@@ -318,7 +320,9 @@ async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters):
       p_min_age: filters.ageRange?.min || null,
       p_max_age: filters.ageRange?.max || null,
       p_interests: filters.interests || null,
-      p_venue_slugs: filters.venueAreas || null,
+      p_interests_logic: filters.interestsLogic || 'match_any',
+      p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
+      p_venue_logic: filters.venuePreferencesLogic || 'match_any',
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
       p_tier_badges: filters.tierBadges || null
@@ -351,7 +355,9 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
       p_min_age: filters.ageRange?.min || null,
       p_max_age: filters.ageRange?.max || null,
       p_interests: filters.interests || null,
-      p_venue_slugs: filters.venueAreas || null,
+      p_interests_logic: filters.interestsLogic || 'match_any',
+      p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
+      p_venue_logic: filters.venuePreferencesLogic || 'match_any',
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
       p_tier_badges: filters.tierBadges || null
