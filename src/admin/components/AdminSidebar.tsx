@@ -95,9 +95,13 @@ export const AdminSidebar = () => {
           <SidebarGroup key={section.title}>
             {section.items ? (
               <>
-                <SidebarGroupLabel className="flex items-center gap-2">
-                  <section.icon className="h-4 w-4" />
-                  {!collapsed && section.title}
+                <SidebarGroupLabel className="flex items-center gap-3 px-3 py-2 mx-2 mb-1 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/10 text-primary font-semibold text-sm tracking-wide uppercase">
+                  <div className="p-1 rounded-md bg-primary/10">
+                    <section.icon className="h-4 w-4" />
+                  </div>
+                  {!collapsed && (
+                    <span className="flex-1">{section.title}</span>
+                  )}
                 </SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
