@@ -7,6 +7,9 @@ const corsHeaders = {
 };
 
 interface SegmentFilters {
+  // Master logic control
+  masterLogic?: 'all_sections' | 'any_section';
+  
   dateRange?: { start: string; end: string };
   ageRange?: { min: number; max: number };
   interests?: string[];
@@ -22,6 +25,27 @@ interface SegmentFilters {
     frequency?: { min: number; max: number };
   };
   itemPreferences?: string[];
+  
+  // Activity-based filters
+  receiptActivityPeriod?: 'last_30_days' | 'last_60_days' | 'last_90_days' | 'last_6_months' | 'last_1_year';
+  visitFrequency?: 'never' | '1_to_2' | '3_to_5' | '6_to_10' | '10_plus';
+  totalSpendRange?: { min: number; max: number };
+  recentActivity?: 'active_7_days' | 'active_14_days' | 'active_30_days' | 'inactive_30_plus';
+  activityLogic?: 'all_match' | 'any_match';
+  
+  // Behavioral patterns
+  preferredVisitDays?: string[];
+  visitTiming?: ('early_month' | 'mid_month' | 'end_month')[];
+  avgSpendPerVisit?: 'under_10' | '10_to_20' | '20_to_30' | '30_to_50' | '50_plus';
+  behaviorLogic?: 'all_match' | 'any_match';
+  
+  demographicsLogic?: 'all_match' | 'any_match';
+  
+  // Member status
+  hasUploadedReceipts?: boolean;
+  pushNotificationsEnabled?: boolean;
+  loyaltyEngagement?: 'has_card' | 'completed_cards' | 'high_punches';
+  memberStatusLogic?: 'all_match' | 'any_match';
 }
 
 interface CreateSegmentRequest {

@@ -7,22 +7,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Users, TrendingUp, X, Filter, Calendar, Clock, Coins } from 'lucide-react';
+import { Users, TrendingUp, X, Filter, Calendar, Clock, Coins, ToggleLeft, ToggleRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { INTEREST_OPTIONS, VENUE_PREFERENCES } from '@/data/interests';
 
 interface SegmentFilters {
+  // Master logic control
+  masterLogic?: 'all_sections' | 'any_section';
+  
   // Activity-based filters
   receiptActivityPeriod?: 'last_30_days' | 'last_60_days' | 'last_90_days' | 'last_6_months' | 'last_1_year';
   visitFrequency?: 'never' | '1_to_2' | '3_to_5' | '6_to_10' | '10_plus';
   totalSpendRange?: { min: number; max: number };
   recentActivity?: 'active_7_days' | 'active_14_days' | 'active_30_days' | 'inactive_30_plus';
+  activityLogic?: 'all_match' | 'any_match';
   
   // Behavioral patterns
   preferredVisitDays?: string[];
   visitTiming?: ('early_month' | 'mid_month' | 'end_month')[];
   avgSpendPerVisit?: 'under_10' | '10_to_20' | '20_to_30' | '30_to_50' | '50_plus';
+  behaviorLogic?: 'all_match' | 'any_match';
   
   // Demographics (optional)
   ageRange?: { min: number; max: number };
@@ -30,11 +35,13 @@ interface SegmentFilters {
   interestsLogic?: 'match_all' | 'match_any';
   venuePreferences?: string[];
   venuePreferencesLogic?: 'match_all' | 'match_any';
+  demographicsLogic?: 'all_match' | 'any_match';
   
   // Member status
   hasUploadedReceipts?: boolean;
   pushNotificationsEnabled?: boolean;
   loyaltyEngagement?: 'has_card' | 'completed_cards' | 'high_punches';
+  memberStatusLogic?: 'all_match' | 'any_match';
 }
 
 interface SegmentPreview {
@@ -246,13 +253,72 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
               </Button>
             )}
           </div>
+          
+          {/* Master Logic Toggle */}
+          <div className="mt-4 p-4 bg-muted/30 rounded-lg border-2 border-dashed border-muted">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium text-sm">Master Filter Logic</h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  How should filter sections be combined?
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  variant={filters.masterLogic === 'all_sections' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('masterLogic', 'all_sections')}
+                  className="text-xs"
+                >
+                  ALL Sections
+                </Button>
+                <Button
+                  variant={filters.masterLogic === 'any_section' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('masterLogic', 'any_section')}
+                  className="text-xs"
+                >
+                  ANY Section
+                </Button>
+              </div>
+            </div>
+            {filters.masterLogic && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                {filters.masterLogic === 'all_sections' 
+                  ? '🔒 Members must match filters from ALL sections that have active filters'
+                  : '🔓 Members only need to match filters from ANY section that has active filters'
+                }
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-8">
           {/* Activity-Based Filters */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Calendar className="h-4 w-4" />
-              Activity-Based Filters
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                Activity-Based Filters
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Logic:</span>
+                <Button
+                  variant={filters.activityLogic === 'all_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('activityLogic', 'all_match')}
+                  className="text-xs h-7"
+                >
+                  ALL
+                </Button>
+                <Button
+                  variant={filters.activityLogic === 'any_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('activityLogic', 'any_match')}
+                  className="text-xs h-7"
+                >
+                  ANY
+                </Button>
+              </div>
             </div>
             <Separator />
 
@@ -362,9 +428,30 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
 
           {/* Behavioral Patterns */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Behavioral Patterns
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Clock className="h-4 w-4" />
+                Behavioral Patterns
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Logic:</span>
+                <Button
+                  variant={filters.behaviorLogic === 'all_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('behaviorLogic', 'all_match')}
+                  className="text-xs h-7"
+                >
+                  ALL
+                </Button>
+                <Button
+                  variant={filters.behaviorLogic === 'any_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('behaviorLogic', 'any_match')}
+                  className="text-xs h-7"
+                >
+                  ANY
+                </Button>
+              </div>
             </div>
             <Separator />
 
@@ -440,9 +527,30 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
 
           {/* Demographics (Optional) */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Users className="h-4 w-4" />
-              Demographics (Optional)
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Users className="h-4 w-4" />
+                Demographics (Optional)
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Logic:</span>
+                <Button
+                  variant={filters.demographicsLogic === 'all_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('demographicsLogic', 'all_match')}
+                  className="text-xs h-7"
+                >
+                  ALL
+                </Button>
+                <Button
+                  variant={filters.demographicsLogic === 'any_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('demographicsLogic', 'any_match')}
+                  className="text-xs h-7"
+                >
+                  ANY
+                </Button>
+              </div>
             </div>
             <Separator />
 
@@ -586,9 +694,30 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
 
           {/* Member Status */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Coins className="h-4 w-4" />
-              Member Status
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Coins className="h-4 w-4" />
+                Member Status
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Logic:</span>
+                <Button
+                  variant={filters.memberStatusLogic === 'all_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('memberStatusLogic', 'all_match')}
+                  className="text-xs h-7"
+                >
+                  ALL
+                </Button>
+                <Button
+                  variant={filters.memberStatusLogic === 'any_match' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => updateFilter('memberStatusLogic', 'any_match')}
+                  className="text-xs h-7"
+                >
+                  ANY
+                </Button>
+              </div>
             </div>
             <Separator />
 
