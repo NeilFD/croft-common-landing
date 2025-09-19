@@ -73,6 +73,68 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
         return;
       }
 
+      const noServerFilters = !filters.dateStart && !filters.dateEnd &&
+        !filters.minAge && !filters.maxAge &&
+        filters.interests.length === 0 && filters.venueAreas.length === 0 &&
+        !filters.minSpend && !filters.maxSpend &&
+        filters.tierBadges.length === 0;
+
+      const mapBasicToEnhanced = (rows: any[]): EnhancedMemberAnalytics[] => {
+        return (rows || []).map((b: any) => ({
+          user_id: b.user_id,
+          first_name: b.first_name,
+          last_name: b.last_name,
+          display_name: b.display_name,
+          age: undefined,
+          interests: [],
+          tier_badge: 'bronze',
+          total_transactions: Number(b.total_transactions || 0),
+          total_spend: Number(b.total_spend || 0),
+          avg_transaction: Number(b.avg_transaction || 0),
+          first_transaction_date: b.first_transaction_date,
+          last_transaction_date: b.last_transaction_date,
+          active_months: Number(b.active_months || 0),
+          active_days: Number(b.active_days || 0),
+          categories: b.categories || [],
+          payment_methods: b.payment_methods || [],
+          currency: b.currency || 'GBP',
+          current_month_spend: Number(b.current_month_spend || 0),
+          current_week_spend: Number(b.current_week_spend || 0),
+          current_month_transactions: Number(b.current_month_transactions || 0),
+          favorite_venues: [],
+          visit_frequency: 0,
+          last_visit_date: b.last_transaction_date,
+          preferred_visit_times: [],
+          retention_risk_score: 0,
+          lifetime_value: Number(b.total_spend || 0),
+        }));
+      };
+
+      const fallbackToBasic = async (): Promise<EnhancedMemberAnalytics[]> => {
+        // Try member-analytics Edge Function first (admin-scoped)
+        try {
+          const { data: basicFn, error: basicFnError } = await supabase.functions.invoke('member-analytics', {
+            headers: {
+              Authorization: `Bearer ${session.session.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          if (!basicFnError && Array.isArray(basicFn?.analytics) && basicFn.analytics.length > 0) {
+            console.warn('Using basic member-analytics edge function fallback');
+            return mapBasicToEnhanced(basicFn.analytics);
+          }
+        } catch (e) {
+          console.warn('member-analytics edge function fallback failed, trying direct RPC...', e);
+        }
+        // Then direct RPC as last resort
+        const { data: basicRpc, error: basicRpcError } = await supabase.rpc('get_member_analytics');
+        if (basicRpcError) {
+          console.error('Basic RPC fallback error:', basicRpcError);
+          return [];
+        }
+        return mapBasicToEnhanced(basicRpc || []);
+      };
+
       console.log('Calling advanced-analytics function with filters:', filters);
       const { data, error } = await supabase.functions.invoke('advanced-analytics', {
         headers: {
@@ -96,8 +158,15 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
 
       let effectiveAnalytics: EnhancedMemberAnalytics[] | null = null;
 
-      if (!error && data?.analytics) {
-        effectiveAnalytics = data.analytics as EnhancedMemberAnalytics[];
+      if (!error && Array.isArray(data?.analytics)) {
+        if ((data.analytics as any[]).length > 0) {
+          effectiveAnalytics = data.analytics as EnhancedMemberAnalytics[];
+        } else if (noServerFilters) {
+          console.warn('Advanced analytics returned 0 members with no filters; falling back to basic analytics.');
+          effectiveAnalytics = await fallbackToBasic();
+        } else {
+          effectiveAnalytics = [];
+        }
       } else {
         console.warn('Edge function failed or returned no data, falling back to direct RPC...', error);
         const { data: rpcData, error: rpcError } = await supabase.rpc('get_advanced_member_analytics', {
@@ -118,7 +187,14 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
           console.error('RPC fallback error:', rpcError);
           throw new Error(rpcError.message);
         }
-        effectiveAnalytics = (rpcData || []) as EnhancedMemberAnalytics[];
+        if (Array.isArray(rpcData) && rpcData.length > 0) {
+          effectiveAnalytics = (rpcData as any) as EnhancedMemberAnalytics[];
+        } else if (noServerFilters) {
+          console.warn('Advanced RPC returned 0 members with no filters; falling back to basic analytics.');
+          effectiveAnalytics = await fallbackToBasic();
+        } else {
+          effectiveAnalytics = [];
+        }
       }
       
       console.log('Enhanced analytics data received:', effectiveAnalytics?.length || 0, 'members');
