@@ -95,8 +95,8 @@ export const AdminSidebar = () => {
           <SidebarGroup key={section.title}>
             {section.items ? (
               <>
-                <SidebarGroupLabel className="flex items-center gap-3 px-3 py-2 mx-2 mb-1 rounded-lg bg-gradient-to-r from-primary/5 to-primary/10 border border-primary/10 text-primary font-semibold text-sm tracking-wide uppercase">
-                  <div className="p-1 rounded-md bg-primary/10">
+                <SidebarGroupLabel className="flex items-center gap-3 px-3 py-2 mx-2 mb-1 rounded-lg border-2 border-pink-500/20 text-pink-600 font-semibold text-sm tracking-wide uppercase hover:border-pink-500/40 transition-colors">
+                  <div className="p-1 rounded-md bg-pink-500/10">
                     <section.icon className="h-4 w-4" />
                   </div>
                   {!collapsed && (
