@@ -25,6 +25,7 @@ interface CreateSegmentRequest {
   name: string;
   description?: string;
   filters: SegmentFilters;
+  preview_only?: boolean;
 }
 
 Deno.serve(async (req) => {
@@ -123,6 +124,21 @@ Deno.serve(async (req) => {
       // Calculate average spend for the segment
       const avgSpend = await calculateSegmentAvgSpend(supabase, requestData.filters);
       console.log('💰 Segment average spend:', avgSpend);
+
+      // If this is a preview-only request, return preview data without creating segment
+      if (requestData.preview_only) {
+        return new Response(
+          JSON.stringify({ 
+            member_count: memberCount,
+            avg_spend: avgSpend,
+            message: 'Preview data calculated'
+          }),
+          { 
+            status: 200, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
 
       // Create the segment
       const { data: segment, error: createError } = await supabase

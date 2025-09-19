@@ -131,8 +131,8 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
 
       // Extract preview data from the response
       setPreview({
-        memberCount: data.member_count || 0,
-        avgSpend: data.avg_spend || 0
+        memberCount: data.segment?.member_count || data.member_count || 0,
+        avgSpend: data.segment?.avg_spend || data.avg_spend || 0
       });
     } catch (error) {
       console.error('Error updating segment preview:', error);
