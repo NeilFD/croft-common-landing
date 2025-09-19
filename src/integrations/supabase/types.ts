@@ -2773,19 +2773,47 @@ export type Database = {
         }[]
       }
       get_advanced_member_analytics: {
-        Args: {
-          p_date_end?: string
-          p_date_start?: string
-          p_interests?: string[]
-          p_interests_logic?: string
-          p_max_age?: number
-          p_max_spend?: number
-          p_min_age?: number
-          p_min_spend?: number
-          p_tier_badges?: string[]
-          p_venue_logic?: string
-          p_venue_slugs?: string[]
-        }
+        Args:
+          | {
+              p_activity_logic?: string
+              p_avg_spend_per_visit?: string
+              p_behavior_logic?: string
+              p_date_end?: string
+              p_date_start?: string
+              p_demographics_logic?: string
+              p_has_uploaded_receipts?: boolean
+              p_interests?: string[]
+              p_interests_logic?: string
+              p_loyalty_engagement?: string
+              p_master_logic?: string
+              p_max_age?: number
+              p_max_spend?: number
+              p_member_status_logic?: string
+              p_min_age?: number
+              p_min_spend?: number
+              p_preferred_visit_days?: string[]
+              p_push_notifications_enabled?: boolean
+              p_receipt_activity_period?: string
+              p_recent_activity?: string
+              p_tier_badges?: string[]
+              p_venue_logic?: string
+              p_venue_slugs?: string[]
+              p_visit_frequency?: string
+              p_visit_timing?: string[]
+            }
+          | {
+              p_date_end?: string
+              p_date_start?: string
+              p_interests?: string[]
+              p_interests_logic?: string
+              p_max_age?: number
+              p_max_spend?: number
+              p_min_age?: number
+              p_min_spend?: number
+              p_tier_badges?: string[]
+              p_venue_logic?: string
+              p_venue_slugs?: string[]
+            }
         Returns: {
           active_days: number
           active_months: number

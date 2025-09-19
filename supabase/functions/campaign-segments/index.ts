@@ -309,19 +309,52 @@ Deno.serve(async (req) => {
 
 async function previewSegment(supabase: any, filters: SegmentFilters): Promise<number> {
   try {
-    // Call the enhanced analytics function with filters
+    // Call the enhanced analytics function with filters including hierarchical logic
     const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+      // Date filters
       p_date_start: filters.dateRange?.start || null,
       p_date_end: filters.dateRange?.end || null,
+      
+      // Age filters
       p_min_age: filters.ageRange?.min || null,
       p_max_age: filters.ageRange?.max || null,
+      
+      // Interest filters
       p_interests: filters.interests || null,
       p_interests_logic: filters.interestsLogic || 'match_any',
+      
+      // Venue filters
       p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
       p_venue_logic: filters.venuePreferencesLogic || 'match_any',
+      
+      // Spending filters
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
-      p_tier_badges: filters.tierBadges || null
+      p_tier_badges: filters.tierBadges || null,
+      
+      // Activity filters
+      p_receipt_activity_period: filters.receiptActivityPeriod || null,
+      p_visit_frequency: filters.visitFrequency || null,
+      p_recent_activity: filters.recentActivity || null,
+      p_activity_logic: filters.activityLogic || 'any_match',
+      
+      // Behavioral filters
+      p_preferred_visit_days: filters.preferredVisitDays || null,
+      p_visit_timing: filters.visitTiming || null,
+      p_avg_spend_per_visit: filters.avgSpendPerVisit || null,
+      p_behavior_logic: filters.behaviorLogic || 'any_match',
+      
+      // Demographics section logic
+      p_demographics_logic: filters.demographicsLogic || 'any_match',
+      
+      // Member status filters
+      p_has_uploaded_receipts: filters.hasUploadedReceipts || null,
+      p_push_notifications_enabled: filters.pushNotificationsEnabled || null,
+      p_loyalty_engagement: filters.loyaltyEngagement || null,
+      p_member_status_logic: filters.memberStatusLogic || 'any_match',
+      
+      // Master logic control
+      p_master_logic: filters.masterLogic || 'any_section'
     });
 
     if (error) {
@@ -339,17 +372,50 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
 async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters): Promise<number> {
   try {
     const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+      // Date filters
       p_date_start: filters.dateRange?.start || null,
       p_date_end: filters.dateRange?.end || null,
+      
+      // Age filters
       p_min_age: filters.ageRange?.min || null,
       p_max_age: filters.ageRange?.max || null,
+      
+      // Interest filters
       p_interests: filters.interests || null,
       p_interests_logic: filters.interestsLogic || 'match_any',
+      
+      // Venue filters
       p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
       p_venue_logic: filters.venuePreferencesLogic || 'match_any',
+      
+      // Spending filters
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
-      p_tier_badges: filters.tierBadges || null
+      p_tier_badges: filters.tierBadges || null,
+      
+      // Activity filters
+      p_receipt_activity_period: filters.receiptActivityPeriod || null,
+      p_visit_frequency: filters.visitFrequency || null,
+      p_recent_activity: filters.recentActivity || null,
+      p_activity_logic: filters.activityLogic || 'any_match',
+      
+      // Behavioral filters
+      p_preferred_visit_days: filters.preferredVisitDays || null,
+      p_visit_timing: filters.visitTiming || null,
+      p_avg_spend_per_visit: filters.avgSpendPerVisit || null,
+      p_behavior_logic: filters.behaviorLogic || 'any_match',
+      
+      // Demographics section logic
+      p_demographics_logic: filters.demographicsLogic || 'any_match',
+      
+      // Member status filters
+      p_has_uploaded_receipts: filters.hasUploadedReceipts || null,
+      p_push_notifications_enabled: filters.pushNotificationsEnabled || null,
+      p_loyalty_engagement: filters.loyaltyEngagement || null,
+      p_member_status_logic: filters.memberStatusLogic || 'any_match',
+      
+      // Master logic control
+      p_master_logic: filters.masterLogic || 'any_section'
     });
 
     if (error || !analytics || analytics.length === 0) {
@@ -374,17 +440,50 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
 
     // Get filtered members
     const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+      // Date filters
       p_date_start: filters.dateRange?.start || null,
       p_date_end: filters.dateRange?.end || null,
+      
+      // Age filters
       p_min_age: filters.ageRange?.min || null,
       p_max_age: filters.ageRange?.max || null,
+      
+      // Interest filters
       p_interests: filters.interests || null,
       p_interests_logic: filters.interestsLogic || 'match_any',
+      
+      // Venue filters
       p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
       p_venue_logic: filters.venuePreferencesLogic || 'match_any',
+      
+      // Spending filters
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
-      p_tier_badges: filters.tierBadges || null
+      p_tier_badges: filters.tierBadges || null,
+      
+      // Activity filters
+      p_receipt_activity_period: filters.receiptActivityPeriod || null,
+      p_visit_frequency: filters.visitFrequency || null,
+      p_recent_activity: filters.recentActivity || null,
+      p_activity_logic: filters.activityLogic || 'any_match',
+      
+      // Behavioral filters
+      p_preferred_visit_days: filters.preferredVisitDays || null,
+      p_visit_timing: filters.visitTiming || null,
+      p_avg_spend_per_visit: filters.avgSpendPerVisit || null,
+      p_behavior_logic: filters.behaviorLogic || 'any_match',
+      
+      // Demographics section logic
+      p_demographics_logic: filters.demographicsLogic || 'any_match',
+      
+      // Member status filters
+      p_has_uploaded_receipts: filters.hasUploadedReceipts || null,
+      p_push_notifications_enabled: filters.pushNotificationsEnabled || null,
+      p_loyalty_engagement: filters.loyaltyEngagement || null,
+      p_member_status_logic: filters.memberStatusLogic || 'any_match',
+      
+      // Master logic control
+      p_master_logic: filters.masterLogic || 'any_section'
     });
 
     if (error || !analytics) {
