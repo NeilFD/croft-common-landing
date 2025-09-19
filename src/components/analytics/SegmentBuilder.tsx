@@ -159,14 +159,14 @@ export const SegmentBuilder: React.FC<SegmentBuilderProps> = ({
     setIsSaving(true);
     try {
       const method = editingSegment ? 'PUT' : 'POST';
-      const url = editingSegment ? `?id=${editingSegment.id}` : '';
       
       const { data, error } = await supabase.functions.invoke('campaign-segments', {
         method,
         body: {
           name: segmentName,
           description: segmentDescription,
-          filters
+          filters,
+          ...(editingSegment && { segment_id: editingSegment.id })
         }
       });
 

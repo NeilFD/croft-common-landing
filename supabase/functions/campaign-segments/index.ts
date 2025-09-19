@@ -202,17 +202,16 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === 'PUT') {
-      const url = new URL(req.url);
-      const segmentId = url.searchParams.get('id');
+      const requestData: CreateSegmentRequest = await req.json();
+      const segmentId = (requestData as any).segment_id;
       
       if (!segmentId) {
         return new Response(
-          JSON.stringify({ error: 'Segment ID required' }),
+          JSON.stringify({ error: 'Segment ID required for update' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      const requestData: CreateSegmentRequest = await req.json();
       console.log('📝 Updating segment:', segmentId);
 
       // Preview updated segment
