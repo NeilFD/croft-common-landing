@@ -320,17 +320,19 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
       p_max_age: filters.ageRange?.max || null,
       
       // Interest filters
-      p_interests: filters.interests || null,
+      p_interests: (filters.interests && filters.interests.length > 0) ? filters.interests : null,
       p_interests_logic: filters.interestsLogic || 'match_any',
       
       // Venue filters
-      p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
+      p_venue_slugs: (filters.venueAreas && filters.venueAreas.length > 0)
+        ? filters.venueAreas
+        : ((filters.venuePreferences && filters.venuePreferences.length > 0) ? filters.venuePreferences : null),
       p_venue_logic: filters.venuePreferencesLogic || 'match_any',
       
       // Spending filters
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
-      p_tier_badges: filters.tierBadges || null,
+      p_tier_badges: (filters.tierBadges && filters.tierBadges.length > 0) ? filters.tierBadges : null,
       
       // Activity filters
       p_receipt_activity_period: filters.receiptActivityPeriod || null,
@@ -339,8 +341,8 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
       p_activity_logic: filters.activityLogic || 'any_match',
       
       // Behavioral filters
-      p_preferred_visit_days: filters.preferredVisitDays || null,
-      p_visit_timing: filters.visitTiming || null,
+      p_preferred_visit_days: (filters.preferredVisitDays && filters.preferredVisitDays.length > 0) ? filters.preferredVisitDays : null,
+      p_visit_timing: (filters.visitTiming && filters.visitTiming.length > 0) ? filters.visitTiming : null,
       p_avg_spend_per_visit: filters.avgSpendPerVisit || null,
       p_behavior_logic: filters.behaviorLogic || 'any_match',
       
@@ -348,8 +350,8 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
       p_demographics_logic: filters.demographicsLogic || 'any_match',
       
       // Member status filters
-      p_has_uploaded_receipts: filters.hasUploadedReceipts || null,
-      p_push_notifications_enabled: filters.pushNotificationsEnabled || null,
+      p_has_uploaded_receipts: (typeof filters.hasUploadedReceipts === 'boolean') ? filters.hasUploadedReceipts : null,
+      p_push_notifications_enabled: (typeof filters.pushNotificationsEnabled === 'boolean') ? filters.pushNotificationsEnabled : null,
       p_loyalty_engagement: filters.loyaltyEngagement || null,
       p_member_status_logic: filters.memberStatusLogic || 'any_match',
       
@@ -360,14 +362,35 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
     console.log('📥 Segment preview filters:', filters);
     console.log('🧮 RPC args (preview):', args);
 
-    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', args);
+    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics_v2', args);
 
     if (error) {
       console.error('Error in segment preview:', error);
       return 0;
     }
 
-    return analytics?.length || 0;
+    // Enforce strict interest matching when master logic requires ALL sections
+    let results = analytics || [];
+    if (filters.masterLogic === 'all_sections' && filters.interests && filters.interests.length > 0) {
+      const ids = results.map((m: any) => m.user_id);
+      if (ids.length > 0) {
+        const { data: profiles, error: profErr } = await supabase
+          .from('profiles')
+          .select('user_id, interests')
+          .in('user_id', ids);
+        if (!profErr && profiles) {
+          const map = new Map(profiles.map((p: any) => [p.user_id, p.interests || []]));
+          const requireAll = (filters.interestsLogic || 'match_any') === 'match_all';
+          results = results.filter((m: any) => {
+            const userInterests: string[] = map.get(m.user_id) || [];
+            const sel = filters.interests as string[];
+            return requireAll ? sel.every(i => userInterests.includes(i)) : sel.some(i => userInterests.includes(i));
+          });
+        }
+      }
+    }
+
+    return results.length;
   } catch (error) {
     console.error('Error previewing segment:', error);
     return 0;
@@ -386,17 +409,19 @@ async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters):
       p_max_age: filters.ageRange?.max || null,
       
       // Interest filters
-      p_interests: filters.interests || null,
+      p_interests: (filters.interests && filters.interests.length > 0) ? filters.interests : null,
       p_interests_logic: filters.interestsLogic || 'match_any',
       
       // Venue filters
-      p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
+      p_venue_slugs: (filters.venueAreas && filters.venueAreas.length > 0)
+        ? filters.venueAreas
+        : ((filters.venuePreferences && filters.venuePreferences.length > 0) ? filters.venuePreferences : null),
       p_venue_logic: filters.venuePreferencesLogic || 'match_any',
       
       // Spending filters
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
-      p_tier_badges: filters.tierBadges || null,
+      p_tier_badges: (filters.tierBadges && filters.tierBadges.length > 0) ? filters.tierBadges : null,
       
       // Activity filters
       p_receipt_activity_period: filters.receiptActivityPeriod || null,
@@ -405,8 +430,8 @@ async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters):
       p_activity_logic: filters.activityLogic || 'any_match',
       
       // Behavioral filters
-      p_preferred_visit_days: filters.preferredVisitDays || null,
-      p_visit_timing: filters.visitTiming || null,
+      p_preferred_visit_days: (filters.preferredVisitDays && filters.preferredVisitDays.length > 0) ? filters.preferredVisitDays : null,
+      p_visit_timing: (filters.visitTiming && filters.visitTiming.length > 0) ? filters.visitTiming : null,
       p_avg_spend_per_visit: filters.avgSpendPerVisit || null,
       p_behavior_logic: filters.behaviorLogic || 'any_match',
       
@@ -414,8 +439,8 @@ async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters):
       p_demographics_logic: filters.demographicsLogic || 'any_match',
       
       // Member status filters
-      p_has_uploaded_receipts: filters.hasUploadedReceipts || null,
-      p_push_notifications_enabled: filters.pushNotificationsEnabled || null,
+      p_has_uploaded_receipts: (typeof filters.hasUploadedReceipts === 'boolean') ? filters.hasUploadedReceipts : null,
+      p_push_notifications_enabled: (typeof filters.pushNotificationsEnabled === 'boolean') ? filters.pushNotificationsEnabled : null,
       p_loyalty_engagement: filters.loyaltyEngagement || null,
       p_member_status_logic: filters.memberStatusLogic || 'any_match',
       
@@ -426,14 +451,35 @@ async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters):
     console.log('📥 Segment filters (avg spend):', filters);
     console.log('🧮 RPC args (avg spend):', args);
 
-    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', args);
+    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics_v2', args);
 
     if (error || !analytics || analytics.length === 0) {
       return 0;
     }
 
-    const totalSpend = analytics.reduce((sum: number, member: any) => sum + (member.total_spend || 0), 0);
-    return totalSpend / analytics.length;
+    // Enforce strict interest matching when master logic requires ALL sections
+    let results = analytics;
+    if (filters.masterLogic === 'all_sections' && filters.interests && filters.interests.length > 0) {
+      const ids = results.map((m: any) => m.user_id);
+      if (ids.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, interests')
+          .in('user_id', ids);
+        if (profiles) {
+          const map = new Map(profiles.map((p: any) => [p.user_id, p.interests || []]));
+          const requireAll = (filters.interestsLogic || 'match_any') === 'match_all';
+          results = results.filter((m: any) => {
+            const userInterests: string[] = map.get(m.user_id) || [];
+            const sel = filters.interests as string[];
+            return requireAll ? sel.every(i => userInterests.includes(i)) : sel.some(i => userInterests.includes(i));
+          });
+        }
+      }
+    }
+
+    const totalSpend = results.reduce((sum: number, member: any) => sum + (member.total_spend || 0), 0);
+    return results.length ? totalSpend / results.length : 0;
   } catch (error) {
     console.error('Error calculating segment avg spend:', error);
     return 0;
@@ -459,17 +505,19 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
       p_max_age: filters.ageRange?.max || null,
       
       // Interest filters
-      p_interests: filters.interests || null,
+      p_interests: (filters.interests && filters.interests.length > 0) ? filters.interests : null,
       p_interests_logic: filters.interestsLogic || 'match_any',
       
       // Venue filters
-      p_venue_slugs: filters.venueAreas || filters.venuePreferences || null,
+      p_venue_slugs: (filters.venueAreas && filters.venueAreas.length > 0)
+        ? filters.venueAreas
+        : ((filters.venuePreferences && filters.venuePreferences.length > 0) ? filters.venuePreferences : null),
       p_venue_logic: filters.venuePreferencesLogic || 'match_any',
       
       // Spending filters
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
-      p_tier_badges: filters.tierBadges || null,
+      p_tier_badges: (filters.tierBadges && filters.tierBadges.length > 0) ? filters.tier_badges : null,
       
       // Activity filters
       p_receipt_activity_period: filters.receiptActivityPeriod || null,
@@ -478,8 +526,8 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
       p_activity_logic: filters.activityLogic || 'any_match',
       
       // Behavioral filters
-      p_preferred_visit_days: filters.preferredVisitDays || null,
-      p_visit_timing: filters.visitTiming || null,
+      p_preferred_visit_days: (filters.preferredVisitDays && filters.preferredVisitDays.length > 0) ? filters.preferredVisitDays : null,
+      p_visit_timing: (filters.visitTiming && filters.visitTiming.length > 0) ? filters.visitTiming : null,
       p_avg_spend_per_visit: filters.avgSpendPerVisit || null,
       p_behavior_logic: filters.behaviorLogic || 'any_match',
       
@@ -487,8 +535,8 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
       p_demographics_logic: filters.demographicsLogic || 'any_match',
       
       // Member status filters
-      p_has_uploaded_receipts: filters.hasUploadedReceipts || null,
-      p_push_notifications_enabled: filters.pushNotificationsEnabled || null,
+      p_has_uploaded_receipts: (typeof filters.hasUploadedReceipts === 'boolean') ? filters.hasUploadedReceipts : null,
+      p_push_notifications_enabled: (typeof filters.pushNotificationsEnabled === 'boolean') ? filters.pushNotificationsEnabled : null,
       p_loyalty_engagement: filters.loyaltyEngagement || null,
       p_member_status_logic: filters.memberStatusLogic || 'any_match',
       
@@ -499,15 +547,36 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
     console.log('📥 Segment filters (generate members):', filters);
     console.log('🧮 RPC args (generate members):', args);
 
-    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', args);
+    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics_v2', args);
 
     if (error || !analytics) {
       console.error('Error getting analytics for segment members:', error);
       return;
     }
 
+    // Enforce strict interest matching when master logic requires ALL sections
+    let results = analytics;
+    if (filters.masterLogic === 'all_sections' && filters.interests && filters.interests.length > 0) {
+      const ids = results.map((m: any) => m.user_id);
+      if (ids.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, interests')
+          .in('user_id', ids);
+        if (profiles) {
+          const map = new Map(profiles.map((p: any) => [p.user_id, p.interests || []]));
+          const requireAll = (filters.interestsLogic || 'match_any') === 'match_all';
+          results = results.filter((m: any) => {
+            const userInterests: string[] = map.get(m.user_id) || [];
+            const sel = filters.interests as string[];
+            return requireAll ? sel.every(i => userInterests.includes(i)) : sel.some(i => userInterests.includes(i));
+          });
+        }
+      }
+    }
+
     // Insert segment members
-    const segmentMembers = analytics.map((member: any) => ({
+    const segmentMembers = results.map((member: any) => ({
       segment_id: segmentId,
       user_id: member.user_id
     }));
