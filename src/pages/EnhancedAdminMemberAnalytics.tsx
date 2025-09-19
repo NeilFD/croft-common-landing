@@ -94,14 +94,36 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
 
       console.log('Function response:', { data, error });
 
-      if (error) {
-        console.error('Function error details:', error);
-        throw new Error(`Function error: ${error.message || JSON.stringify(error)}`);
+      let effectiveAnalytics: EnhancedMemberAnalytics[] | null = null;
+
+      if (!error && data?.analytics) {
+        effectiveAnalytics = data.analytics as EnhancedMemberAnalytics[];
+      } else {
+        console.warn('Edge function failed or returned no data, falling back to direct RPC...', error);
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_advanced_member_analytics', {
+          p_date_start: filters.dateStart ? filters.dateStart.toISOString().split('T')[0] : null,
+          p_date_end: filters.dateEnd ? filters.dateEnd.toISOString().split('T')[0] : null,
+          p_min_age: filters.minAge || null,
+          p_max_age: filters.maxAge || null,
+          p_interests: filters.interests.length ? filters.interests : null,
+          p_interests_logic: 'match_any',
+          p_venue_slugs: filters.venueAreas.length ? filters.venueAreas : null,
+          p_venue_logic: 'match_any',
+          p_min_spend: filters.minSpend || null,
+          p_max_spend: filters.maxSpend || null,
+          p_tier_badges: filters.tierBadges.length ? filters.tierBadges : null
+        });
+
+        if (rpcError) {
+          console.error('RPC fallback error:', rpcError);
+          throw new Error(rpcError.message);
+        }
+        effectiveAnalytics = (rpcData || []) as EnhancedMemberAnalytics[];
       }
       
-      console.log('Enhanced analytics data received:', data?.analytics?.length || 0, 'members');
-      setAnalytics(data?.analytics || []);
-      setSegments(data?.segments || []);
+      console.log('Enhanced analytics data received:', effectiveAnalytics?.length || 0, 'members');
+      setAnalytics(effectiveAnalytics || []);
+      setSegments((data as any)?.segments || []);
     } catch (error) {
       console.error('Error fetching enhanced analytics:', error);
       toast.error('Failed to load enhanced member analytics');
