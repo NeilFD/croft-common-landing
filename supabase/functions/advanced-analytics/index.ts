@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
 
     // Call the advanced analytics function with filters
     console.log('📊 Fetching advanced member analytics data...');
-    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+    const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics_v2', {
       p_date_start: filters.dateStart ? new Date(filters.dateStart).toISOString().split('T')[0] : null,
       p_date_end: filters.dateEnd ? new Date(filters.dateEnd).toISOString().split('T')[0] : null,
       p_min_age: filters.minAge || null,
