@@ -11,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { SegmentBuilder } from './SegmentBuilder';
@@ -133,6 +134,36 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
       toast.error('Failed to load segments');
     }
     setIsLoadingSegments(false);
+  };
+
+  const handleDeleteSegment = async (segmentId: string, segmentName: string) => {
+    try {
+      // Get the auth token to make the request
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
+      const response = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/campaign-segments?id=${segmentId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to delete segment' }));
+        throw new Error(errorData.error || 'Failed to delete segment');
+      }
+      
+      toast.success(`Segment "${segmentName}" deleted successfully`);
+      loadSavedSegments(); // Reload segments after deletion
+    } catch (error) {
+      console.error('Error deleting segment:', error);
+      toast.error('Failed to delete segment');
+    }
   };
 
   // Calculate estimated reach based on selected segment or custom filters
@@ -564,6 +595,30 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
                             >
                               <Target className="h-4 w-4" />
                             </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Segment</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "{segment.name}"? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction 
+                                    onClick={() => handleDeleteSegment(segment.id, segment.name)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </div>
                       </CardContent>
