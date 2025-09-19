@@ -53,6 +53,163 @@ export type Database = {
         }
         Relationships: []
       }
+      campaign_analytics: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          event_timestamp: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          event_timestamp?: string
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          event_timestamp?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_analytics_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_segments: {
+        Row: {
+          avg_spend: number | null
+          created_at: string
+          created_by: string
+          description: string | null
+          filters: Json
+          id: string
+          is_active: boolean
+          member_count: number | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          avg_spend?: number | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_active?: boolean
+          member_count?: number | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          avg_spend?: number | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_active?: boolean
+          member_count?: number | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      campaigns: {
+        Row: {
+          clicked_count: number | null
+          created_at: string
+          created_by: string
+          delivered_count: number | null
+          estimated_reach: number | null
+          id: string
+          message: string
+          opened_count: number | null
+          personalize: boolean
+          schedule_type: string
+          scheduled_date: string | null
+          scheduled_time: string | null
+          segment_filters: Json | null
+          segment_id: string | null
+          sent_at: string | null
+          sent_count: number | null
+          status: string
+          template_id: string | null
+          test_mode: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          clicked_count?: number | null
+          created_at?: string
+          created_by: string
+          delivered_count?: number | null
+          estimated_reach?: number | null
+          id?: string
+          message: string
+          opened_count?: number | null
+          personalize?: boolean
+          schedule_type?: string
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          segment_filters?: Json | null
+          segment_id?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          template_id?: string | null
+          test_mode?: boolean
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          clicked_count?: number | null
+          created_at?: string
+          created_by?: string
+          delivered_count?: number | null
+          estimated_reach?: number | null
+          id?: string
+          message?: string
+          opened_count?: number | null
+          personalize?: boolean
+          schedule_type?: string
+          scheduled_date?: string | null
+          scheduled_time?: string | null
+          segment_filters?: Json | null
+          segment_id?: string | null
+          sent_at?: string | null
+          sent_count?: number | null
+          status?: string
+          template_id?: string | null
+          test_mode?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_segments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cinema_bookings: {
         Row: {
           created_at: string
@@ -2022,6 +2179,35 @@ export type Database = {
           word?: string
         }
         Relationships: []
+      }
+      segment_member_previews: {
+        Row: {
+          created_at: string
+          id: string
+          segment_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          segment_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          segment_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "segment_member_previews_segment_id_fkey"
+            columns: ["segment_id"]
+            isOneToOne: false
+            referencedRelation: "campaign_segments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       streak_badges: {
         Row: {
