@@ -121,7 +121,9 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
   const loadSavedSegments = async () => {
     setIsLoadingSegments(true);
     try {
-      const { data, error } = await supabase.functions.invoke('campaign-segments');
+      const { data, error } = await supabase.functions.invoke('campaign-segments', {
+        method: 'GET'
+      });
       
       if (error) throw error;
       
