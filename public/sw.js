@@ -2,7 +2,7 @@
 // Handles caching, push notifications, and app communication
 
 // Cache names for versioning
-const CACHE_NAME = 'croft-app-v1.6';
+const CACHE_NAME = 'croft-app-v1.7';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
 // Install event - cache essential assets
@@ -256,9 +256,19 @@ self.addEventListener('notificationclick', event => {
       }
     } catch (_) {}
 
-    // If we have a tracking URL, navigate directly to it
+    // If we have a tracking URL, extract path and navigate or store for nudge
     if (url && typeof url === 'string' && url.length > 0) {
-      console.log('🔔 SW: 🎯 Opening tracking URL directly:', url);
+      console.log('🔔 SW: 🎯 Processing tracking URL:', url);
+      
+      // Extract pathname from full URL for internal navigation
+      let navigationPath = url;
+      try {
+        const urlObj = new URL(url);
+        navigationPath = urlObj.pathname + urlObj.search + urlObj.hash;
+        console.log('🔔 SW: Extracted path for navigation:', navigationPath);
+      } catch (e) {
+        console.log('🔔 SW: URL parsing failed, using as-is:', url);
+      }
       
       // Try to focus existing window first
       const clients = await self.clients.matchAll({ 
@@ -267,14 +277,15 @@ self.addEventListener('notificationclick', event => {
       });
       
       if (clients.length > 0) {
-        // Navigate existing window to the tracking URL
-        console.log('🔔 SW: Navigating existing window to tracking URL');
-        clients[0].navigate(url);
+        // For open PWA, store the path for nudge button and focus
+        console.log('🔔 SW: PWA open - storing path for nudge and focusing window');
+        await storeNudgeUrl(navigationPath);
+        await attemptNudgeDelivery(navigationPath);
         await clients[0].focus();
       } else {
-        // Open new window directly to the tracking URL
-        console.log('🔔 SW: Opening new window with tracking URL');
-        await self.clients.openWindow(url);
+        // No open window - navigate directly to the path
+        console.log('🔔 SW: Opening new window with path:', navigationPath);
+        await self.clients.openWindow(navigationPath);
       }
     } else {
       // Fallback: open app normally if no tracking URL

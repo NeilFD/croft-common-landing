@@ -29,13 +29,16 @@ const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "
     if (nudgeUrl) {
       markNudgeClicked(); // Mark as clicked immediately
       
-      // Navigate to the URL (could be internal or external)
+      // Handle both full URLs and internal paths
       if (nudgeUrl.startsWith('http')) {
         console.log('🎯 NUDGE BUTTON: Opening external URL');
         window.open(nudgeUrl, '_blank');
-      } else {
-        console.log('🎯 NUDGE BUTTON: Navigating to internal URL');
+      } else if (nudgeUrl.startsWith('/')) {
+        console.log('🎯 NUDGE BUTTON: Navigating to internal path');
         navigate(nudgeUrl);
+      } else {
+        console.log('🎯 NUDGE BUTTON: Treating as internal path, adding slash');
+        navigate('/' + nudgeUrl);
       }
     }
   };
