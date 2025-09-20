@@ -308,24 +308,10 @@ serve(async (req) => {
         ? renderTemplate((payload as any).banner_message, { first_name: first })
         : null;
       
-      // Generate tracking redirect URL: /c/:token?u=<dest>&user=<id>
+      // Generate relative tracking URL: /c/:token?u=<dest>&user=<id> (safer for cross-origin)
       const baseUrl = payload!.url || "/notifications";
-      let redirectBase: URL;
-      try {
-        const requestOrigin = req.headers.get('origin') || req.headers.get('referer');
-        if (requestOrigin) {
-          redirectBase = new URL(`/c/${clickToken}`, requestOrigin);
-        } else {
-          redirectBase = new URL(`/c/${clickToken}`, "https://croftcommontest.com");
-        }
-      } catch {
-        redirectBase = new URL(`/c/${clickToken}`, "https://croftcommontest.com");
-      }
-      redirectBase.searchParams.set('u', baseUrl);
-      if ((s as any).user_id) {
-        redirectBase.searchParams.set('user', (s as any).user_id);
-      }
-      const notificationUrl = redirectBase.toString();
+      const userParam = (s as any).user_id ? `&user=${encodeURIComponent((s as any).user_id)}` : '';
+      const notificationUrl = `/c/${clickToken}?u=${encodeURIComponent(baseUrl)}${userParam}`;
       
       const payloadForSub = { 
         ...(payload as any), 

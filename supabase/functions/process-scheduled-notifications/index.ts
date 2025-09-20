@@ -197,10 +197,16 @@ serve(async (req) => {
         const first = (s as any).user_id ? userFirstNames.get((s as any).user_id) : undefined;
         const personalizedTitle = renderTemplate(n.title, { first_name: first });
         const personalizedBody = renderTemplate(n.body, { first_name: first });
+        
+        // Generate relative tracking URL for CTR tracking
+        const baseUrl = n.url || "/notifications";
+        const userParam = (s as any).user_id ? `&user=${encodeURIComponent((s as any).user_id)}` : '';
+        const trackingUrl = `/c/${clickToken}?u=${encodeURIComponent(baseUrl)}${userParam}`;
+        
         const payloadForSub = {
           title: personalizedTitle,
           body: personalizedBody,
-          url: n.url ?? undefined,
+          url: trackingUrl,
           icon: n.icon ?? undefined,
           badge: n.badge ?? undefined,
           notification_id: n.id,

@@ -260,9 +260,19 @@ self.addEventListener('notificationclick', event => {
     if (url && typeof url === 'string' && url.length > 0) {
       console.log('🔔 SW: 🎯 Processing tracking URL:', url);
       
-      // Use the full tracking URL directly for proper click recording
+      // Handle cross-origin URLs by using pathname + search
       let navigationPath = url;
-      console.log('🔔 SW: Using full tracking URL for navigation:', navigationPath);
+      try {
+        const urlObj = new URL(url, self.location.origin);
+        if (urlObj.origin !== self.location.origin) {
+          navigationPath = urlObj.pathname + urlObj.search + urlObj.hash;
+          console.log('🔔 SW: Cross-origin URL detected, using path:', navigationPath);
+        } else {
+          console.log('🔔 SW: Same-origin URL, using full URL:', navigationPath);
+        }
+      } catch (e) {
+        console.log('🔔 SW: URL parsing failed, using as-is:', url);
+      }
       
       // Try to focus existing window first
       const clients = await self.clients.matchAll({ 
