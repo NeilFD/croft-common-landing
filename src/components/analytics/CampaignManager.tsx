@@ -47,6 +47,20 @@ interface CampaignTemplate {
   personalizable: boolean;
 }
 
+interface CampaignHistoryItem {
+  id: string;
+  title: string;
+  message: string;
+  status: string;
+  sent_at: string;
+  sent_count: number;
+  delivered_count: number;
+  opened_count: number;
+  clicked_count: number;
+  estimated_reach: number;
+  test_mode: boolean;
+}
+
 const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
   {
     id: 'welcome_new',
@@ -97,6 +111,10 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
   const [showSegmentBuilder, setShowSegmentBuilder] = useState(false);
   const [editingSegment, setEditingSegment] = useState<SavedSegment | null>(null);
   const [activeTab, setActiveTab] = useState('create');
+  
+  // Campaign history state
+  const [campaignHistory, setCampaignHistory] = useState<CampaignHistoryItem[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
   const [selectedSegment, setSelectedSegment] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
@@ -116,6 +134,13 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
     loadSavedSegments();
   }, []);
 
+  // Load campaign history when history tab is accessed
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadCampaignHistory();
+    }
+  }, [activeTab]);
+
   const loadSavedSegments = async () => {
     setIsLoadingSegments(true);
     try {
@@ -131,6 +156,23 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
       toast.error('Failed to load segments');
     }
     setIsLoadingSegments(false);
+  };
+
+  const loadCampaignHistory = async () => {
+    setIsLoadingHistory(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
+        method: 'GET'
+      });
+      
+      if (error) throw error;
+      
+      setCampaignHistory(data.campaigns || []);
+    } catch (error) {
+      console.error('Error loading campaign history:', error);
+      toast.error('Failed to load campaign history');
+    }
+    setIsLoadingHistory(false);
   };
 
   const handleDeleteSegment = async (segmentId: string, segmentName: string) => {
@@ -287,6 +329,11 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
       setCustomFilters(null);
 
       toast.success(data.message || 'Campaign sent successfully!');
+      
+      // Refresh campaign history if we're on that tab
+      if (activeTab === 'history') {
+        loadCampaignHistory();
+      }
     } catch (error) {
       console.error('Campaign send error:', error);
       toast.error('Failed to send campaign');
@@ -699,10 +746,151 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
             </TabsContent>
 
             <TabsContent value="history" className="space-y-4 mt-6">
-              <h3 className="text-lg font-semibold">Campaign History</h3>
-              <div className="text-center py-8 text-muted-foreground">
-                Campaign history will be displayed here once campaigns are sent.
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">Campaign History</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadCampaignHistory}
+                  disabled={isLoadingHistory}
+                >
+                  Refresh
+                </Button>
               </div>
+
+              {isLoadingHistory ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                  <p className="text-muted-foreground mt-2">Loading campaign history...</p>
+                </div>
+              ) : campaignHistory.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Send className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No campaigns sent yet. Create your first campaign to see history here.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {/* Summary metrics */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-primary">
+                          {campaignHistory.reduce((acc, c) => acc + c.sent_count, 0)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Total Sent</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-green-600">
+                          {campaignHistory.reduce((acc, c) => acc + c.delivered_count, 0)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Delivered</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {campaignHistory.reduce((acc, c) => acc + c.opened_count, 0)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Opened</p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <div className="text-2xl font-bold text-purple-600">
+                          {campaignHistory.reduce((acc, c) => acc + c.clicked_count, 0)}
+                        </div>
+                        <p className="text-xs text-muted-foreground">Clicked</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Campaign list */}
+                  <div className="space-y-3">
+                    {campaignHistory.map((campaign) => {
+                      const openRate = campaign.sent_count > 0 ? (campaign.opened_count / campaign.sent_count * 100).toFixed(1) : '0';
+                      const clickRate = campaign.opened_count > 0 ? (campaign.clicked_count / campaign.opened_count * 100).toFixed(1) : '0';
+                      const deliveryRate = campaign.sent_count > 0 ? (campaign.delivered_count / campaign.sent_count * 100).toFixed(1) : '0';
+
+                      return (
+                        <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="font-semibold">{campaign.title}</h4>
+                                  {campaign.test_mode && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      <TestTube className="h-3 w-3 mr-1" />
+                                      Test
+                                    </Badge>
+                                  )}
+                                  <Badge 
+                                    variant={campaign.status === 'sent' ? 'default' : 'secondary'}
+                                    className="text-xs"
+                                  >
+                                    {campaign.status}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                                  {campaign.message}
+                                </p>
+                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {campaign.sent_at ? format(new Date(campaign.sent_at), 'MMM d, yyyy HH:mm') : 'Not sent'}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Users className="h-3 w-3" />
+                                    {campaign.sent_count} recipients
+                                  </span>
+                                </div>
+                              </div>
+                              
+                              <div className="grid grid-cols-4 gap-4 ml-6 text-center">
+                                <div>
+                                  <div className="text-lg font-semibold text-green-600">
+                                    {deliveryRate}%
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Delivered</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {campaign.delivered_count}/{campaign.sent_count}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-lg font-semibold text-blue-600">
+                                    {openRate}%
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Open Rate</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {campaign.opened_count}/{campaign.sent_count}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-lg font-semibold text-purple-600">
+                                    {clickRate}%
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">CTR</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {campaign.clicked_count}/{campaign.opened_count || campaign.sent_count}
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="text-lg font-semibold">
+                                    {campaign.estimated_reach}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">Est. Reach</div>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
