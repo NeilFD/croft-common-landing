@@ -151,6 +151,9 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
   const [estimatedReach, setEstimatedReach] = useState(0);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  // Segments management
+  const [editingSegment, setEditingSegment] = useState<SavedSegment | null>(null);
+
   const loadCampaignHistory = async () => {
     try {
       setHistoryLoading(true);
@@ -200,28 +203,37 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
   };
 
   // Load saved segments on component mount
-  useEffect(() => {
-    const loadSavedSegments = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('campaign_segments')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
+  const loadSavedSegments = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('campaign_segments')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
 
-        if (error) {
-          console.error('Error loading saved segments:', error);
-          return;
-        }
-
-        setSavedSegments(data || []);
-      } catch (error) {
+      if (error) {
         console.error('Error loading saved segments:', error);
+        return;
       }
-    };
 
+      setSavedSegments(data || []);
+    } catch (error) {
+      console.error('Error loading saved segments:', error);
+    }
+  };
+
+  useEffect(() => {
     loadSavedSegments();
   }, []);
+
+  // Update estimated reach when segment is selected
+  useEffect(() => {
+    if (selectedSegment) {
+      setEstimatedReach(selectedSegment.member_count);
+    } else {
+      setEstimatedReach(0);
+    }
+  }, [selectedSegment]);
 
   // Load campaign history when tab becomes active or archive filter changes
   useEffect(() => {
@@ -290,6 +302,36 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
     setPersonalizeMessage(template.personalizable);
   };
 
+  const handleSegmentCreate = async (segment: SavedSegment) => {
+    await loadSavedSegments();
+    setActiveTab('create');
+    setSelectedSegment(segment);
+    setEditingSegment(null);
+  };
+
+  const handleSegmentEdit = (segment: SavedSegment) => {
+    setEditingSegment(segment);
+  };
+
+  const handleSegmentDelete = async (segmentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('campaign_segments')
+        .update({ is_active: false })
+        .eq('id', segmentId);
+
+      if (error) {
+        toast.error('Failed to delete segment');
+        return;
+      }
+
+      toast.success('Segment deleted successfully');
+      await loadSavedSegments();
+    } catch (error) {
+      toast.error('Failed to delete segment');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -310,6 +352,10 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
           <TabsTrigger value="create">
             <Send className="h-4 w-4 mr-2" />
             Create Campaign
+          </TabsTrigger>
+          <TabsTrigger value="segments">
+            <Target className="h-4 w-4 mr-2" />
+            Segments
           </TabsTrigger>
           <TabsTrigger value="history">
             <Clock className="h-4 w-4 mr-2" />
@@ -389,7 +435,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="segment">Target a Saved Segment</Label>
-                  <Select onValueChange={(value) => {
+                  <Select value={selectedSegment?.id || ''} onValueChange={(value) => {
                     const segment = savedSegments.find(s => s.id === value);
                     setSelectedSegment(segment || null);
                     setSegmentFilters(null);
@@ -405,17 +451,11 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <Label>
-                    <div className="flex items-center justify-between">
-                      Target Dynamic Segment
-                    </div>
-                  </Label>
-                  <SegmentBuilder onSegmentCreate={setSegmentFilters} />
+                  {savedSegments.length === 0 && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      No saved segments available. Create one in the Segments tab.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -492,6 +532,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                     id="estimated-reach"
                     placeholder="Estimated Reach"
                     value={estimatedReach}
+                    readOnly={!!selectedSegment}
                     onChange={(e) => setEstimatedReach(parseInt(e.target.value))}
                   />
                 </div>
@@ -524,6 +565,95 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
             )}
           </Button>
         </div>
+        </TabsContent>
+
+        <TabsContent value="segments" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Saved Segments List */}
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    Saved Segments
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setEditingSegment(null)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      New
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {savedSegments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No segments created yet.</p>
+                  ) : (
+                    savedSegments.map((segment) => (
+                      <div key={segment.id} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-sm">{segment.name}</h4>
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleSegmentEdit(segment)}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="sm">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Segment</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete "{segment.name}"? This action cannot be undone.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleSegmentDelete(segment.id)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{segment.description}</p>
+                        <div className="flex justify-between text-xs">
+                          <span>{segment.member_count} members</span>
+                          <span>£{segment.avg_spend} avg spend</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Segment Builder */}
+            <div className="lg:col-span-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>
+                    {editingSegment ? `Edit Segment: ${editingSegment.name}` : 'Create New Segment'}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SegmentBuilder 
+                    onSegmentCreate={handleSegmentCreate}
+                    editingSegment={editingSegment}
+                    initialFilters={editingSegment?.filters}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="history" className="space-y-6">
