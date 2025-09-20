@@ -249,8 +249,14 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
         personalize,
         test_mode: testMode,
         schedule_type: scheduleType,
-        scheduled_date: scheduledDate,
-        scheduled_time: scheduledTime,
+        // Only include date/time for scheduled campaigns
+        ...(scheduleType === 'later' ? {
+          scheduled_date: scheduledDate,
+          scheduled_time: scheduledTime
+        } : {
+          scheduled_date: null,
+          scheduled_time: null
+        }),
         estimated_reach: estimatedReach,
         icon: BRAND_LOGO, // Always include brand logo
       };
