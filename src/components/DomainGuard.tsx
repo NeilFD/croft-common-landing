@@ -15,6 +15,7 @@ const DomainGuard: React.FC<DomainGuardProps> = ({
   const isDevelopment = currentDomain === 'localhost' || 
                        currentDomain === '127.0.0.1' || 
                        currentDomain.includes('.lovable.app') ||
+                       currentDomain.includes('lovableproject.com') ||
                        currentDomain.includes('localhost');
   
   const isAllowedDomain = allowedDomains.includes(currentDomain) || isDevelopment;

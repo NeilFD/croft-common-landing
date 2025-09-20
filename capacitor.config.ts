@@ -4,10 +4,10 @@ const config: CapacitorConfig = {
   appId: 'com.croftcommon.beacon',
   appName: 'Croft Common',
   webDir: 'dist',
-  // server: {
-  //   url: 'https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com?forceHideBadge=true',
-  //   cleartext: true
-  // },
+  server: {
+    url: 'https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com?forceHideBadge=true',
+    cleartext: true
+  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 5000,
@@ -28,6 +28,12 @@ const config: CapacitorConfig = {
       presentationOptions: ["badge", "sound", "alert"],
     },
   },
+  allowNavigation: [
+    '410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com',
+    '*.lovableproject.com',
+    'croftcommon.co.uk',
+    'www.croftcommon.co.uk'
+  ],
   ios: {
     scheme: 'Croft Common',
     contentInset: 'automatic',

@@ -16,6 +16,7 @@ const ReverseDomainGuard: React.FC = () => {
     const isDevelopment = currentDomain === 'localhost' || 
                          currentDomain === '127.0.0.1' || 
                          currentDomain.includes('.lovable.app') ||
+                         currentDomain.includes('lovableproject.com') ||
                          currentDomain.includes('localhost');
     
     // If on restricted domain and not in development, redirect to /secretkitchens
