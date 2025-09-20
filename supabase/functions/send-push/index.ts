@@ -308,27 +308,24 @@ serve(async (req) => {
         ? renderTemplate((payload as any).banner_message, { first_name: first })
         : null;
       
-      // Generate full absolute URL for the intended route with tracking parameters
+      // Generate tracking redirect URL: /c/:token?u=<dest>&user=<id>
       const baseUrl = payload!.url || "/notifications";
-      let url: URL;
+      let redirectBase: URL;
       try {
-        // Try to construct URL using the request origin if available
         const requestOrigin = req.headers.get('origin') || req.headers.get('referer');
         if (requestOrigin) {
-          url = new URL(baseUrl, requestOrigin);
+          redirectBase = new URL(`/c/${clickToken}`, requestOrigin);
         } else {
-          // Fallback to production domain
-          url = new URL(baseUrl, "https://croftcommontest.com");
+          redirectBase = new URL(`/c/${clickToken}`, "https://croftcommontest.com");
         }
       } catch {
-        // Final fallback
-        url = new URL(baseUrl, "https://croftcommontest.com");
+        redirectBase = new URL(`/c/${clickToken}`, "https://croftcommontest.com");
       }
-      url.searchParams.set('ntk', clickToken);
+      redirectBase.searchParams.set('u', baseUrl);
       if ((s as any).user_id) {
-        url.searchParams.set('user', (s as any).user_id);
+        redirectBase.searchParams.set('user', (s as any).user_id);
       }
-      const notificationUrl = url.toString();
+      const notificationUrl = redirectBase.toString();
       
       const payloadForSub = { 
         ...(payload as any), 

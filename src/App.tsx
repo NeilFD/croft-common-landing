@@ -38,6 +38,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 const Branding = lazy(() => import("./pages/Branding"));
 const CommonGood = lazy(() => import("./pages/CommonGood"));
 const CommonGoodMessage = lazy(() => import("./pages/CommonGoodMessage"));
+const ClickRedirect = lazy(() => import("./pages/ClickRedirect"));
 const CroftCommonDateTime = lazy(() => import("./pages/CroftCommonDateTime"));
 const Book = lazy(() => import("./pages/Book"));
 const Admin = lazy(() => import("./pages/Admin"));
@@ -217,6 +218,7 @@ const App = () => (
                     <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
                     <Route path="/cms/*" element={<CMS />} />
                     <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/c/:token" element={<ClickRedirect />} />
                     <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Suspense>
