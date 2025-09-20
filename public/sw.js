@@ -237,6 +237,8 @@ self.addEventListener('notificationclick', event => {
 
   const data = event.notification.data || {};
   const url = data.url;
+  const clickToken = data.click_token || data.clickToken || (typeof url === 'string' ? (() => { try { return new URL(url, self.location.origin).searchParams.get('ntk'); } catch { return null; } })() : null);
+  const clickUser = data.user || (typeof url === 'string' ? (() => { try { return new URL(url, self.location.origin).searchParams.get('user'); } catch { return null; } })() : null);
   
   console.log('🔔 SW: 🎯 NOTIFICATION CLICK DATA INSPECTION:');
   console.log('🔔 SW: Raw notification data:', JSON.stringify(data, null, 2));
@@ -245,6 +247,14 @@ self.addEventListener('notificationclick', event => {
   
   event.waitUntil((async () => {
     console.log('🔔 SW: Processing notification click with validated data:', data);
+
+    // Best-effort click tracking via Edge Function (idempotent)
+    try {
+      if (clickToken) {
+        const trackUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/track-notification-click?ntk=${encodeURIComponent(clickToken)}${clickUser ? `&user=${encodeURIComponent(clickUser)}` : ''}`;
+        fetch(trackUrl, { method: 'GET', mode: 'cors' }).catch(() => {});
+      }
+    } catch (_) {}
 
     // If we have a tracking URL, navigate directly to it
     if (url && typeof url === 'string' && url.length > 0) {

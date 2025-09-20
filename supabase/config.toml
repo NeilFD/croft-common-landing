@@ -198,6 +198,10 @@ verify_jwt = false
 [functions.simple-push-test]
 verify_jwt = false
 
+# Tracking clicks must be public (no JWT)
+[functions.track-notification-click]
+verify_jwt = false
+
 [functions.calendly-webhook]
 verify_jwt = false
 
