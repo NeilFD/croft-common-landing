@@ -82,160 +82,172 @@ Deno.serve(async (req) => {
     }
 
     if (req.method === 'POST') {
-      const requestBody = await req.json();
-      
-      // Check if this is a campaign creation request or a data fetch/update request
-      if (requestBody.action === 'get_campaigns') {
-        // Handle campaign history request
-        console.log('📊 Retrieving campaign history...');
-        
-        const includeArchived = requestBody.include_archived || req.headers.get('x-include-archived') === 'true';
-        
-        try {
-          let query = supabase
-            .from('campaigns')
-            .select('*')
-            .order('created_at', { ascending: false });
+      const requestBody: any = await req.json().catch(() => ({}));
 
-          if (!includeArchived) {
-            query = query.eq('archived', false);
-          }
+      // Route by explicit action first
+      if (typeof requestBody.action === 'string') {
+        const action = String(requestBody.action);
 
-          const { data: campaigns, error: campaignsError } = await query.limit(50);
+        if (action === 'get_campaigns') {
+          // Handle campaign history request
+          console.log('📊 Retrieving campaign history...');
+          const includeArchived = requestBody.include_archived || req.headers.get('x-include-archived') === 'true';
+          try {
+            let query = supabase
+              .from('campaigns')
+              .select('*')
+              .order('created_at', { ascending: false });
 
-          if (campaignsError) {
-            console.error('❌ Error fetching campaigns:', campaignsError);
-            return new Response(
-              JSON.stringify({ error: 'Failed to fetch campaigns' }),
-              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
+            if (!includeArchived) {
+              query = query.eq('archived', false);
+            }
 
-          // Get real-time metrics for each campaign (no RPC needed)
-          const campaignsWithMetrics = await Promise.all(
-            campaigns.map(async (campaign) => {
-              try {
-                // 1) Base from campaign row
-                let sent = campaign.sent_count || 0;
-                let delivered = campaign.delivered_count || 0;
-                let opened = campaign.opened_count || 0;
-                let clicked = campaign.clicked_count || 0;
+            const { data: campaigns, error: campaignsError } = await query.limit(50);
+            if (campaignsError) {
+              console.error('❌ Error fetching campaigns:', campaignsError);
+              return new Response(
+                JSON.stringify({ error: 'Failed to fetch campaigns' }),
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
 
-                // 2) Aggregate from campaign_analytics if present
-                const { data: events } = await supabase
-                  .from('campaign_analytics')
-                  .select('event_type')
-                  .eq('campaign_id', campaign.id);
-                if (events && events.length > 0) {
-                  const counts: Record<string, number> = {};
-                  for (const e of events) counts[e.event_type] = (counts[e.event_type] || 0) + 1;
-                  sent = Math.max(sent, counts['sent'] || 0);
-                  delivered = Math.max(delivered, counts['delivered'] || 0);
-                  opened = Math.max(opened, counts['opened'] || 0);
-                  clicked = Math.max(clicked, counts['clicked'] || 0);
-                }
+            // Get real-time metrics for each campaign (no RPC needed)
+            const campaignsWithMetrics = await Promise.all(
+              campaigns.map(async (campaign) => {
+                try {
+                  let sent = campaign.sent_count || 0;
+                  let delivered = campaign.delivered_count || 0;
+                  let opened = campaign.opened_count || 0;
+                  let clicked = campaign.clicked_count || 0;
 
-                // 3) Fallback: derive clicks from notification deliveries if analytics missing
-                if (clicked === 0) {
-                  const { data: notifs } = await supabase
-                    .from('notifications')
-                    .select('id')
+                  const { data: events } = await supabase
+                    .from('campaign_analytics')
+                    .select('event_type')
                     .eq('campaign_id', campaign.id);
-                  const notifIds = (notifs || []).map((n: any) => n.id);
-                  if (notifIds.length > 0) {
-                    const { data: deliveries } = await supabase
-                      .from('notification_deliveries')
-                      .select('status')
-                      .in('notification_id', notifIds);
-                    if (deliveries && deliveries.length > 0) {
-                      clicked = deliveries.filter((d: any) => d.status === 'clicked').length;
+                  if (events && events.length > 0) {
+                    const counts: Record<string, number> = {};
+                    for (const e of events) counts[e.event_type] = (counts[e.event_type] || 0) + 1;
+                    sent = Math.max(sent, counts['sent'] || 0);
+                    delivered = Math.max(delivered, counts['delivered'] || 0);
+                    opened = Math.max(opened, counts['opened'] || 0);
+                    clicked = Math.max(clicked, counts['clicked'] || 0);
+                  }
+
+                  if (clicked === 0) {
+                    const { data: notifs } = await supabase
+                      .from('notifications')
+                      .select('id')
+                      .eq('campaign_id', campaign.id);
+                    const notifIds = (notifs || []).map((n: any) => n.id);
+                    if (notifIds.length > 0) {
+                      const { data: deliveries } = await supabase
+                        .from('notification_deliveries')
+                        .select('status')
+                        .in('notification_id', notifIds);
+                      if (deliveries && deliveries.length > 0) {
+                        clicked = deliveries.filter((d: any) => d.status === 'clicked').length;
+                      }
                     }
                   }
+
+                  const delivery_rate = sent > 0 ? (delivered / sent) * 100 : 0;
+                  const open_rate = delivered > 0 ? (opened / delivered) * 100 : 0;
+                  const click_rate = delivered > 0 ? (clicked / delivered) * 100 : 0;
+
+                  return {
+                    ...campaign,
+                    sent_count: sent,
+                    delivered_count: delivered,
+                    opened_count: opened,
+                    clicked_count: clicked,
+                    delivery_rate: Number(delivery_rate.toFixed(1)),
+                    open_rate: Number(open_rate.toFixed(1)),
+                    click_rate: Number(click_rate.toFixed(1))
+                  };
+                } catch (error) {
+                  console.error('Error computing metrics for campaign', campaign.id, error);
+                  return campaign;
                 }
+              })
+            );
 
-                const delivery_rate = sent > 0 ? (delivered / sent) * 100 : 0;
-                const open_rate = delivered > 0 ? (opened / delivered) * 100 : 0;
-                const click_rate = delivered > 0 ? (clicked / delivered) * 100 : 0;
+            const totalSent = campaignsWithMetrics.reduce((sum, c) => sum + (c.sent_count || 0), 0);
+            const totalDelivered = campaignsWithMetrics.reduce((sum, c) => sum + (c.delivered_count || 0), 0);
+            const totalOpened = campaignsWithMetrics.reduce((sum, c) => sum + (c.opened_count || 0), 0);
+            const totalClicked = campaignsWithMetrics.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
 
-                return {
-                  ...campaign,
-                  sent_count: sent,
-                  delivered_count: delivered,
-                  opened_count: opened,
-                  clicked_count: clicked,
-                  delivery_rate: Number(delivery_rate.toFixed(1)),
-                  open_rate: Number(open_rate.toFixed(1)),
-                  click_rate: Number(click_rate.toFixed(1))
-                };
-              } catch (error) {
-                console.error('Error computing metrics for campaign', campaign.id, error);
-                return campaign;
-              }
-            })
-          );
+            const summary = {
+              total_campaigns: campaignsWithMetrics.length,
+              total_sent: totalSent,
+              total_delivered: totalDelivered,
+              total_opened: totalOpened,
+              total_clicked: totalClicked,
+              avg_delivery_rate: totalSent > 0 ? ((totalDelivered / totalSent) * 100).toFixed(1) : '0',
+              avg_open_rate: totalDelivered > 0 ? ((totalOpened / totalDelivered) * 100).toFixed(1) : '0',
+              avg_click_rate: totalDelivered > 0 ? ((totalClicked / totalDelivered) * 100).toFixed(1) : '0'
+            };
 
-          // Calculate summary metrics from real-time data
-          const totalSent = campaignsWithMetrics.reduce((sum, c) => sum + (c.sent_count || 0), 0);
-          const totalDelivered = campaignsWithMetrics.reduce((sum, c) => sum + (c.delivered_count || 0), 0);
-          const totalOpened = campaignsWithMetrics.reduce((sum, c) => sum + (c.opened_count || 0), 0);
-          const totalClicked = campaignsWithMetrics.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
-
-          const summary = {
-            total_campaigns: campaignsWithMetrics.length,
-            total_sent: totalSent,
-            total_delivered: totalDelivered,
-            total_opened: totalOpened,
-            total_clicked: totalClicked,
-            avg_delivery_rate: totalSent > 0 ? ((totalDelivered / totalSent) * 100).toFixed(1) : '0',
-            avg_open_rate: totalDelivered > 0 ? ((totalOpened / totalDelivered) * 100).toFixed(1) : '0',
-            avg_click_rate: totalDelivered > 0 ? ((totalClicked / totalDelivered) * 100).toFixed(1) : '0'
-          };
-
-          return new Response(
-            JSON.stringify({ campaigns: campaignsWithMetrics, summary }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        } catch (error) {
-          console.error('❌ Unexpected error:', error);
-          return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      } else if (requestBody.action === 'archive_campaign') {
-        // Handle archive/unarchive
-        const { campaign_id, archived } = requestBody;
-        if (!campaign_id || typeof archived !== 'boolean') {
-          return new Response(
-            JSON.stringify({ error: 'Campaign ID and archived status are required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        try {
-          const { error: updateError } = await supabase
-            .from('campaigns')
-            .update({ archived })
-            .eq('id', campaign_id);
-          if (updateError) {
-            console.error('❌ Error updating campaign archive status:', updateError);
             return new Response(
-              JSON.stringify({ error: 'Failed to update campaign' }),
+              JSON.stringify({ campaigns: campaignsWithMetrics, summary }),
+              { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          } catch (error) {
+            console.error('❌ Unexpected error:', error);
+            return new Response(
+              JSON.stringify({ error: 'Internal server error' }),
               { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
           }
-          return new Response(
-            JSON.stringify({ success: true }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        } catch (error) {
-          console.error('❌ Unexpected error:', error);
-          return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
         }
+
+        if (action === 'archive_campaign') {
+          const { campaign_id, archived } = requestBody;
+          if (!campaign_id || typeof archived !== 'boolean') {
+            return new Response(
+              JSON.stringify({ error: 'Campaign ID and archived status are required' }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          try {
+            const { error: updateError } = await supabase
+              .from('campaigns')
+              .update({ archived })
+              .eq('id', campaign_id);
+            if (updateError) {
+              console.error('❌ Error updating campaign archive status:', updateError);
+              return new Response(
+                JSON.stringify({ error: 'Failed to update campaign' }),
+                { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              );
+            }
+            return new Response(
+              JSON.stringify({ success: true }),
+              { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          } catch (error) {
+            console.error('❌ Unexpected error:', error);
+            return new Response(
+              JSON.stringify({ error: 'Internal server error' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+
+        // Unknown action
+        return new Response(
+          JSON.stringify({ error: 'Unknown action' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-      
+
+      // No action: treat as campaign creation only when required fields exist
+      if (!requestBody?.title || !requestBody?.message) {
+        return new Response(
+          JSON.stringify({ error: 'Missing required fields for campaign creation' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       // Handle campaign creation request (original functionality)
       const campaignData: CampaignData = requestBody;
       console.log('📤 Creating enhanced campaign:', campaignData.title);
