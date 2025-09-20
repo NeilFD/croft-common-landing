@@ -241,7 +241,7 @@ serve(async (req) => {
         badge: payload.badge ?? null,
         banner_message: (payload as any).banner_message ?? null,
         display_mode: (payload as any).display_mode ?? 'navigation',
-        scope: targetUserIds.length > 0 ? `specific(${targetUserIds.length})` : scope,
+        scope: scope, // Always use valid enum value (all/self), targeting handled by user_ids
         dry_run: dryRun,
         recipients_count: subs?.length ?? 0,
         status: dryRun ? "sent" : "sending",
