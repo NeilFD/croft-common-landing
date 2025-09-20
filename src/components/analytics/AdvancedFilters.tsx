@@ -121,7 +121,7 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Search and Basic Filters Row */}
-        <div className="grid md:grid-cols-6 gap-4">
+        <div className="grid md:grid-cols-5 gap-4">
           <Input
             placeholder="Search members..."
             value={filters.searchTerm}
@@ -166,20 +166,28 @@ export const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
             value={filters.maxSpend || ''}
             onChange={(e) => updateFilter('maxSpend', e.target.value ? Number(e.target.value) : undefined)}
           />
+        </div>
 
-          <div className="flex gap-2">
-            <Input
-              placeholder="Min age"
-              type="number"
-              value={filters.minAge || ''}
-              onChange={(e) => updateFilter('minAge', e.target.value ? Number(e.target.value) : undefined)}
-            />
-            <Input
-              placeholder="Max age"
-              type="number"
-              value={filters.maxAge || ''}
-              onChange={(e) => updateFilter('maxAge', e.target.value ? Number(e.target.value) : undefined)}
-            />
+        {/* Age Range Row */}
+        <div className="grid md:grid-cols-4 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Age Range</label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Min age"
+                type="number"
+                value={filters.minAge || ''}
+                onChange={(e) => updateFilter('minAge', e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full"
+              />
+              <Input
+                placeholder="Max age"
+                type="number"
+                value={filters.maxAge || ''}
+                onChange={(e) => updateFilter('maxAge', e.target.value ? Number(e.target.value) : undefined)}
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
 
