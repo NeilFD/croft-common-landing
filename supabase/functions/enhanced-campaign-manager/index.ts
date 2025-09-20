@@ -111,29 +111,64 @@ Deno.serve(async (req) => {
             );
           }
 
-          // Get real-time metrics for each campaign
+          // Get real-time metrics for each campaign (no RPC needed)
           const campaignsWithMetrics = await Promise.all(
             campaigns.map(async (campaign) => {
               try {
-                const { data: metrics } = await supabase
-                  .rpc('get_campaign_metrics', { p_campaign_id: campaign.id });
-                
-                const realTimeMetrics = metrics && metrics.length > 0 ? metrics[0] : {
-                  sent_count: campaign.sent_count || 0,
-                  delivered_count: campaign.delivered_count || 0,
-                  opened_count: campaign.opened_count || 0,
-                  clicked_count: campaign.clicked_count || 0,
-                  delivery_rate: 0,
-                  open_rate: 0,
-                  click_rate: 0
-                };
+                // 1) Base from campaign row
+                let sent = campaign.sent_count || 0;
+                let delivered = campaign.delivered_count || 0;
+                let opened = campaign.opened_count || 0;
+                let clicked = campaign.clicked_count || 0;
+
+                // 2) Aggregate from campaign_analytics if present
+                const { data: events } = await supabase
+                  .from('campaign_analytics')
+                  .select('event_type')
+                  .eq('campaign_id', campaign.id);
+                if (events && events.length > 0) {
+                  const counts: Record<string, number> = {};
+                  for (const e of events) counts[e.event_type] = (counts[e.event_type] || 0) + 1;
+                  sent = Math.max(sent, counts['sent'] || 0);
+                  delivered = Math.max(delivered, counts['delivered'] || 0);
+                  opened = Math.max(opened, counts['opened'] || 0);
+                  clicked = Math.max(clicked, counts['clicked'] || 0);
+                }
+
+                // 3) Fallback: derive clicks from notification deliveries if analytics missing
+                if (clicked === 0) {
+                  const { data: notifs } = await supabase
+                    .from('notifications')
+                    .select('id')
+                    .eq('campaign_id', campaign.id);
+                  const notifIds = (notifs || []).map((n: any) => n.id);
+                  if (notifIds.length > 0) {
+                    const { data: deliveries } = await supabase
+                      .from('notification_deliveries')
+                      .select('status')
+                      .in('notification_id', notifIds);
+                    if (deliveries && deliveries.length > 0) {
+                      clicked = deliveries.filter((d: any) => d.status === 'clicked').length;
+                    }
+                  }
+                }
+
+                const delivery_rate = sent > 0 ? (delivered / sent) * 100 : 0;
+                const open_rate = delivered > 0 ? (opened / delivered) * 100 : 0;
+                const click_rate = delivered > 0 ? (clicked / delivered) * 100 : 0;
 
                 return {
                   ...campaign,
-                  ...realTimeMetrics
+                  sent_count: sent,
+                  delivered_count: delivered,
+                  opened_count: opened,
+                  clicked_count: clicked,
+                  delivery_rate: Number(delivery_rate.toFixed(1)),
+                  open_rate: Number(open_rate.toFixed(1)),
+                  click_rate: Number(click_rate.toFixed(1))
                 };
               } catch (error) {
-                console.error('Error fetching metrics for campaign', campaign.id, error);
+                console.error('Error computing metrics for campaign', campaign.id, error);
                 return campaign;
               }
             })
