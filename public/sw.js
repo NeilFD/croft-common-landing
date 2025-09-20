@@ -2,7 +2,7 @@
 // Handles caching, push notifications, and app communication
 
 // Cache names for versioning
-const CACHE_NAME = 'croft-app-v1.5';
+const CACHE_NAME = 'croft-app-v1.6';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
 // Install event - cache essential assets
