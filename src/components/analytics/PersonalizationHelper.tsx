@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, Crown } from 'lucide-react';
+import { User } from 'lucide-react';
 
 interface PersonalizationHelperProps {
   onInsertCode: (code: string) => void;
@@ -15,12 +15,6 @@ const PERSONALIZATION_CODES = [
     description: 'Member\'s first name',
     example: 'John',
     icon: User
-  },
-  {
-    code: '{{tier}}',
-    description: 'Membership tier',
-    example: 'Gold',
-    icon: Crown
   }
 ];
 
@@ -34,12 +28,12 @@ export const PersonalizationHelper: React.FC<PersonalizationHelperProps> = ({
     <Card className="border-blue-200 bg-blue-50/50">
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-medium text-blue-900">
-          Personalization Templates
+          Personalisation Templates
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
         <p className="text-xs text-blue-700">
-          Click to insert personalization codes into your message:
+          Click to insert personalisation codes into your message:
         </p>
         
         <div className="grid gap-2">
@@ -72,9 +66,9 @@ export const PersonalizationHelper: React.FC<PersonalizationHelperProps> = ({
         </div>
         
         <div className="mt-3 p-2 bg-blue-100 rounded text-xs text-blue-800">
-          <strong>Example:</strong> "Welcome {'{{first_name}}'} ! Your {'{{tier}}'} membership includes..."
+          <strong>Example:</strong> "Welcome {'{{first_name}}'} to our exclusive club!"
           <br />
-          <strong>Becomes:</strong> "Welcome John! Your Gold membership includes..."
+          <strong>Becomes:</strong> "Welcome John to our exclusive club!"
         </div>
       </CardContent>
     </Card>

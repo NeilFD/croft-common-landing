@@ -77,13 +77,6 @@ const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
     personalizable: true
   },
   {
-    id: 'tier_upgrade',
-    name: 'Tier Upgrade Reward',
-    message: 'Congratulations {{first_name}}! You\'ve been upgraded to {{tier}} tier. Enjoy your new perks and exclusive benefits.',
-    category: 'upsell',
-    personalizable: true
-  },
-  {
     id: 'event_reminder',
     name: 'Event Reminder',
     message: 'Don\'t forget! Your event starts in 2 hours. We can\'t wait to see you there!',
@@ -421,14 +414,14 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
                   id="message"
                   value={campaignMessage}
                   onChange={(e) => setCampaignMessage(e.target.value)}
-                  placeholder="Enter your campaign message. Use {{first_name}} for personalization."
+                  placeholder="Enter your campaign message. Use {{first_name}} for personalisation."
                   rows={4}
                   className={personalize && campaignMessage.includes('{{') ? 'border-blue-200 bg-blue-50/30' : ''}
                 />
                 {personalize && campaignMessage.includes('{{') && (
                   <div className="text-xs text-blue-600 flex items-center gap-1">
                     <span className="inline-block w-2 h-2 bg-blue-400 rounded-full"></span>
-                    Personalization codes detected
+                    Personalisation codes detected
                   </div>
                 )}
               </div>
@@ -451,7 +444,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
                     checked={personalize}
                     onCheckedChange={(checked) => setPersonalize(checked === true)}
                   />
-                  <Label htmlFor="personalize">Personalize messages with member names</Label>
+                  <Label htmlFor="personalize">Personalise messages with member names</Label>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -543,13 +536,11 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
               </div>
 
               {/* Push Notification Preview */}
-              {campaignTitle && campaignMessage && (
-                <PushNotificationPreview
-                  title={campaignTitle}
-                  message={campaignMessage}
-                  personalize={personalize}
-                />
-              )}
+              <PushNotificationPreview
+                title={campaignTitle || "Your campaign title"}
+                message={campaignMessage || "Your campaign message will appear here"}
+                personalize={personalize}
+              />
 
               {/* Send Button */}
               <Button 

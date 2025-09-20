@@ -69,7 +69,7 @@ export const PushNotificationPreview: React.FC<PushNotificationPreviewProps> = (
         <div className="mt-4 text-xs text-muted-foreground space-y-1">
           <p>• This is how your push notification will appear on mobile devices</p>
           {personalize && (
-            <p>• Personalization preview shows "John" - actual notifications will use real member names</p>
+            <p>• Personalisation preview shows "John" - actual notifications will use real member names</p>
           )}
           <p>• The app icon is automatically included from your brand settings</p>
         </div>
