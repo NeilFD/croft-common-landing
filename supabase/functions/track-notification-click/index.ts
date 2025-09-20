@@ -70,54 +70,45 @@ Deno.serve(async (req) => {
       userId = (sub?.user_id as string) || null;
     }
 
-    // Record campaign click analytics if we know the campaign
+    // Atomically mark as clicked; only the first transition increments CTR
     let analyticsRecorded = false;
-    if (notification?.campaign_id) {
-      // Check idempotency
-      const { data: existing } = await supabase
+    let campaignUpdated = false;
+    let firstClick = false;
+
+    // Update only if not already clicked, and detect if we were the first
+    const { data: updatedRows, error: updateErr } = await supabase
+      .from('notification_deliveries')
+      .update({ status: 'clicked' })
+      .eq('id', delivery.id)
+      .neq('status', 'clicked')
+      .select('id');
+
+    firstClick = !updateErr && Array.isArray(updatedRows) && updatedRows.length > 0;
+
+    // Only record analytics and increment campaign on the first transition
+    if (firstClick && notification?.campaign_id) {
+      const { error: insertErr } = await supabase
         .from('campaign_analytics')
-        .select('id')
-        .eq('campaign_id', notification.campaign_id)
-        .eq('user_id', userId)
-        .eq('event_type', 'clicked')
+        .insert({
+          campaign_id: notification.campaign_id,
+          user_id: userId,
+          event_type: 'clicked',
+          metadata: { source: 'track-notification-click' },
+        } as any);
+      if (!insertErr) analyticsRecorded = true;
+
+      const { data: camp } = await supabase
+        .from('campaigns')
+        .select('id, clicked_count')
+        .eq('id', notification.campaign_id)
         .maybeSingle();
 
-      if (!existing) {
-        const { error: insertErr } = await supabase
-          .from('campaign_analytics')
-          .insert({
-            campaign_id: notification.campaign_id,
-            user_id: userId,
-            event_type: 'clicked',
-            metadata: { source: 'track-notification-click' },
-          } as any);
-        if (!insertErr) analyticsRecorded = true;
-      }
-    }
-
-    // Mark delivery as clicked (idempotent) and bump campaign clicked_count once
-    let campaignUpdated = false;
-    const shouldIncrement = delivery.status !== 'clicked';
-    if (shouldIncrement) {
-      await supabase
-        .from('notification_deliveries')
-        .update({ status: 'clicked' })
-        .eq('id', delivery.id);
-
-      // Increment campaign clicked_count once per unique click
-      if (notification?.campaign_id) {
-        const { data: camp } = await supabase
-          .from('campaigns')
-          .select('id, clicked_count')
-          .eq('id', notification.campaign_id)
-          .maybeSingle();
-        const next = ((camp?.clicked_count as number) || 0) + 1;
-        const { error: campErr } = await supabase
-          .from('campaigns')
-          .update({ clicked_count: next })
-          .eq('id', notification.campaign_id);
-        if (!campErr) campaignUpdated = true;
-      }
+      const next = ((camp?.clicked_count as number) || 0) + 1;
+      const { error: campErr } = await supabase
+        .from('campaigns')
+        .update({ clicked_count: next })
+        .eq('id', notification.campaign_id);
+      if (!campErr) campaignUpdated = true;
     }
 
     return new Response(JSON.stringify({ success: true, analyticsRecorded, campaignUpdated }), {
