@@ -67,10 +67,8 @@ interface CampaignHistoryItem {
   message: string;
   sent_count: number;
   delivered_count: number;
-  opened_count: number;
   clicked_count: number;
   delivery_rate?: number;
-  open_rate?: number;
   click_rate?: number;
   created_at: string;
   sent_at?: string;
@@ -130,10 +128,8 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
     total_campaigns: 0,
     total_sent: 0,
     total_delivered: 0,
-    total_opened: 0,
     total_clicked: 0,
     avg_delivery_rate: '0',
-    avg_open_rate: '0',
     avg_click_rate: '0'
   });
 
@@ -227,16 +223,13 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
           setCampaignHistory(enriched);
           const totalSent = enriched.reduce((sum: number, c: any) => sum + (c.sent_count || 0), 0);
           const totalDelivered = enriched.reduce((sum: number, c: any) => sum + (c.delivered_count || 0), 0);
-          const totalOpened = enriched.reduce((sum: number, c: any) => sum + (c.opened_count || 0), 0);
           const totalClicked = enriched.reduce((sum: number, c: any) => sum + (c.clicked_count || 0), 0);
           setSummaryMetrics({
             total_campaigns: enriched.length,
             total_sent: totalSent,
             total_delivered: totalDelivered,
-            total_opened: totalOpened,
             total_clicked: totalClicked,
             avg_delivery_rate: totalSent > 0 ? ((totalDelivered / totalSent) * 100).toFixed(1) : '0',
-            avg_open_rate: totalDelivered > 0 ? ((totalOpened / totalDelivered) * 100).toFixed(1) : '0',
             avg_click_rate: totalDelivered > 0 ? ((totalClicked / totalDelivered) * 100).toFixed(1) : '0'
           });
         }
@@ -887,12 +880,6 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                         <div className="text-xs text-muted-foreground">Delivered</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-purple-600">
-                          {(campaign.opened_count || 0).toLocaleString()}
-                        </div>
-                        <div className="text-xs text-muted-foreground">Opened</div>
-                      </div>
-                      <div className="text-center">
                         <div className="text-2xl font-bold text-orange-600">
                           {(campaign.clicked_count || 0).toLocaleString()}
                         </div>
@@ -905,11 +892,6 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                         <span>
                           Delivery Rate: <span className="font-medium">
                             {campaign.delivery_rate || (campaign.sent_count ? ((campaign.delivered_count || 0) / campaign.sent_count * 100).toFixed(1) : 0)}%
-                          </span>
-                        </span>
-                        <span>
-                          Open Rate: <span className="font-medium">
-                            {campaign.open_rate || (campaign.delivered_count ? ((campaign.opened_count || 0) / campaign.delivered_count * 100).toFixed(1) : 0)}%
                           </span>
                         </span>
                         <span>
