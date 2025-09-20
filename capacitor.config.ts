@@ -35,6 +35,8 @@ const config: CapacitorConfig = {
     backgroundColor: '#000000',
     allowsLinkPreview: false,
     handleApplicationURL: true,
+    buildNumber: '2',
+    version: '1.0.1',
   },
   android: {
     backgroundColor: '#000000',
