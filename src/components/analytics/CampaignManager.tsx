@@ -16,7 +16,10 @@ import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plu
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { SegmentBuilder } from './SegmentBuilder';
+import { PersonalizationHelper } from './PersonalizationHelper';
+import { PushNotificationPreview } from './PushNotificationPreview';
 import { supabase } from '@/integrations/supabase/client';
+import { BRAND_LOGO } from '@/data/brand';
 
 interface MemberSegment {
   segment_name: string;
@@ -48,44 +51,44 @@ const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
   {
     id: 'welcome_new',
     name: 'Welcome New Members',
-    message: 'Welcome to our community, {name}! 🎉 Your first drink is on us. Use code WELCOME at the bar.',
+    message: 'Welcome to our community, {{first_name}}! 🎉 Your first drink is on us. Use code WELCOME at the bar.',
     category: 'engagement',
     personalizable: true
   },
   {
     id: 'win_back',
     name: 'Win Back At-Risk',
-    message: 'We miss you, {name}! Come back this week and enjoy 20% off your visit. We have some exciting new additions you\'ll love.',
+    message: 'We miss you, {{first_name}}! Come back this week and enjoy 20% off your visit. We have some exciting new additions you\'ll love.',
     category: 'retention',
     personalizable: true
   },
   {
     id: 'vip_invite',
     name: 'VIP Event Invitation',
-    message: 'Exclusive invitation for you, {name}! Join us for our VIP wine tasting event this Friday at 7PM. Limited spots available.',
+    message: 'Exclusive invitation for you, {{first_name}}! Join us for our VIP wine tasting event this Friday at 7PM. Limited spots available.',
     category: 'event',
     personalizable: true
   },
   {
     id: 'birthday_special',
     name: 'Birthday Celebration',
-    message: 'Happy Birthday {name}! 🎂 Celebrate with us and receive a complimentary dessert with any main course.',
+    message: 'Happy Birthday {{first_name}}! 🎂 Celebrate with us and receive a complimentary dessert with any main course.',
     category: 'engagement',
     personalizable: true
   },
   {
     id: 'tier_upgrade',
     name: 'Tier Upgrade Reward',
-    message: 'Congratulations {name}! You\'ve been upgraded to {tier} tier. Enjoy your new perks and exclusive benefits.',
+    message: 'Congratulations {{first_name}}! You\'ve been upgraded to {{tier}} tier. Enjoy your new perks and exclusive benefits.',
     category: 'upsell',
     personalizable: true
   },
   {
     id: 'event_reminder',
     name: 'Event Reminder',
-    message: 'Don\'t forget! Your event \"{event_name}\" starts in 2 hours. We can\'t wait to see you there!',
+    message: 'Don\'t forget! Your event starts in 2 hours. We can\'t wait to see you there!',
     category: 'event',
-    personalizable: true
+    personalizable: false
   }
 ];
 
@@ -113,6 +116,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
   const [scheduledTime, setScheduledTime] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [customFilters, setCustomFilters] = useState<any>(null);
+  const [messageTextareaRef, setMessageTextareaRef] = useState<HTMLTextAreaElement | null>(null);
 
   // Load saved segments on mount
   useEffect(() => {
@@ -188,7 +192,30 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
     if (template) {
       setCampaignMessage(template.message);
       setCampaignTitle(template.name);
+      // Auto-enable personalization for personalizable templates
+      if (template.personalizable) {
+        setPersonalize(true);
+      }
     }
+  };
+
+  const insertPersonalizationCode = (code: string) => {
+    if (!messageTextareaRef) return;
+    
+    const textarea = messageTextareaRef;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    
+    const currentMessage = campaignMessage;
+    const newMessage = currentMessage.slice(0, start) + code + currentMessage.slice(end);
+    
+    setCampaignMessage(newMessage);
+    
+    // Set cursor position after the inserted code
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + code.length, start + code.length);
+    }, 0);
   };
 
   const handleSegmentCreate = (segmentData: any) => {
@@ -232,6 +259,7 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
         scheduled_date: scheduledDate,
         scheduled_time: scheduledTime,
         estimated_reach: estimatedReach,
+        icon: BRAND_LOGO, // Always include brand logo
       };
 
       // Use enhanced campaign manager
@@ -389,13 +417,27 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
               <div className="space-y-2">
                 <Label htmlFor="message">Campaign Message</Label>
                 <Textarea
+                  ref={setMessageTextareaRef}
                   id="message"
                   value={campaignMessage}
                   onChange={(e) => setCampaignMessage(e.target.value)}
-                  placeholder="Enter your campaign message"
+                  placeholder="Enter your campaign message. Use {{first_name}} for personalization."
                   rows={4}
+                  className={personalize && campaignMessage.includes('{{') ? 'border-blue-200 bg-blue-50/30' : ''}
                 />
+                {personalize && campaignMessage.includes('{{') && (
+                  <div className="text-xs text-blue-600 flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 bg-blue-400 rounded-full"></span>
+                    Personalization codes detected
+                  </div>
+                )}
               </div>
+              
+              {/* Personalization Helper */}
+              <PersonalizationHelper 
+                isVisible={personalize}
+                onInsertCode={insertPersonalizationCode}
+              />
 
               <Separator />
 
@@ -499,6 +541,15 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
                   </div>
                 </div>
               </div>
+
+              {/* Push Notification Preview */}
+              {campaignTitle && campaignMessage && (
+                <PushNotificationPreview
+                  title={campaignTitle}
+                  message={campaignMessage}
+                  personalize={personalize}
+                />
+              )}
 
               {/* Send Button */}
               <Button 
