@@ -182,18 +182,89 @@ serve(async (req) => {
     }
 
     if (token) {
-      // Mark clicked when we receive a token (idempotent)
-      const { error: updateError } = await admin
-        .from("notification_deliveries")
-        .update({ clicked_at: new Date().toISOString() } as any)
-        .is("clicked_at", null)
-        .eq("click_token", token);
+      // Resolve delivery by token and perform first-click semantics
+      const { data: delivery, error: delErr } = await admin
+        .from('notification_deliveries')
+        .select('id, notification_id, subscription_id, status')
+        .eq('click_token', token)
+        .maybeSingle();
 
-      if (updateError) {
-        console.error(`[${requestId}] Error updating notification delivery:`, updateError);
-        // Don't fail the request - tracking is not critical
+      if (delErr || !delivery) {
+        console.warn(`[${requestId}] Click token not found or DB error`, { hasError: Boolean(delErr) });
       } else {
-        console.log(`[${requestId}] Successfully marked notification as clicked for token: ${token.substring(0, 8)}...`);
+        // Get notification to resolve campaign
+        const { data: notification } = await admin
+          .from('notifications')
+          .select('id, campaign_id')
+          .eq('id', delivery.notification_id)
+          .maybeSingle();
+
+        // Resolve user_id from subscription if available
+        let userId: string | null = null;
+        if ((delivery as any).subscription_id) {
+          const { data: sub } = await admin
+            .from('push_subscriptions')
+            .select('user_id')
+            .eq('id', (delivery as any).subscription_id)
+            .maybeSingle();
+          userId = (sub?.user_id as string) || null;
+        }
+
+        // Atomically set status to clicked if not already; detect first transition
+        const { data: updatedRows, error: updateErr } = await admin
+          .from('notification_deliveries')
+          .update({ status: 'clicked', clicked_at: new Date().toISOString() } as any)
+          .eq('id', (delivery as any).id)
+          .neq('status', 'clicked')
+          .select('id');
+
+        const firstClick = !updateErr && Array.isArray(updatedRows) && updatedRows.length > 0;
+
+        if (firstClick) {
+          console.log(`[${requestId}] First click recorded for delivery ${(delivery as any).id}`);
+          if (notification?.campaign_id) {
+            // Record analytics
+            const { error: insertErr } = await admin
+              .from('campaign_analytics')
+              .insert({
+                campaign_id: notification.campaign_id,
+                user_id: userId,
+                event_type: 'clicked',
+                metadata: { source: 'track-notification-event' },
+              } as any);
+            if (insertErr) {
+              console.error(`[${requestId}] Failed to insert campaign analytics`, insertErr);
+            }
+
+            // Increment campaign clicked_count
+            const { data: camp } = await admin
+              .from('campaigns')
+              .select('id, clicked_count')
+              .eq('id', notification.campaign_id)
+              .maybeSingle();
+
+            const next = ((camp?.clicked_count as number) || 0) + 1;
+            const { error: campErr } = await admin
+              .from('campaigns')
+              .update({ clicked_count: next })
+              .eq('id', notification.campaign_id);
+            if (campErr) {
+              console.error(`[${requestId}] Failed to update campaign clicked_count`, campErr);
+            } else {
+              console.log(`[${requestId}] Campaign ${notification.campaign_id} clicked_count incremented to ${next}`);
+            }
+          }
+        } else {
+          // Ensure clicked_at is set at least once
+          const { error: ensureErr } = await admin
+            .from('notification_deliveries')
+            .update({ clicked_at: new Date().toISOString() } as any)
+            .eq('id', (delivery as any).id)
+            .is('clicked_at', null);
+          if (ensureErr) {
+            console.error(`[${requestId}] Failed to ensure clicked_at`, ensureErr);
+          }
+        }
       }
     }
 

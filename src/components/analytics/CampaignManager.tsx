@@ -199,14 +199,15 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                 if (notifIds.length > 0) {
                   const { data: deliveries, error: delErr } = await supabase
                     .from('notification_deliveries')
-                    .select('notification_id, status')
+                    .select('notification_id, status, clicked_at')
                     .in('notification_id', notifIds);
                   if (delErr) {
                     console.error('Fallback: deliveries fetch failed', delErr);
                   } else {
                     const clickedByCampaign: Record<string, number> = {};
                     for (const d of deliveries || []) {
-                      if ((d as any).status === 'clicked') {
+                      const isClicked = (d as any).status === 'clicked' || (d as any).clicked_at != null;
+                      if (isClicked) {
                         const cid = notifToCampaign[(d as any).notification_id as any];
                         if (cid) clickedByCampaign[cid] = (clickedByCampaign[cid] || 0) + 1;
                       }
