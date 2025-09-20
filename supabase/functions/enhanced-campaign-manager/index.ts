@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     if (req.method === 'POST') {
       const requestBody = await req.json();
       
-      // Check if this is a campaign creation request or a data fetch request
+      // Check if this is a campaign creation request or a data fetch/update request
       if (requestBody.action === 'get_campaigns') {
         // Handle campaign history request
         console.log('📊 Retrieving campaign history...');
@@ -202,6 +202,38 @@ Deno.serve(async (req) => {
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+      } else if (requestBody.action === 'archive_campaign') {
+        // Handle archive/unarchive
+        const { campaign_id, archived } = requestBody;
+        if (!campaign_id || typeof archived !== 'boolean') {
+          return new Response(
+            JSON.stringify({ error: 'Campaign ID and archived status are required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        try {
+          const { error: updateError } = await supabase
+            .from('campaigns')
+            .update({ archived })
+            .eq('id', campaign_id);
+          if (updateError) {
+            console.error('❌ Error updating campaign archive status:', updateError);
+            return new Response(
+              JSON.stringify({ error: 'Failed to update campaign' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          return new Response(
+            JSON.stringify({ success: true }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (error) {
+          console.error('❌ Unexpected error:', error);
+          return new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
       
       // Handle campaign creation request (original functionality)
@@ -292,46 +324,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Handle archive/unarchive via POST action
-    if (req.method === 'POST') {
-      const bodyData = await req.json().catch(() => ({ action: null }));
-      const { action, campaign_id, archived } = bodyData;
-      
-      if (action === 'archive_campaign') {
-        if (!campaign_id || typeof archived !== 'boolean') {
-          return new Response(
-            JSON.stringify({ error: 'Campaign ID and archived status are required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        try {
-          const { error: updateError } = await supabase
-            .from('campaigns')
-            .update({ archived })
-            .eq('id', campaign_id);
-
-          if (updateError) {
-            console.error('❌ Error updating campaign archive status:', updateError);
-            return new Response(
-              JSON.stringify({ error: 'Failed to update campaign' }),
-              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-            );
-          }
-
-          return new Response(
-            JSON.stringify({ success: true }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        } catch (error) {
-          console.error('❌ Unexpected error:', error);
-          return new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-    }
 
     return new Response(
       JSON.stringify({ error: 'Method not allowed' }),
