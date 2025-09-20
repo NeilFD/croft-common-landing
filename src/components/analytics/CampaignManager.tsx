@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target, Trash2 } from 'lucide-react';
+import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target, Trash2, Archive, ArchiveRestore } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { SegmentBuilder } from './SegmentBuilder';
@@ -20,6 +20,20 @@ import { PersonalizationHelper } from './PersonalizationHelper';
 import { PushNotificationPreview } from './PushNotificationPreview';
 import { supabase } from '@/integrations/supabase/client';
 import { BRAND_LOGO } from '@/data/brand';
+
+interface CampaignData {
+  title: string;
+  message: string;
+  segment_id?: string;
+  segment_filters?: any;
+  template_id?: string;
+  personalize: boolean;
+  test_mode: boolean;
+  schedule_type: string;
+  scheduled_date?: string;
+  scheduled_time?: string;
+  estimated_reach: number;
+}
 
 interface MemberSegment {
   segment_name: string;
@@ -51,850 +65,595 @@ interface CampaignHistoryItem {
   id: string;
   title: string;
   message: string;
-  status: string;
-  sent_at: string;
   sent_count: number;
   delivered_count: number;
   opened_count: number;
   clicked_count: number;
-  estimated_reach: number;
-  test_mode: boolean;
+  delivery_rate?: number;
+  open_rate?: number;
+  click_rate?: number;
+  created_at: string;
+  sent_at?: string;
+  archived?: boolean;
 }
 
 const CAMPAIGN_TEMPLATES: CampaignTemplate[] = [
   {
-    id: 'welcome_new',
-    name: 'Welcome New Members',
-    message: 'Welcome to our community, {{first_name}}! 🎉 Your first drink is on us. Use code WELCOME at the bar.',
+    id: 'welcome',
+    name: 'Welcome Message',
+    message: 'Welcome to The Common Room! {{first_name}}, we\'re excited to have you join our community.',
     category: 'engagement',
     personalizable: true
   },
   {
-    id: 'win_back',
-    name: 'Win Back At-Risk',
-    message: 'We miss you, {{first_name}}! Come back this week and enjoy 20% off your visit. We have some exciting new additions you\'ll love.',
+    id: 'discount',
+    name: 'Exclusive Discount',
+    message: 'Enjoy 20% off your next visit, {{first_name}}! Use code WELCOME20 at checkout.',
+    category: 'upsell',
+    personalizable: true
+  },
+  {
+    id: 'new_menu',
+    name: 'New Menu Items',
+    message: 'We\'ve updated our menu! Come try our new dishes, {{first_name}}.',
+    category: 'engagement',
+    personalizable: true
+  },
+  {
+    id: 'event_invite',
+    name: 'Upcoming Event Invitation',
+    message: 'You\'re invited to our special event, {{first_name}}! Join us for a night of fun.',
+    category: 'event',
+    personalizable: true
+  },
+  {
+    id: 'loyalty_reward',
+    name: 'Loyalty Reward',
+    message: 'As a thank you, {{first_name}}, enjoy a free drink on your next visit!',
     category: 'retention',
     personalizable: true
-  },
-  {
-    id: 'vip_invite',
-    name: 'VIP Event Invitation',
-    message: 'Exclusive invitation for you, {{first_name}}! Join us for our VIP wine tasting event this Friday at 7PM. Limited spots available.',
-    category: 'event',
-    personalizable: true
-  },
-  {
-    id: 'birthday_special',
-    name: 'Birthday Celebration',
-    message: 'Happy Birthday {{first_name}}! 🎂 Celebrate with us and receive a complimentary dessert with any main course.',
-    category: 'engagement',
-    personalizable: true
-  },
-  {
-    id: 'event_reminder',
-    name: 'Event Reminder',
-    message: 'Don\'t forget! Your event starts in 2 hours. We can\'t wait to see you there!',
-    category: 'event',
-    personalizable: false
   }
 ];
 
 interface CampaignManagerProps {
   segments: MemberSegment[];
-  onSendCampaign: (campaignData: any) => Promise<void>;
+  onSendCampaign?: (campaignData: any) => void;
   isLoading?: boolean;
 }
 
-export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampaign, isLoading: externalLoading }) => {
+const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampaign, isLoading = false }) => {
   const [savedSegments, setSavedSegments] = useState<SavedSegment[]>([]);
-  const [isLoadingSegments, setIsLoadingSegments] = useState(true);
-  const [showSegmentBuilder, setShowSegmentBuilder] = useState(false);
-  const [editingSegment, setEditingSegment] = useState<SavedSegment | null>(null);
-  const [activeTab, setActiveTab] = useState('create');
-  
-  // Campaign history state
   const [campaignHistory, setCampaignHistory] = useState<CampaignHistoryItem[]>([]);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [summaryMetrics, setSummaryMetrics] = useState({
+    total_campaigns: 0,
+    total_sent: 0,
+    total_delivered: 0,
+    total_opened: 0,
+    total_clicked: 0,
+    avg_delivery_rate: '0',
+    avg_open_rate: '0',
+    avg_click_rate: '0'
+  });
 
-  const [selectedSegment, setSelectedSegment] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [activeTab, setActiveTab] = useState('create');
   const [campaignTitle, setCampaignTitle] = useState('');
   const [campaignMessage, setCampaignMessage] = useState('');
-  const [personalize, setPersonalize] = useState(false);
+  const [selectedSegment, setSelectedSegment] = useState<SavedSegment | null>(null);
+  const [segmentFilters, setSegmentFilters] = useState<any>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<CampaignTemplate | null>(null);
+  const [personalizeMessage, setPersonalizeMessage] = useState(true);
   const [testMode, setTestMode] = useState(false);
   const [scheduleType, setScheduleType] = useState('now');
-  const [scheduledDate, setScheduledDate] = useState('');
+  const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
   const [scheduledTime, setScheduledTime] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [customFilters, setCustomFilters] = useState<any>(null);
-  const [messageTextareaRef, setMessageTextareaRef] = useState<HTMLTextAreaElement | null>(null);
+  const [estimatedReach, setEstimatedReach] = useState(0);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Load saved segments on mount
-  useEffect(() => {
-    loadSavedSegments();
-  }, []);
+  const loadCampaignHistory = async () => {
+    try {
+      setHistoryLoading(true);
+      const url = new URL('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/enhanced-campaign-manager');
+      if (showArchived) {
+        url.searchParams.set('include_archived', 'true');
+      }
+      
+      const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
+        method: 'GET'
+      });
 
-  // Load campaign history when history tab is accessed
+      if (error) {
+        console.error('Error loading campaign history:', error);
+        return;
+      }
+
+      if (data?.campaigns) {
+        setCampaignHistory(data.campaigns);
+      }
+      if (data?.summary) {
+        setSummaryMetrics(data.summary);
+      }
+    } catch (error) {
+      console.error('Error loading campaign history:', error);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
+  const handleArchiveCampaign = async (campaignId: string, archived: boolean) => {
+    try {
+      const { error } = await supabase.functions.invoke('enhanced-campaign-manager', {
+        method: 'PUT',
+        body: { campaign_id: campaignId, archived }
+      });
+
+      if (error) {
+        console.error('Error updating campaign archive status:', error);
+        return;
+      }
+
+      // Refresh campaign history
+      await loadCampaignHistory();
+    } catch (error) {
+      console.error('Error updating campaign archive status:', error);
+    }
+  };
+
+  // Load campaign history when tab becomes active or archive filter changes
   useEffect(() => {
     if (activeTab === 'history') {
       loadCampaignHistory();
     }
-  }, [activeTab]);
-
-  const loadSavedSegments = async () => {
-    setIsLoadingSegments(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('campaign-segments', {
-        method: 'GET'
-      });
-      
-      if (error) throw error;
-      
-      setSavedSegments(data.segments || []);
-    } catch (error) {
-      console.error('Error loading segments:', error);
-      toast.error('Failed to load segments');
-    }
-    setIsLoadingSegments(false);
-  };
-
-  const loadCampaignHistory = async () => {
-    setIsLoadingHistory(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
-        method: 'GET'
-      });
-      
-      if (error) throw error;
-      
-      setCampaignHistory(data.campaigns || []);
-    } catch (error) {
-      console.error('Error loading campaign history:', error);
-      toast.error('Failed to load campaign history');
-    }
-    setIsLoadingHistory(false);
-  };
-
-  const handleDeleteSegment = async (segmentId: string, segmentName: string) => {
-    try {
-      // Get the auth token to make the request
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        throw new Error('Not authenticated');
-      }
-
-      const response = await fetch(`https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/campaign-segments?id=${segmentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to delete segment' }));
-        throw new Error(errorData.error || 'Failed to delete segment');
-      }
-      
-      toast.success(`Segment "${segmentName}" deleted successfully`);
-      loadSavedSegments(); // Reload segments after deletion
-    } catch (error) {
-      console.error('Error deleting segment:', error);
-      toast.error('Failed to delete segment');
-    }
-  };
-
-  // Calculate estimated reach based on selected segment or custom filters
-  const getEstimatedReach = () => {
-    if (testMode) return 1;
-    
-    if (customFilters?.memberCount) {
-      return customFilters.memberCount;
-    }
-    
-    const selectedSegmentData = savedSegments.find(s => s.id === selectedSegment) ||
-      segments.find(s => s.segment_name === selectedSegment);
-    
-    return selectedSegmentData?.member_count || 0;
-  };
-
-  const estimatedReach = getEstimatedReach();
-
-  const handleTemplateSelect = (templateId: string) => {
-    if (templateId === selectedTemplate) {
-      // If the same template is selected, deselect it
-      setSelectedTemplate('');
-      return;
-    }
-    
-    setSelectedTemplate(templateId);
-    const template = CAMPAIGN_TEMPLATES.find(t => t.id === templateId);
-    if (template) {
-      setCampaignMessage(template.message);
-      setCampaignTitle(template.name);
-      // Auto-enable personalization for personalizable templates
-      if (template.personalizable) {
-        setPersonalize(true);
-      }
-    }
-  };
-
-  const insertPersonalizationCode = (code: string) => {
-    if (!messageTextareaRef) return;
-    
-    const textarea = messageTextareaRef;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    
-    const currentMessage = campaignMessage;
-    const newMessage = currentMessage.slice(0, start) + code + currentMessage.slice(end);
-    
-    setCampaignMessage(newMessage);
-    
-    // Set cursor position after the inserted code
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + code.length, start + code.length);
-    }, 0);
-  };
-
-  const handleSegmentCreate = (segmentData: any) => {
-    if (segmentData.filters) {
-      setCustomFilters(segmentData);
-      setSelectedSegment('custom');
-    } else {
-      // Segment was saved, reload the list
-      loadSavedSegments();
-    }
-    setShowSegmentBuilder(false);
-  };
+  }, [activeTab, showArchived]);
 
   const handleSendCampaign = async () => {
     if (!campaignTitle || !campaignMessage) {
-      toast.error('Please fill in campaign title and message');
+      toast.error('Please fill in all required fields.');
       return;
     }
 
-    if (!selectedSegment && !customFilters) {
-      toast.error('Please select a target segment or create custom filters');
-      return;
-    }
-
-    setIsLoading(true);
+    const campaignData: CampaignData = {
+      title: campaignTitle,
+      message: campaignMessage,
+      segment_id: selectedSegment?.id,
+      segment_filters: segmentFilters,
+      template_id: selectedTemplate?.id,
+      personalize: personalizeMessage,
+      test_mode: testMode,
+      schedule_type: scheduleType,
+      scheduled_date: scheduledDate ? format(scheduledDate, 'yyyy-MM-dd') : undefined,
+      scheduled_time: scheduledTime,
+      estimated_reach: estimatedReach
+    };
 
     try {
-      // Find the selected segment
-      const segmentData = savedSegments.find(s => s.id === selectedSegment) ||
-        segments.find(s => s.segment_name === selectedSegment);
-
-      const campaignData = {
-        title: campaignTitle,
-        message: campaignMessage,
-        segment_id: (segmentData as SavedSegment)?.id || null,
-        segment_filters: selectedSegment === 'custom' ? customFilters?.filters : null,
-        template_id: selectedTemplate,
-        personalize,
-        test_mode: testMode,
-        schedule_type: scheduleType,
-        // Only include date/time for scheduled campaigns
-        ...(scheduleType === 'later' ? {
-          scheduled_date: scheduledDate,
-          scheduled_time: scheduledTime
-        } : {
-          scheduled_date: null,
-          scheduled_time: null
-        }),
-        estimated_reach: estimatedReach,
-        icon: BRAND_LOGO, // Always include brand logo
-      };
-
-      // Use enhanced campaign manager
+      setIsDialogOpen(true);
       const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
+        method: 'POST',
         body: campaignData
       });
 
-      if (error) throw error;
-
-      // Reset form after successful send
-      setCampaignTitle('');
-      setCampaignMessage('');
-      setSelectedSegment('');
-      setSelectedTemplate('');
-      setPersonalize(false);
-      setTestMode(false);
-      setScheduleType('now');
-      setScheduledDate('');
-      setScheduledTime('');
-      setCustomFilters(null);
-
-      toast.success(data.message || 'Campaign sent successfully!');
-      
-      // Refresh campaign history if we're on that tab
-      if (activeTab === 'history') {
-        loadCampaignHistory();
+      if (error) {
+        console.error('Error sending campaign:', error);
+        toast.error(`Failed to send campaign: ${error.message}`);
+      } else {
+        toast.success(data.message || 'Campaign sent successfully!');
+        // Reset form fields after successful submission
+        setCampaignTitle('');
+        setCampaignMessage('');
+        setSelectedSegment(null);
+        setSegmentFilters(null);
+        setSelectedTemplate(null);
+        setPersonalizeMessage(true);
+        setTestMode(false);
+        setScheduleType('now');
+        setScheduledDate(null);
+        setScheduledTime('');
+        setEstimatedReach(0);
+        await loadCampaignHistory();
       }
-    } catch (error) {
-      console.error('Campaign send error:', error);
-      toast.error('Failed to send campaign');
+    } catch (error: any) {
+      console.error('Error sending campaign:', error);
+      toast.error(`Failed to send campaign: ${error.message || error}`);
+    } finally {
+      setIsDialogOpen(false);
     }
+  };
 
-    setIsLoading(false);
+  const handleTemplateSelect = (template: CampaignTemplate) => {
+    setSelectedTemplate(template);
+    setCampaignMessage(template.message);
+    setPersonalizeMessage(template.personalizable);
   };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Send className="h-5 w-5" />
-            Enhanced Campaign Manager
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="create">Create Campaign</TabsTrigger>
-              <TabsTrigger value="segments">Manage Segments</TabsTrigger>
-              <TabsTrigger value="history">Campaign History</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="create" className="space-y-6 mt-6">
-              {/* Target Audience */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="segment">Target Audience</Label>
-                  <div className="flex gap-2">
-                    <Dialog open={showSegmentBuilder} onOpenChange={setShowSegmentBuilder}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Plus className="h-4 w-4 mr-1" />
-                          Create Segment
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Create Audience Segment</DialogTitle>
-                        </DialogHeader>
-                        <SegmentBuilder onSegmentCreate={handleSegmentCreate} />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Sending Campaign</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="flex items-center justify-center">
+              <div className="text-muted-foreground">Sending campaign...</div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList>
+          <TabsTrigger value="create">
+            <Send className="h-4 w-4 mr-2" />
+            Create Campaign
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <Clock className="h-4 w-4 mr-2" />
+            Campaign History
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="create" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Campaign Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="campaign-title">Title</Label>
+                  <Input
+                    type="text"
+                    id="campaign-title"
+                    placeholder="Campaign Title"
+                    value={campaignTitle}
+                    onChange={(e) => setCampaignTitle(e.target.value)}
+                  />
                 </div>
-                
-                <Select value={selectedSegment} onValueChange={setSelectedSegment}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select audience segment or create new" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {/* Legacy segments */}
-                    {segments.map((segment) => (
-                      <SelectItem key={segment.segment_name} value={segment.segment_name}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{segment.segment_name}</span>
-                          <Badge variant="secondary" className="ml-2">
-                            {segment.member_count} members
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
-                    
-                    {/* Saved segments */}
-                    {savedSegments.map((segment) => (
-                      <SelectItem key={segment.id} value={segment.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{segment.name}</span>
-                          <Badge variant="secondary" className="ml-2">
-                            {segment.member_count} members
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
-                    
-                    {/* Custom filters option */}
-                    {customFilters && (
-                      <SelectItem value="custom">
-                        <div className="flex items-center justify-between w-full">
-                          <span>Custom Audience</span>
-                          <Badge variant="secondary" className="ml-2">
-                            {customFilters.memberCount} members
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-                
-                {(selectedSegment === 'custom' && customFilters) && (
-                  <div className="text-sm text-muted-foreground p-3 bg-muted rounded-md">
-                    Using custom audience filters with {customFilters.memberCount} members
-                  </div>
-                )}
-              </div>
-
-              {/* Message Template */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="template">Message Template (Optional)</Label>
-                  {selectedTemplate && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedTemplate('');
-                        setCampaignTitle('');
-                        setCampaignMessage('');
-                      }}
-                      className="text-xs h-auto p-1"
-                    >
-                      Clear Template
-                    </Button>
-                  )}
+                <div>
+                  <Label htmlFor="campaign-message">Message</Label>
+                  <Textarea
+                    id="campaign-message"
+                    placeholder="Campaign Message"
+                    value={campaignMessage}
+                    onChange={(e) => setCampaignMessage(e.target.value)}
+                  />
                 </div>
-                <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choose a template or create custom message" />
-                  </SelectTrigger>
-                  <SelectContent>
+                <div>
+                  <Label>Template <Button variant="link" size="sm" onClick={() => setCampaignMessage('')}>Clear</Button></Label>
+                  <div className="flex flex-wrap gap-2">
                     {CAMPAIGN_TEMPLATES.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
-                        <div>
-                          <div className="font-medium">{template.name}</div>
-                          <div className="text-xs text-muted-foreground truncate max-w-xs">
-                            {template.message}
-                          </div>
-                        </div>
-                      </SelectItem>
+                      <Badge
+                        key={template.id}
+                        variant="secondary"
+                        className={`cursor-pointer ${selectedTemplate?.id === template.id ? 'bg-primary text-primary-foreground' : ''}`}
+                        onClick={() => handleTemplateSelect(template)}
+                      >
+                        {template.name}
+                      </Badge>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Campaign Title */}
-              <div className="space-y-2">
-                <Label htmlFor="title">Campaign Title</Label>
-                <Input
-                  id="title"
-                  value={campaignTitle}
-                  onChange={(e) => setCampaignTitle(e.target.value)}
-                  placeholder="Enter campaign title"
-                />
-              </div>
-
-              {/* Campaign Message */}
-              <div className="space-y-2">
-                <Label htmlFor="message">Campaign Message</Label>
-                <Textarea
-                  ref={setMessageTextareaRef}
-                  id="message"
-                  value={campaignMessage}
-                  onChange={(e) => setCampaignMessage(e.target.value)}
-                  placeholder="Enter your campaign message. Use {{first_name}} for personalisation."
-                  rows={4}
-                  className={personalize && campaignMessage.includes('{{') ? 'border-blue-200 bg-blue-50/30' : ''}
-                />
-                {personalize && campaignMessage.includes('{{') && (
-                  <div className="text-xs text-blue-600 flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 bg-blue-400 rounded-full"></span>
-                    Personalisation codes detected
                   </div>
-                )}
-              </div>
-              
-              {/* Personalization Helper */}
-              <PersonalizationHelper 
-                isVisible={personalize}
-                onInsertCode={insertPersonalizationCode}
-              />
-
-              <Separator />
-
-              {/* Campaign Options */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Campaign Options</h3>
-                
-                <div className="flex items-center space-x-2">
+                </div>
+                <Separator />
+                <div>
+                  <Label htmlFor="personalize">
+                    <div className="flex items-center justify-between">
+                      Personalize Message
+                    </div>
+                  </Label>
                   <Checkbox
                     id="personalize"
-                    checked={personalize}
-                    onCheckedChange={(checked) => setPersonalize(checked === true)}
+                    checked={personalizeMessage}
+                    onCheckedChange={(checked) => setPersonalizeMessage(!!checked)}
                   />
-                  <Label htmlFor="personalize">Personalise messages with member names</Label>
+                </div>
+                {personalizeMessage && (
+                  <PersonalizationHelper />
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Target Audience</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="segment">Target a Saved Segment</Label>
+                  <Select onValueChange={(value) => {
+                    const segment = savedSegments.find(s => s.id === value);
+                    setSelectedSegment(segment || null);
+                    setSegmentFilters(null);
+                  }}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a segment" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {savedSegments.map((segment) => (
+                        <SelectItem key={segment.id} value={segment.id}>{segment.name} ({segment.member_count})</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="testMode"
-                    checked={testMode}
-                    onCheckedChange={(checked) => setTestMode(checked === true)}
-                  />
-                  <Label htmlFor="testMode">Test mode (send to admin users only)</Label>
+                <Separator />
+
+                <div>
+                  <Label>
+                    <div className="flex items-center justify-between">
+                      Target Dynamic Segment
+                    </div>
+                  </Label>
+                  <SegmentBuilder onChange={setSegmentFilters} />
                 </div>
-              </div>
+              </CardContent>
+            </Card>
+          </div>
 
-              <Separator />
-
-              {/* Scheduling Options */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Scheduling</h3>
-                
-                <RadioGroup value={scheduleType} onValueChange={setScheduleType}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="now" id="now" />
-                    <Label htmlFor="now">Send immediately</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="scheduled" id="scheduled" />
-                    <Label htmlFor="scheduled">Schedule for later</Label>
-                  </div>
-                </RadioGroup>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Scheduling</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Schedule Type</Label>
+                  <RadioGroup defaultValue={scheduleType} className="flex flex-col space-y-1" onValueChange={setScheduleType}>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="now" id="schedule-now" />
+                      <Label htmlFor="schedule-now">Send Now</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="scheduled" id="schedule-later" />
+                      <Label htmlFor="schedule-later">Schedule for Later</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
 
                 {scheduleType === 'scheduled' && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="date">Date</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="scheduled-date">Date</Label>
                       <Input
-                        id="date"
                         type="date"
-                        value={scheduledDate}
-                        onChange={(e) => setScheduledDate(e.target.value)}
+                        id="scheduled-date"
+                        value={scheduledDate ? format(scheduledDate, 'yyyy-MM-dd') : ''}
+                        onChange={(e) => setScheduledDate(new Date(e.target.value))}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="time">Time</Label>
+                    <div>
+                      <Label htmlFor="scheduled-time">Time</Label>
                       <Input
-                        id="time"
                         type="time"
+                        id="scheduled-time"
                         value={scheduledTime}
                         onChange={(e) => setScheduledTime(e.target.value)}
                       />
                     </div>
                   </div>
                 )}
-              </div>
+              </CardContent>
+            </Card>
 
-              <Separator />
-
-              {/* Campaign Preview */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Campaign Preview</h3>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <Users className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <div className="text-2xl font-bold">{estimatedReach.toLocaleString()}</div>
-                    <div className="text-sm text-muted-foreground">Estimated Reach</div>
-                  </div>
-                  
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <Eye className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <div className="text-2xl font-bold">{Math.round(estimatedReach * 0.15)}</div>
-                    <div className="text-sm text-muted-foreground">Expected Opens</div>
-                  </div>
-                  
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <MousePointer className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <div className="text-2xl font-bold">{Math.round(estimatedReach * 0.03)}</div>
-                    <div className="text-sm text-muted-foreground">Expected Actions</div>
-                  </div>
-                  
-                  <div className="text-center p-4 bg-muted rounded-lg">
-                    <Zap className="h-6 w-6 mx-auto mb-2 text-primary" />
-                    <div className="text-2xl font-bold">
-                      £{customFilters?.avgSpend ? customFilters.avgSpend.toFixed(0) : 
-                        (savedSegments.find(s => s.id === selectedSegment) ||
-                         segments.find(s => s.segment_name === selectedSegment))?.avg_spend.toFixed(0) || 'N/A'}
+            <Card>
+              <CardHeader>
+                <CardTitle>Testing &amp; Delivery</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="test-mode">
+                    <div className="flex items-center justify-between">
+                      Enable Test Mode
+                      <TestTube className="h-4 w-4" />
                     </div>
-                    <div className="text-sm text-muted-foreground">Avg. Member Value</div>
-                  </div>
+                  </Label>
+                  <Checkbox
+                    id="test-mode"
+                    checked={testMode}
+                    onCheckedChange={(checked) => setTestMode(!!checked)}
+                  />
                 </div>
-              </div>
 
-              {/* Push Notification Preview */}
+                <Separator />
+
+                <div>
+                  <Label htmlFor="estimated-reach">Estimated Reach</Label>
+                  <Input
+                    type="number"
+                    id="estimated-reach"
+                    placeholder="Estimated Reach"
+                    value={estimatedReach}
+                    onChange={(e) => setEstimatedReach(parseInt(e.target.value))}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Push Notification Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
               <PushNotificationPreview
-                title={campaignTitle || "Your campaign title"}
-                message={campaignMessage || "Your campaign message will appear here"}
-                personalize={personalize}
+                title={campaignTitle}
+                message={campaignMessage}
+                brandLogo={BRAND_LOGO}
               />
+            </CardContent>
+          </Card>
 
-              {/* Send Button */}
-              <Button 
-                onClick={handleSendCampaign}
-                disabled={isLoading || !campaignTitle || !campaignMessage || (!selectedSegment && !customFilters)}
-                className="w-full"
-                size="lg"
-              >
-                {isLoading ? (
-                  'Sending...'
-                ) : testMode ? (
-                  <>
-                    <TestTube className="mr-2 h-4 w-4" />
-                    Send Test Campaign
-                  </>
-                ) : scheduleType === 'scheduled' ? (
-                  <>
-                    <Clock className="mr-2 h-4 w-4" />
-                    Schedule Campaign
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Send Campaign Now
-                  </>
-                )}
-              </Button>
-            </TabsContent>
+          <Button onClick={handleSendCampaign} disabled={isLoading}>
+            {isLoading ? (
+              <>
+                Sending...
+              </>
+            ) : (
+              <>
+                <Send className="h-4 w-4 mr-2" />
+                {testMode ? 'Send Test Campaign' : 'Send Campaign'}
+              </>
+            )}
+          </Button>
+        </TabsContent>
+        
+        <TabsContent value="history" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 flex-1">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{summaryMetrics.total_campaigns}</div>
+                  <p className="text-xs text-muted-foreground">Total Campaigns</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{summaryMetrics.total_sent.toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">Total Sent</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{summaryMetrics.avg_delivery_rate}%</div>
+                  <p className="text-xs text-muted-foreground">Avg Delivery Rate</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="text-2xl font-bold">{summaryMetrics.avg_click_rate}%</div>
+                  <p className="text-xs text-muted-foreground">Avg CTR</p>
+                </CardContent>
+              </Card>
+            </div>
+            <div className="ml-4">
+              <label className="flex items-center space-x-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={showArchived}
+                  onChange={(e) => setShowArchived(e.target.checked)}
+                  className="rounded border-gray-300"
+                />
+                <span>Show Archived</span>
+              </label>
+            </div>
+          </div>
 
-            <TabsContent value="segments" className="space-y-4 mt-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Saved Audience Segments</h3>
-                <Button onClick={() => setShowSegmentBuilder(true)}>
-                  <Plus className="h-4 w-4 mr-1" />
-                  New Segment
-                </Button>
-              </div>
-              
-              {isLoadingSegments ? (
-                <div className="text-center py-8">Loading segments...</div>
-              ) : savedSegments.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No saved segments yet. Create your first audience segment to get started.
+          {historyLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-muted-foreground">Loading campaign history...</div>
+            </div>
+          ) : campaignHistory.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-12">
+                  <div className="text-muted-foreground mb-4">No campaigns sent yet</div>
+                  <p className="text-sm text-muted-foreground">
+                    Your campaign history will appear here once you start sending campaigns.
+                  </p>
                 </div>
-              ) : (
-                <div className="grid gap-4">
-                  {savedSegments.map((segment) => (
-                    <Card key={segment.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <h4 className="font-semibold">{segment.name}</h4>
-                            {segment.description && (
-                              <p className="text-sm text-muted-foreground">{segment.description}</p>
-                            )}
-                            <div className="flex gap-4 mt-2">
-                              <Badge variant="secondary">
-                                <Users className="h-3 w-3 mr-1" />
-                                {segment.member_count} members
-                              </Badge>
-                              <Badge variant="outline">
-                                £{segment.avg_spend.toFixed(0)} avg spend
-                              </Badge>
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Dialog open={editingSegment?.id === segment.id} onOpenChange={(open) => setEditingSegment(open ? segment : null)}>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                                <DialogHeader>
-                                  <DialogTitle>Edit Segment: {segment.name}</DialogTitle>
-                                </DialogHeader>
-                                <SegmentBuilder 
-                                  editingSegment={segment}
-                                  initialFilters={segment.filters}
-                                  onSegmentCreate={(data) => {
-                                    loadSavedSegments();
-                                    setEditingSegment(null);
-                                  }}
-                                />
-                              </DialogContent>
-                            </Dialog>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setSelectedSegment(segment.id);
-                                setActiveTab('create');
-                              }}
-                            >
-                              <Target className="h-4 w-4" />
-                            </Button>
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Delete Segment</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to delete "{segment.name}"? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction 
-                                    onClick={() => handleDeleteSegment(segment.id, segment.name)}
-                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                  >
-                                    Delete
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              {campaignHistory.map((campaign) => (
+                <Card key={campaign.id} className={campaign.archived ? 'opacity-60' : ''}>
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold">{campaign.title}</h3>
+                          {campaign.archived && (
+                            <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                              Archived
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Sent {format(new Date(campaign.sent_at || campaign.created_at), 'MMM d, yyyy • h:mm a')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-right">
+                          <div className="text-sm font-medium">
+                            {(campaign.sent_count || 0).toLocaleString()} recipients
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="history" className="space-y-4 mt-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Campaign History</h3>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={loadCampaignHistory}
-                  disabled={isLoadingHistory}
-                >
-                  Refresh
-                </Button>
-              </div>
-
-              {isLoadingHistory ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                  <p className="text-muted-foreground mt-2">Loading campaign history...</p>
-                </div>
-              ) : campaignHistory.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Send className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No campaigns sent yet. Create your first campaign to see history here.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {/* Summary metrics */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-primary">
-                          {campaignHistory.reduce((acc, c) => acc + c.sent_count, 0)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">Total Sent</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4">
-                        <div className="text-2xl font-bold text-green-600">
-                          {campaignHistory.reduce((acc, c) => acc + c.delivered_count, 0)}
-                        </div>
-                        <p className="text-xs text-muted-foreground">Delivered</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleArchiveCampaign(campaign.id, !campaign.archived)}
+                        >
+                          {campaign.archived ? (
+                            <>
+                              <ArchiveRestore className="h-4 w-4 mr-1" />
+                              Unarchive
+                            </>
+                          ) : (
+                            <>
+                              <Archive className="h-4 w-4 mr-1" />
+                              Archive
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">
-                          {campaignHistory.reduce((acc, c) => acc + c.opened_count, 0)}
+                          {(campaign.sent_count || 0).toLocaleString()}
                         </div>
-                        <p className="text-xs text-muted-foreground">Opened</p>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="p-4">
+                        <div className="text-xs text-muted-foreground">Sent</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">
+                          {(campaign.delivered_count || 0).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Delivered</div>
+                      </div>
+                      <div className="text-center">
                         <div className="text-2xl font-bold text-purple-600">
-                          {campaignHistory.reduce((acc, c) => acc + c.clicked_count, 0)}
+                          {(campaign.opened_count || 0).toLocaleString()}
                         </div>
-                        <p className="text-xs text-muted-foreground">Clicked</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Campaign list */}
-                  <div className="space-y-3">
-                    {campaignHistory.map((campaign) => {
-                      const openRate = campaign.sent_count > 0 ? (campaign.opened_count / campaign.sent_count * 100).toFixed(1) : '0';
-                      const clickRate = campaign.opened_count > 0 ? (campaign.clicked_count / campaign.opened_count * 100).toFixed(1) : '0';
-                      const deliveryRate = campaign.sent_count > 0 ? (campaign.delivered_count / campaign.sent_count * 100).toFixed(1) : '0';
-
-                      return (
-                        <Card key={campaign.id} className="hover:shadow-md transition-shadow">
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h4 className="font-semibold">{campaign.title}</h4>
-                                  {campaign.test_mode && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      <TestTube className="h-3 w-3 mr-1" />
-                                      Test
-                                    </Badge>
-                                  )}
-                                  <Badge 
-                                    variant={campaign.status === 'sent' ? 'default' : 'secondary'}
-                                    className="text-xs"
-                                  >
-                                    {campaign.status}
-                                  </Badge>
-                                </div>
-                                <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                                  {campaign.message}
-                                </p>
-                                <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                  <span className="flex items-center gap-1">
-                                    <Clock className="h-3 w-3" />
-                                    {campaign.sent_at ? format(new Date(campaign.sent_at), 'MMM d, yyyy HH:mm') : 'Not sent'}
-                                  </span>
-                                  <span className="flex items-center gap-1">
-                                    <Users className="h-3 w-3" />
-                                    {campaign.sent_count} recipients
-                                  </span>
-                                </div>
-                              </div>
-                              
-                              <div className="grid grid-cols-4 gap-4 ml-6 text-center">
-                                <div>
-                                  <div className="text-lg font-semibold text-green-600">
-                                    {deliveryRate}%
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">Delivered</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {campaign.delivered_count}/{campaign.sent_count}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="text-lg font-semibold text-blue-600">
-                                    {openRate}%
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">Open Rate</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {campaign.opened_count}/{campaign.sent_count}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="text-lg font-semibold text-purple-600">
-                                    {clickRate}%
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">CTR</div>
-                                  <div className="text-xs text-muted-foreground">
-                                    {campaign.clicked_count}/{campaign.opened_count || campaign.sent_count}
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="text-lg font-semibold">
-                                    {campaign.estimated_reach}
-                                  </div>
-                                  <div className="text-xs text-muted-foreground">Est. Reach</div>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+                        <div className="text-xs text-muted-foreground">Opened</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {(campaign.clicked_count || 0).toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">Clicked</div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                      <div className="flex gap-4 text-sm">
+                        <span>
+                          Delivery Rate: <span className="font-medium">
+                            {campaign.delivery_rate || (campaign.sent_count ? ((campaign.delivered_count || 0) / campaign.sent_count * 100).toFixed(1) : 0)}%
+                          </span>
+                        </span>
+                        <span>
+                          Open Rate: <span className="font-medium">
+                            {campaign.open_rate || (campaign.delivered_count ? ((campaign.opened_count || 0) / campaign.delivered_count * 100).toFixed(1) : 0)}%
+                          </span>
+                        </span>
+                        <span>
+                          CTR: <span className="font-medium">
+                            {campaign.click_rate || (campaign.delivered_count ? ((campaign.clicked_count || 0) / campaign.delivered_count * 100).toFixed(1) : 0)}%
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
+
+export default CampaignManager;

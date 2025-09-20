@@ -169,85 +169,167 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Handle PUT requests to archive/unarchive campaigns
+    if (req.method === 'PUT') {
+      const { campaign_id, archived } = await req.json();
+      
+      if (!campaign_id || typeof archived !== 'boolean') {
+        return new Response(
+          JSON.stringify({ error: 'Campaign ID and archived status are required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      try {
+        const { error: updateError } = await supabase
+          .from('campaigns')
+          .update({ archived })
+          .eq('id', campaign_id);
+
+        if (updateError) {
+          console.error('❌ Error updating campaign archive status:', updateError);
+          return new Response(
+            JSON.stringify({ error: 'Failed to update campaign' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        return new Response(
+          JSON.stringify({ success: true }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('❌ Unexpected error:', error);
+        return new Response(
+          JSON.stringify({ error: 'Internal server error' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     if (req.method === 'GET') {
       const url = new URL(req.url);
       const campaignId = url.searchParams.get('campaign_id');
+      const includeArchived = url.searchParams.get('include_archived') === 'true';
 
       if (campaignId) {
-        // Get specific campaign with analytics
-        console.log('📊 Fetching campaign analytics for:', campaignId);
+        // Get specific campaign analytics with real-time metrics
+        console.log('📊 Retrieving analytics for campaign:', campaignId);
         
-        const { data: campaign, error: campaignError } = await supabase
-          .from('campaigns')
-          .select('*')
-          .eq('id', campaignId)
-          .single();
+        try {
+          // Get real-time metrics using the new function
+          const { data: metrics, error: metricsError } = await supabase
+            .rpc('get_campaign_metrics', { p_campaign_id: campaignId });
 
-        if (campaignError) {
-          throw campaignError;
-        }
-
-        // Get campaign analytics
-        const { data: analytics, error: analyticsError } = await supabase
-          .from('campaign_analytics')
-          .select('*')
-          .eq('campaign_id', campaignId);
-
-        if (analyticsError) {
-          console.error('Error fetching analytics:', analyticsError);
-        }
-
-        // Calculate performance metrics
-        const performance = calculateCampaignPerformance(analytics || []);
-
-        return new Response(
-          JSON.stringify({
-            campaign,
-            analytics: analytics || [],
-            performance
-          }),
-          { 
-            status: 200, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          if (metricsError) {
+            console.error('❌ Error fetching campaign metrics:', metricsError);
+            return new Response(
+              JSON.stringify({ error: 'Failed to fetch metrics' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
           }
-        );
+
+          const campaignMetrics = metrics && metrics.length > 0 ? metrics[0] : {
+            sent_count: 0,
+            delivered_count: 0,
+            opened_count: 0,
+            clicked_count: 0,
+            delivery_rate: 0,
+            open_rate: 0,
+            click_rate: 0
+          };
+          
+          return new Response(
+            JSON.stringify({ metrics: campaignMetrics }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (error) {
+          console.error('❌ Unexpected error:', error);
+          return new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       } else {
-        // Get campaign history
+        // Get campaign history with summary metrics and real-time data
         console.log('📊 Retrieving campaign history...');
+        
+        try {
+          let query = supabase
+            .from('campaigns')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-        const { data: campaigns, error: campaignsError } = await supabase
-          .from('campaigns')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(50);
-
-        if (campaignsError) {
-          throw campaignsError;
-        }
-
-        // Get summary metrics
-        const totalCampaigns = campaigns.length;
-        const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0);
-        const totalOpened = campaigns.reduce((sum, c) => sum + (c.opened_count || 0), 0);
-        const totalClicked = campaigns.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
-
-        return new Response(
-          JSON.stringify({
-            campaigns,
-            summary: {
-              total_campaigns: totalCampaigns,
-              total_sent: totalSent,
-              total_opened: totalOpened,
-              total_clicked: totalClicked,
-              avg_open_rate: totalSent > 0 ? (totalOpened / totalSent * 100) : 0,
-              avg_click_rate: totalSent > 0 ? (totalClicked / totalSent * 100) : 0
-            }
-          }),
-          { 
-            status: 200, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          if (!includeArchived) {
+            query = query.eq('archived', false);
           }
-        );
+
+          const { data: campaigns, error: campaignsError } = await query.limit(50);
+
+          if (campaignsError) {
+            console.error('❌ Error fetching campaigns:', campaignsError);
+            return new Response(
+              JSON.stringify({ error: 'Failed to fetch campaigns' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          // Get real-time metrics for each campaign
+          const campaignsWithMetrics = await Promise.all(
+            campaigns.map(async (campaign) => {
+              try {
+                const { data: metrics } = await supabase
+                  .rpc('get_campaign_metrics', { p_campaign_id: campaign.id });
+                
+                const realTimeMetrics = metrics && metrics.length > 0 ? metrics[0] : {
+                  sent_count: campaign.sent_count || 0,
+                  delivered_count: campaign.delivered_count || 0,
+                  opened_count: campaign.opened_count || 0,
+                  clicked_count: campaign.clicked_count || 0,
+                  delivery_rate: 0,
+                  open_rate: 0,
+                  click_rate: 0
+                };
+
+                return {
+                  ...campaign,
+                  ...realTimeMetrics
+                };
+              } catch (error) {
+                console.error('Error fetching metrics for campaign', campaign.id, error);
+                return campaign;
+              }
+            })
+          );
+
+          // Calculate summary metrics from real-time data
+          const totalSent = campaignsWithMetrics.reduce((sum, c) => sum + (c.sent_count || 0), 0);
+          const totalDelivered = campaignsWithMetrics.reduce((sum, c) => sum + (c.delivered_count || 0), 0);
+          const totalOpened = campaignsWithMetrics.reduce((sum, c) => sum + (c.opened_count || 0), 0);
+          const totalClicked = campaignsWithMetrics.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
+
+          const summary = {
+            total_campaigns: campaignsWithMetrics.length,
+            total_sent: totalSent,
+            total_delivered: totalDelivered,
+            total_opened: totalOpened,
+            total_clicked: totalClicked,
+            avg_delivery_rate: totalSent > 0 ? ((totalDelivered / totalSent) * 100).toFixed(1) : '0',
+            avg_open_rate: totalDelivered > 0 ? ((totalOpened / totalDelivered) * 100).toFixed(1) : '0',
+            avg_click_rate: totalDelivered > 0 ? ((totalClicked / totalDelivered) * 100).toFixed(1) : '0'
+          };
+
+          return new Response(
+            JSON.stringify({ campaigns: campaignsWithMetrics, summary }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (error) {
+          console.error('❌ Unexpected error:', error);
+          return new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
     }
 
@@ -324,9 +406,12 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
       campaign_id: campaign.id
     };
 
-    // Call send-push function with user authorization
+    // Call send-push function with user authorization and campaign_id for tracking
     const pushResponse = await supabase.functions.invoke('send-push', {
-      body: pushPayload,
+      body: {
+        ...pushPayload,
+        campaign_id: campaign.id // Add campaign_id for tracking
+      },
       headers: {
         'Authorization': authHeader
       }

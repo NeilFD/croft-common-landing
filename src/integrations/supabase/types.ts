@@ -132,6 +132,7 @@ export type Database = {
       }
       campaigns: {
         Row: {
+          archived: boolean
           clicked_count: number | null
           created_at: string
           created_by: string
@@ -155,6 +156,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived?: boolean
           clicked_count?: number | null
           created_at?: string
           created_by: string
@@ -178,6 +180,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived?: boolean
           clicked_count?: number | null
           created_at?: string
           created_by?: string
@@ -1652,6 +1655,7 @@ export type Database = {
           badge: string | null
           banner_message: string | null
           body: string
+          campaign_id: string | null
           created_at: string
           created_by: string | null
           created_by_email: string | null
@@ -1681,6 +1685,7 @@ export type Database = {
           badge?: string | null
           banner_message?: string | null
           body: string
+          campaign_id?: string | null
           created_at?: string
           created_by?: string | null
           created_by_email?: string | null
@@ -1710,6 +1715,7 @@ export type Database = {
           badge?: string | null
           banner_message?: string | null
           body?: string
+          campaign_id?: string | null
           created_at?: string
           created_by?: string | null
           created_by_email?: string | null
@@ -1735,6 +1741,13 @@ export type Database = {
           url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "notifications_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notifications_parent_id_fkey"
             columns: ["parent_id"]
@@ -2865,6 +2878,18 @@ export type Database = {
       get_app_setting: {
         Args: { setting_key: string }
         Returns: string
+      }
+      get_campaign_metrics: {
+        Args: { p_campaign_id: string }
+        Returns: {
+          click_rate: number
+          clicked_count: number
+          delivered_count: number
+          delivery_rate: number
+          open_rate: number
+          opened_count: number
+          sent_count: number
+        }[]
       }
       get_cinema_status: {
         Args: Record<PropertyKey, never>

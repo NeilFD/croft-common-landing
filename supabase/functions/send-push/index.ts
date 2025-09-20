@@ -31,6 +31,7 @@ type SendPushRequest = {
   scope?: SendScope;
   dry_run?: boolean;
   user_ids?: string[]; // Optional explicit targeting
+  campaign_id?: string; // Link to campaign for tracking
   // Back-compat legacy top-level fields
   title?: string;
   body?: string;
@@ -172,6 +173,7 @@ serve(async (req) => {
     const rawBody: SendPushRequest = await req.json().catch(() => ({} as any));
     const scope: SendScope = (rawBody?.scope as SendScope) ?? "all";
     const targetUserIds: string[] = Array.from(new Set((rawBody?.user_ids || []).filter(Boolean)));
+    const campaignId: string | undefined = rawBody?.campaign_id;
     const dryRun: boolean = Boolean(rawBody?.dry_run);
     let payload: PushPayload | undefined = rawBody?.payload as PushPayload | undefined;
 
@@ -237,7 +239,7 @@ serve(async (req) => {
       );
     }
 
-    // Create notification row with banner fields
+    // Create notification row with banner fields and campaign_id for tracking
     const { data: inserted, error: insertErr } = await supabaseAdmin
       .from("notifications")
       .insert({
@@ -251,6 +253,7 @@ serve(async (req) => {
         banner_message: (payload as any).banner_message ?? null,
         display_mode: (payload as any).display_mode ?? 'navigation',
         scope: scope, // Always use valid enum value (all/self), targeting handled by user_ids
+        campaign_id: campaignId, // Link notification to campaign for tracking
         dry_run: dryRun,
         recipients_count: subs?.length ?? 0,
         status: dryRun ? "sent" : "sending",
