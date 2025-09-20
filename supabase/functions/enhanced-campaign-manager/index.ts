@@ -115,31 +115,45 @@ Deno.serve(async (req) => {
 
       // If sending now, trigger the push notification
       if (campaignData.schedule_type === 'now') {
-        const pushResult = await sendCampaignPushNotifications(supabase, campaign, user.id, authHeader);
-        
-        // Update campaign with actual metrics
-        await supabase
-          .from('campaigns')
-          .update({
-            sent_count: pushResult.sent_count,
-            delivered_count: pushResult.delivered_count,
-            sent_at: new Date().toISOString()
-          })
-          .eq('id', campaign.id);
+        try {
+          const pushResult = await sendCampaignPushNotifications(supabase, campaign, user.id, authHeader);
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            campaign: { ...campaign, ...pushResult },
-            message: campaignData.test_mode 
-              ? 'Test campaign sent successfully to admin users'
-              : `Campaign sent successfully to ${pushResult.sent_count} recipients`
-          }),
-          { 
-            status: 200, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-          }
-        );
+          // Update campaign with actual metrics
+          await supabase
+            .from('campaigns')
+            .update({
+              sent_count: pushResult.sent_count,
+              delivered_count: pushResult.delivered_count,
+              sent_at: new Date().toISOString()
+            })
+            .eq('id', campaign.id);
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              campaign: { ...campaign, ...pushResult },
+              message: campaignData.test_mode
+                ? 'Test campaign sent successfully'
+                : `Campaign sent successfully to ${pushResult.sent_count} recipients`
+            }),
+            {
+              status: 200,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+        } catch (err: any) {
+          console.error('❌ Push send failed:', err);
+          // Allow the UI to surface a clear error when there are no recipients or other issues
+          const status = typeof err?.status === 'number' ? err.status : 400;
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'Failed to send campaign',
+              details: err?.message || String(err)
+            }),
+            { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
 
       return new Response(

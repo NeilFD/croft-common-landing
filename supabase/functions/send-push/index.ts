@@ -228,6 +228,15 @@ serve(async (req) => {
       });
     }
 
+    // Pre-check: no active subscriptions for the target audience
+    if (!subs || subs.length === 0) {
+      console.warn("⚠️ DEBUG: No active push subscriptions found for target audience");
+      return new Response(
+        JSON.stringify({ error: "No active push subscriptions for target audience", recipients: 0, scope }),
+        { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
+    }
+
     // Create notification row with banner fields
     const { data: inserted, error: insertErr } = await supabaseAdmin
       .from("notifications")
