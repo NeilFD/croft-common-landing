@@ -10,6 +10,7 @@ import { TransitionProvider } from "@/contexts/TransitionContext";
 import { MembershipAuthProvider } from "@/contexts/MembershipAuthContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
 import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
+import { useTrackNotificationClick } from "@/hooks/useTrackNotificationClick";
 import NudgeFloatingButton from './components/NudgeFloatingButton';
 
 // Lazy load pages for better performance
@@ -71,6 +72,8 @@ const GlobalHandlers = () => {
   
   // Handle nudge notifications
   useNudgeNotificationHandler();
+  // Track notification clicks via URL tokens
+  useTrackNotificationClick();
   
   return null;
 };
