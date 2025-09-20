@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
 
       // If sending now, trigger the push notification
       if (campaignData.schedule_type === 'now') {
-        const pushResult = await sendCampaignPushNotifications(supabase, campaign, user.id);
+        const pushResult = await sendCampaignPushNotifications(supabase, campaign, user.id, authHeader);
         
         // Update campaign with actual metrics
         await supabase
@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function sendCampaignPushNotifications(supabase: any, campaign: any, userId: string) {
+async function sendCampaignPushNotifications(supabase: any, campaign: any, userId: string, authHeader: string) {
   console.log('📱 Sending push notifications for campaign:', campaign.id);
 
   try {
@@ -310,9 +310,12 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
       campaign_id: campaign.id
     };
 
-    // Call send-push function
+    // Call send-push function with user authorization
     const pushResponse = await supabase.functions.invoke('send-push', {
-      body: pushPayload
+      body: pushPayload,
+      headers: {
+        'Authorization': authHeader
+      }
     });
 
     if (pushResponse.error) {
