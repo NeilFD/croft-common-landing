@@ -257,41 +257,45 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Handle PUT requests to archive/unarchive campaigns
-    if (req.method === 'PUT') {
-      const { campaign_id, archived } = await req.json();
-      
-      if (!campaign_id || typeof archived !== 'boolean') {
-        return new Response(
-          JSON.stringify({ error: 'Campaign ID and archived status are required' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      try {
-        const { error: updateError } = await supabase
-          .from('campaigns')
-          .update({ archived })
-          .eq('id', campaign_id);
-
-        if (updateError) {
-          console.error('❌ Error updating campaign archive status:', updateError);
+    // Handle archive/unarchive via POST action
+    if (req.method === 'POST') {
+      const { action } = await req.json().catch(() => ({ action: null }));
+      // Note: body was already read above in the first POST branch.
+      // If this branch is hit, it means the early POST branch didn't return.
+      if (action === 'archive_campaign') {
+        const { campaign_id, archived } = await req.json();
+        if (!campaign_id || typeof archived !== 'boolean') {
           return new Response(
-            JSON.stringify({ error: 'Failed to update campaign' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({ error: 'Campaign ID and archived status are required' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        return new Response(
-          JSON.stringify({ success: true }),
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } catch (error) {
-        console.error('❌ Unexpected error:', error);
-        return new Response(
-          JSON.stringify({ error: 'Internal server error' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        try {
+          const { error: updateError } = await supabase
+            .from('campaigns')
+            .update({ archived })
+            .eq('id', campaign_id);
+
+          if (updateError) {
+            console.error('❌ Error updating campaign archive status:', updateError);
+            return new Response(
+              JSON.stringify({ error: 'Failed to update campaign' }),
+              { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+
+          return new Response(
+            JSON.stringify({ success: true }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } catch (error) {
+          console.error('❌ Unexpected error:', error);
+          return new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
     }
 

@@ -168,8 +168,35 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
         }
       });
 
-      if (error) {
-        console.error('Error loading campaign history:', error);
+      if (error || !data) {
+        console.error('Error loading campaign history via function, falling back to direct query:', error);
+        // Fallback: query campaigns directly
+        let query = supabase
+          .from('campaigns')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(50);
+        if (!showArchived) query = query.eq('archived', false);
+        const { data: campaigns, error: campaignsError } = await query;
+        if (campaignsError) {
+          console.error('Fallback load failed:', campaignsError);
+        } else if (campaigns) {
+          setCampaignHistory(campaigns);
+          const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0);
+          const totalDelivered = campaigns.reduce((sum, c) => sum + (c.delivered_count || 0), 0);
+          const totalOpened = campaigns.reduce((sum, c) => sum + (c.opened_count || 0), 0);
+          const totalClicked = campaigns.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
+          setSummaryMetrics({
+            total_campaigns: campaigns.length,
+            total_sent: totalSent,
+            total_delivered: totalDelivered,
+            total_opened: totalOpened,
+            total_clicked: totalClicked,
+            avg_delivery_rate: totalSent > 0 ? ((totalDelivered / totalSent) * 100).toFixed(1) : '0',
+            avg_open_rate: totalDelivered > 0 ? ((totalOpened / totalDelivered) * 100).toFixed(1) : '0',
+            avg_click_rate: totalDelivered > 0 ? ((totalClicked / totalDelivered) * 100).toFixed(1) : '0'
+          });
+        }
         return;
       }
 
@@ -189,8 +216,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
   const handleArchiveCampaign = async (campaignId: string, archived: boolean) => {
     try {
       const { error } = await supabase.functions.invoke('enhanced-campaign-manager', {
-        method: 'PUT',
-        body: { campaign_id: campaignId, archived }
+        body: { action: 'archive_campaign', campaign_id: campaignId, archived }
       });
 
       if (error) {
