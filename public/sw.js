@@ -248,13 +248,6 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil((async () => {
     console.log('🔔 SW: Processing notification click with validated data:', data);
 
-    // Best-effort click tracking via Edge Function (idempotent)
-    try {
-      if (clickToken) {
-        const trackUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/track-notification-click?ntk=${encodeURIComponent(clickToken)}${clickUser ? `&user=${encodeURIComponent(clickUser)}` : ''}`;
-        fetch(trackUrl, { method: 'GET', mode: 'cors' }).catch(() => {});
-      }
-    } catch (_) {}
 
     // If we have a tracking URL, use it for proper CTR tracking
     if (url && typeof url === 'string' && url.length > 0) {
