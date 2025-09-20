@@ -30,6 +30,7 @@ type SendPushRequest = {
   payload?: PushPayload;
   scope?: SendScope;
   dry_run?: boolean;
+  user_ids?: string[]; // Optional explicit targeting
   // Back-compat legacy top-level fields
   title?: string;
   body?: string;
@@ -169,7 +170,8 @@ serve(async (req) => {
 
     // Parse body, support both shapes
     const rawBody: SendPushRequest = await req.json().catch(() => ({} as any));
-    const scope: SendScope = rawBody?.scope ?? "all";
+    const scope: SendScope = (rawBody?.scope as SendScope) ?? "all";
+    const targetUserIds: string[] = Array.from(new Set((rawBody?.user_ids || []).filter(Boolean)));
     const dryRun: boolean = Boolean(rawBody?.dry_run);
     let payload: PushPayload | undefined = rawBody?.payload as PushPayload | undefined;
 
@@ -193,13 +195,16 @@ serve(async (req) => {
     }
 
     // Fetch recipients
-    console.log(`🔍 DEBUG: Fetching subscriptions for scope="${scope}"`);
+    console.log(`🔍 DEBUG: Fetching subscriptions for scope="${scope}" (targetUserIds=${targetUserIds.length})`);
     let query = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, p256dh, auth, user_id")
       .eq("is_active", true);
 
-    if (scope === "self") {
+    if (targetUserIds.length > 0) {
+      console.log(`🎯 DEBUG: Targeting explicit user_ids:`, targetUserIds);
+      query = query.in("user_id", targetUserIds);
+    } else if (scope === "self") {
       // Use the actual authenticated user's ID for testing
       console.log(`🎯 DEBUG: Self-scope detected, using authenticated user ID: ${userRes.user.id}`);
       query = query.eq("user_id", userRes.user.id);
@@ -236,7 +241,7 @@ serve(async (req) => {
         badge: payload.badge ?? null,
         banner_message: (payload as any).banner_message ?? null,
         display_mode: (payload as any).display_mode ?? 'navigation',
-        scope,
+        scope: targetUserIds.length > 0 ? `specific(${targetUserIds.length})` : scope,
         dry_run: dryRun,
         recipients_count: subs?.length ?? 0,
         status: dryRun ? "sent" : "sending",

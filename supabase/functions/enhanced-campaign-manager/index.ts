@@ -303,7 +303,7 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
     const pushPayload = {
       title: campaign.title,
       body: campaign.message,
-      scope: 'specific_users',
+      scope: campaign.test_mode ? 'self' : 'all',
       user_ids: targetUserIds,
       dry_run: campaign.test_mode,
       personalize: campaign.personalize,
@@ -339,8 +339,8 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
     }
 
     return {
-      sent_count: pushResult.sent || 0,
-      delivered_count: pushResult.sent || 0, // Assume delivered for now
+      sent_count: pushResult.success || 0,
+      delivered_count: pushResult.success || 0, // Assume delivered for now
       failed_count: pushResult.failed || 0
     };
 
