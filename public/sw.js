@@ -246,48 +246,42 @@ self.addEventListener('notificationclick', event => {
   event.waitUntil((async () => {
     console.log('🔔 SW: Processing notification click with validated data:', data);
 
-    // Robust IndexedDB storage for NUDGE notifications
-    if (url) {
-      console.log('🔔 SW: 💾 Storing NUDGE URL with robust strategy:', url);
+    // If we have a tracking URL, navigate directly to it
+    if (url && typeof url === 'string' && url.length > 0) {
+      console.log('🔔 SW: 🎯 Opening tracking URL directly:', url);
       
-      try {
-        await storeNudgeUrl(url);
-        console.log('🔔 SW: ✅ NUDGE URL stored successfully');
-      } catch (error) {
-        console.error('🔔 SW: ❌ NUDGE URL storage failed:', error);
+      // Try to focus existing window first
+      const clients = await self.clients.matchAll({ 
+        type: 'window', 
+        includeUncontrolled: true 
+      });
+      
+      if (clients.length > 0) {
+        // Navigate existing window to the tracking URL
+        console.log('🔔 SW: Navigating existing window to tracking URL');
+        clients[0].navigate(url);
+        await clients[0].focus();
+      } else {
+        // Open new window directly to the tracking URL
+        console.log('🔔 SW: Opening new window with tracking URL');
+        await self.clients.openWindow(url);
       }
-    }
-
-    // Always open/focus the app first
-    console.log('🔔 SW: Opening/focusing app window');
-    let appWindow = null;
-    
-    // Try to focus existing window first
-    const clients = await self.clients.matchAll({ 
-      type: 'window', 
-      includeUncontrolled: true 
-    });
-    
-    if (clients.length > 0) {
-      appWindow = clients[0];
-      await appWindow.focus();
-      console.log('🔔 SW: Focused existing window');
     } else {
-      // Open new window - always to the main app, not the notification URL
-      appWindow = await self.clients.openWindow('/');
-      console.log('🔔 SW: Opened new window');
-    }
-    
-    // Simple NUDGE message delivery - storage-first approach
-    if (url) {
-      console.log('🔔 SW: 📡 Starting NUDGE delivery for URL:', url);
+      // Fallback: open app normally if no tracking URL
+      console.log('🔔 SW: No tracking URL, opening app normally');
       
-      // Store URL first
-      await storeNudgeUrl(url);
+      const clients = await self.clients.matchAll({ 
+        type: 'window', 
+        includeUncontrolled: true 
+      });
       
-      // Send with smart delivery system
-      console.log('🔔 SW: 📡 Starting smart NUDGE delivery');
-      attemptNudgeDelivery(url);
+      if (clients.length > 0) {
+        await clients[0].focus();
+        console.log('🔔 SW: Focused existing window');
+      } else {
+        await self.clients.openWindow('/');
+        console.log('🔔 SW: Opened new window');
+      }
     }
   })());
 });
