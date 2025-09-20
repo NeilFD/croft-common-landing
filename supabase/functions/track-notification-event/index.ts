@@ -182,10 +182,10 @@ serve(async (req) => {
     }
 
     if (token) {
-      // Resolve delivery by token and perform first-open/click semantics
+      // Resolve delivery by token and perform first-click semantics
       const { data: delivery, error: delErr } = await admin
         .from('notification_deliveries')
-        .select('id, notification_id, subscription_id, status, opened_at')
+        .select('id, notification_id, subscription_id, status')
         .eq('click_token', token)
         .maybeSingle();
 
@@ -210,107 +210,59 @@ serve(async (req) => {
           userId = (sub?.user_id as string) || null;
         }
 
-        if (type === 'notification_open') {
-          // Handle notification opened/viewed
-          const { data: updatedRows, error: updateErr } = await admin
-            .from('notification_deliveries')
-            .update({ opened_at: new Date().toISOString() } as any)
-            .eq('id', (delivery as any).id)
-            .is('opened_at', null)
-            .select('id');
+        // Atomically set status to clicked if not already; detect first transition
+        const { data: updatedRows, error: updateErr } = await admin
+          .from('notification_deliveries')
+          .update({ status: 'clicked', clicked_at: new Date().toISOString() } as any)
+          .eq('id', (delivery as any).id)
+          .neq('status', 'clicked')
+          .select('id');
 
-          const firstOpen = !updateErr && Array.isArray(updatedRows) && updatedRows.length > 0;
+        const firstClick = !updateErr && Array.isArray(updatedRows) && updatedRows.length > 0;
 
-          if (firstOpen) {
-            console.log(`[${requestId}] First open recorded for delivery ${(delivery as any).id}`);
-            if (notification?.campaign_id) {
-              // Record analytics
-              const { error: insertErr } = await admin
-                .from('campaign_analytics')
-                .insert({
-                  campaign_id: notification.campaign_id,
-                  user_id: userId,
-                  event_type: 'opened',
-                  metadata: { source: 'track-notification-event' },
-                } as any);
-              if (insertErr) {
-                console.error(`[${requestId}] Failed to insert opened analytics`, insertErr);
-              }
+        if (firstClick) {
+          console.log(`[${requestId}] First click recorded for delivery ${(delivery as any).id}`);
+          if (notification?.campaign_id) {
+            // Record analytics
+            const { error: insertErr } = await admin
+              .from('campaign_analytics')
+              .insert({
+                campaign_id: notification.campaign_id,
+                user_id: userId,
+                event_type: 'clicked',
+                metadata: { source: 'track-notification-event' },
+              } as any);
+            if (insertErr) {
+              console.error(`[${requestId}] Failed to insert campaign analytics`, insertErr);
+            }
 
-              // Increment campaign opened_count
-              const { data: camp } = await admin
-                .from('campaigns')
-                .select('id, opened_count')
-                .eq('id', notification.campaign_id)
-                .maybeSingle();
+            // Increment campaign clicked_count
+            const { data: camp } = await admin
+              .from('campaigns')
+              .select('id, clicked_count')
+              .eq('id', notification.campaign_id)
+              .maybeSingle();
 
-              const next = ((camp?.opened_count as number) || 0) + 1;
-              const { error: campErr } = await admin
-                .from('campaigns')
-                .update({ opened_count: next })
-                .eq('id', notification.campaign_id);
-              if (campErr) {
-                console.error(`[${requestId}] Failed to update campaign opened_count`, campErr);
-              } else {
-                console.log(`[${requestId}] Campaign ${notification.campaign_id} opened_count incremented to ${next}`);
-              }
+            const next = ((camp?.clicked_count as number) || 0) + 1;
+            const { error: campErr } = await admin
+              .from('campaigns')
+              .update({ clicked_count: next })
+              .eq('id', notification.campaign_id);
+            if (campErr) {
+              console.error(`[${requestId}] Failed to update campaign clicked_count`, campErr);
+            } else {
+              console.log(`[${requestId}] Campaign ${notification.campaign_id} clicked_count incremented to ${next}`);
             }
           }
-        } else if (type === 'notification_click') {
-          // Handle notification clicked - same logic as before
-          const { data: updatedRows, error: updateErr } = await admin
+        } else {
+          // Ensure clicked_at is set at least once
+          const { error: ensureErr } = await admin
             .from('notification_deliveries')
-            .update({ status: 'clicked', clicked_at: new Date().toISOString() } as any)
+            .update({ clicked_at: new Date().toISOString() } as any)
             .eq('id', (delivery as any).id)
-            .neq('status', 'clicked')
-            .select('id');
-
-          const firstClick = !updateErr && Array.isArray(updatedRows) && updatedRows.length > 0;
-
-          if (firstClick) {
-            console.log(`[${requestId}] First click recorded for delivery ${(delivery as any).id}`);
-            if (notification?.campaign_id) {
-              // Record analytics
-              const { error: insertErr } = await admin
-                .from('campaign_analytics')
-                .insert({
-                  campaign_id: notification.campaign_id,
-                  user_id: userId,
-                  event_type: 'clicked',
-                  metadata: { source: 'track-notification-event' },
-                } as any);
-              if (insertErr) {
-                console.error(`[${requestId}] Failed to insert campaign analytics`, insertErr);
-              }
-
-              // Increment campaign clicked_count
-              const { data: camp } = await admin
-                .from('campaigns')
-                .select('id, clicked_count')
-                .eq('id', notification.campaign_id)
-                .maybeSingle();
-
-              const next = ((camp?.clicked_count as number) || 0) + 1;
-              const { error: campErr } = await admin
-                .from('campaigns')
-                .update({ clicked_count: next })
-                .eq('id', notification.campaign_id);
-              if (campErr) {
-                console.error(`[${requestId}] Failed to update campaign clicked_count`, campErr);
-              } else {
-                console.log(`[${requestId}] Campaign ${notification.campaign_id} clicked_count incremented to ${next}`);
-              }
-            }
-          } else {
-            // Ensure clicked_at is set at least once
-            const { error: ensureErr } = await admin
-              .from('notification_deliveries')
-              .update({ clicked_at: new Date().toISOString() } as any)
-              .eq('id', (delivery as any).id)
-              .is('clicked_at', null);
-            if (ensureErr) {
-              console.error(`[${requestId}] Failed to ensure clicked_at`, ensureErr);
-            }
+            .is('clicked_at', null);
+          if (ensureErr) {
+            console.error(`[${requestId}] Failed to ensure clicked_at`, ensureErr);
           }
         }
       }

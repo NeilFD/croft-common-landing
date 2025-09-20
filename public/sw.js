@@ -226,30 +226,7 @@ self.addEventListener('push', event => {
   console.log('🔔 SW: Showing notification:', { title, options });
 
   event.waitUntil(
-    self.registration.showNotification(title, options).then(() => {
-      // Track notification opened/viewed
-      const clickToken = data.click_token || data.clickToken;
-      if (clickToken) {
-        console.log('🔔 SW: 📊 Tracking notification opened for token:', clickToken.substring(0, 8) + '...');
-        
-        // Fire and forget - track that notification was opened/viewed
-        fetch('/functions/v1/track-notification-event', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            type: 'notification_open',
-            token: clickToken,
-            url: data.url || self.location.origin
-          })
-        }).catch(err => {
-          console.warn('🔔 SW: Failed to track notification open:', err);
-        });
-      } else {
-        console.log('🔔 SW: No click token available for opened tracking');
-      }
-    })
+    self.registration.showNotification(title, options)
   );
 });
 
