@@ -106,6 +106,9 @@ verify_jwt = false
 [functions.send-push]
 verify_jwt = true
 
+[functions.track-notification-click]
+verify_jwt = false
+
 # New functions
 [functions.upsert-notification]
 verify_jwt = true
@@ -198,9 +201,6 @@ verify_jwt = false
 [functions.simple-push-test]
 verify_jwt = false
 
-# Tracking clicks must be public (no JWT)
-[functions.track-notification-click]
-verify_jwt = false
 
 [functions.calendly-webhook]
 verify_jwt = false
