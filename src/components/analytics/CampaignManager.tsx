@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target, Trash2, Archive, ArchiveRestore } from 'lucide-react';
+import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target, Trash2, Archive, ArchiveRestore, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { SegmentBuilder } from './SegmentBuilder';
@@ -304,9 +304,15 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
 
   const handleSegmentCreate = async (segment: SavedSegment) => {
     await loadSavedSegments();
-    setActiveTab('create');
-    setSelectedSegment(segment);
-    setEditingSegment(null);
+    if (editingSegment) {
+      // If we were editing, go back to segments list
+      setEditingSegment(null);
+      toast.success('Segment updated successfully');
+    } else {
+      // If we were creating new, switch to create campaign tab
+      setActiveTab('create');
+      setSelectedSegment(segment);
+    }
   };
 
   const handleSegmentEdit = (segment: SavedSegment) => {
@@ -568,43 +574,88 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
         </TabsContent>
 
         <TabsContent value="segments" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Saved Segments List */}
-            <div className="lg:col-span-1">
+          {editingSegment ? (
+            /* Edit Segment View */
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingSegment(null)}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Segments
+                </Button>
+                <h2 className="text-lg font-semibold">Edit Segment: {editingSegment.name}</h2>
+              </div>
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    Saved Segments
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setEditingSegment(null)}
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      New
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {savedSegments.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No segments created yet.</p>
-                  ) : (
-                    savedSegments.map((segment) => (
-                      <div key={segment.id} className="border rounded-lg p-3 space-y-2">
+                <CardContent className="pt-6">
+                  <SegmentBuilder 
+                    onSegmentCreate={handleSegmentCreate}
+                    editingSegment={editingSegment}
+                    initialFilters={editingSegment?.filters}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            /* Segments List View */
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold">Saved Segments</h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEditingSegment(null)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create New Segment
+                </Button>
+              </div>
+              
+              {savedSegments.length === 0 ? (
+                <Card>
+                  <CardContent className="pt-6">
+                    <div className="text-center space-y-4">
+                      <Target className="h-12 w-12 mx-auto text-muted-foreground" />
+                      <div>
+                        <h3 className="font-medium">No segments created yet</h3>
+                        <p className="text-sm text-muted-foreground">Create your first segment to start targeting specific audiences.</p>
+                      </div>
+                      <Button onClick={() => setEditingSegment(null)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Your First Segment
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-4">
+                  {savedSegments.map((segment) => (
+                    <Card key={segment.id}>
+                      <CardContent className="pt-6">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-sm">{segment.name}</h4>
-                          <div className="flex gap-1">
+                          <div className="space-y-1">
+                            <h4 className="font-medium">{segment.name}</h4>
+                            <p className="text-sm text-muted-foreground">{segment.description}</p>
+                            <div className="flex gap-4 text-sm">
+                              <span className="text-muted-foreground">{segment.member_count} members</span>
+                              <span className="text-muted-foreground">£{segment.avg_spend} avg spend</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
                               onClick={() => handleSegmentEdit(segment)}
                             >
-                              <Edit className="h-3 w-3" />
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
                             </Button>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="sm">
-                                  <Trash2 className="h-3 w-3" />
+                                <Button variant="outline" size="sm">
+                                  <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
                               <AlertDialogContent>
@@ -624,36 +675,29 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                             </AlertDialog>
                           </div>
                         </div>
-                        <p className="text-xs text-muted-foreground">{segment.description}</p>
-                        <div className="flex justify-between text-xs">
-                          <span>{segment.member_count} members</span>
-                          <span>£{segment.avg_spend} avg spend</span>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </CardContent>
-              </Card>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+              
+              {/* Create New Segment Form */}
+              {editingSegment === null && savedSegments.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Create New Segment</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <SegmentBuilder 
+                      onSegmentCreate={handleSegmentCreate}
+                      editingSegment={null}
+                      initialFilters={null}
+                    />
+                  </CardContent>
+                </Card>
+              )}
             </div>
-
-            {/* Segment Builder */}
-            <div className="lg:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>
-                    {editingSegment ? `Edit Segment: ${editingSegment.name}` : 'Create New Segment'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <SegmentBuilder 
-                    onSegmentCreate={handleSegmentCreate}
-                    editingSegment={editingSegment}
-                    initialFilters={editingSegment?.filters}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+          )}
         </TabsContent>
         
         <TabsContent value="history" className="space-y-6">
