@@ -170,7 +170,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
 
       if (error || !data) {
         console.error('Error loading campaign history via function, falling back to direct query:', error);
-        // Fallback: query campaigns directly
+        // Fallback: query campaigns directly and compute clicks from deliveries
         let query = supabase
           .from('campaigns')
           .select('*')
@@ -181,13 +181,55 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
         if (campaignsError) {
           console.error('Fallback load failed:', campaignsError);
         } else if (campaigns) {
-          setCampaignHistory(campaigns);
-          const totalSent = campaigns.reduce((sum, c) => sum + (c.sent_count || 0), 0);
-          const totalDelivered = campaigns.reduce((sum, c) => sum + (c.delivered_count || 0), 0);
-          const totalOpened = campaigns.reduce((sum, c) => sum + (c.opened_count || 0), 0);
-          const totalClicked = campaigns.reduce((sum, c) => sum + (c.clicked_count || 0), 0);
+          // Derive clicked_count by looking at deliveries for notifications in each campaign
+          let enriched = campaigns;
+          try {
+            const campaignIds = campaigns.map((c: any) => c.id);
+            if (campaignIds.length > 0) {
+              const { data: notifRows, error: notifErr } = await supabase
+                .from('notifications')
+                .select('id, campaign_id')
+                .in('campaign_id', campaignIds);
+              if (notifErr) {
+                console.error('Fallback: notifications fetch failed', notifErr);
+              } else {
+                const notifIds = (notifRows || []).map((n: any) => n.id);
+                const notifToCampaign: Record<string, string> = {};
+                (notifRows || []).forEach((n: any) => { notifToCampaign[n.id] = n.campaign_id; });
+                if (notifIds.length > 0) {
+                  const { data: deliveries, error: delErr } = await supabase
+                    .from('notification_deliveries')
+                    .select('notification_id, status')
+                    .in('notification_id', notifIds);
+                  if (delErr) {
+                    console.error('Fallback: deliveries fetch failed', delErr);
+                  } else {
+                    const clickedByCampaign: Record<string, number> = {};
+                    for (const d of deliveries || []) {
+                      if ((d as any).status === 'clicked') {
+                        const cid = notifToCampaign[(d as any).notification_id as any];
+                        if (cid) clickedByCampaign[cid] = (clickedByCampaign[cid] || 0) + 1;
+                      }
+                    }
+                    enriched = campaigns.map((c: any) => ({
+                      ...c,
+                      clicked_count: clickedByCampaign[c.id] ?? c.clicked_count ?? 0,
+                    }));
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Fallback: error computing click metrics', e);
+          }
+
+          setCampaignHistory(enriched);
+          const totalSent = enriched.reduce((sum: number, c: any) => sum + (c.sent_count || 0), 0);
+          const totalDelivered = enriched.reduce((sum: number, c: any) => sum + (c.delivered_count || 0), 0);
+          const totalOpened = enriched.reduce((sum: number, c: any) => sum + (c.opened_count || 0), 0);
+          const totalClicked = enriched.reduce((sum: number, c: any) => sum + (c.clicked_count || 0), 0);
           setSummaryMetrics({
-            total_campaigns: campaigns.length,
+            total_campaigns: enriched.length,
             total_sent: totalSent,
             total_delivered: totalDelivered,
             total_opened: totalOpened,
