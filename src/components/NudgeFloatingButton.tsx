@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useNudgeNotification } from "@/contexts/NudgeNotificationContext";
-import { supabase } from "@/integrations/supabase/client";
 
 interface NudgeFloatingButtonProps {
   className?: string;
@@ -30,23 +29,6 @@ const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "
     if (!nudgeUrl) return;
 
     markNudgeClicked(); // Mark as clicked immediately
-
-    // Pre-emptively record click if URL contains /c/:token
-    try {
-      const urlObj = nudgeUrl.startsWith('http') ? new URL(nudgeUrl) : new URL(nudgeUrl, window.location.origin);
-      const parts = urlObj.pathname.split('/');
-      const idx = parts.findIndex((p) => p === 'c');
-      const token = idx >= 0 && parts[idx + 1] ? parts[idx + 1] : null;
-      const user = urlObj.searchParams.get('user');
-      if (token) {
-        console.log('🎯 NUDGE BUTTON: Pre-tracking click with token:', token, 'user:', user);
-        void supabase.functions
-          .invoke('track-notification-click', { body: { click_token: token, user_id: user } })
-          .catch(() => {});
-      }
-    } catch (e) {
-      console.log('🎯 NUDGE BUTTON: Pre-track parse failed');
-    }
     
     // Handle both full URLs and internal paths
     if (nudgeUrl.startsWith('http')) {

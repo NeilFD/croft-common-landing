@@ -256,19 +256,13 @@ self.addEventListener('notificationclick', event => {
       }
     } catch (_) {}
 
-    // If we have a tracking URL, extract path and navigate or store for nudge
+    // If we have a tracking URL, use it for proper CTR tracking
     if (url && typeof url === 'string' && url.length > 0) {
       console.log('🔔 SW: 🎯 Processing tracking URL:', url);
       
-      // Extract pathname from full URL for internal navigation
+      // Use the full tracking URL directly for proper click recording
       let navigationPath = url;
-      try {
-        const urlObj = new URL(url);
-        navigationPath = urlObj.pathname + urlObj.search + urlObj.hash;
-        console.log('🔔 SW: Extracted path for navigation:', navigationPath);
-      } catch (e) {
-        console.log('🔔 SW: URL parsing failed, using as-is:', url);
-      }
+      console.log('🔔 SW: Using full tracking URL for navigation:', navigationPath);
       
       // Try to focus existing window first
       const clients = await self.clients.matchAll({ 
@@ -277,14 +271,13 @@ self.addEventListener('notificationclick', event => {
       });
       
       if (clients.length > 0) {
-        // For open PWA, store the path for nudge button and focus
-        console.log('🔔 SW: PWA open - storing path for nudge and focusing window');
-        await storeNudgeUrl(navigationPath);
-        await attemptNudgeDelivery(navigationPath);
+        // For open PWA, navigate to tracking URL which will record click and redirect
+        console.log('🔔 SW: PWA open - navigating to tracking URL');
         await clients[0].focus();
+        clients[0].navigate(navigationPath);
       } else {
-        // No open window - navigate directly to the path
-        console.log('🔔 SW: Opening new window with path:', navigationPath);
+        // No open window - navigate directly to the tracking URL
+        console.log('🔔 SW: Opening new window with tracking URL:', navigationPath);
         await self.clients.openWindow(navigationPath);
       }
     } else {

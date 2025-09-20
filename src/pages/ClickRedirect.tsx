@@ -21,10 +21,19 @@ export default function ClickRedirect() {
       } catch (_) {
         // ignore
       } finally {
-        // Decode once; if invalid, just navigate to fallback
+        // Decode destination URL and pass tracking parameters
         try {
           const url = decodeURIComponent(dest);
-          navigate(url.startsWith('/') ? url : '/notifications', { replace: true });
+          const targetUrl = url.startsWith('/') ? url : '/notifications';
+          
+          // Add tracking parameters to destination for personalization
+          const urlObj = new URL(targetUrl, window.location.origin);
+          if (token) urlObj.searchParams.set('ntk', token);
+          if (user) urlObj.searchParams.set('user', user);
+          
+          const finalPath = urlObj.pathname + urlObj.search;
+          console.log('🎯 ClickRedirect: Navigating to:', finalPath);
+          navigate(finalPath, { replace: true });
         } catch {
           navigate('/notifications', { replace: true });
         }
