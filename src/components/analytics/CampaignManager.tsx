@@ -349,7 +349,12 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                   />
                 </div>
                 {personalizeMessage && (
-                  <PersonalizationHelper />
+                  <PersonalizationHelper 
+                    onInsertCode={(code) => {
+                      setCampaignMessage(prev => prev + code);
+                    }}
+                    isVisible={personalizeMessage}
+                  />
                 )}
               </CardContent>
             </Card>
@@ -385,7 +390,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                       Target Dynamic Segment
                     </div>
                   </Label>
-                  <SegmentBuilder onChange={setSegmentFilters} />
+                  <SegmentBuilder onSegmentCreate={setSegmentFilters} />
                 </div>
               </CardContent>
             </Card>
@@ -479,7 +484,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
               <PushNotificationPreview
                 title={campaignTitle}
                 message={campaignMessage}
-                brandLogo={BRAND_LOGO}
+                personalize={personalizeMessage}
               />
             </CardContent>
           </Card>

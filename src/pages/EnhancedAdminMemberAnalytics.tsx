@@ -9,7 +9,7 @@ import { AdvancedFilters } from '@/components/analytics/AdvancedFilters';
 import { EnhancedAnalyticsStats } from '@/components/analytics/EnhancedAnalyticsStats';
 import { MemberAnalyticsTable, EnhancedMemberAnalytics } from '@/components/analytics/MemberAnalyticsTable';
 import { MemberDeepDiveModal, MemberDeepDiveData } from '@/components/analytics/MemberDeepDiveModal';
-import { CampaignManager } from '@/components/analytics/CampaignManager';
+import CampaignManager from '@/components/analytics/CampaignManager';
 
 interface AdvancedFilters {
   dateStart?: Date;
