@@ -180,6 +180,12 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
   const estimatedReach = getEstimatedReach();
 
   const handleTemplateSelect = (templateId: string) => {
+    if (templateId === selectedTemplate) {
+      // If the same template is selected, deselect it
+      setSelectedTemplate('');
+      return;
+    }
+    
     setSelectedTemplate(templateId);
     const template = CAMPAIGN_TEMPLATES.find(t => t.id === templateId);
     if (template) {
@@ -381,7 +387,23 @@ export const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSe
 
               {/* Message Template */}
               <div className="space-y-2">
-                <Label htmlFor="template">Message Template (Optional)</Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="template">Message Template (Optional)</Label>
+                  {selectedTemplate && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedTemplate('');
+                        setCampaignTitle('');
+                        setCampaignMessage('');
+                      }}
+                      className="text-xs h-auto p-1"
+                    >
+                      Clear Template
+                    </Button>
+                  )}
+                </div>
                 <Select value={selectedTemplate} onValueChange={handleTemplateSelect}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose a template or create custom message" />
