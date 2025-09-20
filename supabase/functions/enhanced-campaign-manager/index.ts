@@ -294,11 +294,10 @@ Deno.serve(async (req) => {
 
     // Handle archive/unarchive via POST action
     if (req.method === 'POST') {
-      const { action } = await req.json().catch(() => ({ action: null }));
-      // Note: body was already read above in the first POST branch.
-      // If this branch is hit, it means the early POST branch didn't return.
+      const bodyData = await req.json().catch(() => ({ action: null }));
+      const { action, campaign_id, archived } = bodyData;
+      
       if (action === 'archive_campaign') {
-        const { campaign_id, archived } = await req.json();
         if (!campaign_id || typeof archived !== 'boolean') {
           return new Response(
             JSON.stringify({ error: 'Campaign ID and archived status are required' }),
