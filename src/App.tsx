@@ -61,6 +61,10 @@ import DomainGuard from '@/components/DomainGuard';
 import ReverseDomainGuard from '@/components/ReverseDomainGuard';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useConsolidatedPerformance } from '@/hooks/useConsolidatedPerformance';
+import { useCapacitorDeepLinking } from '@/hooks/useCapacitorDeepLinking';
+import { useCapacitorPushNotifications } from '@/hooks/useCapacitorPushNotifications';
+import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
+import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 
 const queryClient = new QueryClient();
 
@@ -75,6 +79,10 @@ const GlobalHandlers = () => {
   useNudgeNotificationHandler();
   // Track notification clicks via URL tokens
   useTrackNotificationClick();
+  
+  // Capacitor native functionality
+  useCapacitorDeepLinking();
+  useCapacitorPushNotifications();
   
   return null;
 };
@@ -158,77 +166,85 @@ const PageLoader = () => {
   );
 };
 
-const App = () => (
-  <HelmetProvider>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <NudgeNotificationProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <GlobalHandlers />
-              <LowercasePathGuard />
-              <ReverseDomainGuard />
-              <RouteImagePreloader />
-              <NudgeFloatingButton />
+const App = () => {
+  const { isOpen, handleLogoTap, closePanel } = useHiddenDevPanel();
+  
+  return (
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <NudgeNotificationProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ScrollToTop />
+                <GlobalHandlers />
+                <LowercasePathGuard />
+                <ReverseDomainGuard />
+                <RouteImagePreloader />
+                <NudgeFloatingButton />
+                
+                <TransitionProvider>
+                  <MembershipAuthProvider>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                      <Route path="/" element={<Index />} />
+                      <Route path="/cafe" element={<Cafe />} />
+                      <Route path="/cocktails" element={<Cocktails />} />
+                      <Route path="/beer" element={<Beer />} />
+                      <Route path="/kitchens" element={<Kitchens />} />
+                      <Route path="/onekitchen-menu" element={<OneKitchenMenu />} />
+                      <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
+                      <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
+                      <Route path="/hall" element={<Hall />} />
+                      <Route path="/community" element={<Community />} />
+                      <Route path="/common-room" element={<CommonRoom />} />
+                      <Route path="/common-room/main" element={<CommonRoomMain />} />
+                      <Route path="/common-room/member" element={<MemberHome />} />
+                      <Route path="/common-room/member/lunch-run" element={<LunchRun />} />
+                      <Route path="/common-room/member/ledger" element={<MemberLedger />} />
+                      <Route path="/common-room/member/profile" element={<MemberProfile />} />
+                      <Route path="/common-room/member/dashboard" element={<MemberDashboard />} />
+                      <Route path="/common-room/member/moments" element={<MemberMoments />} />
+                      <Route path="/check-in" element={<CheckIn />} />
+                      <Route path="/calendar" element={<Calendar />} />
+                      <Route path="/manage-event/:token" element={<ManageEvent />} />
+                      <Route path="/privacy" element={<Privacy />} />
+                      <Route path="/unsubscribe" element={<Unsubscribe />} />
+                      <Route path="/branding" element={<Branding />} />
+                      <Route path="/common-good" element={<CommonGood />} />
+                      <Route path="/common-good/message" element={<CommonGoodMessage />} />
+                      <Route path="/croft-common-datetime" element={<CroftCommonDateTime />} />
+                      <Route path="/CroftCommonDate&Time" element={<Navigate to="/croft-common-datetime" replace />} />
+                      <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
+                      <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
+                      <Route path="/book" element={<Book />} />
+                      <Route path="/admin/*" element={<Admin />} />
+                  <Route path="/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
+                  <Route path="/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
+                      <Route path="/profile" element={<MemberProfile />} />
+                      <Route path="/cms/login" element={<CMSLogin />} />
+                      <Route path="/cms/kitchens" element={<CMSKitchens />} />
+                      <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
+                      <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
+                      <Route path="/cms/*" element={<CMS />} />
+                      <Route path="/notifications" element={<Notifications />} />
+                      <Route path="/c/:token" element={<ClickRedirect />} />
+                      <Route path="/from-notification" element={<Index />} />
+                      <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                  </MembershipAuthProvider>
+                </TransitionProvider>
+              </BrowserRouter>
               
-              <TransitionProvider>
-                <MembershipAuthProvider>
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/cafe" element={<Cafe />} />
-                    <Route path="/cocktails" element={<Cocktails />} />
-                    <Route path="/beer" element={<Beer />} />
-                    <Route path="/kitchens" element={<Kitchens />} />
-                    <Route path="/onekitchen-menu" element={<OneKitchenMenu />} />
-                    <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
-                    <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
-                    <Route path="/hall" element={<Hall />} />
-                    <Route path="/community" element={<Community />} />
-                    <Route path="/common-room" element={<CommonRoom />} />
-                    <Route path="/common-room/main" element={<CommonRoomMain />} />
-                    <Route path="/common-room/member" element={<MemberHome />} />
-                    <Route path="/common-room/member/lunch-run" element={<LunchRun />} />
-                    <Route path="/common-room/member/ledger" element={<MemberLedger />} />
-                    <Route path="/common-room/member/profile" element={<MemberProfile />} />
-                    <Route path="/common-room/member/dashboard" element={<MemberDashboard />} />
-                    <Route path="/common-room/member/moments" element={<MemberMoments />} />
-                    <Route path="/check-in" element={<CheckIn />} />
-                    <Route path="/calendar" element={<Calendar />} />
-                    <Route path="/manage-event/:token" element={<ManageEvent />} />
-                    <Route path="/privacy" element={<Privacy />} />
-                    <Route path="/unsubscribe" element={<Unsubscribe />} />
-                    <Route path="/branding" element={<Branding />} />
-                    <Route path="/common-good" element={<CommonGood />} />
-                    <Route path="/common-good/message" element={<CommonGoodMessage />} />
-                    <Route path="/croft-common-datetime" element={<CroftCommonDateTime />} />
-                    <Route path="/CroftCommonDate&Time" element={<Navigate to="/croft-common-datetime" replace />} />
-                    <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
-                    <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
-                    <Route path="/book" element={<Book />} />
-                    <Route path="/admin/*" element={<Admin />} />
-                <Route path="/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
-                <Route path="/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
-                    <Route path="/profile" element={<MemberProfile />} />
-                    <Route path="/cms/login" element={<CMSLogin />} />
-                    <Route path="/cms/kitchens" element={<CMSKitchens />} />
-                    <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
-                    <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
-                    <Route path="/cms/*" element={<CMS />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/c/:token" element={<ClickRedirect />} />
-                    <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </MembershipAuthProvider>
-              </TransitionProvider>
-            </BrowserRouter>
-        </NudgeNotificationProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </HelmetProvider>
-);
+              {/* Hidden Dev Panel */}
+              <HiddenDevPanel isOpen={isOpen} onClose={closePanel} />
+          </NudgeNotificationProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
+  );
+};
  
 export default App;
