@@ -97,8 +97,8 @@ Deno.serve(async (req) => {
           personalize: campaignData.personalize,
           test_mode: campaignData.test_mode,
           schedule_type: campaignData.schedule_type,
-          scheduled_date: campaignData.scheduled_date,
-          scheduled_time: campaignData.scheduled_time,
+          scheduled_date: campaignData.scheduled_date || null,
+          scheduled_time: campaignData.scheduled_time && campaignData.scheduled_time.trim() !== '' ? campaignData.scheduled_time : null,
           estimated_reach: campaignData.estimated_reach,
           created_by: user.id,
           status: campaignData.schedule_type === 'now' ? 'sent' : 'scheduled'
