@@ -199,6 +199,30 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
     }
   };
 
+  // Load saved segments on component mount
+  useEffect(() => {
+    const loadSavedSegments = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('campaign_segments')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading saved segments:', error);
+          return;
+        }
+
+        setSavedSegments(data || []);
+      } catch (error) {
+        console.error('Error loading saved segments:', error);
+      }
+    };
+
+    loadSavedSegments();
+  }, []);
+
   // Load campaign history when tab becomes active or archive filter changes
   useEffect(() => {
     if (activeTab === 'history') {
@@ -370,12 +394,14 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                     setSelectedSegment(segment || null);
                     setSegmentFilters(null);
                   }}>
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full bg-background">
                       <SelectValue placeholder="Select a segment" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="z-50 bg-background">
                       {savedSegments.map((segment) => (
-                        <SelectItem key={segment.id} value={segment.id}>{segment.name} ({segment.member_count})</SelectItem>
+                        <SelectItem key={segment.id} value={segment.id}>
+                          {segment.name} ({segment.member_count})
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
