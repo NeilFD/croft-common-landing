@@ -159,7 +159,10 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
       setHistoryLoading(true);
       
       const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
-        method: 'GET',
+        body: { 
+          action: 'get_campaigns',
+          include_archived: showArchived 
+        },
         headers: {
           'x-include-archived': showArchived.toString()
         }
