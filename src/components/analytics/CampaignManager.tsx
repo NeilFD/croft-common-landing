@@ -154,13 +154,12 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
   const loadCampaignHistory = async () => {
     try {
       setHistoryLoading(true);
-      const url = new URL('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/enhanced-campaign-manager');
-      if (showArchived) {
-        url.searchParams.set('include_archived', 'true');
-      }
       
       const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
-        method: 'GET'
+        method: 'GET',
+        headers: {
+          'x-include-archived': showArchived.toString()
+        }
       });
 
       if (error) {
@@ -295,7 +294,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
         </TabsList>
         
         <TabsContent value="create" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Campaign Details</CardTitle>
@@ -394,9 +393,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>Scheduling</CardTitle>
@@ -417,7 +414,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                 </div>
 
                 {scheduleType === 'scheduled' && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="scheduled-date">Date</Label>
                       <Input
@@ -474,7 +471,6 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                 </div>
               </CardContent>
             </Card>
-          </div>
 
           <Card>
             <CardHeader>
@@ -501,6 +497,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
               </>
             )}
           </Button>
+        </div>
         </TabsContent>
         
         <TabsContent value="history" className="space-y-6">

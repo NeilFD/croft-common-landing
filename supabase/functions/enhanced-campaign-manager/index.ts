@@ -210,7 +210,10 @@ Deno.serve(async (req) => {
     if (req.method === 'GET') {
       const url = new URL(req.url);
       const campaignId = url.searchParams.get('campaign_id');
-      const includeArchived = url.searchParams.get('include_archived') === 'true';
+      // Get include_archived from query params or headers
+      const includeArchivedQuery = url.searchParams.get('include_archived');
+      const includeArchivedHeader = req.headers.get('x-include-archived');
+      const includeArchived = includeArchivedQuery === 'true' || includeArchivedHeader === 'true';
 
       if (campaignId) {
         // Get specific campaign analytics with real-time metrics
