@@ -95,15 +95,32 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Mark delivery as clicked (idempotent)
-    if (delivery.status !== 'clicked') {
+    // Mark delivery as clicked (idempotent) and bump campaign clicked_count once
+    let campaignUpdated = false;
+    const shouldIncrement = delivery.status !== 'clicked';
+    if (shouldIncrement) {
       await supabase
         .from('notification_deliveries')
         .update({ status: 'clicked' })
         .eq('id', delivery.id);
+
+      // Increment campaign clicked_count once per unique click
+      if (notification?.campaign_id) {
+        const { data: camp } = await supabase
+          .from('campaigns')
+          .select('id, clicked_count')
+          .eq('id', notification.campaign_id)
+          .maybeSingle();
+        const next = ((camp?.clicked_count as number) || 0) + 1;
+        const { error: campErr } = await supabase
+          .from('campaigns')
+          .update({ clicked_count: next })
+          .eq('id', notification.campaign_id);
+        if (!campErr) campaignUpdated = true;
+      }
     }
 
-    return new Response(JSON.stringify({ success: true, analyticsRecorded }), {
+    return new Response(JSON.stringify({ success: true, analyticsRecorded, campaignUpdated }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
