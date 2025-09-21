@@ -82,7 +82,7 @@ export const MembershipCard = () => {
                   </h3>
                   <p className="text-xs font-medium text-muted-foreground mt-1">MEMBERSHIP</p>
                 </div>
-                <CroftLogo size="lg" className="w-16 h-16" enableDevPanel={false} />
+                <CroftLogo size="lg" className="w-20 h-20" enableDevPanel={false} />
               </div>
 
               {/* Pink Accent Bar */}
@@ -111,7 +111,7 @@ export const MembershipCard = () => {
                       Membership No.
                     </span>
                   </div>
-                  <p className="text-3xl font-mono font-bold text-accent-pink tracking-wider">
+                  <p className="text-2xl font-mono font-bold text-accent-pink tracking-wider">
                     {cardData.membership_number || 'Loading...'}
                   </p>
                 </div>
