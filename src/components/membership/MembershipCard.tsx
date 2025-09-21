@@ -77,16 +77,16 @@ export const MembershipCard = () => {
               {/* Card Header with Logo */}
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                  <h3 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
                     CROFT COMMON
                   </h3>
-                  <p className="text-sm font-medium text-muted-foreground mt-1">MEMBER</p>
+                  <p className="text-xs font-medium text-muted-foreground mt-1">MEMBERSHIP</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="bg-accent-pink px-3 py-1 rounded-full border border-accent-pink/30">
+                  <div className="bg-accent-pink px-2 py-0.5 rounded-full border border-accent-pink/30">
                     <span className="text-xs font-bold text-white uppercase tracking-wide">ACTIVE</span>
                   </div>
-                  <CroftLogo size="md" enableDevPanel={false} />
+                  <CroftLogo size="lg" enableDevPanel={false} />
                 </div>
               </div>
 
@@ -135,9 +135,6 @@ export const MembershipCard = () => {
                     {memberSince}
                   </p>
                 </div>
-                
-                {/* Decorative Pink Corner */}
-                <div className="absolute bottom-0 right-0 w-12 h-12 bg-accent-pink/10 rounded-tl-full border-l-2 border-t-2 border-accent-pink/20"></div>
               </div>
             </CardContent>
           </Card>
