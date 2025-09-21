@@ -75,7 +75,7 @@ export const MembershipCard = () => {
           <Card className="border-2 border-black shadow-lg bg-gradient-to-br from-background to-muted/20 overflow-hidden h-full">
             <CardContent className="p-6 relative h-full flex flex-col justify-between">
               {/* Card Header with Logo */}
-              <div className="flex justify-between items-start">
+              <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
                     CROFT COMMON
@@ -103,9 +103,9 @@ export const MembershipCard = () => {
                   </p>
                 </div>
 
-                {/* Membership Number with Pink Accent - Centered */}
-                <div className="text-center">
-                  <div className="flex items-center justify-center gap-2 mb-2">
+                {/* Membership Number with Pink Accent - Left Aligned */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
                     <Hash className="h-4 w-4 text-accent-pink" />
                     <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                       Membership No.
