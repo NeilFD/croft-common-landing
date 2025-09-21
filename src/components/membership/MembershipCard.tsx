@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { useMembershipCard } from '@/hooks/useMembershipCard';
 import { Wallet, RotateCcw, Calendar, User, Hash } from 'lucide-react';
 import { format } from 'date-fns';
+import CroftLogo from '@/components/CroftLogo';
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
@@ -64,73 +64,85 @@ export const MembershipCard = () => {
     return null;
   }
 
-  const displayName = cardData.display_name || `${cardData.first_name || ''} ${cardData.last_name || ''}`.trim();
+  const fullName = `${cardData.first_name || ''} ${cardData.last_name || ''}`.trim() || cardData.display_name || 'Member Name';
   const memberSince = cardData.member_since ? format(new Date(cardData.member_since), 'MMM yyyy') : 'Recent';
 
   return (
     <div className="space-y-4">
-      {/* Visual Membership Card */}
-      <Card className="border-2 border-black shadow-lg bg-gradient-to-br from-background to-muted/20 overflow-hidden">
-        <CardContent className="p-6 relative">
-          {/* Card Header */}
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-                CROFT COMMON
-              </h3>
-              <p className="text-sm font-medium text-muted-foreground mt-1">MEMBER</p>
-            </div>
-            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-              ACTIVE
-            </Badge>
-          </div>
-
-          {/* Main Content */}
-          <div className="space-y-4">
-            {/* Member Name */}
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Member
-                </span>
+      {/* Credit Card Size Container */}
+      <div className="w-full max-w-md mx-auto">
+        <div className="aspect-[1.618/1] w-full">
+          <Card className="border-2 border-black shadow-lg bg-gradient-to-br from-background to-muted/20 overflow-hidden h-full">
+            <CardContent className="p-6 relative h-full flex flex-col justify-between">
+              {/* Card Header with Logo */}
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                    CROFT COMMON
+                  </h3>
+                  <p className="text-sm font-medium text-muted-foreground mt-1">MEMBER</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-accent-pink px-3 py-1 rounded-full border border-accent-pink/30">
+                    <span className="text-xs font-bold text-white uppercase tracking-wide">ACTIVE</span>
+                  </div>
+                  <CroftLogo size="md" enableDevPanel={false} />
+                </div>
               </div>
-              <p className="text-2xl font-bold text-foreground">
-                {displayName || 'Member Name'}
-              </p>
-            </div>
 
-            {/* Membership Number */}
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Hash className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Membership No.
-                </span>
+              {/* Pink Accent Bar */}
+              <div className="absolute left-0 top-20 w-full h-1 bg-gradient-to-r from-accent-pink to-accent-pink/60"></div>
+
+              {/* Main Content */}
+              <div className="space-y-3 mt-2">
+                {/* Member Name */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <User className="h-3 w-3 text-accent-pink" />
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Member
+                    </span>
+                  </div>
+                  <p className="text-xl font-bold text-foreground leading-tight">
+                    {fullName}
+                  </p>
+                </div>
+
+                {/* Membership Number with Pink Accent */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Hash className="h-3 w-3 text-accent-pink" />
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Membership No.
+                    </span>
+                  </div>
+                  <p className="text-sm font-mono font-bold text-accent-pink tracking-wider">
+                    {cardData.membership_number || 'Loading...'}
+                  </p>
+                </div>
               </div>
-              <p className="text-lg font-mono font-bold text-foreground tracking-wider">
-                {cardData.membership_number || 'Loading...'}
-              </p>
-            </div>
 
-            {/* Member Since */}
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                  Member Since
-                </span>
+              {/* Bottom Section */}
+              <div className="flex justify-between items-end">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Calendar className="h-3 w-3 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      Member Since
+                    </span>
+                  </div>
+                  <p className="text-xs font-medium text-foreground">
+                    {memberSince}
+                  </p>
+                </div>
+                
+                {/* Decorative Pink Corner */}
+                <div className="absolute bottom-0 right-0 w-12 h-12 bg-accent-pink/10 rounded-tl-full border-l-2 border-t-2 border-accent-pink/20"></div>
               </div>
-              <p className="text-sm font-medium text-foreground">
-                {memberSince}
-              </p>
-            </div>
-          </div>
-
-          {/* Decorative Corner */}
-          <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 rounded-bl-full"></div>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3">
