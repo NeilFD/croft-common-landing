@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCapacitorPushNotifications = () => {
   useEffect(() => {
@@ -29,9 +30,25 @@ export const useCapacitorPushNotifications = () => {
     };
 
     // Listen for registration success
-    PushNotifications.addListener('registration', (token) => {
+    PushNotifications.addListener('registration', async (token) => {
       console.log('📱 Push registration success, token:', token.value);
-      // TODO: In Phase 2, send this token to Supabase
+      
+      try {
+        const { error } = await supabase.functions.invoke('save-push-subscription', {
+          body: {
+            endpoint: `ios-token:${token.value}`,
+            platform: 'ios'
+          }
+        });
+        
+        if (error) {
+          console.error('📱 Failed to save iOS push token:', error);
+        } else {
+          console.log('📱 iOS push token saved successfully');
+        }
+      } catch (error) {
+        console.error('📱 Error saving iOS push token:', error);
+      }
     });
 
     // Listen for registration error
