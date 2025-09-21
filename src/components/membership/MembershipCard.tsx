@@ -82,12 +82,7 @@ export const MembershipCard = () => {
                   </h3>
                   <p className="text-xs font-medium text-muted-foreground mt-1">MEMBERSHIP</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="bg-accent-pink px-2 py-0.5 rounded-full border border-accent-pink/30">
-                    <span className="text-xs font-bold text-white uppercase tracking-wide">ACTIVE</span>
-                  </div>
-                  <CroftLogo size="lg" enableDevPanel={false} />
-                </div>
+                <CroftLogo size="lg" className="w-16 h-16" enableDevPanel={false} />
               </div>
 
               {/* Pink Accent Bar */}
@@ -108,15 +103,15 @@ export const MembershipCard = () => {
                   </p>
                 </div>
 
-                {/* Membership Number with Pink Accent */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Hash className="h-3 w-3 text-accent-pink" />
-                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                {/* Membership Number with Pink Accent - Centered */}
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <Hash className="h-4 w-4 text-accent-pink" />
+                    <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                       Membership No.
                     </span>
                   </div>
-                  <p className="text-sm font-mono font-bold text-accent-pink tracking-wider">
+                  <p className="text-3xl font-mono font-bold text-accent-pink tracking-wider">
                     {cardData.membership_number || 'Loading...'}
                   </p>
                 </div>
@@ -134,6 +129,13 @@ export const MembershipCard = () => {
                   <p className="text-xs font-medium text-foreground">
                     {memberSince}
                   </p>
+                </div>
+              </div>
+
+              {/* Active Pill - Bottom Right */}
+              <div className="absolute bottom-4 right-4">
+                <div className="bg-accent-pink px-2 py-0.5 rounded-full border border-accent-pink/30">
+                  <span className="text-xs font-bold text-white uppercase tracking-wide">ACTIVE</span>
                 </div>
               </div>
             </CardContent>
