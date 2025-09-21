@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import { BRAND_LOGO } from "@/data/brand";
 import fallbackLogo from "@/assets/croft-logo.png";
 import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
+import { useLongPress } from '@/hooks/useLongPress';
 
 interface CroftLogoProps {
   className?: string;
@@ -14,7 +15,7 @@ interface CroftLogoProps {
 
 const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDevPanel = true }: CroftLogoProps) => {
   const [imageError, setImageError] = useState(false);
-  const { handleLogoTap } = useHiddenDevPanel();
+  const { handleLogoTap, openPanel } = useHiddenDevPanel();
   
   const sizeClasses = {
     sm: 'w-6 h-6',
@@ -22,19 +23,33 @@ const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDe
     lg: 'w-12 h-12'
   };
 
-  const handleClick = () => {
-    if (enableDevPanel) {
-      handleLogoTap();
-    }
-    if (onClick) {
-      onClick();
-    }
-  };
+  // Long-press handler (1.2s) for watermark accessibility
+  const longPressHandlers = useLongPress({
+    onLongPress: () => {
+      if (enableDevPanel) {
+        openPanel();
+      }
+    },
+    onClick: () => {
+      if (enableDevPanel) {
+        handleLogoTap();
+      }
+      if (onClick) {
+        onClick();
+      }
+    },
+    delay: 1200
+  });
 
   return (
     <div 
-      className={cn("object-contain cursor-pointer", sizeClasses[size], className)}
-      onClick={handleClick}
+      className={cn(
+        "object-contain cursor-pointer select-none",
+        "pointer-events-auto z-20", // Ensure it's pressable and on top
+        sizeClasses[size], 
+        className
+      )}
+      {...(enableDevPanel ? longPressHandlers : { onClick })}
     >
       {!imageError ? (
         <img
@@ -43,6 +58,7 @@ const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDe
           className="w-full h-full object-contain"
           onError={() => setImageError(true)}
           loading={priority ? 'eager' : 'lazy'}
+          draggable={false}
         />
       ) : (
         <img
@@ -50,6 +66,7 @@ const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDe
           alt="Croft Common Logo"
           className="w-full h-full object-contain"
           loading={priority ? 'eager' : 'lazy'}
+          draggable={false}
         />
       )}
     </div>

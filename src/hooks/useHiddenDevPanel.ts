@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export const useHiddenDevPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,10 +21,14 @@ export const useHiddenDevPanel = () => {
     // Open dev panel if tapped 7 times
     if (tapCountRef.current >= 7) {
       setIsOpen(true);
-      // Broadcast a global event so any listener can open the panel UI
+      // Harden event dispatch for iOS compatibility
       try {
         window.dispatchEvent(new CustomEvent('devpanel:open'));
-      } catch {}
+        window.dispatchEvent(new Event('devpanel:open'));
+        document.dispatchEvent(new CustomEvent('devpanel:open'));
+      } catch (error) {
+        console.warn('Failed to dispatch devpanel:open event:', error);
+      }
       tapCountRef.current = 0;
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -32,13 +36,40 @@ export const useHiddenDevPanel = () => {
     }
   }, []);
 
+  const openPanel = useCallback(() => {
+    setIsOpen(true);
+    // Harden event dispatch for iOS compatibility
+    try {
+      window.dispatchEvent(new CustomEvent('devpanel:open'));
+      window.dispatchEvent(new Event('devpanel:open'));
+      document.dispatchEvent(new CustomEvent('devpanel:open'));
+    } catch (error) {
+      console.warn('Failed to dispatch devpanel:open event:', error);
+    }
+  }, []);
+
   const closePanel = useCallback(() => {
     setIsOpen(false);
+    try {
+      window.dispatchEvent(new CustomEvent('devpanel:close'));
+      window.dispatchEvent(new Event('devpanel:close'));
+    } catch {}
   }, []);
+
+  // Auto-open via URL parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = window.location.hash;
+    
+    if (urlParams.get('dev') === '1' || hashParams === '#dev') {
+      setTimeout(() => openPanel(), 100); // Small delay to ensure components are mounted
+    }
+  }, [openPanel]);
 
   return {
     isOpen,
     handleLogoTap,
+    openPanel,
     closePanel,
   };
 };
