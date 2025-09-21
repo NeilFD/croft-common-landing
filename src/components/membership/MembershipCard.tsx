@@ -73,9 +73,9 @@ export const MembershipCard = () => {
       <div className="w-full max-w-md mx-auto">
         <div className="aspect-[1.618/1] w-full">
           <Card className="border-2 border-black shadow-lg bg-gradient-to-br from-background to-muted/20 overflow-hidden h-full">
-            <CardContent className="p-6 relative h-full flex flex-col justify-between">
+            <CardContent className="p-6 relative h-full flex flex-col">
               {/* Card Header with Logo */}
-              <div className="flex justify-between items-start mb-6">
+              <div className="flex justify-between items-start">
                 <div>
                   <h3 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
                     CROFT COMMON
@@ -86,10 +86,10 @@ export const MembershipCard = () => {
               </div>
 
               {/* Pink Accent Bar */}
-              <div className="absolute left-0 top-20 w-full h-1 bg-gradient-to-r from-accent-pink to-accent-pink/60"></div>
+              <div className="absolute left-0 top-24 w-full h-1 bg-gradient-to-r from-accent-pink to-accent-pink/60"></div>
 
-              {/* Main Content */}
-              <div className="space-y-3 mt-2">
+              {/* Main Content - Better Spacing */}
+              <div className="space-y-4 mt-8 flex-1">
                 {/* Member Name */}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -118,7 +118,7 @@ export const MembershipCard = () => {
               </div>
 
               {/* Bottom Section */}
-              <div className="flex justify-between items-end">
+              <div className="flex justify-between items-end mt-auto">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <Calendar className="h-3 w-3 text-muted-foreground" />
