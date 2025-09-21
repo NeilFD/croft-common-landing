@@ -1909,6 +1909,7 @@ export type Database = {
           user_type: string | null
           wallet_pass_last_issued_at: string | null
           wallet_pass_revoked: boolean | null
+          wallet_pass_serial_number: string | null
           wallet_pass_url: string | null
         }
         Insert: {
@@ -1930,6 +1931,7 @@ export type Database = {
           user_type?: string | null
           wallet_pass_last_issued_at?: string | null
           wallet_pass_revoked?: boolean | null
+          wallet_pass_serial_number?: string | null
           wallet_pass_url?: string | null
         }
         Update: {
@@ -1951,6 +1953,7 @@ export type Database = {
           user_type?: string | null
           wallet_pass_last_issued_at?: string | null
           wallet_pass_revoked?: boolean | null
+          wallet_pass_serial_number?: string | null
           wallet_pass_url?: string | null
         }
         Relationships: []

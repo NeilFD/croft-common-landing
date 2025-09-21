@@ -5,26 +5,87 @@ import { useMembershipCard } from '@/hooks/useMembershipCard';
 import { Wallet, RotateCcw, Calendar, User, Hash } from 'lucide-react';
 import { format } from 'date-fns';
 import CroftLogo from '@/components/CroftLogo';
+import { supabase } from '@/integrations/supabase/client';
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
   const [isReissuing, setIsReissuing] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handleAddToWallet = () => {
-    if (cardData?.wallet_pass_url) {
+  const handleAddToWallet = async () => {
+    if (cardData?.wallet_pass_url && !cardData?.wallet_pass_revoked) {
+      // If we already have a valid pass, open it
       window.open(cardData.wallet_pass_url, '_blank');
     } else {
-      // TODO: Call create-pass edge function in Phase 3
-      console.log('Creating new Apple Wallet pass...');
+      // Generate new pass
+      setIsGenerating(true);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('No session found');
+          return;
+        }
+
+        const response = await supabase.functions.invoke('create-wallet-pass', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (response.error) {
+          console.error('Error creating wallet pass:', response.error);
+          return;
+        }
+
+        // Refresh card data to get the new pass URL
+        await refetch();
+        
+        // Open the new pass
+        if (response.data?.passUrl) {
+          window.open(response.data.passUrl, '_blank');
+        }
+      } catch (error) {
+        console.error('Error generating wallet pass:', error);
+      } finally {
+        setIsGenerating(false);
+      }
     }
   };
 
   const handleReissueCard = async () => {
     setIsReissuing(true);
     try {
-      // TODO: Call reissue-pass edge function in Phase 3
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No session found');
+        return;
+      }
+
+      // First revoke the current pass if it exists
+      if (cardData?.wallet_pass_url) {
+        await supabase.functions.invoke('revoke-wallet-pass', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+      }
+
+      // Then create a new pass
+      const response = await supabase.functions.invoke('create-wallet-pass', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        console.error('Error reissuing wallet pass:', response.error);
+        return;
+      }
+
+      // Refresh card data
       await refetch();
-      console.log('Reissuing membership card...');
+    } catch (error) {
+      console.error('Error reissuing card:', error);
     } finally {
       setIsReissuing(false);
     }
@@ -144,15 +205,18 @@ export const MembershipCard = () => {
           onClick={handleAddToWallet}
           className="flex-1 flex items-center gap-2"
           size="lg"
+          disabled={isGenerating || isReissuing}
         >
           <Wallet className="h-4 w-4" />
-          Add to Apple Wallet
+          {isGenerating ? 'Generating...' : 
+           (cardData?.wallet_pass_url && !cardData?.wallet_pass_revoked) ? 
+           'Open in Apple Wallet' : 'Add to Apple Wallet'}
         </Button>
         
         <Button 
           variant="outline" 
           onClick={handleReissueCard}
-          disabled={isReissuing}
+          disabled={isReissuing || isGenerating}
           className="flex items-center gap-2"
           size="lg"
         >
@@ -162,11 +226,19 @@ export const MembershipCard = () => {
       </div>
 
       {/* Status Info */}
-      {cardData.wallet_pass_last_issued_at && (
-        <div className="text-xs text-muted-foreground text-center">
-          Last issued: {format(new Date(cardData.wallet_pass_last_issued_at), 'PPp')}
-        </div>
-      )}
+      <div className="space-y-1">
+        {cardData.wallet_pass_last_issued_at && (
+          <div className="text-xs text-muted-foreground text-center">
+            Last issued: {format(new Date(cardData.wallet_pass_last_issued_at), 'PPp')}
+          </div>
+        )}
+        
+        {cardData?.wallet_pass_revoked && (
+          <div className="text-xs text-orange-600 text-center">
+            Previous pass revoked - click "Add to Apple Wallet" to generate new
+          </div>
+        )}
+      </div>
     </div>
   );
 };
