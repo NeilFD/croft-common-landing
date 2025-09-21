@@ -17,6 +17,7 @@ import { Helmet } from 'react-helmet-async';
 import { User, PoundSterling, Settings, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
+import { MembershipCard } from '@/components/membership/MembershipCard';
 import Footer from '@/components/Footer';
 
 const MemberProfile: React.FC = () => {
@@ -119,6 +120,12 @@ const MemberProfile: React.FC = () => {
 
             <TabsContent value="profile">
               <div className="space-y-6">
+                {/* Membership Card Section */}
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">Your Membership Card</h3>
+                  <MembershipCard />
+                </div>
+
                 {/* Avatar Section */}
                 <ProfileFormSection
                   title="Profile Picture"
