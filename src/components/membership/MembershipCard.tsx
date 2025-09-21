@@ -150,26 +150,14 @@ export const MembershipCard = () => {
               <div className="absolute left-0 top-20 w-full h-1 bg-gradient-to-r from-accent-pink to-accent-pink/60"></div>
 
               {/* Member Name */}
-              <div className="mt-6 mb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <User className="h-3 w-3 text-accent-pink" />
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                    Member
-                  </span>
-                </div>
-                <p className="text-lg font-bold text-foreground leading-tight">
+              <div className="mt-8 mb-6">
+                <p className="text-xl font-bold text-foreground leading-tight">
                   {fullName}
                 </p>
               </div>
 
               {/* Membership Number */}
-              <div className="mb-4">
-                <div className="flex items-center gap-2 mb-1">
-                  <Hash className="h-4 w-4 text-accent-pink" />
-                  <span className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-                    Membership No.
-                  </span>
-                </div>
+              <div className="mb-6">
                 <p className="text-2xl font-mono font-bold text-accent-pink tracking-wider">
                   {cardData.membership_number || 'Loading...'}
                 </p>
