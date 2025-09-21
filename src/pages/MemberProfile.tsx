@@ -99,6 +99,7 @@ const MemberProfile: React.FC = () => {
                 <User className="h-8 w-8" />
                 Member Profile
               </CardTitle>
+              <p className="text-xs text-muted-foreground mt-1">Build marker: 21 Sep 2025, 20:15</p>
             </CardHeader>
           </Card>
 
