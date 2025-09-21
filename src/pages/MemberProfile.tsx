@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { SecureLedgerWrapper } from '@/components/ledger/SecureLedgerWrapper';
 import { Helmet } from 'react-helmet-async';
-import MemberLedger from './MemberLedger';
 import { User, PoundSterling, Settings, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
@@ -382,9 +381,22 @@ const MemberProfile: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="ledger">
-              <SecureLedgerWrapper>
-                <MemberLedger />
-              </SecureLedgerWrapper>
+              <Card className="border-2 border-black shadow-md">
+                <CardHeader>
+                  <CardTitle>Member Ledger</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground mb-4">
+                    View your transaction history and account activity.
+                  </p>
+                  <Link 
+                    to="/common-room/member/ledger" 
+                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                  >
+                    Open Full Ledger
+                  </Link>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="settings">
