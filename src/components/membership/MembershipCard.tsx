@@ -79,7 +79,7 @@ export const MembershipCard = () => {
               
               {/* Card Header */}
               <div className="mb-4">
-                <h3 className="text-sm font-semibold tracking-widest text-muted-foreground uppercase">
+                <h3 className="text-sm font-semibold tracking-widest text-foreground uppercase">
                   CROFT COMMON
                 </h3>
                 <p className="text-xs font-medium text-muted-foreground mt-1">MEMBERSHIP</p>
