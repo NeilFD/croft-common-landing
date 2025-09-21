@@ -1900,11 +1900,16 @@ export type Database = {
           interests: string[] | null
           last_name: string | null
           member_since: string
+          membership_number: string | null
           phone_number: string | null
           secret_kitchens_access: boolean | null
+          square_customer_id: string | null
           updated_at: string
           user_id: string
           user_type: string | null
+          wallet_pass_last_issued_at: string | null
+          wallet_pass_revoked: boolean | null
+          wallet_pass_url: string | null
         }
         Insert: {
           birthday?: string | null
@@ -1916,11 +1921,16 @@ export type Database = {
           interests?: string[] | null
           last_name?: string | null
           member_since?: string
+          membership_number?: string | null
           phone_number?: string | null
           secret_kitchens_access?: boolean | null
+          square_customer_id?: string | null
           updated_at?: string
           user_id: string
           user_type?: string | null
+          wallet_pass_last_issued_at?: string | null
+          wallet_pass_revoked?: boolean | null
+          wallet_pass_url?: string | null
         }
         Update: {
           birthday?: string | null
@@ -1932,11 +1942,16 @@ export type Database = {
           interests?: string[] | null
           last_name?: string | null
           member_since?: string
+          membership_number?: string | null
           phone_number?: string | null
           secret_kitchens_access?: boolean | null
+          square_customer_id?: string | null
           updated_at?: string
           user_id?: string
           user_type?: string | null
+          wallet_pass_last_issued_at?: string | null
+          wallet_pass_revoked?: boolean | null
+          wallet_pass_url?: string | null
         }
         Relationships: []
       }
@@ -2785,6 +2800,14 @@ export type Database = {
           tickets_left: number
         }[]
       }
+      ensure_membership_number: {
+        Args: { user_id_input: string }
+        Returns: string
+      }
+      generate_membership_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_advanced_member_analytics: {
         Args: {
           p_activity_logic?: string
@@ -2962,6 +2985,19 @@ export type Database = {
           member_count: number
           segment_description: string
           segment_name: string
+        }[]
+      }
+      get_membership_card_details: {
+        Args: { user_id_input: string }
+        Returns: {
+          display_name: string
+          first_name: string
+          last_name: string
+          member_since: string
+          membership_number: string
+          wallet_pass_last_issued_at: string
+          wallet_pass_revoked: boolean
+          wallet_pass_url: string
         }[]
       }
       get_or_create_current_release: {
