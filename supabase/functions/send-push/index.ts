@@ -1,4 +1,5 @@
 
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import webpush from "npm:web-push@3.6.6";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -48,6 +49,91 @@ function renderTemplate(str: string, vars: { [k: string]: string | undefined }):
     const v = vars[k.toLowerCase()];
     return v ? String(v) : "";
   });
+}
+
+// APNs JWT Token Generation
+async function createApnsJwt(keyId: string, teamId: string, privateKey: string): Promise<string> {
+  const header = {
+    alg: "ES256",
+    kid: keyId
+  };
+  
+  const payload = {
+    iss: teamId,
+    iat: Math.floor(Date.now() / 1000)
+  };
+  
+  const encoder = new TextEncoder();
+  const headerBytes = encoder.encode(JSON.stringify(header));
+  const payloadBytes = encoder.encode(JSON.stringify(payload));
+  
+  const headerB64 = btoa(String.fromCharCode(...headerBytes)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const payloadB64 = btoa(String.fromCharCode(...payloadBytes)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  
+  const message = `${headerB64}.${payloadB64}`;
+  
+  // Import the private key
+  const keyData = privateKey
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/\s/g, '');
+  
+  const keyBytes = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    keyBytes,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    cryptoKey,
+    encoder.encode(message)
+  );
+  
+  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  
+  return `${message}.${signatureB64}`;
+}
+
+// Send APNs notification
+async function sendApnsNotification(token: string, payload: any, keyId: string, teamId: string, privateKey: string): Promise<void> {
+  const jwt = await createApnsJwt(keyId, teamId, privateKey);
+  
+  const apnsPayload = {
+    aps: {
+      alert: {
+        title: payload.title,
+        body: payload.body
+      },
+      badge: 1,
+      sound: "default",
+      'mutable-content': 1
+    },
+    url: payload.url,
+    click_token: payload.click_token,
+    notification_id: payload.notification_id
+  };
+  
+  const response = await fetch(`https://api.push.apple.com/3/device/${token}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+      'apns-topic': 'com.croftcommon.beacon',
+      'apns-priority': '10'
+    },
+    body: JSON.stringify(apnsPayload)
+  });
+  
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`APNs error ${response.status}: ${errorBody}`);
+  }
 }
 
 async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise<Map<string, string>> {
@@ -139,6 +225,11 @@ serve(async (req) => {
     const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
     const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
     const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT")!;
+    
+    // APNs Configuration
+    const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID");
+    const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
+    const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY");
 
     console.log(`🔑 DEBUG: VAPID Configuration Check (force refresh):`);
     console.log(`  - VAPID_SUBJECT: "${VAPID_SUBJECT || 'EMPTY/NULL'}"`);
@@ -200,7 +291,7 @@ serve(async (req) => {
     console.log(`🔍 DEBUG: Fetching subscriptions for scope="${scope}" (targetUserIds=${targetUserIds.length})`);
     let query = supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth, user_id")
+      .select("id, endpoint, p256dh, auth, user_id, platform")
       .eq("is_active", true);
 
     if (targetUserIds.length > 0) {
@@ -217,9 +308,11 @@ serve(async (req) => {
     if (subs && subs.length > 0) {
       console.log(`📱 DEBUG: Subscription details:`, subs.map(s => ({
         id: s.id,
-        endpoint_domain: new URL(s.endpoint).hostname,
+        platform: (s as any).platform,
+        endpoint_domain: (s as any).platform === 'ios' ? 'iOS APNs' : new URL(s.endpoint).hostname,
         user_id: s.user_id,
-        has_keys: !!(s.p256dh && s.auth)
+        has_keys: !!(s.p256dh && s.auth),
+        is_ios: s.endpoint.startsWith('ios-token:')
       })));
     }
     if (subsErr) {
@@ -296,10 +389,6 @@ serve(async (req) => {
     // Send sequentially; simple and reliable
     console.log(`🚀 DEBUG: Starting to send notifications to ${subs?.length || 0} subscriptions`);
     for (const s of subs ?? []) {
-      const subscription = {
-        endpoint: s.endpoint,
-        keys: { p256dh: s.p256dh, auth: s.auth },
-      };
       const clickToken = randomHex(16);
       const first = (s as any).user_id ? userFirstNames.get((s as any).user_id) : undefined;
       const personalizedTitle = renderTemplate(payload!.title, { first_name: first });
@@ -324,30 +413,48 @@ serve(async (req) => {
         notification_id: notificationId 
       };
 
-      console.log(`📬 DEBUG: Processing subscription ${s.id}:`);
-      console.log(`  - Endpoint: ${new URL(s.endpoint).hostname}`);
+      const isIos = s.endpoint.startsWith('ios-token:');
+      console.log(`📬 DEBUG: Processing subscription ${s.id} (${isIos ? 'iOS' : 'Web'}):`);
+      console.log(`  - Platform: ${(s as any).platform || 'web'}`);
+      console.log(`  - Endpoint: ${isIos ? 'iOS APNs Token' : new URL(s.endpoint).hostname}`);
       console.log(`  - User ID: ${(s as any).user_id || 'null'}`);
       console.log(`  - First name: "${first || 'none'}"`);
-      console.log(`  - Original title: "${payload!.title}"`);
       console.log(`  - Personalized title: "${personalizedTitle}"`);
-      console.log(`  - Original body: "${payload!.body}"`);
       console.log(`  - Personalized body: "${personalizedBody}"`);
-      console.log(`  - Full payload:`, payloadForSub);
 
       try {
-        console.log(`⏳ DEBUG: Sending push notification to ${new URL(s.endpoint).hostname}...`);
-        console.log(`📦 DEBUG: Subscription object:`, {
-          endpoint: s.endpoint,
-          keys: { 
-            p256dh: s.p256dh ? `${s.p256dh.substring(0, 20)}...` : 'missing',
-            auth: s.auth ? `${s.auth.substring(0, 20)}...` : 'missing'
+        if (isIos) {
+          // iOS APNs
+          if (!APNS_KEY_ID || !APNS_TEAM_ID || !APNS_PRIVATE_KEY) {
+            throw new Error("APNs credentials not configured");
           }
-        });
-        console.log(`📄 DEBUG: Payload size: ${JSON.stringify(payloadForSub).length} bytes`);
-        
-        const pushResult = await webpush.sendNotification(subscription as any, JSON.stringify(payloadForSub));
-        success++;
-        console.log(`✅ DEBUG: Successfully sent to subscription ${s.id}. Response:`, pushResult);
+          
+          const iosToken = s.endpoint.replace('ios-token:', '');
+          console.log(`🍎 DEBUG: Sending APNs notification to iOS device...`);
+          
+          await sendApnsNotification(iosToken, payloadForSub, APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY);
+          success++;
+          console.log(`✅ DEBUG: Successfully sent APNs notification to subscription ${s.id}`);
+        } else {
+          // Web Push
+          const subscription = {
+            endpoint: s.endpoint,
+            keys: { p256dh: s.p256dh, auth: s.auth },
+          };
+          
+          console.log(`🌐 DEBUG: Sending web push notification to ${new URL(s.endpoint).hostname}...`);
+          console.log(`📦 DEBUG: Subscription object:`, {
+            endpoint: s.endpoint,
+            keys: { 
+              p256dh: s.p256dh ? `${s.p256dh.substring(0, 20)}...` : 'missing',
+              auth: s.auth ? `${s.auth.substring(0, 20)}...` : 'missing'
+            }
+          });
+          
+          const pushResult = await webpush.sendNotification(subscription as any, JSON.stringify(payloadForSub));
+          success++;
+          console.log(`✅ DEBUG: Successfully sent web push to subscription ${s.id}. Response:`, pushResult);
+        }
 
         await supabaseAdmin.from("notification_deliveries").insert({
           notification_id: notificationId,
