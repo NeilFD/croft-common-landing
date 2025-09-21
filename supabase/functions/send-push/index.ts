@@ -136,6 +136,54 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
   }
 }
 
+// Send FCM notification
+async function sendFcmNotification(token: string, payload: any, serverKey: string): Promise<void> {
+  const fcmPayload = {
+    to: token,
+    notification: {
+      title: payload.title,
+      body: payload.body,
+      icon: payload.icon || '/icon-192x192.png',
+      badge: '/icon-192x192.png',
+      click_action: payload.url || '/'
+    },
+    data: {
+      url: payload.url || '/',
+      click_token: payload.click_token,
+      notification_id: payload.notification_id
+    },
+    android: {
+      notification: {
+        channel_id: 'default',
+        priority: 'high',
+        default_sound: true,
+        default_vibrate_timings: true,
+        default_light_settings: true
+      }
+    }
+  };
+  
+  const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `key=${serverKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(fcmPayload)
+  });
+  
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`FCM error ${response.status}: ${errorBody}`);
+  }
+  
+  const result = await response.json();
+  if (result.failure > 0) {
+    const error = result.results?.[0]?.error || 'Unknown FCM error';
+    throw new Error(`FCM delivery failed: ${error}`);
+  }
+}
+
 async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise<Map<string, string>> {
   const uniq = Array.from(new Set((userIds || []).filter(Boolean)));
   console.log(`👤 DEBUG: Building first name map for ${uniq.length} user IDs:`, uniq);
@@ -230,6 +278,9 @@ serve(async (req) => {
     const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID");
     const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
     const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY");
+    
+    // FCM Configuration
+    const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
 
     console.log(`🔑 DEBUG: VAPID Configuration Check (force refresh):`);
     console.log(`  - VAPID_SUBJECT: "${VAPID_SUBJECT || 'EMPTY/NULL'}"`);
@@ -414,9 +465,12 @@ serve(async (req) => {
       };
 
       const isIos = s.endpoint.startsWith('ios-token:');
-      console.log(`📬 DEBUG: Processing subscription ${s.id} (${isIos ? 'iOS' : 'Web'}):`);
+      const isAndroid = s.endpoint.startsWith('android-token:');
+      const platformType = isIos ? 'iOS' : isAndroid ? 'Android' : 'Web';
+      
+      console.log(`📬 DEBUG: Processing subscription ${s.id} (${platformType}):`);
       console.log(`  - Platform: ${(s as any).platform || 'web'}`);
-      console.log(`  - Endpoint: ${isIos ? 'iOS APNs Token' : new URL(s.endpoint).hostname}`);
+      console.log(`  - Endpoint: ${isIos ? 'iOS APNs Token' : isAndroid ? 'Android FCM Token' : new URL(s.endpoint).hostname}`);
       console.log(`  - User ID: ${(s as any).user_id || 'null'}`);
       console.log(`  - First name: "${first || 'none'}"`);
       console.log(`  - Personalized title: "${personalizedTitle}"`);
@@ -435,6 +489,18 @@ serve(async (req) => {
           await sendApnsNotification(iosToken, payloadForSub, APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY);
           success++;
           console.log(`✅ DEBUG: Successfully sent APNs notification to subscription ${s.id}`);
+        } else if (isAndroid) {
+          // Android FCM
+          if (!FCM_SERVER_KEY) {
+            throw new Error("FCM server key not configured");
+          }
+          
+          const androidToken = s.endpoint.replace('android-token:', '');
+          console.log(`🤖 DEBUG: Sending FCM notification to Android device...`);
+          
+          await sendFcmNotification(androidToken, payloadForSub, FCM_SERVER_KEY);
+          success++;
+          console.log(`✅ DEBUG: Successfully sent FCM notification to subscription ${s.id}`);
         } else {
           // Web Push
           const subscription = {

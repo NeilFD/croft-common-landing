@@ -46,11 +46,18 @@ function cleanupRateLimit() {
 }
 
 function validateEndpoint(endpoint: string): boolean {
-  // Handle iOS tokens
+  // Handle iOS tokens (APNs)
   if (endpoint.startsWith('ios-token:')) {
     const token = endpoint.replace('ios-token:', '');
     // iOS APNs tokens are typically 64 characters hex
     return /^[0-9a-fA-F]{64}$/.test(token);
+  }
+  
+  // Handle Android tokens (FCM)
+  if (endpoint.startsWith('android-token:')) {
+    const token = endpoint.replace('android-token:', '');
+    // FCM tokens are base64-like strings, typically longer than 140 characters
+    return token.length >= 140 && /^[A-Za-z0-9_:-]+$/.test(token);
   }
   
   try {
@@ -169,11 +176,11 @@ serve(async (req) => {
       });
     }
 
-    // Check if this is an iOS token (doesn't need p256dh/auth keys)
-    const isIosToken = endpoint.startsWith('ios-token:');
+    // Check if this is a native token (doesn't need p256dh/auth keys)
+    const isNativeToken = endpoint.startsWith('ios-token:') || endpoint.startsWith('android-token:');
     
-    // Validate required push keys (only for web push, not iOS)
-    if (!isIosToken && (!p256dh || !auth)) {
+    // Validate required push keys (only for web push, not native)
+    if (!isNativeToken && (!p256dh || !auth)) {
       return new Response(JSON.stringify({
         error: "Push subscription keys are required",
         code: "KEYS_REQUIRED"
@@ -185,7 +192,15 @@ serve(async (req) => {
 
     // Sanitize inputs
     const sanitizedUserAgent = sanitizeUserAgent(user_agent || '');
-    const sanitizedPlatform = isIosToken ? 'ios' : (platform ? platform.replace(/[<>'"&]/g, '').trim().substring(0, 20) : 'web');
+    let sanitizedPlatform = 'web';
+    
+    if (endpoint.startsWith('ios-token:')) {
+      sanitizedPlatform = 'ios';
+    } else if (endpoint.startsWith('android-token:')) {
+      sanitizedPlatform = 'android';
+    } else if (platform) {
+      sanitizedPlatform = platform.replace(/[<>'"&]/g, '').trim().substring(0, 20);
+    }
 
     // Use provided user_id (from WebAuthn) or fallback to traditional auth
     let userId: string | null = providedUserId || null;
@@ -202,8 +217,8 @@ serve(async (req) => {
 
     const row = {
       endpoint,
-      p256dh: isIosToken ? null : (p256dh ?? null),
-      auth: isIosToken ? null : (auth ?? null),
+      p256dh: isNativeToken ? null : (p256dh ?? null),
+      auth: isNativeToken ? null : (auth ?? null),
       user_agent: sanitizedUserAgent,
       platform: sanitizedPlatform,
       user_id: userId,
@@ -211,7 +226,7 @@ serve(async (req) => {
       last_seen: new Date().toISOString(),
     } as const;
 
-    console.log(`[${requestId}] Upserting subscription for ${isIosToken ? 'iOS' : 'web'} endpoint: ${isIosToken ? 'iOS token' : new URL(endpoint).hostname}`);
+    console.log(`[${requestId}] Upserting subscription for ${sanitizedPlatform} endpoint: ${isNativeToken ? `${sanitizedPlatform} token` : new URL(endpoint).hostname}`);
     const { data: upserted, error } = await adminClient
       .from("push_subscriptions")
       .upsert(row, { onConflict: "endpoint" })

@@ -53,6 +53,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const SecretKitchens = lazy(() => import("./pages/SecretKitchens"));
 const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
 const OneKitchenMenu = lazy(() => import("./pages/OneKitchenMenu"));
+const PushTest = lazy(() => import("./pages/PushTest"));
 
 // Optimized imports that load immediately
 import RouteImagePreloader from '@/components/RouteImagePreloader';
@@ -228,8 +229,9 @@ const App = () => {
                       <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
                       <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
                       <Route path="/cms/*" element={<CMS />} />
-                      <Route path="/notifications" element={<Notifications />} />
-                      <Route path="/c/:token" element={<ClickRedirect />} />
+                       <Route path="/notifications" element={<Notifications />} />
+                       <Route path="/push-test" element={<PushTest />} />
+                       <Route path="/c/:token" element={<ClickRedirect />} />
                       <Route path="/from-notification" element={<Index />} />
                       <Route path="*" element={<NotFound />} />
                       </Routes>
