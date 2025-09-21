@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.croftcommon.beacon',
-  appName: 'Croft Common',
+  appName: 'CroftCommon',
   webDir: 'dist',
   // server: {
   //   url: 'https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com?forceHideBadge=true',
