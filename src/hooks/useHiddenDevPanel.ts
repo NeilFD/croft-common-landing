@@ -21,6 +21,10 @@ export const useHiddenDevPanel = () => {
     // Open dev panel if tapped 7 times
     if (tapCountRef.current >= 7) {
       setIsOpen(true);
+      // Broadcast a global event so any listener can open the panel UI
+      try {
+        window.dispatchEvent(new CustomEvent('devpanel:open'));
+      } catch {}
       tapCountRef.current = 0;
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);

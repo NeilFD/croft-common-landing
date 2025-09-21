@@ -76,6 +76,18 @@ export function MobileDebugPanel({ sessionId }: MobileDebugPanelProps) {
     }
   }, [isOpen, sessionId]);
 
+  // Allow opening/closing via global custom events
+  useEffect(() => {
+    const openHandler = (_e: Event) => setIsOpen(true);
+    const closeHandler = (_e: Event) => setIsOpen(false);
+    window.addEventListener('devpanel:open', openHandler);
+    window.addEventListener('devpanel:close', closeHandler);
+    return () => {
+      window.removeEventListener('devpanel:open', openHandler);
+      window.removeEventListener('devpanel:close', closeHandler);
+    };
+  }, []);
+
   // Real-time updates with more frequent polling for active debugging
   useEffect(() => {
     const channel = supabase
