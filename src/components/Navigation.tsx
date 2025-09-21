@@ -106,6 +106,7 @@ const Navigation = () => {
             size="lg"
             className="w-[4.5rem] h-[4.5rem] md:translate-x-2"
             priority={true}
+            enableDevPanel={false}
           />
           <CMSText
             page="global"

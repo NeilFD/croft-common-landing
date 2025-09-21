@@ -135,6 +135,7 @@ const HeroCarousel = () => {
         <CroftLogo
           className="w-[27.5rem] h-[27.5rem] sm:w-[30rem] sm:h-[30rem] md:w-[32.5rem] md:h-[32.5rem] lg:w-[35rem] lg:h-[35rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
           priority={true}
+          enableDevPanel={true}
         />
       </div>
 
