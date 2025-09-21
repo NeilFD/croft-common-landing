@@ -35,7 +35,7 @@ const config: CapacitorConfig = {
     'www.croftcommon.co.uk'
   ],
   ios: {
-    scheme: 'Croft Common',
+    scheme: 'CroftCommon',
     contentInset: 'automatic',
     scrollEnabled: true,
     backgroundColor: '#000000',
