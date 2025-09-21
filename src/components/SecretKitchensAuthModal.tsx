@@ -185,15 +185,16 @@ export const SecretKitchensAuthModal = ({
     setOtpSent(false);
   };
 
-  // If user is already authenticated, don't show the modal
-  if (user && isOpen) {
+  // If user is already authenticated and not in verification state, close modal
+  if (user && isOpen && !otpSent) {
+    console.debug('[SecretKitchensAuthModal] User already authenticated, calling onSuccess');
     onSuccess();
     return null;
   }
 
   if (otpSent) {
     return (
-      <Dialog open={isOpen} onOpenChange={handleClose}>
+      <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
         <DialogContent className="sm:max-w-[425px] z-[10002]">
           <DialogHeader>
             <DialogTitle>Enter verification code</DialogTitle>
@@ -235,7 +236,7 @@ export const SecretKitchensAuthModal = ({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
       <DialogContent className="sm:max-w-[425px] z-[10002]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

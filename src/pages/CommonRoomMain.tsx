@@ -7,7 +7,7 @@ import { useCMSMode } from '@/contexts/CMSModeContext';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
-import { OtpAuthModal } from '@/components/OtpAuthModal';
+import { AuthModal } from '@/components/AuthModal';
 import { useNavigate } from 'react-router-dom';
 
 const CommonRoomMain = () => {
@@ -146,7 +146,7 @@ const CommonRoomMain = () => {
         onSuccess={membershipGate.handleLinkSuccess}
       />
       
-      <OtpAuthModal
+      <AuthModal
         isOpen={membershipGate.authOpen}
         onClose={membershipGate.reset}
         onSuccess={membershipGate.handleAuthSuccess}

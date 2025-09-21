@@ -142,15 +142,16 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
     setOtpSent(false);
   };
 
-  // If user is already authenticated, don't show the modal
-  if (user && isOpen) {
+  // If user is already authenticated and not in verification state, close modal
+  if (user && isOpen && !otpSent) {
+    console.debug('[OtpAuthModal] User already authenticated, calling onSuccess');
     onSuccess();
     return null;
   }
 
   if (otpSent) {
     return (
-      <Dialog open={isOpen} onOpenChange={handleClose}>
+      <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
         <DialogContent className="sm:max-w-[425px] z-[10002]">
           <DialogHeader>
             <DialogTitle>Enter verification code</DialogTitle>
@@ -192,7 +193,7 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
       <DialogContent className="sm:max-w-[425px] z-[10002]">
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in to your loyalty card'}</DialogTitle>
