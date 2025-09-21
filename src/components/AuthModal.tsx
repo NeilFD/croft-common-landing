@@ -255,7 +255,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
   if (otpSent) {
     return (
-      <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
+      <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent className="sm:max-w-[425px] z-[10002]">
           <DialogHeader>
             <DialogTitle className="text-black font-bold">
@@ -316,7 +316,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent className="sm:max-w-[425px] z-[10002]">
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>

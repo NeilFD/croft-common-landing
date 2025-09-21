@@ -2,7 +2,7 @@
 // Handles caching, push notifications, and app communication
 
 // Cache names for versioning
-const CACHE_NAME = 'croft-app-v1.7';
+const CACHE_NAME = 'croft-app-v1.8';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
 // Install event - cache essential assets
@@ -46,151 +46,69 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch event - mobile-optimized caching strategy
-self.addEventListener('fetch', event => {
-  // Only handle GET requests
-  if (event.request.method !== 'GET') return;
+// Safe, simplified fetch event handler
+self.addEventListener('message', (event) => {
+  if (event?.data?.type === 'SKIP_WAITING') {
+    try { self.skipWaiting(); } catch (e) { console.warn('SW skipWaiting failed', e); }
+  }
+});
 
-  const url = new URL(event.request.url);
+self.addEventListener('fetch', (event) => {
+  try {
+    if (event.request.method !== 'GET') return;
 
-  // NEVER cache Supabase API requests - let them go direct to network
-  if (url.hostname.includes('supabase.') || 
-      url.hostname.includes('supabase') || 
+    const url = new URL(event.request.url);
+
+    // Ignore cross-origin requests entirely
+    if (url.origin !== self.location.origin) return;
+
+    // Bypass caching for Supabase and API endpoints
+    if (
+      url.hostname.includes('supabase') ||
       url.pathname.includes('/functions/v1/') ||
       url.pathname.includes('/auth/v1/') ||
       url.pathname.includes('/rest/v1/') ||
       url.pathname.includes('/storage/v1/') ||
-      url.pathname.includes('/uploads/') || 
-      url.pathname.includes('/api/') ||
-      url.search.includes('bypass-cache=true')) {
-    console.log('🔔 SW: Bypassing cache for:', url.href);
-    return;
-  }
-  // SPA navigation: always serve fresh index.html (network-first) for any route
-  if (event.request.mode === 'navigate' && url.origin === self.location.origin) {
+      url.search.includes('bypass-cache=true')
+    ) {
+      return;
+    }
+
+    // SPA navigation: network-first with cached '/' fallback
+    if (event.request.mode === 'navigate') {
+      event.respondWith(
+        fetch(event.request, { cache: 'no-cache' }).catch(async () => {
+          const cachedHome = await caches.match('/');
+          return cachedHome || Response.error();
+        })
+      );
+      return;
+    }
+
+    // Generic network-first for same-origin GET
     event.respondWith(
-      fetch('/', { cache: 'no-cache' }).catch(async () => {
-        const cache = await caches.open(CACHE_NAME);
-        return (await cache.match('/')) || Response.error();
-      })
-    );
-    return;
-  }
-
-  // Aggressive CMS image caching
-  if (url.pathname.includes('cms_images') || 
-      (url.search.includes('from=cms_images') && event.request.method === 'GET')) {
-    event.respondWith(
-      caches.open(CMS_CACHE_NAME).then(cache => {
-        return cache.match(event.request).then(cachedResponse => {
-          if (cachedResponse) {
-            // Serve from cache immediately, update in background
-            fetch(event.request)
-              .then(networkResponse => {
-                if (networkResponse.status === 200) {
-                  cache.put(event.request, networkResponse.clone());
-                }
-              })
-              .catch(() => {}); // Silent fail
-            return cachedResponse;
-          }
-          
-          // Not in cache, fetch and cache
-          return fetch(event.request).then(networkResponse => {
-            if (networkResponse.status === 200) {
-              cache.put(event.request, networkResponse.clone());
+      fetch(event.request)
+        .then(async (resp) => {
+          try {
+            if (resp && resp.status === 200) {
+              const cache = await caches.open(CACHE_NAME);
+              cache.put(event.request, resp.clone());
             }
-            return networkResponse;
-          });
-        });
-      })
+          } catch (e) {
+            console.warn('SW: cache.put failed', e);
+          }
+          return resp;
+        })
+        .catch(async () => {
+          const cached = await caches.match(event.request);
+          if (cached) return cached;
+          const cachedHome = await caches.match('/');
+          return cachedHome || Response.error();
+        })
     );
-    return;
-  }
-
-  // Handle same-origin requests with mobile-friendly strategy
-  if (url.origin === self.location.origin) {
-    // Network-first for HTML pages (prevents stale app issues on mobile)
-    if (url.pathname === '/' || url.pathname.endsWith('.html')) {
-      event.respondWith(
-        fetch(event.request, { cache: 'no-cache' }).then(networkResponse => {
-          // Cache successful response for offline fallback
-          if (networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, networkResponse.clone());
-            });
-          }
-          return networkResponse;
-        }).catch(() => {
-          // Network failed - try cache as fallback
-          return caches.open(CACHE_NAME).then(cache => {
-            return cache.match(event.request) || Response.error();
-          });
-        })
-      );
-      return;
-    }
-
-    // Network-first for JS/CSS (prevents stale app bundle issues)
-    if (url.pathname.match(/\.(js|css)$/)) {
-      event.respondWith(
-        fetch(event.request).then(networkResponse => {
-          // Cache successful response
-          if (networkResponse.status === 200) {
-            caches.open(CACHE_NAME).then(cache => {
-              cache.put(event.request, networkResponse.clone());
-            });
-          }
-          return networkResponse;
-        }).catch(() => {
-          // Network failed - try cache as fallback
-          return caches.open(CACHE_NAME).then(cache => {
-            return cache.match(event.request);
-          });
-        })
-      );
-      return;
-    }
-
-    // Dynamic images strategy (uploads): network-first for fresh content
-    if (url.pathname.startsWith('/lovable-uploads/')) {
-      event.respondWith(
-        fetch(event.request).then(networkResponse => {
-          // Successfully fetched from network - cache and return
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, networkResponse.clone());
-          });
-          return networkResponse;
-        }).catch(() => {
-          // Network failed - try cache as fallback
-          return caches.open(CACHE_NAME).then(cache => {
-            return cache.match(event.request);
-          });
-        })
-      );
-      return;
-    }
-
-    // Static assets (images, fonts): cache first
-    if (url.pathname.match(/\.(png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
-      event.respondWith(
-        caches.open(CACHE_NAME).then(cache => {
-          return cache.match(event.request).then(cachedResponse => {
-            if (cachedResponse) {
-              return cachedResponse;
-            }
-            
-            // Not in cache, fetch and cache
-            return fetch(event.request).then(networkResponse => {
-              if (networkResponse.status === 200) {
-                cache.put(event.request, networkResponse.clone());
-              }
-              return networkResponse;
-            });
-          });
-        })
-      );
-    }
+  } catch (e) {
+    // Absolute fallback – never throw from SW fetch handler
+    console.error('SW fetch handler error', e);
   }
 });
 

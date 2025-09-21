@@ -65,12 +65,18 @@ export async function registerServiceWorker(): Promise<ServiceWorkerRegistration
       }
     }
     
-    // Force register the main service worker with NUDGE functionality
+// Force register the main service worker with NUDGE functionality
     const swPath = '/sw.js';
     const reg = await navigator.serviceWorker.register(swPath, { 
       scope: '/',
       updateViaCache: 'none' // Force fresh registration
     });
+
+    // Ensure we get the latest SW and activate it ASAP
+    try { await reg.update(); } catch (e) { console.warn('SW update() failed', e); }
+    if (reg.waiting) {
+      try { reg.waiting.postMessage({ type: 'SKIP_WAITING' }); } catch (e) { console.warn('Failed to message waiting SW', e); }
+    }
     
     console.log(`✅ Service worker registered (NUDGE-enabled):`, reg.scope);
     console.log('🎯 Service worker script URL:', reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL);

@@ -194,7 +194,7 @@ export const SecretKitchensAuthModal = ({
 
   if (otpSent) {
     return (
-      <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
+      <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent className="sm:max-w-[425px] z-[10002]">
           <DialogHeader>
             <DialogTitle>Enter verification code</DialogTitle>
@@ -236,7 +236,7 @@ export const SecretKitchensAuthModal = ({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !loading && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent className="sm:max-w-[425px] z-[10002]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
