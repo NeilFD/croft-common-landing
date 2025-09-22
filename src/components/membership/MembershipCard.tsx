@@ -8,8 +8,7 @@ import { format } from 'date-fns';
 import CroftLogo from '@/components/CroftLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Browser } from '@capacitor/browser';
-// import { App } from '@capacitor/app';
+
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
@@ -18,6 +17,7 @@ export const MembershipCard = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showAddFallback, setShowAddFallback] = useState(false);
   const [showReissueFallback, setShowReissueFallback] = useState(false);
+  const [lastDirectUrl, setLastDirectUrl] = useState<string | null>(null);
 
   const openDirectInSafari = async (forceRegenerate: boolean) => {
     try {
@@ -27,24 +27,47 @@ export const MembershipCard = () => {
         toast.error('Please sign in to open your wallet pass');
         return false;
       }
-      
+
       const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
       const token = encodeURIComponent(session.access_token);
       const member = encodeURIComponent(cardData?.membership_number || '');
       const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}&t=${Date.now()}`;
-      
-      console.log('Direct Wallet URL prepared (iOS):', { native: isCapacitorNative, pwa: isPWAStandalone });
-      
+
+      setLastDirectUrl(directUrl);
+      console.log('Direct Wallet URL prepared (iOS):', { directUrl, native: isCapacitorNative, pwa: isPWAStandalone });
+
       if (isCapacitorNative) {
-        await Browser.open({ url: directUrl, windowName: '_system' });
-      } else {
-        window.location.assign(directUrl);
+        try {
+          console.log('Attempting window.open (native)');
+          const win = window.open(directUrl, '_blank');
+          if (!win) {
+            console.warn('window.open returned null, trying location.assign');
+            window.location.assign(directUrl);
+          }
+          setTimeout(() => refetch(), 2000);
+          return true;
+        } catch (nativeErr) {
+          console.warn('Navigation failed on native, showing fallback', nativeErr);
+          return false;
+        }
       }
-      
-      setTimeout(() => refetch(), 2000);
-      return true;
+
+      try {
+        console.log('Attempting window.location.assign');
+        window.location.assign(directUrl);
+        setTimeout(() => refetch(), 2000);
+        return true;
+      } catch (assignErr) {
+        console.warn('assign failed, trying window.open', assignErr);
+        const win = window.open(directUrl, '_blank');
+        if (win) {
+          setTimeout(() => refetch(), 2000);
+          return true;
+        }
+        return false;
+      }
     } catch (error) {
-      console.error('Error opening direct URL:', error);
+      console.error('Error building or opening direct URL:', error);
       return false;
     }
   };
@@ -334,13 +357,21 @@ export const MembershipCard = () => {
         </Button>
       </div>
 
-      {false && (
+      {shouldUseDirectOpen && (showAddFallback || showReissueFallback) && (
         <div className="text-center space-y-2">
           <p className="text-xs text-muted-foreground">If nothing happens, open directly in Apple Wallet.</p>
           <div className="flex justify-center">
-            <Button variant="outline" size="sm" onClick={() => openDirectInSafari(showReissueFallback)}>
-              Open directly in Apple Wallet
-            </Button>
+            {lastDirectUrl ? (
+              <a href={lastDirectUrl} target="_blank" rel="noopener noreferrer" className="inline-flex">
+                <Button variant="outline" size="sm">
+                  Open directly in Apple Wallet
+                </Button>
+              </a>
+            ) : (
+              <Button variant="outline" size="sm" onClick={() => openDirectInSafari(showReissueFallback)}>
+                Open directly in Apple Wallet
+              </Button>
+            )}
           </div>
         </div>
       )}
