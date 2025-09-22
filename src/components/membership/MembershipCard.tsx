@@ -20,29 +20,39 @@ export const MembershipCard = () => {
   const [showReissueFallback, setShowReissueFallback] = useState(false);
 
   const openDirectInSafari = async (forceRegenerate: boolean) => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      console.error('No session for direct open');
-      toast.error('Please sign in to open your wallet pass');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No session for direct open');
+        toast.error('Please sign in to open your wallet pass');
+        return false;
+      }
+      
+      const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
+      const token = encodeURIComponent(session.access_token);
+      const member = encodeURIComponent(cardData?.membership_number || '');
+      const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}`;
+      
+      console.log('Direct Wallet URL prepared (iOS):', { native: isCapacitorNative, pwa: isPWAStandalone });
+      
+      if (isCapacitorNative) {
+        await Browser.open({ url: directUrl, windowName: '_system' });
+      } else {
+        window.location.assign(directUrl);
+      }
+      
+      setTimeout(() => refetch(), 2000);
+      return true;
+    } catch (error) {
+      console.error('Error opening direct URL:', error);
       return false;
     }
-    const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
-    const token = encodeURIComponent(session.access_token);
-    const member = encodeURIComponent(cardData?.membership_number || '');
-    const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}`;
-    console.log('Direct Wallet URL prepared (iOS):', { native: isCapacitorNative, pwa: isPWAStandalone });
-    if (isCapacitorNative) {
-      await App.openUrl({ url: directUrl });
-    } else {
-      window.location.assign(directUrl);
-    }
-    setTimeout(() => refetch(), 2000);
-    return true;
   };
 
   const handleAddToWallet = async () => {
     setIsGenerating(true);
     setShowAddFallback(false);
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -57,8 +67,11 @@ export const MembershipCard = () => {
         // For iOS devices, use direct GET URL with access token
         console.log('Using direct URL approach for iOS...');
         const ok = await openDirectInSafari(false);
-        if (ok) return;
-          
+        if (!ok) {
+          setShowAddFallback(true);
+          toast.error('Couldn\'t open Apple Wallet. Try "Open directly" below.', { id: 'wallet-pass-generation' });
+        }
+        return;
       } else {
         // For non-iOS browsers, use the POST+blob approach
         console.log('Using POST+blob approach for non-iOS...');
@@ -115,6 +128,7 @@ export const MembershipCard = () => {
   const handleReissueCard = async () => {
     setIsReissuing(true);
     setShowReissueFallback(false);
+    
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -142,17 +156,11 @@ export const MembershipCard = () => {
         // For iOS devices, use direct GET URL with access token
         console.log('Using direct URL approach for iOS reissue...');
         const ok = await openDirectInSafari(true);
-        if (ok) return;
-          
-          // Refetch card data to update the wallet pass status
-          setTimeout(() => refetch(), 2000);
-          return;
-        } catch (error) {
-          console.error('Error opening direct URL:', error);
+        if (!ok) {
           setShowReissueFallback(true);
-          toast.error('Couldn’t open Apple Wallet. Try “Open directly” below.', { id: 'wallet-pass-reissue' });
-          return;
+          toast.error('Couldn\'t open Apple Wallet. Try "Open directly" below.', { id: 'wallet-pass-reissue' });
         }
+        return;
       } else {
         // For non-iOS browsers, use the POST+blob approach
         console.log('Using POST+blob approach for non-iOS reissue...');
