@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'CroftCommon',
   webDir: 'dist',
   server: {
-    url: 'https://id-preview--410602d4-4805-4fdf-8c51-900e548d9b20.lovable.app',
+    url: 'https://croftcommontest.com',
     cleartext: true
   },
   plugins: {
@@ -29,6 +29,8 @@ const config: CapacitorConfig = {
     },
   },
   allowNavigation: [
+    'croftcommontest.com',
+    '*.croftcommontest.com',
     'id-preview--410602d4-4805-4fdf-8c51-900e548d9b20.lovable.app',
     '*.lovable.app',
     '410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com',
