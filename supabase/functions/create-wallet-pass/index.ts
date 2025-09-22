@@ -243,6 +243,31 @@ serve(async (req) => {
       const wwdr = forge.pki.certificateFromPem(wwdrCertPem);
       const key = forge.pki.privateKeyFromPem(passKeyPem);
 
+      // Log non-sensitive certificate details for debugging
+      try {
+        const certSubjectCN = cert.subject.getField('CN')?.value;
+        const certIssuerCN = cert.issuer.getField('CN')?.value;
+        const certUID = (cert.subject.getField('UID') || cert.subject.getField('userId'))?.value;
+        const wwdrSubjectCN = wwdr.subject.getField('CN')?.value;
+        const wwdrIssuerCN = wwdr.issuer.getField('CN')?.value;
+        console.log('🎫 Cert details:', {
+          subjectCN: certSubjectCN,
+          issuerCN: certIssuerCN,
+          uid: certUID,
+          serialNumber: cert.serialNumber,
+          notBefore: cert.validity.notBefore,
+          notAfter: cert.validity.notAfter,
+          teamIdentifier,
+          passTypeIdentifier
+        });
+        console.log('🎫 WWDR details:', {
+          subjectCN: wwdrSubjectCN,
+          issuerCN: wwdrIssuerCN
+        });
+      } catch (_) {
+        // ignore logging parsing errors
+      }
+
       // Create PKCS#7 signature
       const p7 = forge.pkcs7.createSignedData();
       p7.content = forge.util.createBuffer(manifestString, 'utf8');
@@ -255,7 +280,7 @@ serve(async (req) => {
         certificate: cert,
         digestAlgorithm: forge.pki.oids.sha1,
         authenticatedAttributes: [
-          { type: forge.pki.oids.contentTypes, value: forge.pki.oids.data },
+          { type: forge.pki.oids.contentType, value: forge.pki.oids.data },
           { type: forge.pki.oids.messageDigest },
           { type: forge.pki.oids.signingTime, value: new Date() }
         ]

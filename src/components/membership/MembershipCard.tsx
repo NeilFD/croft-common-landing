@@ -38,19 +38,15 @@ export const MembershipCard = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error creating wallet pass:', errorText);
-        
-        // Show specific error message based on the response
         let errorMessage = 'Failed to create wallet pass. Please try again.';
-        if (errorText.includes('credentials not configured')) {
-          errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
-        } else if (errorText.includes('Member data not found')) {
-          errorMessage = 'Membership data not found. Please ensure your membership is active.';
-        } else if (errorText.includes('Invalid Apple Wallet certificate configuration')) {
-          errorMessage = 'Signing certificate is misconfigured. Please contact support to update Apple Wallet certificates.';
+        try {
+          const data = await response.json();
+          if (data?.error) errorMessage = data.error;
+        } catch {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
         }
-        
+        console.error('Error creating wallet pass:', errorMessage);
         toast.error(errorMessage, { id: 'wallet-pass-generation' });
         return;
       }
@@ -122,17 +118,15 @@ export const MembershipCard = () => {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error reissuing wallet pass:', errorText);
-        
-        // Show specific error message based on the response
         let errorMessage = 'Failed to reissue wallet pass. Please try again.';
-        if (errorText.includes('credentials not configured')) {
-          errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
-        } else if (errorText.includes('Invalid Apple Wallet certificate configuration')) {
-          errorMessage = 'Signing certificate is misconfigured. Please contact support to update Apple Wallet certificates.';
+        try {
+          const data = await response.json();
+          if (data?.error) errorMessage = data.error;
+        } catch {
+          const text = await response.text();
+          errorMessage = text || errorMessage;
         }
-        
+        console.error('Error reissuing wallet pass:', errorMessage);
         toast.error(errorMessage, { id: 'wallet-pass-reissue' });
         return;
       }
