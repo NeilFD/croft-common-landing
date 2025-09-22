@@ -9,7 +9,7 @@ import CroftLogo from '@/components/CroftLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Browser } from '@capacitor/browser';
-import { App } from '@capacitor/app';
+// import { App } from '@capacitor/app';
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
@@ -31,7 +31,7 @@ export const MembershipCard = () => {
       const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
       const token = encodeURIComponent(session.access_token);
       const member = encodeURIComponent(cardData?.membership_number || '');
-      const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}`;
+      const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}&t=${Date.now()}`;
       
       console.log('Direct Wallet URL prepared (iOS):', { native: isCapacitorNative, pwa: isPWAStandalone });
       
@@ -69,7 +69,7 @@ export const MembershipCard = () => {
         const ok = await openDirectInSafari(false);
         if (!ok) {
           setShowAddFallback(true);
-          toast.error('Couldn\'t open Apple Wallet. Try "Open directly" below.', { id: 'wallet-pass-generation' });
+          toast.error("Couldn’t open Apple Wallet. Please try again.", { id: 'wallet-pass-generation' });
         }
         return;
       } else {
@@ -158,7 +158,7 @@ export const MembershipCard = () => {
         const ok = await openDirectInSafari(true);
         if (!ok) {
           setShowReissueFallback(true);
-          toast.error('Couldn\'t open Apple Wallet. Try "Open directly" below.', { id: 'wallet-pass-reissue' });
+          toast.error("Couldn’t open Apple Wallet. Please try again.", { id: 'wallet-pass-reissue' });
         }
         return;
       } else {
@@ -334,7 +334,7 @@ export const MembershipCard = () => {
         </Button>
       </div>
 
-      {shouldUseDirectOpen && (showAddFallback || showReissueFallback) && (
+      {false && (
         <div className="text-center space-y-2">
           <p className="text-xs text-muted-foreground">If nothing happens, open directly in Apple Wallet.</p>
           <div className="flex justify-center">

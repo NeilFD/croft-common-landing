@@ -227,7 +227,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.create-wallet-pass]
-verify_jwt = true
+verify_jwt = false
 
 [functions.revoke-wallet-pass]
 verify_jwt = true
