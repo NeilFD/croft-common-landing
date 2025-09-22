@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import AdmZip from "https://deno.land/x/admzip@v1.0.0/mod.ts";
+import JSZip from "https://esm.sh/jszip@3.10.1";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
 import { forge } from "https://deno.land/x/forge@0.0.15/mod.ts";
@@ -148,13 +148,12 @@ serve(async (req) => {
     console.log('🎫 STEP 2: Member data:', JSON.stringify(member, null, 2));
 
     // Create pass bundle with required files
-    const zip = new AdmZip();
+    const zip = new JSZip();
     
     console.log('🎫 STEP 3: Creating pass.json structure');
     // Add pass.json
     const passJsonString = JSON.stringify(passJson, null, 2);
-    const passJsonBytes = new TextEncoder().encode(passJsonString);
-    zip.addFile("pass.json", Buffer.from(passJsonBytes));
+    zip.file("pass.json", passJsonString);
 
     console.log('🎫 STEP 4: Adding icon assets');
     // Fetch actual icon assets from Supabase storage
@@ -163,12 +162,12 @@ serve(async (req) => {
       const iconBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg==";
       const iconData = Uint8Array.from(atob(iconBase64), c => c.charCodeAt(0));
       
-      // Add icon files (all sizes) as Buffer
-      zip.addFile("icon.png", Buffer.from(iconData));
-      zip.addFile("icon@2x.png", Buffer.from(iconData));
-      zip.addFile("icon@3x.png", Buffer.from(iconData));
-      zip.addFile("logo.png", Buffer.from(iconData));
-      zip.addFile("logo@2x.png", Buffer.from(iconData));
+      // Add icon files (all sizes) using JSZip
+      zip.file("icon.png", iconData);
+      zip.file("icon@2x.png", iconData);
+      zip.file("icon@3x.png", iconData);
+      zip.file("logo.png", iconData);
+      zip.file("logo@2x.png", iconData);
       console.log('🎫 STEP 5: Icon assets added successfully');
     } catch (error) {
       console.error('❌ Error adding icon assets:', error);
@@ -176,11 +175,11 @@ serve(async (req) => {
       const transparentPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg==";
       const iconData = Uint8Array.from(atob(transparentPng), c => c.charCodeAt(0));
       
-      zip.addFile("icon.png", Buffer.from(iconData));
-      zip.addFile("icon@2x.png", Buffer.from(iconData));
-      zip.addFile("icon@3x.png", Buffer.from(iconData));
-      zip.addFile("logo.png", Buffer.from(iconData));
-      zip.addFile("logo@2x.png", Buffer.from(iconData));
+      zip.file("icon.png", iconData);
+      zip.file("icon@2x.png", iconData);
+      zip.file("icon@3x.png", iconData);
+      zip.file("logo.png", iconData);
+      zip.file("logo@2x.png", iconData);
     }
 
     console.log('🎫 STEP 6: Generating manifest.json with SHA1 hashes');
@@ -188,33 +187,26 @@ serve(async (req) => {
     const manifest: Record<string, string> = {};
     
     // Calculate SHA1 for each file in the ZIP using raw bytes
-    const files = zip.getEntries();
-    console.log('🎫 STEP 7: Computing hashes for files:', files.map(f => f.name));
+    const fileNames = Object.keys(zip.files);
+    console.log('🎫 STEP 7: Computing hashes for files:', fileNames);
     
-    for (const file of files) {
-      if (file.name !== 'manifest.json' && file.name !== 'signature') {
-        const fileData = file.getData();
-        let fileBytes: Uint8Array;
+    for (const fileName of fileNames) {
+      if (fileName !== 'manifest.json' && fileName !== 'signature') {
+        const file = zip.files[fileName];
         
-        if (fileData instanceof Buffer) {
-          fileBytes = new Uint8Array(fileData);
-        } else if (fileData instanceof Uint8Array) {
-          fileBytes = fileData;
-        } else {
-          // Convert string to bytes
-          fileBytes = new TextEncoder().encode(fileData.toString());
+        if (file && !file.dir) {
+          // Get the raw binary data from JSZip
+          const fileData = await file.async('uint8array');
+          const hash = await sha1(fileData);
+          manifest[fileName] = hash;
+          console.log(`🎫 Hash for ${fileName}: ${hash}`);
         }
-        
-        const hash = await sha1(fileBytes);
-        manifest[file.name] = hash;
-        console.log(`🎫 Hash for ${file.name}: ${hash}`);
       }
     }
 
     console.log('🎫 STEP 8: Creating manifest.json');
     const manifestString = JSON.stringify(manifest, null, 2);
-    const manifestBytes = new TextEncoder().encode(manifestString);
-    zip.addFile("manifest.json", Buffer.from(manifestBytes));
+    zip.file("manifest.json", manifestString);
 
     console.log('🎫 STEP 9: Generating PKCS#7 signature');
     // Generate proper PKCS#7 signature
@@ -265,21 +257,21 @@ serve(async (req) => {
         signatureBytes[i] = derBuffer.charCodeAt(i);
       }
       
-      zip.addFile("signature", Buffer.from(signatureBytes));
+      zip.file("signature", signatureBytes);
       console.log('🎫 ✅ PKCS#7 signature generated successfully');
       
     } catch (sigError) {
       console.error('❌ Error generating PKCS#7 signature:', sigError);
       // Fallback to placeholder for now
       const signatureData = "SIGNATURE_PLACEHOLDER_FOR_DEVELOPMENT";
-      zip.addFile("signature", Buffer.from(new TextEncoder().encode(signatureData)));
+      zip.file("signature", signatureData);
       console.log('🎫 ⚠️ Using placeholder signature');
     }
 
     console.log('🎫 STEP 10: Generating final .pkpass file');
-    // Generate the ZIP file
-    const zipBuffer = zip.toBuffer();
-    const zipUint8Array = new Uint8Array(zipBuffer);
+    // Generate the ZIP file using JSZip
+    const zipArrayBuffer = await zip.generateAsync({ type: "arraybuffer" });
+    const zipUint8Array = new Uint8Array(zipArrayBuffer);
     console.log(`🎫 Generated .pkpass file size: ${zipUint8Array.length} bytes`);
 
     // Upload .pkpass file to storage
