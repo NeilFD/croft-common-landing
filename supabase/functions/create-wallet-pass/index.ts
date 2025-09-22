@@ -275,41 +275,11 @@ serve(async (req) => {
     const zipUint8Array = new Uint8Array(zipArrayBuffer);
     console.log(`🎫 Generated .pkpass file size: ${zipUint8Array.length} bytes`);
 
-    // Upload .pkpass file to storage
-    const passFileName = `${user.id}/${serialNumber}.pkpass`;
-    console.log(`🎫 STEP 11: Uploading to storage: ${passFileName}`);
-    
-    const { data: uploadData, error: uploadError } = await supabaseClient.storage
-      .from('wallet-passes')
-      .upload(passFileName, zipUint8Array, {
-        contentType: 'application/vnd.apple.pkpass',
-        upsert: true
-      });
-
-    if (uploadError) {
-      console.error('❌ STEP 11 FAILED - Error uploading pass:', uploadError);
-      return new Response(JSON.stringify({ error: 'Failed to create pass file' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
-    console.log('🎫 ✅ STEP 11 SUCCESS - Pass uploaded to storage');
-
-    console.log('🎫 STEP 12: Creating signed URL');
-    // Get signed URL for the pass
-    const { data: signedUrlData } = await supabaseClient.storage
-      .from('wallet-passes')
-      .createSignedUrl(passFileName, 3600); // 1 hour expiry
-    
-    console.log('🎫 ✅ Signed URL created:', signedUrlData?.signedUrl ? 'YES' : 'NO');
-
-    console.log('🎫 STEP 13: Updating user profile');
-    // Update user profile with pass information
+    console.log('🎫 STEP 11: Updating user profile with serial number');
+    // Update user profile with pass information (but without URL since we serve directly)
     const { error: updateError } = await supabaseClient
       .from('profiles')
       .update({
-        wallet_pass_url: signedUrlData?.signedUrl,
         wallet_pass_last_issued_at: new Date().toISOString(),
         wallet_pass_serial_number: serialNumber,
         wallet_pass_revoked: false
@@ -317,7 +287,7 @@ serve(async (req) => {
       .eq('user_id', user.id);
 
     if (updateError) {
-      console.error('❌ STEP 13 FAILED - Error updating profile:', updateError);
+      console.error('❌ STEP 11 FAILED - Error updating profile:', updateError);
       return new Response(JSON.stringify({ error: 'Failed to update profile' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -326,15 +296,18 @@ serve(async (req) => {
 
     console.log('🎫 🎉 SUCCESS - Apple Wallet pass created successfully!');
     console.log('🎫 Serial Number:', serialNumber);
-    console.log('🎫 Pass URL available:', signedUrlData?.signedUrl ? 'YES' : 'NO');
+    console.log('🎫 Serving .pkpass file directly with proper headers');
 
-    return new Response(JSON.stringify({
-      success: true,
-      passUrl: signedUrlData?.signedUrl,
-      serialNumber: serialNumber,
-      message: 'Apple Wallet pass created successfully'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    // Serve the .pkpass file directly with proper headers
+    return new Response(zipUint8Array, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/vnd.apple.pkpass',
+        'Content-Disposition': `attachment; filename="croft-common-membership-${serialNumber}.pkpass"`,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      },
     });
 
   } catch (error) {

@@ -14,29 +14,7 @@ export const MembershipCard = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const handleAddToWallet = async () => {
-    if (cardData?.wallet_pass_url && !cardData?.wallet_pass_revoked) {
-      // If we already have a valid pass, download it directly
-      try {
-        const link = document.createElement('a');
-        link.href = cardData.wallet_pass_url;
-        link.download = `croft-common-membership-${cardData.membership_number}.pkpass`;
-        link.target = '_blank';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast.success('Downloading your Apple Wallet pass...');
-      } catch (error) {
-        console.error('Error opening existing pass:', error);
-        toast.error('Failed to download pass. Opening in new tab...');
-        // Fallback to opening in new tab
-        window.open(cardData.wallet_pass_url, '_blank');
-      }
-      return;
-    }
-
-    // Generate new pass
+    // Generate or download pass by calling the edge function directly
     setIsGenerating(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -48,20 +26,26 @@ export const MembershipCard = () => {
 
       toast.loading('Generating your Apple Wallet pass...', { id: 'wallet-pass-generation' });
 
-      const response = await supabase.functions.invoke('create-wallet-pass', {
+      // Make direct request to edge function to get the .pkpass file
+      const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
       });
 
-      if (response.error) {
-        console.error('Error creating wallet pass:', response.error);
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('Error creating wallet pass:', error);
         
         // Show specific error message based on the response
         let errorMessage = 'Failed to create wallet pass. Please try again.';
-        if (response.error.message?.includes('credentials not configured')) {
+        if (error.includes('credentials not configured')) {
           errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
-        } else if (response.error.message?.includes('Member data not found')) {
+        } else if (error.includes('Member data not found')) {
           errorMessage = 'Membership data not found. Please ensure your membership is active.';
         }
         
@@ -69,31 +53,27 @@ export const MembershipCard = () => {
         return;
       }
 
-      // Refresh card data to get the new pass URL
+      // Get the .pkpass file as a blob
+      const blob = await response.blob();
+      
+      // Create a URL for the blob and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      window.URL.revokeObjectURL(url);
+      
+      // Refresh card data to update the state
       await refetch();
       
-      // Download the new .pkpass file
-      if (response.data?.passUrl) {
-        try {
-          const link = document.createElement('a');
-          link.href = response.data.passUrl;
-          link.download = `croft-common-membership-${response.data.serialNumber || 'new'}.pkpass`;
-          link.target = '_blank';
-          
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          toast.success('Apple Wallet pass generated and downloaded successfully!', { id: 'wallet-pass-generation' });
-        } catch (error) {
-          console.error('Error downloading pass:', error);
-          toast.warning('Pass generated but download failed. Opening in new tab...', { id: 'wallet-pass-generation' });
-          // Fallback to opening in new tab
-          window.open(response.data.passUrl, '_blank');
-        }
-      } else {
-        toast.error('Failed to generate wallet pass URL', { id: 'wallet-pass-generation' });
-      }
+      toast.success('Apple Wallet pass generated and downloaded successfully!', { id: 'wallet-pass-generation' });
+      
     } catch (error) {
       console.error('Error generating wallet pass:', error);
       toast.error('An unexpected error occurred while generating the wallet pass', { id: 'wallet-pass-generation' });
@@ -128,19 +108,24 @@ export const MembershipCard = () => {
         }
       }
 
-      // Then create a new pass
-      const response = await supabase.functions.invoke('create-wallet-pass', {
+      // Then create a new pass by calling the edge function directly
+      const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
+      
+      const response = await fetch(functionUrl, {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
         },
       });
 
-      if (response.error) {
-        console.error('Error reissuing wallet pass:', response.error);
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('Error reissuing wallet pass:', error);
         
         // Show specific error message based on the response
         let errorMessage = 'Failed to reissue wallet pass. Please try again.';
-        if (response.error.message?.includes('credentials not configured')) {
+        if (error.includes('credentials not configured')) {
           errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
         }
         
@@ -148,29 +133,26 @@ export const MembershipCard = () => {
         return;
       }
 
+      // Get the .pkpass file as a blob
+      const blob = await response.blob();
+      
+      // Create a URL for the blob and trigger download
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      window.URL.revokeObjectURL(url);
+
       // Refresh card data
       await refetch();
       
-      // Download the new pass if URL is available
-      if (response.data?.passUrl) {
-        try {
-          const link = document.createElement('a');
-          link.href = response.data.passUrl;
-          link.download = `croft-common-membership-${response.data.serialNumber || 'reissued'}.pkpass`;
-          link.target = '_blank';
-          
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          
-          toast.success('Apple Wallet pass reissued successfully!', { id: 'wallet-pass-reissue' });
-        } catch (error) {
-          console.error('Error downloading reissued pass:', error);
-          toast.success('Pass reissued successfully!', { id: 'wallet-pass-reissue' });
-        }
-      } else {
-        toast.success('Pass reissued successfully!', { id: 'wallet-pass-reissue' });
-      }
+      toast.success('Apple Wallet pass reissued successfully!', { id: 'wallet-pass-reissue' });
     } catch (error) {
       console.error('Error reissuing card:', error);
       toast.error('An unexpected error occurred while reissuing the wallet pass', { id: 'wallet-pass-reissue' });
@@ -284,9 +266,7 @@ export const MembershipCard = () => {
           disabled={isGenerating || isReissuing}
         >
           <Wallet className="h-4 w-4" />
-          {isGenerating ? 'Generating...' : 
-           (cardData?.wallet_pass_url && !cardData?.wallet_pass_revoked) ? 
-           'Open in Apple Wallet' : 'Add to Apple Wallet'}
+          {isGenerating ? 'Generating...' : 'Add to Apple Wallet'}
         </Button>
         
         <Button 
