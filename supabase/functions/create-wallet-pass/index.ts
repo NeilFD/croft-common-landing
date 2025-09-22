@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import JSZip from "https://esm.sh/jszip@3.10.1";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
-import { forge } from "https://deno.land/x/forge@0.0.15/mod.ts";
+import forge from "https://esm.sh/node-forge@1.3.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -262,10 +262,12 @@ serve(async (req) => {
       
     } catch (sigError) {
       console.error('❌ Error generating PKCS#7 signature:', sigError);
-      // Fallback to placeholder for now
+      console.error('❌ Signature error details:', sigError.message);
+      
+      // Fallback to placeholder signature
       const signatureData = "SIGNATURE_PLACEHOLDER_FOR_DEVELOPMENT";
       zip.file("signature", signatureData);
-      console.log('🎫 ⚠️ Using placeholder signature');
+      console.log('🎫 ⚠️ Using placeholder signature due to error');
     }
 
     console.log('🎫 STEP 10: Generating final .pkpass file');
