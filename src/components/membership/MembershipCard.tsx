@@ -30,44 +30,65 @@ export const MembershipCard = () => {
 
       const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
       const token = encodeURIComponent(session.access_token);
-      const member = encodeURIComponent(cardData?.membership_number || '');
-      const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?token=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}&t=${Date.now()}`;
+      // Simplified URL - only pass the token, let the backend handle the rest
+      const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?token=${token}${forceRegenerate ? '&force=true' : ''}`;
 
       setLastDirectUrl(directUrl);
-      console.log('Direct Wallet URL prepared (iOS):', { directUrl, native: isCapacitorNative, pwa: isPWAStandalone });
+      console.log('🎫 Direct Wallet URL prepared:', { 
+        url: directUrl.substring(0, 100) + '...', 
+        isCapacitorNative, 
+        isPWAStandalone, 
+        isIOS,
+        userAgent: navigator.userAgent.substring(0, 100)
+      });
 
+      // Improved iOS Safari detection and handling
+      const isIOSSafari = /iPhone|iPad|iPod/i.test(navigator.userAgent) && /Safari/i.test(navigator.userAgent) && !/CriOS|FxiOS/i.test(navigator.userAgent);
+      
       if (isCapacitorNative) {
         try {
-          console.log('Attempting window.open (native)');
+          console.log('🎫 Attempting navigation (Capacitor native)');
           const win = window.open(directUrl, '_blank');
           if (!win) {
-            console.warn('window.open returned null, trying location.assign');
+            console.log('🎫 window.open failed, trying location.assign');
             window.location.assign(directUrl);
           }
-          setTimeout(() => refetch(), 2000);
+          setTimeout(() => refetch(), 3000);
           return true;
         } catch (nativeErr) {
-          console.warn('Navigation failed on native, showing fallback', nativeErr);
+          console.warn('🎫 Navigation failed on native, showing fallback', nativeErr);
           return false;
         }
       }
 
+      if (isIOSSafari) {
+        try {
+          console.log('🎫 iOS Safari detected - using location.assign for wallet pass');
+          // For iOS Safari, location.assign works better for wallet passes
+          window.location.assign(directUrl);
+          setTimeout(() => refetch(), 3000); // Give iOS more time to process
+          return true;
+        } catch (assignErr) {
+          console.warn('🎫 location.assign failed on iOS Safari', assignErr);
+          return false;
+        }
+      }
+
+      // Fallback for other browsers
       try {
-        console.log('Attempting window.location.assign');
-        window.location.assign(directUrl);
-        setTimeout(() => refetch(), 2000);
-        return true;
-      } catch (assignErr) {
-        console.warn('assign failed, trying window.open', assignErr);
+        console.log('🎫 Using window.open fallback');
         const win = window.open(directUrl, '_blank');
         if (win) {
           setTimeout(() => refetch(), 2000);
           return true;
         }
         return false;
+      } catch (error) {
+        console.warn('🎫 All navigation methods failed', error);
+        return false;
       }
     } catch (error) {
-      console.error('Error building or opening direct URL:', error);
+      console.error('🎫 Error building or opening direct URL:', error);
       return false;
     }
   };
