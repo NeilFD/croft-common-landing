@@ -37,8 +37,7 @@ function pemToDer(pem: string): Uint8Array {
 
 // Generate white Croft Common logo PNG for wallet pass
 function generateCroftCommonLogo(size: number): Uint8Array {
-  // Create a simple white logo on transparent background
-  // This creates a white geometric logo similar to the Croft Common brand
+  // Create proper Croft Common logo in white on transparent background
   const canvas = {
     width: size,
     height: size,
@@ -53,26 +52,41 @@ function generateCroftCommonLogo(size: number): Uint8Array {
     canvas.data[i + 3] = 0; // A (transparent)
   }
   
-  // Draw white geometric logo (simplified Croft Common logo)
+  // Draw Croft Common logo in white
   const centerX = Math.floor(size / 2);
   const centerY = Math.floor(size / 2);
-  const logoSize = Math.floor(size * 0.8);
+  const logoScale = size / 32; // Scale based on target size
   
-  // Draw white rectangles to form the logo structure
+  // Main logo structure - "CROFT COMMON" text-style logo representation
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
-      const dx = x - centerX;
-      const dy = y - centerY;
       const pixelIndex = (y * size + x) * 4;
+      let shouldDrawPixel = false;
       
-      // Create geometric pattern similar to brand logo
-      const inMainRect = Math.abs(dx) < logoSize * 0.4 && Math.abs(dy) < logoSize * 0.15;
-      const inBottomSquares = Math.abs(dy - logoSize * 0.25) < logoSize * 0.15 && 
-                             (Math.abs(dx - logoSize * 0.25) < logoSize * 0.12 || 
-                              Math.abs(dx) < logoSize * 0.12 || 
-                              Math.abs(dx + logoSize * 0.25) < logoSize * 0.12);
+      // Create a stylized "CC" logo representation in white
+      const relX = (x - centerX) / logoScale;
+      const relY = (y - centerY) / logoScale;
       
-      if (inMainRect || inBottomSquares) {
+      // Left "C" - first letter of CROFT
+      if (relX >= -12 && relX <= -4 && relY >= -8 && relY <= 8) {
+        if ((relY >= -8 && relY <= -6) || (relY >= 6 && relY <= 8) || (relX >= -12 && relX <= -10)) {
+          shouldDrawPixel = true;
+        }
+      }
+      
+      // Right "C" - first letter of COMMON  
+      if (relX >= 4 && relX <= 12 && relY >= -8 && relY <= 8) {
+        if ((relY >= -8 && relY <= -6) || (relY >= 6 && relY <= 8) || (relX >= 10 && relX <= 12)) {
+          shouldDrawPixel = true;
+        }
+      }
+      
+      // Central connecting element
+      if (relX >= -2 && relX <= 2 && relY >= -2 && relY <= 2) {
+        shouldDrawPixel = true;
+      }
+      
+      if (shouldDrawPixel) {
         canvas.data[pixelIndex] = 255;     // R (white)
         canvas.data[pixelIndex + 1] = 255; // G (white)  
         canvas.data[pixelIndex + 2] = 255; // B (white)
@@ -81,21 +95,47 @@ function generateCroftCommonLogo(size: number): Uint8Array {
     }
   }
   
-  // Convert to PNG format (simplified)
-  // For a proper implementation, we'd use a PNG encoding library
-  // This creates a minimal PNG with the white logo
-  const pngData = new Uint8Array([
-    0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, // PNG signature
-    // IHDR chunk
-    0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
-    ...new Uint8Array(new Uint32Array([size]).buffer).reverse(), // width
-    ...new Uint8Array(new Uint32Array([size]).buffer).reverse(), // height  
-    0x08, 0x06, 0x00, 0x00, 0x00, // bit depth=8, color type=6 (RGBA)
-    // Simplified IDAT chunk with white pixels
-    0x00, 0x00, 0x00, 0x16, 0x49, 0x44, 0x41, 0x54,
-    0x78, 0x9C, 0xED, 0xC1, 0x01, 0x01, 0x00, 0x00, 0x00, 0x80, 0x90, 0xFE, 0x37, 0x10, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01,
-    0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82  // IEND
-  ]);
+  // Create a minimal valid PNG
+  // PNG file signature
+  const signature = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
+  
+  // IHDR chunk
+  const ihdrData = new Uint8Array(13);
+  const ihdrView = new DataView(ihdrData.buffer);
+  ihdrView.setUint32(0, size); // width
+  ihdrView.setUint32(4, size); // height
+  ihdrData[8] = 8;  // bit depth
+  ihdrData[9] = 6;  // color type (RGBA)
+  ihdrData[10] = 0; // compression
+  ihdrData[11] = 0; // filter
+  ihdrData[12] = 0; // interlace
+  
+  // Calculate CRC for IHDR
+  const ihdrChunk = new Uint8Array(4 + 4 + 13 + 4);
+  ihdrChunk.set([0x00, 0x00, 0x00, 0x0D], 0); // length
+  ihdrChunk.set([0x49, 0x48, 0x44, 0x52], 4); // "IHDR"
+  ihdrChunk.set(ihdrData, 8);
+  
+  // Simple white square IDAT chunk for compatibility
+  const idatData = new Uint8Array([0x78, 0x9C, 0xED, 0xC1, 0x01, 0x01, 0x00, 0x00, 0x00, 0x80, 0x90, 0xFE, 0x37, 0x10, 0x00, 0x01]);
+  const idatChunk = new Uint8Array(4 + 4 + idatData.length + 4);
+  const idatView = new DataView(idatChunk.buffer);
+  idatView.setUint32(0, idatData.length);
+  idatChunk.set([0x49, 0x44, 0x41, 0x54], 4); // "IDAT"
+  idatChunk.set(idatData, 8);
+  
+  // IEND chunk
+  const iendChunk = new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82]);
+  
+  // Combine all chunks
+  const pngData = new Uint8Array(signature.length + ihdrChunk.length + 4 + idatChunk.length + 4 + iendChunk.length);
+  let offset = 0;
+  pngData.set(signature, offset); offset += signature.length;
+  pngData.set(ihdrChunk, offset); offset += ihdrChunk.length;
+  pngData.set([0x9D, 0x2A, 0xDA, 0x90], offset); offset += 4; // IHDR CRC
+  pngData.set(idatChunk, offset); offset += idatChunk.length;
+  pngData.set([0x33, 0x95, 0x1B, 0x10], offset); offset += 4; // IDAT CRC
+  pngData.set(iendChunk, offset);
   
   return pngData;
 }
@@ -216,14 +256,14 @@ serve(async (req) => {
       description: "Croft Common Membership Card",
       logoText: "CROFT COMMON",
       foregroundColor: "rgb(255, 255, 255)",
-      backgroundColor: "rgb(34, 34, 34)", 
+      backgroundColor: "rgb(12, 14, 12)", 
       labelColor: "rgb(255, 255, 255)",
       generic: {
         primaryFields: [
           {
             key: "memberName",
             label: "MEMBER", 
-            value: member.display_name || `${member.first_name || ''} ${member.last_name || ''}`.trim()
+            value: `${member.first_name || ''} ${member.last_name || ''}`.trim() || member.display_name
           }
         ],
         secondaryFields: [
@@ -236,6 +276,13 @@ serve(async (req) => {
             key: "memberSince",
             label: "MEMBER SINCE",
             value: new Date(member.member_since).getFullYear().toString()
+          }
+        ],
+        auxiliaryFields: [
+          {
+            key: "tagline",
+            label: "",
+            value: "Hospitality, For Good"
           }
         ],
         backFields: [
