@@ -68,19 +68,36 @@ const Navigation = () => {
   const handleNavClick = (path: string, source: string = 'click') => {
     console.log('🔗 [Mobile Debug] Navigation clicked:', path, 'source:', source);
     setIsMobileMenuOpen(false); // Close mobile menu
+
+    const startingPath = location.pathname;
+    let fallbackTimer: number | undefined;
+    const scheduleFallback = () => {
+      try {
+        if (fallbackTimer) window.clearTimeout(fallbackTimer);
+      } catch {}
+      fallbackTimer = window.setTimeout(() => {
+        if (location.pathname === startingPath) {
+          console.warn('[Navigation] Fallback forcing navigation to', path, 'from source', source);
+          window.location.assign(path);
+        }
+      }, 700);
+    };
     
     if (path === '/') {
       // Only play strobe transition when going home
       console.log('🔗 [Mobile Debug] Navigating to home with transition');
       triggerTransition('/');
+      scheduleFallback();
     } else {
       // Soft transition for section navigations
       console.log('🔗 [Mobile Debug] Navigating to section:', path);
       const preview = getRoutePreview(path);
       if (preview) {
         triggerTransition(path, { variant: 'soft', previewSrc: preview });
+        scheduleFallback();
       } else {
         navigate(path);
+        scheduleFallback();
       }
     }
   };
@@ -104,11 +121,7 @@ const Navigation = () => {
       <div className="container mx-auto px-1 sm:px-2 md:px-6 py-4 flex justify-between items-center">
         <button 
           onClick={() => handleNavClick('/', 'logo-click')}
-          onTouchEnd={(e) => {
-            console.log('🔗 [Mobile Debug] Logo touch end');
-            e.preventDefault();
-            handleNavClick('/', 'logo-touch');
-          }}
+          onPointerUp={() => handleNavClick('/', 'logo-pointer')}
           className="flex items-center space-x-4 hover:scale-105 transition-transform duration-200"
         >
           <CroftLogo 
@@ -138,11 +151,7 @@ const Navigation = () => {
                 shape="pill"
                 size="sm"
                 onClick={() => handleNavClick(item.path, 'desktop-click')}
-                onTouchEnd={(e) => {
-                  console.log('🔗 [Mobile Debug] Desktop button touch end:', item.path);
-                  e.preventDefault();
-                  handleNavClick(item.path, 'desktop-touch');
-                }}
+                 onPointerUp={() => handleNavClick(item.path, 'desktop-pointer')}
                 onMouseEnter={() => handleNavHover(item.path)}
                 aria-current={isActive ? 'page' : undefined}
                 className={`h-8 px-3 text-xs font-industrial tracking-wide text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
@@ -185,11 +194,7 @@ const Navigation = () => {
                 shape="square"
                 size="sm"
                 onClick={() => handleNavClick(item.path, 'mobile-click')}
-                onTouchEnd={(e) => {
-                  console.log('🔗 [Mobile Debug] Mobile button touch end:', item.path);
-                  e.preventDefault();
-                  handleNavClick(item.path, 'mobile-touch');
-                }}
+                 onPointerUp={() => handleNavClick(item.path, 'mobile-pointer')}
                 aria-current={isActive ? 'page' : undefined}
                 className={`relative block w-fit text-left self-start font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 pl-2 pr-8 hover:bg-transparent focus:bg-transparent active:bg-transparent hover:border-[hsl(var(--accent-pink))] active:border-[hsl(var(--accent-pink))] focus:border-[hsl(var(--accent-pink))] ${isActive ? 'border-[hsl(var(--accent-pink))]' : ''}`}
               >

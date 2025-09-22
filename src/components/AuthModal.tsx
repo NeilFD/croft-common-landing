@@ -339,22 +339,12 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
                 type="submit" 
                 disabled={loading || otpCode.length !== 6} 
                 className="flex-1"
-                onClick={(e) => {
-                  console.log('🔐 [Mobile Debug] Button onClick fired');
-                  // Fallback for mobile - if form submission fails, call directly
-                  const target = e.target as HTMLElement;
-                  if (target.closest && target.closest('form')) {
-                    // Let form submission handle it
-                    return;
+                onPointerUp={(e) => {
+                  console.log('🔐 [Mobile Debug] Button onPointerUp fired');
+                  const btn = e.currentTarget as HTMLButtonElement;
+                  if (!loading && otpCode.length === 6) {
+                    btn.form?.requestSubmit();
                   }
-                  // Direct call as fallback
-                  console.log('🔐 [Mobile Debug] Using fallback direct call');
-                  handleVerifyOtp();
-                }}
-                onTouchEnd={(e) => {
-                  console.log('🔐 [Mobile Debug] Button onTouchEnd fired');
-                  // Prevent double firing
-                  e.preventDefault();
                 }}
               >
                 {loading ? 'Verifying...' : 'Verify'}
