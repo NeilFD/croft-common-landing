@@ -340,7 +340,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         <form onSubmit={handleSendOtp} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email address</Label>
-            <Input id="email" type="email" placeholder="your.name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} required />
+            <Input id="email" type="email" className="cursor-text" placeholder="your.name@company.com" value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading} required />
           </div>
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>Cancel</Button>

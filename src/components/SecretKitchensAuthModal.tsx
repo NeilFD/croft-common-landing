@@ -275,6 +275,7 @@ export const SecretKitchensAuthModal = ({
               id="email"
               type="email"
               placeholder="your.name@company.com"
+              className="cursor-text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
