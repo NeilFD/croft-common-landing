@@ -6,6 +6,7 @@ import { Wallet, RotateCcw, Calendar, User, Hash } from 'lucide-react';
 import { format } from 'date-fns';
 import CroftLogo from '@/components/CroftLogo';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
@@ -14,41 +15,81 @@ export const MembershipCard = () => {
 
   const handleAddToWallet = async () => {
     if (cardData?.wallet_pass_url && !cardData?.wallet_pass_revoked) {
-      // If we already have a valid pass, open it
-      window.open(cardData.wallet_pass_url, '_blank');
-    } else {
-      // Generate new pass
-      setIsGenerating(true);
+      // If we already have a valid pass, download it directly
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
-          console.error('No session found');
-          return;
-        }
-
-        const response = await supabase.functions.invoke('create-wallet-pass', {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        });
-
-        if (response.error) {
-          console.error('Error creating wallet pass:', response.error);
-          return;
-        }
-
-        // Refresh card data to get the new pass URL
-        await refetch();
+        const link = document.createElement('a');
+        link.href = cardData.wallet_pass_url;
+        link.download = `croft-common-membership-${cardData.membership_number}.pkpass`;
+        link.target = '_blank';
         
-        // Open the new pass
-        if (response.data?.passUrl) {
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast.success('Downloading your Apple Wallet pass...');
+      } catch (error) {
+        console.error('Error opening existing pass:', error);
+        toast.error('Failed to download pass. Opening in new tab...');
+        // Fallback to opening in new tab
+        window.open(cardData.wallet_pass_url, '_blank');
+      }
+      return;
+    }
+
+    // Generate new pass
+    setIsGenerating(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        console.error('No session found');
+        toast.error('Please sign in to generate your wallet pass');
+        return;
+      }
+
+      toast.loading('Generating your Apple Wallet pass...', { id: 'wallet-pass-generation' });
+
+      const response = await supabase.functions.invoke('create-wallet-pass', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.error) {
+        console.error('Error creating wallet pass:', response.error);
+        toast.error('Failed to create wallet pass. Please try again.', { id: 'wallet-pass-generation' });
+        return;
+      }
+
+      // Refresh card data to get the new pass URL
+      await refetch();
+      
+      // Download the new .pkpass file
+      if (response.data?.passUrl) {
+        try {
+          const link = document.createElement('a');
+          link.href = response.data.passUrl;
+          link.download = `croft-common-membership-${response.data.serialNumber || 'new'}.pkpass`;
+          link.target = '_blank';
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          toast.success('Apple Wallet pass generated and downloaded successfully!', { id: 'wallet-pass-generation' });
+        } catch (error) {
+          console.error('Error downloading pass:', error);
+          toast.warning('Pass generated but download failed. Opening in new tab...', { id: 'wallet-pass-generation' });
+          // Fallback to opening in new tab
           window.open(response.data.passUrl, '_blank');
         }
-      } catch (error) {
-        console.error('Error generating wallet pass:', error);
-      } finally {
-        setIsGenerating(false);
+      } else {
+        toast.error('Failed to generate wallet pass URL', { id: 'wallet-pass-generation' });
       }
+    } catch (error) {
+      console.error('Error generating wallet pass:', error);
+      toast.error('An unexpected error occurred while generating the wallet pass', { id: 'wallet-pass-generation' });
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -58,16 +99,24 @@ export const MembershipCard = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         console.error('No session found');
+        toast.error('Please sign in to reissue your wallet pass');
         return;
       }
 
+      toast.loading('Reissuing your Apple Wallet pass...', { id: 'wallet-pass-reissue' });
+
       // First revoke the current pass if it exists
       if (cardData?.wallet_pass_url) {
-        await supabase.functions.invoke('revoke-wallet-pass', {
+        const revokeResponse = await supabase.functions.invoke('revoke-wallet-pass', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
         });
+        
+        if (revokeResponse.error) {
+          console.warn('Error revoking existing pass:', revokeResponse.error);
+          // Continue anyway - we'll create a new pass
+        }
       }
 
       // Then create a new pass
@@ -79,13 +128,36 @@ export const MembershipCard = () => {
 
       if (response.error) {
         console.error('Error reissuing wallet pass:', response.error);
+        toast.error('Failed to reissue wallet pass. Please try again.', { id: 'wallet-pass-reissue' });
         return;
       }
 
       // Refresh card data
       await refetch();
+      
+      // Download the new pass if URL is available
+      if (response.data?.passUrl) {
+        try {
+          const link = document.createElement('a');
+          link.href = response.data.passUrl;
+          link.download = `croft-common-membership-${response.data.serialNumber || 'reissued'}.pkpass`;
+          link.target = '_blank';
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          
+          toast.success('Apple Wallet pass reissued successfully!', { id: 'wallet-pass-reissue' });
+        } catch (error) {
+          console.error('Error downloading reissued pass:', error);
+          toast.success('Pass reissued successfully!', { id: 'wallet-pass-reissue' });
+        }
+      } else {
+        toast.success('Pass reissued successfully!', { id: 'wallet-pass-reissue' });
+      }
     } catch (error) {
       console.error('Error reissuing card:', error);
+      toast.error('An unexpected error occurred while reissuing the wallet pass', { id: 'wallet-pass-reissue' });
     } finally {
       setIsReissuing(false);
     }
