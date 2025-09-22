@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'CroftCommon',
   webDir: 'dist',
   server: {
-    url: 'https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com?forceHideBadge=true',
+    url: 'https://id-preview--410602d4-4805-4fdf-8c51-900e548d9b20.lovable.app',
     cleartext: true
   },
   plugins: {
@@ -29,6 +29,8 @@ const config: CapacitorConfig = {
     },
   },
   allowNavigation: [
+    'id-preview--410602d4-4805-4fdf-8c51-900e548d9b20.lovable.app',
+    '*.lovable.app',
     '410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com',
     '*.lovableproject.com',
     'croftcommon.co.uk',
