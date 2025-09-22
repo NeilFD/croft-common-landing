@@ -9,15 +9,40 @@ import CroftLogo from '@/components/CroftLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Browser } from '@capacitor/browser';
+import { App } from '@capacitor/app';
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
   const { shouldUseDirectOpen, isCapacitorNative, isPWAStandalone, isIOS } = useIOSDetection();
   const [isReissuing, setIsReissuing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showAddFallback, setShowAddFallback] = useState(false);
+  const [showReissueFallback, setShowReissueFallback] = useState(false);
+
+  const openDirectInSafari = async (forceRegenerate: boolean) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      console.error('No session for direct open');
+      toast.error('Please sign in to open your wallet pass');
+      return false;
+    }
+    const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
+    const token = encodeURIComponent(session.access_token);
+    const member = encodeURIComponent(cardData?.membership_number || '');
+    const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}`;
+    console.log('Direct Wallet URL prepared (iOS):', { native: isCapacitorNative, pwa: isPWAStandalone });
+    if (isCapacitorNative) {
+      await App.openUrl({ url: directUrl });
+    } else {
+      window.location.assign(directUrl);
+    }
+    setTimeout(() => refetch(), 2000);
+    return true;
+  };
 
   const handleAddToWallet = async () => {
     setIsGenerating(true);
+    setShowAddFallback(false);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -31,30 +56,9 @@ export const MembershipCard = () => {
       if (shouldUseDirectOpen) {
         // For iOS devices, use direct GET URL with access token
         console.log('Using direct URL approach for iOS...');
-        const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
-        const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${session.access_token}&membershipNumber=${cardData?.membership_number}&forceRegenerate=false`;
-        
-        console.log('Opening direct URL for iOS wallet pass...');
-        
-        toast.success('Opening Apple Wallet...', { id: 'wallet-pass-generation' });
-        
-        try {
-          if (isCapacitorNative) {
-            // Use Capacitor Browser for native apps
-            await Browser.open({ url: directUrl });
-          } else {
-            // Use window.location.assign for PWA/Safari
-            window.location.assign(directUrl);
-          }
+        const ok = await openDirectInSafari(false);
+        if (ok) return;
           
-          // Refetch card data to update the wallet pass status
-          setTimeout(() => refetch(), 2000);
-          return;
-        } catch (error) {
-          console.error('Error opening direct URL:', error);
-          toast.error('Failed to open wallet pass', { id: 'wallet-pass-generation' });
-          return;
-        }
       } else {
         // For non-iOS browsers, use the POST+blob approach
         console.log('Using POST+blob approach for non-iOS...');
@@ -110,6 +114,7 @@ export const MembershipCard = () => {
 
   const handleReissueCard = async () => {
     setIsReissuing(true);
+    setShowReissueFallback(false);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -136,28 +141,16 @@ export const MembershipCard = () => {
       if (shouldUseDirectOpen) {
         // For iOS devices, use direct GET URL with access token
         console.log('Using direct URL approach for iOS reissue...');
-        const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
-        const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${session.access_token}&membershipNumber=${cardData?.membership_number}&forceRegenerate=true`;
-        
-        console.log('Opening direct URL for iOS wallet pass reissue...');
-        
-        toast.success('Opening Apple Wallet...', { id: 'wallet-pass-reissue' });
-        
-        try {
-          if (isCapacitorNative) {
-            // Use Capacitor Browser for native apps
-            await Browser.open({ url: directUrl });
-          } else {
-            // Use window.location.assign for PWA/Safari
-            window.location.assign(directUrl);
-          }
+        const ok = await openDirectInSafari(true);
+        if (ok) return;
           
           // Refetch card data to update the wallet pass status
           setTimeout(() => refetch(), 2000);
           return;
         } catch (error) {
           console.error('Error opening direct URL:', error);
-          toast.error('Failed to open wallet pass', { id: 'wallet-pass-reissue' });
+          setShowReissueFallback(true);
+          toast.error('Couldn’t open Apple Wallet. Try “Open directly” below.', { id: 'wallet-pass-reissue' });
           return;
         }
       } else {
@@ -332,6 +325,17 @@ export const MembershipCard = () => {
           {isReissuing ? 'Reissuing...' : 'Reissue Card'}
         </Button>
       </div>
+
+      {shouldUseDirectOpen && (showAddFallback || showReissueFallback) && (
+        <div className="text-center space-y-2">
+          <p className="text-xs text-muted-foreground">If nothing happens, open directly in Apple Wallet.</p>
+          <div className="flex justify-center">
+            <Button variant="outline" size="sm" onClick={() => openDirectInSafari(showReissueFallback)}>
+              Open directly in Apple Wallet
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Status Info */}
       <div className="space-y-1">
