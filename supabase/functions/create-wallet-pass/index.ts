@@ -377,21 +377,25 @@ serve(async (req) => {
     console.log('🎫 Serial Number:', serialNumber);
     console.log('🎫 Serving .pkpass file directly with proper headers');
 
-    // Serve the .pkpass file directly with proper headers for iOS Safari
-    const headers = {
-      ...corsHeaders,
-      'Content-Type': 'application/vnd.apple.pkpass',
-      'Cache-Control': 'no-cache, no-store, must-revalidate',
-      'Pragma': 'no-cache',
-      'Expires': '0'
-    };
-    
-    // For GET requests (iOS Safari), don't force download
-    if (req.method !== 'GET') {
-      headers['Content-Disposition'] = `attachment; filename="croft-common-membership-${serialNumber}.pkpass"`;
-    }
+    // Generate filename with .pkpass extension for iOS Safari recognition
+    const filename = `${member.membership_number || 'membership'}-${serialNumber}.pkpass`;
 
-    return new Response(zipUint8Array, { headers });
+    // Return the .pkpass file with iOS-specific headers to ensure Safari recognizes it
+    return new Response(zipUint8Array, {
+      status: 200,
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'application/vnd.apple.pkpass',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Length': zipUint8Array.byteLength.toString(),
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        // iOS-specific headers to help Safari recognize the wallet pass
+        'X-Content-Type-Options': 'nosniff',
+        'Accept-Ranges': 'bytes'
+      }
+    });
 
   } catch (error) {
     console.error('Error in create-wallet-pass function:', error);
