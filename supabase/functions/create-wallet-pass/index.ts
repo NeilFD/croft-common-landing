@@ -102,8 +102,6 @@ serve(async (req) => {
       foregroundColor: "rgb(255, 255, 255)",
       backgroundColor: "rgb(34, 34, 34)",
       labelColor: "rgb(255, 255, 255)",
-      webServiceURL: `https://${Deno.env.get('SUPABASE_URL')?.replace('https://', '')}/functions/v1/wallet-pass-service`,
-      authenticationToken: serialNumber, // Use serial number as auth token
       generic: {
         primaryFields: [
           {
@@ -146,6 +144,7 @@ serve(async (req) => {
 
     console.log('🎫 STEP 1: Creating wallet pass for user:', user.id);
     console.log('🎫 STEP 2: Member data:', JSON.stringify(member, null, 2));
+    console.log('🎫 ✅ Pass configured as static (no web service communication required)');
 
     // Create pass bundle with required files
     const zip = new JSZip();
