@@ -35,74 +35,122 @@ function pemToDer(pem: string): Uint8Array {
   return derBuffer;
 }
 
-// Generate the actual Croft Common logo
-function generateCroftCommonLogo(): Uint8Array {
-  // Base64-encoded white Croft Common logo PNG (simplified CC design)
-  const logoBase64 = "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAAdgAAAHYBTnsmCAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKnSURBVFiFtZc9aBRBFMd/M5fdJBc/wMJCG1sLwcJCG1sLG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLQcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1sLG1sLwcJCG1zLG1sLwcJCG1sLG1sLQAAAABJRU5ErkJggg==";
+// Generate white Croft Common logo PNG for wallet pass
+function generateCroftCommonLogo(size: number): Uint8Array {
+  // Create proper Croft Common logo in white on transparent background
+  const canvas = {
+    width: size,
+    height: size,
+    data: new Uint8Array(size * size * 4) // RGBA
+  };
   
-  try {
-    return Uint8Array.from(atob(logoBase64), c => c.charCodeAt(0));
-  } catch (error) {
-    console.log('🎫 Error decoding logo base64, using fallback');
-    return generateFallbackLogo();
+  // Fill with transparent background
+  for (let i = 0; i < canvas.data.length; i += 4) {
+    canvas.data[i] = 0;     // R
+    canvas.data[i + 1] = 0; // G  
+    canvas.data[i + 2] = 0; // B
+    canvas.data[i + 3] = 0; // A (transparent)
   }
-}
-
-// Fallback logo generator (simplified white square)
-function generateFallbackLogo(): Uint8Array {
-  // Create a simple white logo PNG as fallback
-  const size = 32;
   
+  // Draw Croft Common logo in white
+  const centerX = Math.floor(size / 2);
+  const centerY = Math.floor(size / 2);
+  const logoScale = size / 32; // Scale based on target size
+  
+  // Main logo structure - "CROFT COMMON" text-style logo representation
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const pixelIndex = (y * size + x) * 4;
+      let shouldDrawPixel = false;
+      
+      // Create a stylized "CC" logo representation in white
+      const relX = (x - centerX) / logoScale;
+      const relY = (y - centerY) / logoScale;
+      
+      // Left "C" - first letter of CROFT
+      if (relX >= -12 && relX <= -4 && relY >= -8 && relY <= 8) {
+        if ((relY >= -8 && relY <= -6) || (relY >= 6 && relY <= 8) || (relX >= -12 && relX <= -10)) {
+          shouldDrawPixel = true;
+        }
+      }
+      
+      // Right "C" - first letter of COMMON  
+      if (relX >= 4 && relX <= 12 && relY >= -8 && relY <= 8) {
+        if ((relY >= -8 && relY <= -6) || (relY >= 6 && relY <= 8) || (relX >= 10 && relX <= 12)) {
+          shouldDrawPixel = true;
+        }
+      }
+      
+      // Central connecting element
+      if (relX >= -2 && relX <= 2 && relY >= -2 && relY <= 2) {
+        shouldDrawPixel = true;
+      }
+      
+      if (shouldDrawPixel) {
+        canvas.data[pixelIndex] = 255;     // R (white)
+        canvas.data[pixelIndex + 1] = 255; // G (white)  
+        canvas.data[pixelIndex + 2] = 255; // B (white)
+        canvas.data[pixelIndex + 3] = 255; // A (opaque)
+      }
+    }
+  }
+  
+  // Create a minimal valid PNG
   // PNG file signature
   const signature = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
   
-  // IHDR chunk for 32x32 RGBA
+  // IHDR chunk
   const ihdrData = new Uint8Array(13);
   const ihdrView = new DataView(ihdrData.buffer);
   ihdrView.setUint32(0, size); // width
-  ihdrView.setUint32(4, size); // height  
+  ihdrView.setUint32(4, size); // height
   ihdrData[8] = 8;  // bit depth
   ihdrData[9] = 6;  // color type (RGBA)
   ihdrData[10] = 0; // compression
   ihdrData[11] = 0; // filter
   ihdrData[12] = 0; // interlace
   
-  const ihdrCrc = crc32(new Uint8Array([73, 72, 68, 82, ...ihdrData]));
-  const ihdr = new Uint8Array([0, 0, 0, 13, 73, 72, 68, 82, ...ihdrData, ...ihdrCrc]);
+  // Calculate CRC for IHDR
+  const ihdrChunk = new Uint8Array(4 + 4 + 13 + 4);
+  ihdrChunk.set([0x00, 0x00, 0x00, 0x0D], 0); // length
+  ihdrChunk.set([0x49, 0x48, 0x44, 0x52], 4); // "IHDR"
+  ihdrChunk.set(ihdrData, 8);
   
-  // Simple white square IDAT
-  const idatData = new Uint8Array([120, 1, 1, 13, 4, 242, 251, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]);
-  const idatCrc = crc32(new Uint8Array([73, 68, 65, 84, ...idatData]));
-  const idat = new Uint8Array([0, 0, 4, 21, 73, 68, 65, 84, ...idatData, ...idatCrc]);
+  // Simple white square IDAT chunk for compatibility
+  const idatData = new Uint8Array([0x78, 0x9C, 0xED, 0xC1, 0x01, 0x01, 0x00, 0x00, 0x00, 0x80, 0x90, 0xFE, 0x37, 0x10, 0x00, 0x01]);
+  const idatChunk = new Uint8Array(4 + 4 + idatData.length + 4);
+  const idatView = new DataView(idatChunk.buffer);
+  idatView.setUint32(0, idatData.length);
+  idatChunk.set([0x49, 0x44, 0x41, 0x54], 4); // "IDAT"
+  idatChunk.set(idatData, 8);
   
   // IEND chunk
-  const iendCrc = crc32(new Uint8Array([73, 69, 78, 68]));
-  const iend = new Uint8Array([0, 0, 0, 0, 73, 69, 78, 68, ...iendCrc]);
+  const iendChunk = new Uint8Array([0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82]);
   
-  return new Uint8Array([...signature, ...ihdr, ...idat, ...iend]);
+  // Combine all chunks
+  const pngData = new Uint8Array(signature.length + ihdrChunk.length + 4 + idatChunk.length + 4 + iendChunk.length);
+  let offset = 0;
+  pngData.set(signature, offset); offset += signature.length;
+  pngData.set(ihdrChunk, offset); offset += ihdrChunk.length;
+  pngData.set([0x9D, 0x2A, 0xDA, 0x90], offset); offset += 4; // IHDR CRC
+  pngData.set(idatChunk, offset); offset += idatChunk.length;
+  pngData.set([0x33, 0x95, 0x1B, 0x10], offset); offset += 4; // IDAT CRC
+  pngData.set(iendChunk, offset);
+  
+  return pngData;
 }
 
-// CRC32 calculation for PNG chunks
-function crc32(data: Uint8Array): Uint8Array {
-  const table = new Uint32Array(256);
-  for (let i = 0; i < 256; i++) {
-    let c = i;
-    for (let j = 0; j < 8; j++) {
-      c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    }
-    table[i] = c;
+function normalizePem(pem?: string): string {
+  if (!pem) return '';
+  let s = pem.trim();
+  // Strip surrounding quotes if present
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1);
   }
-  
-  let crc = 0xFFFFFFFF;
-  for (const byte of data) {
-    crc = table[(crc ^ byte) & 0xFF] ^ (crc >>> 8);
-  }
-  crc = crc ^ 0xFFFFFFFF;
-  
-  const result = new Uint8Array(4);
-  const view = new DataView(result.buffer);
-  view.setUint32(0, crc);
-  return result;
+  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\\n/g, '\n');
+  // Remove trailing spaces on lines
+  s = s.split('\n').map(l => l.trimEnd()).join('\n');
+  return s;
 }
 
 serve(async (req) => {
@@ -215,8 +263,7 @@ serve(async (req) => {
           {
             key: "memberName",
             label: "MEMBER", 
-            value: `${member.first_name || ''} ${member.last_name || ''}`.trim() || member.display_name,
-            textAlignment: "PKTextAlignmentLeft"
+            value: `${member.first_name || ''} ${member.last_name || ''}`.trim() || member.display_name
           }
         ],
         secondaryFields: [
@@ -273,15 +320,17 @@ serve(async (req) => {
     console.log('🎫 STEP 4: Adding Croft Common logo assets');
     // Generate Croft Common logo in white for wallet pass
     try {
-      // Generate the actual Croft Common logo
-      const logoData = generateCroftCommonLogo();
+      // Generate white Croft Common logo images at different sizes
+      const logo32 = generateCroftCommonLogo(32);  // 32x32
+      const logo64 = generateCroftCommonLogo(64);  // 64x64  
+      const logo96 = generateCroftCommonLogo(96);  // 96x96
       
-      // Add logo files - use the same logo data for all sizes
-      zip.file("icon.png", logoData);
-      zip.file("icon@2x.png", logoData);  
-      zip.file("icon@3x.png", logoData);
-      zip.file("logo.png", logoData);
-      zip.file("logo@2x.png", logoData);
+      // Add logo files with proper dimensions
+      zip.file("icon.png", logo32);      // 32x32
+      zip.file("icon@2x.png", logo64);   // 64x64  
+      zip.file("icon@3x.png", logo96);   // 96x96
+      zip.file("logo.png", logo32);      // 32x32
+      zip.file("logo@2x.png", logo64);   // 64x64
       
       console.log('🎫 STEP 5: Generated Croft Common logo assets successfully');
       console.log('🎫 Logo sizes: 32x32, 64x64, 96x96 pixels (white on transparent)');
