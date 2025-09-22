@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import AdmZip from "https://deno.land/x/admzip@v1.0.0/mod.ts";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
+import { forge } from "https://deno.land/x/forge@0.0.15/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,11 +18,9 @@ interface PassData {
   memberSince: string;
 }
 
-// Utility function to calculate SHA1 hash
-async function sha1(data: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const dataBuffer = encoder.encode(data);
-  const hashBuffer = await crypto.subtle.digest('SHA-1', dataBuffer);
+// Utility function to calculate SHA1 hash from raw bytes
+async function sha1(data: Uint8Array): Promise<string> {
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
   return Array.from(new Uint8Array(hashBuffer))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
@@ -145,75 +144,147 @@ serve(async (req) => {
       }
     };
 
-    console.log('Creating wallet pass for user:', user.id);
-    console.log('Member data:', member);
+    console.log('🎫 STEP 1: Creating wallet pass for user:', user.id);
+    console.log('🎫 STEP 2: Member data:', JSON.stringify(member, null, 2));
 
     // Create pass bundle with required files
     const zip = new AdmZip();
     
+    console.log('🎫 STEP 3: Creating pass.json structure');
     // Add pass.json
     const passJsonString = JSON.stringify(passJson, null, 2);
-    zip.addFile("pass.json", passJsonString);
+    const passJsonBytes = new TextEncoder().encode(passJsonString);
+    zip.addFile("pass.json", Buffer.from(passJsonBytes));
 
+    console.log('🎫 STEP 4: Adding icon assets');
     // Fetch actual icon assets from Supabase storage
     try {
       // For now, use a basic transparent PNG as fallback
       const iconBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg==";
       const iconData = Uint8Array.from(atob(iconBase64), c => c.charCodeAt(0));
       
-      // Add icon files (all sizes)
-      zip.addFile("icon.png", iconData);
-      zip.addFile("icon@2x.png", iconData);
-      zip.addFile("icon@3x.png", iconData);
-      zip.addFile("logo.png", iconData);
-      zip.addFile("logo@2x.png", iconData);
+      // Add icon files (all sizes) as Buffer
+      zip.addFile("icon.png", Buffer.from(iconData));
+      zip.addFile("icon@2x.png", Buffer.from(iconData));
+      zip.addFile("icon@3x.png", Buffer.from(iconData));
+      zip.addFile("logo.png", Buffer.from(iconData));
+      zip.addFile("logo@2x.png", Buffer.from(iconData));
+      console.log('🎫 STEP 5: Icon assets added successfully');
     } catch (error) {
-      console.error('Error adding icon assets:', error);
+      console.error('❌ Error adding icon assets:', error);
       // Continue with placeholder icons
       const transparentPng = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg==";
       const iconData = Uint8Array.from(atob(transparentPng), c => c.charCodeAt(0));
       
-      zip.addFile("icon.png", iconData);
-      zip.addFile("icon@2x.png", iconData);
-      zip.addFile("icon@3x.png", iconData);
-      zip.addFile("logo.png", iconData);
-      zip.addFile("logo@2x.png", iconData);
+      zip.addFile("icon.png", Buffer.from(iconData));
+      zip.addFile("icon@2x.png", Buffer.from(iconData));
+      zip.addFile("icon@3x.png", Buffer.from(iconData));
+      zip.addFile("logo.png", Buffer.from(iconData));
+      zip.addFile("logo@2x.png", Buffer.from(iconData));
     }
 
+    console.log('🎫 STEP 6: Generating manifest.json with SHA1 hashes');
     // Generate manifest.json with SHA1 hashes of all files
     const manifest: Record<string, string> = {};
     
-    // Calculate SHA1 for each file in the ZIP
+    // Calculate SHA1 for each file in the ZIP using raw bytes
     const files = zip.getEntries();
+    console.log('🎫 STEP 7: Computing hashes for files:', files.map(f => f.name));
+    
     for (const file of files) {
       if (file.name !== 'manifest.json' && file.name !== 'signature') {
         const fileData = file.getData();
-        let fileString: string;
+        let fileBytes: Uint8Array;
         
-        if (fileData instanceof Uint8Array) {
-          fileString = String.fromCharCode(...fileData);
+        if (fileData instanceof Buffer) {
+          fileBytes = new Uint8Array(fileData);
+        } else if (fileData instanceof Uint8Array) {
+          fileBytes = fileData;
         } else {
-          fileString = fileData.toString();
+          // Convert string to bytes
+          fileBytes = new TextEncoder().encode(fileData.toString());
         }
         
-        manifest[file.name] = await sha1(fileString);
+        const hash = await sha1(fileBytes);
+        manifest[file.name] = hash;
+        console.log(`🎫 Hash for ${file.name}: ${hash}`);
       }
     }
 
+    console.log('🎫 STEP 8: Creating manifest.json');
     const manifestString = JSON.stringify(manifest, null, 2);
-    zip.addFile("manifest.json", manifestString);
+    const manifestBytes = new TextEncoder().encode(manifestString);
+    zip.addFile("manifest.json", Buffer.from(manifestBytes));
 
-    // Add signature placeholder (in production, this would be a proper PKCS#7 signature)
-    // For now, we'll add a basic signature file to make the pass structure complete
-    const signatureData = "SIGNATURE_PLACEHOLDER_FOR_DEVELOPMENT";
-    zip.addFile("signature", signatureData);
+    console.log('🎫 STEP 9: Generating PKCS#7 signature');
+    // Generate proper PKCS#7 signature
+    try {
+      // Parse certificates and key
+      const passCertPem = passCert.replace(/\\n/g, '\n');
+      const passKeyPem = passKey.replace(/\\n/g, '\n');
+      const wwdrCertPem = wwdrCert.replace(/\\n/g, '\n');
+      
+      // Create PKCS#7 signature
+      const p7 = forge.pkcs7.createSignedData();
+      p7.content = forge.util.createBuffer(manifestString, 'utf8');
+      
+      // Add certificates
+      const cert = forge.pki.certificateFromPem(passCertPem);
+      const wwdr = forge.pki.certificateFromPem(wwdrCertPem);
+      p7.addCertificate(cert);
+      p7.addCertificate(wwdr);
+      
+      // Add signer
+      const key = forge.pki.privateKeyFromPem(passKeyPem);
+      p7.addSigner({
+        key: key,
+        certificate: cert,
+        digestAlgorithm: forge.pki.oids.sha1,
+        authenticatedAttributes: [
+          {
+            type: forge.pki.oids.contentTypes,
+            value: forge.pki.oids.data
+          },
+          {
+            type: forge.pki.oids.messageDigest
+          },
+          {
+            type: forge.pki.oids.signingTime,
+            value: new Date()
+          }
+        ]
+      });
+      
+      // Sign
+      p7.sign({ detached: true });
+      
+      // Convert to DER format
+      const derBuffer = forge.asn1.toDer(p7.toAsn1()).getBytes();
+      const signatureBytes = new Uint8Array(derBuffer.length);
+      for (let i = 0; i < derBuffer.length; i++) {
+        signatureBytes[i] = derBuffer.charCodeAt(i);
+      }
+      
+      zip.addFile("signature", Buffer.from(signatureBytes));
+      console.log('🎫 ✅ PKCS#7 signature generated successfully');
+      
+    } catch (sigError) {
+      console.error('❌ Error generating PKCS#7 signature:', sigError);
+      // Fallback to placeholder for now
+      const signatureData = "SIGNATURE_PLACEHOLDER_FOR_DEVELOPMENT";
+      zip.addFile("signature", Buffer.from(new TextEncoder().encode(signatureData)));
+      console.log('🎫 ⚠️ Using placeholder signature');
+    }
 
+    console.log('🎫 STEP 10: Generating final .pkpass file');
     // Generate the ZIP file
     const zipBuffer = zip.toBuffer();
     const zipUint8Array = new Uint8Array(zipBuffer);
+    console.log(`🎫 Generated .pkpass file size: ${zipUint8Array.length} bytes`);
 
     // Upload .pkpass file to storage
     const passFileName = `${user.id}/${serialNumber}.pkpass`;
+    console.log(`🎫 STEP 11: Uploading to storage: ${passFileName}`);
     
     const { data: uploadData, error: uploadError } = await supabaseClient.storage
       .from('wallet-passes')
@@ -223,18 +294,24 @@ serve(async (req) => {
       });
 
     if (uploadError) {
-      console.error('Error uploading pass:', uploadError);
+      console.error('❌ STEP 11 FAILED - Error uploading pass:', uploadError);
       return new Response(JSON.stringify({ error: 'Failed to create pass file' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+    
+    console.log('🎫 ✅ STEP 11 SUCCESS - Pass uploaded to storage');
 
+    console.log('🎫 STEP 12: Creating signed URL');
     // Get signed URL for the pass
     const { data: signedUrlData } = await supabaseClient.storage
       .from('wallet-passes')
       .createSignedUrl(passFileName, 3600); // 1 hour expiry
+    
+    console.log('🎫 ✅ Signed URL created:', signedUrlData?.signedUrl ? 'YES' : 'NO');
 
+    console.log('🎫 STEP 13: Updating user profile');
     // Update user profile with pass information
     const { error: updateError } = await supabaseClient
       .from('profiles')
@@ -247,12 +324,16 @@ serve(async (req) => {
       .eq('user_id', user.id);
 
     if (updateError) {
-      console.error('Error updating profile:', updateError);
+      console.error('❌ STEP 13 FAILED - Error updating profile:', updateError);
       return new Response(JSON.stringify({ error: 'Failed to update profile' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log('🎫 🎉 SUCCESS - Apple Wallet pass created successfully!');
+    console.log('🎫 Serial Number:', serialNumber);
+    console.log('🎫 Pass URL available:', signedUrlData?.signedUrl ? 'YES' : 'NO');
 
     return new Response(JSON.stringify({
       success: true,

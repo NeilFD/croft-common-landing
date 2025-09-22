@@ -56,7 +56,16 @@ export const MembershipCard = () => {
 
       if (response.error) {
         console.error('Error creating wallet pass:', response.error);
-        toast.error('Failed to create wallet pass. Please try again.', { id: 'wallet-pass-generation' });
+        
+        // Show specific error message based on the response
+        let errorMessage = 'Failed to create wallet pass. Please try again.';
+        if (response.error.message?.includes('credentials not configured')) {
+          errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
+        } else if (response.error.message?.includes('Member data not found')) {
+          errorMessage = 'Membership data not found. Please ensure your membership is active.';
+        }
+        
+        toast.error(errorMessage, { id: 'wallet-pass-generation' });
         return;
       }
 
@@ -128,7 +137,14 @@ export const MembershipCard = () => {
 
       if (response.error) {
         console.error('Error reissuing wallet pass:', response.error);
-        toast.error('Failed to reissue wallet pass. Please try again.', { id: 'wallet-pass-reissue' });
+        
+        // Show specific error message based on the response
+        let errorMessage = 'Failed to reissue wallet pass. Please try again.';
+        if (response.error.message?.includes('credentials not configured')) {
+          errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
+        }
+        
+        toast.error(errorMessage, { id: 'wallet-pass-reissue' });
         return;
       }
 
@@ -293,9 +309,15 @@ export const MembershipCard = () => {
           </div>
         )}
         
-        {cardData?.wallet_pass_revoked && (
+        {cardData?.wallet_pass_revoked && !cardData?.wallet_pass_url && (
           <div className="text-xs text-orange-600 text-center">
             Previous pass revoked - click "Add to Apple Wallet" to generate new
+          </div>
+        )}
+        
+        {cardData?.wallet_pass_revoked && cardData?.wallet_pass_url && (
+          <div className="text-xs text-green-600 text-center">
+            New pass generated - click "Open in Apple Wallet" to download
           </div>
         )}
       </div>
