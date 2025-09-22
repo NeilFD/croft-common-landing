@@ -89,7 +89,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: undefined
         }
       });
 
@@ -116,7 +116,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
                 email,
                 options: {
                   shouldCreateUser: true,
-                  emailRedirectTo: `${window.location.origin}/`
+                  emailRedirectTo: undefined
                 }
               });
               
@@ -216,6 +216,17 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         });
       } else {
         await refreshSession();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('✅ OTP accepted but no session established yet.');
+          toast({
+            title: "Verification issue",
+            description: "Code accepted but session not established. Please try again.",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
         toast({
           title: "Signed in successfully!",
           description: "Welcome back.",
@@ -261,26 +272,24 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
             <DialogTitle className="text-black font-bold">
               {emailSentTitle ?? (requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Enter verification code')}
             </DialogTitle>
-            <DialogDescription className="space-y-4 text-left">
-              <p>We've sent a 6-digit code to {email}.</p>
-              {emailSentDescription ? (
-                <div className="space-y-2">{emailSentDescription}</div>
-              ) : (
-                <>
-                  {requireAllowedDomain ? (
-                    <>
-                      <p>Enter the code below to continue.</p>
-                      <p>Once verified, complete the secret gesture again and the event creation form will open for you.</p>
-                      <p>Complete the form and save.</p>
-                    </>
-                   ) : (
-                     <>
-                       <p>{emailSentInstructions || "Enter the code below to continue."}</p>
-                     </>
-                   )}
-                </>
-              )}
+            <DialogDescription>
+              {`We've sent a 6-digit code to ${email}.`}
             </DialogDescription>
+            {emailSentDescription ? (
+              <div className="space-y-2 text-sm text-muted-foreground text-left">{emailSentDescription}</div>
+            ) : (
+              <div className="space-y-2 text-sm text-muted-foreground text-left">
+                {requireAllowedDomain ? (
+                  <>
+                    <p>Enter the code below to continue.</p>
+                    <p>Once verified, complete the secret gesture again and the event creation form will open for you.</p>
+                    <p>Complete the form and save.</p>
+                  </>
+                ) : (
+                  <p>{emailSentInstructions || "Enter the code below to continue."}</p>
+                )}
+              </div>
+            )}
           </DialogHeader>
           <form onSubmit={handleVerifyOtp} className="space-y-4">
             <div className="space-y-2">
