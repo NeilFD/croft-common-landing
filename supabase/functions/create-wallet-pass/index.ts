@@ -35,6 +35,19 @@ function pemToDer(pem: string): Uint8Array {
   return derBuffer;
 }
 
+function normalizePem(pem?: string): string {
+  if (!pem) return '';
+  let s = pem.trim();
+  // Strip surrounding quotes if present
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1);
+  }
+  s = s.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/\\n/g, '\n');
+  // Remove trailing spaces on lines
+  s = s.split('\n').map(l => l.trimEnd()).join('\n');
+  return s;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -210,63 +223,66 @@ serve(async (req) => {
     console.log('🎫 STEP 9: Generating PKCS#7 signature');
     // Generate proper PKCS#7 signature
     try {
+      // Normalise and validate certificates and key
+      const passCertPem = normalizePem(passCert);
+      const passKeyPem = normalizePem(passKey);
+      const wwdrCertPem = normalizePem(wwdrCert);
+
+      if (!/-----BEGIN CERTIFICATE-----/.test(passCertPem)) {
+        throw new Error('Pass certificate PEM missing BEGIN CERTIFICATE header');
+      }
+      if (!/-----BEGIN (?:RSA )?PRIVATE KEY-----/.test(passKeyPem)) {
+        throw new Error('Private key PEM missing BEGIN PRIVATE KEY or BEGIN RSA PRIVATE KEY header');
+      }
+      if (!/-----BEGIN CERTIFICATE-----/.test(wwdrCertPem)) {
+        throw new Error('WWDR certificate PEM missing BEGIN CERTIFICATE header');
+      }
+
       // Parse certificates and key
-      const passCertPem = passCert.replace(/\\n/g, '\n');
-      const passKeyPem = passKey.replace(/\\n/g, '\n');
-      const wwdrCertPem = wwdrCert.replace(/\\n/g, '\n');
-      
+      const cert = forge.pki.certificateFromPem(passCertPem);
+      const wwdr = forge.pki.certificateFromPem(wwdrCertPem);
+      const key = forge.pki.privateKeyFromPem(passKeyPem);
+
       // Create PKCS#7 signature
       const p7 = forge.pkcs7.createSignedData();
       p7.content = forge.util.createBuffer(manifestString, 'utf8');
-      
-      // Add certificates
-      const cert = forge.pki.certificateFromPem(passCertPem);
-      const wwdr = forge.pki.certificateFromPem(wwdrCertPem);
       p7.addCertificate(cert);
       p7.addCertificate(wwdr);
-      
+
       // Add signer
-      const key = forge.pki.privateKeyFromPem(passKeyPem);
       p7.addSigner({
         key: key,
         certificate: cert,
         digestAlgorithm: forge.pki.oids.sha1,
         authenticatedAttributes: [
-          {
-            type: forge.pki.oids.contentTypes,
-            value: forge.pki.oids.data
-          },
-          {
-            type: forge.pki.oids.messageDigest
-          },
-          {
-            type: forge.pki.oids.signingTime,
-            value: new Date()
-          }
+          { type: forge.pki.oids.contentTypes, value: forge.pki.oids.data },
+          { type: forge.pki.oids.messageDigest },
+          { type: forge.pki.oids.signingTime, value: new Date() }
         ]
       });
-      
+
       // Sign
       p7.sign({ detached: true });
-      
-      // Convert to DER format
+
+      // Convert to DER format and add to zip
       const derBuffer = forge.asn1.toDer(p7.toAsn1()).getBytes();
       const signatureBytes = new Uint8Array(derBuffer.length);
       for (let i = 0; i < derBuffer.length; i++) {
         signatureBytes[i] = derBuffer.charCodeAt(i);
       }
-      
-      zip.file("signature", signatureBytes);
+      zip.file('signature', signatureBytes);
       console.log('🎫 ✅ PKCS#7 signature generated successfully');
-      
+
     } catch (sigError) {
       console.error('❌ Error generating PKCS#7 signature:', sigError);
-      console.error('❌ Signature error details:', sigError.message);
-      
-      // Fallback to placeholder signature
-      const signatureData = "SIGNATURE_PLACEHOLDER_FOR_DEVELOPMENT";
-      zip.file("signature", signatureData);
-      console.log('🎫 ⚠️ Using placeholder signature due to error');
+      const detail = (sigError as any)?.message || 'Unknown error';
+      return new Response(
+        JSON.stringify({
+          error: `Invalid Apple Wallet certificate configuration: ${detail}. ` +
+                 'Ensure all PEM values have real newlines (no \\n) and proper BEGIN/END headers.'
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log('🎫 STEP 10: Generating final .pkpass file');

@@ -38,15 +38,17 @@ export const MembershipCard = () => {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        console.error('Error creating wallet pass:', error);
+        const errorText = await response.text();
+        console.error('Error creating wallet pass:', errorText);
         
         // Show specific error message based on the response
         let errorMessage = 'Failed to create wallet pass. Please try again.';
-        if (error.includes('credentials not configured')) {
+        if (errorText.includes('credentials not configured')) {
           errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
-        } else if (error.includes('Member data not found')) {
+        } else if (errorText.includes('Member data not found')) {
           errorMessage = 'Membership data not found. Please ensure your membership is active.';
+        } else if (errorText.includes('Invalid Apple Wallet certificate configuration')) {
+          errorMessage = 'Signing certificate is misconfigured. Please contact support to update Apple Wallet certificates.';
         }
         
         toast.error(errorMessage, { id: 'wallet-pass-generation' });
@@ -120,13 +122,15 @@ export const MembershipCard = () => {
       });
 
       if (!response.ok) {
-        const error = await response.text();
-        console.error('Error reissuing wallet pass:', error);
+        const errorText = await response.text();
+        console.error('Error reissuing wallet pass:', errorText);
         
         // Show specific error message based on the response
         let errorMessage = 'Failed to reissue wallet pass. Please try again.';
-        if (error.includes('credentials not configured')) {
+        if (errorText.includes('credentials not configured')) {
           errorMessage = 'Apple Wallet credentials are not configured. Please contact support.';
+        } else if (errorText.includes('Invalid Apple Wallet certificate configuration')) {
+          errorMessage = 'Signing certificate is misconfigured. Please contact support to update Apple Wallet certificates.';
         }
         
         toast.error(errorMessage, { id: 'wallet-pass-reissue' });
