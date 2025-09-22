@@ -264,8 +264,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent 
           className="sm:max-w-[425px] z-[10002]"
-          onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
-          onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+          onEscapeKeyDown={(e) => { e.preventDefault(); }}
+          onInteractOutside={(e) => { e.preventDefault(); }}
         >
           <DialogHeader>
             <DialogTitle className="text-black font-bold">
@@ -327,8 +327,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent 
         className="sm:max-w-[425px] z-[10002]"
-        onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
-        onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { e.preventDefault(); }}
+        onInteractOutside={(e) => { e.preventDefault(); }}
       >
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>

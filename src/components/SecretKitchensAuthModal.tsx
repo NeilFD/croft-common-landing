@@ -208,8 +208,8 @@ export const SecretKitchensAuthModal = ({
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent 
           className="sm:max-w-[425px] z-[10002]"
-          onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
-          onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+          onEscapeKeyDown={(e) => { e.preventDefault(); }}
+          onInteractOutside={(e) => { e.preventDefault(); }}
         >
           <DialogHeader>
             <DialogTitle>Enter verification code</DialogTitle>
@@ -254,8 +254,8 @@ export const SecretKitchensAuthModal = ({
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent 
         className="sm:max-w-[425px] z-[10002]"
-        onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
-        onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { e.preventDefault(); }}
+        onInteractOutside={(e) => { e.preventDefault(); }}
       >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
