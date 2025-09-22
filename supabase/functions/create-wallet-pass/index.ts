@@ -49,8 +49,31 @@ function normalizePem(pem?: string): string {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
+  }
+
+  // Handle GET requests for iOS Safari direct navigation
+  if (req.method === 'GET') {
+    const url = new URL(req.url);
+    const authToken = url.searchParams.get('Authorization');
+    
+    if (!authToken) {
+      return new Response(JSON.stringify({ error: 'Authorization required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Continue with pass generation using the provided token
+    req = new Request(req.url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
   }
 
   try {
@@ -339,17 +362,21 @@ serve(async (req) => {
     console.log('🎫 Serial Number:', serialNumber);
     console.log('🎫 Serving .pkpass file directly with proper headers');
 
-    // Serve the .pkpass file directly with proper headers
-    return new Response(zipUint8Array, {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/vnd.apple.pkpass',
-        'Content-Disposition': `attachment; filename="croft-common-membership-${serialNumber}.pkpass"`,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
-      },
-    });
+    // Serve the .pkpass file directly with proper headers for iOS Safari
+    const headers = {
+      ...corsHeaders,
+      'Content-Type': 'application/vnd.apple.pkpass',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    };
+    
+    // For GET requests (iOS Safari), don't force download
+    if (req.method !== 'GET') {
+      headers['Content-Disposition'] = `attachment; filename="croft-common-membership-${serialNumber}.pkpass"`;
+    }
+
+    return new Response(zipUint8Array, { headers });
 
   } catch (error) {
     console.error('Error in create-wallet-pass function:', error);

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useMembershipCard } from '@/hooks/useMembershipCard';
+import { useIOSDetection } from '@/hooks/useIOSDetection';
 import { Wallet, RotateCcw, Calendar, User, Hash } from 'lucide-react';
 import { format } from 'date-fns';
 import CroftLogo from '@/components/CroftLogo';
@@ -10,6 +11,7 @@ import { toast } from 'sonner';
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
+  const { isIOSSafari } = useIOSDetection();
   const [isReissuing, setIsReissuing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
@@ -51,26 +53,34 @@ export const MembershipCard = () => {
         return;
       }
 
-      // Get the .pkpass file as a blob
-      const blob = await response.blob();
-      
-      // Create a URL for the blob and trigger download
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up the blob URL
-      window.URL.revokeObjectURL(url);
+      if (isIOSSafari) {
+        // For iOS Safari, navigate directly to trigger native Apple Wallet prompt
+        toast.success('Opening Apple Wallet...', { id: 'wallet-pass-generation' });
+        window.location.href = functionUrl + '?' + new URLSearchParams({
+          Authorization: session.access_token
+        }).toString();
+      } else {
+        // For other browsers, download the .pkpass file
+        const blob = await response.blob();
+        
+        // Create a URL for the blob and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the blob URL
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-generation' });
+      }
       
       // Refresh card data to update the state
       await refetch();
-      
-      toast.success('Apple Wallet pass generated and downloaded successfully!', { id: 'wallet-pass-generation' });
       
     } catch (error) {
       console.error('Error generating wallet pass:', error);
@@ -131,26 +141,34 @@ export const MembershipCard = () => {
         return;
       }
 
-      // Get the .pkpass file as a blob
-      const blob = await response.blob();
-      
-      // Create a URL for the blob and trigger download
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
-      
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      // Clean up the blob URL
-      window.URL.revokeObjectURL(url);
+      if (isIOSSafari) {
+        // For iOS Safari, navigate directly to trigger native Apple Wallet prompt
+        toast.success('Opening Apple Wallet...', { id: 'wallet-pass-reissue' });
+        window.location.href = functionUrl + '?' + new URLSearchParams({
+          Authorization: session.access_token
+        }).toString();
+      } else {
+        // For other browsers, download the .pkpass file
+        const blob = await response.blob();
+        
+        // Create a URL for the blob and trigger download
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the blob URL
+        window.URL.revokeObjectURL(url);
+        
+        toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-reissue' });
+      }
 
       // Refresh card data
       await refetch();
-      
-      toast.success('Apple Wallet pass reissued successfully!', { id: 'wallet-pass-reissue' });
     } catch (error) {
       console.error('Error reissuing card:', error);
       toast.error('An unexpected error occurred while reissuing the wallet pass', { id: 'wallet-pass-reissue' });
