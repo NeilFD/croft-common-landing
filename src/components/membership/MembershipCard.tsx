@@ -17,15 +17,42 @@ export const MembershipCard = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const openWalletPass = async (passUrl: string) => {
-    if (isCapacitorNative) {
-      // For Capacitor native apps, use Browser plugin
-      await Browser.open({ url: passUrl });
-    } else if (isPWAStandalone) {
-      // For PWA standalone mode, open in new window
-      window.open(passUrl, '_blank');
-    } else {
-      // For regular Safari, direct navigation
+    console.log('🍎 WALLET: Opening wallet pass:', { 
+      passUrl, 
+      isCapacitorNative, 
+      isPWAStandalone, 
+      shouldUseDirectOpen,
+      userAgent: navigator.userAgent 
+    });
+
+    try {
+      if (isCapacitorNative) {
+        console.log('🍎 WALLET: Using Capacitor Browser plugin');
+        await Browser.open({ url: passUrl });
+        return;
+      }
+    } catch (error) {
+      console.error('🍎 WALLET: Capacitor Browser.open failed:', error);
+    }
+
+    try {
+      if (isPWAStandalone) {
+        console.log('🍎 WALLET: Using window.open for PWA');
+        const opened = window.open(passUrl, '_blank');
+        if (opened) return;
+        console.warn('🍎 WALLET: window.open blocked or failed');
+      }
+    } catch (error) {
+      console.error('🍎 WALLET: window.open failed:', error);
+    }
+
+    try {
+      console.log('🍎 WALLET: Falling back to window.location.assign');
       window.location.assign(passUrl);
+      return;
+    } catch (error) {
+      console.error('🍎 WALLET: window.location.assign failed:', error);
+      throw new Error('All wallet opening methods failed. Please use the fallback download method.');
     }
   };
 
@@ -45,7 +72,50 @@ export const MembershipCard = () => {
         // For iOS devices, directly open the pass URL to trigger native wallet integration
         toast.success('Opening Apple Wallet...', { id: 'wallet-pass-generation' });
         const passUrl = `${functionUrl}?Authorization=${encodeURIComponent(session.access_token)}`;
-        await openWalletPass(passUrl);
+        
+        try {
+          await openWalletPass(passUrl);
+        } catch (openError) {
+          console.error('🍎 WALLET: All opening methods failed, falling back to POST method:', openError);
+          toast.error('Unable to open directly, downloading instead...', { id: 'wallet-pass-generation' });
+          
+          // Fallback to POST method with detailed error reporting
+          const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}: Failed to create wallet pass`;
+            try {
+              const errorData = await response.json();
+              console.error('🍎 WALLET: Detailed server error:', errorData);
+              errorMessage = errorData?.error || errorData?.message || errorMessage;
+            } catch {
+              const text = await response.text();
+              console.error('🍎 WALLET: Server error text:', text);
+              errorMessage = text || errorMessage;
+            }
+            toast.error(errorMessage, { id: 'wallet-pass-generation' });
+            return;
+          }
+
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-generation' });
+        }
       } else {
         // For other browsers, download the .pkpass file
         toast.loading('Generating your Apple Wallet pass...', { id: 'wallet-pass-generation' });
@@ -59,15 +129,16 @@ export const MembershipCard = () => {
         });
 
         if (!response.ok) {
-          let errorMessage = 'Failed to create wallet pass. Please try again.';
+          let errorMessage = `HTTP ${response.status}: Failed to create wallet pass`;
           try {
-            const data = await response.json();
-            if (data?.error) errorMessage = data.error;
+            const errorData = await response.json();
+            console.error('🍎 WALLET: Detailed server error:', errorData);
+            errorMessage = errorData?.error || errorData?.message || errorMessage;
           } catch {
             const text = await response.text();
+            console.error('🍎 WALLET: Server error text:', text);
             errorMessage = text || errorMessage;
           }
-          console.error('Error creating wallet pass:', errorMessage);
           toast.error(errorMessage, { id: 'wallet-pass-generation' });
           return;
         }
@@ -125,7 +196,50 @@ export const MembershipCard = () => {
         // For iOS devices, directly open the pass URL to trigger native wallet integration
         toast.success('Opening Apple Wallet...', { id: 'wallet-pass-reissue' });
         const passUrl = `${functionUrl}?Authorization=${encodeURIComponent(session.access_token)}`;
-        await openWalletPass(passUrl);
+        
+        try {
+          await openWalletPass(passUrl);
+        } catch (openError) {
+          console.error('🍎 WALLET: All opening methods failed, falling back to POST method:', openError);
+          toast.error('Unable to open directly, downloading instead...', { id: 'wallet-pass-reissue' });
+          
+          // Fallback to POST method with detailed error reporting
+          const response = await fetch(functionUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${session.access_token}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!response.ok) {
+            let errorMessage = `HTTP ${response.status}: Failed to reissue wallet pass`;
+            try {
+              const errorData = await response.json();
+              console.error('🍎 WALLET: Detailed server error:', errorData);
+              errorMessage = errorData?.error || errorData?.message || errorMessage;
+            } catch {
+              const text = await response.text();
+              console.error('🍎 WALLET: Server error text:', text);
+              errorMessage = text || errorMessage;
+            }
+            toast.error(errorMessage, { id: 'wallet-pass-reissue' });
+            return;
+          }
+
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
+          
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(url);
+          
+          toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-reissue' });
+        }
       } else {
         // For other browsers, download the .pkpass file
         toast.loading('Reissuing your Apple Wallet pass...', { id: 'wallet-pass-reissue' });
@@ -139,15 +253,16 @@ export const MembershipCard = () => {
         });
 
         if (!response.ok) {
-          let errorMessage = 'Failed to reissue wallet pass. Please try again.';
+          let errorMessage = `HTTP ${response.status}: Failed to reissue wallet pass`;
           try {
-            const data = await response.json();
-            if (data?.error) errorMessage = data.error;
+            const errorData = await response.json();
+            console.error('🍎 WALLET: Detailed server error:', errorData);
+            errorMessage = errorData?.error || errorData?.message || errorMessage;
           } catch {
             const text = await response.text();
+            console.error('🍎 WALLET: Server error text:', text);
             errorMessage = text || errorMessage;
           }
-          console.error('Error reissuing wallet pass:', errorMessage);
           toast.error(errorMessage, { id: 'wallet-pass-reissue' });
           return;
         }

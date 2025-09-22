@@ -225,3 +225,9 @@ verify_jwt = true
 
 [functions.apply-grace-week]
 verify_jwt = true
+
+[functions.create-wallet-pass]
+verify_jwt = true
+
+[functions.revoke-wallet-pass]
+verify_jwt = true
