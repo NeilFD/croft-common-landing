@@ -208,6 +208,7 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
               id="email"
               type="email"
               placeholder="your.name@company.com"
+              className="cursor-text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}

@@ -65,7 +65,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
           console.log('🚨 Email domain not authorized:', email);
           toast({
             title: "Access denied",
-            description: "This email address is not authorized.",
+            description: "This email address is not authorised.",
             variant: "destructive"
           });
           return;
@@ -89,7 +89,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: undefined
+          emailRedirectTo: `${window.location.origin}/`
         }
       });
 
