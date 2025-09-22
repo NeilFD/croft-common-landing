@@ -31,7 +31,7 @@ export const MembershipCard = () => {
       const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
       const token = encodeURIComponent(session.access_token);
       const member = encodeURIComponent(cardData?.membership_number || '');
-      const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}&t=${Date.now()}`;
+      const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?token=${token}&membershipNumber=${member}&forceRegenerate=${forceRegenerate}&t=${Date.now()}`;
 
       setLastDirectUrl(directUrl);
       console.log('Direct Wallet URL prepared (iOS):', { directUrl, native: isCapacitorNative, pwa: isPWAStandalone });

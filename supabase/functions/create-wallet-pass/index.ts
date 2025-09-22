@@ -57,16 +57,31 @@ serve(async (req) => {
   // Handle GET requests for iOS Safari direct navigation
   if (req.method === 'GET') {
     const url = new URL(req.url);
-    const authToken = url.searchParams.get('Authorization');
-    
-    if (!authToken) {
-      return new Response(JSON.stringify({ error: 'Authorization required' }), {
+    // Accept multiple param names for robustness
+    const rawParam =
+      url.searchParams.get('token') ||
+      url.searchParams.get('Authorization') ||
+      url.searchParams.get('authorization') ||
+      url.searchParams.get('bearer') ||
+      url.searchParams.get('access_token');
+
+    if (!rawParam) {
+      console.warn('GET create-wallet-pass: missing token in query params');
+      return new Response(JSON.stringify({ error: 'Token required in query string' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
-    
-    // Continue with pass generation using the provided token
+
+    // Safely decode and normalise (strip optional "Bearer " prefix)
+    const decoded = decodeURIComponent(rawParam);
+    const authToken = decoded.replace(/^Bearer\s+/i, '');
+    console.log('GET create-wallet-pass: token received via query string', {
+      via: url.searchParams.has('token') ? 'token' : url.searchParams.has('Authorization') ? 'Authorization' : 'other',
+      length: authToken.length,
+    });
+
+    // Continue with pass generation using the provided token by transforming into a POST
     req = new Request(req.url, {
       method: 'POST',
       headers: {
