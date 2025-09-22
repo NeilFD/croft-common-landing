@@ -12,37 +12,9 @@ import { Browser } from '@capacitor/browser';
 
 export const MembershipCard = () => {
   const { cardData, loading, error, refetch } = useMembershipCard();
-  const { shouldUseDirectOpen, isCapacitorNative, isPWAStandalone } = useIOSDetection();
+  const { shouldUseDirectOpen, isCapacitorNative, isPWAStandalone, isIOS } = useIOSDetection();
   const [isReissuing, setIsReissuing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-
-  const downloadWalletPass = (blob: Blob, filename: string) => {
-    console.log('🍎 WALLET: Triggering wallet pass download:', filename);
-    
-    try {
-      // Create a blob URL
-      const blobUrl = URL.createObjectURL(blob);
-      
-      // Create a download link
-      const downloadLink = document.createElement('a');
-      downloadLink.href = blobUrl;
-      downloadLink.download = filename;
-      downloadLink.style.display = 'none';
-      
-      // Add to DOM, click, and remove
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      
-      // Clean up the blob URL
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
-      
-      console.log('🍎 WALLET: Download triggered successfully');
-    } catch (error) {
-      console.error('🍎 WALLET: Error triggering download:', error);
-      throw error;
-    }
-  };
 
   const handleAddToWallet = async () => {
     setIsGenerating(true);
@@ -54,57 +26,42 @@ export const MembershipCard = () => {
         return;
       }
 
-      const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
+      console.log('iOS Detection:', { shouldUseDirectOpen, isCapacitorNative, isPWAStandalone });
 
       if (shouldUseDirectOpen) {
-        // For iOS devices, use authenticated fetch to get .pkpass blob and open it
+        // For iOS devices, use direct GET URL with access token
+        console.log('Using direct URL approach for iOS...');
+        const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
+        const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${session.access_token}&membershipNumber=${cardData?.membership_number}&forceRegenerate=false`;
+        
+        console.log('Opening direct URL for iOS wallet pass...');
+        
         toast.success('Opening Apple Wallet...', { id: 'wallet-pass-generation' });
         
         try {
-          const response = await fetch(functionUrl, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!response.ok) {
-            let errorMessage = `HTTP ${response.status}: Failed to create wallet pass`;
-            try {
-              const errorData = await response.json();
-              console.error('🍎 WALLET: Detailed server error:', errorData);
-              errorMessage = errorData?.error || errorData?.message || errorMessage;
-            } catch {
-              const text = await response.text();
-              console.error('🍎 WALLET: Server error text:', text);
-              errorMessage = text || errorMessage;
-            }
-            toast.error(errorMessage, { id: 'wallet-pass-generation' });
-            return;
+          if (isCapacitorNative) {
+            // Use Capacitor Browser for native apps
+            await Browser.open({ url: directUrl });
+          } else {
+            // Use window.location.assign for PWA/Safari
+            window.location.assign(directUrl);
           }
-
-          const blob = await response.blob();
-          const filename = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
           
-          console.log('🍎 WALLET: Created blob for iOS download');
-          
-          try {
-            downloadWalletPass(blob, filename);
-            toast.success('Apple Wallet pass downloaded! Tap to add to Wallet.', { id: 'wallet-pass-generation' });
-          } catch (downloadError) {
-            console.error('🍎 WALLET: Download failed:', downloadError);
-            toast.error('Failed to download wallet pass', { id: 'wallet-pass-generation' });
-          }
-        } catch (fetchError) {
-          console.error('🍎 WALLET: Authenticated fetch failed:', fetchError);
-          toast.error(`Failed to generate pass: ${fetchError.message}`, { id: 'wallet-pass-generation' });
+          // Refetch card data to update the wallet pass status
+          setTimeout(() => refetch(), 2000);
+          return;
+        } catch (error) {
+          console.error('Error opening direct URL:', error);
+          toast.error('Failed to open wallet pass', { id: 'wallet-pass-generation' });
           return;
         }
       } else {
-        // For other browsers, download the .pkpass file
+        // For non-iOS browsers, use the POST+blob approach
+        console.log('Using POST+blob approach for non-iOS...');
+        
         toast.loading('Generating your Apple Wallet pass...', { id: 'wallet-pass-generation' });
         
+        const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
         const response = await fetch(functionUrl, {
           method: 'POST',
           headers: {
@@ -117,11 +74,11 @@ export const MembershipCard = () => {
           let errorMessage = `HTTP ${response.status}: Failed to create wallet pass`;
           try {
             const errorData = await response.json();
-            console.error('🍎 WALLET: Detailed server error:', errorData);
+            console.error('Server error:', errorData);
             errorMessage = errorData?.error || errorData?.message || errorMessage;
           } catch {
             const text = await response.text();
-            console.error('🍎 WALLET: Server error text:', text);
+            console.error('Server error text:', text);
             errorMessage = text || errorMessage;
           }
           toast.error(errorMessage, { id: 'wallet-pass-generation' });
@@ -140,9 +97,8 @@ export const MembershipCard = () => {
         window.URL.revokeObjectURL(url);
         
         toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-generation' });
+        await refetch();
       }
-      
-      await refetch();
       
     } catch (error) {
       console.error('Error generating wallet pass:', error);
@@ -175,57 +131,42 @@ export const MembershipCard = () => {
         }
       }
 
-      const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
+      console.log('iOS Detection for reissue:', { shouldUseDirectOpen, isCapacitorNative, isPWAStandalone });
 
       if (shouldUseDirectOpen) {
-        // For iOS devices, use authenticated fetch to get .pkpass blob and open it
+        // For iOS devices, use direct GET URL with access token
+        console.log('Using direct URL approach for iOS reissue...');
+        const supabaseUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co';
+        const directUrl = `${supabaseUrl}/functions/v1/create-wallet-pass?Authorization=${session.access_token}&membershipNumber=${cardData?.membership_number}&forceRegenerate=true`;
+        
+        console.log('Opening direct URL for iOS wallet pass reissue...');
+        
         toast.success('Opening Apple Wallet...', { id: 'wallet-pass-reissue' });
         
         try {
-          const response = await fetch(functionUrl, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-
-          if (!response.ok) {
-            let errorMessage = `HTTP ${response.status}: Failed to reissue wallet pass`;
-            try {
-              const errorData = await response.json();
-              console.error('🍎 WALLET: Detailed server error:', errorData);
-              errorMessage = errorData?.error || errorData?.message || errorMessage;
-            } catch {
-              const text = await response.text();
-              console.error('🍎 WALLET: Server error text:', text);
-              errorMessage = text || errorMessage;
-            }
-            toast.error(errorMessage, { id: 'wallet-pass-reissue' });
-            return;
+          if (isCapacitorNative) {
+            // Use Capacitor Browser for native apps
+            await Browser.open({ url: directUrl });
+          } else {
+            // Use window.location.assign for PWA/Safari
+            window.location.assign(directUrl);
           }
-
-          const blob = await response.blob();
-          const filename = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
           
-          console.log('🍎 WALLET: Created blob for iOS reissue download');
-          
-          try {
-            downloadWalletPass(blob, filename);
-            toast.success('Apple Wallet pass downloaded! Tap to add to Wallet.', { id: 'wallet-pass-reissue' });
-          } catch (downloadError) {
-            console.error('🍎 WALLET: Download failed:', downloadError);
-            toast.error('Failed to download wallet pass', { id: 'wallet-pass-reissue' });
-          }
-        } catch (fetchError) {
-          console.error('🍎 WALLET: Authenticated fetch failed:', fetchError);
-          toast.error(`Failed to reissue pass: ${fetchError.message}`, { id: 'wallet-pass-reissue' });
+          // Refetch card data to update the wallet pass status
+          setTimeout(() => refetch(), 2000);
+          return;
+        } catch (error) {
+          console.error('Error opening direct URL:', error);
+          toast.error('Failed to open wallet pass', { id: 'wallet-pass-reissue' });
           return;
         }
       } else {
-        // For other browsers, download the .pkpass file
+        // For non-iOS browsers, use the POST+blob approach
+        console.log('Using POST+blob approach for non-iOS reissue...');
+        
         toast.loading('Reissuing your Apple Wallet pass...', { id: 'wallet-pass-reissue' });
         
+        const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
         const response = await fetch(functionUrl, {
           method: 'POST',
           headers: {
@@ -238,11 +179,11 @@ export const MembershipCard = () => {
           let errorMessage = `HTTP ${response.status}: Failed to reissue wallet pass`;
           try {
             const errorData = await response.json();
-            console.error('🍎 WALLET: Detailed server error:', errorData);
+            console.error('Server error:', errorData);
             errorMessage = errorData?.error || errorData?.message || errorMessage;
           } catch {
             const text = await response.text();
-            console.error('🍎 WALLET: Server error text:', text);
+            console.error('Server error text:', text);
             errorMessage = text || errorMessage;
           }
           toast.error(errorMessage, { id: 'wallet-pass-reissue' });
@@ -261,9 +202,9 @@ export const MembershipCard = () => {
         window.URL.revokeObjectURL(url);
         
         toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-reissue' });
+        await refetch();
       }
 
-      await refetch();
     } catch (error) {
       console.error('Error reissuing card:', error);
       toast.error('An unexpected error occurred while reissuing the wallet pass', { id: 'wallet-pass-reissue' });
