@@ -155,6 +155,17 @@ export const SecretKitchensAuthModal = ({
         });
       } else {
         await refreshSession();
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('[SecretKitchens] OTP accepted but no session established');
+          toast({
+            title: "Verification issue",
+            description: "Code accepted but session not established. Please try again.",
+            variant: "destructive"
+          });
+          setLoading(false);
+          return;
+        }
         toast({
           title: "Welcome back!",
           description: "You're now signed in to Secret Kitchens.",
@@ -195,7 +206,11 @@ export const SecretKitchensAuthModal = ({
   if (otpSent) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
-        <DialogContent className="sm:max-w-[425px] z-[10002]">
+        <DialogContent 
+          className="sm:max-w-[425px] z-[10002]"
+          onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
+          onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+        >
           <DialogHeader>
             <DialogTitle>Enter verification code</DialogTitle>
             <DialogDescription>
@@ -237,7 +252,11 @@ export const SecretKitchensAuthModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
-      <DialogContent className="sm:max-w-[425px] z-[10002]">
+      <DialogContent 
+        className="sm:max-w-[425px] z-[10002]"
+        onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
+        onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>

@@ -257,17 +257,16 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     setOtpSent(false);
   };
 
-  // If user is already authenticated and not in verification state, close modal
-  if (user && isOpen && !otpSent) {
-    console.debug('[AuthModal] User already authenticated, calling onSuccess');
-    onSuccess();
-    return null;
-  }
+  // Note: We no longer auto-close when a user is detected; the parent will close on explicit success to avoid premature closure.
 
   if (otpSent) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
-        <DialogContent className="sm:max-w-[425px] z-[10002]">
+        <DialogContent 
+          className="sm:max-w-[425px] z-[10002]"
+          onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
+          onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+        >
           <DialogHeader>
             <DialogTitle className="text-black font-bold">
               {emailSentTitle ?? (requireAllowedDomain ? 'IMPORTANT PLEASE READ INSTRUCTIONS' : 'Enter verification code')}
@@ -326,7 +325,11 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
-      <DialogContent className="sm:max-w-[425px] z-[10002]">
+      <DialogContent 
+        className="sm:max-w-[425px] z-[10002]"
+        onEscapeKeyDown={(e) => { if (loading) e.preventDefault(); }}
+        onInteractOutside={(e) => { if (loading) e.preventDefault(); }}
+      >
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>
           <DialogDescription>
