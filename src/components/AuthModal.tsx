@@ -43,6 +43,15 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   const [otpSent, setOtpSent] = useState(false);
   const { user, refreshSession } = useAuth();
 
+  // Debug logging for mobile OTP issues
+  useEffect(() => {
+    console.log('🔐 [Mobile Debug] OTP Code changed:', otpCode, 'length:', otpCode.length, 'isComplete:', otpCode.length === 6);
+  }, [otpCode]);
+
+  useEffect(() => {
+    console.log('🔐 [Mobile Debug] Modal state - otpSent:', otpSent, 'loading:', loading);
+  }, [otpSent, loading]);
+
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,10 +192,15 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     setLoading(false);
   };
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerifyOtp = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    console.log('🔐 [Mobile Debug] Verify button clicked, otpCode:', otpCode, 'length:', otpCode.length);
     
     if (!otpCode || otpCode.length !== 6) {
+      console.log('🚨 [Mobile Debug] Invalid OTP code length');
       toast({
         title: "Code required",
         description: "Please enter the 6-digit code from your email.",
@@ -195,6 +209,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       return;
     }
 
+    console.log('🔐 [Mobile Debug] Starting OTP verification...');
     setLoading(true);
 
     try {
@@ -295,7 +310,10 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
               <Label htmlFor="otp">Verification code</Label>
               <InputOTP
                 value={otpCode}
-                onChange={setOtpCode}
+                onChange={(value) => {
+                  console.log('🔐 [Mobile Debug] InputOTP onChange:', value);
+                  setOtpCode(value);
+                }}
                 maxLength={6}
                 disabled={loading}
               >
@@ -308,12 +326,37 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
                   <InputOTPSlot index={5} />
                 </InputOTPGroup>
               </InputOTP>
+              {/* Debug info for mobile testing */}
+              <div className="text-xs text-muted-foreground">
+                Debug: Code length {otpCode.length}/6 {otpCode.length === 6 ? '✓' : ''}
+              </div>
             </div>
             <div className="flex gap-2">
               <Button type="button" variant="outline" onClick={handleBackToEmail} disabled={loading}>
                 Back
               </Button>
-              <Button type="submit" disabled={loading || otpCode.length !== 6} className="flex-1">
+              <Button 
+                type="submit" 
+                disabled={loading || otpCode.length !== 6} 
+                className="flex-1"
+                onClick={(e) => {
+                  console.log('🔐 [Mobile Debug] Button onClick fired');
+                  // Fallback for mobile - if form submission fails, call directly
+                  const target = e.target as HTMLElement;
+                  if (target.closest && target.closest('form')) {
+                    // Let form submission handle it
+                    return;
+                  }
+                  // Direct call as fallback
+                  console.log('🔐 [Mobile Debug] Using fallback direct call');
+                  handleVerifyOtp();
+                }}
+                onTouchEnd={(e) => {
+                  console.log('🔐 [Mobile Debug] Button onTouchEnd fired');
+                  // Prevent double firing
+                  e.preventDefault();
+                }}
+              >
                 {loading ? 'Verifying...' : 'Verify'}
               </Button>
             </div>
