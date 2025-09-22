@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { JSZip } from "https://deno.land/x/jszip@0.11.0/mod.ts";
+import AdmZip from "https://deno.land/x/admzip@v1.0.0/mod.ts";
 import { encode as base64Encode } from "https://deno.land/std@0.190.0/encoding/base64.ts";
 import { encode as hexEncode } from "https://deno.land/std@0.190.0/encoding/hex.ts";
 
@@ -149,7 +149,7 @@ serve(async (req) => {
     console.log('Member data:', member);
 
     // Create pass bundle with required files
-    const zip = new JSZip();
+    const zip = new AdmZip();
     
     // Add pass.json
     const passJsonString = JSON.stringify(passJson, null, 2);
@@ -209,8 +209,8 @@ serve(async (req) => {
     zip.addFile("signature", signatureData);
 
     // Generate the ZIP file
-    const zipArrayBuffer = await zip.generateAsync({ type: "arraybuffer" });
-    const zipUint8Array = new Uint8Array(zipArrayBuffer);
+    const zipBuffer = zip.toBuffer();
+    const zipUint8Array = new Uint8Array(zipBuffer);
 
     // Upload .pkpass file to storage
     const passFileName = `${user.id}/${serialNumber}.pkpass`;
