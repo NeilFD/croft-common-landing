@@ -69,17 +69,10 @@ export const MembershipCard = () => {
       const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
 
       if (shouldUseDirectOpen) {
-        // For iOS devices, directly open the pass URL to trigger native wallet integration
+        // For iOS devices, use authenticated fetch to get .pkpass blob and open it
         toast.success('Opening Apple Wallet...', { id: 'wallet-pass-generation' });
-        const passUrl = `${functionUrl}?Authorization=${encodeURIComponent(session.access_token)}`;
         
         try {
-          await openWalletPass(passUrl);
-        } catch (openError) {
-          console.error('🍎 WALLET: All opening methods failed, falling back to POST method:', openError);
-          toast.error('Unable to open directly, downloading instead...', { id: 'wallet-pass-generation' });
-          
-          // Fallback to POST method with detailed error reporting
           const response = await fetch(functionUrl, {
             method: 'POST',
             headers: {
@@ -104,17 +97,36 @@ export const MembershipCard = () => {
           }
 
           const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
+          const blobUrl = window.URL.createObjectURL(blob);
           
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
+          console.log('🍎 WALLET: Created blob URL:', blobUrl);
           
-          toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-generation' });
+          try {
+            await openWalletPass(blobUrl);
+            toast.success('Opening Apple Wallet pass...', { id: 'wallet-pass-generation' });
+          } catch (openError) {
+            console.error('🍎 WALLET: Failed to open blob URL, downloading instead:', openError);
+            
+            // Fallback to download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-generation' });
+          }
+          
+          // Clean up blob URL after a delay
+          setTimeout(() => {
+            window.URL.revokeObjectURL(blobUrl);
+          }, 5000);
+        } catch (fetchError) {
+          console.error('🍎 WALLET: Authenticated fetch failed:', fetchError);
+          toast.error(`Failed to generate pass: ${fetchError.message}`, { id: 'wallet-pass-generation' });
+          return;
         }
       } else {
         // For other browsers, download the .pkpass file
@@ -193,17 +205,10 @@ export const MembershipCard = () => {
       const functionUrl = `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/create-wallet-pass`;
 
       if (shouldUseDirectOpen) {
-        // For iOS devices, directly open the pass URL to trigger native wallet integration
+        // For iOS devices, use authenticated fetch to get .pkpass blob and open it
         toast.success('Opening Apple Wallet...', { id: 'wallet-pass-reissue' });
-        const passUrl = `${functionUrl}?Authorization=${encodeURIComponent(session.access_token)}`;
         
         try {
-          await openWalletPass(passUrl);
-        } catch (openError) {
-          console.error('🍎 WALLET: All opening methods failed, falling back to POST method:', openError);
-          toast.error('Unable to open directly, downloading instead...', { id: 'wallet-pass-reissue' });
-          
-          // Fallback to POST method with detailed error reporting
           const response = await fetch(functionUrl, {
             method: 'POST',
             headers: {
@@ -228,17 +233,36 @@ export const MembershipCard = () => {
           }
 
           const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
+          const blobUrl = window.URL.createObjectURL(blob);
           
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          window.URL.revokeObjectURL(url);
+          console.log('🍎 WALLET: Created blob URL for reissue:', blobUrl);
           
-          toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-reissue' });
+          try {
+            await openWalletPass(blobUrl);
+            toast.success('Opening Apple Wallet pass...', { id: 'wallet-pass-reissue' });
+          } catch (openError) {
+            console.error('🍎 WALLET: Failed to open blob URL, downloading instead:', openError);
+            
+            // Fallback to download
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-reissue' });
+          }
+          
+          // Clean up blob URL after a delay
+          setTimeout(() => {
+            window.URL.revokeObjectURL(blobUrl);
+          }, 5000);
+        } catch (fetchError) {
+          console.error('🍎 WALLET: Authenticated fetch failed:', fetchError);
+          toast.error(`Failed to reissue pass: ${fetchError.message}`, { id: 'wallet-pass-reissue' });
+          return;
         }
       } else {
         // For other browsers, download the .pkpass file
