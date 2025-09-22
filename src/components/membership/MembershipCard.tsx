@@ -16,43 +16,31 @@ export const MembershipCard = () => {
   const [isReissuing, setIsReissuing] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const openWalletPass = async (passUrl: string) => {
-    console.log('🍎 WALLET: Opening wallet pass:', { 
-      passUrl, 
-      isCapacitorNative, 
-      isPWAStandalone, 
-      shouldUseDirectOpen,
-      userAgent: navigator.userAgent 
-    });
-
+  const downloadWalletPass = (blob: Blob, filename: string) => {
+    console.log('🍎 WALLET: Triggering wallet pass download:', filename);
+    
     try {
-      if (isCapacitorNative) {
-        console.log('🍎 WALLET: Using Capacitor Browser plugin');
-        await Browser.open({ url: passUrl });
-        return;
-      }
+      // Create a blob URL
+      const blobUrl = URL.createObjectURL(blob);
+      
+      // Create a download link
+      const downloadLink = document.createElement('a');
+      downloadLink.href = blobUrl;
+      downloadLink.download = filename;
+      downloadLink.style.display = 'none';
+      
+      // Add to DOM, click, and remove
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+      
+      // Clean up the blob URL
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+      
+      console.log('🍎 WALLET: Download triggered successfully');
     } catch (error) {
-      console.error('🍎 WALLET: Capacitor Browser.open failed:', error);
-    }
-
-    try {
-      if (isPWAStandalone) {
-        console.log('🍎 WALLET: Using window.open for PWA');
-        const opened = window.open(passUrl, '_blank');
-        if (opened) return;
-        console.warn('🍎 WALLET: window.open blocked or failed');
-      }
-    } catch (error) {
-      console.error('🍎 WALLET: window.open failed:', error);
-    }
-
-    try {
-      console.log('🍎 WALLET: Falling back to window.location.assign');
-      window.location.assign(passUrl);
-      return;
-    } catch (error) {
-      console.error('🍎 WALLET: window.location.assign failed:', error);
-      throw new Error('All wallet opening methods failed. Please use the fallback download method.');
+      console.error('🍎 WALLET: Error triggering download:', error);
+      throw error;
     }
   };
 
@@ -97,32 +85,17 @@ export const MembershipCard = () => {
           }
 
           const blob = await response.blob();
-          const blobUrl = window.URL.createObjectURL(blob);
+          const filename = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
           
-          console.log('🍎 WALLET: Created blob URL:', blobUrl);
+          console.log('🍎 WALLET: Created blob for iOS download');
           
           try {
-            await openWalletPass(blobUrl);
-            toast.success('Opening Apple Wallet pass...', { id: 'wallet-pass-generation' });
-          } catch (openError) {
-            console.error('🍎 WALLET: Failed to open blob URL, downloading instead:', openError);
-            
-            // Fallback to download
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `croft-common-membership-${cardData?.membership_number || 'new'}.pkpass`;
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-generation' });
+            downloadWalletPass(blob, filename);
+            toast.success('Apple Wallet pass downloaded! Tap to add to Wallet.', { id: 'wallet-pass-generation' });
+          } catch (downloadError) {
+            console.error('🍎 WALLET: Download failed:', downloadError);
+            toast.error('Failed to download wallet pass', { id: 'wallet-pass-generation' });
           }
-          
-          // Clean up blob URL after a delay
-          setTimeout(() => {
-            window.URL.revokeObjectURL(blobUrl);
-          }, 5000);
         } catch (fetchError) {
           console.error('🍎 WALLET: Authenticated fetch failed:', fetchError);
           toast.error(`Failed to generate pass: ${fetchError.message}`, { id: 'wallet-pass-generation' });
@@ -233,32 +206,17 @@ export const MembershipCard = () => {
           }
 
           const blob = await response.blob();
-          const blobUrl = window.URL.createObjectURL(blob);
+          const filename = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
           
-          console.log('🍎 WALLET: Created blob URL for reissue:', blobUrl);
+          console.log('🍎 WALLET: Created blob for iOS reissue download');
           
           try {
-            await openWalletPass(blobUrl);
-            toast.success('Opening Apple Wallet pass...', { id: 'wallet-pass-reissue' });
-          } catch (openError) {
-            console.error('🍎 WALLET: Failed to open blob URL, downloading instead:', openError);
-            
-            // Fallback to download
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = `croft-common-membership-${cardData?.membership_number || 'reissued'}.pkpass`;
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            toast.success('Apple Wallet pass downloaded successfully!', { id: 'wallet-pass-reissue' });
+            downloadWalletPass(blob, filename);
+            toast.success('Apple Wallet pass downloaded! Tap to add to Wallet.', { id: 'wallet-pass-reissue' });
+          } catch (downloadError) {
+            console.error('🍎 WALLET: Download failed:', downloadError);
+            toast.error('Failed to download wallet pass', { id: 'wallet-pass-reissue' });
           }
-          
-          // Clean up blob URL after a delay
-          setTimeout(() => {
-            window.URL.revokeObjectURL(blobUrl);
-          }, 5000);
         } catch (fetchError) {
           console.error('🍎 WALLET: Authenticated fetch failed:', fetchError);
           toast.error(`Failed to reissue pass: ${fetchError.message}`, { id: 'wallet-pass-reissue' });
