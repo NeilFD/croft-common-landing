@@ -67,6 +67,7 @@ import { useCapacitorPushNotifications } from '@/hooks/useCapacitorPushNotificat
 import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
 import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 import { ProtectedRoute } from '@/components/research/ProtectedRoute';
+import InteractionWatchdog from '@/components/InteractionWatchdog';
 
 const queryClient = new QueryClient();
 
@@ -198,6 +199,7 @@ const App = () => {
                 <LowercasePathGuard />
                 <ReverseDomainGuard />
                 <RouteImagePreloader />
+                <InteractionWatchdog />
                 <NudgeFloatingButton />
                 
                 <TransitionProvider>

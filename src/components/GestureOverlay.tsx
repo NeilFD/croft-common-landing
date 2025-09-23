@@ -176,6 +176,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   useEffect(() => {
     if (!containerRef?.current) return;
     const el = containerRef.current as HTMLElement;
+    // Ensure no stray disabled attribute can block interactions
+    el.removeAttribute('disabled');
     const prevTouchAction = el.style.touchAction;
     const prevUserSelect = el.style.userSelect;
     const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
@@ -271,6 +273,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       (el.style as any).webkitUserSelect = prevWebkitUserSelect;
       (el.style as any).webkitTouchCallout = prevWebkitTouchCallout;
       el.classList.remove('gesture-container');
+      // Ensure no lingering disabled attribute remains
+      el.removeAttribute('disabled');
       el.removeEventListener('touchstart', ts);
       el.removeEventListener('touchmove', tm);
       el.removeEventListener('touchend', te);

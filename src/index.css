@@ -509,18 +509,16 @@
 }
 
 /* When a Radix dialog is open, disable interactions only on background carousels */
-body:has([data-radix-dialog-overlay]) .embla,
-body:has([data-radix-dialog-overlay]) .carousel-container,
-body:has([data-radix-dialog-overlay]) .mobile-safe-carousel {
+body:has([data-radix-dialog-overlay][data-state="open"]) .embla,
+body:has([data-radix-dialog-overlay][data-state="open"]) .carousel-container,
+body:has([data-radix-dialog-overlay][data-state="open"]) .mobile-safe-carousel {
   pointer-events: none !important;
   /* allow native scrolling behaviours to remain intact */
   touch-action: none !important;
 }
 
-/* Hide the overlay behind the modal */
-body:has([data-radix-dialog-overlay]) .gesture-container {
-  z-index: 50;
-}
+/* Remove z-index promotion of gesture-container to avoid layering over content */
+/* body:has([data-radix-dialog-overlay]) .gesture-container { z-index: 50; } */
 
 .gesture-drawing {
   cursor: crosshair !important;
