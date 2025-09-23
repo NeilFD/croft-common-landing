@@ -245,7 +245,7 @@ export const useResearch = () => {
   };
 
   // Create venue
-  const createVenue = async (venueData: Partial<Venue>) => {
+  const createVenue = async (venueData: { name: string; geo_area_id: string; address?: string }) => {
     try {
       setLoading(true);
       const { error } = await supabase

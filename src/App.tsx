@@ -53,6 +53,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const SecretKitchens = lazy(() => import("./pages/SecretKitchens"));
 const SecretKitchenAdmin = lazy(() => import("./pages/SecretKitchenAdmin"));
 const OneKitchenMenu = lazy(() => import("./pages/OneKitchenMenu"));
+const Research = lazy(() => import("./pages/Research"));
 
 // Optimized imports that load immediately
 import RouteImagePreloader from '@/components/RouteImagePreloader';
@@ -65,6 +66,7 @@ import { useCapacitorDeepLinking } from '@/hooks/useCapacitorDeepLinking';
 import { useCapacitorPushNotifications } from '@/hooks/useCapacitorPushNotifications';
 import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
 import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
+import { ProtectedRoute } from '@/components/research/ProtectedRoute';
 
 const queryClient = new QueryClient();
 
@@ -229,6 +231,7 @@ const App = () => {
                       <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
                       <Route path="/cms/*" element={<CMS />} />
                       <Route path="/notifications" element={<Notifications />} />
+                      <Route path="/research" element={<ProtectedRoute><Research /></ProtectedRoute>} />
                       <Route path="/c/:token" element={<ClickRedirect />} />
                       <Route path="/from-notification" element={<Index />} />
                       <Route path="*" element={<NotFound />} />
