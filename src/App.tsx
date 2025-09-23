@@ -171,6 +171,20 @@ const PageLoader = () => {
 const App = () => {
   const { isOpen, handleLogoTap, closePanel } = useHiddenDevPanel();
   
+  // Safety cleanup for any lingering gesture-drawing classes
+  useEffect(() => {
+    const cleanup = () => {
+      document.body.classList.remove('gesture-drawing');
+      document.documentElement.classList.remove('gesture-drawing');
+      document.body.style.pointerEvents = '';
+      document.documentElement.style.pointerEvents = '';
+    };
+    
+    cleanup();
+    
+    return cleanup;
+  }, []);
+  
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>

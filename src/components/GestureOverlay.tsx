@@ -288,22 +288,17 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-40 bg-transparent gesture-container pointer-events-none"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onDragStart={(e) => e.preventDefault()}
-      onContextMenu={(e) => e.preventDefault()}
+      className="fixed inset-0 z-40 bg-transparent gesture-container"
       style={{ 
+        pointerEvents: 'none', // Make overlay non-blocking
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none',
         WebkitTapHighlightColor: 'transparent'
       }}
-    />
+    >
+      {/* Invisible overlay for gesture detection - doesn't block interactions */}
+    </div>
   );
 };
 

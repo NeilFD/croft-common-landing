@@ -137,10 +137,23 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
       setShowSecret(false);
       setShowMembership(false);
       setShowHallMenu(false);
+      
+      // Cleanup any lingering gesture-drawing class
+      if (containerRef.current) {
+        containerRef.current.classList.remove('gesture-drawing');
+      }
+      document.body.classList.remove('gesture-drawing');
+      document.documentElement.classList.remove('gesture-drawing');
     }
 
     return () => {
       document.body.style.overflow = 'unset';
+      // Cleanup gesture classes on unmount
+      if (containerRef.current) {
+        containerRef.current.classList.remove('gesture-drawing');
+      }
+      document.body.classList.remove('gesture-drawing');
+      document.documentElement.classList.remove('gesture-drawing');
     };
   }, [isOpen]);
 

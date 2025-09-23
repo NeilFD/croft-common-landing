@@ -401,7 +401,7 @@
   -ms-user-select: none !important;
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  pointer-events: none !important;
+  /* REMOVED: pointer-events: none !important; - This was blocking all interactions */
 }
 
 .mobile-safe-carousel {
