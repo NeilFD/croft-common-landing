@@ -103,9 +103,10 @@ const BeerHeroCarousel = () => {
       </div>
 
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10 pointer-events-none">
         <CroftLogo
-          className="w-[27.5rem] h-[27.5rem] sm:w-[30rem] sm:h-[30rem] md:w-[32.5rem] md:h-[32.5rem] lg:w-[35rem] lg:h-[35rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
+          className="w-[27.5rem] h-[27.5rem] sm:w-[30rem] sm:h-[30rem] md:w-[32.5rem] md:h-[32.5rem] lg:w-[35rem] lg:h-[35rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 invert pointer-events-none"
+          enableDevPanel={false}
         />
       </div>
 

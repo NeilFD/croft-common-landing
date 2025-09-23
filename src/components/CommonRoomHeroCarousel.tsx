@@ -47,7 +47,8 @@ const CommonRoomHeroCarousel = () => {
       <div className="absolute inset-0 flex items-center justify-center mt-16 z-5 pointer-events-none">
         <div className="group">
           <CroftLogo
-            className="w-[18rem] h-[18rem] sm:w-[22rem] sm:h-[22rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert"
+            className="w-[18rem] h-[18rem] sm:w-[22rem] sm:h-[22rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert pointer-events-none"
+            enableDevPanel={false}
           />
         </div>
       </div>

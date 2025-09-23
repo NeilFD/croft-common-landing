@@ -96,9 +96,10 @@ const CommunityHeroCarousel = () => {
       </div>
 
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10">
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-10 pointer-events-none">
         <CroftLogo
-          className="w-[25rem] h-[25rem] sm:w-[27.5rem] sm:h-[27.5rem] md:w-[30rem] md:h-[30rem] lg:w-[32.5rem] lg:h-[32.5rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 cursor-pointer invert"
+          className="w-[25rem] h-[25rem] sm:w-[27.5rem] sm:h-[27.5rem] md:w-[30rem] md:h-[30rem] lg:w-[32.5rem] lg:h-[32.5rem] opacity-30 object-contain transition-all duration-500 hover:opacity-70 invert pointer-events-none"
+          enableDevPanel={false}
         />
       </div>
 
