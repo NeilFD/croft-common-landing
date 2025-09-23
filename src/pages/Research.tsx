@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RunTab } from '@/components/research/RunTab';
 import { ManageTab } from '@/components/research/ManageTab';
 import { AnalysisTab } from '@/components/research/AnalysisTab';
+import CroftLogo from '@/components/CroftLogo';
 
 const Research = () => {
   const [activeTab, setActiveTab] = useState('run');
@@ -13,9 +14,7 @@ const Research = () => {
       <header className="bg-card border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">CC</span>
-            </div>
+            <CroftLogo size="md" enableDevPanel={false} />
             <div>
               <h1 className="font-bold text-xl">Croft Common</h1>
               <p className="text-sm text-muted-foreground">Field Research</p>
