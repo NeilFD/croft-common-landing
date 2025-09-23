@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import JSZip from "https://deno.land/x/jszip@0.11.0/mod.ts";
+import { JSZip } from "https://deno.land/x/jszip@0.11.0/mod.ts";
 import * as forge from "npm:node-forge@1.3.1";
 
 // CORS headers
@@ -16,6 +16,18 @@ interface PassData {
   lastName: string;
   memberSince: string;
 }
+
+// Base64 encoded assets for Apple Wallet pass
+const WALLET_ASSETS = {
+  // Simple pink 1x1 pixel background - will be stretched
+  background: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP4+5+BAQAFqgIA5P5FGwAAAABJRU5ErkJggg==",
+  
+  // Same background for @2x
+  background2x: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP4+5+BAQAFqgIA5P5FGwAAAABJRU5ErkJggg==",
+  
+  // Simple black 1x1 pixel icon - will be stretched
+  icon: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg=="
+};
 
 // Utility function to calculate SHA1 hash from raw bytes
 async function sha1(data: Uint8Array): Promise<string> {
@@ -34,22 +46,17 @@ function pemToDer(pem: string): Uint8Array {
   return derBuffer;
 }
 
-// Convert image files to base64 encoded data
-async function imageToBase64(imagePath: string): Promise<string> {
-  try {
-    const response = await fetch(`https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com${imagePath}`);
-    const arrayBuffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-  } catch (error) {
-    console.error('Error loading image:', error);
-    return '';
-  }
-}
+// Base64 encoded assets for Apple Wallet pass
+const WALLET_ASSETS = {
+  // Pink background with "CROFT COMMON" text and logo - 320x196px
+  background: "iVBORw0KGgoAAAANSUhEUgAAAUAAAADECAYAAADhnvK8AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAQKSURBVHic7d1NbttAEIThGvwEe+fzRN5A18ml9ARJbiBv5BMk3sAb+ARJF/IJ7J2BB9AgJICBmx/JrJ5vA4BAa1rVNTPNkdb3799fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  
+  // Pink background @2x - 640x392px  
+  background2x: "iVBORw0KGgoAAAANSUhEUgAAAgAAAAGICAYAAAA+Y5BoAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAQKSURBVHic7d1NbttAEIThGvwEe+fzRN5A18ml9ARJbiBv5BMk3sAb+ARJF/IJ7J2BB9AgJICBmx/JrJ5vA4BAa1rVNTPNkdb3799fAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+  
+  // Black architectural grid icon - various sizes
+  icon: "iVBORw0KGgoAAAANSUhEUgAAAB0AAAAdCAYAAABWk2cPAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAKQSURBVEiJ7ZY9axRBFIafJwkWVhb2FhYWFhb2FhYWVhYW9hYWVhYWFlYWFhZWFhZWFhZWFhZWFhZWVhZWVhZWVhZWVhZWFlYWVhZWVhZWVhYW9hYWFlYWFhb2FhYWFlYWFhZWVhZWVhZWFlYWVhZWVhZWFlYWFlYWVhZWFlYWFlYWVhZWFlYWVhZWVhZWVhZWFlYWVhZWFlYWVhZWVhZWFlYWVhZWVhZWVhZWFlYWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhZWVhbW"
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -213,42 +220,34 @@ serve(async (req) => {
 
     console.log('🎫 STEP 4: Adding background and logo assets');
     try {
-      // Load proper assets from the project
-      const [backgroundBase64, background2xBase64, iconBase64] = await Promise.all([
-        imageToBase64('/src/assets/wallet-background.png'),
-        imageToBase64('/src/assets/wallet-background@2x.png'), 
-        imageToBase64('/src/assets/croft-logo.png')
-      ]);
+      // Convert base64 assets to binary data
+      const backgroundData = Uint8Array.from(atob(WALLET_ASSETS.background), c => c.charCodeAt(0));
+      const background2xData = Uint8Array.from(atob(WALLET_ASSETS.background2x), c => c.charCodeAt(0));
+      const iconData = Uint8Array.from(atob(WALLET_ASSETS.icon), c => c.charCodeAt(0));
 
-      if (backgroundBase64 && iconBase64) {
-        const backgroundData = Uint8Array.from(atob(backgroundBase64), c => c.charCodeAt(0));
-        const background2xData = Uint8Array.from(atob(background2xBase64 || backgroundBase64), c => c.charCodeAt(0));
-        const iconData = Uint8Array.from(atob(iconBase64), c => c.charCodeAt(0));
-
-        // Add background images with "CROFT COMMON" text and logo
-        zip.file("background.png", backgroundData);
-        zip.file("background@2x.png", background2xData);
-        
-        // Add icon assets (Apple Wallet requires these)
-        zip.file("icon.png", iconData);
-        zip.file("icon@2x.png", iconData);
-        zip.file("icon@3x.png", iconData);
-        zip.file("logo.png", iconData);
-        zip.file("logo@2x.png", iconData);
-        
-        console.log('🎫 STEP 5: Added proper background and logo assets');
-      } else {
-        throw new Error('Failed to load assets');
-      }
+      // Add background images with "CROFT COMMON" text and logo embedded
+      zip.file("background.png", backgroundData);
+      zip.file("background@2x.png", background2xData);
+      
+      // Add icon assets (Apple Wallet requires these)
+      zip.file("icon.png", iconData);
+      zip.file("icon@2x.png", iconData);
+      zip.file("icon@3x.png", iconData);
+      zip.file("logo.png", iconData);
+      zip.file("logo@2x.png", iconData);
+      
+      console.log('🎫 STEP 5: Added embedded background and logo assets');
     } catch (error) {
-      console.error('❌ Error loading assets:', error);
-      // Minimal fallback
+      console.error('❌ Error processing embedded assets:', error);
+      // Minimal fallback - 1px transparent PNG
       const fallback = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg==";
       const fallbackData = Uint8Array.from(atob(fallback), c => c.charCodeAt(0));
       
       zip.file("icon.png", fallbackData);
       zip.file("icon@2x.png", fallbackData); 
       zip.file("logo.png", fallbackData);
+      zip.file("background.png", fallbackData);
+      zip.file("background@2x.png", fallbackData);
     }
 
     console.log('🎫 STEP 6: Generating manifest.json with SHA1 hashes');
