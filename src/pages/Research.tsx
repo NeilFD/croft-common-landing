@@ -11,7 +11,7 @@ const Research = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-background border-b sticky top-0 z-50 backdrop-blur-sm">
+      <header className="bg-white border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <CroftLogo size="md" enableDevPanel={false} />

@@ -264,6 +264,90 @@ export const useResearch = () => {
     }
   };
 
+  // Update venue
+  const updateVenue = async (venueId: string, updates: Partial<Venue>) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('venues')
+        .update(updates)
+        .eq('id', venueId);
+      
+      if (error) throw error;
+      
+      await fetchVenues();
+      toast.success('Venue updated');
+    } catch (error) {
+      console.error('Error updating venue:', error);
+      toast.error('Failed to update venue');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete venue
+  const deleteVenue = async (venueId: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('venues')
+        .update({ is_active: false })
+        .eq('id', venueId);
+      
+      if (error) throw error;
+      
+      await fetchVenues();
+      toast.success('Venue deleted');
+    } catch (error) {
+      console.error('Error deleting venue:', error);
+      toast.error('Failed to delete venue');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update geo area
+  const updateGeoArea = async (areaId: string, updates: Partial<GeoArea>) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('geo_areas')
+        .update(updates)
+        .eq('id', areaId);
+      
+      if (error) throw error;
+      
+      await fetchGeoAreas();
+      toast.success('Geo area updated');
+    } catch (error) {
+      console.error('Error updating geo area:', error);
+      toast.error('Failed to update geo area');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete geo area
+  const deleteGeoArea = async (areaId: string) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('geo_areas')
+        .update({ is_active: false })
+        .eq('id', areaId);
+      
+      if (error) throw error;
+      
+      await fetchGeoAreas();
+      toast.success('Geo area deleted');
+    } catch (error) {
+      console.error('Error deleting geo area:', error);
+      toast.error('Failed to delete geo area');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Initial data fetch
   useEffect(() => {
     if (user) {
@@ -288,5 +372,9 @@ export const useResearch = () => {
     upsertWalkEntry,
     createGeoArea,
     createVenue,
+    updateVenue,
+    deleteVenue,
+    updateGeoArea,
+    deleteGeoArea,
   };
 };

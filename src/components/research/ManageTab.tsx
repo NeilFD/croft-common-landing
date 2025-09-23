@@ -3,23 +3,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, MapPin, Building2, Search, Edit, Trash2, Upload } from 'lucide-react';
+import { Plus, MapPin, Building2, Search, Edit, Trash2 } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { VenueUpload } from './VenueUpload';
 
 export const ManageTab = () => {
-  const { geoAreas, venues, walkCards, loading, createGeoArea, createVenue } = useResearch();
+  const { 
+    geoAreas, 
+    venues, 
+    walkCards, 
+    loading, 
+    createGeoArea, 
+    createVenue, 
+    updateVenue, 
+    deleteVenue, 
+    updateGeoArea, 
+    deleteGeoArea 
+  } = useResearch();
+  
+  const [activeTab, setActiveTab] = useState('venues');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGeoArea, setSelectedGeoArea] = useState<string>('all');
-  const [newGeoAreaName, setNewGeoAreaName] = useState('');
+  
+  // Venue form states
+  const [showVenueForm, setShowVenueForm] = useState(false);
+  const [editingVenue, setEditingVenue] = useState<string | null>(null);
   const [newVenueName, setNewVenueName] = useState('');
   const [newVenueAddress, setNewVenueAddress] = useState('');
   const [newVenueGeoArea, setNewVenueGeoArea] = useState('');
-  const [showGeoAreaDialog, setShowGeoAreaDialog] = useState(false);
-  const [showVenueDialog, setShowVenueDialog] = useState(false);
+  
+  // Geo area form states
+  const [showGeoAreaForm, setShowGeoAreaForm] = useState(false);
+  const [editingGeoArea, setEditingGeoArea] = useState<string | null>(null);
+  const [newGeoAreaName, setNewGeoAreaName] = useState('');
 
   const filteredVenues = venues.filter(venue => {
     const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -27,34 +46,71 @@ export const ManageTab = () => {
     return matchesSearch && matchesGeoArea;
   });
 
-  const handleCreateGeoArea = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newGeoAreaName.trim()) return;
-    
-    await createGeoArea(newGeoAreaName.trim());
+  const resetVenueForm = () => {
+    setNewVenueName('');
+    setNewVenueAddress('');
+    setNewVenueGeoArea('');
+    setShowVenueForm(false);
+    setEditingVenue(null);
+  };
+
+  const resetGeoAreaForm = () => {
     setNewGeoAreaName('');
-    setShowGeoAreaDialog(false);
+    setShowGeoAreaForm(false);
+    setEditingGeoArea(null);
   };
 
   const handleCreateVenue = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newVenueName.trim() || !newVenueGeoArea) return;
     
-    await createVenue({
-      name: newVenueName.trim(),
-      address: newVenueAddress.trim() || undefined,
-      geo_area_id: newVenueGeoArea,
-    });
+    if (editingVenue) {
+      await updateVenue(editingVenue, {
+        name: newVenueName.trim(),
+        address: newVenueAddress.trim() || undefined,
+        geo_area_id: newVenueGeoArea,
+      });
+    } else {
+      await createVenue({
+        name: newVenueName.trim(),
+        address: newVenueAddress.trim() || undefined,
+        geo_area_id: newVenueGeoArea,
+      });
+    }
     
-    setNewVenueName('');
-    setNewVenueAddress('');
-    setNewVenueGeoArea('');
-    setShowVenueDialog(false);
+    resetVenueForm();
+  };
+
+  const handleEditVenue = (venue: any) => {
+    setNewVenueName(venue.name);
+    setNewVenueAddress(venue.address || '');
+    setNewVenueGeoArea(venue.geo_area_id);
+    setEditingVenue(venue.id);
+    setShowVenueForm(true);
+  };
+
+  const handleCreateGeoArea = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newGeoAreaName.trim()) return;
+    
+    if (editingGeoArea) {
+      await updateGeoArea(editingGeoArea, { name: newGeoAreaName.trim() });
+    } else {
+      await createGeoArea(newGeoAreaName.trim());
+    }
+    
+    resetGeoAreaForm();
+  };
+
+  const handleEditGeoArea = (area: any) => {
+    setNewGeoAreaName(area.name);
+    setEditingGeoArea(area.id);
+    setShowGeoAreaForm(true);
   };
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="venues" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="venues">Venues</TabsTrigger>
           <TabsTrigger value="geo-areas">Geo Areas</TabsTrigger>
@@ -68,19 +124,21 @@ export const ManageTab = () => {
               <h2 className="text-lg font-semibold">Venues</h2>
               <p className="text-sm text-muted-foreground">Manage competitor venues</p>
             </div>
-            <div className="flex gap-2">
-              <Dialog open={showVenueDialog} onOpenChange={setShowVenueDialog}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Venue
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Venue</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleCreateVenue} className="space-y-4">
+            <Button onClick={() => setShowVenueForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Venue
+            </Button>
+          </div>
+
+          {/* Inline Venue Form */}
+          {showVenueForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingVenue ? 'Edit Venue' : 'New Venue'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleCreateVenue} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="venue-name">Name *</Label>
                       <Input
@@ -107,28 +165,31 @@ export const ManageTab = () => {
                           <SelectValue placeholder="Select geo area" />
                         </SelectTrigger>
                         <SelectContent>
-                          {geoAreas.map((area) => (
-                            <SelectItem key={area.id} value={area.id}>
-                              {area.name}
-                            </SelectItem>
-                          ))}
+                          {geoAreas.length === 0 ? (
+                            <SelectItem value="" disabled>No areas available</SelectItem>
+                          ) : (
+                            geoAreas.map((area) => (
+                              <SelectItem key={area.id} value={area.id}>
+                                {area.name}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
-                    <div className="flex gap-2">
-                      <Button type="submit" disabled={loading}>Create</Button>
-                      <Button type="button" variant="outline" onClick={() => setShowVenueDialog(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-
-          {/* Venue Upload Section */}
-          <VenueUpload />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={loading}>
+                      {editingVenue ? 'Update' : 'Create'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={resetVenueForm}>
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Venues Filters */}
           <div className="flex flex-col sm:flex-row gap-4">
@@ -158,38 +219,62 @@ export const ManageTab = () => {
 
           {/* Venues List */}
           <div className="grid gap-4">
-            {filteredVenues.map((venue) => {
-              const geoArea = geoAreas.find(area => area.id === venue.geo_area_id);
-              return (
-                <Card key={venue.id}>
-                  <CardContent className="pt-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <h3 className="font-semibold">{venue.name}</h3>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <MapPin className="h-3 w-3" />
-                          {geoArea?.name}
-                        </div>
-                        {venue.address && (
+            {filteredVenues.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {venues.length === 0 ? 'No venues added yet.' : 'No venues match your search.'}
+              </div>
+            ) : (
+              filteredVenues.map((venue) => {
+                const geoArea = geoAreas.find(area => area.id === venue.geo_area_id);
+                return (
+                  <Card key={venue.id}>
+                    <CardContent className="pt-4">
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-1">
+                          <h3 className="font-semibold">{venue.name}</h3>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Building2 className="h-3 w-3" />
-                            {venue.address}
+                            <MapPin className="h-3 w-3" />
+                            {geoArea?.name || 'Unknown area'}
                           </div>
-                        )}
+                          {venue.address && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Building2 className="h-3 w-3" />
+                              {venue.address}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditVenue(venue)}>
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Venue</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{venue.name}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteVenue(venue.id)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         </TabsContent>
 
@@ -200,17 +285,19 @@ export const ManageTab = () => {
               <h2 className="text-lg font-semibold">Geo Areas</h2>
               <p className="text-sm text-muted-foreground">Manage research areas</p>
             </div>
-            <Dialog open={showGeoAreaDialog} onOpenChange={setShowGeoAreaDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Area
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Geo Area</DialogTitle>
-                </DialogHeader>
+            <Button onClick={() => setShowGeoAreaForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Area
+            </Button>
+          </div>
+
+          {/* Inline Geo Area Form */}
+          {showGeoAreaForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingGeoArea ? 'Edit Geo Area' : 'New Geo Area'}</CardTitle>
+              </CardHeader>
+              <CardContent>
                 <form onSubmit={handleCreateGeoArea} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="area-name">Name *</Label>
@@ -223,43 +310,69 @@ export const ManageTab = () => {
                     />
                   </div>
                   <div className="flex gap-2">
-                    <Button type="submit" disabled={loading}>Create</Button>
-                    <Button type="button" variant="outline" onClick={() => setShowGeoAreaDialog(false)}>
+                    <Button type="submit" disabled={loading}>
+                      {editingGeoArea ? 'Update' : 'Create'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={resetGeoAreaForm}>
                       Cancel
                     </Button>
                   </div>
                 </form>
-              </DialogContent>
-            </Dialog>
-          </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Geo Areas List */}
           <div className="grid gap-4">
-            {geoAreas.map((area) => {
-              const venueCount = venues.filter(venue => venue.geo_area_id === area.id).length;
-              return (
-                <Card key={area.id}>
-                  <CardContent className="pt-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{area.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {venueCount} venue{venueCount !== 1 ? 's' : ''}
-                        </p>
+            {geoAreas.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No geo areas added yet.
+              </div>
+            ) : (
+              geoAreas.map((area) => {
+                const venueCount = venues.filter(venue => venue.geo_area_id === area.id).length;
+                return (
+                  <Card key={area.id}>
+                    <CardContent className="pt-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold">{area.name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {venueCount} venue{venueCount !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="sm" onClick={() => handleEditGeoArea(area)}>
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Geo Area</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{area.name}"? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => deleteGeoArea(area.id)}>
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </div>
-                      <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </CardContent>
+                  </Card>
+                );
+              })
+            )}
           </div>
         </TabsContent>
 
@@ -272,34 +385,40 @@ export const ManageTab = () => {
 
           {/* Walk Cards List */}
           <div className="grid gap-4">
-            {walkCards.map((card) => (
-              <Card key={card.id}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{card.title}</CardTitle>
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      card.status === 'Active' ? 'bg-green-100 text-green-700' :
-                      card.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {card.status}
+            {walkCards.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No walk cards yet. Create one from the Run tab.
+              </div>
+            ) : (
+              walkCards.map((card) => (
+                <Card key={card.id}>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base">{card.title}</CardTitle>
+                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        card.status === 'Active' ? 'bg-green-100 text-green-700' :
+                        card.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
+                        'bg-gray-100 text-gray-700'
+                      }`}>
+                        {card.status}
+                      </div>
                     </div>
-                  </div>
-                  <CardDescription>
-                    {card.date} • {card.time_block} • {card.weather_preset}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {card.croft_zones.map((zone) => (
-                      <span key={zone} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
-                        {zone}
-                      </span>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                    <CardDescription>
+                      {card.date} • {card.time_block} • {card.weather_preset}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {card.croft_zones.map((zone) => (
+                        <span key={zone} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
+                          {zone}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </TabsContent>
       </Tabs>
