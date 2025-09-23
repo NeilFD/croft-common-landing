@@ -126,11 +126,11 @@ const OptimizedImage = ({
   return (
     <div className={cn('relative overflow-hidden', className)}>
       {!isLoaded && (
-        <Skeleton className="absolute inset-0 bg-muted/20" />
+        <Skeleton className="absolute inset-0 bg-muted/20 pointer-events-none" />
       )}
       
       {isBroken && !isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/10">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/10 pointer-events-none">
           <div className="text-center text-muted-foreground text-sm">
             <div className="text-2xl mb-2">📷</div>
             <div>Image unavailable</div>

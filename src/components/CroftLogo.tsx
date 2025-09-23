@@ -11,9 +11,10 @@ interface CroftLogoProps {
   priority?: boolean;
   onClick?: () => void;
   enableDevPanel?: boolean;
+  interactive?: boolean;
 }
 
-const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDevPanel = true }: CroftLogoProps) => {
+const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDevPanel = true, interactive = true }: CroftLogoProps) => {
   const [imageError, setImageError] = useState(false);
   const { handleLogoTap, openPanel } = useHiddenDevPanel();
   
@@ -44,12 +45,15 @@ const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDe
   return (
     <div 
       className={cn(
-        "object-contain cursor-pointer select-none",
-        "pointer-events-auto z-20", // Ensure it's pressable and on top
+        "object-contain select-none",
+        interactive ? "cursor-pointer pointer-events-auto" : "cursor-default pointer-events-none",
+        "z-20",
         sizeClasses[size], 
         className
       )}
-      {...(enableDevPanel ? longPressHandlers : { onClick })}
+      {...(interactive ? (enableDevPanel ? longPressHandlers : (onClick ? { onClick } : {})) : {})}
+      aria-hidden={!interactive}
+      role={interactive ? undefined : "presentation"}
     >
       {!imageError ? (
         <img
