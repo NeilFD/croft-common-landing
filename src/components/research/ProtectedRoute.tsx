@@ -11,6 +11,13 @@ const RESEARCH_ALLOWED_EMAILS = [
   'andrew.brown@portlandbrown.com'
 ];
 
+// Check if we're in preview/development mode
+const isPreviewMode = () => {
+  return window.location.hostname.includes('lovable.app') ||
+         window.location.hostname === 'localhost' ||
+         window.location.hostname.includes('preview');
+};
+
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -22,6 +29,12 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
     );
   }
 
+  // Allow access in preview mode regardless of user authentication
+  if (isPreviewMode()) {
+    return <>{children}</>;
+  }
+
+  // In production, enforce email restrictions
   if (!user || !RESEARCH_ALLOWED_EMAILS.includes(user.email || '')) {
     return <Navigate to="/" replace />;
   }
