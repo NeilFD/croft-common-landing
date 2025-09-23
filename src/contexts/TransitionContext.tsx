@@ -205,10 +205,11 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     <TransitionContext.Provider value={{ isTransitioning, triggerTransition }}>
       {children}
       <div
+        data-transition-overlay
         className={`fixed inset-0 z-[99999] bg-void transition-opacity duration-[600ms] ${
           overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ transformOrigin: 'center center', willChange: 'opacity, transform' }}
+        style={{ transformOrigin: 'center center', willChange: 'opacity, transform', pointerEvents: overlayVisible ? 'auto' : 'none' }}
       >
         {/* Texture strobe layer */}
         <img
