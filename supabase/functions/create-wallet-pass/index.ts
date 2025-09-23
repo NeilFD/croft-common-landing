@@ -175,7 +175,7 @@ serve(async (req) => {
       teamIdentifier: teamIdentifier,
       organizationName: "CROFT COMMON",
       description: "Croft Common Membership Card",
-      logoText: "CROFT COMMON",
+      logoText: "",
       foregroundColor: "rgb(0, 0, 0)",
       backgroundColor: "rgb(232, 121, 160)", 
       labelColor: "rgb(0, 0, 0)",
@@ -238,34 +238,44 @@ serve(async (req) => {
     const passJsonString = JSON.stringify(passJson, null, 2);
     zip.file("pass.json", passJsonString);
 
-    console.log('🎫 STEP 4: Adding Croft Common architectural grid logo assets');
-    // Generate Croft Common architectural grid logo in black for wallet pass
+    console.log('🎫 STEP 4: Adding background and logo assets');
     try {
-      // Generate black Croft Common architectural grid logo images at different sizes
-      const logo32 = generateCroftCommonLogo(32);  // 32x32
-      const logo64 = generateCroftCommonLogo(64);  // 64x64  
-      const logo96 = generateCroftCommonLogo(96);  // 96x96
-      
-      // Add logo files with proper dimensions
-      zip.file("icon.png", logo32);      // 32x32
-      zip.file("icon@2x.png", logo64);   // 64x64  
-      zip.file("icon@3x.png", logo96);   // 96x96
-      zip.file("logo.png", logo32);      // 32x32
-      zip.file("logo@2x.png", logo64);   // 64x64
-      
-      console.log('🎫 STEP 5: Generated Croft Common architectural grid logo assets successfully');
-      console.log('🎫 Logo sizes: 32x32, 64x64, 96x96 pixels (black architectural grid)');
+      // Load proper assets from the project
+      const [backgroundBase64, background2xBase64, iconBase64] = await Promise.all([
+        imageToBase64('/src/assets/wallet-background.png'),
+        imageToBase64('/src/assets/wallet-background@2x.png'), 
+        imageToBase64('/src/assets/croft-logo.png')
+      ]);
+
+      if (backgroundBase64 && iconBase64) {
+        const backgroundData = Uint8Array.from(atob(backgroundBase64), c => c.charCodeAt(0));
+        const background2xData = Uint8Array.from(atob(background2xBase64 || backgroundBase64), c => c.charCodeAt(0));
+        const iconData = Uint8Array.from(atob(iconBase64), c => c.charCodeAt(0));
+
+        // Add background images with "CROFT COMMON" text and logo
+        zip.file("background.png", backgroundData);
+        zip.file("background@2x.png", background2xData);
+        
+        // Add icon assets (Apple Wallet requires these)
+        zip.file("icon.png", iconData);
+        zip.file("icon@2x.png", iconData);
+        zip.file("icon@3x.png", iconData);
+        zip.file("logo.png", iconData);
+        zip.file("logo@2x.png", iconData);
+        
+        console.log('🎫 STEP 5: Added proper background and logo assets');
+      } else {
+        throw new Error('Failed to load assets');
+      }
     } catch (error) {
-      console.error('❌ Error generating PNG assets:', error);
-      // Fallback to the previous approach if PNG generation fails
-      const iconBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg==";
-      const iconData = Uint8Array.from(atob(iconBase64), c => c.charCodeAt(0));
+      console.error('❌ Error loading assets:', error);
+      // Minimal fallback
+      const fallback = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChAI9jU77wgAAAABJRU5ErkJggg==";
+      const fallbackData = Uint8Array.from(atob(fallback), c => c.charCodeAt(0));
       
-      zip.file("icon.png", iconData);
-      zip.file("icon@2x.png", iconData);
-      zip.file("icon@3x.png", iconData);
-      zip.file("logo.png", iconData);
-      zip.file("logo@2x.png", iconData);
+      zip.file("icon.png", fallbackData);
+      zip.file("icon@2x.png", fallbackData); 
+      zip.file("logo.png", fallbackData);
     }
 
     console.log('🎫 STEP 6: Generating manifest.json with SHA1 hashes');
