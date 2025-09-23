@@ -754,6 +754,30 @@ export type Database = {
         }
         Relationships: []
       }
+      geo_areas: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       kitchen_vendor_inquiries: {
         Row: {
           business_name: string
@@ -1862,6 +1886,30 @@ export type Database = {
         }
         Relationships: []
       }
+      pnls: {
+        Row: {
+          created_at: string
+          effective_from: string
+          id: string
+          json_forecast: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effective_from: string
+          id?: string
+          json_forecast?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effective_from?: string
+          id?: string
+          json_forecast?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pong_scores: {
         Row: {
           created_at: string
@@ -2609,6 +2657,191 @@ export type Database = {
         }
         Relationships: []
       }
+      venues: {
+        Row: {
+          address: string | null
+          created_at: string
+          geo_area_id: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          geo_area_id: string
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          geo_area_id?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_geo_area_id_fkey"
+            columns: ["geo_area_id"]
+            isOneToOne: false
+            referencedRelation: "geo_areas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      walk_card_geo_areas: {
+        Row: {
+          created_at: string
+          geo_area_id: string
+          id: string
+          walk_card_id: string
+        }
+        Insert: {
+          created_at?: string
+          geo_area_id: string
+          id?: string
+          walk_card_id: string
+        }
+        Update: {
+          created_at?: string
+          geo_area_id?: string
+          id?: string
+          walk_card_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "walk_card_geo_areas_geo_area_id_fkey"
+            columns: ["geo_area_id"]
+            isOneToOne: false
+            referencedRelation: "geo_areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "walk_card_geo_areas_walk_card_id_fkey"
+            columns: ["walk_card_id"]
+            isOneToOne: false
+            referencedRelation: "walk_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      walk_cards: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by_user_id: string
+          croft_zones: string[]
+          date: string
+          id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["walk_card_status_enum"]
+          time_block: Database["public"]["Enums"]["time_block_enum"]
+          title: string
+          updated_at: string
+          weather_notes: string | null
+          weather_preset: Database["public"]["Enums"]["weather_preset_enum"]
+          weather_temp_c: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by_user_id: string
+          croft_zones?: string[]
+          date: string
+          id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["walk_card_status_enum"]
+          time_block: Database["public"]["Enums"]["time_block_enum"]
+          title: string
+          updated_at?: string
+          weather_notes?: string | null
+          weather_preset: Database["public"]["Enums"]["weather_preset_enum"]
+          weather_temp_c?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by_user_id?: string
+          croft_zones?: string[]
+          date?: string
+          id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["walk_card_status_enum"]
+          time_block?: Database["public"]["Enums"]["time_block_enum"]
+          title?: string
+          updated_at?: string
+          weather_notes?: string | null
+          weather_preset?: Database["public"]["Enums"]["weather_preset_enum"]
+          weather_temp_c?: number | null
+        }
+        Relationships: []
+      }
+      walk_entries: {
+        Row: {
+          created_at: string
+          flag_anomaly: boolean
+          id: string
+          is_closed: boolean
+          laptop_count: number
+          notes: string | null
+          people_count: number
+          photo_url: string | null
+          recorded_at: string
+          updated_at: string
+          venue_id: string
+          walk_card_id: string
+        }
+        Insert: {
+          created_at?: string
+          flag_anomaly?: boolean
+          id?: string
+          is_closed?: boolean
+          laptop_count?: number
+          notes?: string | null
+          people_count?: number
+          photo_url?: string | null
+          recorded_at?: string
+          updated_at?: string
+          venue_id: string
+          walk_card_id: string
+        }
+        Update: {
+          created_at?: string
+          flag_anomaly?: boolean
+          id?: string
+          is_closed?: boolean
+          laptop_count?: number
+          notes?: string | null
+          people_count?: number
+          photo_url?: string | null
+          recorded_at?: string
+          updated_at?: string
+          venue_id?: string
+          walk_card_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "walk_entries_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "walk_entries_walk_card_id_fkey"
+            columns: ["walk_card_id"]
+            isOneToOne: false
+            referencedRelation: "walk_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       webauthn_challenges: {
         Row: {
           challenge: string
@@ -3088,6 +3321,10 @@ export type Database = {
         Args: { email: string }
         Returns: boolean
       }
+      is_research_user: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_secret_kitchen_access_expired: {
         Args: { email_input: string }
         Returns: boolean
@@ -3167,6 +3404,22 @@ export type Database = {
       loyalty_card_type: "regular" | "lucky7"
       notification_scope: "all" | "self"
       notification_status: "draft" | "queued" | "sending" | "sent" | "failed"
+      time_block_enum:
+        | "EarlyMorning"
+        | "MidMorning"
+        | "Lunch"
+        | "MidAfternoon"
+        | "EarlyEvening"
+        | "Evening"
+        | "Late"
+      walk_card_status_enum: "Draft" | "Active" | "Completed"
+      weather_preset_enum:
+        | "Sunny"
+        | "Overcast"
+        | "Rain"
+        | "Mixed"
+        | "ColdSnap"
+        | "Heatwave"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3300,6 +3553,24 @@ export const Constants = {
       loyalty_card_type: ["regular", "lucky7"],
       notification_scope: ["all", "self"],
       notification_status: ["draft", "queued", "sending", "sent", "failed"],
+      time_block_enum: [
+        "EarlyMorning",
+        "MidMorning",
+        "Lunch",
+        "MidAfternoon",
+        "EarlyEvening",
+        "Evening",
+        "Late",
+      ],
+      walk_card_status_enum: ["Draft", "Active", "Completed"],
+      weather_preset_enum: [
+        "Sunny",
+        "Overcast",
+        "Rain",
+        "Mixed",
+        "ColdSnap",
+        "Heatwave",
+      ],
     },
   },
 } as const
