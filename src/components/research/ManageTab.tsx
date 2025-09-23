@@ -3,11 +3,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, MapPin, Building2, Search } from 'lucide-react';
+import { Plus, MapPin, Building2, Search, Edit, Trash2, Upload } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { VenueUpload } from './VenueUpload';
 
 export const ManageTab = () => {
   const { geoAreas, venues, walkCards, loading, createGeoArea, createVenue } = useResearch();
@@ -67,62 +68,67 @@ export const ManageTab = () => {
               <h2 className="text-lg font-semibold">Venues</h2>
               <p className="text-sm text-muted-foreground">Manage competitor venues</p>
             </div>
-            <Dialog open={showVenueDialog} onOpenChange={setShowVenueDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Venue
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Venue</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleCreateVenue} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="venue-name">Name *</Label>
-                    <Input
-                      id="venue-name"
-                      value={newVenueName}
-                      onChange={(e) => setNewVenueName(e.target.value)}
-                      placeholder="Venue name"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="venue-address">Address</Label>
-                    <Input
-                      id="venue-address"
-                      value={newVenueAddress}
-                      onChange={(e) => setNewVenueAddress(e.target.value)}
-                      placeholder="Street address"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="venue-geo-area">Geo Area *</Label>
-                    <Select value={newVenueGeoArea} onValueChange={setNewVenueGeoArea} required>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select geo area" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {geoAreas.map((area) => (
-                          <SelectItem key={area.id} value={area.id}>
-                            {area.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button type="submit" disabled={loading}>Create</Button>
-                    <Button type="button" variant="outline" onClick={() => setShowVenueDialog(false)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
+            <div className="flex gap-2">
+              <Dialog open={showVenueDialog} onOpenChange={setShowVenueDialog}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Venue
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Add New Venue</DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleCreateVenue} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="venue-name">Name *</Label>
+                      <Input
+                        id="venue-name"
+                        value={newVenueName}
+                        onChange={(e) => setNewVenueName(e.target.value)}
+                        placeholder="Venue name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="venue-address">Address</Label>
+                      <Input
+                        id="venue-address"
+                        value={newVenueAddress}
+                        onChange={(e) => setNewVenueAddress(e.target.value)}
+                        placeholder="Street address"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="venue-geo-area">Geo Area *</Label>
+                      <Select value={newVenueGeoArea} onValueChange={setNewVenueGeoArea} required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select geo area" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {geoAreas.map((area) => (
+                            <SelectItem key={area.id} value={area.id}>
+                              {area.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" disabled={loading}>Create</Button>
+                      <Button type="button" variant="outline" onClick={() => setShowVenueDialog(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
+
+          {/* Venue Upload Section */}
+          <VenueUpload />
 
           {/* Venues Filters */}
           <div className="flex flex-col sm:flex-row gap-4">
@@ -170,6 +176,14 @@ export const ManageTab = () => {
                             {venue.address}
                           </div>
                         )}
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -232,6 +246,14 @@ export const ManageTab = () => {
                         <p className="text-sm text-muted-foreground">
                           {venueCount} venue{venueCount !== 1 ? 's' : ''}
                         </p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>

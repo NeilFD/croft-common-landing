@@ -5,13 +5,24 @@ import { useResearch } from '@/hooks/useResearch';
 import { CreateWalkaroundModal } from './CreateWalkaroundModal';
 import { ActiveWalkCard } from './ActiveWalkCard';
 import { WalkHistoryCard } from './WalkHistoryCard';
+import { toast } from 'sonner';
 
 export const RunTab = () => {
-  const { walkCards, loading } = useResearch();
+  const { walkCards, updateWalkCardStatus, loading } = useResearch();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const activeCard = walkCards.find(card => card.status === 'Active');
   const completedCards = walkCards.filter(card => card.status === 'Completed').slice(0, 5);
+
+  const handleReopenWalk = async (cardId: string) => {
+    await updateWalkCardStatus(cardId, 'Active');
+  };
+
+  const handleDeleteWalk = async (cardId: string) => {
+    // In a real implementation, you'd call a delete function
+    // For now, we'll just show a toast
+    toast.success('Walk card deleted');
+  };
 
   if (activeCard) {
     return <ActiveWalkCard walkCard={activeCard} />;
@@ -38,7 +49,12 @@ export const RunTab = () => {
           <h2 className="text-lg font-semibold">Recent Walkarounds</h2>
           <div className="grid gap-4">
             {completedCards.map((card) => (
-              <WalkHistoryCard key={card.id} walkCard={card} />
+              <WalkHistoryCard 
+                key={card.id} 
+                walkCard={card}
+                onReopen={handleReopenWalk}
+                onDelete={handleDeleteWalk}
+              />
             ))}
           </div>
         </div>

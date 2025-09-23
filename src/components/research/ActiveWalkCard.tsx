@@ -1,227 +1,310 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Save, CheckCircle, Play, Users, Cloud, Calendar, Clock, Laptop } from 'lucide-react';
-import { useResearch, WalkCard } from '@/hooks/useResearch';
-import { VenueObservationRow } from './VenueObservationRow';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { 
+  MapPin, 
+  Users, 
+  Laptop, 
+  Camera, 
+  Flag, 
+  Clock, 
+  CloudRain,
+  CheckCircle,
+  Building2
+} from 'lucide-react';
+import { useResearch, WalkCard, WalkEntry } from '@/hooks/useResearch';
+import { toast } from 'sonner';
 
 interface ActiveWalkCardProps {
   walkCard: WalkCard;
 }
 
 export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
-  const { venues, geoAreas, walkEntries, fetchWalkEntries, updateWalkCardStatus, loading } = useResearch();
-  const [expandedAreas, setExpandedAreas] = useState<Set<string>>(new Set());
-  const [showCompleteDialog, setShowCompleteDialog] = useState(false);
+  const { 
+    venues, 
+    geoAreas, 
+    walkEntries, 
+    fetchWalkEntries, 
+    upsertWalkEntry, 
+    updateWalkCardStatus,
+    loading 
+  } = useResearch();
+  
+  const [currentVenueIndex, setCurrentVenueIndex] = useState(0);
+  const [entryData, setEntryData] = useState<Partial<WalkEntry>>({
+    people_count: 0,
+    laptop_count: 0,
+    is_closed: false,
+    flag_anomaly: false,
+    notes: ''
+  });
+
+  // Get venues from associated geo areas (simplified for now - in reality would use walk_card_geo_areas table)
+  const walkVenues = venues.filter(venue => 
+    geoAreas.some(area => area.id === venue.geo_area_id)
+  );
+
+  const currentVenue = walkVenues[currentVenueIndex];
+  const currentEntry = walkEntries.find(entry => 
+    entry.venue_id === currentVenue?.id && entry.walk_card_id === walkCard.id
+  );
 
   useEffect(() => {
-    fetchWalkEntries(walkCard.id);
+    if (walkCard.id) {
+      fetchWalkEntries(walkCard.id);
+    }
   }, [walkCard.id, fetchWalkEntries]);
 
-  // Get venues for selected geo areas (this would need geo area associations from backend)
-  const relevantVenues = venues.filter(venue => venue.is_active);
-  const venuesByArea = relevantVenues.reduce((acc, venue) => {
-    if (!acc[venue.geo_area_id]) {
-      acc[venue.geo_area_id] = [];
-    }
-    acc[venue.geo_area_id].push(venue);
-    return acc;
-  }, {} as Record<string, typeof venues>);
-
-  const toggleArea = (areaId: string) => {
-    const newExpanded = new Set(expandedAreas);
-    if (newExpanded.has(areaId)) {
-      newExpanded.delete(areaId);
+  useEffect(() => {
+    if (currentEntry) {
+      setEntryData({
+        people_count: currentEntry.people_count,
+        laptop_count: currentEntry.laptop_count,
+        is_closed: currentEntry.is_closed,
+        flag_anomaly: currentEntry.flag_anomaly,
+        notes: currentEntry.notes || ''
+      });
     } else {
-      newExpanded.add(areaId);
+      setEntryData({
+        people_count: 0,
+        laptop_count: 0,
+        is_closed: false,
+        flag_anomaly: false,
+        notes: ''
+      });
     }
-    setExpandedAreas(newExpanded);
+  }, [currentEntry]);
+
+  const handleSaveEntry = async () => {
+    if (!currentVenue) return;
+
+    await upsertWalkEntry({
+      walk_card_id: walkCard.id,
+      venue_id: currentVenue.id,
+      ...entryData
+    });
+
+    toast.success('Entry saved');
   };
 
-  const handleStartWalk = () => {
-    updateWalkCardStatus(walkCard.id, 'Active');
+  const handleNextVenue = () => {
+    if (currentVenueIndex < walkVenues.length - 1) {
+      handleSaveEntry();
+      setCurrentVenueIndex(prev => prev + 1);
+    }
   };
 
-  const handleCompleteWalk = () => {
-    setShowCompleteDialog(true);
+  const handlePrevVenue = () => {
+    if (currentVenueIndex > 0) {
+      handleSaveEntry();
+      setCurrentVenueIndex(prev => prev - 1);
+    }
   };
 
-  const confirmComplete = () => {
-    updateWalkCardStatus(walkCard.id, 'Completed');
-    setShowCompleteDialog(false);
+  const handleCompleteWalk = async () => {
+    await handleSaveEntry();
+    await updateWalkCardStatus(walkCard.id, 'Completed');
+    toast.success('Walk completed!');
   };
 
-  const formatTimeBlock = (timeBlock: string) => {
-    return timeBlock.replace(/([A-Z])/g, ' $1').trim();
-  };
+  const completedEntries = walkEntries.filter(entry => 
+    walkVenues.some(venue => venue.id === entry.venue_id)
+  ).length;
 
-  const showLaptopCountInline = walkCard.croft_zones.includes('Café');
+  if (!currentVenue) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <MapPin className="mx-auto h-12 w-12 mb-4 opacity-50" />
+            <p className="text-muted-foreground">No venues available for this walk</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Walk Card Header */}
+      {/* Walk Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
               <CardTitle className="flex items-center gap-2">
-                {walkCard.status === 'Draft' && <Play className="h-5 w-5 text-yellow-500" />}
-                {walkCard.status === 'Active' && <Users className="h-5 w-5 text-green-500" />}
+                <Clock className="h-5 w-5" />
                 {walkCard.title}
               </CardTitle>
-              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+                <span>{walkCard.date}</span>
+                <span>{walkCard.time_block}</span>
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  {walkCard.date}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  {formatTimeBlock(walkCard.time_block)}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Cloud className="h-4 w-4" />
+                  <CloudRain className="h-3 w-3" />
                   {walkCard.weather_preset}
-                  {walkCard.weather_temp_c && ` (${walkCard.weather_temp_c}°C)`}
+                  {walkCard.weather_temp_c && ` ${walkCard.weather_temp_c}°C`}
                 </div>
               </div>
             </div>
-            <Badge variant={walkCard.status === 'Active' ? 'default' : 'secondary'}>
-              {walkCard.status}
-            </Badge>
-          </div>
-          
-          {walkCard.croft_zones.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {walkCard.croft_zones.map((zone) => (
-                <Badge key={zone} variant="outline">{zone}</Badge>
-              ))}
+            <div className="text-right">
+              <Badge variant="secondary">Active</Badge>
+              <p className="text-sm text-muted-foreground mt-1">
+                {completedEntries} of {walkVenues.length} venues
+              </p>
             </div>
-          )}
-          
-          {walkCard.weather_notes && (
-            <p className="text-sm text-muted-foreground italic">
-              {walkCard.weather_notes}
-            </p>
-          )}
+          </div>
         </CardHeader>
       </Card>
 
-      {/* Start Walk Button (Draft Status) */}
-      {walkCard.status === 'Draft' && (
-        <div className="text-center">
-          <Button onClick={handleStartWalk} size="lg" disabled={loading}>
-            <Play className="mr-2 h-5 w-5" />
-            Start Walk
-          </Button>
-        </div>
-      )}
+      {/* Current Venue Entry */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              {currentVenue.name}
+            </div>
+            <span className="text-sm text-muted-foreground">
+              {currentVenueIndex + 1} of {walkVenues.length}
+            </span>
+          </CardTitle>
+          {currentVenue.address && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-3 w-3" />
+              {currentVenue.address}
+            </div>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Quick Status */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="closed"
+              checked={entryData.is_closed}
+              onCheckedChange={(checked) => 
+                setEntryData(prev => ({ ...prev, is_closed: checked as boolean }))
+              }
+            />
+            <Label htmlFor="closed">Venue is closed</Label>
+          </div>
 
-      {/* Venue Observations (Active Status) */}
-      {walkCard.status === 'Active' && (
-        <div className="space-y-4">
-          {Object.entries(venuesByArea).map(([areaId, areaVenues]) => {
-            const geoArea = geoAreas.find(area => area.id === areaId);
-            if (!geoArea) return null;
+          {!entryData.is_closed && (
+            <>
+              {/* People Count */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="people-count" className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    People Count
+                  </Label>
+                  <Input
+                    id="people-count"
+                    type="number"
+                    min="0"
+                    value={entryData.people_count || 0}
+                    onChange={(e) => 
+                      setEntryData(prev => ({ 
+                        ...prev, 
+                        people_count: parseInt(e.target.value) || 0 
+                      }))
+                    }
+                  />
+                </div>
 
-            const isExpanded = expandedAreas.has(areaId);
-            const areaEntries = walkEntries.filter(entry => 
-              areaVenues.some(venue => venue.id === entry.venue_id)
-            );
-            const totalPeople = areaEntries.reduce((sum, entry) => sum + entry.people_count, 0);
+                <div className="space-y-2">
+                  <Label htmlFor="laptop-count" className="flex items-center gap-2">
+                    <Laptop className="h-4 w-4" />
+                    Laptop Count
+                  </Label>
+                  <Input
+                    id="laptop-count"
+                    type="number"
+                    min="0"
+                    value={entryData.laptop_count || 0}
+                    onChange={(e) => 
+                      setEntryData(prev => ({ 
+                        ...prev, 
+                        laptop_count: parseInt(e.target.value) || 0 
+                      }))
+                    }
+                  />
+                </div>
+              </div>
 
-            return (
-              <Card key={areaId}>
-                <Collapsible>
-                  <CollapsibleTrigger 
-                    className="w-full"
-                    onClick={() => toggleArea(areaId)}
-                  >
-                    <CardHeader className="cursor-pointer hover:bg-muted/50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CardTitle className="text-lg">{geoArea.name}</CardTitle>
-                          <Badge variant="secondary">
-                            {areaVenues.length} venues
-                          </Badge>
-                          {totalPeople > 0 && (
-                            <Badge variant="default">
-                              {totalPeople} people
-                            </Badge>
-                          )}
-                        </div>
-                        {isExpanded ? (
-                          <ChevronUp className="h-5 w-5" />
-                        ) : (
-                          <ChevronDown className="h-5 w-5" />
-                        )}
-                      </div>
-                    </CardHeader>
-                  </CollapsibleTrigger>
-                  
-                  <CollapsibleContent>
-                    <CardContent className="pt-0 space-y-3">
-                      {areaVenues.map((venue) => {
-                        const entry = walkEntries.find(e => e.venue_id === venue.id);
-                        return (
-                          <VenueObservationRow
-                            key={venue.id}
-                            venue={venue}
-                            walkCardId={walkCard.id}
-                            entry={entry}
-                            showLaptopCountInline={showLaptopCountInline}
-                          />
-                        );
-                      })}
-                    </CardContent>
-                  </CollapsibleContent>
-                </Collapsible>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+              {/* Flag Anomaly */}
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="flag-anomaly"
+                  checked={entryData.flag_anomaly}
+                  onCheckedChange={(checked) => 
+                    setEntryData(prev => ({ ...prev, flag_anomaly: checked as boolean }))
+                  }
+                />
+                <Label htmlFor="flag-anomaly" className="flex items-center gap-2">
+                  <Flag className="h-4 w-4" />
+                  Flag as anomaly
+                </Label>
+              </div>
+            </>
+          )}
 
-      {/* Sticky Action Bar */}
-      {walkCard.status === 'Active' && (
-        <div className="fixed bottom-0 left-0 right-0 bg-card border-t p-4 z-50">
-          <div className="container mx-auto flex gap-2">
-            <Button variant="outline" className="flex-1">
-              <Save className="mr-2 h-4 w-4" />
-              Save Progress
+          {/* Notes */}
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Textarea
+              id="notes"
+              placeholder="Any observations or notes..."
+              value={entryData.notes || ''}
+              onChange={(e) => 
+                setEntryData(prev => ({ ...prev, notes: e.target.value }))
+              }
+              rows={3}
+            />
+          </div>
+
+          {/* Photo Upload Placeholder */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              Photos (Coming Soon)
+            </Label>
+            <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center text-muted-foreground">
+              <Camera className="mx-auto h-8 w-8 mb-2 opacity-50" />
+              <p>Photo upload will be available soon</p>
+            </div>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex gap-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={handlePrevVenue}
+              disabled={currentVenueIndex === 0}
+            >
+              Previous
             </Button>
-            <Button onClick={handleCompleteWalk} className="flex-1" disabled={loading}>
+            
+            <Button onClick={handleSaveEntry} disabled={loading}>
               <CheckCircle className="mr-2 h-4 w-4" />
-              Complete Walkaround
+              Save Entry
             </Button>
-          </div>
-        </div>
-      )}
 
-      {/* Complete Confirmation Dialog */}
-      <Dialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Complete Walkaround</DialogTitle>
-            <DialogDescription>
-              You're about to complete this walkaround. This will lock all entries and prevent further changes. Are you sure?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-2 justify-end">
-            <Button variant="outline" onClick={() => setShowCompleteDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={confirmComplete} disabled={loading}>
-              Yes, Complete
-            </Button>
+            {currentVenueIndex < walkVenues.length - 1 ? (
+              <Button onClick={handleNextVenue}>
+                Next Venue
+              </Button>
+            ) : (
+              <Button onClick={handleCompleteWalk} className="ml-auto">
+                Complete Walk
+              </Button>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add bottom padding to account for sticky action bar */}
-      <div className="h-20"></div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
