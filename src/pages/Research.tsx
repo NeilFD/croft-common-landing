@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RunTab } from '@/components/research/RunTab';
 import { ManageTab } from '@/components/research/ManageTab';
@@ -7,6 +7,16 @@ import CroftLogo from '@/components/CroftLogo';
 
 const Research = () => {
   const [activeTab, setActiveTab] = useState('run');
+
+  useEffect(() => {
+    const { body } = document;
+    // Reset any accidental global pointer blocking
+    if (body.style.pointerEvents === 'none') {
+      body.style.pointerEvents = 'auto';
+    }
+    body.classList.remove('gesture-drawing');
+    body.removeAttribute('data-pointer-blocked');
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
