@@ -288,7 +288,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-40 bg-transparent gesture-container"
+      className="fixed inset-0 z-40 bg-transparent gesture-container pointer-events-none"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

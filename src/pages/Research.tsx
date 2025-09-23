@@ -19,7 +19,7 @@ const Research = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative z-[60] min-h-screen bg-background pointer-events-auto">
       {/* Header */}
       <header className="bg-white border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -35,7 +35,7 @@ const Research = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-6">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={(v) => { console.log('Research Tabs change:', v); setActiveTab(v); }} className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="run">Run</TabsTrigger>
             <TabsTrigger value="manage">Manage</TabsTrigger>
