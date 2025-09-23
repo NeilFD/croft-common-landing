@@ -280,6 +280,63 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     };
   }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isDrawing, isInteractiveElement, points]);
 
+  // If no containerRef provided, attach global listeners to document for non-blocking gesture capture
+  useEffect(() => {
+    if (containerRef?.current) return;
+
+    const ts = (e: TouchEvent) => {
+      if (isInteractiveElement(e.target)) return;
+      try { window.getSelection()?.removeAllRanges(); } catch {}
+      const { x, y } = getEventPosition(e);
+      startGesture(x, y);
+    };
+    const tm = (e: TouchEvent) => {
+      if (!isDrawing) return;
+      if (isInteractiveElement(e.target)) return;
+      const { x, y } = getEventPosition(e);
+      addPoint(x, y);
+    };
+    const te = (e: TouchEvent) => {
+      if (isInteractiveElement(e.target)) return;
+      endGesture();
+    };
+    const md = (e: MouseEvent) => {
+      if (isInteractiveElement(e.target)) return;
+      e.preventDefault();
+      try { window.getSelection()?.removeAllRanges(); } catch {}
+      const { x, y } = getEventPosition(e);
+      startGesture(x, y);
+    };
+    const mm = (e: MouseEvent) => {
+      if (!isDrawing) return;
+      if (isInteractiveElement(e.target)) return;
+      e.preventDefault();
+      const { x, y } = getEventPosition(e);
+      addPoint(x, y);
+    };
+    const mu = (e: MouseEvent) => {
+      if (isInteractiveElement(e.target)) return;
+      e.preventDefault();
+      endGesture();
+    };
+
+    document.addEventListener('touchstart', ts, { passive: true });
+    document.addEventListener('touchmove', tm, { passive: true });
+    document.addEventListener('touchend', te, { passive: true });
+    document.addEventListener('mousedown', md);
+    document.addEventListener('mousemove', mm);
+    document.addEventListener('mouseup', mu);
+
+    return () => {
+      document.removeEventListener('touchstart', ts);
+      document.removeEventListener('touchmove', tm);
+      document.removeEventListener('touchend', te);
+      document.removeEventListener('mousedown', md);
+      document.removeEventListener('mousemove', mm);
+      document.removeEventListener('mouseup', mu);
+    };
+  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isDrawing, isInteractiveElement]);
+
   // If containerRef is provided, don't render overlay - gesture detection happens on the container
   if (containerRef) {
     return null;
@@ -288,17 +345,15 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-40 bg-transparent gesture-container"
+      className="fixed inset-0 z-40 bg-transparent"
       style={{ 
-        pointerEvents: 'none', // Make overlay non-blocking
+        pointerEvents: 'none',
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none',
         WebkitTapHighlightColor: 'transparent'
       }}
-    >
-      {/* Invisible overlay for gesture detection - doesn't block interactions */}
-    </div>
+    />
   );
 };
 

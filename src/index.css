@@ -362,7 +362,6 @@
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
   touch-action: manipulation !important;
-  pointer-events: auto !important;
 }
 
 .gesture-container * {
@@ -372,7 +371,6 @@
   -ms-user-select: none !important;
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  pointer-events: auto !important;
 }
 
 .gesture-container img {
@@ -468,7 +466,6 @@
   touch-action: manipulation !important;
   -webkit-touch-callout: none !important;
   -webkit-tap-highlight-color: transparent !important;
-  pointer-events: auto !important;
 }
 
 /* Only apply anti-selection to content areas, not interactive elements */
