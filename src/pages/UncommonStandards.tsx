@@ -8,7 +8,10 @@ const UncommonStandards = () => {
       
       <Navigation />
       
-      <main className="pt-32 pb-16 px-4">
+      <main 
+        className="pb-16 px-4"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 140px)' }}
+      >
         <div className="container mx-auto max-w-4xl">
           <header className="text-left mb-16">
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 text-center">
