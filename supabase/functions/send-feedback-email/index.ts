@@ -135,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     const emailResponse = await resend.emails.send({
-      from: "Croft Common Feedback <feedback@croftcommon.com>",
+      from: "Croft Common Feedback <onboarding@resend.dev>",
       to: ["neil@croftcommon.co.uk"],
       subject: `Uncommon Standards Feedback from ${displayName}`,
       html: `
