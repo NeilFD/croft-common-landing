@@ -136,7 +136,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "Croft Common Feedback <onboarding@resend.dev>",
-      to: ["neil@croftcommon.co.uk"],
+      to: ["neil@thehive-hospitality.com"],
       subject: `Uncommon Standards Feedback from ${displayName}`,
       html: `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #ffffff;">
