@@ -43,12 +43,6 @@ const Index = () => {
       
       {!isCMSMode && (
         <>
-          <FAQSection 
-            page="home"
-            title="Frequently Asked Questions"
-            className="bg-background"
-          />
-          
           {/* Uncommon Standards Button */}
           <div className="py-16 bg-background">
             <div className="container mx-auto px-4 text-center">
@@ -61,6 +55,12 @@ const Index = () => {
               </Button>
             </div>
           </div>
+
+          <FAQSection 
+            page="home"
+            title="Frequently Asked Questions"
+            className="bg-background"
+          />
           
           <Footer />
         </>
