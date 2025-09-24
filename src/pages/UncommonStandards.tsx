@@ -71,7 +71,7 @@ const UncommonStandards = () => {
 
           <div className="mt-16 bg-card rounded-lg p-8 border border-border">
             <p className="text-lg text-foreground font-medium mb-4">
-              . But it's our standard.
+              This is Uncommon Hospitality. But it's our standard.
             </p>
             <p className="text-muted-foreground text-lg leading-relaxed mb-4">If we ever blow you away, or If you ever feel we fall short, let us know. We mean it when we say we want you to hold us to account an dlet us know when we get it just right.</p>
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
