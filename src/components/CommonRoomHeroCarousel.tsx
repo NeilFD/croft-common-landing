@@ -11,6 +11,8 @@ import { useCMSImages } from '@/hooks/useCMSImages';
 import { commonRoomMenuData } from '@/data/menuData';
 import CroftLogo from './CroftLogo';
 import { useAuth } from '@/hooks/useAuth';
+import ClickProbe from './dev/ClickProbe';
+import DeadZoneGuard from './dev/DeadZoneGuard';
 
 const CommonRoomHeroCarousel = () => {
   const [showPongGame, setShowPongGame] = useState(false);
@@ -44,7 +46,7 @@ const CommonRoomHeroCarousel = () => {
 
 
       {/* Fixed watermark overlay */}
-      <div className="absolute inset-0 flex items-center justify-center mt-16 z-5 pointer-events-none" aria-hidden data-watermark="true">
+      <div className="absolute inset-0 flex items-center justify-center mt-16 z-0 pointer-events-none" aria-hidden data-watermark="true">
         <div className="group">
           <CroftLogo
             className="w-[18rem] h-[18rem] sm:w-[22rem] sm:h-[22rem] md:w-[26rem] md:h-[26rem] lg:w-[28rem] lg:h-[28rem] opacity-30 object-contain transition-all duration-500 invert pointer-events-none"
@@ -94,6 +96,10 @@ const CommonRoomHeroCarousel = () => {
         isComplete={gestureState.isComplete} 
         isDrawing={gestureState.isDrawing} 
       />
+
+      {/* Route-local guards and debugging */}
+      <DeadZoneGuard />
+      {typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debugclick') && <ClickProbe />}
 
       {/* Pong Game Modal */}
       {showPongGame && (

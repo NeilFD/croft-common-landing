@@ -189,6 +189,12 @@
   color: hsl(var(--foreground));
 }
 
+/* Ensure watermark never intercepts clicks/touches */
+[data-watermark="true"],
+[data-watermark="true"] * {
+  pointer-events: none !important;
+}
+
 /* GRADIENTS */
 .gradient-pink {
   background: linear-gradient(135deg, hsl(var(--accent-pink)) 0%, hsl(var(--accent-pink-dark)) 100%);

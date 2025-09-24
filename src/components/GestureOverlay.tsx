@@ -141,14 +141,10 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   const handleMouseDown = useCallback((event: React.MouseEvent) => {
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
-    
-    event.preventDefault();
-    
-    // Clear any existing text selection
+    // Do not prevent default on initial mousedown; allow native clicks
     try {
       window.getSelection()?.removeAllRanges();
     } catch {}
-    
     const { x, y } = getEventPosition(event);
     startGesture(x, y);
   }, [getEventPosition, startGesture, isInteractiveElement]);
@@ -167,10 +163,11 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   const handleMouseUp = useCallback((event: React.MouseEvent) => {
     // Allow interactive elements to function normally
     if (isInteractiveElement(event.target)) return;
-    
-    event.preventDefault();
+    if (isDrawing) {
+      event.preventDefault();
+    }
     endGesture();
-  }, [endGesture, isInteractiveElement]);
+  }, [endGesture, isInteractiveElement, isDrawing]);
 
   // Attach listeners to provided container instead of overlay
   useEffect(() => {
@@ -229,14 +226,10 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const md = (e: MouseEvent) => {
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
-      
-      e.preventDefault();
-      
-      // Clear any existing text selection
+      // Do not prevent default on initial mousedown; allow native clicks
       try {
         window.getSelection()?.removeAllRanges();
       } catch {}
-      
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
     };
@@ -255,8 +248,9 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     const mu = (e: MouseEvent) => {
       // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
-      
-      e.preventDefault();
+      if (isDrawing) {
+        e.preventDefault();
+      }
       endGesture();
     };
 
@@ -306,7 +300,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     };
     const md = (e: MouseEvent) => {
       if (isInteractiveElement(e.target)) return;
-      e.preventDefault();
+      // Do not prevent default on initial mousedown; allow native clicks
       try { window.getSelection()?.removeAllRanges(); } catch {}
       const { x, y } = getEventPosition(e);
       startGesture(x, y);
@@ -320,7 +314,9 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     };
     const mu = (e: MouseEvent) => {
       if (isInteractiveElement(e.target)) return;
-      e.preventDefault();
+      if (isDrawing) {
+        e.preventDefault();
+      }
       endGesture();
     };
 
