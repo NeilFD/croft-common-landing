@@ -45,6 +45,22 @@ const Footer = ({
             <SubscriptionForm variant="footer" className="max-w-md mx-auto" />
           </div>}
         
+        {/* Uncommon Standards section */}
+        <div className="mb-16 text-center border-b border-background/20 pb-12">
+          <h3 className="font-brutalist text-3xl mb-4 text-background">
+            Our Uncommon Standards
+          </h3>
+          <p className="font-industrial text-lg text-background/80 mb-6 max-w-2xl mx-auto leading-relaxed">
+            We believe hospitality should be felt, not just promised. These are the standards we hold ourselves to, written plainly and lived every shift.
+          </p>
+          <button
+            onClick={() => window.location.href = '/uncommon-standards'}
+            className="inline-flex items-center px-8 py-3 border-2 border-background text-background font-industrial text-lg hover:bg-background hover:text-void transition-all duration-200 rounded-lg"
+          >
+            Read Our Standards
+          </button>
+        </div>
+        
          <div className="grid md:grid-cols-3 gap-12">
           <div>
             <CMSText
