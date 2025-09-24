@@ -40,6 +40,18 @@ export default function DeadZoneGuard() {
           neutralised.push(he);
           break; // Next point
         }
+
+        // Special check for stuck transition overlays
+        if (he.hasAttribute('data-transition-overlay') && cs.pointerEvents !== 'none') {
+          const opacity = parseFloat(cs.opacity || '1');
+          if (opacity < 0.1) {
+            console.warn('[DeadZoneGuard] Found stuck transition overlay, neutralising');
+            he.style.pointerEvents = 'none';
+            he.setAttribute('data-debug-neutralised', 'transition-overlay');
+            neutralised.push(he);
+            break;
+          }
+        }
       }
     }
 

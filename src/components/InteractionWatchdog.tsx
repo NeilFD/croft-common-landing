@@ -17,8 +17,29 @@ export default function InteractionWatchdog() {
       }
     }
 
+    // Check for stuck high z-index overlays that might be blocking interactions
+    const overlays = Array.from(document.querySelectorAll('[data-transition-overlay]')) as HTMLElement[];
+    let overlayFixed = 0;
+    
+    for (const overlay of overlays) {
+      const styles = getComputedStyle(overlay);
+      const opacity = parseFloat(styles.opacity || '1');
+      const pointerEvents = styles.pointerEvents;
+      
+      // If overlay is nearly invisible but still has pointer events, fix it
+      if (opacity < 0.1 && pointerEvents !== 'none') {
+        overlay.style.pointerEvents = 'none';
+        overlayFixed++;
+        console.warn('[InteractionWatchdog] Fixed stuck transition overlay');
+      }
+    }
+
     if (fixed > 0) {
       console.warn(`[InteractionWatchdog] Removed ${fixed} stray disabled attribute(s).`);
+    }
+    
+    if (overlayFixed > 0) {
+      console.warn(`[InteractionWatchdog] Fixed ${overlayFixed} stuck overlay(s).`);
     }
   }, [location.pathname]);
 

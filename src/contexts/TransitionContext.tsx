@@ -189,16 +189,66 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
   // Intro on first visit to home (per tab/session)
   const location = useLocation();
+  const emergencyCleanupRef = useRef<number | null>(null);
+
+  // Emergency cleanup function to force-remove stuck overlays
+  const forceCleanup = () => {
+    console.warn('[TransitionProvider] Emergency cleanup triggered');
+    setOverlayVisible(false);
+    setIsTransitioning(false);
+    setPhase('idle');
+    setTargetPath('');
+    if (intervalRef.current) window.clearInterval(intervalRef.current);
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    intervalRef.current = null;
+  };
+
+  // Set up emergency cleanup failsafe whenever overlay becomes visible
+  useEffect(() => {
+    if (overlayVisible) {
+      // Clear any existing emergency cleanup
+      if (emergencyCleanupRef.current) {
+        clearTimeout(emergencyCleanupRef.current);
+      }
+      // Set emergency cleanup for 10 seconds (should never take this long)
+      emergencyCleanupRef.current = window.setTimeout(() => {
+        console.error('[TransitionProvider] Emergency cleanup activated - overlay stuck for >10s');
+        forceCleanup();
+      }, 10000);
+    } else {
+      // Clear emergency cleanup when overlay properly hidden
+      if (emergencyCleanupRef.current) {
+        clearTimeout(emergencyCleanupRef.current);
+        emergencyCleanupRef.current = null;
+      }
+    }
+
+    return () => {
+      if (emergencyCleanupRef.current) {
+        clearTimeout(emergencyCleanupRef.current);
+      }
+    };
+  }, [overlayVisible]);
+
   useEffect(() => {
     try {
+      // Clear any stuck intro flag on page load to ensure clean state
+      if (location.pathname === '/') {
+        sessionStorage.removeItem('introPlayed');
+      }
+      
       const played = sessionStorage.getItem('introPlayed') === '1';
       if (location.pathname === '/' && !played && !isTransitioning) {
+        console.log('[TransitionProvider] Starting intro sequence');
         // Start intro without navigation
         setTargetPath('');
         setIsTransitioning(true);
         sessionStorage.setItem('introPlayed', '1');
       }
-    } catch {}
+    } catch (e) {
+      console.warn('[TransitionProvider] SessionStorage error:', e);
+    }
   }, [location.pathname, isTransitioning]);
 
   return (
@@ -209,7 +259,10 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         className={`fixed inset-0 z-[99999] bg-void transition-opacity duration-[600ms] ${
           overlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
-        style={{ transformOrigin: 'center center', willChange: 'opacity, transform', pointerEvents: overlayVisible ? 'auto' : 'none' }}
+        style={{ 
+          transformOrigin: 'center center', 
+          willChange: 'opacity, transform'
+        }}
       >
         {/* Texture strobe layer */}
         <img
