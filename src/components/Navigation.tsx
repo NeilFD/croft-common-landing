@@ -8,11 +8,13 @@ import { getRoutePreview } from '@/data/routeHeroMap';
 import { Button } from '@/components/ui/button';
 import CroftLogo from '@/components/CroftLogo';
 import { CMSText } from './cms/CMSText';
+import { useIOSDetection } from '@/hooks/useIOSDetection';
 const Navigation = () => {
   const { triggerTransition } = useTransition();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isIOS, isCapacitorNative } = useIOSDetection();
   
   const navItems = [
     { name: 'CAFE', path: '/cafe' },
@@ -117,7 +119,9 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-charcoal">
+    <nav className={`fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-charcoal ${
+      isCapacitorNative && isIOS ? 'pt-[env(safe-area-inset-top)]' : ''
+    }`}>
       <div className="container mx-auto px-1 sm:px-2 md:px-6 py-4 flex justify-between items-center">
         <button 
           onClick={() => handleNavClick('/', 'logo-click')}
