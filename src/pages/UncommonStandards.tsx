@@ -2,17 +2,9 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedMetaTags } from "@/components/SEO/EnhancedMetaTags";
 import { FeedbackButton } from "@/components/FeedbackButton";
-
 const UncommonStandards = () => {
-  return (
-    <div className="min-h-screen">
-      <EnhancedMetaTags
-        title="Croft Common - Uncommon Standards"
-        description="We believe hospitality should never hide behind slogans. It should be lived, every shift, every guest, every moment. Here are the standards we hold ourselves to."
-        keywords={["hospitality standards", "Croft Common values", "restaurant standards", "uncommon hospitality"]}
-        url="https://croftcommon.com/uncommon-standards"
-        type="website"
-      />
+  return <div className="min-h-screen">
+      <EnhancedMetaTags title="Croft Common - Uncommon Standards" description="We believe hospitality should never hide behind slogans. It should be lived, every shift, every guest, every moment. Here are the standards we hold ourselves to." keywords={["hospitality standards", "Croft Common values", "restaurant standards", "uncommon hospitality"]} url="https://croftcommon.com/uncommon-standards" type="website" />
       
       <Navigation />
       
@@ -22,9 +14,7 @@ const UncommonStandards = () => {
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 text-center">
               Uncommon Standards
             </h1>
-            <p className="text-xl text-muted-foreground leading-relaxed text-left">
-              We believe hospitality should never hide behind slogans. It should be lived, every shift, every guest, every moment. So here are the standards we hold ourselves to, written as plainly as possible.
-            </p>
+            <p className="text-xl text-muted-foreground leading-relaxed text-left">We believe hospitality should never hide behind slogans. It should be lived, every shift, every guest, every moment. So here are the standards we hold ourselves to, written as plainly as possible. Open book, transparent, uncommon.</p>
           </header>
 
           <div className="space-y-12">
@@ -97,8 +87,6 @@ const UncommonStandards = () => {
       </main>
       
       <Footer />
-    </div>
-  );
+    </div>;
 };
-
 export default UncommonStandards;
