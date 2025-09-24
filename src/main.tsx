@@ -27,6 +27,11 @@ if (
 } else {
   createRoot(document.getElementById("root")!).render(<App />);
   
+  // Initialise native status bar (iOS) without blocking render
+  import('./mobile/initStatusBar')
+    .then(({ initStatusBar }) => { if (typeof initStatusBar === 'function') initStatusBar(); })
+    .catch((err) => { console.warn('StatusBar init skipped:', err); });
+
   // Initialize PWA earlier and with better timing
   requestAnimationFrame(() => {
     import('./pwa/deferredPWA')

@@ -117,12 +117,12 @@ export const EnhancedMetaTags = ({
       <meta name="bingbot" content="index, follow" />
       
       {/* Mobile and responsive */}
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       <meta name="format-detection" content="telephone=yes" />
       
       {/* PWA and mobile app tags */}
       <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       <meta name="apple-mobile-web-app-title" content="Croft Common" />
       
       {/* Language and region */}

@@ -124,7 +124,8 @@ const Navigation = () => {
     <>
       <SafeAreaTopCap />
       <nav
-        className={`fixed top-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-b border-charcoal isolate transform-gpu pt-[env(safe-area-inset-top)]`}
+        className={`fixed top-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-b border-charcoal isolate transform-gpu`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
       {isNativeIOS && (
         <div
