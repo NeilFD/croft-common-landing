@@ -141,7 +141,7 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto my-4">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-foreground">
             Tell us more
