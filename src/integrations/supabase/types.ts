@@ -754,6 +754,63 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_submissions: {
+        Row: {
+          created_at: string
+          drink_rating: number | null
+          email: string | null
+          food_rating: number | null
+          hospitality_rating: number | null
+          id: string
+          is_anonymous: boolean
+          message: string
+          name: string | null
+          overall_rating: number | null
+          price_rating: number | null
+          source_page: string | null
+          team_rating: number | null
+          updated_at: string
+          user_id: string | null
+          venue_rating: number | null
+        }
+        Insert: {
+          created_at?: string
+          drink_rating?: number | null
+          email?: string | null
+          food_rating?: number | null
+          hospitality_rating?: number | null
+          id?: string
+          is_anonymous?: boolean
+          message: string
+          name?: string | null
+          overall_rating?: number | null
+          price_rating?: number | null
+          source_page?: string | null
+          team_rating?: number | null
+          updated_at?: string
+          user_id?: string | null
+          venue_rating?: number | null
+        }
+        Update: {
+          created_at?: string
+          drink_rating?: number | null
+          email?: string | null
+          food_rating?: number | null
+          hospitality_rating?: number | null
+          id?: string
+          is_anonymous?: boolean
+          message?: string
+          name?: string | null
+          overall_rating?: number | null
+          price_rating?: number | null
+          source_page?: string | null
+          team_rating?: number | null
+          updated_at?: string
+          user_id?: string | null
+          venue_rating?: number | null
+        }
+        Relationships: []
+      }
       geo_areas: {
         Row: {
           created_at: string

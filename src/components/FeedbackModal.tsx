@@ -14,10 +14,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { StarRating } from './StarRating';
 
 interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface Ratings {
+  hospitality: number | null;
+  food: number | null;
+  drink: number | null;
+  team: number | null;
+  venue: number | null;
+  price: number | null;
+  overall: number | null;
 }
 
 export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
@@ -25,6 +36,15 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
   const [message, setMessage] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [ratings, setRatings] = useState<Ratings>({
+    hospitality: null,
+    food: null,
+    drink: null,
+    team: null,
+    venue: null,
+    price: null,
+    overall: null,
+  });
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -56,7 +76,9 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
         body: {
           name: name.trim(),
           message: message.trim(),
-          isAnonymous
+          isAnonymous,
+          ratings,
+          sourcePage: 'uncommon-standards'
         }
       });
 
@@ -73,6 +95,15 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
       setName('');
       setMessage('');
       setIsAnonymous(false);
+      setRatings({
+        hospitality: null,
+        food: null,
+        drink: null,
+        team: null,
+        venue: null,
+        price: null,
+        overall: null,
+      });
       onClose();
     } catch (error) {
       console.error('Error sending feedback:', error);
@@ -91,8 +122,21 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
       setName('');
       setMessage('');
       setIsAnonymous(false);
+      setRatings({
+        hospitality: null,
+        food: null,
+        drink: null,
+        team: null,
+        venue: null,
+        price: null,
+        overall: null,
+      });
       onClose();
     }
+  };
+
+  const handleRatingChange = (category: keyof Ratings, value: number | null) => {
+    setRatings(prev => ({ ...prev, [category]: value }));
   };
 
   return (
@@ -159,6 +203,58 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
               <p className="text-xs text-muted-foreground text-right">
                 {message.length}/1000 characters
               </p>
+            </div>
+
+            {/* Optional Rating System */}
+            <div className="space-y-4 pt-4 border-t border-border">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  Rate your experience (optional)
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Help us understand what we're doing well and where we can improve
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <StarRating
+                  label="Hospitality"
+                  value={ratings.hospitality}
+                  onChange={(value) => handleRatingChange('hospitality', value)}
+                />
+                <StarRating
+                  label="Food"
+                  value={ratings.food}
+                  onChange={(value) => handleRatingChange('food', value)}
+                />
+                <StarRating
+                  label="Drink"
+                  value={ratings.drink}
+                  onChange={(value) => handleRatingChange('drink', value)}
+                />
+                <StarRating
+                  label="Team"
+                  value={ratings.team}
+                  onChange={(value) => handleRatingChange('team', value)}
+                />
+                <StarRating
+                  label="Venue"
+                  value={ratings.venue}
+                  onChange={(value) => handleRatingChange('venue', value)}
+                />
+                <StarRating
+                  label="Price"
+                  value={ratings.price}
+                  onChange={(value) => handleRatingChange('price', value)}
+                />
+              </div>
+              
+              <StarRating
+                label="Overall Experience"
+                value={ratings.overall}
+                onChange={(value) => handleRatingChange('overall', value)}
+                className="pt-2"
+              />
             </div>
           </div>
 

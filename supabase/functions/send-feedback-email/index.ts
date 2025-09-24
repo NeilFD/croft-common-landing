@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -13,6 +14,16 @@ interface FeedbackRequest {
   name: string;
   message: string;
   isAnonymous: boolean;
+  ratings?: {
+    hospitality: number | null;
+    food: number | null;
+    drink: number | null;
+    team: number | null;
+    venue: number | null;
+    price: number | null;
+    overall: number | null;
+  };
+  sourcePage?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -22,7 +33,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { name, message, isAnonymous }: FeedbackRequest = await req.json();
+    const { name, message, isAnonymous, ratings, sourcePage }: FeedbackRequest = await req.json();
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    
+    if (!supabaseUrl || !supabaseServiceKey) {
+      throw new Error("Missing Supabase configuration");
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Validate required fields
     if (!message || message.trim().length === 0) {
@@ -54,6 +75,65 @@ const handler = async (req: Request): Promise<Response> => {
       minute: '2-digit'
     });
 
+    // Store feedback in database
+    const { data: feedbackData, error: dbError } = await supabase
+      .from('feedback_submissions')
+      .insert({
+        name: isAnonymous ? null : name.trim(),
+        message: message.trim(),
+        is_anonymous: isAnonymous,
+        source_page: sourcePage || 'unknown',
+        hospitality_rating: ratings?.hospitality || null,
+        food_rating: ratings?.food || null,
+        drink_rating: ratings?.drink || null,
+        team_rating: ratings?.team || null,
+        venue_rating: ratings?.venue || null,
+        price_rating: ratings?.price || null,
+        overall_rating: ratings?.overall || null,
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error('Database error:', dbError);
+      throw new Error(`Failed to store feedback: ${dbError.message}`);
+    }
+
+    console.log('Feedback stored successfully:', feedbackData.id);
+
+    // Format ratings for email display
+    const formatRatings = (ratings: any) => {
+      if (!ratings) return '';
+      
+      const ratingCategories = [
+        { key: 'hospitality', label: 'Hospitality' },
+        { key: 'food', label: 'Food' },
+        { key: 'drink', label: 'Drink' },
+        { key: 'team', label: 'Team' },
+        { key: 'venue', label: 'Venue' },
+        { key: 'price', label: 'Price' },
+        { key: 'overall', label: 'Overall Experience' }
+      ];
+      
+      const ratedCategories = ratingCategories.filter(cat => 
+        ratings[cat.key] !== null && ratings[cat.key] !== undefined
+      );
+      
+      if (ratedCategories.length === 0) return '';
+      
+      return `
+        <div style="margin: 30px 0;">
+          <h3 style="color: #1f2937; font-size: 16px; margin: 0 0 15px 0;">Ratings:</h3>
+          <div style="background-color: #f9fafb; border-left: 4px solid #10b981; padding: 15px; border-radius: 0 8px 8px 0;">
+            ${ratedCategories.map(cat => {
+              const stars = '★'.repeat(ratings[cat.key]) + '☆'.repeat(5 - ratings[cat.key]);
+              return `<p style="margin: 5px 0;"><strong>${cat.label}:</strong> ${stars} (${ratings[cat.key]}/5)</p>`;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    };
+
     const emailResponse = await resend.emails.send({
       from: "Croft Common Feedback <feedback@croftcommon.com>",
       to: ["neil@croftcommon.co.uk"],
@@ -71,6 +151,8 @@ const handler = async (req: Request): Promise<Response> => {
             <p style="margin: 8px 0;"><strong>Date:</strong> ${currentDate}</p>
             <p style="margin: 8px 0;"><strong>Source:</strong> Uncommon Standards page</p>
           </div>
+          
+          ${formatRatings(ratings)}
           
           <div style="margin: 30px 0;">
             <h3 style="color: #1f2937; font-size: 16px; margin: 0 0 15px 0;">Message:</h3>
