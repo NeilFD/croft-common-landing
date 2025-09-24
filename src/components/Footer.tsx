@@ -55,7 +55,7 @@ const Footer = ({
           </p>
           <button
             onClick={() => window.location.href = '/uncommon-standards'}
-            className="inline-flex items-center px-8 py-3 border-2 border-background text-background font-industrial text-lg hover:bg-background hover:text-void transition-all duration-200 rounded-lg"
+            className="inline-flex items-center px-8 py-3 border-2 border-background text-background font-industrial text-lg hover:bg-accent hover:text-accent-foreground transition-colors duration-200 rounded-lg"
           >
             Uncommon Standards
           </button>
