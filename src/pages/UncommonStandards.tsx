@@ -19,8 +19,8 @@ const UncommonStandards = () => {
       <main className="pt-32 pb-16 px-4">
         <div className="container mx-auto max-w-4xl">
           <header className="text-left mb-16">
-            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6 whitespace-nowrap">
-              Croft Common - Uncommon Standards
+            <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+              Uncommon Standards
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed text-left">
               We believe hospitality should never hide behind slogans. It should be lived, every shift, every guest, every moment. So here are the standards we hold ourselves to, written as plainly as possible.
