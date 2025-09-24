@@ -233,11 +233,6 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
   useEffect(() => {
     try {
-      // Clear any stuck intro flag on page load to ensure clean state
-      if (location.pathname === '/') {
-        sessionStorage.removeItem('introPlayed');
-      }
-      
       const played = sessionStorage.getItem('introPlayed') === '1';
       if (location.pathname === '/' && !played && !isTransitioning) {
         console.log('[TransitionProvider] Starting intro sequence');
