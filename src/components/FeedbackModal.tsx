@@ -103,7 +103,7 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
             Tell us more
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Help us maintain our uncommon standards. Your feedback goes directly to our team.
+            Your feedback goes directly to Neil who runs the team at Croft Common. Give us the good and the not so good, everything helps.
           </DialogDescription>
         </DialogHeader>
 
