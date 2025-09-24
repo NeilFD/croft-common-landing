@@ -42,7 +42,7 @@ const CommonRoom = () => {
             contentKey="title"
             fallback="THE COMMON ROOM"
             as="h1"
-            className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] cursor-pointer text-center md:text-left"
+            className="text-xl md:text-3xl font-light text-black tracking-[0.1em] md:tracking-[0.2em] uppercase transition-all duration-300 hover:text-[hsl(var(--accent-sage-green))] text-center md:text-left"
           />
         </div>
         

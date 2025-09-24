@@ -14,7 +14,7 @@ interface CroftLogoProps {
   interactive?: boolean;
 }
 
-const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDevPanel = true, interactive = true }: CroftLogoProps) => {
+const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDevPanel = true, interactive = false }: CroftLogoProps) => {
   const [imageError, setImageError] = useState(false);
   const { handleLogoTap, openPanel } = useHiddenDevPanel();
   

@@ -256,7 +256,22 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         }`}
         style={{ 
           transformOrigin: 'center center', 
-          willChange: 'opacity, transform'
+          willChange: 'opacity, transform',
+          // Micro-guard: force pointer-events none if opacity is low
+          pointerEvents: overlayVisible ? 'auto' : 'none'
+        }}
+        ref={(el) => {
+          if (el && overlayVisible) {
+            // Additional runtime guard for race conditions
+            const checkOpacity = () => {
+              const computed = getComputedStyle(el);
+              if (parseFloat(computed.opacity) < 0.1) {
+                el.style.pointerEvents = 'none';
+              }
+            };
+            // Check after a brief delay to catch transition states
+            setTimeout(checkOpacity, 50);
+          }
         }}
       >
         {/* Texture strobe layer */}
@@ -271,7 +286,7 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
 
         {/* Centered logo + title */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-6 pointer-events-none">
             <CroftLogo
               className={`w-[18rem] h-[18rem] md:w-[20rem] md:h-[20rem] lg:w-[22rem] lg:h-[22rem] transition-all duration-300 ${
                 phase === 'soft-logo' || phase === 'logo' ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
@@ -280,9 +295,10 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
                   ? 'invert brightness-200 drop-shadow-[0_0_3rem_hsl(var(--foreground)/0.9)]'
                   : 'invert brightness-110'
               }`}
+              interactive={false}
             />
             <div
-              className={`font-brutalist text-2xl md:text-3xl lg:text-4xl tracking-wider text-primary-foreground transition-opacity duration-300 ${
+              className={`font-brutalist text-2xl md:text-3xl lg:text-4xl tracking-wider text-primary-foreground transition-opacity duration-300 pointer-events-none ${
                 phase === 'soft-logo' || phase === 'logo' ? 'opacity-100' : 'opacity-0'
               }`}
               aria-hidden="true"

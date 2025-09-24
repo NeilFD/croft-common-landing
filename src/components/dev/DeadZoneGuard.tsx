@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react';
 
 /**
  * Route-local guard to neutralise invisible, large overlays that block interactions.
- * Heuristic: fixed/absolute, pointer-events not none, opacity <= 0.05, covering >50% viewport.
+ * Enhanced heuristic: detects elements with misleading cursor styles and large coverage.
  */
 export default function DeadZoneGuard() {
   const scan = useCallback(() => {
@@ -11,10 +11,16 @@ export default function DeadZoneGuard() {
     const cx = Math.round(vw / 2);
     const cy = Math.round(vh / 2);
 
+    // Enhanced point sampling including center and watermark zone
     const points = [
       [cx, cy],
       [Math.round(vw * 0.25), cy],
       [Math.round(vw * 0.75), cy],
+      // Additional vertical band around watermark zone
+      [cx, Math.round(vh * 0.35)],
+      [cx, Math.round(vh * 0.65)],
+      [Math.round(vw * 0.4), Math.round(vh * 0.5)],
+      [Math.round(vw * 0.6), Math.round(vh * 0.5)],
     ];
 
     const neutralised: Element[] = [];
@@ -31,12 +37,17 @@ export default function DeadZoneGuard() {
         const rect = he.getBoundingClientRect();
         const area = rect.width * rect.height;
         const viewportArea = vw * vh;
-        const coversMajority = area > viewportArea * 0.5;
+        const coversMajority = area > viewportArea * 0.25; // Reduced threshold
         const nearlyInvisible = parseFloat(cs.opacity || '1') <= 0.05 || cs.visibility === 'hidden';
+        const hasMisleadingCursor = cs.cursor === 'pointer' && 
+          !he.onclick && 
+          !he.getAttribute('href') && 
+          !he.getAttribute('role')?.includes('button');
 
-        if (coversMajority && nearlyInvisible) {
+        // Enhanced detection: large + (invisible OR misleading cursor)
+        if (coversMajority && (nearlyInvisible || hasMisleadingCursor)) {
           he.style.pointerEvents = 'none';
-          he.setAttribute('data-debug-neutralised', 'true');
+          he.setAttribute('data-debug-neutralised', hasMisleadingCursor ? 'misleading-cursor' : 'invisible');
           neutralised.push(he);
           break; // Next point
         }
