@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 /**
  * Route-local guard to neutralise invisible, large overlays that block interactions.
@@ -37,8 +38,14 @@ export default function DeadZoneGuard() {
         const rect = he.getBoundingClientRect();
         const area = rect.width * rect.height;
         const viewportArea = vw * vh;
-        const coversMajority = area > viewportArea * 0.25; // Reduced threshold
-        const nearlyInvisible = parseFloat(cs.opacity || '1') <= 0.05 || cs.visibility === 'hidden';
+        const isNative = Capacitor.isNativePlatform();
+        
+        // Use different thresholds for native vs desktop
+        const coverageThreshold = isNative ? 0.15 : 0.25;
+        const opacityThreshold = isNative ? 0.15 : 0.05;
+        
+        const coversMajority = area > viewportArea * coverageThreshold;
+        const nearlyInvisible = parseFloat(cs.opacity || '1') <= opacityThreshold || cs.visibility === 'hidden';
         const hasMisleadingCursor = cs.cursor === 'pointer' && 
           !he.onclick && 
           !he.getAttribute('href') && 
@@ -47,6 +54,19 @@ export default function DeadZoneGuard() {
         // Enhanced detection: large + (invisible OR misleading cursor)
         if (coversMajority && (nearlyInvisible || hasMisleadingCursor)) {
           he.style.pointerEvents = 'none';
+          
+          // Apply additional native-specific fixes
+          if (isNative) {
+            he.style.touchAction = 'none';
+            (he.style as any).webkitTouchCallout = 'none';
+            (he.style as any).webkitUserSelect = 'none';
+            if (nearlyInvisible) {
+              he.style.visibility = 'hidden';
+              he.style.transform = 'translateZ(-1px)';
+            }
+            console.warn('[DeadZoneGuard] Applied native-specific fixes to element:', he);
+          }
+          
           he.setAttribute('data-debug-neutralised', hasMisleadingCursor ? 'misleading-cursor' : 'invisible');
           neutralised.push(he);
           break; // Next point

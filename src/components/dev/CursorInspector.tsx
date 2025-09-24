@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
 
 interface ElementInfo {
   tag: string;
@@ -31,6 +32,8 @@ export default function CursorInspector() {
   useEffect(() => {
     if (!isActive) return;
 
+    const isNative = Capacitor.isNativePlatform();
+
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
       
@@ -62,10 +65,11 @@ export default function CursorInspector() {
 
       setElementInfo(info);
 
-      // Highlight element if it has suspicious properties
+      // Highlight element if it has suspicious properties (with native-aware thresholds)
+      const opacityThreshold = isNative ? 0.15 : 0.1;
       const isSuspicious = (
         computedStyle.cursor === 'pointer' &&
-        (parseFloat(computedStyle.opacity) < 0.1 ||
+        (parseFloat(computedStyle.opacity) < opacityThreshold ||
          computedStyle.visibility === 'hidden' ||
          (!topElement.onclick && 
           !topElement.getAttribute('href') && 
@@ -76,7 +80,7 @@ export default function CursorInspector() {
         topElement.style.outline = '2px dashed red';
         topElement.setAttribute('data-cursor-debug', 'suspicious');
         setHighlightedElement(topElement);
-        console.warn('[CursorInspector] Suspicious element:', {
+        console.warn(`[CursorInspector] Suspicious element (${isNative ? 'NATIVE' : 'DESKTOP'}):`, {
           element: topElement,
           ...info
         });
@@ -87,10 +91,24 @@ export default function CursorInspector() {
       }
     };
 
+    const handleTouchStart = (e: TouchEvent) => {
+      if (!isNative || e.touches.length === 0) return;
+      const touch = e.touches[0];
+      handleMouseMove({ clientX: touch.clientX, clientY: touch.clientY } as MouseEvent);
+    };
+
     document.addEventListener('mousemove', handleMouseMove);
+    
+    // Add touch support for native platforms
+    if (isNative) {
+      document.addEventListener('touchstart', handleTouchStart);
+    }
     
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
+      if (isNative) {
+        document.removeEventListener('touchstart', handleTouchStart);
+      }
       // Clean up any remaining highlights
       if (highlightedElement) {
         highlightedElement.style.outline = '';

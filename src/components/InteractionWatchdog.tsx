@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 
 // Removes stray disabled attributes from non-form elements to prevent accidental click-blocking overlays
 export default function InteractionWatchdog() {
   const location = useLocation();
 
   useEffect(() => {
+    const isNative = Capacitor.isNativePlatform();
     const allowed = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'OPTION', 'FIELDSET']);
     const nodes = Array.from(document.querySelectorAll('[disabled]')) as HTMLElement[];
     let fixed = 0;
@@ -43,13 +45,24 @@ export default function InteractionWatchdog() {
       const cs = getComputedStyle(topElement);
       
       // Check for misleading cursor with no real interactivity and low opacity
+      const opacityThreshold = isNative ? 0.15 : 0.1;
+      
       if (cs.cursor === 'pointer' && 
           !topElement.onclick && 
           !topElement.getAttribute('href') && 
           !topElement.getAttribute('role')?.includes('button') &&
-          parseFloat(cs.opacity || '1') < 0.1) {
+          parseFloat(cs.opacity || '1') < opacityThreshold) {
         
         topElement.style.pointerEvents = 'none';
+        
+        // Apply additional native-specific fixes
+        if (isNative) {
+          topElement.style.touchAction = 'none';
+          (topElement.style as any).webkitTouchCallout = 'none';
+          (topElement.style as any).webkitUserSelect = 'none';
+          console.warn('[InteractionWatchdog] Applied native-specific fixes to center element:', topElement);
+        }
+        
         topElement.setAttribute('data-debug-neutralised', 'center-probe');
         centerFixed++;
       }
@@ -65,8 +78,19 @@ export default function InteractionWatchdog() {
       const pointerEvents = styles.pointerEvents;
       
       // If overlay is nearly invisible but still has pointer events, fix it
-      if (opacity < 0.1 && pointerEvents !== 'none') {
+      const overlayOpacityThreshold = isNative ? 0.15 : 0.1;
+      
+      if (opacity < overlayOpacityThreshold && pointerEvents !== 'none') {
         overlay.style.pointerEvents = 'none';
+        
+        // Apply additional native-specific fixes
+        if (isNative) {
+          overlay.style.touchAction = 'none';
+          (overlay.style as any).webkitTouchCallout = 'none';
+          overlay.style.visibility = 'hidden';
+          overlay.style.transform = 'translateZ(-1px)';
+        }
+        
         overlayFixed++;
         console.warn('[InteractionWatchdog] Fixed stuck transition overlay');
       }
