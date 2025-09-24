@@ -43,16 +43,23 @@ const Index = () => {
       
       {!isCMSMode && (
         <>
-          {/* Uncommon Standards Button */}
+          {/* Uncommon Standards Section */}
           <div className="py-16 bg-background">
-            <div className="container mx-auto px-4 text-center">
-              <Button
-                onClick={() => navigate('/uncommon-standards')}
-                className="w-64 h-16 border-2 border-foreground bg-transparent text-foreground font-medium text-lg hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
-                variant="outline"
-              >
-                Uncommon Standards
-              </Button>
+            <div className="container mx-auto px-4">
+              <div className="max-w-4xl mx-auto">
+                <p className="text-xl text-muted-foreground leading-relaxed text-left mb-8">
+                  Hospitality should be felt, not just promised. These are the standards we hold ourselves to, written plainly and lived daily.
+                </p>
+                <div className="text-center">
+                  <Button
+                    onClick={() => navigate('/uncommon-standards')}
+                    className="w-64 h-16 border-2 border-foreground bg-transparent text-foreground font-medium text-lg hover:bg-accent hover:text-accent-foreground transition-colors duration-200"
+                    variant="outline"
+                  >
+                    Uncommon Standards
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
