@@ -199,6 +199,12 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     
     console.log('🔐 [Mobile Debug] Verify button clicked, otpCode:', otpCode, 'length:', otpCode.length);
     
+    // Prevent double submissions - critical for native platforms
+    if (loading) {
+      console.log('🚨 [Mobile Debug] Verification already in progress, ignoring');
+      return;
+    }
+    
     if (!otpCode || otpCode.length !== 6) {
       console.log('🚨 [Mobile Debug] Invalid OTP code length');
       toast({
@@ -339,13 +345,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
                 type="submit" 
                 disabled={loading || otpCode.length !== 6} 
                 className="flex-1"
-                onPointerUp={(e) => {
-                  console.log('🔐 [Mobile Debug] Button onPointerUp fired');
-                  const btn = e.currentTarget as HTMLButtonElement;
-                  if (!loading && otpCode.length === 6) {
-                    btn.form?.requestSubmit();
-                  }
-                }}
               >
                 {loading ? 'Verifying...' : 'Verify'}
               </Button>

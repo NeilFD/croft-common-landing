@@ -31,11 +31,33 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
       const supportedBrowser = isWebAuthnSupported();
       const platform = supportedBrowser ? await isPlatformAuthenticatorAvailable() : false;
       if (!mounted) return;
-      setSupported(supportedBrowser && platform);
+      
+      // Enhanced Capacitor-aware support detection
+      const isCapacitor = window.Capacitor?.isNativePlatform?.() || false;
+      const ua = navigator.userAgent || '';
+      const isIOS = /iPhone|iPad|iPod/.test(ua);
+      
+      console.debug('[BiometricModal] Support check:', { 
+        supportedBrowser, 
+        platform, 
+        isCapacitor, 
+        isIOS,
+        userAgent: ua.substring(0, 100)
+      });
+      
+      // In Capacitor on iOS, be more permissive about platform availability
+      const finalSupported = supportedBrowser && (platform || (isCapacitor && isIOS));
+      
+      setSupported(finalSupported);
       if (!supportedBrowser) {
         setError('Passkeys are not supported in this browser.');
-      } else if (!platform) {
-        setError('No built-in authenticator available on this device.');
+      } else if (!finalSupported) {
+        // More specific error message for Capacitor context
+        if (isCapacitor && isIOS) {
+          setError('Face ID may not be set up on this device. Please check your device settings.');
+        } else {
+          setError('No built-in authenticator available on this device.');
+        }
       } else {
         setError(null);
       }

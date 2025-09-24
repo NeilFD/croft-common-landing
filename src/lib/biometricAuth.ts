@@ -181,11 +181,39 @@ export function isWebAuthnSupported(): boolean {
 
 export async function isPlatformAuthenticatorAvailable(): Promise<boolean> {
   try {
-    // Some browsers can throw here if in Private mode
+    // Check if we're in Capacitor (native app context)
+    const isCapacitor = window.Capacitor?.isNativePlatform?.() || false;
+    
+    if (isCapacitor) {
+      // On native iOS/Android, assume Face ID/biometrics are available if WebAuthn is supported
+      // The native WebView may not accurately report platform authenticator availability
+      const ua = navigator.userAgent || '';
+      const isIOS = /iPhone|iPad|iPod/.test(ua) || /CPU (iPhone )?OS/.test(ua);
+      const isAndroid = /Android/.test(ua);
+      
+      console.debug('[biometricAuth] Capacitor detected:', { isIOS, isAndroid, userAgent: ua.substring(0, 100) });
+      
+      if (isIOS || isAndroid) {
+        console.debug('[biometricAuth] Native platform detected, assuming biometric availability');
+        return true;
+      }
+    }
+    
+    // Fallback to standard API for web context
     // @ts-ignore - conditional API presence
     if (typeof PublicKeyCredential === 'undefined') return false;
     return await (PublicKeyCredential as any).isUserVerifyingPlatformAuthenticatorAvailable?.() ?? false;
-  } catch {
+  } catch (error) {
+    console.debug('[biometricAuth] Platform authenticator check failed:', error);
+    
+    // In native context, if the API fails, still assume availability for iOS/Android
+    if (window.Capacitor?.isNativePlatform?.()) {
+      const ua = navigator.userAgent || '';
+      const isIOS = /iPhone|iPad|iPod/.test(ua);
+      const isAndroid = /Android/.test(ua);
+      return isIOS || isAndroid;
+    }
+    
     return false;
   }
 }

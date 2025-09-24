@@ -58,6 +58,21 @@ export function useMembershipGate(): UseMembershipGate {
 
     (async () => {
       try {
+        // CRITICAL FIX: Check if user is already authenticated via Supabase session
+        // This prevents unnecessary biometric prompts when user is already signed in
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (!sessionError && session?.user) {
+          console.debug('[gate] User already has active Supabase session, granting access');
+          setAllowed(true);
+          setLinkOpen(false);
+          setBioOpen(false);
+          markBioLongSuccess();
+          toast.success('Access granted - you are already signed in');
+          setChecking(false);
+          inFlightRef.current = false;
+          return;
+        }
         const userHandle = getStoredUserHandle();
         if (userHandle) {
           console.debug('[gate] silent membership check with stored handle');
