@@ -21,50 +21,74 @@ export const StarRating = ({ label, value, onChange, className }: StarRatingProp
     }
   };
 
+  const starHeaders = {
+    1: "Not the one",
+    3: "Common", 
+    5: "Uncommon"
+  };
+
   return (
     <div className={cn("space-y-2", className)}>
       <label className="text-sm font-medium text-foreground">
         {label}
       </label>
-      <div className="flex items-center space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => {
-          const isActive = (hoverValue || value || 0) >= star;
-          
-          return (
-            <button
-              key={star}
-              type="button"
-              onClick={() => handleStarClick(star)}
-              onMouseEnter={() => setHoverValue(star)}
-              onMouseLeave={() => setHoverValue(null)}
-              className={cn(
-                "transition-colors duration-150 hover:scale-110 transform",
-                "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50 rounded",
-                "p-1"
+      <div className="relative">
+        {/* Headers above specific stars */}
+        <div className="flex justify-between mb-2">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <div key={star} className="flex-1 text-center">
+              {starHeaders[star as keyof typeof starHeaders] && (
+                <span className="text-xs text-muted-foreground font-medium">
+                  {starHeaders[star as keyof typeof starHeaders]}
+                </span>
               )}
-              aria-label={`Rate ${star} star${star !== 1 ? 's' : ''} for ${label}`}
-            >
-              <Star
-                size={20}
+            </div>
+          ))}
+        </div>
+        
+        {/* Stars spread across full width */}
+        <div className="flex justify-between items-center">
+          {[1, 2, 3, 4, 5].map((star) => {
+            const isActive = (hoverValue || value || 0) >= star;
+            
+            return (
+              <button
+                key={star}
+                type="button"
+                onClick={() => handleStarClick(star)}
+                onMouseEnter={() => setHoverValue(star)}
+                onMouseLeave={() => setHoverValue(null)}
                 className={cn(
-                  "transition-colors duration-150",
-                  isActive 
-                    ? "fill-yellow-400 text-yellow-400" 
-                    : "text-muted-foreground hover:text-yellow-300"
+                  "transition-colors duration-150 hover:scale-110 transform",
+                  "p-2 rounded"
                 )}
-              />
-            </button>
-          );
-        })}
+                aria-label={`Rate ${star} star${star !== 1 ? 's' : ''} for ${label}`}
+              >
+                <Star
+                  size={24}
+                  className={cn(
+                    "transition-colors duration-150",
+                    isActive 
+                      ? "fill-yellow-400 text-yellow-400" 
+                      : "text-muted-foreground hover:text-yellow-300"
+                  )}
+                />
+              </button>
+            );
+          })}
+        </div>
+        
         {value && (
-          <button
-            type="button"
-            onClick={() => onChange(null)}
-            className="ml-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            aria-label={`Clear ${label} rating`}
-          >
-            Clear
-          </button>
+          <div className="flex justify-center mt-2">
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={`Clear ${label} rating`}
+            >
+              Clear
+            </button>
+          </div>
         )}
       </div>
     </div>
