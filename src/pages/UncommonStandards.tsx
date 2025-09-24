@@ -1,6 +1,7 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { EnhancedMetaTags } from "@/components/SEO/EnhancedMetaTags";
+import { FeedbackButton } from "@/components/FeedbackButton";
 
 const UncommonStandards = () => {
   return (
@@ -78,16 +79,19 @@ const UncommonStandards = () => {
             </section>
           </div>
 
-          <div className="mt-16 bg-accent/10 rounded-lg p-8 border border-accent/20">
+          <div className="mt-16 bg-card rounded-lg p-8 border border-border">
             <p className="text-lg text-foreground font-medium mb-4">
               This is Uncommon Hospitality. It's our standard.
             </p>
             <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-              If you ever feel we fall short, tell us. We mean it when we say we want you to hold us to account.
+              If you ever feel we fall short, let us know. We mean it when we say we want you to hold us to account.
             </p>
-            <p className="text-muted-foreground text-lg leading-relaxed">
+            <p className="text-muted-foreground text-lg leading-relaxed mb-6">
               Croft Common is not just a place to eat or drink. It's somewhere to feel welcome, connected, and part of something bigger.
             </p>
+            <div className="flex justify-center pt-2">
+              <FeedbackButton />
+            </div>
           </div>
         </div>
       </main>
