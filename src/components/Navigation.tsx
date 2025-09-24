@@ -14,7 +14,8 @@ const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { isIOS, isCapacitorNative } = useIOSDetection();
+  const { isIOS, isPWAStandalone, isCapacitorNative } = useIOSDetection();
+  const isNativeIOS = isIOS && (isPWAStandalone || isCapacitorNative);
   
   const navItems = [
     { name: 'CAFE', path: '/cafe' },
@@ -119,9 +120,16 @@ const Navigation = () => {
   };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-sm border-b border-charcoal ${
-      isCapacitorNative && isIOS ? 'pt-[env(safe-area-inset-top)]' : ''
-    }`}>
+    <nav
+      className={`fixed top-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-b border-charcoal ${isNativeIOS ? 'pt-[env(safe-area-inset-top)]' : ''}`}
+      style={isNativeIOS ? { top: 'calc(env(safe-area-inset-top) * -1)' } : undefined}
+    >
+      {isNativeIOS && (
+        <div
+          className="pointer-events-none absolute left-0 right-0 top-0 h-[env(safe-area-inset-top)] bg-background/95 backdrop-blur-sm"
+          aria-hidden="true"
+        />
+      )}
       <div className="container mx-auto px-1 sm:px-2 md:px-6 py-4 flex justify-between items-center">
         <button 
           onClick={() => handleNavClick('/', 'logo-click')}
