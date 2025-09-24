@@ -73,9 +73,7 @@ const UncommonStandards = () => {
             <p className="text-lg text-foreground font-medium mb-4">
               This is Uncommon Hospitality. It's our standard.
             </p>
-            <p className="text-muted-foreground text-lg leading-relaxed mb-4">
-              If you ever feel we fall short, let us know. We mean it when we say we want you to hold us to account.
-            </p>
+            <p className="text-muted-foreground text-lg leading-relaxed mb-4">If we ever blow you away, or If you ever feel we fall short, let us know. We mean it when we say we want you to hold us to account an dlet us know when we get it just right.</p>
             <p className="text-muted-foreground text-lg leading-relaxed mb-6">
               Croft Common is not just a place to eat or drink. It's somewhere to feel welcome, connected, and part of something bigger.
             </p>
