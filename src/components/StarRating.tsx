@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Star } from 'lucide-react';
+import { Circle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface StarRatingProps {
@@ -64,13 +64,13 @@ export const StarRating = ({ label, value, onChange, className }: StarRatingProp
                 )}
                 aria-label={`Rate ${star} star${star !== 1 ? 's' : ''} for ${label}`}
               >
-                <Star
-                  size={24}
+                <Circle
+                  size={20}
                   className={cn(
                     "transition-colors duration-150",
                     isActive 
-                      ? "fill-yellow-400 text-yellow-400" 
-                      : "text-muted-foreground hover:text-yellow-300"
+                      ? "fill-accent text-accent" 
+                      : "text-muted-foreground hover:text-accent/60"
                   )}
                 />
               </button>
