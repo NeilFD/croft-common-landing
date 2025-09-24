@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import CroftLogo from '@/components/CroftLogo';
 import { CMSText } from './cms/CMSText';
 import { useIOSDetection } from '@/hooks/useIOSDetection';
+import { SafeAreaTopCap } from './SafeAreaTopCap';
 const Navigation = () => {
   const { triggerTransition } = useTransition();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -120,10 +121,16 @@ const Navigation = () => {
   };
 
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-b border-charcoal ${isNativeIOS ? 'pt-[env(safe-area-inset-top)]' : ''}`}
-      style={isNativeIOS ? { top: 'calc(env(safe-area-inset-top) * -1)' } : undefined}
-    >
+    <>
+      {isNativeIOS && <SafeAreaTopCap />}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-b border-charcoal isolate transform-gpu ${isNativeIOS ? 'pt-[env(safe-area-inset-top)]' : ''}`}
+        style={isNativeIOS ? { 
+          top: 'calc(env(safe-area-inset-top) * -1)', 
+          transform: 'translate3d(0,0,0)', 
+          willChange: 'transform' 
+        } : undefined}
+      >
       {isNativeIOS && (
         <div
           className="pointer-events-none absolute left-0 right-0 top-0 h-[env(safe-area-inset-top)] bg-background/95 backdrop-blur-sm"
@@ -220,6 +227,7 @@ const Navigation = () => {
         </div>
       </div>
     </nav>
+    </>
   );
 };
 
