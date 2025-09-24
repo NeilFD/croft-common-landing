@@ -127,12 +127,6 @@ const Navigation = () => {
         className={`fixed top-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-b border-charcoal isolate transform-gpu`}
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-      {isNativeIOS && (
-        <div
-          className="pointer-events-none absolute left-0 right-0 top-0 h-[env(safe-area-inset-top)] bg-background/95 backdrop-blur-sm"
-          aria-hidden="true"
-        />
-      )}
       <div className="container mx-auto px-1 sm:px-2 md:px-6 py-4 flex justify-between items-center">
         <button 
           onClick={() => handleNavClick('/', 'logo-click')}
