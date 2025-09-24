@@ -141,7 +141,7 @@ export const FeedbackModal = ({ isOpen, onClose }: FeedbackModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto my-4">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto my-4" style={{ marginTop: 'max(env(safe-area-inset-top, 0px) + 60px, 1rem)' }}>
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-foreground">
             Tell us more
