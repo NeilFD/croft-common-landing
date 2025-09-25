@@ -3,16 +3,13 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { CalendarIcon, Edit } from 'lucide-react';
-import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
-import { useResearch, WalkCard } from '@/hooks/useResearch';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Edit, MapPin, Users, Laptop, AlertTriangle, Save } from 'lucide-react';
+import { useResearch, WalkCard, WalkEntry, Venue } from '@/hooks/useResearch';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
 
 interface EditWalkCardModalProps {
   walkCard: WalkCard;
@@ -20,100 +17,107 @@ interface EditWalkCardModalProps {
   onSuccess?: () => void;
 }
 
-const TIME_BLOCKS = [
-  'EarlyMorning',
-  'MidMorning', 
-  'Lunch',
-  'MidAfternoon',
-  'EarlyEvening',
-  'Evening',
-  'Late'
-] as const;
-
-const WEATHER_PRESETS = [
-  'Sunny',
-  'Overcast', 
-  'Rain',
-  'Mixed',
-  'ColdSnap',
-  'Heatwave'
-] as const;
-
-const CROFT_ZONES = [
-  'Café',
-  'Kitchens',
-  'Bar',
-  'Lounge',
-  'Coworking',
-  'Meeting Rooms',
-  'Terrace',
-  'Garden'
-];
+interface VenueEntryData {
+  venue: Venue;
+  entry?: WalkEntry;
+  peopleCount: string;
+  laptopCount: string;
+  isClosed: boolean;
+  notes: string;
+  flagAnomaly: boolean;
+}
 
 export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({ 
   walkCard, 
   trigger,
   onSuccess 
 }) => {
-  const { updateWalkCard, loading } = useResearch();
+  const { venues, walkEntries, upsertWalkEntry, loading, fetchWalkEntries } = useResearch();
   const [open, setOpen] = useState(false);
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    title: walkCard.title,
-    date: new Date(walkCard.date),
-    timeBlock: walkCard.time_block,
-    weatherPreset: walkCard.weather_preset,
-    weatherTempC: walkCard.weather_temp_c || '',
-    weatherNotes: walkCard.weather_notes || '',
-    croftZones: walkCard.croft_zones
-  });
+  const [venueData, setVenueData] = useState<VenueEntryData[]>([]);
+  const [saving, setSaving] = useState(false);
 
-  // Reset form when modal opens
+  // Load venue data when modal opens
   useEffect(() => {
     if (open) {
-      setFormData({
-        title: walkCard.title,
-        date: new Date(walkCard.date),
-        timeBlock: walkCard.time_block,
-        weatherPreset: walkCard.weather_preset,
-        weatherTempC: walkCard.weather_temp_c || '',
-        weatherNotes: walkCard.weather_notes || '',
-        croftZones: walkCard.croft_zones
-      });
+      loadVenueData();
     }
-  }, [open, walkCard]);
+  }, [open, walkCard.id]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const loadVenueData = async () => {
     try {
-      await updateWalkCard(walkCard.id, {
-        title: formData.title.trim(),
-        date: format(formData.date, 'yyyy-MM-dd'),
-        time_block: formData.timeBlock,
-        weather_preset: formData.weatherPreset,
-        weather_temp_c: formData.weatherTempC ? parseInt(formData.weatherTempC.toString()) : undefined,
-        weather_notes: formData.weatherNotes || undefined,
-        croft_zones: formData.croftZones,
-      });
+      await fetchWalkEntries(walkCard.id);
       
-      toast.success('Walk card updated successfully');
-      setOpen(false);
-      onSuccess?.();
+      // Get all walk entries for this walk card
+      const walkCardEntries = walkEntries.filter(entry => entry.walk_card_id === walkCard.id);
+      
+      // Create venue data combining venues with their entries
+      const venueEntryData: VenueEntryData[] = venues.map(venue => {
+        const entry = walkCardEntries.find(e => e.venue_id === venue.id);
+        return {
+          venue,
+          entry,
+          peopleCount: entry ? entry.people_count.toString() : '',
+          laptopCount: entry ? entry.laptop_count.toString() : '',
+          isClosed: entry ? entry.is_closed : false,
+          notes: entry ? (entry.notes || '') : '',
+          flagAnomaly: entry ? entry.flag_anomaly : false,
+        };
+      });
+
+      setVenueData(venueEntryData);
     } catch (error) {
-      console.error('Error updating walk card:', error);
-      toast.error('Failed to update walk card');
+      console.error('Error loading venue data:', error);
+      toast.error('Failed to load venue data');
     }
   };
 
-  const handleZoneToggle = (zone: string) => {
-    setFormData(prev => ({
-      ...prev,
-      croftZones: prev.croftZones.includes(zone)
-        ? prev.croftZones.filter(z => z !== zone)
-        : [...prev.croftZones, zone]
-    }));
+  const updateVenueData = (venueId: string, field: keyof VenueEntryData, value: any) => {
+    setVenueData(prev => prev.map(vd => 
+      vd.venue.id === venueId 
+        ? { ...vd, [field]: value }
+        : vd
+    ));
+  };
+
+  const saveVenueEntry = async (venueEntryData: VenueEntryData) => {
+    const peopleCount = parseInt(venueEntryData.peopleCount) || 0;
+    const laptopCount = parseInt(venueEntryData.laptopCount) || 0;
+
+    await upsertWalkEntry({
+      id: venueEntryData.entry?.id,
+      walk_card_id: walkCard.id,
+      venue_id: venueEntryData.venue.id,
+      people_count: peopleCount,
+      laptop_count: laptopCount,
+      is_closed: venueEntryData.isClosed,
+      notes: venueEntryData.notes || undefined,
+      flag_anomaly: venueEntryData.flagAnomaly,
+      recorded_at: new Date().toISOString(),
+    });
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    try {
+      // Save all venue entries that have data
+      const entriesToSave = venueData.filter(vd => 
+        vd.peopleCount || vd.laptopCount || vd.isClosed || vd.notes || vd.entry
+      );
+
+      for (const venueEntry of entriesToSave) {
+        await saveVenueEntry(venueEntry);
+      }
+
+      toast.success('Venue data updated successfully');
+      setOpen(false);
+      onSuccess?.();
+    } catch (error) {
+      console.error('Error saving venue data:', error);
+      toast.error('Failed to save venue data');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -122,156 +126,148 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
         {trigger || (
           <Button variant="outline" size="sm">
             <Edit className="mr-1 h-3 w-3" />
-            Amend
+            Amend Data
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Amend Walk Card</DialogTitle>
+          <DialogTitle>Amend Walk Data</DialogTitle>
           <DialogDescription>
-            Update the details of this research session.
+            Edit venue data collected during "{walkCard.title}" on {walkCard.date}
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Info */}
+        <div className="space-y-4">
+          {/* Walk Summary */}
+          <div className="flex flex-wrap gap-2 p-3 bg-muted rounded-lg">
+            <Badge variant="outline">{walkCard.date}</Badge>
+            <Badge variant="outline">{walkCard.time_block.replace(/([A-Z])/g, ' $1').trim()}</Badge>
+            <Badge variant="outline">{walkCard.weather_preset}</Badge>
+            {walkCard.weather_temp_c && <Badge variant="outline">{walkCard.weather_temp_c}°C</Badge>}
+          </div>
+
+          {/* Venue Data */}
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="title">Walk Title</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="e.g., Morning Coffee Shop Survey"
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !formData.date && "text-muted-foreground"
+            <h3 className="text-lg font-semibold">Venue Data</h3>
+            {venueData.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Loading venue data...
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {venueData.map((vd) => (
+                  <Card key={vd.venue.id} className={vd.entry ? 'border-primary/50' : ''}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-base">{vd.venue.name}</CardTitle>
+                          {vd.venue.address && (
+                            <CardDescription className="flex items-center gap-1 mt-1">
+                              <MapPin className="h-3 w-3" />
+                              {vd.venue.address}
+                            </CardDescription>
+                          )}
+                        </div>
+                        {vd.entry && (
+                          <Badge variant="secondary" className="text-xs">
+                            Has Data
+                          </Badge>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Venue Closed Checkbox */}
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`closed-${vd.venue.id}`}
+                          checked={vd.isClosed}
+                          onCheckedChange={(checked) => 
+                            updateVenueData(vd.venue.id, 'isClosed', checked)
+                          }
+                        />
+                        <Label htmlFor={`closed-${vd.venue.id}`} className="text-sm font-medium">
+                          Venue is closed
+                        </Label>
+                      </div>
+
+                      {!vd.isClosed && (
+                        <>
+                          {/* Counts */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label className="flex items-center gap-2">
+                                <Users className="h-4 w-4" />
+                                People Count
+                              </Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                value={vd.peopleCount}
+                                onChange={(e) => updateVenueData(vd.venue.id, 'peopleCount', e.target.value)}
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label className="flex items-center gap-2">
+                                <Laptop className="h-4 w-4" />
+                                Laptop Count
+                              </Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                value={vd.laptopCount}
+                                onChange={(e) => updateVenueData(vd.venue.id, 'laptopCount', e.target.value)}
+                                placeholder="0"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Anomaly Flag */}
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`anomaly-${vd.venue.id}`}
+                              checked={vd.flagAnomaly}
+                              onCheckedChange={(checked) => 
+                                updateVenueData(vd.venue.id, 'flagAnomaly', checked)
+                              }
+                            />
+                            <Label htmlFor={`anomaly-${vd.venue.id}`} className="flex items-center gap-2 text-sm font-medium">
+                              <AlertTriangle className="h-3 w-3" />
+                              Flag as anomaly
+                            </Label>
+                          </div>
+                        </>
                       )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {formData.date ? format(formData.date, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
-                    <Calendar
-                      mode="single"
-                      selected={formData.date}
-                      onSelect={(date) => date && setFormData(prev => ({ ...prev, date }))}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div>
-                <Label htmlFor="timeBlock">Time Block</Label>
-                <Select 
-                  value={formData.timeBlock} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, timeBlock: value as any }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIME_BLOCKS.map(block => (
-                      <SelectItem key={block} value={block}>
-                        {block.replace(/([A-Z])/g, ' $1').trim()}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
 
-          {/* Weather */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium">Weather Conditions</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="weatherPreset">Weather</Label>
-                <Select 
-                  value={formData.weatherPreset} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, weatherPreset: value as any }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {WEATHER_PRESETS.map(preset => (
-                      <SelectItem key={preset} value={preset}>
-                        {preset}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      {/* Notes */}
+                      <div className="space-y-2">
+                        <Label>Notes</Label>
+                        <Textarea
+                          value={vd.notes}
+                          onChange={(e) => updateVenueData(vd.venue.id, 'notes', e.target.value)}
+                          placeholder="Observations, special conditions, etc..."
+                          rows={2}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-              
-              <div>
-                <Label htmlFor="weatherTempC">Temperature (°C)</Label>
-                <Input
-                  id="weatherTempC"
-                  type="number"
-                  value={formData.weatherTempC}
-                  onChange={(e) => setFormData(prev => ({ ...prev, weatherTempC: e.target.value }))}
-                  placeholder="e.g. 18"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="weatherNotes">Weather Notes</Label>
-              <Textarea
-                id="weatherNotes"
-                value={formData.weatherNotes}
-                onChange={(e) => setFormData(prev => ({ ...prev, weatherNotes: e.target.value }))}
-                placeholder="Additional weather observations..."
-                rows={2}
-              />
-            </div>
-          </div>
-
-          {/* Croft Zones */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium">Croft Zones to Survey</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {CROFT_ZONES.map((zone) => (
-                <div key={zone} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`zone-${zone}`}
-                    checked={formData.croftZones.includes(zone)}
-                    onCheckedChange={() => handleZoneToggle(zone)}
-                  />
-                  <Label htmlFor={`zone-${zone}`} className="text-sm font-normal">
-                    {zone}
-                  </Label>
-                </div>
-              ))}
-            </div>
+            )}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-6">
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Updating...' : 'Update Walk Card'}
+          <div className="flex gap-3 pt-6 border-t">
+            <Button onClick={handleSaveAll} disabled={saving || loading}>
+              <Save className="mr-2 h-4 w-4" />
+              {saving ? 'Saving...' : 'Save All Changes'}
             </Button>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="outline" onClick={() => setOpen(false)}>
               Cancel
             </Button>
           </div>
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   );
