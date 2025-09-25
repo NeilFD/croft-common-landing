@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Plus, MapPin, Building2, Search, Edit, Trash2, Play, Eye, Filter, ArrowUpDown } from 'lucide-react';
 import { useResearch, GeoArea } from '@/hooks/useResearch';
 import { EditWalkCardModal } from './EditWalkCardModal';
-
+import { WalkHistoryCard } from './WalkHistoryCard';
 
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -51,6 +51,17 @@ export const ManageTab = () => {
 
   const handleStartWalk = async (cardId: string) => {
     await updateWalkCardStatus(cardId, 'Active');
+  };
+
+  const handleReopenWalk = async (cardId: string) => {
+    await updateWalkCardStatus(cardId, 'Active');
+  };
+
+  const handleDeleteWalk = async (cardId: string) => {
+    if (window.confirm('Are you sure you want to delete this walk card? This cannot be undone.')) {
+      // Add delete functionality here when implemented
+      console.log('Delete walk card:', cardId);
+    }
   };
 
   // Load geo areas for walk cards
