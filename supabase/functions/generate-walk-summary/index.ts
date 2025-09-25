@@ -70,7 +70,7 @@ Statistics:
 - Anomalies flagged: ${anomalies}
 - Visits with notes: ${notesWithContent}
 
-Areas covered: ${walkData.geoAreas.map(area => area.name).join(', ')}
+Areas with recorded visits: ${walkData.geoAreas.map(area => area.name).join(', ')}
 
 Visit details with notes:
 ${walkData.walkEntries
@@ -95,7 +95,7 @@ ${walkData.walkEntries
         messages: [
           {
             role: 'system',
-            content: 'You are a professional field researcher assistant. Generate a concise, insightful summary of field research data. Focus on key observations, patterns, and notable findings. Keep the summary professional and objective, around 2-3 paragraphs.'
+            content: 'You are a professional field researcher assistant. Generate a concise, insightful summary of field research data. IMPORTANT: Only use the provided data - do not mention any areas, venues, or statistics not explicitly included in the data. Focus on key observations, patterns, and notable findings from the actual visits recorded. Keep the summary professional and objective, around 2-3 paragraphs.'
           },
           {
             role: 'user',

@@ -55,10 +55,20 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
 
   const fetchWalkEntries = async (): Promise<WalkEntry[]> => {
     try {
+      // Calculate date boundaries (within 24 hours of walk card creation)
+      const walkDate = new Date(walkCard.created_at);
+      const startOfDay = new Date(walkDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      
+      const endOfDay = new Date(walkDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
       const { data, error } = await supabase
         .from('walk_entries')
         .select('*')
-        .eq('walk_card_id', walkCard.id);
+        .eq('walk_card_id', walkCard.id)
+        .gte('recorded_at', startOfDay.toISOString())
+        .lte('recorded_at', endOfDay.toISOString());
 
       if (error) {
         console.error('Error fetching walk entries:', error);

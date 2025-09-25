@@ -35,14 +35,22 @@ const loadLogoAsBase64 = (): Promise<string> => {
 };
 
 export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
-  const { walkCard, venues, walkEntries, geoAreas } = data;
+  const { walkCard, venues, walkEntries } = data;
   const doc = new jsPDF();
+
+  // Calculate visited geo areas from actual walk entries instead of using all geo areas
+  const visitedVenues = walkEntries
+    .map(entry => venues.find(v => v.id === entry.venue_id))
+    .filter(Boolean);
+  
+  const visitedGeoAreaIds = new Set(visitedVenues.map(venue => venue.geo_area_id));
+  const visitedGeoAreas = data.geoAreas.filter(area => visitedGeoAreaIds.has(area.id));
 
   // Generate AI summary first
   let aiSummary = '';
   try {
     const { data: summaryData, error: summaryError } = await supabase.functions.invoke('generate-walk-summary', {
-      body: { walkData: { walkCard, venues, walkEntries, geoAreas } }
+      body: { walkData: { walkCard, venues, walkEntries, geoAreas: visitedGeoAreas } }
     });
     
     if (!summaryError && summaryData?.summary) {
@@ -88,7 +96,7 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   const venueVisits = walkEntries
     .map(entry => {
       const venue = venues.find(v => v.id === entry.venue_id);
-      const geoArea = venue ? geoAreas.find(g => g.id === venue.geo_area_id) : null;
+      const geoArea = venue ? visitedGeoAreas.find(g => g.id === venue.geo_area_id) : null;
       return venue ? { venue, entry, geoAreaName: geoArea?.name || 'N/A' } : null;
     })
     .filter(Boolean)
@@ -180,7 +188,7 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   const notesCount = walkEntries.filter(e => e.notes && e.notes.trim()).length;
   doc.text(`Anomalies Flagged: ${anomalies}`, 105, currentY);
   doc.text(`Entries with Notes: ${notesCount}`, 105, currentY + 12);
-  doc.text(`Areas Covered: ${geoAreas.length}`, 105, currentY + 24);
+  doc.text(`Areas with Visits: ${visitedGeoAreas.length}`, 105, currentY + 24);
   
   currentY += 55;
 
