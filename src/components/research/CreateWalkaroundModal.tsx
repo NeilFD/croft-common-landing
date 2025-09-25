@@ -89,15 +89,9 @@ export const CreateWalkaroundModal: React.FC<CreateWalkaroundModalProps> = ({
       weather_temp_c: formData.weatherTempC ? parseInt(formData.weatherTempC) : undefined,
       weather_notes: formData.weatherNotes || undefined,
       croft_zones: formData.croftZones,
-    });
+    }, formData.selectedGeoAreas); // Pass the selected geo areas!
 
     if (walkCard) {
-      // Create geo area associations
-      for (const geoAreaId of formData.selectedGeoAreas) {
-        // This would typically be handled in the backend or as a separate API call
-        // For now, we'll keep it simple since the UI is the focus
-      }
-      
       handleOpenChange(false);
       // Reset form
       setFormData({
