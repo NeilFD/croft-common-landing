@@ -14,7 +14,7 @@ import { VenuePerformanceGrid } from './analysis/VenuePerformanceGrid';
 import { GeoAnalyticsMap } from './analysis/GeoAnalyticsMap';
 
 export const AnalysisTab = () => {
-  const { walkCards, venues, geoAreas, walkEntries } = useResearch();
+  const { walkCards, venues, geoAreas, allWalkEntries, fetchAllWalkEntries } = useResearch();
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -63,7 +63,12 @@ export const AnalysisTab = () => {
     toast.success('Data exported successfully');
   };
 
-  const metrics = AnalysisService.calculateMetrics(walkEntries, walkCards, venues);
+  const metrics = AnalysisService.calculateMetrics(allWalkEntries, walkCards, venues);
+
+  // Fetch all walk entries when component mounts
+  React.useEffect(() => {
+    fetchAllWalkEntries();
+  }, [fetchAllWalkEntries]);
 
   return (
     <div className="space-y-6">
@@ -195,7 +200,7 @@ export const AnalysisTab = () => {
         <TabsContent value="comparisons">
           <ComparisonChartsSection 
             walkCards={filteredCards}
-            walkEntries={walkEntries}
+            walkEntries={allWalkEntries}
             venues={venues}
             geoAreas={geoAreas}
           />
@@ -204,7 +209,7 @@ export const AnalysisTab = () => {
         <TabsContent value="venues">
           <VenuePerformanceGrid 
             walkCards={filteredCards}
-            walkEntries={walkEntries}
+            walkEntries={allWalkEntries}
             venues={venues}
             geoAreas={geoAreas}
           />
@@ -213,7 +218,7 @@ export const AnalysisTab = () => {
         <TabsContent value="geography">
           <GeoAnalyticsMap 
             walkCards={filteredCards}
-            walkEntries={walkEntries}
+            walkEntries={allWalkEntries}
             venues={venues}
             geoAreas={geoAreas}
           />

@@ -60,6 +60,7 @@ export const useResearch = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [walkCards, setWalkCards] = useState<WalkCard[]>([]);
   const [walkEntries, setWalkEntries] = useState<WalkEntry[]>([]);
+  const [allWalkEntries, setAllWalkEntries] = useState<WalkEntry[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Fetch geo areas
@@ -125,6 +126,22 @@ export const useResearch = () => {
     } catch (error) {
       console.error('Error fetching walk entries:', error);
       toast.error('Failed to load walk entries');
+    }
+  }, []);
+
+  // Fetch all walk entries for analysis
+  const fetchAllWalkEntries = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('walk_entries')
+        .select('*')
+        .order('recorded_at', { ascending: false });
+      
+      if (error) throw error;
+      setAllWalkEntries(data || []);
+    } catch (error) {
+      console.error('Error fetching all walk entries:', error);
+      toast.error('Failed to load walk entries for analysis');
     }
   }, []);
 
@@ -489,11 +506,13 @@ export const useResearch = () => {
     venues,
     walkCards,
     walkEntries,
+    allWalkEntries,
     loading,
     fetchGeoAreas,
     fetchVenues,
     fetchWalkCards,
     fetchWalkEntries,
+    fetchAllWalkEntries,
     fetchWalkCardGeoAreas,
     addGeoAreaToWalkCard,
     removeGeoAreaFromWalkCard,
