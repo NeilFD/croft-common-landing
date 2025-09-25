@@ -82,7 +82,7 @@ const CommonRoomMain = () => {
       <div className="relative z-10">
         {!isCMSMode && <Navigation />}
         <CommonRoomHeroCarousel />
-        <section className="py-24 bg-background">
+        <section className="pb-24 bg-background" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
           <div className="container mx-auto px-6 text-center">
             <CMSText
               page="common-room-main"

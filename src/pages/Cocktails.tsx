@@ -33,7 +33,7 @@ const Cocktails = () => {
       
       {!isCMSMode && <Navigation />}
       <CocktailHeroCarousel />
-      <section className="py-24 bg-background">
+      <section className="pb-24 bg-background" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
         <div className="container mx-auto px-6 text-center">
           <CMSText 
             page="cocktails" 
