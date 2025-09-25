@@ -291,6 +291,7 @@ export const useResearch = () => {
   // Upsert walk entry
   const upsertWalkEntry = async (entryData: Partial<WalkEntry>) => {
     try {
+      setLoading(true);
       const { error } = await supabase
         .from('walk_entries')
         .upsert({
@@ -309,12 +310,15 @@ export const useResearch = () => {
       
       if (error) throw error;
       
+      // Immediately refresh walk entries to ensure UI updates
       if (entryData.walk_card_id) {
         await fetchWalkEntries(entryData.walk_card_id);
       }
     } catch (error) {
       console.error('Error updating walk entry:', error);
-      toast.error('Failed to update entry');
+      throw error; // Re-throw to allow component to handle error
+    } finally {
+      setLoading(false);
     }
   };
 
