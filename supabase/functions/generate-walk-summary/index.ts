@@ -100,7 +100,7 @@ ${walkData.walkEntries
         messages: [
           {
             role: 'system',
-            content: `You're helping to create a friendly, readable summary of a field research walk. Write in a warm, conversational tone - like you're sharing interesting observations with a colleague over coffee. Skip formal language and filler phrases. IMPORTANT: Only use the provided data - don't mention areas, venues, or statistics not included. Focus on the most interesting patterns and findings.${isEveningWalk ? ' NOTE: This is an evening walk, so don\'t comment on laptop or technology usage - people are naturally socializing at this time.' : ''} Keep it to 2-3 short paragraphs.`
+            content: `Create a concise, objective summary of this field research walk. Present key findings and patterns based solely on the provided data. Use factual language and focus on quantifiable observations. ${isEveningWalk ? 'Note: This is an evening walk - laptop usage data is not relevant.' : ''} Keep to 1-2 brief paragraphs with specific statistics and notable patterns only.`
           },
           {
             role: 'user',
