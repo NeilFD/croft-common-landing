@@ -35,7 +35,7 @@ serve(async (req) => {
     console.log("📦 Testing webpush import...");
     let webpush;
     try {
-      webpush = await import("npm:web-push@3.6.6");
+      webpush = await import("https://esm.sh/web-push@3.6.6");
       console.log("✅ webpush imported successfully");
     } catch (webpushError) {
       console.error("❌ webpush import failed:", webpushError);
