@@ -39,23 +39,24 @@ export const shareViaWhatsApp = async (
   const timeBlock = formatTimeBlock(walkCard.time_block);
   const welcomePrefix = `Hey, here's the Market Research report from ${walkDate}${timeBlock ? ` ${timeBlock}` : ''}`;
   
-  // Check if Web Share API is available and supports files (mostly mobile)
-  if (navigator.share && navigator.canShare) {
+  // Always download the PDF first for manual attachment
+  downloadPDF(blob, walkCard);
+
+  // Check if Web Share API is available (mostly mobile)
+  if (navigator.share) {
     try {
-      const file = new File([blob], fileName, { type: 'application/pdf' });
+      const shareMessage = `${welcomePrefix}\n\nThe PDF report has been downloaded to your device - you can attach it to this message to share the complete findings.`;
       
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: `Market Research Report: ${walkCard.title}`,
-          text: `${welcomePrefix}\n\nComplete field research findings attached as PDF.`,
-          files: [file]
-        });
-        showToast?.({
-          title: "Report Shared Successfully",
-          description: "The PDF report has been shared via your device's share menu."
-        });
-        return true;
-      }
+      await navigator.share({
+        title: `Market Research Report: ${walkCard.title}`,
+        text: shareMessage
+      });
+      
+      showToast?.({
+        title: "Message Shared & PDF Downloaded",
+        description: "The message has been shared and PDF downloaded - attach the PDF file to complete the share."
+      });
+      return true;
     } catch (error) {
       if ((error as Error).name !== 'AbortError') {
         console.log('Web Share API failed, falling back to WhatsApp Web', error);
