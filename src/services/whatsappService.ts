@@ -43,77 +43,97 @@ export const shareViaWhatsApp = async (
   const walkDate = new Date(walkCard.date || walkCard.created_at).toLocaleDateString('en-GB');
   const timeBlock = formatTimeBlock(walkCard.time_block);
   const welcomePrefix = `Hey, here's the Market Research report from ${walkDate}${timeBlock ? ` ${timeBlock}` : ''}`;
-  
+
+  // Helpers
+  const safeTitle = walkCard.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
   try {
-    // Check if Web Share API is available (mostly mobile)
-    if (navigator.share) {
+    // Prefer Web Share Level 2 (files) — this attaches the PDF directly in WhatsApp (iOS Safari supports this)
+    const file = new File([blob], `${safeTitle}_report.pdf`, { type: 'application/pdf' });
+    const canShareFiles = typeof navigator !== 'undefined'
+      && 'canShare' in navigator
+      && (navigator as any).canShare?.({ files: [file] });
+
+    if (canShareFiles && navigator.share) {
       try {
-        const shareMessage = `${welcomePrefix}\n\nThe PDF report will be downloaded to your device - you can attach it to this message to share the complete findings.`;
-        
-        // Log what we're sharing for debugging
-        console.log('Sharing via Web Share API (text-only):', {
-          title: `Market Research Report: ${walkCard.title}`,
-          text: shareMessage,
-          platform: 'Mobile Web Share API'
-        });
-        
-        // Share text first (no files to prevent blob URL injection)
+        console.log('Sharing via Web Share API with FILE attachment');
         await navigator.share({
-          title: `Market Research Report: ${walkCard.title}`,
-          text: shareMessage
+          files: [file],
+          text: welcomePrefix
         });
-        
-        // After successful share, trigger PDF download
-        console.log('Share successful, now downloading PDF...');
-        await downloadPDF(blob, walkCard);
-        
+        // No download to avoid any blob: URL contamination
         showToast?.({
-          title: "Message Shared & PDF Downloaded",
-          description: "The message has been shared and PDF downloaded - attach the PDF file to complete the share."
+          title: 'Shared to WhatsApp',
+          description: 'The PDF was attached automatically.'
         });
         return true;
       } catch (error) {
-        if ((error as Error).name !== 'AbortError') {
-          console.log('Web Share API failed, falling back to WhatsApp Web', error);
-        } else {
-          // User cancelled the share
-          console.log('User cancelled Web Share API');
+        if ((error as Error).name === 'AbortError') {
+          console.log('User cancelled Web Share dialog');
           return false;
         }
+        console.log('Web Share with files failed, falling back', error);
+        // Continue to fallbacks below
       }
     }
 
-    // Fallback: Use WhatsApp Web with pre-composed message
-    const message = `${welcomePrefix}\n\nThe PDF report will be downloaded for you - you can attach it to this message to share the complete findings.`;
-    const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-    
-    console.log('Using WhatsApp Web fallback:', {
-      message,
-      platform: 'Desktop WhatsApp Web'
-    });
-    
-    // Open WhatsApp Web first
-    window.open(whatsappUrl, '_blank');
-    
-    // Then trigger PDF download after a short delay
-    setTimeout(async () => {
-      console.log('WhatsApp Web opened, now downloading PDF...');
-      await downloadPDF(blob, walkCard);
-    }, 1000);
-    
-    // Show helpful toast message
-    showToast?.({
-      title: "WhatsApp Opened & PDF Downloading",
-      description: "WhatsApp Web is opening with your message. The PDF will download shortly - attach it to complete the share."
-    });
-    
-    return true;
+    // If Web Share with files is unavailable
+    const message = `${welcomePrefix}`;
+
+    if (navigator.share) {
+      // Share text-only via Web Share as a secondary option (no downloads to avoid blob URL)
+      try {
+        console.log('Sharing via Web Share API (text-only fallback)');
+        await navigator.share({ text: message });
+        showToast?.({
+          title: 'Message Shared',
+          description: 'Shared without attachment due to device limitations.'
+        });
+        return true;
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') {
+          console.log('User cancelled text-only Web Share');
+          return false;
+        }
+        console.log('Text-only Web Share failed, proceeding to WhatsApp URL fallback', error);
+      }
+    }
+
+    // URL fallbacks
+    if (isMobile) {
+      // Mobile: open wa.me text composer (no auto-download to prevent blob URLs in the thread)
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      console.log('Using mobile WhatsApp fallback (wa.me):', { platform: 'Mobile', waUrl });
+      window.open(waUrl, '_blank');
+      showToast?.({
+        title: 'WhatsApp Opened',
+        description: 'Composer opened without attachment due to device support.'
+      });
+      return true;
+    } else {
+      // Desktop: WhatsApp Web + then download for manual attach
+      const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      console.log('Using desktop WhatsApp Web fallback:', { platform: 'Desktop', whatsappUrl });
+      window.open(whatsappUrl, '_blank');
+
+      setTimeout(async () => {
+        console.log('WhatsApp Web opened, now downloading PDF for manual attach...');
+        await downloadPDF(blob, walkCard);
+      }, 1000);
+
+      showToast?.({
+        title: 'WhatsApp Web Opened',
+        description: 'The PDF will download so you can attach it to the message.'
+      });
+      return true;
+    }
   } catch (error) {
     console.error('Error in shareViaWhatsApp:', error);
     showToast?.({
-      title: "Share Failed",
-      description: "There was an error sharing the report. Please try again.",
-      variant: "destructive"
+      title: 'Share Failed',
+      description: 'There was an error sharing the report. Please try again.',
+      variant: 'destructive'
     });
     return false;
   }
