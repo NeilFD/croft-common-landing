@@ -266,6 +266,28 @@ export const useResearch = () => {
     }
   };
 
+  // Update walk card
+  const updateWalkCard = async (cardId: string, updates: Partial<Omit<WalkCard, 'id' | 'created_at' | 'updated_at' | 'created_by_user_id'>>) => {
+    try {
+      setLoading(true);
+      
+      const { error } = await supabase
+        .from('walk_cards')
+        .update(updates)
+        .eq('id', cardId);
+      
+      if (error) throw error;
+      
+      await fetchWalkCards();
+      toast.success('Walk card updated');
+    } catch (error) {
+      console.error('Error updating walk card:', error);
+      toast.error('Failed to update walk card');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Upsert walk entry
   const upsertWalkEntry = async (entryData: Partial<WalkEntry>) => {
     try {
@@ -452,6 +474,7 @@ export const useResearch = () => {
     removeGeoAreaFromWalkCard,
     createWalkCard,
     updateWalkCardStatus,
+    updateWalkCard,
     upsertWalkEntry,
     createGeoArea,
     createVenue,

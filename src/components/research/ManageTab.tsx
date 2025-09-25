@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, MapPin, Building2, Search, Edit, Trash2, Play, Eye, Filter, ArrowUpDown } from 'lucide-react';
-import { useResearch } from '@/hooks/useResearch';
+import { useResearch, GeoArea } from '@/hooks/useResearch';
+import { EditWalkCardModal } from './EditWalkCardModal';
 
 
 import { Label } from '@/components/ui/label';
@@ -22,7 +23,8 @@ export const ManageTab = () => {
     deleteVenue, 
     updateGeoArea, 
     deleteGeoArea,
-    updateWalkCardStatus 
+    updateWalkCardStatus,
+    fetchWalkCardGeoAreas 
   } = useResearch();
   
   const [activeTab, setActiveTab] = useState('venues');
@@ -45,10 +47,32 @@ export const ManageTab = () => {
   const [walkCardSearch, setWalkCardSearch] = useState('');
   const [walkCardStatusFilter, setWalkCardStatusFilter] = useState<string>('all');
   const [walkCardSortBy, setWalkCardSortBy] = useState<string>('date-desc');
+  const [walkCardGeoAreas, setWalkCardGeoAreas] = useState<{[key: string]: GeoArea[]}>({});
 
   const handleStartWalk = async (cardId: string) => {
     await updateWalkCardStatus(cardId, 'Active');
   };
+
+  // Load geo areas for walk cards
+  const loadWalkCardGeoAreas = async () => {
+    const geoAreaMap: {[key: string]: GeoArea[]} = {};
+    for (const card of walkCards) {
+      try {
+        const areas = await fetchWalkCardGeoAreas(card.id);
+        geoAreaMap[card.id] = areas;
+      } catch (error) {
+        console.error(`Failed to fetch geo areas for walk card ${card.id}:`, error);
+        geoAreaMap[card.id] = [];
+      }
+    }
+    setWalkCardGeoAreas(geoAreaMap);
+  };
+
+  useEffect(() => {
+    if (walkCards.length > 0) {
+      loadWalkCardGeoAreas();
+    }
+  }, [walkCards, fetchWalkCardGeoAreas]);
 
 
 const filteredVenues = venues.filter(venue => {
@@ -450,66 +474,107 @@ const filteredVenues = venues.filter(venue => {
                 }
               </div>
             ) : (
-              filteredAndSortedWalkCards.map((card) => (
-                <Card key={card.id}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-base">{card.title}</CardTitle>
-                      <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        card.status === 'Active' ? 'bg-green-100 text-green-700' :
-                        card.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {card.status}
+              filteredAndSortedWalkCards.map((card) => {
+                const cardGeoAreas = walkCardGeoAreas[card.id] || [];
+                return (
+                  <Card key={card.id}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base">{card.title}</CardTitle>
+                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          card.status === 'Active' ? 'bg-green-100 text-green-700' :
+                          card.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-700'
+                        }`}>
+                          {card.status}
+                        </div>
                       </div>
-                    </div>
-                    <CardDescription>
-                      {card.date} • {card.time_block} • {card.weather_preset}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex flex-wrap gap-2">
-                        {card.croft_zones.map((zone) => (
-                          <span key={zone} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
-                            {zone}
-                          </span>
-                        ))}
+                      <CardDescription>
+                        {card.date} • {card.time_block.replace(/([A-Z])/g, ' $1').trim()} • {card.weather_preset}
+                        {card.weather_temp_c && ` ${card.weather_temp_c}°C`}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {/* Geo Areas */}
+                        {cardGeoAreas.length > 0 && (
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-2">Geo Areas</div>
+                            <div className="flex flex-wrap gap-2">
+                              {cardGeoAreas.map((area) => (
+                                <span key={area.id} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">
+                                  {area.name}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Croft Zones */}
+                        {card.croft_zones.length > 0 && (
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-2">Croft Zones</div>
+                            <div className="flex flex-wrap gap-2">
+                              {card.croft_zones.map((zone) => (
+                                <span key={zone} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
+                                  {zone}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Weather Notes */}
+                        {card.weather_notes && (
+                          <div>
+                            <div className="text-xs text-muted-foreground mb-1">Weather Notes</div>
+                            <p className="text-sm break-words">{card.weather_notes}</p>
+                          </div>
+                        )}
+                        
+                        {/* Action buttons for walk cards */}
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          {card.status === 'Draft' && (
+                            <Button 
+                              size="sm" 
+                              onClick={() => handleStartWalk(card.id)}
+                              disabled={loading}
+                            >
+                              <Play className="mr-1 h-3 w-3" />
+                              Start Walk
+                            </Button>
+                          )}
+                          {card.status === 'Active' && (
+                            <Button size="sm" variant="outline" disabled>
+                              <Eye className="mr-1 h-3 w-3" />
+                              Active (Go to Run tab)
+                            </Button>
+                          )}
+                          {card.status === 'Completed' && (
+                            <>
+                              <EditWalkCardModal 
+                                walkCard={card}
+                                onSuccess={() => {
+                                  // Refresh geo areas after edit
+                                  loadWalkCardGeoAreas();
+                                }}
+                              />
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => handleStartWalk(card.id)}
+                              >
+                                <Play className="mr-1 h-3 w-3" />
+                                Restart Walk
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      
-                      {/* Action buttons for walk cards */}
-                      <div className="flex gap-2 pt-2">
-                        {card.status === 'Draft' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleStartWalk(card.id)}
-                            disabled={loading}
-                          >
-                            <Play className="mr-1 h-3 w-3" />
-                            Start Walk
-                          </Button>
-                        )}
-                        {card.status === 'Active' && (
-                          <Button size="sm" variant="outline" disabled>
-                            <Eye className="mr-1 h-3 w-3" />
-                            Active (Go to Run tab)
-                          </Button>
-                        )}
-                        {card.status === 'Completed' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleStartWalk(card.id)}
-                          >
-                            <Play className="mr-1 h-3 w-3" />
-                            Restart Walk
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
         </TabsContent>

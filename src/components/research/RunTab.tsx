@@ -14,7 +14,6 @@ export const RunTab = () => {
 
   const activeCard = walkCards.find(card => card.status === 'Active');
   const draftCards = walkCards.filter(card => card.status === 'Draft');
-  const completedCards = walkCards.filter(card => card.status === 'Completed').slice(0, 5);
 
   const handleReopenWalk = async (cardId: string) => {
     await updateWalkCardStatus(cardId, 'Active');
@@ -76,25 +75,8 @@ export const RunTab = () => {
         </div>
       )}
 
-      {/* Recent History */}
-      {completedCards.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold">Recent Walkarounds</h2>
-          <div className="grid gap-4">
-            {completedCards.map((card) => (
-              <WalkHistoryCard 
-                key={card.id} 
-                walkCard={card}
-                onReopen={handleReopenWalk}
-                onDelete={handleDeleteWalk}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Empty State */}
-      {draftCards.length === 0 && completedCards.length === 0 && !loading && (
+      {draftCards.length === 0 && !loading && (
         <div className="text-center py-12 text-muted-foreground">
           <Clock className="mx-auto h-12 w-12 mb-4 opacity-50" />
           <p>No walkarounds yet. Create your first one to get started.</p>
