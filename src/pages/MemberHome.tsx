@@ -150,7 +150,7 @@ const MemberHome: React.FC = () => {
       <div className="relative z-10">
         <Navigation />
         
-        <div className="container mx-auto px-4 py-8 mt-8">
+        <div className="container mx-auto px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link 
