@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,8 +10,9 @@ import { useResearch } from '@/hooks/useResearch';
 import { toast } from 'sonner';
 
 interface CreateWalkaroundModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  trigger?: React.ReactNode;
 }
 
 const TIME_BLOCKS = [
@@ -42,8 +43,16 @@ const CROFT_ZONES = [
 
 export const CreateWalkaroundModal: React.FC<CreateWalkaroundModalProps> = ({ 
   open, 
-  onOpenChange 
+  onOpenChange,
+  trigger,
 }) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = typeof open === 'boolean';
+  const actualOpen = isControlled ? (open as boolean) : internalOpen;
+  const handleOpenChange = (next: boolean) => {
+    if (isControlled) onOpenChange?.(next);
+    else setInternalOpen(next);
+  };
   const { geoAreas, createWalkCard, loading } = useResearch();
   const [formData, setFormData] = useState({
     date: new Date().toISOString().split('T')[0],
@@ -89,7 +98,7 @@ export const CreateWalkaroundModal: React.FC<CreateWalkaroundModalProps> = ({
         // For now, we'll keep it simple since the UI is the focus
       }
       
-      onOpenChange(false);
+      handleOpenChange(false);
       // Reset form
       setFormData({
         date: new Date().toISOString().split('T')[0],
@@ -122,8 +131,9 @@ export const CreateWalkaroundModal: React.FC<CreateWalkaroundModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={actualOpen} onOpenChange={handleOpenChange}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle>Create New Walkaround</DialogTitle>
         </DialogHeader>
@@ -248,7 +258,7 @@ export const CreateWalkaroundModal: React.FC<CreateWalkaroundModalProps> = ({
             <Button type="submit" disabled={loading} className="flex-1">
               Create Walkaround
             </Button>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button type="button" variant="outline" onClick={() => handleOpenChange(false)}>
               Cancel
             </Button>
           </div>

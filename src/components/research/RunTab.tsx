@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Clock, CloudRain, Users } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 
 export const RunTab = () => {
   const { walkCards, updateWalkCardStatus, loading } = useResearch();
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  
 
   const activeCard = walkCards.find(card => card.status === 'Active');
   const completedCards = walkCards.filter(card => card.status === 'Completed').slice(0, 5);
@@ -30,16 +30,15 @@ export const RunTab = () => {
 
   return (
     <div className="space-y-6">
-      {/* Create Walkaround Button */}
       <div className="text-center py-8">
-        <Button 
-          onClick={() => setShowCreateModal(true)}
-          size="lg"
-          className="h-12 px-8"
-        >
-          <Plus className="mr-2 h-5 w-5" />
-          Create Walkaround
-        </Button>
+        <CreateWalkaroundModal
+          trigger={
+            <Button size="lg" className="h-12 px-8">
+              <Plus className="mr-2 h-5 w-5" />
+              Create Walkaround
+            </Button>
+          }
+        />
       </div>
 
       {/* Recent History */}
@@ -67,11 +66,6 @@ export const RunTab = () => {
         </div>
       )}
 
-      {/* Create Modal */}
-      <CreateWalkaroundModal 
-        open={showCreateModal}
-        onOpenChange={setShowCreateModal}
-      />
     </div>
   );
 };
