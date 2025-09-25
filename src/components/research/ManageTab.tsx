@@ -5,8 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, MapPin, Building2, Search, Edit, Trash2 } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+
+
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -40,11 +40,6 @@ export const ManageTab = () => {
   const [editingGeoArea, setEditingGeoArea] = useState<string | null>(null);
   const [newGeoAreaName, setNewGeoAreaName] = useState('');
 
-const [confirmVenueId, setConfirmVenueId] = useState<string | null>(null);
-const [confirmVenueName, setConfirmVenueName] = useState('');
-const [confirmAreaId, setConfirmAreaId] = useState<string | null>(null);
-const [confirmAreaName, setConfirmAreaName] = useState('');
-const [isDeleting, setIsDeleting] = useState(false);
 
 const filteredVenues = venues.filter(venue => {
     const matchesSearch = venue.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -256,9 +251,10 @@ const filteredVenues = venues.filter(venue => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              setConfirmVenueId(venue.id);
-                              setConfirmVenueName(venue.name);
+                            onClick={async () => {
+                              if (window.confirm(`Delete "${venue.name}"? This cannot be undone.`)) {
+                                await deleteVenue(venue.id);
+                              }
                             }}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -271,37 +267,6 @@ const filteredVenues = venues.filter(venue => {
               })
             )}
           </div>
-          <AlertDialog open={!!confirmVenueId} onOpenChange={(open) => { if (!open) { setConfirmVenueId(null); setConfirmVenueName(''); } }}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Venue</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete "{confirmVenueName}"? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => { setConfirmVenueId(null); setConfirmVenueName(''); }}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={async () => {
-                    if (!confirmVenueId) return;
-                    try {
-                      setIsDeleting(true);
-                      await deleteVenue(confirmVenueId);
-                    } finally {
-                      setIsDeleting(false);
-                      setConfirmVenueId(null);
-                      setConfirmVenueName('');
-                    }
-                  }}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Deleting…' : 'Delete'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </TabsContent>
 
         <TabsContent value="geo-areas" className="space-y-4">
@@ -374,9 +339,10 @@ const filteredVenues = venues.filter(venue => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => {
-                              setConfirmAreaId(area.id);
-                              setConfirmAreaName(area.name);
+                            onClick={async () => {
+                              if (window.confirm(`Delete "${area.name}"? This cannot be undone.`)) {
+                                await deleteGeoArea(area.id);
+                              }
                             }}
                           >
                             <Trash2 className="h-3 w-3" />
@@ -389,37 +355,6 @@ const filteredVenues = venues.filter(venue => {
               })
             )}
           </div>
-          <AlertDialog open={!!confirmAreaId} onOpenChange={(open) => { if (!open) { setConfirmAreaId(null); setConfirmAreaName(''); } }}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Geo Area</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete "{confirmAreaName}"? This action cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => { setConfirmAreaId(null); setConfirmAreaName(''); }}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={async () => {
-                    if (!confirmAreaId) return;
-                    try {
-                      setIsDeleting(true);
-                      await deleteGeoArea(confirmAreaId);
-                    } finally {
-                      setIsDeleting(false);
-                      setConfirmAreaId(null);
-                      setConfirmAreaName('');
-                    }
-                  }}
-                  disabled={isDeleting}
-                >
-                  {isDeleting ? 'Deleting…' : 'Delete'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
         </TabsContent>
 
         <TabsContent value="walk-cards" className="space-y-4">
