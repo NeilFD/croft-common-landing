@@ -262,7 +262,17 @@ export const ManageTab = () => {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteVenue(venue.id)}>
+                                <AlertDialogAction 
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    try {
+                                      await deleteVenue(venue.id);
+                                    } catch (error) {
+                                      console.error('Delete failed:', error);
+                                    }
+                                  }}
+                                  disabled={loading}
+                                >
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>
@@ -360,7 +370,17 @@ export const ManageTab = () => {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => deleteGeoArea(area.id)}>
+                                <AlertDialogAction 
+                                  onClick={async (e) => {
+                                    e.preventDefault();
+                                    try {
+                                      await deleteGeoArea(area.id);
+                                    } catch (error) {
+                                      console.error('Delete failed:', error);
+                                    }
+                                  }}
+                                  disabled={loading}
+                                >
                                   Delete
                                 </AlertDialogAction>
                               </AlertDialogFooter>
