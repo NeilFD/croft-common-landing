@@ -35,7 +35,7 @@ const CommonRoom = () => {
       {/* Hero area with watermark */}
       <main ref={containerRef} className="min-h-screen bg-white relative flex flex-col items-center justify-start pt-40 md:pt-32 px-4 overflow-y-auto">
         {/* Page Title - responsive positioning */}
-        <div className="absolute top-40 left-1/2 transform -translate-x-1/2 md:top-24 md:left-[106px] md:transform-none z-20">
+        <div className="absolute left-1/2 transform -translate-x-1/2 md:left-[106px] md:transform-none z-20" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
           <CMSText
             page="common-room"
             section="hero"
