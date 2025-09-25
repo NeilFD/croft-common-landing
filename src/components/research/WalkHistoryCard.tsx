@@ -13,12 +13,13 @@ import {
   FileText,
   Share
 } from 'lucide-react';
-import { WalkCard, useResearch } from '@/hooks/useResearch';
+import { WalkCard, WalkEntry, useResearch } from '@/hooks/useResearch';
 import { format } from 'date-fns';
 import { generateWalkCardPDF } from '@/services/pdfService';
 import { shareViaWhatsApp, downloadPDF } from '@/services/whatsappService';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface WalkHistoryCardProps {
   walkCard: WalkCard;
@@ -31,7 +32,7 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
   onReopen, 
   onDelete 
 }) => {
-  const { venues, walkEntries, geoAreas } = useResearch();
+  const { venues, geoAreas } = useResearch();
   const { toast } = useToast();
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
@@ -52,11 +53,30 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
     }
   };
 
+  const fetchWalkEntries = async (): Promise<WalkEntry[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('walk_entries')
+        .select('*')
+        .eq('walk_card_id', walkCard.id);
+
+      if (error) {
+        console.error('Error fetching walk entries:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('Failed to fetch walk entries:', error);
+      throw new Error('Failed to fetch walk data');
+    }
+  };
+
   const handleGeneratePDF = async () => {
     try {
       setIsGeneratingPDF(true);
       
-      const walkCardEntries = walkEntries.filter(entry => entry.walk_card_id === walkCard.id);
+      const walkCardEntries = await fetchWalkEntries();
       
       if (walkCardEntries.length === 0) {
         toast({
@@ -96,7 +116,7 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
     try {
       setIsGeneratingPDF(true);
       
-      const walkCardEntries = walkEntries.filter(entry => entry.walk_card_id === walkCard.id);
+      const walkCardEntries = await fetchWalkEntries();
       
       if (walkCardEntries.length === 0) {
         toast({
