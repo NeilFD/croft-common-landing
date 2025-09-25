@@ -15,9 +15,13 @@ import {
   Clock, 
   CloudRain,
   CheckCircle,
-  Building2
+  Building2,
+  Settings
 } from 'lucide-react';
-import { useResearch, WalkCard, WalkEntry } from '@/hooks/useResearch';
+import { useResearch, WalkCard, WalkEntry, Venue, GeoArea } from '@/hooks/useResearch';
+import { VenueGrid } from './VenueGrid';
+import { GeoAreaManager } from './GeoAreaManager';
+import { QuickVenueCreator } from './QuickVenueCreator';
 import { toast } from 'sonner';
 
 interface ActiveWalkCardProps {
@@ -30,12 +34,16 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
     geoAreas, 
     walkEntries, 
     fetchWalkEntries, 
+    fetchWalkCardGeoAreas,
     upsertWalkEntry, 
     updateWalkCardStatus,
     loading 
   } = useResearch();
   
-  const [currentVenueIndex, setCurrentVenueIndex] = useState(0);
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showGeoAreaManager, setShowGeoAreaManager] = useState(false);
+  const [walkGeoAreas, setWalkGeoAreas] = useState<GeoArea[]>([]);
   const [entryData, setEntryData] = useState<Partial<WalkEntry>>({
     people_count: 0,
     laptop_count: 0,
@@ -44,22 +52,29 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
     notes: ''
   });
 
-  // Get venues from associated geo areas (simplified for now - in reality would use walk_card_geo_areas table)
+  // Get venues from walk's selected geo areas
   const walkVenues = venues.filter(venue => 
-    geoAreas.some(area => area.id === venue.geo_area_id)
+    walkGeoAreas.some(area => area.id === venue.geo_area_id)
   );
 
-  const currentVenue = walkVenues[currentVenueIndex];
-  const currentEntry = walkEntries.find(entry => 
-    entry.venue_id === currentVenue?.id && entry.walk_card_id === walkCard.id
-  );
+  const currentEntry = selectedVenue ? walkEntries.find(entry => 
+    entry.venue_id === selectedVenue.id && entry.walk_card_id === walkCard.id
+  ) : null;
 
+  // Load walk data
   useEffect(() => {
-    if (walkCard.id) {
-      fetchWalkEntries(walkCard.id);
-    }
-  }, [walkCard.id, fetchWalkEntries]);
+    const loadWalkData = async () => {
+      if (walkCard.id) {
+        await fetchWalkEntries(walkCard.id);
+        const geoAreasData = await fetchWalkCardGeoAreas(walkCard.id);
+        setWalkGeoAreas(geoAreasData);
+      }
+    };
+    
+    loadWalkData();
+  }, [walkCard.id, fetchWalkEntries, fetchWalkCardGeoAreas]);
 
+  // Update entry data when venue selection changes
   useEffect(() => {
     if (currentEntry) {
       setEntryData({
@@ -80,30 +95,29 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
     }
   }, [currentEntry]);
 
+  const handleGeoAreaUpdate = async () => {
+    const geoAreasData = await fetchWalkCardGeoAreas(walkCard.id);
+    setWalkGeoAreas(geoAreasData);
+  };
+
   const handleSaveEntry = async () => {
-    if (!currentVenue) return;
+    if (!selectedVenue) return;
 
     await upsertWalkEntry({
       walk_card_id: walkCard.id,
-      venue_id: currentVenue.id,
+      venue_id: selectedVenue.id,
       ...entryData
     });
 
     toast.success('Entry saved');
   };
 
-  const handleNextVenue = () => {
-    if (currentVenueIndex < walkVenues.length - 1) {
+  const handleVenueSelect = (venue: Venue) => {
+    // Save current entry before switching
+    if (selectedVenue && entryData) {
       handleSaveEntry();
-      setCurrentVenueIndex(prev => prev + 1);
     }
-  };
-
-  const handlePrevVenue = () => {
-    if (currentVenueIndex > 0) {
-      handleSaveEntry();
-      setCurrentVenueIndex(prev => prev - 1);
-    }
+    setSelectedVenue(venue);
   };
 
   const handleCompleteWalk = async () => {
@@ -115,19 +129,6 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
   const completedEntries = walkEntries.filter(entry => 
     walkVenues.some(venue => venue.id === entry.venue_id)
   ).length;
-
-  if (!currentVenue) {
-    return (
-      <Card>
-        <CardContent className="pt-6">
-          <div className="text-center py-8">
-            <MapPin className="mx-auto h-12 w-12 mb-4 opacity-50" />
-            <p className="text-muted-foreground">No venues available for this walk</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -155,156 +156,206 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
               <p className="text-sm text-muted-foreground mt-1">
                 {completedEntries} of {walkVenues.length} venues
               </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2"
+                onClick={() => setShowGeoAreaManager(!showGeoAreaManager)}
+              >
+                <Settings className="h-4 w-4 mr-1" />
+                Manage Areas
+              </Button>
             </div>
           </div>
         </CardHeader>
       </Card>
 
-      {/* Current Venue Entry */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              {currentVenue.name}
-            </div>
-            <span className="text-sm text-muted-foreground">
-              {currentVenueIndex + 1} of {walkVenues.length}
-            </span>
-          </CardTitle>
-          {currentVenue.address && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <MapPin className="h-3 w-3" />
-              {currentVenue.address}
-            </div>
-          )}
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Quick Status */}
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="closed"
-              checked={entryData.is_closed}
-              onCheckedChange={(checked) => 
-                setEntryData(prev => ({ ...prev, is_closed: checked as boolean }))
-              }
+      {/* Geo Area Manager */}
+      {showGeoAreaManager && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <GeoAreaManager 
+            walkCardId={walkCard.id} 
+            onUpdate={handleGeoAreaUpdate}
+          />
+          <div className="space-y-4">
+            <QuickVenueCreator
+              selectedGeoAreaIds={walkGeoAreas.map(area => area.id)}
+              onVenueCreated={handleGeoAreaUpdate}
             />
-            <Label htmlFor="closed">Venue is closed</Label>
           </div>
+        </div>
+      )}
 
-          {!entryData.is_closed && (
-            <>
-              {/* People Count */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="people-count" className="flex items-center gap-2">
-                    <Users className="h-4 w-4" />
-                    People Count
-                  </Label>
-                  <Input
-                    id="people-count"
-                    type="number"
-                    min="0"
-                    value={entryData.people_count || 0}
-                    onChange={(e) => 
-                      setEntryData(prev => ({ 
-                        ...prev, 
-                        people_count: parseInt(e.target.value) || 0 
-                      }))
+      {walkVenues.length === 0 ? (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <MapPin className="mx-auto h-12 w-12 mb-4 opacity-50" />
+              <p className="text-muted-foreground">No venues available for this walk</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Add geo areas to this walk to see available venues
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Venue Grid */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Venues</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <VenueGrid
+                venues={walkVenues}
+                walkEntries={walkEntries}
+                onVenueSelect={handleVenueSelect}
+                selectedVenue={selectedVenue}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Venue Entry Form */}
+          {selectedVenue ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  {selectedVenue.name}
+                </CardTitle>
+                {selectedVenue.address && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin className="h-3 w-3" />
+                    {selectedVenue.address}
+                  </div>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Quick Status */}
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="closed"
+                    checked={entryData.is_closed}
+                    onCheckedChange={(checked) => 
+                      setEntryData(prev => ({ ...prev, is_closed: checked as boolean }))
                     }
+                  />
+                  <Label htmlFor="closed">Venue is closed</Label>
+                </div>
+
+                {!entryData.is_closed && (
+                  <>
+                    {/* People Count */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="people-count" className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          People Count
+                        </Label>
+                        <Input
+                          id="people-count"
+                          type="number"
+                          min="0"
+                          value={entryData.people_count || 0}
+                          onChange={(e) => 
+                            setEntryData(prev => ({ 
+                              ...prev, 
+                              people_count: parseInt(e.target.value) || 0 
+                            }))
+                          }
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="laptop-count" className="flex items-center gap-2">
+                          <Laptop className="h-4 w-4" />
+                          Laptop Count
+                        </Label>
+                        <Input
+                          id="laptop-count"
+                          type="number"
+                          min="0"
+                          value={entryData.laptop_count || 0}
+                          onChange={(e) => 
+                            setEntryData(prev => ({ 
+                              ...prev, 
+                              laptop_count: parseInt(e.target.value) || 0 
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    {/* Flag Anomaly */}
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="flag-anomaly"
+                        checked={entryData.flag_anomaly}
+                        onCheckedChange={(checked) => 
+                          setEntryData(prev => ({ ...prev, flag_anomaly: checked as boolean }))
+                        }
+                      />
+                      <Label htmlFor="flag-anomaly" className="flex items-center gap-2">
+                        <Flag className="h-4 w-4" />
+                        Flag as anomaly
+                      </Label>
+                    </div>
+                  </>
+                )}
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <Label htmlFor="notes">Notes</Label>
+                  <Textarea
+                    id="notes"
+                    placeholder="Any observations or notes..."
+                    value={entryData.notes || ''}
+                    onChange={(e) => 
+                      setEntryData(prev => ({ ...prev, notes: e.target.value }))
+                    }
+                    rows={3}
                   />
                 </div>
 
+                {/* Photo Upload Placeholder */}
                 <div className="space-y-2">
-                  <Label htmlFor="laptop-count" className="flex items-center gap-2">
-                    <Laptop className="h-4 w-4" />
-                    Laptop Count
+                  <Label className="flex items-center gap-2">
+                    <Camera className="h-4 w-4" />
+                    Photos (Coming Soon)
                   </Label>
-                  <Input
-                    id="laptop-count"
-                    type="number"
-                    min="0"
-                    value={entryData.laptop_count || 0}
-                    onChange={(e) => 
-                      setEntryData(prev => ({ 
-                        ...prev, 
-                        laptop_count: parseInt(e.target.value) || 0 
-                      }))
-                    }
-                  />
+                  <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center text-muted-foreground">
+                    <Camera className="mx-auto h-8 w-8 mb-2 opacity-50" />
+                    <p>Photo upload will be available soon</p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Flag Anomaly */}
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="flag-anomaly"
-                  checked={entryData.flag_anomaly}
-                  onCheckedChange={(checked) => 
-                    setEntryData(prev => ({ ...prev, flag_anomaly: checked as boolean }))
-                  }
-                />
-                <Label htmlFor="flag-anomaly" className="flex items-center gap-2">
-                  <Flag className="h-4 w-4" />
-                  Flag as anomaly
-                </Label>
-              </div>
-            </>
+                {/* Actions */}
+                <div className="flex gap-2 pt-4">
+                  <Button onClick={handleSaveEntry} disabled={loading}>
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Save Entry
+                  </Button>
+                  
+                  <Button onClick={handleCompleteWalk} variant="outline" className="ml-auto">
+                    Complete Walk
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <Building2 className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                  <p className="text-muted-foreground">Select a venue to record data</p>
+                </div>
+              </CardContent>
+            </Card>
           )}
-
-          {/* Notes */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Any observations or notes..."
-              value={entryData.notes || ''}
-              onChange={(e) => 
-                setEntryData(prev => ({ ...prev, notes: e.target.value }))
-              }
-              rows={3}
-            />
-          </div>
-
-          {/* Photo Upload Placeholder */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Camera className="h-4 w-4" />
-              Photos (Coming Soon)
-            </Label>
-            <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center text-muted-foreground">
-              <Camera className="mx-auto h-8 w-8 mb-2 opacity-50" />
-              <p>Photo upload will be available soon</p>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <div className="flex gap-2 pt-4">
-            <Button 
-              variant="outline" 
-              onClick={handlePrevVenue}
-              disabled={currentVenueIndex === 0}
-            >
-              Previous
-            </Button>
-            
-            <Button onClick={handleSaveEntry} disabled={loading}>
-              <CheckCircle className="mr-2 h-4 w-4" />
-              Save Entry
-            </Button>
-
-            {currentVenueIndex < walkVenues.length - 1 ? (
-              <Button onClick={handleNextVenue}>
-                Next Venue
-              </Button>
-            ) : (
-              <Button onClick={handleCompleteWalk} className="ml-auto">
-                Complete Walk
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      )}
     </div>
   );
 };

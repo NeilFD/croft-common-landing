@@ -127,8 +127,65 @@ export const useResearch = () => {
     }
   };
 
+  // Fetch geo areas for a walk card
+  const fetchWalkCardGeoAreas = async (walkCardId: string): Promise<GeoArea[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('walk_card_geo_areas')
+        .select(`
+          geo_area_id,
+          geo_areas (
+            id,
+            name,
+            is_active,
+            created_at,
+            updated_at
+          )
+        `)
+        .eq('walk_card_id', walkCardId);
+      
+      if (error) throw error;
+      return data?.map(item => item.geo_areas as GeoArea).filter(Boolean) || [];
+    } catch (error) {
+      console.error('Error fetching walk card geo areas:', error);
+      return [];
+    }
+  };
+
+  // Add geo area to walk card
+  const addGeoAreaToWalkCard = async (walkCardId: string, geoAreaId: string) => {
+    try {
+      const { error } = await supabase
+        .from('walk_card_geo_areas')
+        .insert({ walk_card_id: walkCardId, geo_area_id: geoAreaId });
+      
+      if (error) throw error;
+      toast.success('Geo area added to walk');
+    } catch (error) {
+      console.error('Error adding geo area to walk card:', error);
+      toast.error('Failed to add geo area');
+    }
+  };
+
+  // Remove geo area from walk card
+  const removeGeoAreaFromWalkCard = async (walkCardId: string, geoAreaId: string) => {
+    try {
+      const { error } = await supabase
+        .from('walk_card_geo_areas')
+        .delete()
+        .eq('walk_card_id', walkCardId)
+        .eq('geo_area_id', geoAreaId);
+      
+      if (error) throw error;
+      toast.success('Geo area removed from walk');
+    } catch (error) {
+      console.error('Error removing geo area from walk card:', error);
+      toast.error('Failed to remove geo area');
+    }
+  };
+
   // Create new walk card
-  const createWalkCard = async (cardData: Partial<WalkCard>) => {
+  const createWalkCard = async (cardData: Partial<WalkCard>, selectedGeoAreaIds: string[] = []) => {
     if (!user) return null;
 
     try {
@@ -153,6 +210,20 @@ export const useResearch = () => {
         .single();
       
       if (error) throw error;
+
+      // Link selected geo areas to the walk card
+      if (selectedGeoAreaIds.length > 0) {
+        const geoAreaLinks = selectedGeoAreaIds.map(geoAreaId => ({
+          walk_card_id: data.id,
+          geo_area_id: geoAreaId
+        }));
+
+        const { error: linkError } = await supabase
+          .from('walk_card_geo_areas')
+          .insert(geoAreaLinks);
+
+        if (linkError) throw linkError;
+      }
       
       await fetchWalkCards();
       toast.success('Walk card created successfully');
@@ -376,6 +447,9 @@ export const useResearch = () => {
     fetchVenues,
     fetchWalkCards,
     fetchWalkEntries,
+    fetchWalkCardGeoAreas,
+    addGeoAreaToWalkCard,
+    removeGeoAreaFromWalkCard,
     createWalkCard,
     updateWalkCardStatus,
     upsertWalkEntry,
