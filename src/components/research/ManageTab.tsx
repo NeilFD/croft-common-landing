@@ -476,7 +476,7 @@ const filteredVenues = venues.filter(venue => {
           </div>
 
           {/* Walk Cards List */}
-          <div className="grid gap-4">
+          <div className="space-y-4">
             {filteredAndSortedWalkCards.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 {walkCards.length === 0 
@@ -486,104 +486,48 @@ const filteredVenues = venues.filter(venue => {
               </div>
             ) : (
               filteredAndSortedWalkCards.map((card) => {
-                const cardGeoAreas = walkCardGeoAreas[card.id] || [];
                 return (
-                  <Card key={card.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-base">{card.title}</CardTitle>
-                        <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          card.status === 'Active' ? 'bg-green-100 text-green-700' :
-                          card.status === 'Completed' ? 'bg-blue-100 text-blue-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                          {card.status}
-                        </div>
+                  <div key={card.id} className="relative">
+                    <WalkHistoryCard 
+                      walkCard={card}
+                      onReopen={card.status === 'Completed' ? handleReopenWalk : undefined}
+                      onDelete={handleDeleteWalk}
+                    />
+                    
+                    {/* Additional management buttons for non-completed cards */}
+                    {card.status !== 'Completed' && (
+                      <div className="absolute top-4 right-4 flex gap-2 z-10">
+                        {card.status === 'Draft' && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleStartWalk(card.id)}
+                            disabled={loading}
+                          >
+                            <Play className="mr-1 h-3 w-3" />
+                            Start Walk
+                          </Button>
+                        )}
+                        {card.status === 'Active' && (
+                          <Button size="sm" variant="outline" disabled>
+                            <Eye className="mr-1 h-3 w-3" />
+                            Active (Go to Run tab)
+                          </Button>
+                        )}
                       </div>
-                      <CardDescription>
-                        {card.date} • {card.time_block.replace(/([A-Z])/g, ' $1').trim()} • {card.weather_preset}
-                        {card.weather_temp_c && ` ${card.weather_temp_c}°C`}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        {/* Geo Areas */}
-                        {cardGeoAreas.length > 0 && (
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-2">Geo Areas</div>
-                            <div className="flex flex-wrap gap-2">
-                              {cardGeoAreas.map((area) => (
-                                <span key={area.id} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-xs">
-                                  {area.name}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Croft Zones */}
-                        {card.croft_zones.length > 0 && (
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-2">Croft Zones</div>
-                            <div className="flex flex-wrap gap-2">
-                              {card.croft_zones.map((zone) => (
-                                <span key={zone} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
-                                  {zone}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Weather Notes */}
-                        {card.weather_notes && (
-                          <div>
-                            <div className="text-xs text-muted-foreground mb-1">Weather Notes</div>
-                            <p className="text-sm break-words">{card.weather_notes}</p>
-                          </div>
-                        )}
-                        
-                        {/* Action buttons for walk cards */}
-                        <div className="flex flex-wrap gap-2 pt-2">
-                          {card.status === 'Draft' && (
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleStartWalk(card.id)}
-                              disabled={loading}
-                            >
-                              <Play className="mr-1 h-3 w-3" />
-                              Start Walk
-                            </Button>
-                          )}
-                          {card.status === 'Active' && (
-                            <Button size="sm" variant="outline" disabled>
-                              <Eye className="mr-1 h-3 w-3" />
-                              Active (Go to Run tab)
-                            </Button>
-                          )}
-                          {card.status === 'Completed' && (
-                            <>
-                              <EditWalkCardModal 
-                                walkCard={card}
-                                onSuccess={() => {
-                                  // Refresh geo areas after edit
-                                  loadWalkCardGeoAreas();
-                                }}
-                              />
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => handleStartWalk(card.id)}
-                              >
-                                <Play className="mr-1 h-3 w-3" />
-                                Restart Walk
-                              </Button>
-                            </>
-                          )}
-                        </div>
+                    )}
+                    
+                    {/* Edit button for completed cards */}
+                    {card.status === 'Completed' && (
+                      <div className="absolute top-4 right-4 z-10">
+                        <EditWalkCardModal 
+                          walkCard={card}
+                          onSuccess={() => {
+                            loadWalkCardGeoAreas();
+                          }}
+                        />
                       </div>
-                    </CardContent>
-                  </Card>
+                    )}
+                  </div>
                 );
               })
             )}
