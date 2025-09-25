@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Minus, Plus, MoreHorizontal, Laptop, StickyNote, Camera, Flag, Store, X } from 'lucide-react';
+import { Minus, Plus, MoreHorizontal, Laptop, StickyNote, Camera, Flag, Store, X, Clock } from 'lucide-react';
 import { useResearch, Venue, WalkEntry } from '@/hooks/useResearch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { format } from 'date-fns';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 
 interface VenueObservationRowProps {
   venue: Venue;
@@ -27,6 +29,16 @@ export const VenueObservationRow: React.FC<VenueObservationRowProps> = ({
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const [tempNotes, setTempNotes] = useState(entry?.notes || '');
   const [tempLaptopCount, setTempLaptopCount] = useState(entry?.laptop_count || 0);
+  const [tempRecordedAt, setTempRecordedAt] = useState(() => {
+    if (entry?.recorded_at) {
+      // Convert from UTC to GMT for editing
+      const gmtTime = toZonedTime(new Date(entry.recorded_at), 'Europe/London');
+      return format(gmtTime, "yyyy-MM-dd'T'HH:mm");
+    }
+    // Default to current GMT time
+    const now = toZonedTime(new Date(), 'Europe/London');
+    return format(now, "yyyy-MM-dd'T'HH:mm");
+  });
 
   const peopleCount = entry?.people_count || 0;
   const laptopCount = entry?.laptop_count || 0;
@@ -42,6 +54,7 @@ export const VenueObservationRow: React.FC<VenueObservationRowProps> = ({
       is_closed: isClosed,
       flag_anomaly: isAnomalous,
       notes: entry?.notes,
+      recorded_at: entry?.recorded_at,
       ...updates,
     });
   };
@@ -65,9 +78,14 @@ export const VenueObservationRow: React.FC<VenueObservationRowProps> = ({
   };
 
   const saveDetails = () => {
+    // Convert the input datetime back to UTC for storage
+    const gmtDate = new Date(tempRecordedAt);
+    const utcDate = fromZonedTime(gmtDate, 'Europe/London');
+    
     updateEntry({ 
       notes: tempNotes || undefined,
-      laptop_count: tempLaptopCount 
+      laptop_count: tempLaptopCount,
+      recorded_at: utcDate.toISOString()
     });
     setShowDetailsDialog(false);
   };
@@ -107,6 +125,14 @@ export const VenueObservationRow: React.FC<VenueObservationRowProps> = ({
         <div className="text-center min-w-[3rem]">
           <div className="text-lg font-bold">{peopleCount}</div>
           <div className="text-xs text-muted-foreground">people</div>
+          {entry?.recorded_at && (
+            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+              <Clock className="h-3 w-3" />
+              <span>
+                {format(toZonedTime(new Date(entry.recorded_at), 'Europe/London'), 'HH:mm dd/MM')}
+              </span>
+            </div>
+          )}
         </div>
         
         <Button
@@ -186,6 +212,10 @@ export const VenueObservationRow: React.FC<VenueObservationRowProps> = ({
             <StickyNote className="mr-2 h-4 w-4" />
             Add Note
           </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowDetailsDialog(true)}>
+            <Clock className="mr-2 h-4 w-4" />
+            Edit Time
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={toggleAnomaly}>
             <Flag className="mr-2 h-4 w-4" />
             {isAnomalous ? 'Clear Flag' : 'Flag Anomaly'}
@@ -201,6 +231,19 @@ export const VenueObservationRow: React.FC<VenueObservationRowProps> = ({
           </DialogHeader>
           
           <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="recorded-time">Recorded Time (GMT)</Label>
+              <Input
+                id="recorded-time"
+                type="datetime-local"
+                value={tempRecordedAt}
+                onChange={(e) => setTempRecordedAt(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Automatically adjusts for British Summer Time (GMT/BST)
+              </p>
+            </div>
+            
             {!showLaptopCountInline && (
               <div className="space-y-2">
                 <Label htmlFor="laptop-count">Laptop Count</Label>

@@ -302,6 +302,7 @@ export const useResearch = () => {
           flag_anomaly: entryData.flag_anomaly || false,
           notes: entryData.notes,
           photo_url: entryData.photo_url,
+          recorded_at: entryData.recorded_at || new Date().toISOString(),
         }, {
           onConflict: 'walk_card_id,venue_id'
         });
