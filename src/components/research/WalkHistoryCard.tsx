@@ -45,30 +45,33 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-base">{walkCard.title}</CardTitle>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Calendar className="h-3 w-3" />
-                {formatDate(walkCard.date)}
-              </div>
-              <div className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {walkCard.time_block}
-              </div>
-              <div className="flex items-center gap-1">
-                <CloudRain className="h-3 w-3" />
+        <div className="space-y-3">
+          <div className="flex items-start justify-between gap-2">
+            <CardTitle className="text-base flex-1 min-w-0 truncate">{walkCard.title}</CardTitle>
+            <Badge 
+              variant={walkCard.status === 'Completed' ? 'default' : 'secondary'}
+              className="shrink-0"
+            >
+              {walkCard.status}
+            </Badge>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1 min-w-0">
+              <Calendar className="h-3 w-3 shrink-0" />
+              <span className="truncate">{formatDate(walkCard.date)}</span>
+            </div>
+            <div className="flex items-center gap-1 min-w-0">
+              <Clock className="h-3 w-3 shrink-0" />
+              <span className="truncate">{walkCard.time_block}</span>
+            </div>
+            <div className="flex items-center gap-1 min-w-0">
+              <CloudRain className="h-3 w-3 shrink-0" />
+              <span className="truncate">
                 {walkCard.weather_preset}
                 {walkCard.weather_temp_c && ` ${walkCard.weather_temp_c}°C`}
-              </div>
+              </span>
             </div>
           </div>
-          <Badge 
-            variant={walkCard.status === 'Completed' ? 'default' : 'secondary'}
-          >
-            {walkCard.status}
-          </Badge>
         </div>
       </CardHeader>
       
@@ -92,30 +95,31 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
           {walkCard.weather_notes && (
             <div>
               <div className="text-xs text-muted-foreground mb-1">Weather Notes</div>
-              <p className="text-sm">{walkCard.weather_notes}</p>
+              <p className="text-sm break-words">{walkCard.weather_notes}</p>
             </div>
           )}
 
           {/* Timing */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <div>
-              {walkCard.started_at && (
-                <span>Started: {formatTime(walkCard.started_at)}</span>
-              )}
-            </div>
-            <div>
-              {walkCard.completed_at && (
-                <span>Completed: {formatTime(walkCard.completed_at)}</span>
-              )}
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs text-muted-foreground">
+            {walkCard.started_at && (
+              <div className="min-w-0">
+                <span className="truncate">Started: {formatTime(walkCard.started_at)}</span>
+              </div>
+            )}
+            {walkCard.completed_at && (
+              <div className="min-w-0">
+                <span className="truncate">Completed: {formatTime(walkCard.completed_at)}</span>
+              </div>
+            )}
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2">
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
             {onReopen && walkCard.status === 'Completed' && (
               <Button 
                 variant="outline" 
                 size="sm"
+                className="w-full sm:w-auto"
                 onClick={() => onReopen(walkCard.id)}
               >
                 <RotateCcw className="mr-1 h-3 w-3" />
@@ -126,6 +130,7 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
               <Button 
                 variant="outline" 
                 size="sm"
+                className="w-full sm:w-auto"
                 onClick={() => onDelete(walkCard.id)}
               >
                 <Trash2 className="mr-1 h-3 w-3" />
