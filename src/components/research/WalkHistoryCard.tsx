@@ -55,27 +55,75 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
 
   const fetchWalkEntries = async (): Promise<WalkEntry[]> => {
     try {
-      // Calculate date boundaries (within 24 hours of walk card creation)
+      // Get original walk date from walk card creation
       const walkDate = new Date(walkCard.created_at);
-      const startOfDay = new Date(walkDate);
-      startOfDay.setHours(0, 0, 0, 0);
+      const walkDateStr = walkDate.toISOString().split('T')[0]; // YYYY-MM-DD format
       
-      const endOfDay = new Date(walkDate);
-      endOfDay.setHours(23, 59, 59, 999);
-
+      // Get all entries for this walk card
       const { data, error } = await supabase
         .from('walk_entries')
         .select('*')
         .eq('walk_card_id', walkCard.id)
-        .gte('recorded_at', startOfDay.toISOString())
-        .lte('recorded_at', endOfDay.toISOString());
+        .order('recorded_at', { ascending: true });
 
       if (error) {
         console.error('Error fetching walk entries:', error);
         throw error;
       }
 
-      return data || [];
+      if (!data || data.length === 0) {
+        return [];
+      }
+
+      // Filter to only include entries from the original walk date
+      const originalWalkEntries = data.filter(entry => {
+        const entryDate = new Date(entry.recorded_at).toISOString().split('T')[0];
+        return entryDate === walkDateStr;
+      });
+
+      // Group entries by venue_id to handle duplicates
+      const venueEntriesMap = new Map<string, WalkEntry[]>();
+      originalWalkEntries.forEach(entry => {
+        const venueId = entry.venue_id;
+        if (!venueEntriesMap.has(venueId)) {
+          venueEntriesMap.set(venueId, []);
+        }
+        venueEntriesMap.get(venueId)!.push(entry);
+      });
+
+      // Process entries: keep originals and only legitimate second visits
+      const processedEntries: WalkEntry[] = [];
+      const legitimateSecondVisitVenues = new Set(['Full Moon', 'The Canteen', 'Caribbean Croft']);
+
+      venueEntriesMap.forEach((entries, venueId) => {
+        // Find the venue name
+        const venue = venues.find(v => v.id === venueId);
+        const venueName = venue?.name || '';
+
+        if (entries.length === 1) {
+          // Single visit - always include
+          processedEntries.push(entries[0]);
+        } else if (entries.length > 1) {
+          // Multiple visits - sort by recorded_at
+          const sortedEntries = entries.sort((a, b) => 
+            new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+          );
+
+          // Always include the first visit
+          processedEntries.push(sortedEntries[0]);
+
+          // Only include second visit if it's a legitimate venue
+          if (legitimateSecondVisitVenues.has(venueName) && sortedEntries.length > 1) {
+            processedEntries.push(sortedEntries[1]);
+          }
+        }
+      });
+
+      // Sort final entries by recorded_at
+      return processedEntries.sort((a, b) => 
+        new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime()
+      );
+
     } catch (error) {
       console.error('Failed to fetch walk entries:', error);
       throw new Error('Failed to fetch walk data');

@@ -92,7 +92,7 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
     doc.text(`Temperature: ${walkCard.weather_temp_c}°C`, 120, 60);
   }
 
-  // Get venues with their walk entries and sort chronologically
+  // Process venue visits - entries are already filtered and deduplicated
   const venueVisits = walkEntries
     .map(entry => {
       const venue = venues.find(v => v.id === entry.venue_id);
@@ -159,13 +159,43 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   
   let currentY = finalY + 25;
   
-  // AI-generated summary if available
+  // AI-generated summary with page break handling
   if (aiSummary) {
     doc.setFontSize(10);
     doc.setTextColor(60, 60, 60);
     const summaryLines = doc.splitTextToSize(aiSummary, 170);
-    doc.text(summaryLines, 20, currentY);
-    currentY += (summaryLines.length * 5) + 15;
+    
+    const pageHeight = doc.internal.pageSize.height;
+    const marginBottom = 30; // Space for footer
+    const lineHeight = 5;
+    
+    for (let i = 0; i < summaryLines.length; i++) {
+      // Check if we need a new page
+      if (currentY + lineHeight > pageHeight - marginBottom) {
+        doc.addPage();
+        currentY = 30; // Top margin for new page
+        
+        // Add header on new page
+        doc.setFontSize(16);
+        doc.setTextColor(40, 40, 40);
+        doc.text('Walk Summary (continued)', 20, currentY - 10);
+        doc.setFontSize(10);
+        doc.setTextColor(60, 60, 60);
+      }
+      
+      doc.text(summaryLines[i], 20, currentY);
+      currentY += lineHeight;
+    }
+    
+    currentY += 15; // Extra space after summary
+  }
+  
+  // Check if we need a new page for statistics
+  const pageHeight = doc.internal.pageSize.height;
+  const marginBottom = 30;
+  if (currentY + 80 > pageHeight - marginBottom) {
+    doc.addPage();
+    currentY = 30;
   }
   
   // Statistics section
@@ -194,6 +224,12 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
 
   // Weather notes if available
   if (walkCard.weather_notes) {
+    // Check if we need a new page for weather notes
+    if (currentY + 40 > pageHeight - marginBottom) {
+      doc.addPage();
+      currentY = 30;
+    }
+    
     doc.setFontSize(12);
     doc.setTextColor(40, 40, 40);
     doc.text('Weather Notes', 20, currentY);
@@ -205,12 +241,19 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
     doc.text(splitNotes, 20, currentY);
   }
 
-  // Footer
-  const pageHeight = doc.internal.pageSize.height;
-  doc.setFontSize(8);
-  doc.setTextColor(120, 120, 120);
-  doc.text(`Generated on ${new Date().toLocaleString('en-GB')}`, 20, pageHeight - 15);
-  doc.text('Croft Common Field Research', 120, pageHeight - 15);
+  // Add footer to all pages
+  const totalPages = doc.getNumberOfPages();
+  for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+    doc.setPage(pageNum);
+    const currentPageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+    doc.text(`Generated on ${new Date().toLocaleString('en-GB')}`, 20, currentPageHeight - 15);
+    doc.text('Croft Common Field Research', 120, currentPageHeight - 15);
+    if (totalPages > 1) {
+      doc.text(`Page ${pageNum} of ${totalPages}`, 170, currentPageHeight - 15);
+    }
+  }
 
   return doc.output('blob');
 };
