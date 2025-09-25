@@ -61,9 +61,41 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
     toast.success('Walk completed!');
   };
 
-  const completedEntries = walkEntries.filter(entry => 
-    walkVenues.some(venue => venue.id === entry.venue_id)
-  ).length;
+  // Filter walk entries to only the original walk date and allow at most a legitimate second visit
+  const walkDateStr = new Date(walkCard.created_at).toISOString().split('T')[0];
+  const allowedSecondVisitVenueNames = new Set<string>(['Full Moon', 'The Canteen', 'Caribbean Croft']);
+
+  // Map venue_id -> venue name for quick lookup
+  const venueNameById = new Map(venues.map(v => [v.id, v.name] as const));
+
+  // Keep only entries recorded on the original walk date
+  const entriesOnDate = walkEntries.filter(e => {
+    const entryDateStr = new Date(e.recorded_at).toISOString().split('T')[0];
+    return entryDateStr === walkDateStr;
+  });
+
+  // Group by venue and keep first visit, and second only if venue is in the allowed list
+  const grouped = new Map<string, typeof entriesOnDate>();
+  for (const e of entriesOnDate) {
+    if (!grouped.has(e.venue_id)) grouped.set(e.venue_id, []);
+    grouped.get(e.venue_id)!.push(e);
+  }
+
+  const filteredWalkEntries = Array.from(grouped.entries()).flatMap(([venueId, entries]) => {
+    // Ignore venues not in the current walk's geo areas
+    if (!walkVenues.some(v => v.id === venueId)) return [] as typeof entries;
+
+    const name = venueNameById.get(venueId) || '';
+    const sorted = entries.sort((a, b) => new Date(a.recorded_at).getTime() - new Date(b.recorded_at).getTime());
+
+    const keep: typeof entries = [];
+    if (sorted.length >= 1) keep.push(sorted[0]);
+    if (sorted.length >= 2 && allowedSecondVisitVenueNames.has(name)) keep.push(sorted[1]);
+    return keep;
+  });
+
+  // Count unique venues completed
+  const completedVenueCount = new Set(filteredWalkEntries.map(e => e.venue_id)).size;
 
   return (
     <div className="space-y-3 sm:space-y-6">
@@ -93,7 +125,7 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
                 {walkCard.weather_temp_c && ` ${walkCard.weather_temp_c}°C`}
               </div>
               <p className="text-xs sm:text-sm text-muted-foreground">
-                {completedEntries} of {walkVenues.length} venues completed
+                {completedVenueCount} of {walkVenues.length} venues completed
               </p>
             </div>
             
@@ -147,7 +179,7 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
             <CardContent className="p-4 sm:p-6 pt-0">
               <VenueGrid
                 venues={walkVenues}
-                walkEntries={walkEntries}
+                walkEntries={filteredWalkEntries}
                 walkCardId={walkCard.id}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
