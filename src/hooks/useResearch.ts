@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
@@ -62,7 +62,7 @@ export const useResearch = () => {
   const [loading, setLoading] = useState(false);
 
   // Fetch geo areas
-  const fetchGeoAreas = async () => {
+  const fetchGeoAreas = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('geo_areas')
@@ -76,10 +76,10 @@ export const useResearch = () => {
       console.error('Error fetching geo areas:', error);
       toast.error('Failed to load geo areas');
     }
-  };
+  }, []);
 
   // Fetch venues
-  const fetchVenues = async () => {
+  const fetchVenues = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('venues')
@@ -93,10 +93,10 @@ export const useResearch = () => {
       console.error('Error fetching venues:', error);
       toast.error('Failed to load venues');
     }
-  };
+  }, []);
 
   // Fetch walk cards
-  const fetchWalkCards = async () => {
+  const fetchWalkCards = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('walk_cards')
@@ -109,10 +109,10 @@ export const useResearch = () => {
       console.error('Error fetching walk cards:', error);
       toast.error('Failed to load walk cards');
     }
-  };
+  }, []);
 
   // Fetch walk entries for a specific card
-  const fetchWalkEntries = async (walkCardId: string) => {
+  const fetchWalkEntries = useCallback(async (walkCardId: string) => {
     try {
       const { data, error } = await supabase
         .from('walk_entries')
@@ -125,10 +125,10 @@ export const useResearch = () => {
       console.error('Error fetching walk entries:', error);
       toast.error('Failed to load walk entries');
     }
-  };
+  }, []);
 
   // Fetch geo areas for a walk card
-  const fetchWalkCardGeoAreas = async (walkCardId: string): Promise<GeoArea[]> => {
+  const fetchWalkCardGeoAreas = useCallback(async (walkCardId: string): Promise<GeoArea[]> => {
     try {
       const { data, error } = await supabase
         .from('walk_card_geo_areas')
@@ -150,7 +150,7 @@ export const useResearch = () => {
       console.error('Error fetching walk card geo areas:', error);
       return [];
     }
-  };
+  }, []);
 
   // Add geo area to walk card
   const addGeoAreaToWalkCard = async (walkCardId: string, geoAreaId: string) => {
