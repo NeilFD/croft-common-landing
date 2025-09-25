@@ -55,9 +55,8 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
 
   const fetchWalkEntries = async (): Promise<WalkEntry[]> => {
     try {
-      // Get original walk date from walk card creation
-      const walkDate = new Date(walkCard.created_at);
-      const walkDateStr = walkDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      // Get original walk date from walk card
+      const walkDateStr = (walkCard.date || '').slice(0, 10) || new Date(walkCard.created_at).toISOString().slice(0, 10);
       
       // Get all entries for this walk card
       const { data, error } = await supabase

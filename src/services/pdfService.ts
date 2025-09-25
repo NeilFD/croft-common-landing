@@ -82,7 +82,7 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   doc.setFontSize(12);
   doc.setTextColor(60, 60, 60);
   doc.text(`Walk: ${walkCard.title}`, 20, 50);
-  doc.text(`Date: ${new Date(walkCard.created_at).toLocaleDateString('en-GB')}`, 20, 60);
+  doc.text(`Date: ${new Date(walkCard.date || walkCard.created_at).toLocaleDateString('en-GB')}`, 20, 60);
   doc.text(`Status: ${walkCard.status}`, 20, 70);
   
   if (walkCard.weather_preset) {

@@ -62,7 +62,7 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
   };
 
   // Filter walk entries to only the original walk date and allow at most a legitimate second visit
-  const walkDateStr = new Date(walkCard.created_at).toISOString().split('T')[0];
+  const walkDateStr = (walkCard.date || '').slice(0, 10) || new Date(walkCard.created_at).toISOString().slice(0, 10);
   const allowedSecondVisitVenueNames = new Set<string>(['Full Moon', 'The Canteen', 'Caribbean Croft']);
 
   // Map venue_id -> venue name for quick lookup

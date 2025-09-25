@@ -48,7 +48,7 @@ export const shareViaWhatsApp = async (
   // Fallback: Download file and use WhatsApp Web with pre-composed message
   downloadPDF(blob, walkCard);
   
-  const message = `Field Research Report: ${walkCard.title}\n\nCompleted on ${new Date(walkCard.created_at).toLocaleDateString('en-GB')}\n\nI've downloaded the PDF report - sharing it with you now.`;
+  const message = `Field Research Report: ${walkCard.title}\n\nCompleted on ${new Date(walkCard.date || walkCard.created_at).toLocaleDateString('en-GB')}\n\nI've downloaded the PDF report - sharing it with you now.`;
   const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
   
   // Show helpful toast message
