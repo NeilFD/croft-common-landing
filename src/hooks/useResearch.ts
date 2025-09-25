@@ -335,19 +335,22 @@ export const useResearch = () => {
 
   // Delete geo area
   const deleteGeoArea = async (areaId: string) => {
+    const previous = geoAreas;
+    // Optimistic update: remove locally first
+    setGeoAreas((prev) => prev.filter((a) => a.id !== areaId));
     try {
       setLoading(true);
       const { error } = await supabase
         .from('geo_areas')
         .update({ is_active: false })
         .eq('id', areaId);
-      
       if (error) throw error;
-      
       await fetchGeoAreas();
       toast.success('Geo area deleted');
     } catch (error) {
       console.error('Error deleting geo area:', error);
+      // Revert on failure
+      setGeoAreas(previous);
       toast.error('Failed to delete geo area');
     } finally {
       setLoading(false);
