@@ -76,8 +76,20 @@ export const shareViaWhatsApp = async (
           console.log('User cancelled Web Share dialog');
           return false;
         }
+        
+        // On iOS, don't fall back to wa.me - show error instead since cached PDF should work
+        if (isIOS) {
+          console.log('Web Share failed on iOS');
+          showToast?.({
+            title: 'Share Failed',
+            description: 'Please try again or use the PDF download option.',
+            variant: 'destructive'
+          });
+          return false;
+        }
+        
         console.log('Web Share with files failed, falling back', error);
-        // Continue to fallbacks below
+        // Continue to fallbacks below for non-iOS platforms
       }
     }
 

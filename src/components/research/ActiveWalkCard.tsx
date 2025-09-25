@@ -57,8 +57,69 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
   };
 
   const handleCompleteWalk = async () => {
-    await updateWalkCardStatus(walkCard.id, 'Completed');
-    toast.success('Walk completed!');
+    toast.success('Completing walk and preparing report...');
+    
+    try {
+      // Update status to completed
+      await updateWalkCardStatus(walkCard.id, 'Completed');
+      
+      // Pre-generate and cache the PDF in the background
+      setTimeout(async () => {
+        try {
+          console.log('Pre-generating PDF for walk', walkCard.id);
+          
+          // Import services dynamically to avoid circular dependencies
+          const { generateWalkCardPDF } = await import('@/services/pdfService');
+          const { pdfCacheService } = await import('@/services/pdfCacheService');
+          
+          // Fetch walk entries using the same logic as WalkHistoryCard
+          const { data: walkEntriesData, error } = await import('@/integrations/supabase/client').then(m => 
+            m.supabase
+              .from('walk_entries')
+              .select('*')
+              .eq('walk_card_id', walkCard.id)
+              .order('recorded_at', { ascending: true })
+          );
+
+          if (error || !walkEntriesData) {
+            console.warn('No walk entries to cache PDF for:', error);
+            return;
+          }
+
+          // Filter and process entries (same logic as WalkHistoryCard)
+          const walkDateStr = (walkCard.date || '').slice(0, 10) || new Date(walkCard.created_at).toISOString().slice(0, 10);
+          const originalWalkEntries = walkEntriesData.filter(entry => {
+            const entryDate = new Date(entry.recorded_at).toISOString().split('T')[0];
+            return entryDate === walkDateStr;
+          });
+
+          if (originalWalkEntries.length === 0) {
+            console.log('No entries to cache PDF for walk', walkCard.id);
+            return;
+          }
+
+          // Generate PDF with current venues and geoAreas
+          const pdfBlob = await generateWalkCardPDF({
+            walkCard,
+            venues,
+            walkEntries: originalWalkEntries,
+            geoAreas: walkGeoAreas
+          });
+
+          // Cache the PDF
+          await pdfCacheService.storePDF(walkCard.id, pdfBlob);
+          console.log('PDF successfully cached for walk', walkCard.id);
+          
+        } catch (error) {
+          console.warn('Failed to pre-generate PDF cache:', error);
+          // Don't show error toast - caching is optional
+        }
+      }, 500); // Small delay to let UI update first
+
+    } catch (error) {
+      console.error('Error completing walk:', error);
+      toast.error('Failed to complete walk');
+    }
   };
 
   // Filter walk entries to only the original walk date and allow at most a legitimate second visit
