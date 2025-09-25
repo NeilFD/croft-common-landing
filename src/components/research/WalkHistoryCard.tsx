@@ -9,10 +9,16 @@ import {
   Users, 
   MapPin, 
   RotateCcw,
-  Trash2
+  Trash2,
+  FileText,
+  Share
 } from 'lucide-react';
-import { WalkCard } from '@/hooks/useResearch';
+import { WalkCard, useResearch } from '@/hooks/useResearch';
 import { format } from 'date-fns';
+import { generateWalkCardPDF } from '@/services/pdfService';
+import { shareViaWhatsApp, downloadPDF } from '@/services/whatsappService';
+import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 interface WalkHistoryCardProps {
   walkCard: WalkCard;
@@ -25,6 +31,10 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
   onReopen, 
   onDelete 
 }) => {
+  const { venues, walkEntries, geoAreas } = useResearch();
+  const { toast } = useToast();
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'PPP');
@@ -39,6 +49,86 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
       return format(new Date(timeString), 'HH:mm');
     } catch {
       return timeString;
+    }
+  };
+
+  const handleGeneratePDF = async () => {
+    try {
+      setIsGeneratingPDF(true);
+      
+      const walkCardEntries = walkEntries.filter(entry => entry.walk_card_id === walkCard.id);
+      
+      if (walkCardEntries.length === 0) {
+        toast({
+          title: "No data available",
+          description: "This walk card has no venue visits to include in the report.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const pdfBlob = await generateWalkCardPDF({
+        walkCard,
+        venues,
+        walkEntries: walkCardEntries,
+        geoAreas
+      });
+
+      downloadPDF(pdfBlob, walkCard);
+      
+      toast({
+        title: "PDF Generated",
+        description: "The walk card report has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF report. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const handleShareWhatsApp = async () => {
+    try {
+      setIsGeneratingPDF(true);
+      
+      const walkCardEntries = walkEntries.filter(entry => entry.walk_card_id === walkCard.id);
+      
+      if (walkCardEntries.length === 0) {
+        toast({
+          title: "No data available",
+          description: "This walk card has no venue visits to share.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const pdfBlob = await generateWalkCardPDF({
+        walkCard,
+        venues,
+        walkEntries: walkCardEntries,
+        geoAreas
+      });
+
+      await shareViaWhatsApp(pdfBlob, walkCard);
+      
+      toast({
+        title: "Sharing initiated",
+        description: "PDF report ready for WhatsApp sharing.",
+      });
+    } catch (error) {
+      console.error('Error sharing via WhatsApp:', error);
+      toast({
+        title: "Error",
+        description: "Failed to prepare report for sharing. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -115,6 +205,30 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            {walkCard.status === 'Completed' && (
+              <>
+                <Button 
+                  onClick={handleGeneratePDF}
+                  variant="outline" 
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  disabled={isGeneratingPDF}
+                >
+                  <FileText className="mr-1 h-3 w-3" />
+                  {isGeneratingPDF ? "Generating..." : "PDF Report"}
+                </Button>
+                <Button 
+                  onClick={handleShareWhatsApp}
+                  variant="outline" 
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  disabled={isGeneratingPDF}
+                >
+                  <Share className="mr-1 h-3 w-3" />
+                  Share WhatsApp
+                </Button>
+              </>
+            )}
             {onReopen && walkCard.status === 'Completed' && (
               <Button 
                 variant="outline" 
