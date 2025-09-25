@@ -23,6 +23,8 @@ import { VenueGrid } from './VenueGrid';
 import { GeoAreaManager } from './GeoAreaManager';
 import { QuickVenueCreator } from './QuickVenueCreator';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 
 interface ActiveWalkCardProps {
   walkCard: WalkCard;
@@ -49,7 +51,8 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
     laptop_count: 0,
     is_closed: false,
     flag_anomaly: false,
-    notes: ''
+    notes: '',
+    recorded_at: new Date().toISOString()
   });
 
   // Get venues from walk's selected geo areas
@@ -82,7 +85,8 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
         laptop_count: currentEntry.laptop_count,
         is_closed: currentEntry.is_closed,
         flag_anomaly: currentEntry.flag_anomaly,
-        notes: currentEntry.notes || ''
+        notes: currentEntry.notes || '',
+        recorded_at: currentEntry.recorded_at || new Date().toISOString()
       });
     } else {
       setEntryData({
@@ -90,7 +94,8 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
         laptop_count: 0,
         is_closed: false,
         flag_anomaly: false,
-        notes: ''
+        notes: '',
+        recorded_at: new Date().toISOString()
       });
     }
   }, [currentEntry]);
@@ -314,6 +319,31 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
                     </div>
                   </>
                 )}
+
+                {/* Timestamp */}
+                <div className="space-y-2">
+                  <Label htmlFor="recorded-time" className="flex items-center gap-2 text-sm sm:text-base">
+                    <Clock className="h-4 w-4" />
+                    Recorded Time (GMT)
+                  </Label>
+                  <Input
+                    id="recorded-time"
+                    type="datetime-local"
+                    value={entryData.recorded_at ? 
+                      format(toZonedTime(new Date(entryData.recorded_at), 'Europe/London'), "yyyy-MM-dd'T'HH:mm") : 
+                      format(toZonedTime(new Date(), 'Europe/London'), "yyyy-MM-dd'T'HH:mm")
+                    }
+                    onChange={(e) => {
+                      const gmtDate = new Date(e.target.value);
+                      const utcDate = fromZonedTime(gmtDate, 'Europe/London');
+                      setEntryData(prev => ({ ...prev, recorded_at: utcDate.toISOString() }));
+                    }}
+                    className="h-11 text-base"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Automatically adjusts for British Summer Time (GMT/BST)
+                  </p>
+                </div>
 
                 {/* Notes */}
                 <div className="space-y-2">
