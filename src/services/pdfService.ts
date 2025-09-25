@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { WalkCard, Venue, WalkEntry } from '@/hooks/useResearch';
+import { supabase } from '@/integrations/supabase/client';
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
@@ -36,6 +37,20 @@ const loadLogoAsBase64 = (): Promise<string> => {
 export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   const { walkCard, venues, walkEntries, geoAreas } = data;
   const doc = new jsPDF();
+
+  // Generate AI summary first
+  let aiSummary = '';
+  try {
+    const { data: summaryData, error: summaryError } = await supabase.functions.invoke('generate-walk-summary', {
+      body: { walkData: { walkCard, venues, walkEntries, geoAreas } }
+    });
+    
+    if (!summaryError && summaryData?.summary) {
+      aiSummary = summaryData.summary;
+    }
+  } catch (error) {
+    console.warn('Failed to generate AI summary:', error);
+  }
 
   // Load and add logo
   const logoBase64 = await loadLogoAsBase64();
@@ -122,29 +137,64 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
     margin: { left: 10, right: 10 },
   });
 
-  // Summary statistics with better spacing
-  const finalY = (doc as any).lastAutoTable?.finalY + 25 || 185;
+  // Summary section with improved spacing and layout
+  const finalY = (doc as any).lastAutoTable?.finalY + 30 || 190;
   
   // Add separator line
   doc.setDrawColor(200, 200, 200);
   doc.line(20, finalY - 5, 190, finalY - 5);
   
-  doc.setFontSize(14);
+  // Summary header
+  doc.setFontSize(16);
   doc.setTextColor(40, 40, 40);
-  doc.text('Summary', 20, finalY + 5);
+  doc.text('Walk Summary', 20, finalY + 10);
+  
+  let currentY = finalY + 25;
+  
+  // AI-generated summary if available
+  if (aiSummary) {
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    const summaryLines = doc.splitTextToSize(aiSummary, 170);
+    doc.text(summaryLines, 20, currentY);
+    currentY += (summaryLines.length * 5) + 15;
+  }
+  
+  // Statistics section
+  doc.setFontSize(12);
+  doc.setTextColor(40, 40, 40);
+  doc.text('Key Statistics', 20, currentY);
+  currentY += 15;
   
   doc.setFontSize(10);
   doc.setTextColor(60, 60, 60);
-  doc.text(`Total Venues Visited: ${new Set(walkEntries.map(e => e.venue_id)).size}`, 20, finalY + 25);
-  doc.text(`Total Visits: ${walkEntries.length}`, 20, finalY + 40);
-  doc.text(`Total People Count: ${walkEntries.reduce((sum, e) => sum + (e.people_count || 0), 0)}`, 20, finalY + 55);
-  doc.text(`Total Laptop Count: ${walkEntries.reduce((sum, e) => sum + (e.laptop_count || 0), 0)}`, 20, finalY + 70);
+  
+  // Left column stats
+  doc.text(`Total Venues Visited: ${new Set(walkEntries.map(e => e.venue_id)).size}`, 20, currentY);
+  doc.text(`Total Visits: ${walkEntries.length}`, 20, currentY + 12);
+  doc.text(`Total People Count: ${walkEntries.reduce((sum, e) => sum + (e.people_count || 0), 0)}`, 20, currentY + 24);
+  doc.text(`Total Laptop Count: ${walkEntries.reduce((sum, e) => sum + (e.laptop_count || 0), 0)}`, 20, currentY + 36);
+  
+  // Right column stats  
+  const anomalies = walkEntries.filter(e => e.flag_anomaly).length;
+  const notesCount = walkEntries.filter(e => e.notes && e.notes.trim()).length;
+  doc.text(`Anomalies Flagged: ${anomalies}`, 105, currentY);
+  doc.text(`Entries with Notes: ${notesCount}`, 105, currentY + 12);
+  doc.text(`Areas Covered: ${geoAreas.length}`, 105, currentY + 24);
+  
+  currentY += 55;
 
   // Weather notes if available
   if (walkCard.weather_notes) {
-    doc.text('Weather Notes:', 20, finalY + 90);
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Weather Notes', 20, currentY);
+    currentY += 15;
+    
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
     const splitNotes = doc.splitTextToSize(walkCard.weather_notes, 170);
-    doc.text(splitNotes, 20, finalY + 105);
+    doc.text(splitNotes, 20, currentY);
   }
 
   // Footer

@@ -26,7 +26,7 @@ export const shareViaWhatsApp = async (
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({
           title: `Field Research Report: ${walkCard.title}`,
-          text: `Here's the field research report for ${walkCard.title} from ${new Date(walkCard.created_at).toLocaleDateString('en-GB')}`,
+          text: `Here's the field research report for ${walkCard.title}`,
           files: [file]
         });
         showToast?.({
