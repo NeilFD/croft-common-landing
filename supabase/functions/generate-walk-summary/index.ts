@@ -100,7 +100,7 @@ ${walkData.walkEntries
         messages: [
           {
             role: 'system',
-            content: `Create a factual, data-driven summary of this field research walk. Use a warm but professional tone that focuses on key patterns and insights. Avoid flowery descriptions or atmospheric language - stick to what the data shows. IMPORTANT: Only use the provided data - don't mention areas, venues, or statistics not included. Present findings as clear, actionable insights.${isEveningWalk ? ' NOTE: This is an evening walk, so don\'t comment on laptop or technology usage - people are naturally socializing at this time.' : ''} Keep it to 2-3 concise paragraphs that highlight the most significant patterns.`
+            content: `You're helping to create a friendly, readable summary of a field research walk. Write in a warm, conversational tone - like you're sharing interesting observations with a colleague over coffee. Skip formal language and filler phrases. IMPORTANT: Only use the provided data - don't mention areas, venues, or statistics not included. Focus on the most interesting patterns and findings.${isEveningWalk ? ' NOTE: This is an evening walk, so don\'t comment on laptop or technology usage - people are naturally socializing at this time.' : ''} Keep it to 2-3 short paragraphs.`
           },
           {
             role: 'user',

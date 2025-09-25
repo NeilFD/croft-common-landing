@@ -133,22 +133,6 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
     try {
       setIsGeneratingPDF(true);
       
-      // Check for cached PDF first
-      const { pdfCacheService } = await import('@/services/pdfCacheService');
-      const cachedPDF = await pdfCacheService.getPDF(walkCard.id);
-      
-      if (cachedPDF) {
-        console.log('Using cached PDF for download');
-        downloadPDF(cachedPDF, walkCard);
-        toast({
-          title: "PDF Downloaded",
-          description: "The walk card report has been downloaded successfully.",
-        });
-        return;
-      }
-
-      // Generate PDF on demand if not cached
-      console.log('Generating PDF on demand');
       const walkCardEntries = await fetchWalkEntries();
       
       if (walkCardEntries.length === 0) {
@@ -189,32 +173,6 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
     try {
       setIsGeneratingPDF(true);
       
-      // Check for cached PDF first
-      const { pdfCacheService } = await import('@/services/pdfCacheService');
-      const cachedPDF = await pdfCacheService.getPDF(walkCard.id);
-      
-      if (cachedPDF) {
-        console.log('Using cached PDF for sharing:', { 
-          walkCardId: walkCard.id, 
-          pdfSize: cachedPDF.size,
-          pdfType: cachedPDF.type 
-        });
-        
-        const success = await shareViaWhatsApp(cachedPDF, walkCard, (toastData) => {
-          toast({
-            title: toastData.title,
-            description: toastData.description,
-            variant: toastData.variant as any
-          });
-        });
-        
-        // Don't show "cancelled" toast - that's normal user behavior
-        // Only the shareViaWhatsApp function will show error toasts for technical failures
-        return;
-      }
-
-      // Generate PDF on demand if not cached
-      console.log('Generating PDF on demand for sharing');
       const walkCardEntries = await fetchWalkEntries();
       
       if (walkCardEntries.length === 0) {
@@ -241,8 +199,13 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
         });
       });
       
-      // Don't show "cancelled" toast - that's normal user behavior
-      // Only the shareViaWhatsApp function will show error toasts for technical failures
+      if (!success) {
+        toast({
+          title: "Share Cancelled",
+          description: "The sharing process was cancelled.",
+          variant: "default"
+        });
+      }
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
       toast({
