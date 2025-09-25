@@ -36,7 +36,6 @@ export const RunTab = () => {
           onClick={() => setShowCreateModal(true)}
           size="lg"
           className="h-12 px-8"
-          disabled={loading}
         >
           <Plus className="mr-2 h-5 w-5" />
           Create Walkaround
