@@ -263,9 +263,9 @@ export const ManageTab = () => {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction 
-                                  onClick={async (e) => {
-                                    e.preventDefault();
+                                  onClick={async () => {
                                     try {
+                                      console.log('Deleting venue', venue.id);
                                       await deleteVenue(venue.id);
                                     } catch (error) {
                                       console.error('Delete failed:', error);
@@ -371,9 +371,9 @@ export const ManageTab = () => {
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
                                 <AlertDialogAction 
-                                  onClick={async (e) => {
-                                    e.preventDefault();
+                                  onClick={async () => {
                                     try {
+                                      console.log('Deleting geo area', area.id);
                                       await deleteGeoArea(area.id);
                                     } catch (error) {
                                       console.error('Delete failed:', error);
