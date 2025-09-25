@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { cn } from "@/lib/utils";
 import { BRAND_LOGO } from "@/data/brand";
-import fallbackLogo from "@/assets/croft-logo.png";
 import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
 import { useLongPress } from '@/hooks/useLongPress';
 
@@ -66,7 +65,7 @@ const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDe
         />
       ) : (
         <img
-          src={fallbackLogo}
+          src="/brand/logo.png"
           alt="Croft Common Logo"
           className="w-full h-full object-contain"
           loading={priority ? 'eager' : 'lazy'}
