@@ -120,7 +120,7 @@ const KitchensHeroCarousel = () => {
       </div>
 
       {/* Page Title Overlay */}
-      <div className="absolute top-28 left-4 md:left-[106px] z-20">
+      <div className="absolute left-4 md:left-[106px] z-20" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
         <h1 className="inline-block px-3 py-1 border-2 border-background text-background bg-transparent rounded-lg text-3xl font-light tracking-[0.2em] uppercase transition-all duration-300 hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">
           KITCHENS
         </h1>

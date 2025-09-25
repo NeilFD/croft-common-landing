@@ -58,7 +58,7 @@ const CommonRoomHeroCarousel = () => {
       </div>
 
       {/* Page Title Card Overlay */}
-      <div className="absolute top-28 left-4 md:left-[106px] z-20">
+      <div className="absolute left-4 md:left-[106px] z-20" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
         <div className="inline-block px-4 py-3 border-2 border-background bg-transparent rounded-lg transition-all duration-300 hover:border-[hsl(var(--accent-pink))]">
           <h1 className="text-2xl font-light text-background tracking-[0.2em] uppercase transition-colors duration-300 hover:text-[hsl(var(--accent-pink))]">
             THE COMMON ROOM
@@ -70,7 +70,7 @@ const CommonRoomHeroCarousel = () => {
       </div>
 
       {/* Secret gesture cue - positioned in top right corner */}
-      <div className="absolute top-28 right-8 z-20 text-6xl opacity-30 text-background transition-opacity duration-300 hover:opacity-50 pointer-events-none">
+      <div className="absolute right-8 z-20 text-6xl opacity-30 text-background transition-opacity duration-300 hover:opacity-50 pointer-events-none" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
         ⑦
       </div>
 

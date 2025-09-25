@@ -123,7 +123,7 @@ const CafeHeroCarousel = () => {
       </div>
 
       {/* Page Title Overlay */}
-      <div className="absolute top-28 left-4 md:left-[106px] z-20">
+      <div className="absolute left-4 md:left-[106px] z-20" style={{ top: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
         <CMSText
           page="cafe"
           section="hero"
