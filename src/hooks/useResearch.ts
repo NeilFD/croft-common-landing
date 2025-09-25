@@ -287,25 +287,31 @@ export const useResearch = () => {
 
   // Delete venue
   const deleteVenue = async (venueId: string) => {
+    // Optimistic update: remove from local state immediately
+    const previous = venues;
+    setVenues((prev) => prev.filter((v) => v.id !== venueId));
+
     try {
       setLoading(true);
       const { error } = await supabase
         .from('venues')
         .update({ is_active: false })
         .eq('id', venueId);
-      
+
       if (error) throw error;
-      
+
+      // Ensure state is in sync with backend
       await fetchVenues();
       toast.success('Venue deleted');
     } catch (error) {
       console.error('Error deleting venue:', error);
+      // Revert local state on failure
+      setVenues(previous);
       toast.error('Failed to delete venue');
     } finally {
       setLoading(false);
     }
   };
-
   // Update geo area
   const updateGeoArea = async (areaId: string, updates: Partial<GeoArea>) => {
     try {
