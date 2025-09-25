@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, MapPin, Building2, Search, Edit, Trash2, Play, Eye } from 'lucide-react';
+import { Plus, MapPin, Building2, Search, Edit, Trash2, Play, Eye, Filter, ArrowUpDown } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
 
 
@@ -40,6 +40,11 @@ export const ManageTab = () => {
   const [showGeoAreaForm, setShowGeoAreaForm] = useState(false);
   const [editingGeoArea, setEditingGeoArea] = useState<string | null>(null);
   const [newGeoAreaName, setNewGeoAreaName] = useState('');
+  
+  // Walk Cards filtering and sorting
+  const [walkCardSearch, setWalkCardSearch] = useState('');
+  const [walkCardStatusFilter, setWalkCardStatusFilter] = useState<string>('all');
+  const [walkCardSortBy, setWalkCardSortBy] = useState<string>('date-desc');
 
   const handleStartWalk = async (cardId: string) => {
     await updateWalkCardStatus(cardId, 'Active');
@@ -51,6 +56,31 @@ const filteredVenues = venues.filter(venue => {
     const matchesGeoArea = selectedGeoArea === 'all' || venue.geo_area_id === selectedGeoArea;
     return matchesSearch && matchesGeoArea;
   });
+
+  // Filter and sort walk cards
+  const filteredAndSortedWalkCards = walkCards
+    .filter(card => {
+      const matchesSearch = card.title.toLowerCase().includes(walkCardSearch.toLowerCase());
+      const matchesStatus = walkCardStatusFilter === 'all' || card.status === walkCardStatusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      switch (walkCardSortBy) {
+        case 'date-desc':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'date-asc':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        case 'title-asc':
+          return a.title.localeCompare(b.title);
+        case 'title-desc':
+          return b.title.localeCompare(a.title);
+        case 'status':
+          const statusOrder = { 'Active': 0, 'Draft': 1, 'Completed': 2 };
+          return statusOrder[a.status as keyof typeof statusOrder] - statusOrder[b.status as keyof typeof statusOrder];
+        default:
+          return 0;
+      }
+    });
 
   const resetVenueForm = () => {
     setNewVenueName('');
@@ -364,19 +394,63 @@ const filteredVenues = venues.filter(venue => {
 
         <TabsContent value="walk-cards" className="space-y-4">
           {/* Walk Cards Header */}
-          <div>
-            <h2 className="text-lg font-semibold">Walk Cards</h2>
-            <p className="text-sm text-muted-foreground">Manage research sessions</p>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Walk Cards Archive</h2>
+              <p className="text-sm text-muted-foreground">View and manage all research sessions</p>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {walkCards.length} total cards
+            </div>
+          </div>
+
+          {/* Walk Cards Filters */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search walk cards..."
+                value={walkCardSearch}
+                onChange={(e) => setWalkCardSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={walkCardStatusFilter} onValueChange={setWalkCardStatusFilter}>
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="Draft">Draft</SelectItem>
+                <SelectItem value="Active">Active</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={walkCardSortBy} onValueChange={setWalkCardSortBy}>
+              <SelectTrigger className="w-full sm:w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="date-desc">Newest First</SelectItem>
+                <SelectItem value="date-asc">Oldest First</SelectItem>
+                <SelectItem value="title-asc">Title A-Z</SelectItem>
+                <SelectItem value="title-desc">Title Z-A</SelectItem>
+                <SelectItem value="status">By Status</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Walk Cards List */}
           <div className="grid gap-4">
-            {walkCards.length === 0 ? (
+            {filteredAndSortedWalkCards.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                No walk cards yet. Create one from the Run tab.
+                {walkCards.length === 0 
+                  ? 'No walk cards yet. Create one from the Run tab.'
+                  : 'No walk cards match your search criteria.'
+                }
               </div>
             ) : (
-              walkCards.map((card) => (
+              filteredAndSortedWalkCards.map((card) => (
                 <Card key={card.id}>
                   <CardHeader>
                     <div className="flex items-center justify-between">

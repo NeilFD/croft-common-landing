@@ -5,6 +5,7 @@ import { useResearch } from '@/hooks/useResearch';
 import { CreateWalkaroundModal } from './CreateWalkaroundModal';
 import { ActiveWalkCard } from './ActiveWalkCard';
 import { WalkHistoryCard } from './WalkHistoryCard';
+import { DraftWalkCard } from './DraftWalkCard';
 import { toast } from 'sonner';
 
 export const RunTab = () => {
@@ -12,9 +13,14 @@ export const RunTab = () => {
   
 
   const activeCard = walkCards.find(card => card.status === 'Active');
+  const draftCards = walkCards.filter(card => card.status === 'Draft');
   const completedCards = walkCards.filter(card => card.status === 'Completed').slice(0, 5);
 
   const handleReopenWalk = async (cardId: string) => {
+    await updateWalkCardStatus(cardId, 'Active');
+  };
+
+  const handleStartWalk = async (cardId: string) => {
     await updateWalkCardStatus(cardId, 'Active');
   };
 
@@ -30,16 +36,45 @@ export const RunTab = () => {
 
   return (
     <div className="space-y-6">
-      <div className="text-center py-8">
-        <CreateWalkaroundModal
-          trigger={
-            <Button size="lg" className="h-12 px-8">
-              <Plus className="mr-2 h-5 w-5" />
-              Create Walkaround
-            </Button>
-          }
-        />
-      </div>
+      {/* Draft Cards - Ready to Start */}
+      {draftCards.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold">Ready to Start</h2>
+            <CreateWalkaroundModal
+              trigger={
+                <Button variant="outline" size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create New
+                </Button>
+              }
+            />
+          </div>
+          <div className="grid gap-4">
+            {draftCards.map((card) => (
+              <DraftWalkCard 
+                key={card.id} 
+                walkCard={card}
+                onStartWalk={handleStartWalk}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Create New Button - Only shown when no drafts */}
+      {draftCards.length === 0 && (
+        <div className="text-center py-8">
+          <CreateWalkaroundModal
+            trigger={
+              <Button size="lg" className="h-12 px-8">
+                <Plus className="mr-2 h-5 w-5" />
+                Create Walkaround
+              </Button>
+            }
+          />
+        </div>
+      )}
 
       {/* Recent History */}
       {completedCards.length > 0 && (
@@ -59,7 +94,7 @@ export const RunTab = () => {
       )}
 
       {/* Empty State */}
-      {completedCards.length === 0 && !loading && (
+      {draftCards.length === 0 && completedCards.length === 0 && !loading && (
         <div className="text-center py-12 text-muted-foreground">
           <Clock className="mx-auto h-12 w-12 mb-4 opacity-50" />
           <p>No walkarounds yet. Create your first one to get started.</p>
