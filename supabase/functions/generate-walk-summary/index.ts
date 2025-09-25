@@ -11,6 +11,7 @@ interface WalkData {
   walkCard: {
     title: string;
     created_at: string;
+    time_block?: string;
     weather_preset?: string;
     weather_temp_c?: number;
     weather_notes?: string;
@@ -46,6 +47,10 @@ serve(async (req) => {
 
     const { walkData }: { walkData: WalkData } = await req.json();
     
+    // Check if this is an evening walk (when laptop usage isn't relevant)
+    const isEveningWalk = walkData.walkCard.time_block && 
+      ['Early Evening', 'Evening', 'Late'].includes(walkData.walkCard.time_block);
+    
     // Create a structured summary of the walk data
     const walkDate = new Date(walkData.walkCard.created_at).toLocaleDateString('en-GB');
     const totalVenues = new Set(walkData.walkEntries.map(e => e.venue_id)).size;
@@ -65,8 +70,7 @@ ${walkData.walkCard.weather_notes ? `Weather Notes: ${walkData.walkCard.weather_
 Statistics:
 - Total venues visited: ${totalVenues}
 - Total visits recorded: ${totalVisits}
-- Total people observed: ${totalPeople}
-- Total laptops observed: ${totalLaptops}
+- Total people observed: ${totalPeople}${isEveningWalk ? '' : `\n- Total laptops observed: ${totalLaptops}`}
 - Anomalies flagged: ${anomalies}
 - Visits with notes: ${notesWithContent}
 
@@ -78,7 +82,8 @@ ${walkData.walkEntries
   .map(entry => {
     const venue = walkData.venues.find(v => v.id === entry.venue_id);
     const time = new Date(entry.recorded_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    return `- ${time} at ${venue?.name || 'Unknown venue'}: ${entry.notes} (${entry.people_count || 0} people, ${entry.laptop_count || 0} laptops)${entry.flag_anomaly ? ' [ANOMALY FLAGGED]' : ''}`;
+    const laptopInfo = isEveningWalk ? '' : `, ${entry.laptop_count || 0} laptops`;
+    return `- ${time} at ${venue?.name || 'Unknown venue'}: ${entry.notes} (${entry.people_count || 0} people${laptopInfo})${entry.flag_anomaly ? ' [ANOMALY FLAGGED]' : ''}`;
   }).join('\n')}
 `;
 
@@ -95,11 +100,11 @@ ${walkData.walkEntries
         messages: [
           {
             role: 'system',
-            content: 'You are a professional field researcher assistant. Generate a concise, insightful summary of field research data. IMPORTANT: Only use the provided data - do not mention any areas, venues, or statistics not explicitly included in the data. Focus on key observations, patterns, and notable findings from the actual visits recorded. Keep the summary professional and objective, around 2-3 paragraphs.'
+            content: `You're helping to create a friendly, readable summary of a field research walk. Write in a warm, conversational tone - like you're sharing interesting observations with a colleague over coffee. Skip formal language and filler phrases. IMPORTANT: Only use the provided data - don't mention areas, venues, or statistics not included. Focus on the most interesting patterns and findings.${isEveningWalk ? ' NOTE: This is an evening walk, so don\'t comment on laptop or technology usage - people are naturally socializing at this time.' : ''} Keep it to 2-3 short paragraphs.`
           },
           {
             role: 'user',
-            content: `Please analyse this field research walk data and provide a professional summary focusing on key observations, patterns, and notable findings:\n\n${walkContext}`
+            content: `Here's what happened during this field research walk - what are the key takeaways and interesting observations?\n\n${walkContext}`
           }
         ],
         max_tokens: 300,
@@ -126,7 +131,7 @@ ${walkData.walkEntries
     console.error('Error generating walk summary:', error);
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
         summary: 'Summary generation temporarily unavailable. Please refer to the detailed statistics above.'
       }), 
       {
