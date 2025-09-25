@@ -68,7 +68,7 @@ export const CreateWalkaroundModal: React.FC<CreateWalkaroundModalProps> = ({
       return;
     }
     
-    if (formData.selectedGeoAreas.length === 0) {
+    if (formData.selectedGeoAreas.length === 0 && geoAreas.length > 0) {
       toast.error('Please select at least one geo area');
       return;
     }
@@ -220,22 +220,25 @@ export const CreateWalkaroundModal: React.FC<CreateWalkaroundModalProps> = ({
 
           {/* Geo Areas */}
           <div className="space-y-3">
-            <Label>Geo Areas * (Select areas to research)</Label>
-            <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto border rounded-md p-2">
-              {geoAreas.map((area) => (
-                <div key={area.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={area.id}
-                    checked={formData.selectedGeoAreas.includes(area.id)}
-                    onCheckedChange={(checked) => handleGeoAreaChange(area.id, checked as boolean)}
-                  />
-                  <Label htmlFor={area.id}>{area.name}</Label>
-                </div>
-              ))}
-            </div>
-            {geoAreas.length === 0 && (
-              <p className="text-sm text-muted-foreground">
-                No geo areas available. Add some in the Manage tab first.
+            <Label>
+              Geo Areas {geoAreas.length > 0 ? '* (Select areas to research)' : '(Optional - add areas in Manage tab)'}
+            </Label>
+            {geoAreas.length > 0 ? (
+              <div className="grid grid-cols-1 gap-2 max-h-32 overflow-y-auto border rounded-md p-2">
+                {geoAreas.map((area) => (
+                  <div key={area.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={area.id}
+                      checked={formData.selectedGeoAreas.includes(area.id)}
+                      onCheckedChange={(checked) => handleGeoAreaChange(area.id, checked as boolean)}
+                    />
+                    <Label htmlFor={area.id}>{area.name}</Label>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground p-3 border rounded-md bg-muted/50">
+                No geo areas available. You can add some in the Manage tab and edit this walkaround later.
               </p>
             )}
           </div>
