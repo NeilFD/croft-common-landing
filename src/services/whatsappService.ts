@@ -11,7 +11,11 @@ export const downloadPDF = (blob: Blob, walkCard: WalkCard) => {
   URL.revokeObjectURL(url);
 };
 
-export const shareViaWhatsApp = async (blob: Blob, walkCard: WalkCard): Promise<boolean> => {
+export const shareViaWhatsApp = async (
+  blob: Blob, 
+  walkCard: WalkCard, 
+  showToast?: (message: { title: string; description: string; variant?: string }) => void
+): Promise<boolean> => {
   const fileName = `${walkCard.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_report.pdf`;
   
   // Check if Web Share API is available and supports files (mostly mobile)
@@ -25,10 +29,19 @@ export const shareViaWhatsApp = async (blob: Blob, walkCard: WalkCard): Promise<
           text: `Here's the field research report for ${walkCard.title} from ${new Date(walkCard.created_at).toLocaleDateString('en-GB')}`,
           files: [file]
         });
+        showToast?.({
+          title: "Report Shared Successfully",
+          description: "The PDF report has been shared via your device's share menu."
+        });
         return true;
       }
     } catch (error) {
-      console.log('Web Share API failed, falling back to WhatsApp Web', error);
+      if ((error as Error).name !== 'AbortError') {
+        console.log('Web Share API failed, falling back to WhatsApp Web', error);
+      } else {
+        // User cancelled the share
+        return false;
+      }
     }
   }
 
@@ -37,6 +50,12 @@ export const shareViaWhatsApp = async (blob: Blob, walkCard: WalkCard): Promise<
   
   const message = `Field Research Report: ${walkCard.title}\n\nCompleted on ${new Date(walkCard.created_at).toLocaleDateString('en-GB')}\n\nI've downloaded the PDF report - sharing it with you now.`;
   const whatsappUrl = `https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+  
+  // Show helpful toast message
+  showToast?.({
+    title: "Report Downloaded & WhatsApp Opened",
+    description: "The PDF has been downloaded. WhatsApp Web is opening with a pre-filled message - you can attach the downloaded PDF file."
+  });
   
   // Open WhatsApp Web in a new window/tab
   window.open(whatsappUrl, '_blank');

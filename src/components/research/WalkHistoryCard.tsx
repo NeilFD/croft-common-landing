@@ -134,12 +134,21 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
         geoAreas
       });
 
-      await shareViaWhatsApp(pdfBlob, walkCard);
-      
-      toast({
-        title: "Sharing initiated",
-        description: "PDF report ready for WhatsApp sharing.",
+      const success = await shareViaWhatsApp(pdfBlob, walkCard, (toastData) => {
+        toast({
+          title: toastData.title,
+          description: toastData.description,
+          variant: toastData.variant as any
+        });
       });
+      
+      if (!success) {
+        toast({
+          title: "Share Cancelled",
+          description: "The sharing process was cancelled.",
+          variant: "default"
+        });
+      }
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
       toast({

@@ -16,17 +16,44 @@ interface PDFWalkData {
   geoAreas: { id: string; name: string }[];
 }
 
+const loadLogoAsBase64 = (): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx?.drawImage(img, 0, 0);
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(''); // Fallback to no logo if loading fails
+    img.src = '/brand/logo.png';
+  });
+};
+
 export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   const { walkCard, venues, walkEntries, geoAreas } = data;
   const doc = new jsPDF();
 
+  // Load and add logo
+  const logoBase64 = await loadLogoAsBase64();
+  if (logoBase64) {
+    try {
+      doc.addImage(logoBase64, 'PNG', 20, 15, 15, 15);
+    } catch (error) {
+      console.warn('Failed to add logo to PDF:', error);
+    }
+  }
+
   // Header with branding
   doc.setFontSize(20);
   doc.setTextColor(40, 40, 40);
-  doc.text('Croft Common', 20, 25);
+  doc.text('Croft Common', 40, 25);
   
   doc.setFontSize(16);
-  doc.text('Field Research Report', 20, 35);
+  doc.text('Field Research Report', 40, 35);
 
   // Walk card details
   doc.setFontSize(12);
@@ -95,24 +122,29 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
     margin: { left: 10, right: 10 },
   });
 
-  // Summary statistics
-  const finalY = (doc as any).lastAutoTable?.finalY + 20 || 180;
-  doc.setFontSize(12);
+  // Summary statistics with better spacing
+  const finalY = (doc as any).lastAutoTable?.finalY + 25 || 185;
+  
+  // Add separator line
+  doc.setDrawColor(200, 200, 200);
+  doc.line(20, finalY - 5, 190, finalY - 5);
+  
+  doc.setFontSize(14);
   doc.setTextColor(40, 40, 40);
-  doc.text('Summary', 20, finalY);
+  doc.text('Summary', 20, finalY + 5);
   
   doc.setFontSize(10);
   doc.setTextColor(60, 60, 60);
-  doc.text(`Total Venues Visited: ${new Set(walkEntries.map(e => e.venue_id)).size}`, 20, finalY + 15);
-  doc.text(`Total Visits: ${walkEntries.length}`, 20, finalY + 25);
-  doc.text(`Total People Count: ${walkEntries.reduce((sum, e) => sum + (e.people_count || 0), 0)}`, 20, finalY + 35);
-  doc.text(`Total Laptop Count: ${walkEntries.reduce((sum, e) => sum + (e.laptop_count || 0), 0)}`, 20, finalY + 45);
+  doc.text(`Total Venues Visited: ${new Set(walkEntries.map(e => e.venue_id)).size}`, 20, finalY + 25);
+  doc.text(`Total Visits: ${walkEntries.length}`, 20, finalY + 40);
+  doc.text(`Total People Count: ${walkEntries.reduce((sum, e) => sum + (e.people_count || 0), 0)}`, 20, finalY + 55);
+  doc.text(`Total Laptop Count: ${walkEntries.reduce((sum, e) => sum + (e.laptop_count || 0), 0)}`, 20, finalY + 70);
 
   // Weather notes if available
   if (walkCard.weather_notes) {
-    doc.text('Weather Notes:', 20, finalY + 60);
+    doc.text('Weather Notes:', 20, finalY + 90);
     const splitNotes = doc.splitTextToSize(walkCard.weather_notes, 170);
-    doc.text(splitNotes, 20, finalY + 70);
+    doc.text(splitNotes, 20, finalY + 105);
   }
 
   // Footer
