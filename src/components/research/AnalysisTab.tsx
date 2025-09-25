@@ -4,9 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Download, BarChart3, TrendingUp, Users, MapPin } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Download, BarChart3, TrendingUp, Users, MapPin, Calendar, Trophy, Map } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
 import { toast } from 'sonner';
+import { AnalysisService } from '@/services/analysisService';
+import { ComparisonChartsSection } from './analysis/ComparisonChartsSection';
+import { VenuePerformanceGrid } from './analysis/VenuePerformanceGrid';
+import { GeoAnalyticsMap } from './analysis/GeoAnalyticsMap';
 
 export const AnalysisTab = () => {
   const { walkCards, venues, geoAreas, walkEntries } = useResearch();
@@ -58,19 +63,7 @@ export const AnalysisTab = () => {
     toast.success('Data exported successfully');
   };
 
-  const getTotalPeopleCount = () => {
-    return walkEntries.reduce((sum, entry) => sum + entry.people_count, 0);
-  };
-
-  const getTotalLaptopCount = () => {
-    return walkEntries.reduce((sum, entry) => sum + entry.laptop_count, 0);
-  };
-
-  const getAveragePeoplePerVenue = () => {
-    const totalEntries = walkEntries.length;
-    if (totalEntries === 0) return 0;
-    return Math.round((getTotalPeopleCount() / totalEntries) * 10) / 10;
-  };
+  const metrics = AnalysisService.calculateMetrics(walkEntries, walkCards, venues);
 
   return (
     <div className="space-y-6">
@@ -127,7 +120,7 @@ export const AnalysisTab = () => {
         </CardContent>
       </Card>
 
-      {/* Summary Cards */}
+      {/* Enhanced Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6">
@@ -135,7 +128,7 @@ export const AnalysisTab = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
                 <p className="text-sm font-medium text-muted-foreground">Total People</p>
-                <p className="text-2xl font-bold">{getTotalPeopleCount()}</p>
+                <p className="text-2xl font-bold">{metrics.totalPeople}</p>
               </div>
             </div>
           </CardContent>
@@ -147,7 +140,7 @@ export const AnalysisTab = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
                 <p className="text-sm font-medium text-muted-foreground">Avg per Venue</p>
-                <p className="text-2xl font-bold">{getAveragePeoplePerVenue()}</p>
+                <p className="text-2xl font-bold">{metrics.averagePeoplePerVenue}</p>
               </div>
             </div>
           </CardContent>
@@ -159,7 +152,7 @@ export const AnalysisTab = () => {
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
                 <p className="text-sm font-medium text-muted-foreground">Venues Surveyed</p>
-                <p className="text-2xl font-bold">{walkEntries.length}</p>
+                <p className="text-2xl font-bold">{metrics.totalVenues}</p>
               </div>
             </div>
           </CardContent>
@@ -171,55 +164,93 @@ export const AnalysisTab = () => {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
               <div className="ml-2">
                 <p className="text-sm font-medium text-muted-foreground">Walk Cards</p>
-                <p className="text-2xl font-bold">{filteredCards.length}</p>
+                <p className="text-2xl font-bold">{metrics.totalWalks}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Cards View */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Walk Cards Overview</CardTitle>
-          <CardDescription>Summary of research sessions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {filteredCards.map((card) => (
-              <div key={card.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h3 className="font-semibold">{card.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {card.date} • {card.time_block} • {card.weather_preset}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">Status: {card.status}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Zones: {card.croft_zones.join(', ')}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Enhanced Analytics Tabs */}
+      <Tabs defaultValue="comparisons" className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="comparisons" className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Comparisons
+          </TabsTrigger>
+          <TabsTrigger value="venues" className="flex items-center gap-2">
+            <Trophy className="h-4 w-4" />
+            Venues
+          </TabsTrigger>
+          <TabsTrigger value="geography" className="flex items-center gap-2">
+            <Map className="h-4 w-4" />
+            Geography
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Overview
+          </TabsTrigger>
+        </TabsList>
 
-      {/* P&L Overlay Placeholder */}
-      <Card>
-        <CardHeader>
-          <CardTitle>P&L Comparison</CardTitle>
-          <CardDescription>Compare observed data with forecasts</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <BarChart3 className="mx-auto h-12 w-12 mb-4 opacity-50" />
-            <p>P&L overlay feature coming soon</p>
-            <p className="text-sm">This will show actual vs forecast comparisons</p>
+        <TabsContent value="comparisons">
+          <ComparisonChartsSection 
+            walkCards={filteredCards}
+            walkEntries={walkEntries}
+            venues={venues}
+            geoAreas={geoAreas}
+          />
+        </TabsContent>
+
+        <TabsContent value="venues">
+          <VenuePerformanceGrid 
+            walkCards={filteredCards}
+            walkEntries={walkEntries}
+            venues={venues}
+            geoAreas={geoAreas}
+          />
+        </TabsContent>
+
+        <TabsContent value="geography">
+          <GeoAnalyticsMap 
+            walkCards={filteredCards}
+            walkEntries={walkEntries}
+            venues={venues}
+            geoAreas={geoAreas}
+          />
+        </TabsContent>
+
+        <TabsContent value="overview">
+          <div className="space-y-6">
+            {/* Walk Cards Overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Walk Cards Overview</CardTitle>
+                <CardDescription>Summary of research sessions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {filteredCards.map((card) => (
+                    <div key={card.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h3 className="font-semibold">{card.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {card.date} • {card.time_block} • {card.weather_preset}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">Status: {card.status}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Zones: {card.croft_zones.join(', ')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
