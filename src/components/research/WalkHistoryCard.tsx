@@ -194,7 +194,12 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
       const cachedPDF = await pdfCacheService.getPDF(walkCard.id);
       
       if (cachedPDF) {
-        console.log('Using cached PDF for sharing');
+        console.log('Using cached PDF for sharing:', { 
+          walkCardId: walkCard.id, 
+          pdfSize: cachedPDF.size,
+          pdfType: cachedPDF.type 
+        });
+        
         const success = await shareViaWhatsApp(cachedPDF, walkCard, (toastData) => {
           toast({
             title: toastData.title,
@@ -203,13 +208,8 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
           });
         });
         
-        if (!success) {
-          toast({
-            title: "Share Cancelled",
-            description: "The sharing process was cancelled.",
-            variant: "default"
-          });
-        }
+        // Don't show "cancelled" toast - that's normal user behavior
+        // Only the shareViaWhatsApp function will show error toasts for technical failures
         return;
       }
 
@@ -241,13 +241,8 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
         });
       });
       
-      if (!success) {
-        toast({
-          title: "Share Cancelled",
-          description: "The sharing process was cancelled.",
-          variant: "default"
-        });
-      }
+      // Don't show "cancelled" toast - that's normal user behavior
+      // Only the shareViaWhatsApp function will show error toasts for technical failures
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
       toast({

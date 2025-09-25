@@ -51,44 +51,65 @@ export const shareViaWhatsApp = async (
   const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
 
   try {
-    // Prefer Web Share Level 2 (files) — this attaches the PDF directly in WhatsApp (iOS Safari supports this)
+    // Create the PDF file object
     const file = new File([blob], `${safeTitle}_report.pdf`, { type: 'application/pdf' });
-    // On iOS, skip canShare check due to platform quirks and share directly
+    console.log('Created PDF file:', { 
+      name: file.name, 
+      size: file.size, 
+      type: file.type,
+      isIOS,
+      isMobile,
+      hasShare: 'share' in navigator
+    });
+
+    // Check if Web Share Level 2 (files) is supported
     const canShareFiles = typeof navigator !== 'undefined'
       && 'share' in navigator
       && (isIOS ? true : ('canShare' in navigator && (navigator as any).canShare?.({ files: [file] })));
 
     if (canShareFiles && navigator.share) {
       try {
-        console.log('Sharing via Web Share API with FILE attachment');
+        console.log('Attempting Web Share API with file attachment');
+        
         if (isIOS) {
-          await navigator.share({ files: [file], title: welcomePrefix });
+          // iOS: Use only files parameter for simplicity
+          console.log('Using iOS-optimized share (files only)');
+          await navigator.share({ files: [file] });
         } else {
+          // Non-iOS: Include text message
+          console.log('Using standard share (files + text)');
           await navigator.share({ files: [file], text: welcomePrefix });
         }
+        
+        console.log('Web Share API succeeded');
         showToast?.({
           title: 'Shared to WhatsApp',
           description: 'The PDF was attached automatically.'
         });
         return true;
       } catch (error) {
-        if ((error as Error).name === 'AbortError') {
-          console.log('User cancelled Web Share dialog');
-          return false;
+        const errorName = (error as Error).name;
+        const errorMessage = (error as Error).message;
+        
+        console.log('Web Share API error:', { errorName, errorMessage, isIOS });
+        
+        if (errorName === 'AbortError') {
+          console.log('User cancelled Web Share dialog - this is normal');
+          return false; // Don't show error toast for user cancellation
         }
         
-        // On iOS, don't fall back to wa.me - show error instead since cached PDF should work
+        // On iOS, don't fall back - the cached PDF should work reliably
         if (isIOS) {
-          console.log('Web Share failed on iOS');
+          console.error('Web Share failed on iOS with cached PDF:', error);
           showToast?.({
             title: 'Share Failed',
-            description: 'Please try again or use the PDF download option.',
+            description: `Sharing error: ${errorMessage}. Please try the PDF download option.`,
             variant: 'destructive'
           });
           return false;
         }
         
-        console.log('Web Share with files failed, falling back', error);
+        console.log('Web Share with files failed, falling back to URL methods', error);
         // Continue to fallbacks below for non-iOS platforms
       }
     }
