@@ -294,13 +294,21 @@ export const useResearch = () => {
     try {
       setLoading(true);
       
-      // If no visit_number provided, determine the next visit number for this venue
+      // If no visit_number provided, determine the next visit number for this venue by querying the database
       let visitNumber = entryData.visit_number;
       if (!visitNumber) {
-        const existingEntries = walkEntries.filter(
-          entry => entry.venue_id === entryData.venue_id && entry.walk_card_id === entryData.walk_card_id
-        );
-        visitNumber = existingEntries.length > 0 ? Math.max(...existingEntries.map(e => e.visit_number)) + 1 : 1;
+        // Query database directly to get the current maximum visit number for this venue and walk card
+        const { data: existingEntries, error: queryError } = await supabase
+          .from('walk_entries')
+          .select('visit_number')
+          .eq('venue_id', entryData.venue_id!)
+          .eq('walk_card_id', entryData.walk_card_id!)
+          .order('visit_number', { ascending: false })
+          .limit(1);
+        
+        if (queryError) throw queryError;
+        
+        visitNumber = existingEntries && existingEntries.length > 0 ? existingEntries[0].visit_number + 1 : 1;
       }
 
       const { error } = await supabase
