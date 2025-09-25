@@ -47,22 +47,25 @@ export const shareViaWhatsApp = async (
   // Helpers
   const safeTitle = walkCard.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && (navigator as any).maxTouchPoints > 1);
 
   try {
     // Prefer Web Share Level 2 (files) — this attaches the PDF directly in WhatsApp (iOS Safari supports this)
     const file = new File([blob], `${safeTitle}_report.pdf`, { type: 'application/pdf' });
+    // On iOS, skip canShare check due to platform quirks and share directly
     const canShareFiles = typeof navigator !== 'undefined'
-      && 'canShare' in navigator
-      && (navigator as any).canShare?.({ files: [file] });
+      && 'share' in navigator
+      && (isIOS ? true : ('canShare' in navigator && (navigator as any).canShare?.({ files: [file] })));
 
     if (canShareFiles && navigator.share) {
       try {
         console.log('Sharing via Web Share API with FILE attachment');
-        await navigator.share({
-          files: [file],
-          text: welcomePrefix
-        });
-        // No download to avoid any blob: URL contamination
+        if (isIOS) {
+          await navigator.share({ files: [file], title: welcomePrefix });
+        } else {
+          await navigator.share({ files: [file], text: welcomePrefix });
+        }
         showToast?.({
           title: 'Shared to WhatsApp',
           description: 'The PDF was attached automatically.'
@@ -81,24 +84,7 @@ export const shareViaWhatsApp = async (
     // If Web Share with files is unavailable
     const message = `${welcomePrefix}`;
 
-    if (navigator.share) {
-      // Share text-only via Web Share as a secondary option (no downloads to avoid blob URL)
-      try {
-        console.log('Sharing via Web Share API (text-only fallback)');
-        await navigator.share({ text: message });
-        showToast?.({
-          title: 'Message Shared',
-          description: 'Shared without attachment due to device limitations.'
-        });
-        return true;
-      } catch (error) {
-        if ((error as Error).name === 'AbortError') {
-          console.log('User cancelled text-only Web Share');
-          return false;
-        }
-        console.log('Text-only Web Share failed, proceeding to WhatsApp URL fallback', error);
-      }
-    }
+    /* Skipped text-only Web Share fallback to ensure PDF attachment reliability */
 
     // URL fallbacks
     if (isMobile) {
