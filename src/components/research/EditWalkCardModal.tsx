@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Edit, MapPin, Users, Laptop, AlertTriangle, Save } from 'lucide-react';
 import { useResearch, WalkCard, WalkEntry, Venue } from '@/hooks/useResearch';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 
@@ -32,7 +33,7 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
   trigger,
   onSuccess 
 }) => {
-  const { venues, walkEntries, upsertWalkEntry, loading, fetchWalkEntries } = useResearch();
+  const { venues, walkEntries, upsertWalkEntry, loading, fetchWalkEntries, fetchWalkCardGeoAreas } = useResearch();
   const [open, setOpen] = useState(false);
   const [venueData, setVenueData] = useState<VenueEntryData[]>([]);
   const [saving, setSaving] = useState(false);
@@ -46,14 +47,32 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
 
   const loadVenueData = async () => {
     try {
-      await fetchWalkEntries(walkCard.id);
+      // First get the geo areas associated with this walk card
+      const walkCardGeoAreas = await fetchWalkCardGeoAreas(walkCard.id);
+      const geoAreaIds = walkCardGeoAreas.map(area => area.id);
       
-      // Get all walk entries for this walk card
-      const walkCardEntries = walkEntries.filter(entry => entry.walk_card_id === walkCard.id);
+      // Filter venues to only those in the walk card's geo areas
+      const relevantVenues = venues.filter(venue => 
+        geoAreaIds.includes(venue.geo_area_id)
+      );
+
+      // Load walk entries for this specific walk card and get them directly
+      const { data: walkCardEntries, error } = await supabase
+        .from('walk_entries')
+        .select('*')
+        .eq('walk_card_id', walkCard.id);
+
+      if (error) {
+        console.error('Error fetching walk entries:', error);
+        throw error;
+      }
+
+      console.log('Walk entries loaded:', walkCardEntries); // Debug log
       
       // Create venue data combining venues with their entries
-      const venueEntryData: VenueEntryData[] = venues.map(venue => {
-        const entry = walkCardEntries.find(e => e.venue_id === venue.id);
+      const venueEntryData: VenueEntryData[] = relevantVenues.map(venue => {
+        const entry = walkCardEntries?.find(e => e.venue_id === venue.id);
+        console.log(`Venue ${venue.name} entry:`, entry); // Debug log
         return {
           venue,
           entry,
@@ -65,6 +84,7 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
         };
       });
 
+      console.log('Final venue data:', venueEntryData); // Debug log
       setVenueData(venueEntryData);
     } catch (error) {
       console.error('Error loading venue data:', error);
