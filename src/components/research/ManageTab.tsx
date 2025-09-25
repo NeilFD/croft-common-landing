@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, MapPin, Building2, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, MapPin, Building2, Search, Edit, Trash2, Play, Eye } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
 
 
@@ -21,7 +21,8 @@ export const ManageTab = () => {
     updateVenue, 
     deleteVenue, 
     updateGeoArea, 
-    deleteGeoArea 
+    deleteGeoArea,
+    updateWalkCardStatus 
   } = useResearch();
   
   const [activeTab, setActiveTab] = useState('venues');
@@ -39,6 +40,10 @@ export const ManageTab = () => {
   const [showGeoAreaForm, setShowGeoAreaForm] = useState(false);
   const [editingGeoArea, setEditingGeoArea] = useState<string | null>(null);
   const [newGeoAreaName, setNewGeoAreaName] = useState('');
+
+  const handleStartWalk = async (cardId: string) => {
+    await updateWalkCardStatus(cardId, 'Active');
+  };
 
 
 const filteredVenues = venues.filter(venue => {
@@ -389,12 +394,44 @@ const filteredVenues = venues.filter(venue => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {card.croft_zones.map((zone) => (
-                        <span key={zone} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
-                          {zone}
-                        </span>
-                      ))}
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap gap-2">
+                        {card.croft_zones.map((zone) => (
+                          <span key={zone} className="px-2 py-1 bg-primary/10 text-primary rounded-md text-xs">
+                            {zone}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      {/* Action buttons for walk cards */}
+                      <div className="flex gap-2 pt-2">
+                        {card.status === 'Draft' && (
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleStartWalk(card.id)}
+                            disabled={loading}
+                          >
+                            <Play className="mr-1 h-3 w-3" />
+                            Start Walk
+                          </Button>
+                        )}
+                        {card.status === 'Active' && (
+                          <Button size="sm" variant="outline" disabled>
+                            <Eye className="mr-1 h-3 w-3" />
+                            Active (Go to Run tab)
+                          </Button>
+                        )}
+                        {card.status === 'Completed' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleStartWalk(card.id)}
+                          >
+                            <Play className="mr-1 h-3 w-3" />
+                            Restart Walk
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
