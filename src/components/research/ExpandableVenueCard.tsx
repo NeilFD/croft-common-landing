@@ -88,18 +88,25 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
   };
 
   const handleSaveEntry = async () => {
-    await upsertWalkEntry({
-      walk_card_id: walkCardId,
-      venue_id: venue.id,
-      ...entryData
-    });
+    try {
+      await upsertWalkEntry({
+        walk_card_id: walkCardId,
+        venue_id: venue.id,
+        ...entryData
+      });
 
-    toast.success('Entry saved');
-    setIsExpanded(false);
+      toast.success('Entry saved');
+      setIsExpanded(false);
+    } catch (error) {
+      toast.error('Failed to save entry');
+      console.error('Error saving entry:', error);
+    }
   };
 
   return (
-    <Card className="transition-all hover:shadow-md">
+    <Card className={`transition-all hover:shadow-md ${
+      status === 'completed' ? 'border-green-500 border-2' : 'border-border'
+    }`}>
       <CardContent className="p-3 sm:p-4">
         {/* Header Row */}
         <div className="flex items-start justify-between mb-2">

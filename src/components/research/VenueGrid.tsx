@@ -19,10 +19,12 @@ export const VenueGrid: React.FC<VenueGridProps> = ({
   searchTerm,
   onSearchChange
 }) => {
-  const filteredVenues = venues.filter(venue =>
-    venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    venue.address?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredVenues = venues
+    .filter(venue =>
+      venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      venue.address?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="space-y-3 sm:space-y-4">
