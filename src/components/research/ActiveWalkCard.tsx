@@ -131,58 +131,62 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
   ).length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-6">
       {/* Walk Header */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                {walkCard.title}
+        <CardHeader className="p-4 sm:p-6">
+          <div className="space-y-3">
+            {/* Title and Status */}
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="truncate">{walkCard.title}</span>
               </CardTitle>
-              <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
+              <Badge variant="secondary" className="shrink-0">Active</Badge>
+            </div>
+            
+            {/* Walk Details - Stacked on Mobile */}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-muted-foreground">
                 <span>{walkCard.date}</span>
+                <span>•</span>
                 <span>{walkCard.time_block}</span>
-                <div className="flex items-center gap-1">
-                  <CloudRain className="h-3 w-3" />
-                  {walkCard.weather_preset}
-                  {walkCard.weather_temp_c && ` ${walkCard.weather_temp_c}°C`}
-                </div>
               </div>
-            </div>
-            <div className="text-right">
-              <Badge variant="secondary">Active</Badge>
-              <p className="text-sm text-muted-foreground mt-1">
-                {completedEntries} of {walkVenues.length} venues
+              <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                <CloudRain className="h-3 w-3" />
+                {walkCard.weather_preset}
+                {walkCard.weather_temp_c && ` ${walkCard.weather_temp_c}°C`}
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                {completedEntries} of {walkVenues.length} venues completed
               </p>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2"
-                onClick={() => setShowGeoAreaManager(!showGeoAreaManager)}
-              >
-                <Settings className="h-4 w-4 mr-1" />
-                Manage Areas
-              </Button>
             </div>
+            
+            {/* Full-width button on mobile */}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full sm:w-auto"
+              onClick={() => setShowGeoAreaManager(!showGeoAreaManager)}
+            >
+              <Settings className="h-4 w-4 mr-1" />
+              Manage Areas
+            </Button>
           </div>
         </CardHeader>
       </Card>
 
       {/* Geo Area Manager */}
       {showGeoAreaManager && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="space-y-4">
           <GeoAreaManager 
             walkCardId={walkCard.id} 
             onUpdate={handleGeoAreaUpdate}
           />
-          <div className="space-y-4">
-            <QuickVenueCreator
-              selectedGeoAreaIds={walkGeoAreas.map(area => area.id)}
-              onVenueCreated={handleGeoAreaUpdate}
-            />
-          </div>
+          <QuickVenueCreator
+            selectedGeoAreaIds={walkGeoAreas.map(area => area.id)}
+            onVenueCreated={handleGeoAreaUpdate}
+          />
         </div>
       )}
 
@@ -199,13 +203,13 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
           {/* Venue Grid */}
           <Card>
-            <CardHeader>
-              <CardTitle>Venues</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Venues</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               <VenueGrid
                 venues={walkVenues}
                 walkEntries={walkEntries}
@@ -220,37 +224,40 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
           {/* Venue Entry Form */}
           {selectedVenue ? (
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5" />
-                  {selectedVenue.name}
-                </CardTitle>
-                {selectedVenue.address && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    {selectedVenue.address}
-                  </div>
-                )}
+              <CardHeader className="p-4 sm:p-6">
+                <div className="space-y-2">
+                  <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                    <Building2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="truncate">{selectedVenue.name}</span>
+                  </CardTitle>
+                  {selectedVenue.address && (
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      <span className="truncate">{selectedVenue.address}</span>
+                    </div>
+                  )}
+                </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="p-4 sm:p-6 pt-0 space-y-4">
                 {/* Quick Status */}
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 min-h-[44px]">
                   <Checkbox
                     id="closed"
                     checked={entryData.is_closed}
                     onCheckedChange={(checked) => 
                       setEntryData(prev => ({ ...prev, is_closed: checked as boolean }))
                     }
+                    className="h-5 w-5"
                   />
-                  <Label htmlFor="closed">Venue is closed</Label>
+                  <Label htmlFor="closed" className="text-sm sm:text-base">Venue is closed</Label>
                 </div>
 
                 {!entryData.is_closed && (
                   <>
-                    {/* People Count */}
-                    <div className="grid grid-cols-2 gap-4">
+                    {/* People Count - Stacked on mobile */}
+                    <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="people-count" className="flex items-center gap-2">
+                        <Label htmlFor="people-count" className="flex items-center gap-2 text-sm sm:text-base">
                           <Users className="h-4 w-4" />
                           People Count
                         </Label>
@@ -265,11 +272,12 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
                               people_count: parseInt(e.target.value) || 0 
                             }))
                           }
+                          className="h-11 text-base"
                         />
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="laptop-count" className="flex items-center gap-2">
+                        <Label htmlFor="laptop-count" className="flex items-center gap-2 text-sm sm:text-base">
                           <Laptop className="h-4 w-4" />
                           Laptop Count
                         </Label>
@@ -284,20 +292,22 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
                               laptop_count: parseInt(e.target.value) || 0 
                             }))
                           }
+                          className="h-11 text-base"
                         />
                       </div>
                     </div>
 
                     {/* Flag Anomaly */}
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 min-h-[44px]">
                       <Checkbox
                         id="flag-anomaly"
                         checked={entryData.flag_anomaly}
                         onCheckedChange={(checked) => 
                           setEntryData(prev => ({ ...prev, flag_anomaly: checked as boolean }))
                         }
+                        className="h-5 w-5"
                       />
-                      <Label htmlFor="flag-anomaly" className="flex items-center gap-2">
+                      <Label htmlFor="flag-anomaly" className="flex items-center gap-2 text-sm sm:text-base">
                         <Flag className="h-4 w-4" />
                         Flag as anomaly
                       </Label>
@@ -307,7 +317,7 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
 
                 {/* Notes */}
                 <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
+                  <Label htmlFor="notes" className="text-sm sm:text-base">Notes</Label>
                   <Textarea
                     id="notes"
                     placeholder="Any observations or notes..."
@@ -316,29 +326,26 @@ export const ActiveWalkCard: React.FC<ActiveWalkCardProps> = ({ walkCard }) => {
                       setEntryData(prev => ({ ...prev, notes: e.target.value }))
                     }
                     rows={3}
+                    className="text-base resize-none"
                   />
                 </div>
 
-                {/* Photo Upload Placeholder */}
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Camera className="h-4 w-4" />
-                    Photos (Coming Soon)
-                  </Label>
-                  <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center text-muted-foreground">
-                    <Camera className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p>Photo upload will be available soon</p>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-4">
-                  <Button onClick={handleSaveEntry} disabled={loading}>
+                {/* Actions - Fixed at bottom on mobile */}
+                <div className="flex flex-col sm:flex-row gap-2 pt-4 sticky bottom-4 bg-card">
+                  <Button 
+                    onClick={handleSaveEntry} 
+                    disabled={loading}
+                    className="h-11 flex-1"
+                  >
                     <CheckCircle className="mr-2 h-4 w-4" />
                     Save Entry
                   </Button>
                   
-                  <Button onClick={handleCompleteWalk} variant="outline" className="ml-auto">
+                  <Button 
+                    onClick={handleCompleteWalk} 
+                    variant="outline" 
+                    className="h-11 flex-1 sm:flex-none"
+                  >
                     Complete Walk
                   </Button>
                 </div>
