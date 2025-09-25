@@ -68,13 +68,13 @@ const filteredVenues = venues.filter(venue => {
     if (editingVenue) {
       await updateVenue(editingVenue, {
         name: newVenueName.trim(),
-        address: newVenueAddress.trim() || undefined,
+        address: newVenueAddress.trim() === '' ? null : newVenueAddress.trim(),
         geo_area_id: newVenueGeoArea,
       });
     } else {
       await createVenue({
         name: newVenueName.trim(),
-        address: newVenueAddress.trim() || undefined,
+        address: newVenueAddress.trim() === '' ? null : newVenueAddress.trim(),
         geo_area_id: newVenueGeoArea,
       });
     }

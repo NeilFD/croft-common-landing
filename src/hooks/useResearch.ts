@@ -15,7 +15,7 @@ export interface Venue {
   id: string;
   name: string;
   geo_area_id: string;
-  address?: string;
+  address?: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -245,7 +245,7 @@ export const useResearch = () => {
   };
 
   // Create venue
-  const createVenue = async (venueData: { name: string; geo_area_id: string; address?: string }) => {
+  const createVenue = async (venueData: { name: string; geo_area_id: string; address?: string | null }) => {
     try {
       setLoading(true);
       const { error } = await supabase
