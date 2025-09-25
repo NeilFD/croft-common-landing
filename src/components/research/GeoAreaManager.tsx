@@ -9,11 +9,13 @@ import { GeoArea, useResearch } from '@/hooks/useResearch';
 interface GeoAreaManagerProps {
   walkCardId: string;
   onUpdate?: () => void;
+  onClose?: () => void;
 }
 
 export const GeoAreaManager: React.FC<GeoAreaManagerProps> = ({ 
   walkCardId, 
-  onUpdate 
+  onUpdate,
+  onClose
 }) => {
   const { 
     geoAreas, 
@@ -59,9 +61,21 @@ export const GeoAreaManager: React.FC<GeoAreaManagerProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
-          Geo Areas
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Geo Areas
+          </div>
+          {onClose && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onClose}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

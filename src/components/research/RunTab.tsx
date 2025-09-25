@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Clock, CloudRain, Users } from 'lucide-react';
 import { useResearch } from '@/hooks/useResearch';
@@ -6,10 +6,12 @@ import { CreateWalkaroundModal } from './CreateWalkaroundModal';
 import { ActiveWalkCard } from './ActiveWalkCard';
 import { WalkHistoryCard } from './WalkHistoryCard';
 import { DraftWalkCard } from './DraftWalkCard';
+import { GeoAreaManager } from './GeoAreaManager';
 import { toast } from 'sonner';
 
 export const RunTab = () => {
   const { walkCards, updateWalkCardStatus, loading } = useResearch();
+  const [managingAreasForCard, setManagingAreasForCard] = useState<string | null>(null);
   
 
   const activeCard = walkCards.find(card => card.status === 'Active');
@@ -23,6 +25,14 @@ export const RunTab = () => {
     await updateWalkCardStatus(cardId, 'Active');
   };
 
+  const handleManageAreas = (cardId: string) => {
+    setManagingAreasForCard(cardId);
+  };
+
+  const handleCloseAreaManager = () => {
+    setManagingAreasForCard(null);
+  };
+
   const handleDeleteWalk = async (cardId: string) => {
     // In a real implementation, you'd call a delete function
     // For now, we'll just show a toast
@@ -31,6 +41,19 @@ export const RunTab = () => {
 
   if (activeCard) {
     return <ActiveWalkCard walkCard={activeCard} />;
+  }
+
+  // Show geo area manager for draft card if managing areas
+  if (managingAreasForCard) {
+    return (
+      <div className="space-y-6">
+        <GeoAreaManager 
+          walkCardId={managingAreasForCard}
+          onClose={handleCloseAreaManager}
+          onUpdate={handleCloseAreaManager}
+        />
+      </div>
+    );
   }
 
   return (
@@ -55,6 +78,7 @@ export const RunTab = () => {
                 key={card.id} 
                 walkCard={card}
                 onStartWalk={handleStartWalk}
+                onManageAreas={handleManageAreas}
               />
             ))}
           </div>

@@ -7,9 +7,10 @@ import { WalkCard } from '@/hooks/useResearch';
 interface DraftWalkCardProps {
   walkCard: WalkCard;
   onStartWalk: (cardId: string) => void;
+  onManageAreas?: (cardId: string) => void;
 }
 
-export const DraftWalkCard: React.FC<DraftWalkCardProps> = ({ walkCard, onStartWalk }) => {
+export const DraftWalkCard: React.FC<DraftWalkCardProps> = ({ walkCard, onStartWalk, onManageAreas }) => {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-GB', {
       weekday: 'short',
@@ -30,13 +31,25 @@ export const DraftWalkCard: React.FC<DraftWalkCardProps> = ({ walkCard, onStartW
               {formatDate(walkCard.created_at)}
             </CardDescription>
           </div>
-          <Button 
-            onClick={() => onStartWalk(walkCard.id)}
-            className="h-9 px-4"
-          >
-            <Play className="mr-2 h-4 w-4" />
-            Start Walk
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => onStartWalk(walkCard.id)}
+              className="h-9 px-4"
+            >
+              <Play className="mr-2 h-4 w-4" />
+              Start Walk
+            </Button>
+            {onManageAreas && (
+              <Button 
+                variant="outline"
+                onClick={() => onManageAreas(walkCard.id)}
+                className="h-9 px-4"
+              >
+                <MapPin className="mr-2 h-4 w-4" />
+                Manage Areas
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
