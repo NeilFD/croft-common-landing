@@ -1,11 +1,11 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { WalkCard, Venue, WalkEntry } from '@/hooks/useResearch';
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: any) => jsPDF;
+    autoTable: typeof autoTable;
   }
 }
 
@@ -74,7 +74,7 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   });
 
   // Add venues table
-  doc.autoTable({
+  autoTable(doc, {
     startY: 85,
     head: [['#', 'Time', 'Venue', 'Area', 'People', 'Laptops', 'Visit #', 'Notes', 'Anomaly']],
     body: tableData,
@@ -96,7 +96,7 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   });
 
   // Summary statistics
-  const finalY = (doc as any).lastAutoTable.finalY + 20;
+  const finalY = (doc as any).lastAutoTable?.finalY + 20 || 180;
   doc.setFontSize(12);
   doc.setTextColor(40, 40, 40);
   doc.text('Summary', 20, finalY);
