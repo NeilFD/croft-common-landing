@@ -15,7 +15,8 @@ import {
   ChevronDown, 
   ChevronUp, 
   Flag,
-  Save
+  Save,
+  Copy
 } from 'lucide-react';
 import { Venue, WalkEntry, useResearch } from '@/hooks/useResearch';
 import { format } from 'date-fns';
@@ -26,12 +27,16 @@ interface ExpandableVenueCardProps {
   venue: Venue;
   walkCardId: string;
   walkEntry?: WalkEntry;
+  visitNumber: number;
+  canDuplicate: boolean;
 }
 
-export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
-  venue,
-  walkCardId,
-  walkEntry
+export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({ 
+  venue, 
+  walkCardId, 
+  walkEntry,
+  visitNumber = 1,
+  canDuplicate = false
 }) => {
   const { upsertWalkEntry, loading } = useResearch();
   const [isExpanded, setIsExpanded] = useState(false);
@@ -45,6 +50,7 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
   });
 
   const status = walkEntry ? 'completed' : 'not-started';
+  const displayName = visitNumber > 1 ? `${venue.name} (Visit ${visitNumber})` : venue.name;
 
   // Update entry data when walkEntry changes
   useEffect(() => {
@@ -92,6 +98,7 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
       await upsertWalkEntry({
         walk_card_id: walkCardId,
         venue_id: venue.id,
+        visit_number: visitNumber,
         ...entryData
       });
 
@@ -103,6 +110,26 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
     }
   };
 
+  const handleDuplicateVisit = async () => {
+    try {
+      await upsertWalkEntry({
+        walk_card_id: walkCardId,
+        venue_id: venue.id,
+        // visit_number will be auto-determined for new visit
+        people_count: 0,
+        laptop_count: 0,
+        is_closed: false,
+        flag_anomaly: false,
+        notes: '',
+        recorded_at: new Date().toISOString()
+      });
+      toast.success('New visit created');
+    } catch (error) {
+      toast.error('Failed to create new visit');
+      console.error('Error creating duplicate visit:', error);
+    }
+  };
+
   return (
     <Card className={`transition-all hover:shadow-md ${
       status === 'completed' ? 'border-green-500 border-2' : 'border-border'
@@ -110,8 +137,19 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
       <CardContent className="p-3 sm:p-4">
         {/* Header Row */}
         <div className="flex items-start justify-between mb-2">
-          <h3 className="font-medium text-sm sm:text-base truncate flex-1 mr-2">{venue.name}</h3>
+          <h3 className="font-medium text-sm sm:text-base truncate flex-1 mr-2">{displayName}</h3>
           <div className="flex items-center gap-2 shrink-0">
+            {canDuplicate && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDuplicateVisit}
+                className="h-6 w-6 p-0"
+                title="Add another visit"
+              >
+                <Copy className="h-3 w-3" />
+              </Button>
+            )}
             {getStatusIcon(status)}
             <Button
               variant="ghost"
@@ -167,27 +205,26 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
             {/* Quick Status */}
             <div className="flex items-center space-x-2">
               <Checkbox
-                id={`closed-${venue.id}`}
+                id={`closed-${venue.id}-${visitNumber}`}
                 checked={entryData.is_closed}
                 onCheckedChange={(checked) => 
                   setEntryData(prev => ({ ...prev, is_closed: checked as boolean }))
                 }
                 className="h-5 w-5"
               />
-              <Label htmlFor={`closed-${venue.id}`} className="text-sm">Venue is closed</Label>
+              <Label htmlFor={`closed-${venue.id}-${visitNumber}`} className="text-sm">Venue is closed</Label>
             </div>
 
             {!entryData.is_closed && (
               <>
-                {/* People and Laptop Count */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor={`people-${venue.id}`} className="flex items-center gap-2 text-sm">
+                    <Label htmlFor={`people-${venue.id}-${visitNumber}`} className="flex items-center gap-2 text-sm">
                       <Users className="h-3 w-3" />
                       People Count
                     </Label>
                     <Input
-                      id={`people-${venue.id}`}
+                      id={`people-${venue.id}-${visitNumber}`}
                       type="number"
                       min="0"
                       value={entryData.people_count || 0}
@@ -202,12 +239,12 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor={`laptop-${venue.id}`} className="flex items-center gap-2 text-sm">
+                    <Label htmlFor={`laptop-${venue.id}-${visitNumber}`} className="flex items-center gap-2 text-sm">
                       <Laptop className="h-3 w-3" />
                       Laptop Count
                     </Label>
                     <Input
-                      id={`laptop-${venue.id}`}
+                      id={`laptop-${venue.id}-${visitNumber}`}
                       type="number"
                       min="0"
                       value={entryData.laptop_count || 0}
@@ -225,14 +262,14 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
                 {/* Flag Anomaly */}
                 <div className="flex items-center space-x-2">
                   <Checkbox
-                    id={`anomaly-${venue.id}`}
+                    id={`anomaly-${venue.id}-${visitNumber}`}
                     checked={entryData.flag_anomaly}
                     onCheckedChange={(checked) => 
                       setEntryData(prev => ({ ...prev, flag_anomaly: checked as boolean }))
                     }
                     className="h-5 w-5"
                   />
-                  <Label htmlFor={`anomaly-${venue.id}`} className="flex items-center gap-2 text-sm">
+                  <Label htmlFor={`anomaly-${venue.id}-${visitNumber}`} className="flex items-center gap-2 text-sm">
                     <Flag className="h-3 w-3" />
                     Flag as anomaly
                   </Label>
@@ -242,12 +279,12 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
 
             {/* Timestamp */}
             <div className="space-y-2">
-              <Label htmlFor={`time-${venue.id}`} className="flex items-center gap-2 text-sm">
+              <Label htmlFor={`time-${venue.id}-${visitNumber}`} className="flex items-center gap-2 text-sm">
                 <Clock className="h-3 w-3" />
                 Recorded Time (GMT)
               </Label>
               <Input
-                id={`time-${venue.id}`}
+                id={`time-${venue.id}-${visitNumber}`}
                 type="datetime-local"
                 value={entryData.recorded_at ? 
                   format(toZonedTime(new Date(entryData.recorded_at), 'Europe/London'), "yyyy-MM-dd'T'HH:mm") : 
@@ -267,9 +304,9 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor={`notes-${venue.id}`} className="text-sm">Notes</Label>
+              <Label htmlFor={`notes-${venue.id}-${visitNumber}`} className="text-sm">Notes</Label>
               <Textarea
-                id={`notes-${venue.id}`}
+                id={`notes-${venue.id}-${visitNumber}`}
                 placeholder="Any observations or notes..."
                 value={entryData.notes || ''}
                 onChange={(e) => 

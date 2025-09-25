@@ -2852,6 +2852,7 @@ export type Database = {
           recorded_at: string
           updated_at: string
           venue_id: string
+          visit_number: number
           walk_card_id: string
         }
         Insert: {
@@ -2866,6 +2867,7 @@ export type Database = {
           recorded_at?: string
           updated_at?: string
           venue_id: string
+          visit_number?: number
           walk_card_id: string
         }
         Update: {
@@ -2880,6 +2882,7 @@ export type Database = {
           recorded_at?: string
           updated_at?: string
           venue_id?: string
+          visit_number?: number
           walk_card_id?: string
         }
         Relationships: [

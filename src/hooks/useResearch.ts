@@ -42,6 +42,7 @@ export interface WalkEntry {
   id: string;
   walk_card_id: string;
   venue_id: string;
+  visit_number: number;
   people_count: number;
   laptop_count: number;
   is_closed: boolean;
@@ -292,11 +293,22 @@ export const useResearch = () => {
   const upsertWalkEntry = async (entryData: Partial<WalkEntry>) => {
     try {
       setLoading(true);
+      
+      // If no visit_number provided, determine the next visit number for this venue
+      let visitNumber = entryData.visit_number;
+      if (!visitNumber) {
+        const existingEntries = walkEntries.filter(
+          entry => entry.venue_id === entryData.venue_id && entry.walk_card_id === entryData.walk_card_id
+        );
+        visitNumber = existingEntries.length > 0 ? Math.max(...existingEntries.map(e => e.visit_number)) + 1 : 1;
+      }
+
       const { error } = await supabase
         .from('walk_entries')
         .upsert({
           walk_card_id: entryData.walk_card_id!,
           venue_id: entryData.venue_id!,
+          visit_number: visitNumber,
           people_count: entryData.people_count || 0,
           laptop_count: entryData.laptop_count || 0,
           is_closed: entryData.is_closed || false,
@@ -305,7 +317,7 @@ export const useResearch = () => {
           photo_url: entryData.photo_url,
           recorded_at: entryData.recorded_at || new Date().toISOString(),
         }, {
-          onConflict: 'walk_card_id,venue_id'
+          onConflict: 'walk_card_id,venue_id,visit_number'
         });
       
       if (error) throw error;
