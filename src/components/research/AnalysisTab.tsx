@@ -12,6 +12,7 @@ import { AnalysisService } from '@/services/analysisService';
 import { ComparisonChartsSection } from './analysis/ComparisonChartsSection';
 import { VenuePerformanceGrid } from './analysis/VenuePerformanceGrid';
 import { GeoAnalyticsMap } from './analysis/GeoAnalyticsMap';
+import { RecalculateCapacityButton } from './RecalculateCapacityButton';
 
 export const AnalysisTab = () => {
   const { walkCards, venues, geoAreas, allWalkEntries, fetchAllWalkEntries } = useResearch();
@@ -72,6 +73,23 @@ export const AnalysisTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Research Analysis</h1>
+          <p className="text-muted-foreground">
+            Comprehensive analysis of walk data and venue performance
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <RecalculateCapacityButton />
+          <Button onClick={handleExportCSV} variant="outline">
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
+      </div>
+
       {/* Filters */}
       <Card>
         <CardHeader>

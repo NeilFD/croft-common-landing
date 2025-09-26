@@ -17,7 +17,7 @@ interface VenuePerformanceGridProps {
   geoAreas: GeoArea[];
 }
 
-type SortField = 'performanceScore' | 'totalPeople' | 'averagePeople' | 'totalVisits' | 'occupancyRate';
+type SortField = 'performanceScore' | 'totalPeople' | 'averagePeople' | 'totalVisits' | 'occupancyRate' | 'capacityUtilization';
 
 export const VenuePerformanceGrid: React.FC<VenuePerformanceGridProps> = ({
   walkCards,
@@ -107,14 +107,26 @@ export const VenuePerformanceGrid: React.FC<VenuePerformanceGridProps> = ({
           <p className="text-xl font-bold">{venue.averagePeople}</p>
         </div>
         <div>
+          <p className="text-xs text-muted-foreground">Capacity Utilization</p>
+          <p className={`text-lg font-semibold ${getOccupancyColor(venue.capacityUtilization)}`}>
+            {venue.capacityUtilization}%
+          </p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Peak Capacity</p>
+          <p className={`text-lg font-semibold ${getOccupancyColor(venue.peakCapacityPercentage)}`}>
+            {venue.peakCapacityPercentage}%
+          </p>
+        </div>
+        <div>
           <p className="text-xs text-muted-foreground">Occupancy Rate</p>
-          <p className={`text-lg font-semibold ${getOccupancyColor(venue.occupancyRate)}`}>
+          <p className={`text-sm font-semibold ${getOccupancyColor(venue.occupancyRate)}`}>
             {venue.occupancyRate}%
           </p>
         </div>
         <div>
           <p className="text-xs text-muted-foreground">Visits</p>
-          <p className="text-lg font-semibold">{venue.totalVisits}</p>
+          <p className="text-sm font-semibold">{venue.totalVisits}</p>
         </div>
       </div>
 
@@ -164,6 +176,7 @@ export const VenuePerformanceGrid: React.FC<VenuePerformanceGridProps> = ({
                   <SelectItem value="averagePeople">Average People</SelectItem>
                   <SelectItem value="totalVisits">Total Visits</SelectItem>
                   <SelectItem value="occupancyRate">Occupancy Rate</SelectItem>
+                  <SelectItem value="capacityUtilization">Capacity Utilization</SelectItem>
                 </SelectContent>
               </Select>
             </div>

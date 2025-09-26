@@ -24,7 +24,8 @@ export const ManageTab = () => {
     updateGeoArea, 
     deleteGeoArea,
     updateWalkCardStatus,
-    fetchWalkCardGeoAreas 
+    fetchWalkCardGeoAreas,
+    recalculateAllCapacityPercentages
   } = useResearch();
   
   const [activeTab, setActiveTab] = useState('venues');
@@ -200,10 +201,19 @@ const filteredVenues = venues.filter(venue => {
               <h2 className="text-lg font-semibold">Venues</h2>
               <p className="text-sm text-muted-foreground">Manage competitor venues</p>
             </div>
-            <Button onClick={() => setShowVenueForm(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Venue
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={recalculateAllCapacityPercentages}
+                disabled={loading}
+              >
+                Recalculate Capacity %
+              </Button>
+              <Button onClick={() => setShowVenueForm(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Venue
+              </Button>
+            </div>
           </div>
 
           {/* Inline Venue Form */}

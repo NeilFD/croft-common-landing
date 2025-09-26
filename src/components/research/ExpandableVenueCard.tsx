@@ -22,6 +22,7 @@ import { Venue, WalkEntry, useResearch } from '@/hooks/useResearch';
 import { format } from 'date-fns';
 import { toZonedTime, fromZonedTime } from 'date-fns-tz';
 import { toast } from 'sonner';
+import { CapacityIndicator } from './CapacityIndicator';
 
 interface ExpandableVenueCardProps {
   venue: Venue;
@@ -174,28 +175,49 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
         )}
 
         {/* Status and Current Values */}
-        <div className="flex items-center justify-between">
-          <div className="shrink-0">{getStatusBadge(status)}</div>
-          
-          {walkEntry && (
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                <span>{walkEntry.people_count}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Laptop className="h-3 w-3" />
-                <span>{walkEntry.laptop_count}</span>
-              </div>
-              {walkEntry.recorded_at && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <div className="shrink-0">{getStatusBadge(status)}</div>
+            
+            {walkEntry && (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>
-                    {format(toZonedTime(new Date(walkEntry.recorded_at), 'Europe/London'), 'HH:mm')}
-                  </span>
+                  <Users className="h-3 w-3" />
+                  <span>{walkEntry.people_count}</span>
                 </div>
-              )}
-            </div>
+                <div className="flex items-center gap-1">
+                  <Laptop className="h-3 w-3" />
+                  <span>{walkEntry.laptop_count}</span>
+                </div>
+                {walkEntry.recorded_at && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {format(toZonedTime(new Date(walkEntry.recorded_at), 'Europe/London'), 'HH:mm')}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Capacity Information */}
+          {walkEntry && (
+            <CapacityIndicator
+              currentCount={walkEntry.people_count}
+              maxCapacity={venue.max_capacity}
+              capacityPercentage={walkEntry.capacity_percentage}
+              showDetails={false}
+            />
+          )}
+          
+          {/* Real-time capacity preview when entering data */}
+          {isExpanded && !entryData.is_closed && (
+            <CapacityIndicator
+              currentCount={entryData.people_count || 0}
+              maxCapacity={venue.max_capacity}
+              showDetails={true}
+            />
           )}
         </div>
 

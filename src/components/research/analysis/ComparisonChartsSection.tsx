@@ -122,7 +122,7 @@ export const ComparisonChartsSection: React.FC<ComparisonChartsSectionProps> = (
               Time Block Performance
             </CardTitle>
             <CardDescription>
-              Average occupancy levels by time of day
+              Average occupancy levels and capacity utilization by time of day
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -136,11 +136,21 @@ export const ComparisonChartsSection: React.FC<ComparisonChartsSectionProps> = (
                   height={80}
                 />
                 <YAxis />
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value, name) => [
+                    typeof value === 'number' ? Math.round(value * 10) / 10 : value,
+                    name
+                  ]}
+                />
                 <Bar 
                   dataKey="averagePeople" 
                   fill="hsl(var(--primary))" 
                   name="Avg People"
+                />
+                <Bar 
+                  dataKey="averageCapacityUtilization" 
+                  fill="hsl(var(--secondary))" 
+                  name="Avg Capacity %"
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -169,6 +179,46 @@ export const ComparisonChartsSection: React.FC<ComparisonChartsSectionProps> = (
           </CardContent>
         </Card>
       )}
+
+      {/* Capacity Utilization Analysis */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Capacity Utilization Trends</CardTitle>
+          <CardDescription>
+            How effectively venues are utilizing their maximum capacity over time
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={dayComparisons.slice().reverse()}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="date"
+                tickFormatter={(value) => new Date(value).toLocaleDateString('en-GB', { 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}
+              />
+              <YAxis 
+                domain={[0, 100]}
+                tickFormatter={(value) => `${value}%`}
+              />
+              <Tooltip 
+                labelFormatter={(value) => new Date(value).toLocaleDateString('en-GB')}
+                formatter={(value: any) => [`${Math.round(value * 10) / 10}%`, 'Avg Capacity Utilization']}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="averagePeople" 
+                stroke="hsl(var(--primary))" 
+                strokeWidth={2}
+                name="Avg Capacity Utilization"
+                dot={{ fill: 'hsl(var(--primary))' }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
       {/* Weather Impact Analysis */}
       <Card>
