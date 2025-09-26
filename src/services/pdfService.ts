@@ -110,14 +110,18 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
       minute: '2-digit' 
     });
     
+    const occupancyPercent = entry.capacity_percentage !== null && entry.capacity_percentage !== undefined 
+      ? `${entry.capacity_percentage.toFixed(0)}%` 
+      : 'N/A';
+    
     return [
-      index + 1,
       visitTime,
       venue.name,
       geoAreaName,
       entry.people_count || 0,
       entry.laptop_count || 0,
       entry.visit_number,
+      occupancyPercent,
       entry.notes || '',
       entry.flag_anomaly ? 'Yes' : 'No'
     ];
@@ -126,7 +130,7 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   // Add venues table
   autoTable(doc, {
     startY: 85,
-    head: [['#', 'Time', 'Venue', 'Area', 'People', 'Laptops', 'Visit #', 'Notes', 'Anomaly']],
+    head: [['Time', 'Venue', 'Area', 'People', 'Laptops', 'Visit #', 'Occupancy %', 'Notes', 'Anomaly']],
     body: tableData,
     theme: 'grid',
     styles: {
