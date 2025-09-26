@@ -209,10 +209,10 @@ export const CMSSidebar = () => {
 
   return (
     <Sidebar 
-      className="border-r"
+      className="border-r bg-background"
       collapsible="icon"
     >
-      <SidebarContent className="pt-16">
+      <SidebarContent className="pt-16 bg-background">
         {/* Pages Section */}
         <SidebarGroup>
           <Collapsible 
