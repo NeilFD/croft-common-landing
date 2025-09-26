@@ -158,12 +158,39 @@ const filteredVenues = venues.filter(venue => {
   };
 
   const handleEditVenue = (venue: any) => {
-    setNewVenueName(venue.name);
-    setNewVenueAddress(venue.address || '');
-    setNewVenueGeoArea(venue.geo_area_id);
-    setNewVenueMaxCapacity(venue.max_capacity ? venue.max_capacity.toString() : '');
-    setEditingVenue(venue.id);
-    setShowVenueForm(true);
+    try {
+      console.log('Editing venue:', venue);
+      
+      // Validate venue object
+      if (!venue || !venue.id) {
+        console.error('Invalid venue object:', venue);
+        return;
+      }
+
+      // Safely extract venue properties with defaults
+      const venueName = venue.name || '';
+      const venueAddress = venue.address || '';
+      const venueGeoAreaId = venue.geo_area_id || '';
+      const venueMaxCapacity = venue.max_capacity ? String(venue.max_capacity) : '';
+
+      console.log('Setting venue form data:', {
+        name: venueName,
+        address: venueAddress,
+        geo_area_id: venueGeoAreaId,
+        max_capacity: venueMaxCapacity
+      });
+
+      setNewVenueName(venueName);
+      setNewVenueAddress(venueAddress);
+      setNewVenueGeoArea(venueGeoAreaId);
+      setNewVenueMaxCapacity(venueMaxCapacity);
+      setEditingVenue(venue.id);
+      setShowVenueForm(true);
+      
+      console.log('Venue form opened successfully for:', venue.name);
+    } catch (error) {
+      console.error('Error in handleEditVenue:', error, 'Venue:', venue);
+    }
   };
 
   const handleCreateGeoArea = async (e: React.FormEvent) => {
@@ -321,7 +348,7 @@ const filteredVenues = venues.filter(venue => {
                 {venues.length === 0 ? 'No venues added yet.' : 'No venues match your search.'}
               </div>
             ) : (
-              filteredVenues.map((venue) => {
+              filteredVenues.filter(venue => venue && venue.id).map((venue) => {
                 const geoArea = geoAreas.find(area => area.id === venue.geo_area_id);
                 return (
                   <Card key={venue.id}>
@@ -346,7 +373,16 @@ const filteredVenues = venues.filter(venue => {
                           )}
                         </div>
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => handleEditVenue(venue)}>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('Edit button clicked for venue:', venue?.name || 'Unknown');
+                              handleEditVenue(venue);
+                            }}
+                          >
                             <Edit className="h-3 w-3" />
                           </Button>
                           <Button
