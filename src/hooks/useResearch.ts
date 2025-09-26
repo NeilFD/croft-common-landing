@@ -237,10 +237,11 @@ export const useResearch = () => {
 
   // Create new walk card
   const createWalkCard = async (cardData: Partial<WalkCard>, selectedGeoAreaIds: string[] = []) => {
-    if (!user) return null;
-
     try {
       setLoading(true);
+      
+      // Allow anonymous creation – fall back to a neutral UUID when not signed in
+      const createdBy = user?.id ?? '00000000-0000-0000-0000-000000000000';
       
       // Generate title if not provided
       const title = cardData.title || `${cardData.date} ${cardData.time_block}`;
@@ -252,7 +253,7 @@ export const useResearch = () => {
           time_block: cardData.time_block!,
           weather_preset: cardData.weather_preset!,
           title,
-          created_by_user_id: user.id,
+          created_by_user_id: createdBy,
           croft_zones: cardData.croft_zones || [],
           weather_temp_c: cardData.weather_temp_c,
           weather_notes: cardData.weather_notes,
