@@ -20,6 +20,7 @@ export const CapacityIndicator: React.FC<CapacityIndicatorProps> = ({
     ? Math.min((currentCount / maxCapacity) * 100, 100) 
     : null);
 
+  // Show capacity info if we have a percentage OR max capacity
   if (!percentage && !maxCapacity) {
     return showDetails ? (
       <div className="text-sm text-muted-foreground">

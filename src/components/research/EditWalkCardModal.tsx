@@ -11,6 +11,7 @@ import { useResearch, WalkCard, WalkEntry, Venue } from '@/hooks/useResearch';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
+import { CapacityIndicator } from './CapacityIndicator';
 
 interface EditWalkCardModalProps {
   walkCard: WalkCard;
@@ -53,12 +54,11 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
       const walkCardGeoAreas = await fetchWalkCardGeoAreas(walkCard.id);
       const geoAreaIds = walkCardGeoAreas.map(area => area.id);
       
-      // Fetch fresh venue data directly from Supabase instead of using cached venues
+      // Fetch fresh venue data directly from Supabase - include all venues, not just active ones
       const { data: freshVenues, error: venuesError } = await supabase
         .from('venues')
         .select('*')
-        .in('geo_area_id', geoAreaIds)
-        .eq('is_active', true);
+        .in('geo_area_id', geoAreaIds);
 
       if (venuesError) {
         console.error('Error fetching venues:', venuesError);
@@ -272,20 +272,13 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
                             </div>
                           </div>
 
-                          {/* Capacity helper */}
-                          <div className="text-xs text-muted-foreground">
-                            {(() => {
-                              const people = vd.peopleCount !== '' ? parseInt(vd.peopleCount) || 0 : (vd.entry?.people_count || 0);
-                              if (vd.maxCapacity && vd.maxCapacity > 0) {
-                                const pct = Math.round((people / vd.maxCapacity) * 100);
-                                return `Capacity: ${people} / ${vd.maxCapacity} • ${pct}%`;
-                              }
-                              if (vd.capacityPercentage != null) {
-                                return `Occupancy: ${vd.capacityPercentage}%`;
-                              }
-                              return 'Max capacity unknown';
-                            })()}
-                          </div>
+                          {/* Capacity indicator */}
+                          <CapacityIndicator
+                            currentCount={vd.peopleCount !== '' ? parseInt(vd.peopleCount) || 0 : (vd.entry?.people_count || 0)}
+                            maxCapacity={vd.maxCapacity}
+                            capacityPercentage={vd.capacityPercentage}
+                            showDetails={true}
+                          />
 
                           {/* Anomaly Flag */}
                           <div className="flex items-center space-x-2">
