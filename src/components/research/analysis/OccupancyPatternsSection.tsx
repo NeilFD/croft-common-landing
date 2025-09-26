@@ -92,9 +92,11 @@ export const OccupancyPatternsSection: React.FC<OccupancyPatternsSectionProps> =
                 <YAxis className="fill-foreground text-xs" />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))',
+                    backgroundColor: '#ffffff',
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
+                    borderRadius: '6px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                    color: '#000000'
                   }}
                   formatter={(value: number, name: string) => [
                     `${value}${name.includes('Capacity') ? '%' : ''}`,
@@ -174,9 +176,11 @@ export const OccupancyPatternsSection: React.FC<OccupancyPatternsSectionProps> =
                 <YAxis className="fill-foreground text-xs" />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))',
+                    backgroundColor: '#ffffff',
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '6px'
+                    borderRadius: '6px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                    color: '#000000'
                   }}
                   formatter={(value: number, name: string) => [
                     `${value}${name.includes('Capacity') || name.includes('occupancy') ? '%' : ''}`,
