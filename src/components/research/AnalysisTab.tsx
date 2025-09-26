@@ -197,26 +197,31 @@ export const AnalysisTab = () => {
 
       {/* Enhanced Analytics Tabs */}
       <Tabs defaultValue="comparisons" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="comparisons" className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            Comparisons
+        <TabsList className="grid w-full grid-cols-5 h-auto p-1">
+          <TabsTrigger value="comparisons" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm">
+            <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Comparisons</span>
+            <span className="xs:hidden">Comp</span>
           </TabsTrigger>
-          <TabsTrigger value="occupancy" className="flex items-center gap-2">
-            <TrendingUp className="h-4 w-4" />
-            Occupancy
+          <TabsTrigger value="occupancy" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm">
+            <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Occupancy</span>
+            <span className="xs:hidden">Occ</span>
           </TabsTrigger>
-          <TabsTrigger value="venues" className="flex items-center gap-2">
-            <Trophy className="h-4 w-4" />
-            Venues
+          <TabsTrigger value="venues" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm">
+            <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Venues</span>
+            <span className="xs:hidden">Ven</span>
           </TabsTrigger>
-          <TabsTrigger value="geography" className="flex items-center gap-2">
-            <Map className="h-4 w-4" />
-            Geography
+          <TabsTrigger value="geography" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm">
+            <Map className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Geography</span>
+            <span className="xs:hidden">Geo</span>
           </TabsTrigger>
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Overview
+          <TabsTrigger value="overview" className="flex items-center gap-1 px-2 py-2 text-xs sm:text-sm">
+            <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden xs:inline">Overview</span>
+            <span className="xs:hidden">Over</span>
           </TabsTrigger>
         </TabsList>
 
