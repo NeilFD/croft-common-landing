@@ -26,6 +26,8 @@ interface VenueEntryData {
   isClosed: boolean;
   notes: string;
   flagAnomaly: boolean;
+  maxCapacity?: number | null;
+  capacityPercentage?: number | null;
 }
 
 export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({ 
@@ -73,6 +75,11 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
       const venueEntryData: VenueEntryData[] = relevantVenues.map(venue => {
         const entry = walkCardEntries?.find(e => e.venue_id === venue.id);
         console.log(`Venue ${venue.name} entry:`, entry); // Debug log
+        const people = entry ? entry.people_count : 0;
+        const maxCap = venue.max_capacity ?? null;
+        const capacityPct = maxCap && maxCap > 0 
+          ? Math.round((people / maxCap) * 100)
+          : (entry?.capacity_percentage ?? null);
         return {
           venue,
           entry,
@@ -81,6 +88,8 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
           isClosed: entry ? entry.is_closed : false,
           notes: entry ? (entry.notes || '') : '',
           flagAnomaly: entry ? entry.flag_anomaly : false,
+          maxCapacity: maxCap,
+          capacityPercentage: capacityPct,
         };
       });
 
@@ -241,6 +250,21 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
                                 placeholder="0"
                               />
                             </div>
+                          </div>
+
+                          {/* Capacity helper */}
+                          <div className="text-xs text-muted-foreground">
+                            {(() => {
+                              const people = vd.peopleCount !== '' ? parseInt(vd.peopleCount) || 0 : (vd.entry?.people_count || 0);
+                              if (vd.maxCapacity && vd.maxCapacity > 0) {
+                                const pct = Math.round((people / vd.maxCapacity) * 100);
+                                return `Capacity: ${people} / ${vd.maxCapacity} • ${pct}%`;
+                              }
+                              if (vd.capacityPercentage != null) {
+                                return `Occupancy: ${vd.capacityPercentage}%`;
+                              }
+                              return 'Max capacity unknown';
+                            })()}
                           </div>
 
                           {/* Anomaly Flag */}
