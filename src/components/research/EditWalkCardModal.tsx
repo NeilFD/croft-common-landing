@@ -54,11 +54,12 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
       const walkCardGeoAreas = await fetchWalkCardGeoAreas(walkCard.id);
       const geoAreaIds = walkCardGeoAreas.map(area => area.id);
       
-      // Fetch fresh venue data directly from Supabase - include all venues, not just active ones
+      // Fetch fresh venue data directly from Supabase
       const { data: freshVenues, error: venuesError } = await supabase
         .from('venues')
         .select('*')
-        .in('geo_area_id', geoAreaIds);
+        .in('geo_area_id', geoAreaIds)
+        .eq('is_active', true);
 
       if (venuesError) {
         console.error('Error fetching venues:', venuesError);
