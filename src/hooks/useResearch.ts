@@ -532,11 +532,42 @@ export const useResearch = () => {
     setWalkCards((prev) => prev.filter((card) => card.id !== cardId));
     try {
       setLoading(true);
+      console.log('Attempting to delete walk card:', cardId);
+      
+      // First, delete associated walk entries
+      const { error: entriesError } = await supabase
+        .from('walk_entries')
+        .delete()
+        .eq('walk_card_id', cardId);
+      
+      if (entriesError) {
+        console.error('Error deleting walk entries:', entriesError);
+        throw entriesError;
+      }
+      
+      // Delete associated geo area links
+      const { error: geoLinksError } = await supabase
+        .from('walk_card_geo_areas')
+        .delete()
+        .eq('walk_card_id', cardId);
+      
+      if (geoLinksError) {
+        console.error('Error deleting geo area links:', geoLinksError);
+        throw geoLinksError;
+      }
+      
+      // Finally delete the walk card
       const { error } = await supabase
         .from('walk_cards')
         .delete()
         .eq('id', cardId);
-      if (error) throw error;
+        
+      if (error) {
+        console.error('Error deleting walk card:', error);
+        throw error;
+      }
+      
+      console.log('Walk card deleted successfully');
       await fetchWalkCards();
       toast.success('Walk card deleted');
     } catch (error) {
