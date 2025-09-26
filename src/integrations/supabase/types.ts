@@ -3387,10 +3387,6 @@ export type Database = {
         Args: { email: string }
         Returns: boolean
       }
-      is_research_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       is_secret_kitchen_access_expired: {
         Args: { email_input: string }
         Returns: boolean
