@@ -19,11 +19,13 @@ interface WalkData {
   venues: Array<{
     id: string;
     name: string;
+    max_capacity?: number;
   }>;
   walkEntries: Array<{
     venue_id: string;
     people_count?: number;
     laptop_count?: number;
+    capacity_percentage?: number;
     notes?: string;
     flag_anomaly: boolean;
     recorded_at: string;
@@ -59,6 +61,28 @@ serve(async (req) => {
     const totalLaptops = walkData.walkEntries.reduce((sum, e) => sum + (e.laptop_count || 0), 0);
     const anomalies = walkData.walkEntries.filter(e => e.flag_anomaly).length;
     const notesWithContent = walkData.walkEntries.filter(e => e.notes && e.notes.trim()).length;
+    
+    // Calculate capacity and occupancy metrics
+    const entriesWithCapacity = walkData.walkEntries.filter(e => e.capacity_percentage !== null && e.capacity_percentage !== undefined);
+    const avgCapacityUtilization = entriesWithCapacity.length > 0 
+      ? (entriesWithCapacity.reduce((sum, e) => sum + (e.capacity_percentage || 0), 0) / entriesWithCapacity.length).toFixed(1)
+      : 'N/A';
+    const peakCapacity = entriesWithCapacity.length > 0 
+      ? Math.max(...entriesWithCapacity.map(e => e.capacity_percentage || 0)).toFixed(1) + '%'
+      : 'N/A';
+    
+    // Venue capacity analysis
+    const venueCapacityData = walkData.walkEntries.reduce((acc, entry) => {
+      const venue = walkData.venues.find(v => v.id === entry.venue_id);
+      if (venue && venue.max_capacity && entry.people_count !== null) {
+        const occupancyRate = ((entry.people_count || 0) / venue.max_capacity * 100).toFixed(1);
+        if (!acc[venue.id]) {
+          acc[venue.id] = { name: venue.name, maxCapacity: venue.max_capacity, visits: [] };
+        }
+        acc[venue.id].visits.push({ people: entry.people_count || 0, occupancy: parseFloat(occupancyRate) });
+      }
+      return acc;
+    }, {} as Record<string, { name: string; maxCapacity: number; visits: { people: number; occupancy: number }[] }>);
 
     // Prepare data for AI analysis
     const walkContext = `
@@ -71,10 +95,20 @@ Statistics:
 - Total venues visited: ${totalVenues}
 - Total visits recorded: ${totalVisits}
 - Total people observed: ${totalPeople}${isEveningWalk ? '' : `\n- Total laptops observed: ${totalLaptops}`}
+- Average capacity utilization: ${avgCapacityUtilization}${avgCapacityUtilization !== 'N/A' ? '%' : ''}
+- Peak capacity reached: ${peakCapacity}
 - Anomalies flagged: ${anomalies}
 - Visits with notes: ${notesWithContent}
 
 Areas with recorded visits: ${walkData.geoAreas.map(area => area.name).join(', ')}
+
+Capacity Analysis by Venue:
+${Object.values(venueCapacityData).map(venue => {
+  const avgOccupancy = (venue.visits.reduce((sum, v) => sum + v.occupancy, 0) / venue.visits.length).toFixed(1);
+  const maxOccupancy = Math.max(...venue.visits.map(v => v.occupancy)).toFixed(1);
+  const maxPeople = Math.max(...venue.visits.map(v => v.people));
+  return `- ${venue.name} (capacity: ${venue.maxCapacity}): Avg ${avgOccupancy}% utilization, Peak ${maxOccupancy}% (${maxPeople} people)`;
+}).join('\n')}
 
 Visit details with notes:
 ${walkData.walkEntries

@@ -213,6 +213,18 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   doc.text(`Total People Count: ${walkEntries.reduce((sum, e) => sum + (e.people_count || 0), 0)}`, 20, currentY + 24);
   doc.text(`Total Laptop Count: ${walkEntries.reduce((sum, e) => sum + (e.laptop_count || 0), 0)}`, 20, currentY + 36);
   
+  // Calculate capacity metrics
+  const entriesWithCapacity = walkEntries.filter(e => e.capacity_percentage !== null && e.capacity_percentage !== undefined);
+  const avgCapacityUtilization = entriesWithCapacity.length > 0 
+    ? (entriesWithCapacity.reduce((sum, e) => sum + (e.capacity_percentage || 0), 0) / entriesWithCapacity.length).toFixed(1)
+    : 'N/A';
+  const peakCapacity = entriesWithCapacity.length > 0 
+    ? Math.max(...entriesWithCapacity.map(e => e.capacity_percentage || 0)).toFixed(1)
+    : 'N/A';
+  
+  doc.text(`Average Capacity Utilization: ${avgCapacityUtilization}${avgCapacityUtilization !== 'N/A' ? '%' : ''}`, 20, currentY + 48);
+  doc.text(`Peak Capacity Reached: ${peakCapacity}${peakCapacity !== 'N/A' ? '%' : ''}`, 20, currentY + 60);
+  
   // Right column stats  
   const anomalies = walkEntries.filter(e => e.flag_anomaly).length;
   const notesCount = walkEntries.filter(e => e.notes && e.notes.trim()).length;
@@ -220,7 +232,62 @@ export const generateWalkCardPDF = async (data: PDFWalkData): Promise<Blob> => {
   doc.text(`Entries with Notes: ${notesCount}`, 105, currentY + 12);
   doc.text(`Areas with Visits: ${visitedGeoAreas.length}`, 105, currentY + 24);
   
-  currentY += 55;
+  currentY += 85;
+
+  // Add capacity analysis section
+  if (entriesWithCapacity.length > 0) {
+    // Check if we need a new page for capacity analysis
+    if (currentY + 80 > pageHeight - marginBottom) {
+      doc.addPage();
+      currentY = 30;
+    }
+    
+    doc.setFontSize(12);
+    doc.setTextColor(40, 40, 40);
+    doc.text('Capacity Analysis by Venue', 20, currentY);
+    currentY += 15;
+    
+    doc.setFontSize(9);
+    doc.setTextColor(60, 60, 60);
+    
+    // Group entries by venue for capacity analysis
+    const venueCapacityAnalysis = walkEntries.reduce((acc, entry) => {
+      const venue = venues.find(v => v.id === entry.venue_id);
+      if (venue && venue.max_capacity && entry.people_count !== null && entry.capacity_percentage !== null) {
+        if (!acc[venue.id]) {
+          acc[venue.id] = { 
+            name: venue.name, 
+            maxCapacity: venue.max_capacity, 
+            visits: [] 
+          };
+        }
+        acc[venue.id].visits.push({ 
+          people: entry.people_count || 0, 
+          capacity: entry.capacity_percentage || 0 
+        });
+      }
+      return acc;
+    }, {} as Record<string, { name: string; maxCapacity: number; visits: { people: number; capacity: number }[] }>);
+    
+    Object.values(venueCapacityAnalysis).forEach((venue) => {
+      if (venue.visits.length > 0) {
+        const avgCapacity = (venue.visits.reduce((sum, v) => sum + v.capacity, 0) / venue.visits.length).toFixed(1);
+        const maxCapacity = Math.max(...venue.visits.map(v => v.capacity)).toFixed(1);
+        const maxPeople = Math.max(...venue.visits.map(v => v.people));
+        
+        // Check if we need a new line/page
+        if (currentY > pageHeight - marginBottom - 20) {
+          doc.addPage();
+          currentY = 30;
+        }
+        
+        doc.text(`${venue.name} (max: ${venue.maxCapacity}): Avg ${avgCapacity}%, Peak ${maxCapacity}% (${maxPeople} people)`, 20, currentY);
+        currentY += 12;
+      }
+    });
+    
+    currentY += 15;
+  }
 
   // Weather notes if available
   if (walkCard.weather_notes) {
