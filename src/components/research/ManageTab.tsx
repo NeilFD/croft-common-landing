@@ -29,6 +29,7 @@ export const ManageTab = () => {
     deleteGeoArea,
     updateWalkCardStatus,
     fetchWalkCardGeoAreas,
+    deleteWalkCard,
     recalculateAllCapacityPercentages
   } = useResearch();
   
@@ -65,8 +66,7 @@ export const ManageTab = () => {
 
   const handleDeleteWalk = async (cardId: string) => {
     if (window.confirm('Are you sure you want to delete this walk card? This cannot be undone.')) {
-      // Add delete functionality here when implemented
-      console.log('Delete walk card:', cardId);
+      await deleteWalkCard(cardId);
     }
   };
 

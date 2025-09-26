@@ -525,6 +525,30 @@ export const useResearch = () => {
     }
   };
 
+  // Delete walk card
+  const deleteWalkCard = async (cardId: string) => {
+    const previous = walkCards;
+    // Optimistic update: remove locally first
+    setWalkCards((prev) => prev.filter((card) => card.id !== cardId));
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('walk_cards')
+        .delete()
+        .eq('id', cardId);
+      if (error) throw error;
+      await fetchWalkCards();
+      toast.success('Walk card deleted');
+    } catch (error) {
+      console.error('Error deleting walk card:', error);
+      // Revert on failure
+      setWalkCards(previous);
+      toast.error('Failed to delete walk card');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Initial data fetch - always fetch read-only data for analysis
   useEffect(() => {
     fetchGeoAreas();
@@ -557,6 +581,7 @@ export const useResearch = () => {
     deleteVenue,
     updateGeoArea,
     deleteGeoArea,
+    deleteWalkCard,
     recalculateAllCapacityPercentages,
   };
 };
