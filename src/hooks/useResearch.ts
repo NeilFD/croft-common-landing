@@ -157,17 +157,23 @@ export const useResearch = () => {
       
       const updatedCount = data?.[0]?.updated_count || 0;
       
-      // Refresh all walk entries to show updated capacity percentages
+      // Refresh all walk entries to show updated capacity percentages in analysis
       await fetchAllWalkEntries();
       
-      toast.success(`Updated capacity percentages for ${updatedCount} walk entries`);
+      // Also refresh current walk entries if any are loaded (for editing interface)
+      if (walkEntries.length > 0) {
+        const currentWalkCardId = walkEntries[0].walk_card_id;
+        await fetchWalkEntries(currentWalkCardId);
+      }
+      
+      toast.success(`Updated capacity percentages for ${updatedCount} walk entries. All views refreshed.`);
     } catch (error) {
       console.error('Error recalculating capacity percentages:', error);
       toast.error('Failed to recalculate capacity percentages');
     } finally {
       setLoading(false);
     }
-  }, [fetchAllWalkEntries]);
+  }, [fetchAllWalkEntries, fetchWalkEntries, walkEntries]);
 
   // Fetch geo areas for a walk card
   const fetchWalkCardGeoAreas = useCallback(async (walkCardId: string): Promise<GeoArea[]> => {
