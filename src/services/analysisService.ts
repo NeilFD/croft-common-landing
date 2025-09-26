@@ -167,11 +167,10 @@ export class AnalysisService {
         }
       });
 
-      // Calculate performance score (0-100)
+      // Calculate performance score (0-100) - based on people and occupancy only
       const performanceScore = Math.round(
-        (averagePeople * 0.4 + 
-         occupancyRate * 0.3 + 
-         (stats.totalVisits * 2) * 0.2 + 
+        (averagePeople * 0.5 + 
+         occupancyRate * 0.4 + 
          (stats.anomalyCount === 0 ? 10 : Math.max(0, 10 - stats.anomalyCount)) * 0.1)
       );
 
