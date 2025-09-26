@@ -53,10 +53,17 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
       const walkCardGeoAreas = await fetchWalkCardGeoAreas(walkCard.id);
       const geoAreaIds = walkCardGeoAreas.map(area => area.id);
       
-      // Filter venues to only those in the walk card's geo areas
-      const relevantVenues = venues.filter(venue => 
-        geoAreaIds.includes(venue.geo_area_id)
-      );
+      // Fetch fresh venue data directly from Supabase instead of using cached venues
+      const { data: freshVenues, error: venuesError } = await supabase
+        .from('venues')
+        .select('*')
+        .in('geo_area_id', geoAreaIds)
+        .eq('is_active', true);
+
+      if (venuesError) {
+        console.error('Error fetching venues:', venuesError);
+        throw venuesError;
+      }
 
       // Load walk entries for this specific walk card and get them directly
       const { data: walkCardEntries, error } = await supabase
@@ -72,8 +79,13 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
       console.log('Walk entries loaded:', walkCardEntries); // Debug log
       
       // Create venue data combining venues with their entries
-      const venueEntryData: VenueEntryData[] = relevantVenues.map(venue => {
-        const entry = walkCardEntries?.find(e => e.venue_id === venue.id);
+      const venueEntryData: VenueEntryData[] = (freshVenues || []).map(venue => {
+        // Find all entries for this venue and pick the latest one
+        const entriesForVenue = walkCardEntries?.filter(e => e.venue_id === venue.id) || [];
+        const entry = entriesForVenue.length > 0 
+          ? entriesForVenue.sort((a, b) => new Date(b.recorded_at).getTime() - new Date(a.recorded_at).getTime())[0]
+          : undefined;
+        
         console.log(`Venue ${venue.name} entry:`, entry); // Debug log
         const people = entry ? entry.people_count : 0;
         const maxCap = venue.max_capacity ?? null;
@@ -138,6 +150,9 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
         await saveVenueEntry(venueEntry);
       }
 
+      // Refresh venue data to show updated capacity percentages
+      await loadVenueData();
+      
       toast.success('Venue data updated successfully');
       setOpen(false);
       onSuccess?.();
@@ -178,7 +193,12 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
 
           {/* Venue Data */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Venue Data</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Venue Data</h3>
+              <p className="text-xs text-muted-foreground">
+                Occupancy figures are calculated against each venue's current max capacity
+              </p>
+            </div>
             {venueData.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 Loading venue data...

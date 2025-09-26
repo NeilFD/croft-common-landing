@@ -166,6 +166,9 @@ export const useResearch = () => {
         await fetchWalkEntries(currentWalkCardId);
       }
       
+      // Refresh venues to ensure any UI using venues sees latest max_capacity values
+      await fetchVenues();
+      
       toast.success(`Updated capacity percentages for ${updatedCount} walk entries. All views refreshed.`);
     } catch (error) {
       console.error('Error recalculating capacity percentages:', error);
