@@ -16,6 +16,7 @@ export interface Venue {
   name: string;
   geo_area_id: string;
   address?: string | null;
+  max_capacity?: number | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -45,6 +46,7 @@ export interface WalkEntry {
   visit_number: number;
   people_count: number;
   laptop_count: number;
+  capacity_percentage?: number | null;
   is_closed: boolean;
   notes?: string;
   photo_url?: string;
@@ -144,6 +146,28 @@ export const useResearch = () => {
       toast.error('Failed to load walk entries for analysis');
     }
   }, []);
+
+  // Recalculate capacity percentages for all existing data
+  const recalculateAllCapacityPercentages = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.rpc('recalculate_all_capacity_percentages');
+      
+      if (error) throw error;
+      
+      const updatedCount = data?.[0]?.updated_count || 0;
+      
+      // Refresh all walk entries to show updated capacity percentages
+      await fetchAllWalkEntries();
+      
+      toast.success(`Updated capacity percentages for ${updatedCount} walk entries`);
+    } catch (error) {
+      console.error('Error recalculating capacity percentages:', error);
+      toast.error('Failed to recalculate capacity percentages');
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchAllWalkEntries]);
 
   // Fetch geo areas for a walk card
   const fetchWalkCardGeoAreas = useCallback(async (walkCardId: string): Promise<GeoArea[]> => {
@@ -380,7 +404,7 @@ export const useResearch = () => {
   };
 
   // Create venue
-  const createVenue = async (venueData: { name: string; geo_area_id: string; address?: string | null }) => {
+  const createVenue = async (venueData: { name: string; geo_area_id: string; address?: string | null; max_capacity?: number | null }) => {
     try {
       setLoading(true);
       const { error } = await supabase
@@ -526,5 +550,6 @@ export const useResearch = () => {
     deleteVenue,
     updateGeoArea,
     deleteGeoArea,
+    recalculateAllCapacityPercentages,
   };
 };

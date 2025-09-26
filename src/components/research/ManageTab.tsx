@@ -37,6 +37,7 @@ export const ManageTab = () => {
   const [newVenueName, setNewVenueName] = useState('');
   const [newVenueAddress, setNewVenueAddress] = useState('');
   const [newVenueGeoArea, setNewVenueGeoArea] = useState('');
+  const [newVenueMaxCapacity, setNewVenueMaxCapacity] = useState('');
   
   // Geo area form states
   const [showGeoAreaForm, setShowGeoAreaForm] = useState(false);
@@ -121,6 +122,7 @@ const filteredVenues = venues.filter(venue => {
     setNewVenueName('');
     setNewVenueAddress('');
     setNewVenueGeoArea('');
+    setNewVenueMaxCapacity('');
     setShowVenueForm(false);
     setEditingVenue(null);
   };
@@ -140,12 +142,14 @@ const filteredVenues = venues.filter(venue => {
         name: newVenueName.trim(),
         address: newVenueAddress.trim() === '' ? null : newVenueAddress.trim(),
         geo_area_id: newVenueGeoArea,
+        max_capacity: newVenueMaxCapacity.trim() === '' ? null : Number(newVenueMaxCapacity.trim()),
       });
     } else {
       await createVenue({
         name: newVenueName.trim(),
         address: newVenueAddress.trim() === '' ? null : newVenueAddress.trim(),
         geo_area_id: newVenueGeoArea,
+        max_capacity: newVenueMaxCapacity.trim() === '' ? null : Number(newVenueMaxCapacity.trim()),
       });
     }
     
@@ -156,6 +160,7 @@ const filteredVenues = venues.filter(venue => {
     setNewVenueName(venue.name);
     setNewVenueAddress(venue.address || '');
     setNewVenueGeoArea(venue.geo_area_id);
+    setNewVenueMaxCapacity(venue.max_capacity ? venue.max_capacity.toString() : '');
     setEditingVenue(venue.id);
     setShowVenueForm(true);
   };
@@ -209,7 +214,7 @@ const filteredVenues = venues.filter(venue => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateVenue} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="venue-name">Name *</Label>
                       <Input
@@ -227,6 +232,17 @@ const filteredVenues = venues.filter(venue => {
                         value={newVenueAddress}
                         onChange={(e) => setNewVenueAddress(e.target.value)}
                         placeholder="Street address"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="venue-max-capacity">Max Capacity</Label>
+                      <Input
+                        id="venue-max-capacity"
+                        type="number"
+                        min="1"
+                        value={newVenueMaxCapacity}
+                        onChange={(e) => setNewVenueMaxCapacity(e.target.value)}
+                        placeholder="e.g. 100"
                       />
                     </div>
                     <div className="space-y-2">
@@ -311,6 +327,11 @@ const filteredVenues = venues.filter(venue => {
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Building2 className="h-3 w-3" />
                               {venue.address}
+                            </div>
+                          )}
+                          {venue.max_capacity && (
+                            <div className="text-sm text-muted-foreground">
+                              Max capacity: {venue.max_capacity} people
                             </div>
                           )}
                         </div>

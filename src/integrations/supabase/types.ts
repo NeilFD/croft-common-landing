@@ -2721,6 +2721,7 @@ export type Database = {
           geo_area_id: string
           id: string
           is_active: boolean
+          max_capacity: number | null
           name: string
           updated_at: string
         }
@@ -2730,6 +2731,7 @@ export type Database = {
           geo_area_id: string
           id?: string
           is_active?: boolean
+          max_capacity?: number | null
           name: string
           updated_at?: string
         }
@@ -2739,6 +2741,7 @@ export type Database = {
           geo_area_id?: string
           id?: string
           is_active?: boolean
+          max_capacity?: number | null
           name?: string
           updated_at?: string
         }
@@ -2841,6 +2844,7 @@ export type Database = {
       }
       walk_entries: {
         Row: {
+          capacity_percentage: number | null
           created_at: string
           flag_anomaly: boolean
           id: string
@@ -2856,6 +2860,7 @@ export type Database = {
           walk_card_id: string
         }
         Insert: {
+          capacity_percentage?: number | null
           created_at?: string
           flag_anomaly?: boolean
           id?: string
@@ -2871,6 +2876,7 @@ export type Database = {
           walk_card_id: string
         }
         Update: {
+          capacity_percentage?: number | null
           created_at?: string
           flag_anomaly?: boolean
           id?: string
@@ -3400,6 +3406,12 @@ export type Database = {
       normalize_item_name: {
         Args: { item_name: string }
         Returns: string
+      }
+      recalculate_all_capacity_percentages: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          updated_count: number
+        }[]
       }
       set_ledger_password: {
         Args: { password_input: string; user_id_input: string }

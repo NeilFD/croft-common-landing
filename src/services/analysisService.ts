@@ -17,6 +17,8 @@ export interface VenuePerformance {
   totalVisits: number;
   occupancyRate: number;
   laptopDensity: number;
+  capacityUtilization: number;
+  peakCapacityPercentage: number;
   anomalyCount: number;
   lastVisited: string;
   peakTime: string;
@@ -30,6 +32,7 @@ export interface TimeBlockAnalysis {
   venueCount: number;
   walkCount: number;
   occupancyRate: number;
+  averageCapacityUtilization: number;
 }
 
 export interface DayComparison {
@@ -51,6 +54,7 @@ export interface GeoAreaAnalysis {
   venueCount: number;
   visitCount: number;
   occupancyRate: number;
+  averageCapacityUtilization: number;
   peakTimeBlock: string;
   performanceRank: number;
 }
@@ -133,7 +137,24 @@ export class AnalysisService {
 
       const geoArea = geoAreaMap.get(venue.geo_area_id);
       const averagePeople = stats.totalVisits > 0 ? stats.totalPeople / stats.totalVisits : 0;
-      const occupancyRate = Math.min((averagePeople / 50) * 100, 100); // Assume max capacity of 50
+
+      // Calculate capacity utilization metrics
+      const maxCapacity = venue.max_capacity || 50; // Default to 50 if not set
+      const occupancyRate = Math.min((averagePeople / maxCapacity) * 100, 100);
+      
+      // Calculate capacity utilization from all entries for this venue
+      const capacityPercentages = stats.entries
+        .map(e => e.capacity_percentage)
+        .filter(cp => cp !== null && cp !== undefined) as number[];
+      
+      const capacityUtilization = capacityPercentages.length > 0 
+        ? capacityPercentages.reduce((sum, cp) => sum + cp, 0) / capacityPercentages.length
+        : (averagePeople / maxCapacity) * 100;
+      
+      const peakCapacityPercentage = capacityPercentages.length > 0 
+        ? Math.max(...capacityPercentages)
+        : Math.min((stats.entries.reduce((max, e) => Math.max(max, e.people_count), 0) / maxCapacity) * 100, 100);
+
       const laptopDensity = stats.entries.reduce((sum, e) => sum + e.laptop_count, 0) / stats.totalVisits;
 
       // Find peak time block
@@ -163,6 +184,8 @@ export class AnalysisService {
         totalVisits: stats.totalVisits,
         occupancyRate: Math.round(occupancyRate * 10) / 10,
         laptopDensity: Math.round(laptopDensity * 10) / 10,
+        capacityUtilization: Math.round(capacityUtilization * 10) / 10,
+        peakCapacityPercentage: Math.round(peakCapacityPercentage * 10) / 10,
         anomalyCount: stats.anomalyCount,
         lastVisited: stats.lastVisited,
         peakTime,
@@ -206,14 +229,31 @@ export class AnalysisService {
       stats.entryCount++;
     });
 
-    return Array.from(timeBlockStats.entries()).map(([timeBlock, stats]) => ({
-      timeBlock,
-      totalPeople: stats.totalPeople,
-      averagePeople: Math.round((stats.totalPeople / stats.entryCount) * 10) / 10,
-      venueCount: stats.venueIds.size,
-      walkCount: stats.walkIds.size,
-      occupancyRate: Math.round(((stats.totalPeople / stats.entryCount) / 50) * 100 * 10) / 10
-    })).sort((a, b) => b.totalPeople - a.totalPeople);
+    return Array.from(timeBlockStats.entries()).map(([timeBlock, stats]) => {
+      // Calculate average capacity utilization for this time block
+      const entriesForBlock = walkEntries.filter(entry => {
+        const walkCard = walkCardMap.get(entry.walk_card_id);
+        return walkCard && walkCard.time_block === timeBlock;
+      });
+      
+      const capacityPercentages = entriesForBlock
+        .map(e => e.capacity_percentage)
+        .filter(cp => cp !== null && cp !== undefined) as number[];
+      
+      const averageCapacityUtilization = capacityPercentages.length > 0 
+        ? capacityPercentages.reduce((sum, cp) => sum + cp, 0) / capacityPercentages.length
+        : 0;
+
+      return {
+        timeBlock,
+        totalPeople: stats.totalPeople,
+        averagePeople: Math.round((stats.totalPeople / stats.entryCount) * 10) / 10,
+        venueCount: stats.venueIds.size,
+        walkCount: stats.walkIds.size,
+        occupancyRate: Math.round(((stats.totalPeople / stats.entryCount) / 50) * 100 * 10) / 10,
+        averageCapacityUtilization: Math.round(averageCapacityUtilization * 10) / 10
+      };
+    }).sort((a, b) => b.totalPeople - a.totalPeople);
   }
 
   static calculateDayComparisons(
@@ -325,6 +365,20 @@ export class AnalysisService {
         }
       });
 
+      // Calculate average capacity utilization for this geo area
+      const entriesForGeoArea = walkEntries.filter(entry => {
+        const venue = venueMap.get(entry.venue_id);
+        return venue && venue.geo_area_id === geoAreaId;
+      });
+      
+      const capacityPercentages = entriesForGeoArea
+        .map(e => e.capacity_percentage)
+        .filter(cp => cp !== null && cp !== undefined) as number[];
+      
+      const averageCapacityUtilization = capacityPercentages.length > 0 
+        ? capacityPercentages.reduce((sum, cp) => sum + cp, 0) / capacityPercentages.length
+        : 0;
+
       analyses.push({
         geoAreaId,
         geoAreaName: geoArea.name,
@@ -333,6 +387,7 @@ export class AnalysisService {
         venueCount: stats.venueIds.size,
         visitCount: stats.visitCount,
         occupancyRate: Math.round(((stats.totalPeople / stats.visitCount) / 50) * 100 * 10) / 10,
+        averageCapacityUtilization: Math.round(averageCapacityUtilization * 10) / 10,
         peakTimeBlock,
         performanceRank: 0 // Will be set after sorting
       });
