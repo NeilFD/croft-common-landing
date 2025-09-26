@@ -112,8 +112,15 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
   };
 
   const handleDuplicateVisit = async () => {
+    console.log('🔄 Starting duplicate visit creation for:', { 
+      venueId: venue.id, 
+      venueName: venue.name, 
+      walkCardId, 
+      currentVisitNumber: visitNumber 
+    });
+    
     try {
-      await upsertWalkEntry({
+      const entryPayload = {
         walk_card_id: walkCardId,
         venue_id: venue.id,
         // visit_number will be auto-determined for new visit
@@ -123,11 +130,23 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
         flag_anomaly: false,
         notes: '',
         recorded_at: new Date().toISOString()
-      });
-      toast.success('New visit created');
+      };
+      
+      console.log('📤 Sending duplicate entry payload:', entryPayload);
+      
+      await upsertWalkEntry(entryPayload);
+      
+      console.log('✅ Duplicate visit created successfully');
+      toast.success('New visit created successfully');
+      
+      // Force a small delay to ensure the UI refreshes
+      setTimeout(() => {
+        console.log('🔄 UI should refresh with new visit');
+      }, 100);
+      
     } catch (error) {
-      toast.error('Failed to create new visit');
-      console.error('Error creating duplicate visit:', error);
+      console.error('❌ Error creating duplicate visit:', error);
+      toast.error(`Failed to create new visit: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   };
 

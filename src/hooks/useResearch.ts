@@ -342,12 +342,21 @@ export const useResearch = () => {
 
   // Upsert walk entry
   const upsertWalkEntry = async (entryData: Partial<WalkEntry>) => {
+    console.log('📝 upsertWalkEntry called with:', {
+      walk_card_id: entryData.walk_card_id,
+      venue_id: entryData.venue_id,
+      visit_number: entryData.visit_number,
+      isNewVisit: !entryData.visit_number
+    });
+    
     try {
       setLoading(true);
       
       // If no visit_number provided, determine the next visit number for this venue by querying the database
       let visitNumber = entryData.visit_number;
       if (!visitNumber) {
+        console.log('🔍 No visit number provided, querying for max visit number...');
+        
         // Query database directly to get the current maximum visit number for this venue and walk card
         const { data: existingEntries, error: queryError } = await supabase
           .from('walk_entries')
@@ -357,36 +366,58 @@ export const useResearch = () => {
           .order('visit_number', { ascending: false })
           .limit(1);
         
-        if (queryError) throw queryError;
+        if (queryError) {
+          console.error('❌ Error querying existing entries:', queryError);
+          throw queryError;
+        }
         
-        visitNumber = existingEntries && existingEntries.length > 0 ? existingEntries[0].visit_number + 1 : 1;
+        const maxVisitNumber = existingEntries && existingEntries.length > 0 ? existingEntries[0].visit_number : 0;
+        visitNumber = maxVisitNumber + 1;
+        
+        console.log('📊 Visit number calculation:', {
+          existingEntries: existingEntries?.length || 0,
+          maxVisitNumber,
+          newVisitNumber: visitNumber
+        });
       }
 
-      const { error } = await supabase
-        .from('walk_entries')
-        .upsert({
-          walk_card_id: entryData.walk_card_id!,
-          venue_id: entryData.venue_id!,
-          visit_number: visitNumber,
-          people_count: entryData.people_count || 0,
-          laptop_count: entryData.laptop_count || 0,
-          is_closed: entryData.is_closed || false,
-          flag_anomaly: entryData.flag_anomaly || false,
-          notes: entryData.notes,
-          photo_url: entryData.photo_url,
-          recorded_at: entryData.recorded_at || new Date().toISOString(),
-        }, {
-          onConflict: 'walk_card_id,venue_id,visit_number'
-        });
+      const finalEntry = {
+        walk_card_id: entryData.walk_card_id!,
+        venue_id: entryData.venue_id!,
+        visit_number: visitNumber,
+        people_count: entryData.people_count || 0,
+        laptop_count: entryData.laptop_count || 0,
+        is_closed: entryData.is_closed || false,
+        flag_anomaly: entryData.flag_anomaly || false,
+        notes: entryData.notes,
+        photo_url: entryData.photo_url,
+        recorded_at: entryData.recorded_at || new Date().toISOString(),
+      };
       
-      if (error) throw error;
+      console.log('💾 Upserting walk entry:', finalEntry);
+
+      const { data, error } = await supabase
+        .from('walk_entries')
+        .upsert(finalEntry, {
+          onConflict: 'walk_card_id,venue_id,visit_number'
+        })
+        .select();
+      
+      if (error) {
+        console.error('❌ Supabase upsert error:', error);
+        throw error;
+      }
+      
+      console.log('✅ Walk entry upserted successfully:', data);
       
       // Immediately refresh walk entries to ensure UI updates
       if (entryData.walk_card_id) {
+        console.log('🔄 Refreshing walk entries for walk card:', entryData.walk_card_id);
         await fetchWalkEntries(entryData.walk_card_id);
+        console.log('✅ Walk entries refreshed');
       }
     } catch (error) {
-      console.error('Error updating walk entry:', error);
+      console.error('❌ Error in upsertWalkEntry:', error);
       throw error; // Re-throw to allow component to handle error
     } finally {
       setLoading(false);
