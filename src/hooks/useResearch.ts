@@ -525,14 +525,12 @@ export const useResearch = () => {
     }
   };
 
-  // Initial data fetch
+  // Initial data fetch - always fetch read-only data for analysis
   useEffect(() => {
-    if (user) {
-      fetchGeoAreas();
-      fetchVenues();
-      fetchWalkCards();
-    }
-  }, [user]);
+    fetchGeoAreas();
+    fetchVenues();
+    fetchWalkCards();
+  }, []);
 
   return {
     geoAreas,
