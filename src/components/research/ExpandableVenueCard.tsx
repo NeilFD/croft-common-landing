@@ -207,7 +207,7 @@ export const ExpandableVenueCard: React.FC<ExpandableVenueCardProps> = ({
               currentCount={walkEntry.people_count}
               maxCapacity={venue.max_capacity}
               capacityPercentage={walkEntry.capacity_percentage}
-              showDetails={false}
+              showDetails={true}
             />
           )}
           
