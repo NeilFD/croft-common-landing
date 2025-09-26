@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,9 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const ManageTab = () => {
+  const { toast } = useToast();
+  const venueFormRef = useRef<HTMLDivElement>(null);
+  
   const { 
     geoAreas, 
     venues, 
@@ -164,6 +168,11 @@ const filteredVenues = venues.filter(venue => {
       // Validate venue object
       if (!venue || !venue.id) {
         console.error('Invalid venue object:', venue);
+        toast({
+          title: "Error",
+          description: "Unable to edit venue - invalid data",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -187,9 +196,35 @@ const filteredVenues = venues.filter(venue => {
       setEditingVenue(venue.id);
       setShowVenueForm(true);
       
+      // Show toast notification
+      toast({
+        title: "Editing Venue",
+        description: `Now editing "${venueName}" - scroll up to see the form`,
+      });
+      
+      // Scroll to form after a brief delay to ensure it's rendered
+      setTimeout(() => {
+        if (venueFormRef.current) {
+          venueFormRef.current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+          // Focus the first input
+          const firstInput = venueFormRef.current.querySelector('input');
+          if (firstInput) {
+            firstInput.focus();
+          }
+        }
+      }, 100);
+      
       console.log('Venue form opened successfully for:', venue.name);
     } catch (error) {
       console.error('Error in handleEditVenue:', error, 'Venue:', venue);
+      toast({
+        title: "Error",
+        description: "Failed to open venue edit form",
+        variant: "destructive",
+      });
     }
   };
 
@@ -245,9 +280,21 @@ const filteredVenues = venues.filter(venue => {
 
           {/* Inline Venue Form */}
           {showVenueForm && (
-            <Card>
+            <Card ref={venueFormRef} className="border-primary/50 shadow-lg">
               <CardHeader>
-                <CardTitle>{editingVenue ? 'Edit Venue' : 'New Venue'}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {editingVenue ? 'Edit Venue' : 'New Venue'}
+                  {editingVenue && (
+                    <span className="text-sm font-normal text-muted-foreground">
+                      - {newVenueName || 'Unnamed venue'}
+                    </span>
+                  )}
+                </CardTitle>
+                {editingVenue && (
+                  <CardDescription>
+                    Make your changes and click Update to save
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateVenue} className="space-y-4">
