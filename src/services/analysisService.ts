@@ -59,6 +59,29 @@ export interface GeoAreaAnalysis {
   performanceRank: number;
 }
 
+export interface DayOfWeekAnalysis {
+  dayOfWeek: number; // 0 = Sunday, 1 = Monday, etc.
+  dayName: string;
+  averageOccupancy: number;
+  averageCapacityUtilization: number;
+  totalPeople: number;
+  totalVisits: number;
+  venueCount: number;
+  walkCount: number;
+}
+
+export interface EnhancedTimeBlockAnalysis {
+  timeBlock: string;
+  totalPeople: number;
+  averagePeople: number;
+  venueCount: number;
+  walkCount: number;
+  occupancyRate: number;
+  averageCapacityUtilization: number;
+  geoAreaId?: string;
+  geoAreaName?: string;
+}
+
 export class AnalysisService {
   static calculateMetrics(
     walkEntries: WalkEntry[],
@@ -399,5 +422,159 @@ export class AnalysisService {
     });
 
     return analyses;
+  }
+
+  static calculateDayOfWeekAnalysis(
+    walkEntries: WalkEntry[],
+    walkCards: WalkCard[],
+    venues: Venue[],
+    geoAreaFilter?: string
+  ): DayOfWeekAnalysis[] {
+    const walkCardMap = new Map(walkCards.map(wc => [wc.id, wc]));
+    const venueMap = new Map(venues.map(v => [v.id, v]));
+    
+    const dayStats = new Map<number, {
+      totalPeople: number;
+      visitCount: number;
+      venueIds: Set<string>;
+      walkIds: Set<string>;
+      capacityPercentages: number[];
+    }>();
+
+    // Filter entries by geo area if specified
+    const filteredEntries = geoAreaFilter 
+      ? walkEntries.filter(entry => {
+          const venue = venueMap.get(entry.venue_id);
+          return venue && venue.geo_area_id === geoAreaFilter;
+        })
+      : walkEntries;
+
+    filteredEntries.forEach(entry => {
+      const walkCard = walkCardMap.get(entry.walk_card_id);
+      if (!walkCard) return;
+
+      const date = new Date(walkCard.date);
+      const dayOfWeek = date.getDay();
+
+      if (!dayStats.has(dayOfWeek)) {
+        dayStats.set(dayOfWeek, {
+          totalPeople: 0,
+          visitCount: 0,
+          venueIds: new Set(),
+          walkIds: new Set(),
+          capacityPercentages: []
+        });
+      }
+
+      const stats = dayStats.get(dayOfWeek)!;
+      stats.totalPeople += entry.people_count;
+      stats.visitCount++;
+      stats.venueIds.add(entry.venue_id);
+      stats.walkIds.add(entry.walk_card_id);
+      
+      if (entry.capacity_percentage !== null && entry.capacity_percentage !== undefined) {
+        stats.capacityPercentages.push(entry.capacity_percentage);
+      }
+    });
+
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+    return Array.from(dayStats.entries()).map(([dayOfWeek, stats]) => {
+      const averageCapacityUtilization = stats.capacityPercentages.length > 0
+        ? stats.capacityPercentages.reduce((sum, cp) => sum + cp, 0) / stats.capacityPercentages.length
+        : 0;
+
+      const averageOccupancy = stats.visitCount > 0 ? stats.totalPeople / stats.visitCount : 0;
+
+      return {
+        dayOfWeek,
+        dayName: dayNames[dayOfWeek],
+        averageOccupancy: Math.round(averageOccupancy * 10) / 10,
+        averageCapacityUtilization: Math.round(averageCapacityUtilization * 10) / 10,
+        totalPeople: stats.totalPeople,
+        totalVisits: stats.visitCount,
+        venueCount: stats.venueIds.size,
+        walkCount: stats.walkIds.size
+      };
+    }).sort((a, b) => a.dayOfWeek - b.dayOfWeek);
+  }
+
+  static calculateEnhancedTimeBlockAnalysis(
+    walkEntries: WalkEntry[],
+    walkCards: WalkCard[],
+    venues: Venue[],
+    geoAreaFilter?: string
+  ): EnhancedTimeBlockAnalysis[] {
+    const walkCardMap = new Map(walkCards.map(wc => [wc.id, wc]));
+    const venueMap = new Map(venues.map(v => [v.id, v]));
+    const geoAreaMap = new Map(venues.map(v => [v.geo_area_id, v.geo_area_id]));
+    
+    // Filter entries by geo area if specified
+    const filteredEntries = geoAreaFilter 
+      ? walkEntries.filter(entry => {
+          const venue = venueMap.get(entry.venue_id);
+          return venue && venue.geo_area_id === geoAreaFilter;
+        })
+      : walkEntries;
+
+    const timeBlockStats = new Map<string, {
+      totalPeople: number;
+      venueIds: Set<string>;
+      walkIds: Set<string>;
+      entryCount: number;
+      capacityPercentages: number[];
+    }>();
+
+    filteredEntries.forEach(entry => {
+      const walkCard = walkCardMap.get(entry.walk_card_id);
+      if (!walkCard) return;
+
+      const timeBlock = walkCard.time_block;
+      if (!timeBlockStats.has(timeBlock)) {
+        timeBlockStats.set(timeBlock, {
+          totalPeople: 0,
+          venueIds: new Set(),
+          walkIds: new Set(),
+          entryCount: 0,
+          capacityPercentages: []
+        });
+      }
+
+      const stats = timeBlockStats.get(timeBlock)!;
+      stats.totalPeople += entry.people_count;
+      stats.venueIds.add(entry.venue_id);
+      stats.walkIds.add(entry.walk_card_id);
+      stats.entryCount++;
+      
+      if (entry.capacity_percentage !== null && entry.capacity_percentage !== undefined) {
+        stats.capacityPercentages.push(entry.capacity_percentage);
+      }
+    });
+
+    // Get geo area name if filtering
+    let geoAreaName: string | undefined;
+    if (geoAreaFilter) {
+      const venue = venues.find(v => v.geo_area_id === geoAreaFilter);
+      // We'd need to get the actual geo area name from geoAreas array
+      geoAreaName = geoAreaFilter; // Placeholder - would need geoAreas parameter
+    }
+
+    return Array.from(timeBlockStats.entries()).map(([timeBlock, stats]) => {
+      const averageCapacityUtilization = stats.capacityPercentages.length > 0 
+        ? stats.capacityPercentages.reduce((sum, cp) => sum + cp, 0) / stats.capacityPercentages.length
+        : 0;
+
+      return {
+        timeBlock,
+        totalPeople: stats.totalPeople,
+        averagePeople: Math.round((stats.totalPeople / stats.entryCount) * 10) / 10,
+        venueCount: stats.venueIds.size,
+        walkCount: stats.walkIds.size,
+        occupancyRate: Math.round(((stats.totalPeople / stats.entryCount) / 50) * 100 * 10) / 10,
+        averageCapacityUtilization: Math.round(averageCapacityUtilization * 10) / 10,
+        geoAreaId: geoAreaFilter,
+        geoAreaName
+      };
+    }).sort((a, b) => b.totalPeople - a.totalPeople);
   }
 }

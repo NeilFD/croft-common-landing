@@ -13,6 +13,7 @@ import { ComparisonChartsSection } from './analysis/ComparisonChartsSection';
 import { VenuePerformanceGrid } from './analysis/VenuePerformanceGrid';
 import { GeoAnalyticsMap } from './analysis/GeoAnalyticsMap';
 import { RecalculateCapacityButton } from './RecalculateCapacityButton';
+import { OccupancyPatternsSection } from './analysis/OccupancyPatternsSection';
 
 export const AnalysisTab = () => {
   const { walkCards, venues, geoAreas, allWalkEntries, fetchAllWalkEntries } = useResearch();
@@ -196,10 +197,14 @@ export const AnalysisTab = () => {
 
       {/* Enhanced Analytics Tabs */}
       <Tabs defaultValue="comparisons" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="comparisons" className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Comparisons
+          </TabsTrigger>
+          <TabsTrigger value="occupancy" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Occupancy
           </TabsTrigger>
           <TabsTrigger value="venues" className="flex items-center gap-2">
             <Trophy className="h-4 w-4" />
@@ -217,6 +222,15 @@ export const AnalysisTab = () => {
 
         <TabsContent value="comparisons">
           <ComparisonChartsSection 
+            walkCards={filteredCards}
+            walkEntries={allWalkEntries}
+            venues={venues}
+            geoAreas={geoAreas}
+          />
+        </TabsContent>
+
+        <TabsContent value="occupancy">
+          <OccupancyPatternsSection 
             walkCards={filteredCards}
             walkEntries={allWalkEntries}
             venues={venues}
