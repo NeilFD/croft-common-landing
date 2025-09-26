@@ -68,6 +68,7 @@ export interface DayOfWeekAnalysis {
   totalVisits: number;
   venueCount: number;
   walkCount: number;
+  timeBlocks: string[];
 }
 
 export interface EnhancedTimeBlockAnalysis {
@@ -439,6 +440,7 @@ export class AnalysisService {
       venueIds: Set<string>;
       walkIds: Set<string>;
       capacityPercentages: number[];
+      timeBlocks: Set<string>;
     }>();
 
     // Filter entries by geo area if specified
@@ -462,7 +464,8 @@ export class AnalysisService {
           visitCount: 0,
           venueIds: new Set(),
           walkIds: new Set(),
-          capacityPercentages: []
+          capacityPercentages: [],
+          timeBlocks: new Set()
         });
       }
 
@@ -471,6 +474,7 @@ export class AnalysisService {
       stats.visitCount++;
       stats.venueIds.add(entry.venue_id);
       stats.walkIds.add(entry.walk_card_id);
+      stats.timeBlocks.add(walkCard.time_block);
       
       if (entry.capacity_percentage !== null && entry.capacity_percentage !== undefined) {
         stats.capacityPercentages.push(entry.capacity_percentage);
@@ -494,7 +498,8 @@ export class AnalysisService {
         totalPeople: stats.totalPeople,
         totalVisits: stats.visitCount,
         venueCount: stats.venueIds.size,
-        walkCount: stats.walkIds.size
+        walkCount: stats.walkIds.size,
+        timeBlocks: Array.from(stats.timeBlocks).sort()
       };
     }).sort((a, b) => a.dayOfWeek - b.dayOfWeek);
   }

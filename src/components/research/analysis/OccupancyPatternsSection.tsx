@@ -98,11 +98,21 @@ export const OccupancyPatternsSection: React.FC<OccupancyPatternsSectionProps> =
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                     color: '#000000'
                   }}
-                  formatter={(value: number, name: string) => [
+                  formatter={(value: number, name: string, props: any) => [
                     `${value}${name.includes('Capacity') ? '%' : ''}`,
                     name === 'averageOccupancy' ? 'Avg People' : 
                     name === 'averageCapacityUtilization' ? 'Capacity Utilization' : name
                   ]}
+                  labelFormatter={(label: string, payload: any[]) => {
+                    if (payload && payload.length > 0) {
+                      const data = payload[0].payload;
+                      const timeBlocksText = data.timeBlocks && data.timeBlocks.length > 0 
+                        ? ` (${data.timeBlocks.join(', ')})` 
+                        : '';
+                      return `${label}${timeBlocksText}`;
+                    }
+                    return label;
+                  }}
                 />
                 <Bar 
                   dataKey="averageOccupancy" 
