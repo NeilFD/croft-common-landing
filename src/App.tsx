@@ -70,6 +70,7 @@ import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
 import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 import { ProtectedRoute } from '@/components/research/ProtectedRoute';
 import InteractionWatchdog from '@/components/InteractionWatchdog';
+import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
 
 // Management system components
 const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
@@ -207,6 +208,7 @@ const App = () => {
                 <GlobalHandlers />
                 <LowercasePathGuard />
                 <ReverseDomainGuard />
+                <RecoveryGuard />
                 <RouteImagePreloader />
                 <InteractionWatchdog />
                 <NudgeFloatingButton />

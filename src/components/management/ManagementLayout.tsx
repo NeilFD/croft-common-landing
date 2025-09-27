@@ -11,6 +11,11 @@ interface ManagementLayoutProps {
 export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
   const { managementUser, loading, signOut } = useManagementAuth();
 
+  // Block management pages during password recovery
+  if (typeof window !== 'undefined' && sessionStorage.getItem('recovery') === '1') {
+    return <Navigate to="/management/login" replace />;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

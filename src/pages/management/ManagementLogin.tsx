@@ -206,7 +206,8 @@ const ManagementLogin = () => {
     );
   }
 
-  if (managementUser?.hasAccess && !isPasswordUpdateMode && !recoveryInProgress) {
+  const blockRedirect = isPasswordUpdateMode || recoveryInProgress || (typeof window !== 'undefined' && sessionStorage.getItem('recovery') === '1');
+  if (managementUser?.hasAccess && !blockRedirect) {
     return <Navigate to="/management" replace />;
   }
 
