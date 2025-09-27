@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { useLeads, type LeadWithSpace } from '@/hooks/useLeads';
 import { useSpaces } from '@/hooks/useSpaces';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 
 const STATUS_COLORS = {
@@ -23,6 +23,7 @@ const STATUS_COLORS = {
 };
 
 export default function LeadsList() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({
     status: '',
     owner_id: '',
@@ -68,7 +69,7 @@ export default function LeadsList() {
         <div className="space-y-6">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
-            <Button>
+            <Button onClick={() => navigate('/management/spaces/leads/new')}>
               <Plus className="h-4 w-4 mr-2" />
               New Lead
             </Button>
@@ -102,11 +103,9 @@ export default function LeadsList() {
               </p>
             </div>
           </div>
-          <Button asChild>
-            <Link to="/management/spaces/leads/new">
-              <Plus className="h-4 w-4 mr-2" />
-              New Lead
-            </Link>
+          <Button onClick={() => navigate('/management/spaces/leads/new')}>
+            <Plus className="h-4 w-4 mr-2" />
+            New Lead
           </Button>
         </div>
 
