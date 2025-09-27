@@ -83,6 +83,8 @@ const CalendarView = lazy(() => import("./pages/management/CalendarView"));
 const LeadsList = lazy(() => import("./pages/management/LeadsList"));
 const LeadDetail = lazy(() => import("./pages/management/LeadDetail"));
 const BookingDetail = lazy(() => import("./pages/management/BookingDetail"));
+const EventsList = lazy(() => import("./pages/management/EventsList"));
+const EventDetail = lazy(() => import("./pages/management/EventDetail"));
 
 const queryClient = new QueryClient();
 
@@ -283,6 +285,10 @@ const App = () => {
                         {/* Calendar Management Sub-routes */}
                         <Route path="/management/spaces/calendar" element={<CalendarView />} />
                         <Route path="/management/bookings/:id" element={<BookingDetail />} />
+                        
+                        {/* Events Management Routes */}
+                        <Route path="/management/events" element={<EventsList />} />
+                        <Route path="/management/events/:id" element={<EventDetail />} />
                         
                         {/* Leads & Sales Sub-routes */}
                         <Route path="/management/spaces/leads" element={<LeadsList />} />

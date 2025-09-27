@@ -106,6 +106,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           end_ts: string
+          event_id: string | null
           id: string
           lead_id: string | null
           setup_min: number | null
@@ -120,6 +121,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           end_ts: string
+          event_id?: string | null
           id?: string
           lead_id?: string | null
           setup_min?: number | null
@@ -134,6 +136,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           end_ts?: string
+          event_id?: string | null
           id?: string
           lead_id?: string | null
           setup_min?: number | null
@@ -145,6 +148,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "management_events"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_lead_id_fkey"
             columns: ["lead_id"]
@@ -1489,6 +1499,54 @@ export type Database = {
           started_at?: string
           status?: string
           success_count?: number | null
+        }
+        Relationships: []
+      }
+      management_events: {
+        Row: {
+          code: string | null
+          created_at: string | null
+          event_type: string | null
+          headcount: number | null
+          id: string
+          late_close_approved_by: string | null
+          late_close_reason: string | null
+          late_close_requested: boolean | null
+          notes: string | null
+          owner_id: string | null
+          primary_date: string | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string | null
+          event_type?: string | null
+          headcount?: number | null
+          id?: string
+          late_close_approved_by?: string | null
+          late_close_reason?: string | null
+          late_close_requested?: boolean | null
+          notes?: string | null
+          owner_id?: string | null
+          primary_date?: string | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string | null
+          event_type?: string | null
+          headcount?: number | null
+          id?: string
+          late_close_approved_by?: string | null
+          late_close_reason?: string | null
+          late_close_requested?: boolean | null
+          notes?: string | null
+          owner_id?: string | null
+          primary_date?: string | null
+          status?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -3459,6 +3517,13 @@ export type Database = {
         }
         Relationships: []
       }
+      v_booking_priority: {
+        Row: {
+          rank: number | null
+          status: string | null
+        }
+        Relationships: []
+      }
       v_lead_possible_duplicates: {
         Row: {
           lead_id: string | null
@@ -3471,6 +3536,10 @@ export type Database = {
       add_lead_note: {
         Args: { lead_id_param: string; note_body: string }
         Returns: string
+      }
+      approve_late_close: {
+        Args: { p_event: string }
+        Returns: undefined
       }
       bump_rate_key: {
         Args: { max_hits: number; p_key: string; window_seconds: number }
@@ -3525,8 +3594,16 @@ export type Database = {
           tickets_left: number
         }[]
       }
+      create_hold: {
+        Args: { payload: Json }
+        Returns: string
+      }
       create_lead: {
         Args: { client_ip?: string; payload: Json } | { payload: Json }
+        Returns: string
+      }
+      create_management_event: {
+        Args: { payload: Json }
         Returns: string
       }
       ensure_membership_number: {
@@ -3850,6 +3927,10 @@ export type Database = {
         Args: { item_name: string }
         Returns: string
       }
+      promote_hold: {
+        Args: { p_booking: string; p_new_status: string }
+        Returns: undefined
+      }
       reassign_lead: {
         Args: { lead_id_param: string; new_owner_id: string }
         Returns: undefined
@@ -3859,6 +3940,10 @@ export type Database = {
         Returns: {
           updated_count: number
         }[]
+      }
+      request_late_close: {
+        Args: { p_event: string; p_reason: string }
+        Returns: undefined
       }
       set_ledger_password: {
         Args: { password_input: string; user_id_input: string }
@@ -3882,6 +3967,10 @@ export type Database = {
       }
       update_lead: {
         Args: { lead_id_param: string; patch: Json }
+        Returns: undefined
+      }
+      update_management_event: {
+        Args: { p_id: string; patch: Json }
         Returns: undefined
       }
       update_meeting_status: {
