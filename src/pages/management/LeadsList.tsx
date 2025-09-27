@@ -25,7 +25,7 @@ const STATUS_COLORS = {
 export default function LeadsList() {
   const navigate = useNavigate();
   const [filters, setFilters] = useState({
-    status: '',
+    status: 'all_except_won',
     owner_id: '',
     space_id: '',
     search: '',
@@ -38,8 +38,13 @@ export default function LeadsList() {
   const { data: spaces } = useSpaces();
 
   const handleFilterChange = (key: string, value: string) => {
-    // Convert "all" values to empty strings for the API
-    const apiValue = value === 'all' ? '' : value;
+    // Convert special filter values for the API
+    let apiValue = value;
+    if (value === 'all') {
+      apiValue = '';
+    } else if (value === 'all_except_won') {
+      apiValue = 'all_except_won';
+    }
     setFilters(prev => ({ ...prev, [key]: apiValue }));
   };
 
@@ -177,11 +182,12 @@ export default function LeadsList() {
               </div>
             </div>
 
-            <Select value={filters.status || 'all'} onValueChange={(value) => handleFilterChange('status', value)}>
+            <Select value={filters.status || 'all_except_won'} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger>
-                <SelectValue placeholder="All Statuses" />
+                <SelectValue placeholder="All except Won" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="all_except_won">All except Won</SelectItem>
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="new">New</SelectItem>
                 <SelectItem value="qualified">Qualified</SelectItem>

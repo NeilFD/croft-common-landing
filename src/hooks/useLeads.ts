@@ -82,7 +82,11 @@ export const useLeads = (filters?: {
 
       // Apply filters
       if (filters?.status) {
-        query = query.eq('status', filters.status);
+        if (filters.status === 'all_except_won') {
+          query = query.neq('status', 'won');
+        } else {
+          query = query.eq('status', filters.status);
+        }
       }
       if (filters?.owner_id) {
         query = query.eq('owner_id', filters.owner_id);
