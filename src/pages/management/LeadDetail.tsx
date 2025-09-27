@@ -24,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useLead, useLeadActivity, useUpdateLead, useAddLeadNote } from '@/hooks/useLeads';
+import { useLead, useLeadActivity, useUpdateLead, useAddLeadNote, useCreateLead, type CreateLeadPayload } from '@/hooks/useLeads';
 import { useSpaces } from '@/hooks/useSpaces';
 import { Link } from 'react-router-dom';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
@@ -40,22 +40,37 @@ const STATUS_COLORS = {
 
 export default function LeadDetail() {
   const { id } = useParams<{ id: string }>();
-  const [editing, setEditing] = useState(false);
-  const [editForm, setEditForm] = useState<any>({});
+  const isNewLead = id === 'new';
+  const [editing, setEditing] = useState(isNewLead);
+  const [editForm, setEditForm] = useState<any>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    event_type: '',
+    preferred_space: '',
+    preferred_date: '',
+    date_flexible: false,
+    headcount: '',
+    budget_low: '',
+    budget_high: '',
+    message: '',
+  });
   const [newNote, setNewNote] = useState('');
   const [showBookingForm, setShowBookingForm] = useState(false);
 
-  const { data: lead, isLoading } = useLead(id!);
-  const { data: activity } = useLeadActivity(id!);
+  const { data: lead, isLoading } = useLead(isNewLead ? '' : id!);
+  const { data: activity } = useLeadActivity(isNewLead ? '' : id!);
   const { data: spaces } = useSpaces();
   const updateLead = useUpdateLead();
   const addNote = useAddLeadNote();
+  const createLead = useCreateLead();
 
   if (!id) {
     return <Navigate to="/management/spaces/leads" replace />;
   }
 
-  if (isLoading) {
+  if (isLoading && !isNewLead) {
     return (
       <ManagementLayout>
         <div className="space-y-6">
@@ -77,7 +92,7 @@ export default function LeadDetail() {
     );
   }
 
-  if (!lead) {
+  if (!lead && !isNewLead) {
     return (
       <ManagementLayout>
         <div className="space-y-6">
@@ -100,30 +115,55 @@ export default function LeadDetail() {
   }
 
   const handleEdit = () => {
-    setEditForm({
-      first_name: lead.first_name,
-      last_name: lead.last_name,
-      email: lead.email,
-      phone: lead.phone || '',
-      event_type: lead.event_type || '',
-      preferred_space: lead.preferred_space || '',
-      preferred_date: lead.preferred_date || '',
-      date_flexible: lead.date_flexible,
-      headcount: lead.headcount || '',
-      budget_low: lead.budget_low || '',
-      budget_high: lead.budget_high || '',
-      message: lead.message || '',
-    });
+    if (!isNewLead && lead) {
+      setEditForm({
+        first_name: lead.first_name,
+        last_name: lead.last_name,
+        email: lead.email,
+        phone: lead.phone || '',
+        event_type: lead.event_type || '',
+        preferred_space: lead.preferred_space || '',
+        preferred_date: lead.preferred_date || '',
+        date_flexible: lead.date_flexible,
+        headcount: lead.headcount || '',
+        budget_low: lead.budget_low || '',
+        budget_high: lead.budget_high || '',
+        message: lead.message || '',
+      });
+    }
     setEditing(true);
   };
 
   const handleSave = async () => {
     try {
-      await updateLead.mutateAsync({
-        leadId: lead.id,
-        patch: editForm,
-      });
-      setEditing(false);
+      if (isNewLead) {
+        // Create new lead
+        const payload: CreateLeadPayload = {
+          first_name: editForm.first_name,
+          last_name: editForm.last_name,
+          email: editForm.email,
+          phone: editForm.phone || undefined,
+          event_type: editForm.event_type || undefined,
+          preferred_space: editForm.preferred_space,
+          preferred_date: editForm.preferred_date || undefined,
+          date_flexible: editForm.date_flexible,
+          headcount: editForm.headcount ? parseInt(editForm.headcount) : undefined,
+          budget_low: editForm.budget_low ? parseInt(editForm.budget_low) : undefined,
+          budget_high: editForm.budget_high ? parseInt(editForm.budget_high) : undefined,
+          message: editForm.message || undefined,
+          source: 'management',
+        };
+        const newLeadId = await createLead.mutateAsync(payload);
+        // Redirect to the newly created lead
+        window.location.href = `/management/spaces/leads/${newLeadId}`;
+      } else {
+        // Update existing lead
+        await updateLead.mutateAsync({
+          leadId: lead!.id,
+          patch: editForm,
+        });
+        setEditing(false);
+      }
     } catch (error) {
       // Error handled by the hook
     }
@@ -135,6 +175,8 @@ export default function LeadDetail() {
   };
 
   const handleStatusChange = async (status: string) => {
+    if (isNewLead || !lead) return; // Can't change status of new lead
+    
     try {
       await updateLead.mutateAsync({
         leadId: lead.id,
@@ -146,7 +188,7 @@ export default function LeadDetail() {
   };
 
   const handleAddNote = async () => {
-    if (!newNote.trim()) return;
+    if (!newNote.trim() || isNewLead || !lead) return;
     
     try {
       await addNote.mutateAsync({
@@ -181,36 +223,46 @@ export default function LeadDetail() {
           </Button>
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              {lead.first_name} {lead.last_name}
+              {isNewLead ? 'Create New Lead' : `${lead!.first_name} ${lead!.last_name}`}
             </h1>
-            <p className="text-muted-foreground">{lead.email}</p>
+            <p className="text-muted-foreground">
+              {isNewLead ? 'Add a new lead to the system' : lead!.email}
+            </p>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
-          <Select value={lead.status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="qualified">Qualified</SelectItem>
-              <SelectItem value="proposed">Proposed</SelectItem>
-              <SelectItem value="won">Won</SelectItem>
-              <SelectItem value="lost">Lost</SelectItem>
-            </SelectContent>
-          </Select>
+          {!isNewLead && lead && (
+            <Select value={lead.status} onValueChange={handleStatusChange}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="new">New</SelectItem>
+                <SelectItem value="qualified">Qualified</SelectItem>
+                <SelectItem value="proposed">Proposed</SelectItem>
+                <SelectItem value="won">Won</SelectItem>
+                <SelectItem value="lost">Lost</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
           
           {editing ? (
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleSave} disabled={updateLead.isPending}>
+              <Button 
+                size="sm" 
+                onClick={handleSave} 
+                disabled={updateLead.isPending || createLead.isPending}
+              >
                 <Save className="h-4 w-4 mr-2" />
-                Save
+                {isNewLead ? 'Create Lead' : 'Save'}
               </Button>
-              <Button size="sm" variant="outline" onClick={handleCancel}>
-                <X className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
+              {!isNewLead && (
+                <Button size="sm" variant="outline" onClick={handleCancel}>
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+              )}
             </div>
           ) : (
             <Button size="sm" onClick={handleEdit}>
@@ -229,9 +281,11 @@ export default function LeadDetail() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>Lead Information</CardTitle>
-                <Badge variant="outline" className={STATUS_COLORS[lead.status]}>
-                  {lead.status}
-                </Badge>
+                {!isNewLead && lead && (
+                  <Badge variant="outline" className={STATUS_COLORS[lead.status]}>
+                    {lead.status}
+                  </Badge>
+                )}
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -267,7 +321,7 @@ export default function LeadDetail() {
                     />
                   </div>
                 </div>
-              ) : (
+              ) : lead && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-muted-foreground" />
@@ -358,7 +412,7 @@ export default function LeadDetail() {
                     />
                   </div>
                 </div>
-              ) : (
+              ) : lead && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {lead.event_type && (
                     <div>
@@ -400,7 +454,7 @@ export default function LeadDetail() {
                 </div>
               )}
               
-              {(lead.message || editing) && (
+              {((lead && lead.message) || editing) && (
                 <>
                   <Separator />
                   <div>
@@ -412,7 +466,7 @@ export default function LeadDetail() {
                         placeholder="Additional details about the event..."
                         className="mt-2"
                       />
-                    ) : (
+                    ) : lead && (
                       <p className="mt-1 whitespace-pre-wrap">{lead.message}</p>
                     )}
                   </div>
@@ -424,136 +478,142 @@ export default function LeadDetail() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <Button variant="outline" className="w-full justify-start" asChild>
-                <a href={`mailto:${lead.email}`}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Email
-                </a>
-              </Button>
-              {lead.phone && (
+          {/* Quick Actions - only show for existing leads */}
+          {!isNewLead && lead && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Quick Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 <Button variant="outline" className="w-full justify-start" asChild>
-                  <a href={`tel:${lead.phone}`}>
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call
+                  <a href={`mailto:${lead.email}`}>
+                    <Mail className="h-4 w-4 mr-2" />
+                    Send Email
                   </a>
                 </Button>
-              )}
-              <Button variant="outline" className="w-full justify-start" onClick={() => setShowBookingForm(true)}>
-                <Calendar className="h-4 w-4 mr-2" />
-                Convert to Booking
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Add Note */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Add Note</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="Add a note about this lead..."
-                value={newNote}
-                onChange={(e) => setNewNote(e.target.value)}
-              />
-              <Button 
-                onClick={handleAddNote} 
-                disabled={!newNote.trim() || addNote.isPending}
-                className="w-full"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Note
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Activity Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Activity Timeline</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {activity?.map((item) => (
-                  <div key={item.id} className="flex gap-3">
-                    <div className="flex-shrink-0">
-                      {item.type === 'note' ? (
-                        <MessageSquare className="h-4 w-4 text-blue-500" />
-                      ) : item.type === 'status' ? (
-                        <Activity className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Activity className="h-4 w-4 text-gray-500" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm">
-                        {item.type === 'note' && item.body}
-                        {item.type === 'status' && (
-                          <span>
-                            Status changed from {item.meta?.old_status} to {item.meta?.new_status}
-                          </span>
-                        )}
-                        {item.type === 'system' && (
-                          <span>
-                            {item.meta?.event === 'created' && 'Lead created'}
-                            {item.meta?.event === 'reassigned' && 'Lead reassigned'}
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        {format(new Date(item.created_at), 'dd MMM yyyy HH:mm')}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {(!activity || activity.length === 0) && (
-                  <div className="text-center text-muted-foreground text-sm">
-                    No activity yet
-                  </div>
+                {lead.phone && (
+                  <Button variant="outline" className="w-full justify-start" asChild>
+                    <a href={`tel:${lead.phone}`}>
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call
+                    </a>
+                  </Button>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+                <Button variant="outline" className="w-full justify-start" onClick={() => setShowBookingForm(true)}>
+                  <Calendar className="h-4 w-4 mr-2" />
+                  Convert to Booking
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Lead Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Lead Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Created</span>
-                <span>{format(new Date(lead.created_at), 'dd MMM yyyy')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Last Updated</span>
-                <span>{format(new Date(lead.updated_at), 'dd MMM yyyy')}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Source</span>
-                <span>{lead.source || 'Unknown'}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          {/* Add Note - only show for existing leads */}
+          {!isNewLead && lead && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Add Note</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Textarea
+                  placeholder="Add a note about this lead..."
+                  value={newNote}
+                  onChange={(e) => setNewNote(e.target.value)}
+                />
+                <Button 
+                  onClick={handleAddNote} 
+                  disabled={!newNote.trim() || addNote.isPending}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Note
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Activity Timeline - only show for existing leads */}
+          {!isNewLead && lead && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Activity Timeline</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {activity?.map((item) => (
+                    <div key={item.id} className="flex gap-3">
+                      <div className="flex-shrink-0">
+                        {item.type === 'note' ? (
+                          <MessageSquare className="h-4 w-4 text-blue-500" />
+                        ) : item.type === 'status' ? (
+                          <Activity className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Activity className="h-4 w-4 text-gray-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm">
+                          {item.type === 'note' && item.body}
+                          {item.type === 'status' && (
+                            <span>
+                              Status changed from {item.meta?.old_status} to {item.meta?.new_status}
+                            </span>
+                          )}
+                          {item.type === 'system' && (
+                            <span>{item.body}</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {format(new Date(item.created_at), 'dd MMM yyyy HH:mm')}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {(!activity || activity.length === 0) && (
+                    <div className="text-center text-sm text-muted-foreground py-4">
+                      No activity yet
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Lead Details - only show for existing leads */}
+          {!isNewLead && lead && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Lead Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Created</span>
+                  <span>{format(new Date(lead.created_at), 'dd MMM yyyy')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last Updated</span>
+                  <span>{format(new Date(lead.updated_at), 'dd MMM yyyy')}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Source</span>
+                  <span>{lead.source || 'Unknown'}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
-      {/* Booking Conversion Dialog */}
-      <BookingForm 
-        isOpen={showBookingForm}
-        onClose={() => setShowBookingForm(false)}
-        leadId={lead.id}
-        selectedSpaceId={lead.preferred_space || undefined}
-        initialDate={lead.preferred_date ? new Date(lead.preferred_date) : undefined}
-      />
+      {/* Booking Conversion Dialog - only show for existing leads */}
+      {!isNewLead && lead && (
+        <BookingForm 
+          isOpen={showBookingForm}
+          onClose={() => setShowBookingForm(false)}
+          leadId={lead.id}
+          selectedSpaceId={lead.preferred_space || undefined}
+          initialDate={lead.preferred_date ? new Date(lead.preferred_date) : undefined}
+        />
+      )}
+      </div>
     </ManagementLayout>
   );
 }

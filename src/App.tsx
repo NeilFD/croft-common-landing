@@ -286,6 +286,7 @@ const App = () => {
                         
                         {/* Leads & Sales Sub-routes */}
                         <Route path="/management/spaces/leads" element={<LeadsList />} />
+                        <Route path="/management/spaces/leads/new" element={<LeadDetail />} />
                         <Route path="/management/spaces/leads/:id" element={<LeadDetail />} />
                        
                        <Route path="/c/:token" element={<ClickRedirect />} />
