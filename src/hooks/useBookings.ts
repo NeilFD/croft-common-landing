@@ -113,15 +113,15 @@ export const useBooking = (id: string) => {
   });
 };
 
-// Create booking mutation
+// Create booking mutation using secure RPC
 export const useCreateBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (bookingData: CreateBookingData): Promise<Booking> => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .insert({
+      // Call secure RPC function using rpc with proper typing
+      const { data: bookingId, error } = await supabase.rpc('create_booking' as any, {
+        payload: {
           space_id: bookingData.space_id,
           lead_id: bookingData.lead_id,
           title: bookingData.title,
@@ -129,20 +129,31 @@ export const useCreateBooking = () => {
           end_ts: bookingData.end_ts,
           setup_min: bookingData.setup_min || 0,
           teardown_min: bookingData.teardown_min || 0,
-        })
-        .select(`
-          *,
-          space:spaces(id, name),
-          lead:leads(id, first_name, last_name, email)
-        `)
-        .single();
+        }
+      });
 
       if (error) {
         console.error("Error creating booking:", error);
         throw error;
       }
 
-      return data;
+      // Fetch the created booking with joins
+      const { data: booking, error: fetchError } = await supabase
+        .from("bookings")
+        .select(`
+          *,
+          space:spaces(id, name),
+          lead:leads(id, first_name, last_name, email)
+        `)
+        .eq('id', bookingId as string)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching created booking:", fetchError);
+        throw fetchError;
+      }
+
+      return booking;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
@@ -155,38 +166,62 @@ export const useCreateBooking = () => {
     },
     onError: (error: any) => {
       console.error("Failed to create booking:", error);
+      let errorMessage = "Failed to create booking";
+      
+      // Handle specific error codes from secure RPC
+      if (error.code === 'check_violation') {
+        errorMessage = "Booking is outside trading hours for this space";
+      } else if (error.message?.includes('overlaps with existing booking')) {
+        errorMessage = "This booking conflicts with an existing booking";
+      } else if (error.code === 'insufficient_privilege') {
+        errorMessage = "You don't have permission to create bookings";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to create booking",
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 };
 
-// Update booking mutation
+// Update booking mutation using secure RPC
 export const useUpdateBooking = (id: string) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (updates: UpdateBookingData): Promise<Booking> => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .update(updates)
-        .eq("id", id)
-        .select(`
-          *,
-          space:spaces(id, name),
-          lead:leads(id, first_name, last_name, email)
-        `)
-        .single();
+      // Call secure RPC function
+      const { error } = await supabase.rpc('update_booking' as any, {
+        p_id: id,
+        patch: updates
+      });
 
       if (error) {
         console.error("Error updating booking:", error);
         throw error;
       }
 
-      return data;
+      // Fetch the updated booking with joins
+      const { data: booking, error: fetchError } = await supabase
+        .from("bookings")
+        .select(`
+          *,
+          space:spaces(id, name),
+          lead:leads(id, first_name, last_name, email)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (fetchError) {
+        console.error("Error fetching updated booking:", fetchError);
+        throw fetchError;
+      }
+
+      return booking;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
@@ -199,25 +234,39 @@ export const useUpdateBooking = (id: string) => {
     },
     onError: (error: any) => {
       console.error("Failed to update booking:", error);
+      let errorMessage = "Failed to update booking";
+      
+      // Handle specific error codes from secure RPC
+      if (error.code === 'check_violation') {
+        errorMessage = "Booking is outside trading hours for this space";
+      } else if (error.message?.includes('overlaps with existing booking')) {
+        errorMessage = "This booking conflicts with an existing booking";
+      } else if (error.code === 'insufficient_privilege') {
+        errorMessage = "You don't have permission to update bookings";
+      } else if (error.code === 'no_data_found') {
+        errorMessage = "Booking not found";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to update booking",
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 };
 
-// Delete booking mutation
+// Delete booking mutation using secure RPC
 export const useDeleteBooking = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      const { error } = await supabase
-        .from("bookings")
-        .delete()
-        .eq("id", id);
+      const { error } = await supabase.rpc('delete_booking' as any, {
+        p_id: id
+      });
 
       if (error) {
         console.error("Error deleting booking:", error);
@@ -235,9 +284,18 @@ export const useDeleteBooking = () => {
     },
     onError: (error: any) => {
       console.error("Failed to delete booking:", error);
+      let errorMessage = "Failed to delete booking";
+      
+      // Handle specific error codes from secure RPC
+      if (error.code === 'insufficient_privilege') {
+        errorMessage = "You don't have permission to delete bookings";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to delete booking",
+        description: errorMessage,
         variant: "destructive",
       });
     },
