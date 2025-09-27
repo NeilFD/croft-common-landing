@@ -1,7 +1,7 @@
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Calendar, BarChart3 } from 'lucide-react';
+import { Building2, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
