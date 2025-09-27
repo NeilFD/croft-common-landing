@@ -10,7 +10,7 @@ const ManagementDashboard = () => {
 
   const quickActions = [
     {
-      title: 'Manage Spaces',
+      title: 'Spaces',
       description: 'View and manage venue spaces, capacities, and availability',
       icon: Building2,
       href: '/management/spaces',
@@ -41,7 +41,7 @@ const ManagementDashboard = () => {
               <CardContent>
                 <Button asChild className="w-full">
                   <Link to={action.href}>
-                    Open {action.title}
+                    Open Spaces
                   </Link>
                 </Button>
               </CardContent>
