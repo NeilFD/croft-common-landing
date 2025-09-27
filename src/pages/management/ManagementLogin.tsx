@@ -70,7 +70,22 @@ const ManagementLogin = () => {
         sessionStorage.setItem('recovery', '1');
       }
 
+      // Clean up a trailing hash fragment with no params (e.g. /management/login#)
+      if (window.location.hash === '#') {
+        window.history.replaceState({}, document.title, '/management/login');
+      }
+
       try {
+        // If only access_token is present (no refresh token), Supabase may have already
+        // established a temporary session from the hash. Clean URL once session exists.
+        if (accessToken && !refreshToken && !code && !tokenHash && !token) {
+          const { data: s } = await supabase.auth.getSession();
+          if (s?.session) {
+            window.history.replaceState({}, document.title, '/management/login');
+            return;
+          }
+          // Otherwise, continue and rely on the auth listener below to finalise state.
+        }
         // Handle direct session tokens
         if (accessToken && refreshToken) {
           const { error } = await supabase.auth.setSession({
@@ -222,7 +237,7 @@ const ManagementLogin = () => {
     }
   };
 
-  if (loading) {
+  if (loading && !(isPasswordUpdateMode || recoveryInProgress)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
