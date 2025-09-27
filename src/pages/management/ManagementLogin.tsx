@@ -240,31 +240,46 @@ const ManagementLogin = () => {
         console.warn('⚠️ refreshSession failed (non-blocking):', e);
       }
 
-      // Run update with a hard timeout to guarantee UI unblocks
-      let timedOut = false;
-      const race = await Promise.race([
-        supabase.auth.updateUser({ password: newPassword }),
-        new Promise<{ error: any }>((resolve) =>
-          setTimeout(() => { timedOut = true; resolve({ error: new Error('Request timed out') }); }, 12000)
-        ),
-      ] as const);
+      // Update password via direct GoTrue REST call with abort timeout
+      const GOTRUE_URL = 'https://xccidvoxhpgcnwinnyin.supabase.co/auth/v1/user';
+      const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU';
+      const accessToken = sessionData.session.access_token as string;
 
-      const result = Array.isArray(race) ? race[0] : (race as any);
-      const err = (result && 'error' in result) ? (result as any).error : null;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
 
-      if (timedOut || err) {
-        console.warn('⚠️ Password update did not complete in time or returned error:', err);
-        toast({
-          title: timedOut ? 'Update timed out' : 'Password update failed',
-          description: timedOut ? 'Please try again, or request a new reset link.' : (err?.message || 'Please try again.'),
-          variant: 'destructive',
+      let ok = false;
+      try {
+        const res = await fetch(GOTRUE_URL, {
+          method: 'PUT',
+          headers: {
+            'content-type': 'application/json',
+            'apikey': ANON,
+            'authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ password: newPassword }),
+          signal: controller.signal,
         });
-      } else {
-        console.log('✅ Password updated successfully');
-        toast({
-          title: 'Password updated successfully',
-          description: 'Please sign in with your new password',
-        });
+        ok = res.ok;
+        if (!ok) {
+          const msg = await res.text().catch(() => '');
+          throw new Error(msg || `HTTP ${res.status}`);
+        }
+      } catch (err: any) {
+        if (err?.name === 'AbortError') {
+          console.warn('⏱️ Password update timed out');
+          toast({ title: 'Update timed out', description: 'Please try again, or request a new reset link.', variant: 'destructive' });
+        } else {
+          console.error('🚨 Password update failed (REST):', err);
+          toast({ title: 'Password update failed', description: err?.message || 'Please try again.', variant: 'destructive' });
+        }
+      } finally {
+        clearTimeout(timeout);
+      }
+
+      if (ok) {
+        console.log('✅ Password updated successfully (REST)');
+        toast({ title: 'Password updated successfully', description: 'Please sign in with your new password' });
 
         // Clean recovery state and enforce a fresh load on the production URL
         try { await supabase.auth.signOut(); } catch (e) { console.warn('⚠️ Sign out after reset failed:', e); }
