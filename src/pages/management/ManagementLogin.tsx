@@ -21,8 +21,15 @@ const ManagementLogin = () => {
   const [isPasswordUpdateMode, setIsPasswordUpdateMode] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [recoveryInProgress, setRecoveryInProgress] = useState(false);
 
   useEffect(() => {
+    // Check if we were in recovery mode
+    if (sessionStorage.getItem('recovery')) {
+      setRecoveryInProgress(true);
+      setIsPasswordUpdateMode(true);
+    }
+
     // Handle password reset/auth tokens from URL (robust for multiple Supabase flows)
     const processAuthTokens = async () => {
       const params = new URLSearchParams(window.location.search);
@@ -36,6 +43,13 @@ const ManagementLogin = () => {
       const email = params.get('email') || hashParams.get('email');
       const type = params.get('type') || hashParams.get('type');
 
+      // Detect recovery flow early
+      if (type === 'recovery' || code || tokenHash || token || accessToken || refreshToken) {
+        setRecoveryInProgress(true);
+        setIsPasswordUpdateMode(true);
+        sessionStorage.setItem('recovery', '1');
+      }
+
       try {
         // Handle direct session tokens
         if (accessToken && refreshToken) {
@@ -45,9 +59,6 @@ const ManagementLogin = () => {
           });
           if (error) throw error;
 
-          if (type === 'recovery') {
-            setIsPasswordUpdateMode(true);
-          }
           // Clean up URL
           window.history.replaceState({}, document.title, '/management/login');
           return;
@@ -58,9 +69,6 @@ const ManagementLogin = () => {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
 
-          if (type === 'recovery') {
-            setIsPasswordUpdateMode(true);
-          }
           window.history.replaceState({}, document.title, '/management/login');
           return;
         }
@@ -77,7 +85,6 @@ const ManagementLogin = () => {
           } as any);
           if (error) throw error;
 
-          setIsPasswordUpdateMode(true);
           window.history.replaceState({}, document.title, '/management/login');
           return;
         }
@@ -97,13 +104,18 @@ const ManagementLogin = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
+        setRecoveryInProgress(true);
+        setIsPasswordUpdateMode(true);
+        sessionStorage.setItem('recovery', '1');
+      } else if (event === 'SIGNED_IN' && recoveryInProgress) {
+        // Keep recovery mode active even after sign in during recovery
         setIsPasswordUpdateMode(true);
       }
     });
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [recoveryInProgress]);
 
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
@@ -148,9 +160,13 @@ const ManagementLogin = () => {
         description: "You can now sign in with your new password"
       });
       
+      // Clear recovery states and navigate to management
       setIsPasswordUpdateMode(false);
+      setRecoveryInProgress(false);
       setNewPassword('');
       setConfirmPassword('');
+      sessionStorage.removeItem('recovery');
+      navigate('/management');
     } catch (error) {
       toast({
         title: "Password update failed",
@@ -170,7 +186,7 @@ const ManagementLogin = () => {
     );
   }
 
-  if (managementUser?.hasAccess && !isPasswordUpdateMode) {
+  if (managementUser?.hasAccess && !isPasswordUpdateMode && !recoveryInProgress) {
     return <Navigate to="/management" replace />;
   }
 
