@@ -60,7 +60,8 @@ const SpaceForm = () => {
 
   const watchName = watch('name');
 
-  // Auto-generate slug from name
+  // Auto-generate slug from name (client-side preview only)
+  // Server will normalize the final slug via trigger
   useEffect(() => {
     if (!isEdit && watchName) {
       const slug = watchName
@@ -112,10 +113,13 @@ const SpaceForm = () => {
   const onSubmit = async (data: SpaceFormData) => {
     try {
       if (isEdit && id) {
+        // Update existing space - server normalizes slug
         await updateSpace.mutateAsync({ id, ...data });
       } else {
+        // Create new space - server normalizes slug
         await createSpace.mutateAsync(data as CreateSpaceData);
       }
+      // Navigate back to list - trust server-normalized data
       navigate('/management/spaces');
     } catch (error) {
       // Error handling is done in the mutation hooks

@@ -3585,6 +3585,10 @@ export type Database = {
         Args: { "": string }
         Returns: string[]
       }
+      slugify: {
+        Args: { src: string }
+        Returns: string
+      }
       update_meeting_status: {
         Args: {
           booking_date?: string
