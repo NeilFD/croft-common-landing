@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { ManagementSidebar } from './ManagementSidebar';
+import CroftLogo from '@/components/CroftLogo';
 
 interface ManagementLayoutProps {
   children: ReactNode;
@@ -41,9 +42,12 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
           <header className="border-b border-border bg-card h-16 flex items-center px-4">
             <SidebarTrigger className="mr-4" />
             <div className="flex items-center justify-between w-full">
-              <h1 className="text-xl font-bold text-foreground">
-                Croft Common – Management
-              </h1>
+              <div className="flex items-center space-x-3">
+                <CroftLogo size="sm" className="shrink-0" />
+                <h1 className="text-xl font-bold text-foreground">
+                  Croft Common – Management
+                </h1>
+              </div>
             </div>
           </header>
 

@@ -14,7 +14,7 @@ const ManagementDashboard = () => {
       description: 'View and manage venue spaces, capacities, and availability',
       icon: Building2,
       href: '/management/spaces',
-      color: 'text-blue-600'
+      color: 'text-[hsl(var(--accent-pink))]'
     }
   ];
 
