@@ -112,6 +112,49 @@ export const ManagementSidebar = () => {
         </SidebarHeader>
 
         <SidebarContent className="bg-background">
+          {/* Mini rail icons for collapsed state */}
+          {state === "collapsed" && (
+            <SidebarGroup>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          className={getNavClass(isActive('/management', true))}
+                        >
+                          <NavLink to="/management">
+                            <Settings className="h-5 w-5" />
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                        <p className="font-industrial">Management</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          className={getNavClass(isActive('/management/spaces', true))}
+                        >
+                          <NavLink to="/management/spaces">
+                            <Building2 className="h-5 w-5" />
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                        <p className="font-industrial">Spaces</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          )}
           {/* Management Modules Section */}
           <SidebarGroup>
             {/* Always show section header, even when collapsed */}
@@ -149,7 +192,7 @@ export const ManagementSidebar = () => {
                                   </SidebarMenuButton>
                                 </TooltipTrigger>
                                 {!showText && (
-                                  <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                                  <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
                                     <p className="font-industrial">{module.name}</p>
                                   </TooltipContent>
                                 )}
@@ -163,7 +206,7 @@ export const ManagementSidebar = () => {
                 </div>
               </TooltipTrigger>
               {!showText && (
-                <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
                   <p className="font-industrial">Management</p>
                 </TooltipContent>
               )}
@@ -207,7 +250,7 @@ export const ManagementSidebar = () => {
                                 </SidebarMenuButton>
                               </TooltipTrigger>
                               {!showText && (
-                                <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                                <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
                                   <p className="font-industrial">Spaces Dashboard</p>
                                 </TooltipContent>
                               )}
@@ -230,7 +273,7 @@ export const ManagementSidebar = () => {
                                   </SidebarMenuButton>
                                 </TooltipTrigger>
                                 {!showText && (
-                                  <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                                  <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
                                     <p className="font-industrial">{module.name}</p>
                                   </TooltipContent>
                                 )}
@@ -244,7 +287,7 @@ export const ManagementSidebar = () => {
                 </div>
               </TooltipTrigger>
               {!showText && (
-                <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
                   <p className="font-industrial">Spaces - Event Management</p>
                 </TooltipContent>
               )}
@@ -266,7 +309,7 @@ export const ManagementSidebar = () => {
               </Button>
             </TooltipTrigger>
             {!showText && (
-              <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+              <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
                 <p className="font-industrial">Back to Main Site</p>
               </TooltipContent>
             )}
