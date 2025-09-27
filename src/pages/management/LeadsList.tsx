@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { Search, Filter, MoreHorizontal, Plus, Users, Mail, Calendar, Building2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -34,8 +34,13 @@ export default function LeadsList() {
   });
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
 
-  const { data: leads, isLoading } = useLeads(filters);
+  const { data: leads, isLoading, refetch } = useLeads(filters);
   const { data: spaces } = useSpaces();
+
+  // Force refetch when component mounts to clear any cache issues
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const handleFilterChange = (key: string, value: string) => {
     // Convert special filter values for the API
