@@ -165,7 +165,8 @@ export const useCreateLead = () => {
   return useMutation({
     mutationFn: async (payload: CreateLeadPayload): Promise<string> => {
       const { data, error } = await supabase.rpc('create_lead', { 
-        payload: payload as any
+        payload: payload as any,
+        client_ip: 'management_interface'
       });
 
       if (error) {
