@@ -23,39 +23,88 @@ const ManagementLogin = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
-    // Handle password reset tokens from URL
+    // Handle password reset/auth tokens from URL (robust for multiple Supabase flows)
     const processAuthTokens = async () => {
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      
+
       const accessToken = params.get('access_token') || hashParams.get('access_token');
       const refreshToken = params.get('refresh_token') || hashParams.get('refresh_token');
+      const code = params.get('code') || hashParams.get('code');
+      const tokenHash = params.get('token_hash') || hashParams.get('token_hash');
+      const token = params.get('token') || hashParams.get('token');
+      const email = params.get('email') || hashParams.get('email');
       const type = params.get('type') || hashParams.get('type');
-      
-      if (accessToken && refreshToken && type === 'recovery') {
-        try {
+
+      try {
+        // Handle direct session tokens
+        if (accessToken && refreshToken) {
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
-            refresh_token: refreshToken
+            refresh_token: refreshToken,
           });
-          
-          if (!error) {
+          if (error) throw error;
+
+          if (type === 'recovery') {
             setIsPasswordUpdateMode(true);
-            // Clean up URL
-            window.history.replaceState({}, document.title, '/management/login');
           }
-        } catch (error) {
-          toast({
-            title: "Invalid reset link",
-            description: "The password reset link is invalid or expired",
-            variant: "destructive"
-          });
+          // Clean up URL
+          window.history.replaceState({}, document.title, '/management/login');
+          return;
         }
+
+        // Handle PKCE/code exchange
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (error) throw error;
+
+          if (type === 'recovery') {
+            setIsPasswordUpdateMode(true);
+          }
+          window.history.replaceState({}, document.title, '/management/login');
+          return;
+        }
+
+        // Handle recovery via token_hash or token
+        if (type === 'recovery' && (tokenHash || token)) {
+          const { error } = await supabase.auth.verifyOtp({
+            type: 'recovery',
+            // token_hash variant (most common for recovery links)
+            token_hash: tokenHash || undefined,
+            // token variant (fallback if template provided Token)
+            token: tokenHash ? undefined : (token as string),
+            email: tokenHash ? undefined : (email || undefined),
+          } as any);
+          if (error) throw error;
+
+          setIsPasswordUpdateMode(true);
+          window.history.replaceState({}, document.title, '/management/login');
+          return;
+        }
+      } catch (err: any) {
+        toast({
+          title: 'Invalid reset link',
+          description: err?.message || 'The password reset link is invalid or expired',
+          variant: 'destructive',
+        });
       }
     };
 
     processAuthTokens();
   }, []);
+
+  // Also react to Supabase auth events in case the redirect established a recovery session
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsPasswordUpdateMode(true);
+      }
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,7 +170,7 @@ const ManagementLogin = () => {
     );
   }
 
-  if (managementUser?.hasAccess) {
+  if (managementUser?.hasAccess && !isPasswordUpdateMode) {
     return <Navigate to="/management" replace />;
   }
 
