@@ -24,9 +24,9 @@ const STATUS_COLORS = {
 
 export default function LeadsList() {
   const [filters, setFilters] = useState({
-    status: '',
+    status: 'all',
     owner_id: '',
-    space_id: '',
+    space_id: 'all',
     search: '',
     date_from: '',
     date_to: '',
@@ -37,7 +37,9 @@ export default function LeadsList() {
   const { data: spaces } = useSpaces();
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    // Convert "all" values to empty strings for the API
+    const apiValue = value === 'all' ? '' : value;
+    setFilters(prev => ({ ...prev, [key]: apiValue }));
   };
 
   const handleSelectLead = (leadId: string, checked: boolean) => {
@@ -176,12 +178,12 @@ export default function LeadsList() {
               </div>
             </div>
 
-            <Select value={filters.status} onValueChange={(value) => handleFilterChange('status', value)}>
+            <Select value={filters.status || 'all'} onValueChange={(value) => handleFilterChange('status', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="All Statuses" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="new">New</SelectItem>
                 <SelectItem value="qualified">Qualified</SelectItem>
                 <SelectItem value="proposed">Proposed</SelectItem>
@@ -190,12 +192,12 @@ export default function LeadsList() {
               </SelectContent>
             </Select>
 
-            <Select value={filters.space_id} onValueChange={(value) => handleFilterChange('space_id', value)}>
+            <Select value={filters.space_id || 'all'} onValueChange={(value) => handleFilterChange('space_id', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="All Spaces" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Spaces</SelectItem>
+                <SelectItem value="all">All Spaces</SelectItem>
                 {spaces?.map((space) => (
                   <SelectItem key={space.id} value={space.id}>
                     {space.name}

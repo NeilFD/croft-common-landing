@@ -337,7 +337,7 @@ const filteredVenues = venues.filter(venue => {
                         </SelectTrigger>
                         <SelectContent>
                           {geoAreas.length === 0 ? (
-                            <SelectItem value="" disabled>No areas available</SelectItem>
+                            <SelectItem value="none" disabled>No areas available</SelectItem>
                           ) : (
                             geoAreas.map((area) => (
                               <SelectItem key={area.id} value={area.id}>
