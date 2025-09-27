@@ -22,7 +22,8 @@ import {
   LogOut,
   ChevronDown,
   Settings,
-  BarChart3
+  BarChart3,
+  Users
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -32,11 +33,20 @@ const managementModules = [
     path: '/management',
     icon: Home,
     exactMatch: true
+  }
+];
+
+const spacesSubModules = [
+  {
+    name: 'Venues',
+    path: '/management/spaces/venues',
+    icon: Building2,
+    exactMatch: false
   },
   {
-    name: 'Spaces',
-    path: '/management/spaces',
-    icon: Building2,
+    name: 'Leads & Sales',
+    path: '/management/spaces/leads',
+    icon: Users,
     exactMatch: false
   }
 ];
@@ -51,6 +61,7 @@ export const ManagementSidebar = () => {
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     modules: true,
+    spaces: true,
   });
 
   const toggleSection = (section: string) => {
@@ -66,6 +77,12 @@ export const ManagementSidebar = () => {
     }
     return currentPath.startsWith(path);
   };
+
+  // Keep Spaces section expanded when on any spaces sub-route
+  const isOnSpacesRoute = currentPath.startsWith('/management/spaces');
+  if (isOnSpacesRoute && !expandedSections.spaces) {
+    setExpandedSections(prev => ({ ...prev, spaces: true }));
+  }
 
   const getNavClass = (isActiveItem: boolean) =>
     isActiveItem ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
@@ -112,6 +129,57 @@ export const ManagementSidebar = () => {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {managementModules.map((module) => (
+                    <SidebarMenuItem key={module.path}>
+                      <SidebarMenuButton 
+                        asChild
+                        className={getNavClass(isActive(module.path, module.exactMatch))}
+                      >
+                        <NavLink to={module.path}>
+                          <module.icon className="mr-2 h-4 w-4" />
+                          {showText && module.name}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </SidebarGroup>
+
+        {/* Spaces Event Management Section */}
+        <SidebarGroup>
+          <Collapsible 
+            open={expandedSections.spaces} 
+            onOpenChange={() => toggleSection('spaces')}
+          >
+            <CollapsibleTrigger asChild>
+              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                <span className="flex items-center">
+                  <Building2 className="mr-2 h-4 w-4" />
+                  {showText && "Spaces"}
+                </span>
+                {showText && <ChevronDown className="h-4 w-4" />}
+              </SidebarGroupLabel>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {/* Spaces Dashboard */}
+                  <SidebarMenuItem>
+                    <SidebarMenuButton 
+                      asChild
+                      className={getNavClass(isActive('/management/spaces', true))}
+                    >
+                      <NavLink to="/management/spaces">
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        {showText && "Dashboard"}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  
+                  {/* Sub-modules */}  
+                  {spacesSubModules.map((module) => (
                     <SidebarMenuItem key={module.path}>
                       <SidebarMenuButton 
                         asChild

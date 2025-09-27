@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { Search, Filter, MoreHorizontal, Plus, Users, Mail, Calendar, Building2 } from 'lucide-react';
+import { Search, Filter, MoreHorizontal, Plus, Users, Mail, Calendar, Building2, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,6 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useLeads, type LeadWithSpace } from '@/hooks/useLeads';
 import { useSpaces } from '@/hooks/useSpaces';
 import { Link } from 'react-router-dom';
+import { ManagementLayout } from '@/components/management/ManagementLayout';
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -61,40 +62,51 @@ export default function LeadsList() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Lead
-          </Button>
+      <ManagementLayout>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              New Lead
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-muted-foreground">Loading leads...</div>
+            </CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center text-muted-foreground">Loading leads...</div>
-          </CardContent>
-        </Card>
-      </div>
+      </ManagementLayout>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Leads</h1>
-          <p className="text-muted-foreground">
-            Manage enquiries and track your sales pipeline
-          </p>
+    <ManagementLayout>
+      <div className="space-y-6">
+        {/* Header with Back Navigation */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/management/spaces" className="flex items-center space-x-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back to Spaces</span>
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Leads & Sales</h1>
+              <p className="text-muted-foreground">
+                Manage enquiries and track your sales pipeline
+              </p>
+            </div>
+          </div>
+          <Button asChild>
+            <Link to="/management/spaces/leads/new">
+              <Plus className="h-4 w-4 mr-2" />
+              New Lead
+            </Link>
+          </Button>
         </div>
-        <Button asChild>
-          <Link to="/management/leads/new">
-            <Plus className="h-4 w-4 mr-2" />
-            New Lead
-          </Link>
-        </Button>
-      </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -269,7 +281,7 @@ export default function LeadsList() {
                     <TableCell>
                       <div>
                         <Link 
-                          to={`/management/leads/${lead.id}`}
+                          to={`/management/spaces/leads/${lead.id}`}
                           className="font-medium hover:underline"
                         >
                           {lead.first_name} {lead.last_name}
@@ -326,7 +338,7 @@ export default function LeadsList() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link to={`/management/leads/${lead.id}`}>
+                            <Link to={`/management/spaces/leads/${lead.id}`}>
                               View Details
                             </Link>
                           </DropdownMenuItem>
@@ -357,5 +369,6 @@ export default function LeadsList() {
         </CardContent>
       </Card>
     </div>
-  );
+  </ManagementLayout>
+);
 }

@@ -75,9 +75,12 @@ import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
 // Management system components
 const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
-const SpacesList = lazy(() => import("./pages/management/SpacesList"));
+const SpacesDashboard = lazy(() => import("./pages/management/SpacesDashboard"));
+const VenuesList = lazy(() => import("./pages/management/VenuesList"));
 const SpaceForm = lazy(() => import("./pages/management/SpaceForm"));
 const SpaceDetail = lazy(() => import("./pages/management/SpaceDetail"));
+const LeadsList = lazy(() => import("./pages/management/LeadsList"));
+const LeadDetail = lazy(() => import("./pages/management/LeadDetail"));
 
 const queryClient = new QueryClient();
 
@@ -262,13 +265,22 @@ const App = () => {
                       <Route path="/research" element={<ProtectedRoute><Research /></ProtectedRoute>} />
                        <Route path="/uncommon-standards" element={<UncommonStandards />} />
                        
-                       {/* Management Routes */}
-                       <Route path="/management/login" element={<ManagementLogin />} />
-                       <Route path="/management" element={<ManagementDashboard />} />
-                       <Route path="/management/spaces" element={<SpacesList />} />
-                       <Route path="/management/spaces/new" element={<SpaceForm />} />
-                       <Route path="/management/spaces/:id" element={<SpaceDetail />} />
-                       <Route path="/management/spaces/:id/edit" element={<SpaceForm />} />
+                        {/* Management Routes */}
+                        <Route path="/management/login" element={<ManagementLogin />} />
+                        <Route path="/management" element={<ManagementDashboard />} />
+                        
+                        {/* Spaces Event Management System */}
+                        <Route path="/management/spaces" element={<SpacesDashboard />} />
+                        
+                        {/* Venue Management Sub-routes */}
+                        <Route path="/management/spaces/venues" element={<VenuesList />} />
+                        <Route path="/management/spaces/venues/new" element={<SpaceForm />} />
+                        <Route path="/management/spaces/venues/:id" element={<SpaceDetail />} />
+                        <Route path="/management/spaces/venues/:id/edit" element={<SpaceForm />} />
+                        
+                        {/* Leads & Sales Sub-routes */}
+                        <Route path="/management/spaces/leads" element={<LeadsList />} />
+                        <Route path="/management/spaces/leads/:id" element={<LeadDetail />} />
                        
                        <Route path="/c/:token" element={<ClickRedirect />} />
                        <Route path="/from-notification" element={<Index />} />

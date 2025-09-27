@@ -40,9 +40,10 @@ const ManagementDashboard = () => {
               </CardHeader>
               <CardContent>
                 <Button asChild className="w-full">
-                  <Link to={action.href}>
-                    Open Spaces
-                  </Link>
+          <Link to="/management/spaces" className="flex items-center space-x-2">
+            <Building2 className="mr-2 h-4 w-4" />
+            <span>Open Spaces</span>
+          </Link>
                 </Button>
               </CardContent>
             </Card>

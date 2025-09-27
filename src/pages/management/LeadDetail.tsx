@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label';
 import { useLead, useLeadActivity, useUpdateLead, useAddLeadNote } from '@/hooks/useLeads';
 import { useSpaces } from '@/hooks/useSpaces';
 import { Link } from 'react-router-dom';
+import { ManagementLayout } from '@/components/management/ManagementLayout';
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -48,46 +49,50 @@ export default function LeadDetail() {
   const addNote = useAddLeadNote();
 
   if (!id) {
-    return <Navigate to="/management/leads" replace />;
+    return <Navigate to="/management/spaces/leads" replace />;
   }
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/management/leads">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Leads
-            </Link>
-          </Button>
+      <ManagementLayout>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/management/spaces/leads">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Leads
+              </Link>
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-muted-foreground">Loading lead...</div>
+            </CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center text-muted-foreground">Loading lead...</div>
-          </CardContent>
-        </Card>
-      </div>
+      </ManagementLayout>
     );
   }
 
   if (!lead) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/management/leads">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Leads
-            </Link>
-          </Button>
+      <ManagementLayout>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/management/spaces/leads">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Leads
+              </Link>
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-6">
+              <div className="text-center text-muted-foreground">Lead not found</div>
+            </CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center text-muted-foreground">Lead not found</div>
-          </CardContent>
-        </Card>
-      </div>
+      </ManagementLayout>
     );
   }
 
@@ -160,12 +165,13 @@ export default function LeadDetail() {
   };
 
   return (
-    <div className="space-y-6">
+    <ManagementLayout>
+      <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/management/leads">
+            <Link to="/management/spaces/leads">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Leads
             </Link>
@@ -534,7 +540,8 @@ export default function LeadDetail() {
             </CardContent>
           </Card>
         </div>
+        </div>
       </div>
-    </div>
+    </ManagementLayout>
   );
 }
