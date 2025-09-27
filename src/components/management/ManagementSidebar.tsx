@@ -46,12 +46,6 @@ const managementModules = [
 
 const spacesSubModules = [
   {
-    name: 'Dashboard',
-    path: '/management/spaces',
-    icon: BarChart3,
-    exactMatch: true
-  },
-  {
     name: 'Venues',
     path: '/management/spaces/venues',
     icon: Building2,
