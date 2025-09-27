@@ -101,6 +101,80 @@ export type Database = {
         }
         Relationships: []
       }
+      bookings: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          end_ts: string
+          id: string
+          lead_id: string | null
+          setup_min: number | null
+          space_id: string
+          start_ts: string
+          status: string
+          teardown_min: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          end_ts: string
+          id?: string
+          lead_id?: string | null
+          setup_min?: number | null
+          space_id: string
+          start_ts: string
+          status?: string
+          teardown_min?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          end_ts?: string
+          id?: string
+          lead_id?: string | null
+          setup_min?: number | null
+          space_id?: string
+          start_ts?: string
+          status?: string
+          teardown_min?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "bookings_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["possible_duplicate_id"]
+          },
+          {
+            foreignKeyName: "bookings_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       campaign_analytics: {
         Row: {
           campaign_id: string

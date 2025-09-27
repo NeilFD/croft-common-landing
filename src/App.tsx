@@ -79,8 +79,10 @@ const SpacesDashboard = lazy(() => import("./pages/management/SpacesDashboard"))
 const VenuesList = lazy(() => import("./pages/management/VenuesList"));
 const SpaceForm = lazy(() => import("./pages/management/SpaceForm"));
 const SpaceDetail = lazy(() => import("./pages/management/SpaceDetail"));
+const CalendarView = lazy(() => import("./pages/management/CalendarView"));
 const LeadsList = lazy(() => import("./pages/management/LeadsList"));
 const LeadDetail = lazy(() => import("./pages/management/LeadDetail"));
+const BookingDetail = lazy(() => import("./pages/management/BookingDetail"));
 
 const queryClient = new QueryClient();
 
@@ -277,6 +279,10 @@ const App = () => {
                         <Route path="/management/spaces/venues/new" element={<SpaceForm />} />
                         <Route path="/management/spaces/venues/:id" element={<SpaceDetail />} />
                         <Route path="/management/spaces/venues/:id/edit" element={<SpaceForm />} />
+                        
+                        {/* Calendar Management Sub-routes */}
+                        <Route path="/management/spaces/calendar" element={<CalendarView />} />
+                        <Route path="/management/bookings/:id" element={<BookingDetail />} />
                         
                         {/* Leads & Sales Sub-routes */}
                         <Route path="/management/spaces/leads" element={<LeadsList />} />

@@ -23,8 +23,15 @@ import {
   LogOut,
   ChevronDown,
   Settings,
+  FileText,
+  Mail,
+  MessageSquare,
+  Award,
+  DollarSign,
+  TrendingUp,
   BarChart3,
-  Users
+  Users,
+  Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -39,9 +46,21 @@ const managementModules = [
 
 const spacesSubModules = [
   {
+    name: 'Dashboard',
+    path: '/management/spaces',
+    icon: BarChart3,
+    exactMatch: true
+  },
+  {
     name: 'Venues',
     path: '/management/spaces/venues',
     icon: Building2,
+    exactMatch: false
+  },
+  {
+    name: 'Calendar',
+    path: '/management/spaces/calendar',
+    icon: Calendar,
     exactMatch: false
   },
   {
