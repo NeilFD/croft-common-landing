@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
+import { useParams, Navigate, useMatch } from 'react-router-dom';
 import { format } from 'date-fns';
 import { 
   ArrowLeft, 
@@ -40,7 +40,8 @@ const STATUS_COLORS = {
 
 export default function LeadDetail() {
   const { id } = useParams<{ id: string }>();
-  const isNewLead = id === 'new';
+  const matchNew = useMatch('/management/spaces/leads/new');
+  const isNewLead = !!matchNew || id === 'new';
   const [editing, setEditing] = useState(isNewLead);
   const [editForm, setEditForm] = useState<any>({
     first_name: '',
@@ -66,7 +67,7 @@ export default function LeadDetail() {
   const addNote = useAddLeadNote();
   const createLead = useCreateLead();
 
-  if (!id) {
+  if (!id && !isNewLead) {
     return <Navigate to="/management/spaces/leads" replace />;
   }
 
