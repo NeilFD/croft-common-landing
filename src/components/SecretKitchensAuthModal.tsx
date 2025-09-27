@@ -92,7 +92,7 @@ export const SecretKitchensAuthModal = ({
         email,
         options: {
           shouldCreateUser: false,
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: undefined,
           // Set session to last 49 hours (176400 seconds)
           data: {
             sessionDuration: 176400

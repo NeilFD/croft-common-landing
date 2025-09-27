@@ -98,7 +98,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
         email,
         options: {
           shouldCreateUser: true,
-          emailRedirectTo: `${window.location.origin}/`
+          emailRedirectTo: undefined
         }
       });
 

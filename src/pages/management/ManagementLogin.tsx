@@ -225,7 +225,7 @@ const ManagementLogin = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/management/login`
+        redirectTo: "https://www.croftcommontest.com/management/login"
       });
 
       if (error) {
