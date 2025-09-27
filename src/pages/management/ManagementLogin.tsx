@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,6 +18,100 @@ const ManagementLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
+  const [isPasswordUpdateMode, setIsPasswordUpdateMode] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    // Handle password reset tokens from URL
+    const processAuthTokens = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      const accessToken = params.get('access_token') || hashParams.get('access_token');
+      const refreshToken = params.get('refresh_token') || hashParams.get('refresh_token');
+      const type = params.get('type') || hashParams.get('type');
+      
+      if (accessToken && refreshToken && type === 'recovery') {
+        try {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken
+          });
+          
+          if (!error) {
+            setIsPasswordUpdateMode(true);
+            // Clean up URL
+            window.history.replaceState({}, document.title, '/management/login');
+          }
+        } catch (error) {
+          toast({
+            title: "Invalid reset link",
+            description: "The password reset link is invalid or expired",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+
+    processAuthTokens();
+  }, []);
+
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please ensure both passwords are identical",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast({
+        title: "Password too short",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: "Password update failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Password updated successfully",
+        description: "You can now sign in with your new password"
+      });
+      
+      setIsPasswordUpdateMode(false);
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error) {
+      toast({
+        title: "Password update failed",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -128,44 +222,30 @@ const ManagementLogin = () => {
           <Card>
             <CardHeader>
               <CardTitle>
-                {isResetMode ? 'Reset Password' : 'Sign In'}
+                {isPasswordUpdateMode ? 'Set New Password' : isResetMode ? 'Reset Password' : 'Sign In'}
               </CardTitle>
               <CardDescription>
-                {isResetMode 
-                  ? 'Enter your email to receive reset instructions'
-                  : 'Access the management dashboard'
+                {isPasswordUpdateMode 
+                  ? 'Enter your new password below'
+                  : isResetMode 
+                    ? 'Enter your email to receive reset instructions'
+                    : 'Access the management dashboard'
                 }
               </CardDescription>
             </CardHeader>
             
             <CardContent>
-              <form onSubmit={isResetMode ? handlePasswordReset : handleSignIn} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {!isResetMode && (
+              {isPasswordUpdateMode ? (
+                <form onSubmit={handlePasswordUpdate} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="newPassword">New Password</Label>
                     <div className="relative">
                       <Input
-                        id="password"
+                        id="newPassword"
                         type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your new password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
                         className="pr-10"
                         required
                       />
@@ -180,34 +260,105 @@ const ManagementLogin = () => {
                       </Button>
                     </div>
                   </div>
-                )}
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>{isResetMode ? 'Sending...' : 'Signing in...'}</span>
-                    </div>
-                  ) : (
-                    isResetMode ? 'Send Reset Email' : 'Sign In'
-                  )}
-                </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <Input
+                      id="confirmPassword"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Confirm your new password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
 
-                <div className="text-center">
                   <Button
-                    type="button"
-                    variant="link"
-                    onClick={() => setIsResetMode(!isResetMode)}
-                    className="text-sm"
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoading}
                   >
-                    {isResetMode ? 'Back to sign in' : 'Forgot password?'}
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>Updating...</span>
+                      </div>
+                    ) : (
+                      'Update Password'
+                    )}
                   </Button>
-                </div>
-              </form>
+                </form>
+              ) : (
+                <form onSubmit={isResetMode ? handlePasswordReset : handleSignIn} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {!isResetMode && (
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="password"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="pr-10"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="w-full"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <span>{isResetMode ? 'Sending...' : 'Signing in...'}</span>
+                      </div>
+                    ) : (
+                      isResetMode ? 'Send Reset Email' : 'Sign In'
+                    )}
+                  </Button>
+
+                  <div className="text-center">
+                    <Button
+                      type="button"
+                      variant="link"
+                      onClick={() => setIsResetMode(!isResetMode)}
+                      className="text-sm"
+                    >
+                      {isResetMode ? 'Back to sign in' : 'Forgot password?'}
+                    </Button>
+                  </div>
+                </form>
+              )}
             </CardContent>
           </Card>
         </div>
