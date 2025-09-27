@@ -141,6 +141,7 @@ const ManagementLogin = () => {
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validation checks before setting loading state
     if (newPassword !== confirmPassword) {
       toast({
         title: "Passwords don't match",
@@ -162,11 +163,13 @@ const ManagementLogin = () => {
     setIsLoading(true);
 
     try {
+      console.log('🔐 Attempting password update...');
       const { error } = await supabase.auth.updateUser({
         password: newPassword
       });
 
       if (error) {
+        console.error('🚨 Password update error:', error);
         toast({
           title: "Password update failed",
           description: error.message,
@@ -175,6 +178,7 @@ const ManagementLogin = () => {
         return;
       }
 
+      console.log('✅ Password updated successfully');
       toast({
         title: "Password updated successfully",
         description: "You can now sign in with your new password"
@@ -188,6 +192,7 @@ const ManagementLogin = () => {
       sessionStorage.removeItem('recovery');
       navigate('/management');
     } catch (error) {
+      console.error('🚨 Password update exception:', error);
       toast({
         title: "Password update failed",
         description: "An unexpected error occurred",
