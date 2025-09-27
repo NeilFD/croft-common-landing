@@ -17,27 +17,19 @@ const SpacesDashboard = () => {
       stats: 'Manage venues'
     },
     {
+      title: 'CALENDAR',
+      description: 'Bookings & scheduling',
+      icon: Calendar,
+      href: '/management/spaces/calendar',
+      stats: 'Event calendar'
+    },
+    {
       title: 'LEADS',
       description: 'Enquiries & sales pipeline',
       icon: Users,
       href: '/management/spaces/leads',
       stats: 'CRM tracking'
     },
-  ];
-
-  const upcomingModules = [
-    {
-      title: 'EVENTS',
-      description: 'Bookings & logistics',
-      icon: Calendar,
-      comingSoon: true
-    },
-    {
-      title: 'ANALYTICS',
-      description: 'Performance insights',
-      icon: BarChart3,
-      comingSoon: true
-    }
   ];
 
   return (
@@ -73,34 +65,6 @@ const SpacesDashboard = () => {
                       <Link to={module.href}>
                         OPEN
                       </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Coming Soon Modules */}
-        <div>
-          <h2 className="font-brutalist text-2xl font-black uppercase tracking-wide text-foreground mb-4">COMING SOON</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {upcomingModules.map((module) => (
-              <Card key={module.title} className="opacity-75 border-dashed border-industrial">
-                <CardHeader>
-                  <div className="flex items-center space-x-3">
-                    <module.icon className="h-8 w-8 text-muted-foreground" />
-                    <div>
-                      <CardTitle className="font-brutalist text-xl font-black uppercase tracking-wide text-muted-foreground">{module.title}</CardTitle>
-                      <p className="font-industrial text-sm text-muted-foreground">{module.description}</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <span className="font-industrial text-sm text-muted-foreground">In progress</span>
-                    <Button disabled variant="outline" className="font-brutalist uppercase tracking-wide">
-                      SOON
                     </Button>
                   </div>
                 </CardContent>
