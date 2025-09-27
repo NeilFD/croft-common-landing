@@ -44,6 +44,7 @@ const Book = lazy(() => import("./pages/Book"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminMemberAnalytics = lazy(() => import("./pages/AdminMemberAnalytics"));
 const EnhancedAdminMemberAnalytics = lazy(() => import("./pages/EnhancedAdminMemberAnalytics"));
+const EnquirePage = lazy(() => import("./pages/EnquirePage"));
 const CMSFAQPage = lazy(() => import("./pages/CMSFAQPage"));
 const CMS = lazy(() => import("./pages/CMS"));
 const CMSLogin = lazy(() => import("./pages/CMSLogin"));
@@ -245,9 +246,10 @@ const App = () => {
                       <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
                       <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
                       <Route path="/book" element={<Book />} />
-                      <Route path="/admin/*" element={<Admin />} />
-                  <Route path="/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
-                  <Route path="/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
+                       <Route path="/admin/*" element={<Admin />} />
+                   <Route path="/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
+                   <Route path="/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
+                   <Route path="/enquire" element={<EnquirePage />} />
                       <Route path="/profile" element={<MemberProfile />} />
                       <Route path="/cms/login" element={<CMSLogin />} />
                       <Route path="/cms/kitchens" element={<CMSKitchens />} />

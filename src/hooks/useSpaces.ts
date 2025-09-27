@@ -57,6 +57,25 @@ export const useSpaces = () => {
   });
 };
 
+export const useActiveSpaces = () => {
+  return useQuery({
+    queryKey: ['spaces', 'active'],
+    queryFn: async (): Promise<Space[]> => {
+      const { data, error } = await supabase
+        .from('spaces')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) {
+        throw error;
+      }
+
+      return data;
+    },
+  });
+};
+
 export const useSpace = (id: string) => {
   return useQuery({
     queryKey: ['space', id],

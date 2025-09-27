@@ -925,6 +925,118 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_activity: {
+        Row: {
+          author_id: string | null
+          body: string | null
+          created_at: string | null
+          id: string
+          lead_id: string
+          meta: Json | null
+          type: string
+        }
+        Insert: {
+          author_id?: string | null
+          body?: string | null
+          created_at?: string | null
+          id?: string
+          lead_id: string
+          meta?: Json | null
+          type: string
+        }
+        Update: {
+          author_id?: string | null
+          body?: string | null
+          created_at?: string | null
+          id?: string
+          lead_id?: string
+          meta?: Json | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_activity_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leads: {
+        Row: {
+          budget_high: number | null
+          budget_low: number | null
+          created_at: string | null
+          date_flexible: boolean | null
+          email: string
+          event_type: string | null
+          first_name: string
+          headcount: number | null
+          id: string
+          last_name: string
+          message: string | null
+          owner_id: string | null
+          phone: string | null
+          preferred_date: string | null
+          preferred_space: string | null
+          source: string | null
+          status: string
+          updated_at: string | null
+          utm: Json | null
+        }
+        Insert: {
+          budget_high?: number | null
+          budget_low?: number | null
+          created_at?: string | null
+          date_flexible?: boolean | null
+          email: string
+          event_type?: string | null
+          first_name: string
+          headcount?: number | null
+          id?: string
+          last_name: string
+          message?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          preferred_date?: string | null
+          preferred_space?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string | null
+          utm?: Json | null
+        }
+        Update: {
+          budget_high?: number | null
+          budget_low?: number | null
+          created_at?: string | null
+          date_flexible?: boolean | null
+          email?: string
+          event_type?: string | null
+          first_name?: string
+          headcount?: number | null
+          id?: string
+          last_name?: string
+          message?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          preferred_date?: string | null
+          preferred_space?: string | null
+          source?: string | null
+          status?: string
+          updated_at?: string | null
+          utm?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leads_preferred_space_fkey"
+            columns: ["preferred_space"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ledger_password_reset_tokens: {
         Row: {
           created_at: string
@@ -3193,6 +3305,10 @@ export type Database = {
       }
     }
     Functions: {
+      add_lead_note: {
+        Args: { lead_id_param: string; note_body: string }
+        Returns: string
+      }
       calculate_member_streak: {
         Args: { user_id_input: string }
         Returns: {
@@ -3241,6 +3357,10 @@ export type Database = {
           ticket_numbers: number[]
           tickets_left: number
         }[]
+      }
+      create_lead: {
+        Args: { payload: Json }
+        Returns: string
       }
       ensure_membership_number: {
         Args: { user_id_input: string }
@@ -3563,6 +3683,10 @@ export type Database = {
         Args: { item_name: string }
         Returns: string
       }
+      reassign_lead: {
+        Args: { lead_id_param: string; new_owner_id: string }
+        Returns: undefined
+      }
       recalculate_all_capacity_percentages: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -3588,6 +3712,10 @@ export type Database = {
       slugify: {
         Args: { src: string }
         Returns: string
+      }
+      update_lead: {
+        Args: { lead_id_param: string; patch: Json }
+        Returns: undefined
       }
       update_meeting_status: {
         Args: {

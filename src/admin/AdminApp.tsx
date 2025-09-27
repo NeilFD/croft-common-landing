@@ -14,6 +14,8 @@ import { GranularAnalyticsPage } from './pages/GranularAnalyticsPage';
 import { SubscribersPage } from './pages/SubscribersPage';
 import { MomentsPage } from './pages/MomentsPage';
 import { CinemaPage } from './pages/CinemaPage';
+import LeadsList from '../pages/management/LeadsList';
+import LeadDetail from '../pages/management/LeadDetail';
 
 export const AdminApp = () => {
   const [ready, setReady] = useState(false);
@@ -182,6 +184,8 @@ export const AdminApp = () => {
         <Route path="/management/subscribers" element={<SubscribersPage />} />
         <Route path="/management/moments" element={<MomentsPage />} />
         <Route path="/management/cinema" element={<CinemaPage />} />
+        <Route path="/management/leads" element={<LeadsList />} />
+        <Route path="/management/leads/:id" element={<LeadDetail />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>
       <Toaster />
