@@ -40,15 +40,48 @@ const CalendarView = () => {
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const hours = Array.from({ length: 17 }, (_, i) => i + 7); // 7 AM to 11 PM
 
-  // Group bookings by date and hour
+  // Group bookings by date and calculate blocking periods
   const bookingsByDateHour = bookings.reduce((acc, booking) => {
-    const date = format(new Date(booking.start_ts), "yyyy-MM-dd");
-    const hour = new Date(booking.start_ts).getHours();
-    const key = `${date}-${hour}`;
-    if (!acc[key]) acc[key] = [];
-    acc[key].push(booking);
+    const startDate = new Date(booking.start_ts);
+    const endDate = new Date(booking.end_ts);
+    
+    // Calculate total blocked time including setup/teardown
+    const setupMinutes = booking.setup_min || 0;
+    const teardownMinutes = booking.teardown_min || 0;
+    
+    const blockStartTime = new Date(startDate.getTime() - setupMinutes * 60000);
+    const blockEndTime = new Date(endDate.getTime() + teardownMinutes * 60000);
+    
+    // Create entries for each hour the booking blocks
+    let currentHour = new Date(blockStartTime);
+    currentHour.setMinutes(0, 0, 0); // Round to hour start
+    
+    while (currentHour < blockEndTime) {
+      const date = format(currentHour, "yyyy-MM-dd");
+      const hour = currentHour.getHours();
+      const key = `${date}-${hour}`;
+      
+      if (!acc[key]) acc[key] = [];
+      
+      // Calculate position within the hour slot
+      const isFirstHour = currentHour.getTime() === new Date(Math.floor(blockStartTime.getTime() / 3600000) * 3600000).getTime();
+      const isLastHour = new Date(currentHour.getTime() + 3600000) >= blockEndTime;
+      
+      acc[key].push({
+        ...booking,
+        isSetupHour: currentHour < startDate,
+        isTeardownHour: currentHour >= endDate,
+        isFirstSlot: isFirstHour,
+        isLastSlot: isLastHour,
+        blockStartTime,
+        blockEndTime
+      });
+      
+      currentHour = new Date(currentHour.getTime() + 3600000); // Add 1 hour
+    }
+    
     return acc;
-  }, {} as Record<string, typeof bookings>);
+  }, {} as Record<string, any[]>);
 
   const handleSlotClick = (date: Date, hour: number) => {
     setSelectedSlot({ date, hour });
@@ -197,25 +230,43 @@ const CalendarView = () => {
                           `}
                           onClick={() => !isPastSlot && handleSlotClick(day, hour)}
                         >
-                          {slotBookings.map((booking) => (
-                            <Link
-                              key={booking.id}
-                              to={`/management/bookings/${booking.id}`}
-                              className="block"
-                            >
-                              <Badge
-                                variant="secondary"
-                                className="w-full mb-1 text-xs p-1 h-auto justify-start bg-primary/10 text-primary hover:bg-primary/20 border border-primary/20 font-industrial"
+                          {slotBookings.map((booking) => {
+                            const isSetup = booking.isSetupHour;
+                            const isTeardown = booking.isTeardownHour;
+                            const isMainEvent = !isSetup && !isTeardown;
+                            
+                            return (
+                              <Link
+                                key={booking.id}
+                                to={`/management/bookings/${booking.id}`}
+                                className="block mb-1"
                               >
-                                <div className="truncate">
-                                  <div className="font-bold">{booking.title}</div>
-                                  {booking.space && (
-                                    <div className="text-xs opacity-75">{booking.space.name}</div>
-                                  )}
+                                <div
+                                  className={`
+                                    w-full text-xs p-2 border-2 font-industrial font-bold uppercase
+                                    transition-all hover:shadow-sm
+                                    ${isSetup ? 
+                                      'bg-orange-100 border-orange-300 text-orange-800 opacity-75' : 
+                                      isTeardown ? 
+                                      'bg-blue-100 border-blue-300 text-blue-800 opacity-75' : 
+                                      'bg-primary/20 border-primary text-primary hover:bg-primary/30'
+                                    }
+                                  `}
+                                >
+                                  <div className="truncate">
+                                    <div className="font-black">
+                                      {isSetup ? `SETUP: ${booking.title}` : 
+                                       isTeardown ? `TEARDOWN: ${booking.title}` : 
+                                       booking.title}
+                                    </div>
+                                    {booking.space && (
+                                      <div className="text-xs opacity-75 mt-1">{booking.space.name}</div>
+                                    )}
+                                  </div>
                                 </div>
-                              </Badge>
-                            </Link>
-                          ))}
+                              </Link>
+                            );
+                          })}
                         </div>
                       );
                     })}

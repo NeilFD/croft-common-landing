@@ -20,6 +20,7 @@ import {
 import { useBooking, useDeleteBooking } from "@/hooks/useBookings";
 import { BookingForm } from "@/components/management/BookingForm";
 import { useManagementAuth } from "@/hooks/useManagementAuth";
+import { ManagementLayout } from "@/components/management/ManagementLayout";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,41 +44,43 @@ const BookingDetail = () => {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
+      <ManagementLayout>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
             <Link to="/management/spaces/calendar">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Calendar
+              <Button variant="outline" size="sm" className="h-9 w-9 p-0 border-2 border-foreground hover:bg-foreground hover:text-background">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
             </Link>
-          </Button>
+          </div>
+          <Card className="border-2 border-foreground shadow-brutal">
+            <CardContent className="flex items-center justify-center p-8">
+              <div className="font-industrial font-bold text-foreground">LOADING BOOKING...</div>
+            </CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardContent className="flex items-center justify-center p-8">
-            <div className="text-muted-foreground">Loading booking...</div>
-          </CardContent>
-        </Card>
-      </div>
+      </ManagementLayout>
     );
   }
 
   if (!booking) {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
+      <ManagementLayout>
+        <div className="space-y-6">
+          <div className="flex items-center gap-4">
             <Link to="/management/spaces/calendar">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Calendar
+              <Button variant="outline" size="sm" className="h-9 w-9 p-0 border-2 border-foreground hover:bg-foreground hover:text-background">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
             </Link>
-          </Button>
+          </div>
+          <Card className="border-2 border-foreground shadow-brutal">
+            <CardContent className="flex items-center justify-center p-8">
+              <div className="font-industrial font-bold text-foreground">BOOKING NOT FOUND</div>
+            </CardContent>
+          </Card>
         </div>
-        <Card>
-          <CardContent className="flex items-center justify-center p-8">
-            <div className="text-muted-foreground">Booking not found</div>
-          </CardContent>
-        </Card>
-      </div>
+      </ManagementLayout>
     );
   }
 
@@ -95,55 +98,56 @@ const BookingDetail = () => {
   const duration = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60)); // hours
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
+    <ManagementLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
             <Link to="/management/spaces/calendar">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Calendar
+              <Button variant="outline" size="sm" className="h-9 w-9 p-0 border-2 border-foreground hover:bg-foreground hover:text-background">
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
             </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              {booking.title}
-            </h1>
-            <p className="text-muted-foreground">Booking Details</p>
+            <div>
+              <h1 className="font-brutalist text-3xl font-bold tracking-tight text-foreground uppercase">
+                {booking.title}
+              </h1>
+              <p className="font-industrial text-muted-foreground">Booking Details</p>
+            </div>
           </div>
-        </div>
 
         {canEdit() && (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               onClick={() => setShowEditForm(true)}
+              className="border-2 border-foreground hover:bg-foreground hover:text-background font-industrial font-bold"
             >
               <Edit className="mr-2 h-4 w-4" />
-              Edit
+              EDIT
             </Button>
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">
+                <Button variant="destructive" className="border-2 border-destructive bg-destructive text-destructive-foreground hover:bg-destructive/90 font-industrial font-bold">
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  DELETE
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="bg-background border border-border">
+              <AlertDialogContent className="bg-background border-2 border-foreground shadow-brutal">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Booking</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogTitle className="font-brutalist text-xl font-bold uppercase">Delete Booking</AlertDialogTitle>
+                  <AlertDialogDescription className="font-industrial">
                     Are you sure you want to delete this booking? This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="border-2 border-foreground font-industrial font-bold">CANCEL</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={handleDelete}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 border-2 border-destructive font-industrial font-bold"
                   >
-                    Delete Booking
+                    DELETE BOOKING
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -154,68 +158,68 @@ const BookingDetail = () => {
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Booking Details */}
-        <Card>
+        <Card className="border-2 border-foreground shadow-brutal">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-brutalist text-xl font-bold uppercase">
               <Calendar className="h-5 w-5" />
               Booking Information
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm font-industrial font-bold text-muted-foreground uppercase">
                 <MapPin className="h-4 w-4" />
                 Space
               </div>
-              <div className="font-medium">
+              <div className="font-brutalist font-bold text-lg">
                 {booking.space?.name || "Unknown Space"}
               </div>
             </div>
 
-            <Separator />
+            <Separator className="border-foreground" />
 
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm font-industrial font-bold text-muted-foreground uppercase">
                 <Calendar className="h-4 w-4" />
                 Date & Time
               </div>
               <div className="space-y-1">
-                <div className="font-medium">
+                <div className="font-brutalist font-bold text-lg">
                   {format(startDate, "EEEE, MMMM d, yyyy")}
                 </div>
-                <div className="text-sm">
+                <div className="font-industrial">
                   {format(startDate, "h:mm a")} - {format(endDate, "h:mm a")}
                 </div>
-                <Badge variant="secondary" className="w-fit">
-                  {duration}h duration
+                <Badge variant="outline" className="w-fit border-2 border-foreground font-industrial font-bold">
+                  {duration}h DURATION
                 </Badge>
               </div>
             </div>
 
-            <Separator />
+            <Separator className="border-foreground" />
 
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm font-industrial font-bold text-muted-foreground uppercase">
                 <Timer className="h-4 w-4" />
                 Buffer Times
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="text-muted-foreground">Setup:</span>{" "}
-                  <span className="font-medium">{booking.setup_min} min</span>
+                <div className="font-industrial">
+                  <span className="text-muted-foreground">SETUP:</span>{" "}
+                  <span className="font-bold">{booking.setup_min} MIN</span>
                 </div>
-                <div>
-                  <span className="text-muted-foreground">Teardown:</span>{" "}
-                  <span className="font-medium">{booking.teardown_min} min</span>
+                <div className="font-industrial">
+                  <span className="text-muted-foreground">TEARDOWN:</span>{" "}
+                  <span className="font-bold">{booking.teardown_min} MIN</span>
                 </div>
               </div>
             </div>
 
-            <Separator />
+            <Separator className="border-foreground" />
 
             <div className="space-y-2">
-              <div className="text-sm text-muted-foreground">Status</div>
-              <Badge variant="outline" className="w-fit capitalize">
+              <div className="text-sm font-industrial font-bold text-muted-foreground uppercase">Status</div>
+              <Badge variant="outline" className="w-fit capitalize border-2 border-foreground font-industrial font-bold">
                 {booking.status}
               </Badge>
             </div>
@@ -224,34 +228,34 @@ const BookingDetail = () => {
 
         {/* Lead Information (if linked) */}
         {booking.lead ? (
-          <Card>
+          <Card className="border-2 border-foreground shadow-brutal">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-brutalist text-xl font-bold uppercase">
                 <User className="h-5 w-5" />
                 Linked Lead
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="font-industrial">
                 This booking is linked to a lead
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <div className="text-sm text-muted-foreground">Contact Person</div>
-                <div className="font-medium">
+                <div className="text-sm font-industrial font-bold text-muted-foreground uppercase">Contact Person</div>
+                <div className="font-brutalist font-bold text-lg">
                   {booking.lead.first_name} {booking.lead.last_name}
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="border-foreground" />
 
               <div className="space-y-2">
-                <div className="text-sm text-muted-foreground">Contact Details</div>
+                <div className="text-sm font-industrial font-bold text-muted-foreground uppercase">Contact Details</div>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <a
                       href={`mailto:${booking.lead.email}`}
-                      className="text-primary hover:underline"
+                      className="text-primary hover:underline font-industrial"
                     >
                       {booking.lead.email}
                     </a>
@@ -259,36 +263,36 @@ const BookingDetail = () => {
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="border-foreground" />
 
               <div>
-                <Button variant="outline" size="sm" asChild className="w-full">
+                <Button variant="outline" size="sm" asChild className="w-full border-2 border-foreground font-industrial font-bold">
                   <Link to={`/management/spaces/leads/${booking.lead.id}`}>
-                    View Lead Details
+                    VIEW LEAD DETAILS
                   </Link>
                 </Button>
               </div>
             </CardContent>
           </Card>
         ) : (
-          <Card>
+          <Card className="border-2 border-foreground shadow-brutal">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-brutalist text-xl font-bold uppercase">
                 <User className="h-5 w-5" />
                 Lead Information
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="font-industrial">
                 No lead is linked to this booking
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="text-center py-4">
-                <p className="text-muted-foreground text-sm mb-4">
+                <p className="text-muted-foreground font-industrial mb-4">
                   This booking was created directly without being linked to a lead.
                 </p>
-                <Button variant="outline" size="sm" asChild>
+                <Button variant="outline" size="sm" asChild className="border-2 border-foreground font-industrial font-bold">
                   <Link to="/management/spaces/leads">
-                    View All Leads
+                    VIEW ALL LEADS
                   </Link>
                 </Button>
               </div>
@@ -305,7 +309,8 @@ const BookingDetail = () => {
           booking={booking}
         />
       )}
-    </div>
+      </div>
+    </ManagementLayout>
   );
 };
 
