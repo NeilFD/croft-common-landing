@@ -24,9 +24,9 @@ const STATUS_COLORS = {
 
 export default function LeadsList() {
   const [filters, setFilters] = useState({
-    status: 'all',
+    status: '',
     owner_id: '',
-    space_id: 'all',
+    space_id: '',
     search: '',
     date_from: '',
     date_to: '',
