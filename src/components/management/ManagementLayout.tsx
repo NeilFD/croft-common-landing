@@ -39,7 +39,7 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
         
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header */}
-          <header className="border-t border-b border-industrial bg-background h-16 flex items-center px-4 mt-2 mr-2">
+          <header className="border-t border-b border-industrial bg-background h-16 flex items-center px-4 mt-2 mx-2">
             <SidebarTrigger className="mr-4" />
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center space-x-3">
