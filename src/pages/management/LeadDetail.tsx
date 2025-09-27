@@ -23,10 +23,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useLead, useLeadActivity, useUpdateLead, useAddLeadNote } from '@/hooks/useLeads';
 import { useSpaces } from '@/hooks/useSpaces';
 import { Link } from 'react-router-dom';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
+import { BookingForm } from '@/components/management/BookingForm';
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -41,6 +43,7 @@ export default function LeadDetail() {
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState<any>({});
   const [newNote, setNewNote] = useState('');
+  const [showBookingForm, setShowBookingForm] = useState(false);
 
   const { data: lead, isLoading } = useLead(id!);
   const { data: activity } = useLeadActivity(id!);
@@ -542,6 +545,15 @@ export default function LeadDetail() {
         </div>
         </div>
       </div>
+
+      {/* Booking Conversion Dialog */}
+      <BookingForm 
+        isOpen={showBookingForm}
+        onClose={() => setShowBookingForm(false)}
+        leadId={lead.id}
+        selectedSpaceId={lead.preferred_space || undefined}
+        initialDate={lead.preferred_date ? new Date(lead.preferred_date) : undefined}
+      />
     </ManagementLayout>
   );
 }
