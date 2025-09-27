@@ -39,13 +39,13 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
         
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header */}
-          <header className="border-b border-border bg-card h-16 flex items-center px-4">
+          <header className="border-b border-industrial bg-background h-16 flex items-center px-4">
             <SidebarTrigger className="mr-4" />
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center space-x-3">
                 <CroftLogo size="sm" className="shrink-0" />
-                <h1 className="text-xl font-bold text-foreground">
-                  Croft Common – Management
+                <h1 className="font-brutalist text-xl font-black uppercase tracking-wider text-foreground">
+                  CROFT COMMON
                 </h1>
               </div>
             </div>

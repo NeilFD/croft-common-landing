@@ -61,25 +61,25 @@ const VenuesList = () => {
           {/* Header with Back Navigation */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" asChild className="font-industrial">
                 <Link to="/management/spaces" className="flex items-center space-x-2">
                   <ArrowLeft className="h-4 w-4" />
-                  <span>Back to Spaces</span>
+                  <span>Back</span>
                 </Link>
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Venue Management</h1>
-                <p className="text-muted-foreground">
-                  Manage physical venue spaces and their capacities
+                <h1 className="font-brutalist text-4xl font-black uppercase tracking-wider text-foreground">VENUES</h1>
+                <p className="font-industrial text-muted-foreground">
+                  Physical spaces & capacities
                 </p>
               </div>
             </div>
             
             {canEdit() && (
-              <Button asChild>
+              <Button asChild className="btn-primary font-brutalist uppercase tracking-wide">
                 <Link to="/management/spaces/venues/new" className="flex items-center space-x-2">
                   <Plus className="h-4 w-4" />
-                  <span>Add Venue</span>
+                  <span>ADD</span>
                 </Link>
               </Button>
             )}

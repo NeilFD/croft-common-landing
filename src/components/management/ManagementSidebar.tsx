@@ -102,9 +102,9 @@ export const ManagementSidebar = () => {
     >
       <SidebarHeader className="p-4">
         {showText && (
-          <div className="text-sm text-muted-foreground">
-            <div className="font-medium text-foreground">Management Portal</div>
-            <div className="capitalize">{managementUser?.role}</div>
+          <div className="font-industrial text-sm text-muted-foreground">
+            <div className="font-brutalist font-black uppercase tracking-wide text-foreground">MANAGEMENT</div>
+            <div className="capitalize text-[hsl(var(--accent-pink))]">{managementUser?.role}</div>
           </div>
         )}
       </SidebarHeader>
@@ -118,9 +118,9 @@ export const ManagementSidebar = () => {
           >
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center">
+                <span className="flex items-center font-brutalist uppercase tracking-wide">
                   <Settings className="mr-2 h-4 w-4" />
-                  {showText && "Management"}
+                  {showText && "MGMT"}
                 </span>
                 {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
@@ -134,7 +134,7 @@ export const ManagementSidebar = () => {
                         asChild
                         className={getNavClass(isActive(module.path, module.exactMatch))}
                       >
-                        <NavLink to={module.path}>
+                        <NavLink to={module.path} className="font-industrial">
                           <module.icon className="mr-2 h-4 w-4" />
                           {showText && module.name}
                         </NavLink>
@@ -155,9 +155,9 @@ export const ManagementSidebar = () => {
           >
             <CollapsibleTrigger asChild>
               <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center">
-                  <Building2 className="mr-2 h-4 w-4" />
-                  {showText && "Spaces"}
+                <span className="flex items-center font-brutalist uppercase tracking-wide">
+                  <Building2 className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                  {showText && "SPACES"}
                 </span>
                 {showText && <ChevronDown className="h-4 w-4" />}
               </SidebarGroupLabel>
@@ -171,10 +171,10 @@ export const ManagementSidebar = () => {
                       asChild
                       className={getNavClass(isActive('/management/spaces', true))}
                     >
-                      <NavLink to="/management/spaces">
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        {showText && "Dashboard"}
-                      </NavLink>
+                        <NavLink to="/management/spaces" className="font-industrial">
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          {showText && "Dashboard"}
+                        </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   
@@ -185,7 +185,7 @@ export const ManagementSidebar = () => {
                         asChild
                         className={getNavClass(isActive(module.path, module.exactMatch))}
                       >
-                        <NavLink to={module.path}>
+                        <NavLink to={module.path} className="font-industrial">
                           <module.icon className="mr-2 h-4 w-4" />
                           {showText && module.name}
                         </NavLink>
@@ -204,10 +204,10 @@ export const ManagementSidebar = () => {
           variant="outline"
           size="sm"
           onClick={handleNavigateToSite}
-          className="w-full flex items-center justify-center space-x-2"
+          className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide"
         >
           <LogOut className="h-4 w-4" />
-          {showText && <span>Back to Site</span>}
+          {showText && <span>SITE</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>

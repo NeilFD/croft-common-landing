@@ -10,31 +10,31 @@ const SpacesDashboard = () => {
 
   const modules = [
     {
-      title: 'Venue Management',
-      description: 'Manage physical spaces, capacities, and availability',
+      title: 'VENUES',
+      description: 'Physical spaces & availability',
       icon: Building2,
       href: '/management/spaces/venues',
-      stats: 'Manage all venue spaces'
+      stats: 'Manage venues'
     },
     {
-      title: 'Leads & Sales',
-      description: 'Track enquiries and manage your sales pipeline',
+      title: 'LEADS',
+      description: 'Enquiries & sales pipeline',
       icon: Users,
       href: '/management/spaces/leads',
-      stats: 'CRM and lead tracking'
+      stats: 'CRM tracking'
     },
   ];
 
   const upcomingModules = [
     {
-      title: 'Event Management',
-      description: 'Coordinate bookings and event logistics',
+      title: 'EVENTS',
+      description: 'Bookings & logistics',
       icon: Calendar,
       comingSoon: true
     },
     {
-      title: 'Analytics & Reports',
-      description: 'Performance insights and business intelligence',
+      title: 'ANALYTICS',
+      description: 'Performance insights',
       icon: BarChart3,
       comingSoon: true
     }
@@ -45,33 +45,33 @@ const SpacesDashboard = () => {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Spaces</h1>
-          <p className="text-muted-foreground">
-            Complete event management system for {managementUser?.role || 'your'} operations
+          <h1 className="text-brutalist text-5xl font-black uppercase tracking-wider text-foreground">SPACES</h1>
+          <p className="font-industrial text-muted-foreground">
+            Event management system
           </p>
         </div>
 
         {/* Active Modules */}
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Available Modules</h2>
+          <h2 className="font-brutalist text-2xl font-black uppercase tracking-wide text-foreground mb-4">MODULES</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {modules.map((module) => (
-              <Card key={module.title} className="hover:shadow-md transition-shadow">
+              <Card key={module.title} className="border-industrial hover:shadow-brutal transition-all">
                 <CardHeader>
                   <div className="flex items-center space-x-3">
-                    <module.icon className="h-8 w-8 text-primary" />
+                    <module.icon className="h-8 w-8 text-[hsl(var(--accent-pink))]" />
                     <div>
-                      <CardTitle className="text-lg">{module.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{module.description}</p>
+                      <CardTitle className="font-brutalist text-xl font-black uppercase tracking-wide">{module.title}</CardTitle>
+                      <p className="font-industrial text-sm text-muted-foreground">{module.description}</p>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">{module.stats}</span>
-                    <Button asChild>
+                    <span className="font-industrial text-sm text-muted-foreground">{module.stats}</span>
+                    <Button asChild className="btn-primary font-brutalist uppercase tracking-wide">
                       <Link to={module.href}>
-                        Open {module.title}
+                        OPEN
                       </Link>
                     </Button>
                   </div>
@@ -83,24 +83,24 @@ const SpacesDashboard = () => {
 
         {/* Coming Soon Modules */}
         <div>
-          <h2 className="text-xl font-semibold text-foreground mb-4">Coming Soon</h2>
+          <h2 className="font-brutalist text-2xl font-black uppercase tracking-wide text-foreground mb-4">COMING SOON</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {upcomingModules.map((module) => (
-              <Card key={module.title} className="opacity-75 border-dashed">
+              <Card key={module.title} className="opacity-75 border-dashed border-industrial">
                 <CardHeader>
                   <div className="flex items-center space-x-3">
                     <module.icon className="h-8 w-8 text-muted-foreground" />
                     <div>
-                      <CardTitle className="text-lg text-muted-foreground">{module.title}</CardTitle>
-                      <p className="text-sm text-muted-foreground">{module.description}</p>
+                      <CardTitle className="font-brutalist text-xl font-black uppercase tracking-wide text-muted-foreground">{module.title}</CardTitle>
+                      <p className="font-industrial text-sm text-muted-foreground">{module.description}</p>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Development in progress</span>
-                    <Button disabled variant="outline">
-                      Coming Soon
+                    <span className="font-industrial text-sm text-muted-foreground">In progress</span>
+                    <Button disabled variant="outline" className="font-brutalist uppercase tracking-wide">
+                      SOON
                     </Button>
                   </div>
                 </CardContent>
@@ -110,16 +110,16 @@ const SpacesDashboard = () => {
         </div>
 
         {/* Quick Overview */}
-        <Card>
+        <Card className="border-industrial">
           <CardHeader>
-            <CardTitle>Your Access Level</CardTitle>
+            <CardTitle className="font-brutalist uppercase tracking-wide">ACCESS LEVEL</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-foreground capitalize">{managementUser?.role}</p>
-                <p className="text-sm text-muted-foreground">
-                  Access to event management system modules
+                <p className="font-brutalist font-black uppercase text-foreground">{managementUser?.role}</p>
+                <p className="font-industrial text-sm text-muted-foreground">
+                  System access granted
                 </p>
               </div>
             </div>

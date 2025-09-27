@@ -10,8 +10,8 @@ const ManagementDashboard = () => {
 
   const quickActions = [
     {
-      title: 'Spaces',
-      description: 'View and manage venue spaces, capacities, and availability',
+      title: 'SPACES',
+      description: 'Event management system',
       icon: Building2,
       href: '/management/spaces',
       color: 'text-[hsl(var(--accent-pink))]'
@@ -22,27 +22,27 @@ const ManagementDashboard = () => {
     <ManagementLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Management Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
-            Welcome back, {managementUser?.user.email}. Manage your venue operations from here.
+          <h1 className="text-brutalist text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
+          <p className="font-industrial text-muted-foreground mt-2">
+            {managementUser?.user.email}
           </p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => (
-            <Card key={action.title} className="hover:shadow-md transition-shadow">
+            <Card key={action.title} className="border-industrial hover:shadow-brutal transition-all">
               <CardHeader className="pb-3">
                 <div className="flex items-center space-x-2">
-                  <action.icon className={`h-5 w-5 ${action.color}`} />
-                  <CardTitle className="text-lg">{action.title}</CardTitle>
+                  <action.icon className={`h-6 w-6 ${action.color}`} />
+                  <CardTitle className="font-brutalist text-xl font-black uppercase tracking-wide">{action.title}</CardTitle>
                 </div>
-                <CardDescription>{action.description}</CardDescription>
+                <CardDescription className="font-industrial">{action.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <Button asChild className="w-full">
+                <Button asChild className="w-full btn-primary font-brutalist uppercase tracking-wide">
           <Link to="/management/spaces" className="flex items-center space-x-2">
             <Building2 className="mr-2 h-4 w-4" />
-            <span>Open Spaces</span>
+            <span>OPEN</span>
           </Link>
                 </Button>
               </CardContent>
@@ -50,24 +50,24 @@ const ManagementDashboard = () => {
           ))}
         </div>
 
-        <Card>
+        <Card className="border-industrial">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <BarChart3 className="h-5 w-5" />
-              <span>Quick Overview</span>
+            <CardTitle className="flex items-center space-x-2 font-brutalist uppercase tracking-wide">
+              <BarChart3 className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+              <span>ACCESS</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-muted-foreground space-y-2">
+            <div className="font-industrial text-sm text-muted-foreground space-y-2">
               <div className="flex justify-between">
                 <span>Role:</span>
-                <span className="capitalize font-medium">{managementUser?.role}</span>
+                <span className="capitalize font-medium text-foreground">{managementUser?.role}</span>
               </div>
               <div className="flex justify-between">
-                <span>Access Level:</span>
-                <span className="font-medium">
-                  {managementUser?.role === 'admin' ? 'Full Access' : 
-                   managementUser?.role === 'sales' ? 'Sales & Operations' :
+                <span>Level:</span>
+                <span className="font-medium text-foreground">
+                  {managementUser?.role === 'admin' ? 'Full' : 
+                   managementUser?.role === 'sales' ? 'Sales & Ops' :
                    'Read Only'}
                 </span>
               </div>
