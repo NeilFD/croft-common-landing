@@ -344,7 +344,7 @@ const CalendarView = () => {
                               
                               {/* Main Event */}
                               <div 
-                                className="bg-primary/30 text-primary px-2 py-1 font-industrial flex-1 overflow-hidden"
+                                className="bg-accent text-background px-2 py-1 font-industrial flex-1 overflow-hidden border-y border-foreground"
                                 style={{ 
                                   height: `${((actualEndDisplay - actualStartDisplay) / (endDisplay - startDisplay)) * 100}%` 
                                 }}

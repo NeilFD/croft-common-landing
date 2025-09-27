@@ -78,12 +78,14 @@ export const BookingForm = ({
     defaultValues: {
       space_id: selectedSpaceId || booking?.space_id || "",
       title: booking?.title || "",
-      start_ts: booking?.start_ts || 
-        (initialDate && initialHour !== undefined
+      start_ts: booking?.start_ts 
+        ? format(new Date(booking.start_ts), "yyyy-MM-dd'T'HH:mm")
+        : (initialDate && initialHour !== undefined
           ? format(new Date(initialDate.setHours(initialHour, 0)), "yyyy-MM-dd'T'HH:mm")
           : ""),
-      end_ts: booking?.end_ts ||
-        (initialDate && initialHour !== undefined
+      end_ts: booking?.end_ts
+        ? format(new Date(booking.end_ts), "yyyy-MM-dd'T'HH:mm")
+        : (initialDate && initialHour !== undefined
           ? format(new Date(initialDate.setHours(initialHour + 1, 0)), "yyyy-MM-dd'T'HH:mm")
           : ""),
       setup_min: booking?.setup_min || 0,
@@ -92,20 +94,32 @@ export const BookingForm = ({
   });
 
   useEffect(() => {
-    if (isOpen && !booking) {
-      // Reset form for new bookings
-      form.reset({
-        space_id: selectedSpaceId || "",
-        title: "",
-        start_ts: initialDate && initialHour !== undefined
-          ? format(new Date(initialDate.setHours(initialHour, 0)), "yyyy-MM-dd'T'HH:mm")
-          : "",
-        end_ts: initialDate && initialHour !== undefined
-          ? format(new Date(initialDate.setHours(initialHour + 1, 0)), "yyyy-MM-dd'T'HH:mm")
-          : "",
-        setup_min: 0,
-        teardown_min: 0,
-      });
+    if (isOpen) {
+      if (booking) {
+        // Reset form with existing booking data
+        form.reset({
+          space_id: booking.space_id,
+          title: booking.title,
+          start_ts: format(new Date(booking.start_ts), "yyyy-MM-dd'T'HH:mm"),
+          end_ts: format(new Date(booking.end_ts), "yyyy-MM-dd'T'HH:mm"),
+          setup_min: booking.setup_min || 0,
+          teardown_min: booking.teardown_min || 0,
+        });
+      } else {
+        // Reset form for new bookings
+        form.reset({
+          space_id: selectedSpaceId || "",
+          title: "",
+          start_ts: initialDate && initialHour !== undefined
+            ? format(new Date(initialDate.setHours(initialHour, 0)), "yyyy-MM-dd'T'HH:mm")
+            : "",
+          end_ts: initialDate && initialHour !== undefined
+            ? format(new Date(initialDate.setHours(initialHour + 1, 0)), "yyyy-MM-dd'T'HH:mm")
+            : "",
+          setup_min: 0,
+          teardown_min: 0,
+        });
+      }
     }
   }, [isOpen, booking, initialDate, initialHour, selectedSpaceId, form]);
 
@@ -143,12 +157,12 @@ export const BookingForm = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] bg-background border border-border">
+      <DialogContent className="sm:max-w-[500px] bg-background border-2 border-foreground shadow-brutal">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="font-brutalist text-xl font-bold uppercase">
             {booking ? "Edit Booking" : "Create New Booking"}
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="font-industrial">
             {booking 
               ? "Update the booking details below"
               : "Fill in the details to create a new booking"
@@ -164,20 +178,20 @@ export const BookingForm = ({
               name="space_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Space</FormLabel>
+                  <FormLabel className="font-industrial font-bold text-foreground uppercase">Space</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
                     disabled={!!booking} // Can't change space for existing bookings
                   >
                     <FormControl>
-                      <SelectTrigger className="bg-background border border-border">
+                      <SelectTrigger className="bg-background border-2 border-foreground font-industrial">
                         <SelectValue placeholder="Select a space" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-background border border-border shadow-lg">
+                    <SelectContent className="bg-background border-2 border-foreground shadow-brutal">
                       {spaces.map((space) => (
-                        <SelectItem key={space.id} value={space.id}>
+                        <SelectItem key={space.id} value={space.id} className="font-industrial">
                           {space.name}
                         </SelectItem>
                       ))}
@@ -194,10 +208,11 @@ export const BookingForm = ({
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Booking Title</FormLabel>
+                  <FormLabel className="font-industrial font-bold text-foreground uppercase">Booking Title</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g. Corporate Event, Wedding Reception"
+                      className="border-2 border-foreground font-industrial"
                       {...field}
                     />
                   </FormControl>
@@ -213,10 +228,11 @@ export const BookingForm = ({
                 name="start_ts"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Start Date & Time</FormLabel>
+                    <FormLabel className="font-industrial font-bold text-foreground uppercase">Start Date & Time</FormLabel>
                     <FormControl>
                       <Input
                         type="datetime-local"
+                        className="border-2 border-foreground font-industrial"
                         {...field}
                       />
                     </FormControl>
@@ -230,10 +246,11 @@ export const BookingForm = ({
                 name="end_ts"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>End Date & Time</FormLabel>
+                    <FormLabel className="font-industrial font-bold text-foreground uppercase">End Date & Time</FormLabel>
                     <FormControl>
                       <Input
                         type="datetime-local"
+                        className="border-2 border-foreground font-industrial"
                         {...field}
                       />
                     </FormControl>
@@ -250,11 +267,12 @@ export const BookingForm = ({
                 name="setup_min"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Setup Time (minutes)</FormLabel>
+                    <FormLabel className="font-industrial font-bold text-foreground uppercase">Setup Time (minutes)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min="0"
+                        className="border-2 border-foreground font-industrial"
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
@@ -269,11 +287,12 @@ export const BookingForm = ({
                 name="teardown_min"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Teardown Time (minutes)</FormLabel>
+                    <FormLabel className="font-industrial font-bold text-foreground uppercase">Teardown Time (minutes)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
                         min="0"
+                        className="border-2 border-foreground font-industrial"
                         {...field}
                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
@@ -285,12 +304,21 @@ export const BookingForm = ({
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+                className="border-2 border-foreground font-industrial font-bold"
+              >
+                CANCEL
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-industrial font-bold"
+              >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {booking ? "Update Booking" : "Create Booking"}
+                {booking ? "UPDATE BOOKING" : "CREATE BOOKING"}
               </Button>
             </DialogFooter>
           </form>

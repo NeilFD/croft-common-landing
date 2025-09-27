@@ -201,16 +201,35 @@ const BookingDetail = () => {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm font-industrial font-bold text-muted-foreground uppercase">
                 <Timer className="h-4 w-4" />
-                Buffer Times
+                Complete Schedule
               </div>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="font-industrial">
-                  <span className="text-muted-foreground">SETUP:</span>{" "}
-                  <span className="font-bold">{booking.setup_min} MIN</span>
+              <div className="space-y-2">
+                {booking.setup_min > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-orange-100 border border-orange-300 rounded">
+                    <span className="font-industrial font-bold text-orange-800">SETUP STARTS:</span>
+                    <span className="font-brutalist text-orange-900">
+                      {format(new Date(startDate.getTime() - booking.setup_min * 60000), "h:mm a")}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between p-2 bg-accent/10 border border-accent rounded">
+                  <span className="font-industrial font-bold">EVENT STARTS:</span>
+                  <span className="font-brutalist">{format(startDate, "h:mm a")}</span>
                 </div>
-                <div className="font-industrial">
-                  <span className="text-muted-foreground">TEARDOWN:</span>{" "}
-                  <span className="font-bold">{booking.teardown_min} MIN</span>
+                <div className="flex items-center justify-between p-2 bg-accent/10 border border-accent rounded">
+                  <span className="font-industrial font-bold">EVENT ENDS:</span>
+                  <span className="font-brutalist">{format(endDate, "h:mm a")}</span>
+                </div>
+                {booking.teardown_min > 0 && (
+                  <div className="flex items-center justify-between p-2 bg-blue-100 border border-blue-300 rounded">
+                    <span className="font-industrial font-bold text-blue-800">TEARDOWN ENDS:</span>
+                    <span className="font-brutalist text-blue-900">
+                      {format(new Date(endDate.getTime() + booking.teardown_min * 60000), "h:mm a")}
+                    </span>
+                  </div>
+                )}
+                <div className="text-xs font-industrial text-muted-foreground uppercase text-center pt-2">
+                  Total venue occupation: {booking.setup_min + duration * 60 + booking.teardown_min} minutes
                 </div>
               </div>
             </div>
