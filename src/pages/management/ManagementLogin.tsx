@@ -164,15 +164,34 @@ const ManagementLogin = () => {
 
     try {
       console.log('🔐 Attempting password update...');
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
+
+      // Ensure we have an active recovery session before attempting update
+      const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
+      if (sessionErr) {
+        console.error('🚨 Could not read session:', sessionErr);
+      }
+      if (!sessionData?.session) {
+        toast({
+          title: 'Recovery session expired',
+          description: 'Please click the reset link in your email again to continue.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Prevent hanging UI: add a safety timeout for the update call
+      const timeout = new Promise<{ error: any }>((resolve) =>
+        setTimeout(() => resolve({ error: new Error('Request timed out') }), 20000)
+      );
+
+      const updatePromise = supabase.auth.updateUser({ password: newPassword });
+      const { error } = await Promise.race([updatePromise, timeout]) as { error: any };
 
       if (error) {
         console.error('🚨 Password update error:', error);
         toast({
           title: "Password update failed",
-          description: error.message,
+          description: error.message || 'Please try again.',
           variant: "destructive"
         });
         return;
