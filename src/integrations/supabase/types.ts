@@ -32,6 +32,24 @@ export type Database = {
         }
         Relationships: []
       }
+      api_rate_limiter: {
+        Row: {
+          hits: number
+          key: string
+          window_starts_at: string
+        }
+        Insert: {
+          hits?: number
+          key: string
+          window_starts_at?: string
+        }
+        Update: {
+          hits?: number
+          key?: string
+          window_starts_at?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string | null
@@ -955,11 +973,32 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "lead_activity_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "lead_activity_lead_id_fkey"
             columns: ["lead_id"]
             isOneToOne: false
             referencedRelation: "leads"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_activity_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "lead_activity_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["possible_duplicate_id"]
           },
         ]
       }
@@ -967,6 +1006,7 @@ export type Database = {
         Row: {
           budget_high: number | null
           budget_low: number | null
+          consent_marketing: boolean | null
           created_at: string | null
           date_flexible: boolean | null
           email: string
@@ -980,6 +1020,8 @@ export type Database = {
           phone: string | null
           preferred_date: string | null
           preferred_space: string | null
+          privacy_accepted_at: string | null
+          search_tsv: unknown | null
           source: string | null
           status: string
           updated_at: string | null
@@ -988,6 +1030,7 @@ export type Database = {
         Insert: {
           budget_high?: number | null
           budget_low?: number | null
+          consent_marketing?: boolean | null
           created_at?: string | null
           date_flexible?: boolean | null
           email: string
@@ -1001,6 +1044,8 @@ export type Database = {
           phone?: string | null
           preferred_date?: string | null
           preferred_space?: string | null
+          privacy_accepted_at?: string | null
+          search_tsv?: unknown | null
           source?: string | null
           status?: string
           updated_at?: string | null
@@ -1009,6 +1054,7 @@ export type Database = {
         Update: {
           budget_high?: number | null
           budget_low?: number | null
+          consent_marketing?: boolean | null
           created_at?: string | null
           date_flexible?: boolean | null
           email?: string
@@ -1022,12 +1068,21 @@ export type Database = {
           phone?: string | null
           preferred_date?: string | null
           preferred_space?: string | null
+          privacy_accepted_at?: string | null
+          search_tsv?: unknown | null
           source?: string | null
           status?: string
           updated_at?: string | null
           utm?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_preferred_space_fkey"
             columns: ["preferred_space"]
@@ -1979,6 +2034,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      org_settings: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       otp_codes: {
         Row: {
@@ -3303,11 +3385,22 @@ export type Database = {
         }
         Relationships: []
       }
+      v_lead_possible_duplicates: {
+        Row: {
+          lead_id: string | null
+          possible_duplicate_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_lead_note: {
         Args: { lead_id_param: string; note_body: string }
         Returns: string
+      }
+      bump_rate_key: {
+        Args: { max_hits: number; p_key: string; window_seconds: number }
+        Returns: boolean
       }
       calculate_member_streak: {
         Args: { user_id_input: string }
@@ -3359,7 +3452,7 @@ export type Database = {
         }[]
       }
       create_lead: {
-        Args: { payload: Json }
+        Args: { client_ip?: string; payload: Json } | { payload: Json }
         Returns: string
       }
       ensure_membership_number: {

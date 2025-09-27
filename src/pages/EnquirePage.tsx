@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { useActiveSpaces } from '@/hooks/useSpaces';
 import { useCreateLead, type CreateLeadPayload } from '@/hooks/useLeads';
+import { useToast } from '@/hooks/use-toast';
 import { Helmet } from 'react-helmet-async';
 
 const enquirySchema = z.object({
@@ -27,8 +28,11 @@ const enquirySchema = z.object({
   budget_low: z.coerce.number().min(0, 'Budget must be non-negative').optional(),
   budget_high: z.coerce.number().min(0, 'Budget must be non-negative').optional(),
   message: z.string().max(1000).optional(),
-  // Honeypot field
-  website: z.string().max(0, 'Please leave this field empty'),
+  privacy_accepted: z.boolean().refine(val => val === true, {
+    message: "You must accept the privacy policy to submit this form"
+  }),
+  consent_marketing: z.boolean().default(false),
+  website: z.string().optional(), // Honeypot field
 }).refine((data) => {
   if (data.budget_low && data.budget_high && data.budget_low > data.budget_high) {
     return false;
@@ -64,6 +68,7 @@ export default function EnquirePage() {
   
   const { data: spaces, isLoading: spacesLoading } = useActiveSpaces();
   const createLead = useCreateLead();
+  const { toast } = useToast();
 
   const {
     register,
@@ -83,37 +88,62 @@ export default function EnquirePage() {
   const watchPreferredDate = watch('preferred_date');
 
   const onSubmit = async (data: EnquiryFormData) => {
-    // Basic rate limiting - client side delay
-    if (submissionDelay) return;
-    setSubmissionDelay(true);
-    setTimeout(() => setSubmissionDelay(false), 2000);
-
-    // Remove honeypot field and prepare payload
-    const { website, ...payload } = data;
+    if (submitted) return;
     
-    // Convert empty strings to undefined for optional fields
-    const cleanPayload: CreateLeadPayload = {
-      first_name: payload.first_name,
-      last_name: payload.last_name,
-      email: payload.email,
-      preferred_space: payload.preferred_space,
-      phone: payload.phone || undefined,
-      event_type: payload.event_type || undefined,
-      preferred_date: payload.preferred_date || undefined,
-      date_flexible: payload.date_flexible,
-      headcount: payload.headcount || undefined,
-      budget_low: payload.budget_low || undefined,
-      budget_high: payload.budget_high || undefined,
-      message: payload.message || undefined,
-      source: 'enquiry_form',
-    };
+    // Basic rate limiting - prevent double submission
+    if (submissionDelay) {
+      toast({
+        title: "Please wait",
+        description: "Form submission in progress...",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmissionDelay(true);
+    setTimeout(() => setSubmissionDelay(false), 3000);
 
     try {
-      await createLead.mutateAsync(cleanPayload);
+      // Clean the payload to remove empty strings and honeypot
+      const { website, privacy_accepted, consent_marketing, ...cleanedData } = data;
+      
+      // Convert empty strings to undefined for optional fields
+      const finalPayload: CreateLeadPayload = {
+        first_name: cleanedData.first_name,
+        last_name: cleanedData.last_name,
+        email: cleanedData.email,
+        preferred_space: cleanedData.preferred_space,
+        phone: cleanedData.phone || undefined,
+        event_type: cleanedData.event_type || undefined,
+        preferred_date: cleanedData.preferred_date || undefined,
+        date_flexible: cleanedData.date_flexible,
+        headcount: cleanedData.headcount || undefined,
+        budget_low: cleanedData.budget_low || undefined,
+        budget_high: cleanedData.budget_high || undefined,
+        message: cleanedData.message || undefined,
+        source: 'enquiry_form',
+        privacy_accepted,
+        consent_marketing,
+      };
+
+      await createLead.mutateAsync(finalPayload);
       setSubmitted(true);
-    } catch (error) {
-      // Error handling is done in the hook
-      console.error('Submission error:', error);
+    } catch (error: any) {
+      console.error('Error submitting enquiry:', error);
+      
+      let errorMessage = "There was an error submitting your enquiry. Please try again.";
+      
+      if (error.message?.includes('rate_limit')) {
+        errorMessage = "Too many submissions from your location. Please try again later.";
+      } else if (error.message?.includes('spam_detected')) {
+        errorMessage = "Invalid form submission detected.";
+      }
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
   };
 
@@ -415,7 +445,61 @@ export default function EnquirePage() {
                       <p className="text-sm text-destructive mt-1">{errors.message.message}</p>
                     )}
                   </div>
-                </div>
+                  </div>
+
+                  {/* Honeypot field - hidden from users */}
+                  <div style={{ display: 'none' }}>
+                    <Label htmlFor="website">Website</Label>
+                    <Input
+                      id="website"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      {...register("website")}
+                    />
+                  </div>
+
+                  {/* GDPR Compliance */}
+                  <div className="space-y-3">
+                    <div className="flex items-start space-x-2">
+                      <Checkbox
+                        id="privacy_accepted"
+                        {...register("privacy_accepted")}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <Label
+                          htmlFor="privacy_accepted"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          I accept the privacy policy *
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Required: We need your consent to process your enquiry.
+                        </p>
+                      </div>
+                    </div>
+                    {errors.privacy_accepted && (
+                      <p className="text-sm text-destructive">{errors.privacy_accepted.message}</p>
+                    )}
+
+                    <div className="flex items-start space-x-2">
+                      <Checkbox
+                        id="consent_marketing"
+                        {...register("consent_marketing")}
+                      />
+                      <div className="grid gap-1.5 leading-none">
+                        <Label
+                          htmlFor="consent_marketing"
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Send me marketing updates
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Optional: Receive updates about our venues and events.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
                 <Button 
                   type="submit" 

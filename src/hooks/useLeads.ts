@@ -56,6 +56,8 @@ export interface CreateLeadPayload {
   message?: string;
   source?: string;
   utm?: any;
+  privacy_accepted?: boolean;
+  consent_marketing?: boolean;
 }
 
 // Hook to get all leads with filtering and search
@@ -95,24 +97,18 @@ export const useLeads = (filters?: {
         query = query.lte('created_at', filters.date_to);
       }
 
+      // Use fast text search if search term provided
+      if (filters?.search) {
+        query = query.textSearch('search_tsv', filters.search, {
+          type: 'websearch',
+          config: 'simple'
+        });
+      }
+
       const { data, error } = await query;
 
-      if (error) {
-        throw error;
-      }
-
-      // Apply client-side search if needed
-      let results = data || [];
-      if (filters?.search) {
-        const searchTerm = filters.search.toLowerCase();
-        results = results.filter(lead => 
-          lead.first_name.toLowerCase().includes(searchTerm) ||
-          lead.last_name.toLowerCase().includes(searchTerm) ||
-          lead.email.toLowerCase().includes(searchTerm)
-        );
-      }
-
-      return results;
+      if (error) throw error;
+      return data || [];
     },
   });
 };
@@ -181,18 +177,20 @@ export const useCreateLead = () => {
         await supabase.functions.invoke('send-lead-notification', {
           body: {
             leadId: data,
-            firstName: payload.first_name,
-            lastName: payload.last_name,
-            email: payload.email,
-            phone: payload.phone,
-            eventType: payload.event_type,
-            spaceName: payload.preferred_space, // Will be resolved to name in the email function
-            preferredDate: payload.preferred_date,
-            dateFlexible: payload.date_flexible,
-            headcount: payload.headcount,
-            budgetLow: payload.budget_low,
-            budgetHigh: payload.budget_high,
-            message: payload.message,
+            leadData: {
+              first_name: payload.first_name,
+              last_name: payload.last_name,
+              email: payload.email,
+              phone: payload.phone,
+              event_type: payload.event_type,
+              space_name: payload.preferred_space, // Will be resolved to name in the email function
+              preferred_date: payload.preferred_date,
+              date_flexible: payload.date_flexible,
+              headcount: payload.headcount,
+              budget_low: payload.budget_low,
+              budget_high: payload.budget_high,
+              message: payload.message,
+            },
           },
         });
       } catch (emailError) {

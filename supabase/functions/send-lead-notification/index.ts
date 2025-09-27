@@ -10,18 +10,20 @@ const corsHeaders = {
 
 interface LeadNotificationRequest {
   leadId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  eventType?: string;
-  spaceName?: string;
-  preferredDate?: string;
-  dateFlexible?: boolean;
-  headcount?: number;
-  budgetLow?: number;
-  budgetHigh?: number;
-  message?: string;
+  leadData: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone?: string;
+    event_type?: string;
+    space_name?: string;
+    preferred_date?: string;
+    date_flexible?: boolean;
+    headcount?: number;
+    budget_low?: number;
+    budget_high?: number;
+    message?: string;
+  };
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -31,44 +33,42 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const payload: LeadNotificationRequest = await req.json();
-    console.log("Sending lead notification for:", payload.leadId);
+    const { leadId, leadData }: LeadNotificationRequest = await req.json();
+    console.log("Sending lead notification for:", leadId);
 
-    const {
-      leadId,
-      firstName,
-      lastName,
-      email,
-      phone,
-      eventType,
-      spaceName,
-      preferredDate,
-      dateFlexible,
-      headcount,
-      budgetLow,
-      budgetHigh,
-      message
-    } = payload;
+    // Get notification recipients from org_settings
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const { data: settings } = await supabase
+      .from('org_settings')
+      .select('setting_value')
+      .eq('setting_key', 'leads_notify_recipients')
+      .single();
+
+    const recipients = settings?.setting_value?.split(',').map(email => email.trim()) || ['neil@thehive-hospitality.com'];
 
     // Format the subject line
-    let subject = `New enquiry: ${firstName} ${lastName}`;
-    if (spaceName) {
-      subject += ` → ${spaceName}`;
+    let subject = `New enquiry: ${leadData.first_name} ${leadData.last_name}`;
+    if (leadData.space_name) {
+      subject += ` → ${leadData.space_name}`;
     }
-    if (preferredDate) {
-      subject += ` on ${new Date(preferredDate).toLocaleDateString('en-GB')}`;
-    } else if (dateFlexible) {
+    if (leadData.preferred_date) {
+      subject += ` on ${new Date(leadData.preferred_date).toLocaleDateString('en-GB')}`;
+    } else if (leadData.date_flexible) {
       subject += ` (flexible dates)`;
     }
 
     // Format budget range
     let budgetText = '';
-    if (budgetLow !== undefined && budgetHigh !== undefined) {
-      budgetText = `£${budgetLow.toLocaleString()} - £${budgetHigh.toLocaleString()}`;
-    } else if (budgetLow !== undefined) {
-      budgetText = `£${budgetLow.toLocaleString()}+`;
-    } else if (budgetHigh !== undefined) {
-      budgetText = `Up to £${budgetHigh.toLocaleString()}`;
+    if (leadData.budget_low !== undefined && leadData.budget_high !== undefined) {
+      budgetText = `£${leadData.budget_low.toLocaleString()} - £${leadData.budget_high.toLocaleString()}`;
+    } else if (leadData.budget_low !== undefined) {
+      budgetText = `£${leadData.budget_low.toLocaleString()}+`;
+    } else if (leadData.budget_high !== undefined) {
+      budgetText = `Up to £${leadData.budget_high.toLocaleString()}`;
     }
 
     // Create HTML email content
@@ -82,28 +82,28 @@ const handler = async (req: Request): Promise<Response> => {
         <div style="background: #f8f9fa; padding: 20px; margin-bottom: 20px;">
           <h2 style="margin: 0 0 15px 0; color: #000; font-size: 20px;">Contact Details</h2>
           <table style="width: 100%; border-collapse: collapse;">
-            <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Name:</td><td>${firstName} ${lastName}</td></tr>
-            <tr><td style="padding: 5px 0; font-weight: bold;">Email:</td><td><a href="mailto:${email}" style="color: #e91e63;">${email}</a></td></tr>
-            ${phone ? `<tr><td style="padding: 5px 0; font-weight: bold;">Phone:</td><td><a href="tel:${phone}" style="color: #e91e63;">${phone}</a></td></tr>` : ''}
+            <tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Name:</td><td>${leadData.first_name} ${leadData.last_name}</td></tr>
+            <tr><td style="padding: 5px 0; font-weight: bold;">Email:</td><td><a href="mailto:${leadData.email}" style="color: #e91e63;">${leadData.email}</a></td></tr>
+            ${leadData.phone ? `<tr><td style="padding: 5px 0; font-weight: bold;">Phone:</td><td><a href="tel:${leadData.phone}" style="color: #e91e63;">${leadData.phone}</a></td></tr>` : ''}
           </table>
         </div>
 
         <div style="background: #f8f9fa; padding: 20px; margin-bottom: 20px;">
           <h2 style="margin: 0 0 15px 0; color: #000; font-size: 20px;">Event Details</h2>
           <table style="width: 100%; border-collapse: collapse;">
-            ${eventType ? `<tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Event Type:</td><td>${eventType}</td></tr>` : ''}
-            ${spaceName ? `<tr><td style="padding: 5px 0; font-weight: bold;">Space:</td><td>${spaceName}</td></tr>` : ''}
-            ${preferredDate ? `<tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(preferredDate).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td></tr>` : ''}
-            ${dateFlexible ? `<tr><td style="padding: 5px 0; font-weight: bold;">Dates:</td><td>Flexible</td></tr>` : ''}
-            ${headcount ? `<tr><td style="padding: 5px 0; font-weight: bold;">Headcount:</td><td>${headcount}</td></tr>` : ''}
+            ${leadData.event_type ? `<tr><td style="padding: 5px 0; font-weight: bold; width: 120px;">Event Type:</td><td>${leadData.event_type}</td></tr>` : ''}
+            ${leadData.space_name ? `<tr><td style="padding: 5px 0; font-weight: bold;">Space:</td><td>${leadData.space_name}</td></tr>` : ''}
+            ${leadData.preferred_date ? `<tr><td style="padding: 5px 0; font-weight: bold;">Date:</td><td>${new Date(leadData.preferred_date).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td></tr>` : ''}
+            ${leadData.date_flexible ? `<tr><td style="padding: 5px 0; font-weight: bold;">Dates:</td><td>Flexible</td></tr>` : ''}
+            ${leadData.headcount ? `<tr><td style="padding: 5px 0; font-weight: bold;">Headcount:</td><td>${leadData.headcount}</td></tr>` : ''}
             ${budgetText ? `<tr><td style="padding: 5px 0; font-weight: bold;">Budget:</td><td>${budgetText}</td></tr>` : ''}
           </table>
         </div>
 
-        ${message ? `
+        ${leadData.message ? `
         <div style="background: #f8f9fa; padding: 20px; margin-bottom: 20px;">
           <h2 style="margin: 0 0 15px 0; color: #000; font-size: 20px;">Message</h2>
-          <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${message}</p>
+          <p style="margin: 0; line-height: 1.5; white-space: pre-wrap;">${leadData.message}</p>
         </div>
         ` : ''}
 
@@ -120,21 +120,46 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
-    const emailResponse = await resend.emails.send({
-      from: "Croft Common <noreply@thehive-hospitality.com>",
-      to: ["neil@thehive-hospitality.com"],
-      subject: subject,
-      html: htmlContent,
-    });
+    let emailSuccess = true;
+    let emailError = null;
 
-    console.log("Lead notification email sent successfully:", emailResponse);
+    try {
+      const emailResponse = await resend.emails.send({
+        from: "Croft Common <noreply@thehive-hospitality.com>",
+        to: recipients,
+        subject: subject,
+        html: htmlContent,
+      });
+
+      console.log("Lead notification email sent successfully:", emailResponse);
+    } catch (emailErr: any) {
+      console.error('Failed to send email:', emailErr);
+      emailSuccess = false;
+      emailError = emailErr.message;
+    }
+
+    // Log email activity to lead_activity
+    await supabase
+      .from('lead_activity')
+      .insert({
+        lead_id: leadId,
+        type: 'email',
+        body: `Notification email ${emailSuccess ? 'sent successfully' : 'failed to send'} to ${recipients.join(', ')}`,
+        author_id: null,
+        meta: {
+          template: 'new_lead_notify',
+          recipients,
+          success: emailSuccess,
+          error: emailError
+        }
+      });
 
     return new Response(JSON.stringify({ 
-      success: true,
-      emailId: emailResponse.data?.id,
-      leadId: leadId
+      success: emailSuccess, 
+      recipients,
+      error: emailError 
     }), {
-      status: 200,
+      status: emailSuccess ? 200 : 500,
       headers: {
         "Content-Type": "application/json",
         ...corsHeaders,
