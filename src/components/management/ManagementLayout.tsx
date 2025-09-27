@@ -1,15 +1,15 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
-import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { ManagementSidebar } from './ManagementSidebar';
 
 interface ManagementLayoutProps {
   children: ReactNode;
 }
 
 export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
-  const { managementUser, loading, signOut } = useManagementAuth();
+  const { managementUser, loading } = useManagementAuth();
 
   // Block management pages during password recovery
   if (typeof window !== 'undefined' && sessionStorage.getItem('recovery') === '1') {
@@ -32,42 +32,27 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold text-foreground">
-              Croft Common – Management
-            </h1>
-            <div className="text-sm text-muted-foreground capitalize">
-              {managementUser.role} Portal
+    <SidebarProvider defaultOpen={false}>
+      <div className="min-h-screen flex w-full bg-background">
+        <ManagementSidebar />
+        
+        <div className="flex flex-col flex-1 min-w-0">
+          {/* Header */}
+          <header className="border-b border-border bg-card h-16 flex items-center px-4">
+            <SidebarTrigger className="mr-4" />
+            <div className="flex items-center justify-between w-full">
+              <h1 className="text-xl font-bold text-foreground">
+                Croft Common – Management
+              </h1>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <User className="h-4 w-4" />
-              <span>{managementUser.user.email}</span>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={signOut}
-              className="flex items-center space-x-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Sign Out</span>
-            </Button>
-          </div>
-        </div>
-      </header>
+          </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
-        {children}
-      </main>
-    </div>
+          {/* Main Content */}
+          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+            {children}
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 };
