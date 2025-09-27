@@ -147,25 +147,25 @@ const CalendarView = () => {
     <ManagementLayout>
       <div className="space-y-6">
         {/* Header with Back Navigation */}
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-3 md:p-6">
+          <div className="flex items-start gap-3 md:gap-4">
             <Link to="/management/spaces" className="mt-1">
-              <Button variant="outline" size="sm" className="h-9 w-9 p-0 border-2 border-foreground hover:bg-foreground hover:text-background">
-                <ArrowLeft className="h-4 w-4" />
+              <Button variant="outline" size="sm" className="h-8 w-8 md:h-9 md:w-9 p-0 border-2 border-foreground hover:bg-foreground hover:text-background">
+                <ArrowLeft className="h-3 w-3 md:h-4 md:w-4" />
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-brutalist font-bold tracking-tight text-foreground mb-2">
+              <h1 className="text-2xl md:text-3xl font-brutalist font-bold tracking-tight text-foreground mb-1 md:mb-2">
                 CALENDAR
               </h1>
-              <p className="text-muted-foreground font-industrial">Manage space bookings and availability</p>
+              <p className="text-muted-foreground font-industrial text-sm md:text-base">Manage space bookings and availability</p>
             </div>
           </div>
           <Button 
             onClick={() => setShowBookingForm(true)} 
-            className="gap-2 font-industrial font-bold border-2 border-foreground bg-accent text-accent-foreground hover:bg-accent/80"
+            className="gap-2 font-industrial font-bold border-2 border-foreground bg-accent text-accent-foreground hover:bg-accent/80 h-9 md:h-10 text-sm"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3 w-3 md:h-4 md:w-4" />
             NEW BOOKING
           </Button>
         </div>

@@ -96,10 +96,10 @@ export default function LeadsList() {
 
   return (
     <ManagementLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6 p-3 md:p-6">
         {/* Header with Back Navigation */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center space-x-3 md:space-x-4">
             <Button variant="ghost" size="sm" asChild>
               <Link to="/management/spaces" className="flex items-center space-x-2">
                 <ArrowLeft className="h-4 w-4" />
@@ -107,13 +107,13 @@ export default function LeadsList() {
               </Link>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Leads & Sales</h1>
-              <p className="text-muted-foreground">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Leads & Sales</h1>
+              <p className="text-muted-foreground text-sm md:text-base">
                 Manage enquiries and track your sales pipeline
               </p>
             </div>
           </div>
-          <Button onClick={() => navigate('/management/spaces/leads/new')}>
+          <Button onClick={() => navigate('/management/spaces/leads/new')} className="h-9 md:h-10 text-sm">
             <Plus className="h-4 w-4 mr-2" />
             New Lead
           </Button>

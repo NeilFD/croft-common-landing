@@ -115,11 +115,11 @@ export const ManagementSidebar = () => {
         className="border-r bg-background"
         collapsible="icon"
       >
-        <SidebarHeader className="p-4">
+        <SidebarHeader className="p-3 md:p-4">
           {showText && (
-            <div className="font-industrial text-sm text-muted-foreground">
-              <div className="font-brutalist font-black uppercase tracking-wide text-foreground">MANAGEMENT</div>
-              <div className="capitalize text-[hsl(var(--accent-pink))]">{managementUser?.role}</div>
+            <div className="font-industrial text-xs md:text-sm text-muted-foreground">
+              <div className="font-brutalist font-black uppercase tracking-wide text-foreground text-sm md:text-base">MANAGEMENT</div>
+              <div className="capitalize text-[hsl(var(--accent-pink))] text-xs md:text-sm">{managementUser?.role}</div>
             </div>
           )}
         </SidebarHeader>
@@ -282,16 +282,16 @@ export const ManagementSidebar = () => {
           )}
         </SidebarContent>
 
-        <SidebarFooter className="p-4">
+        <SidebarFooter className="p-3 md:p-4">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleNavigateToSite}
-                className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide"
+                className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide h-8 md:h-9 text-xs md:text-sm"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-3 w-3 md:h-4 md:w-4" />
                 {showText && <span>SITE</span>}
               </Button>
             </TooltipTrigger>

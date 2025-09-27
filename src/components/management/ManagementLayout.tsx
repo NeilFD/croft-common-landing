@@ -39,12 +39,12 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
         
         <div className="flex flex-col flex-1 min-w-0">
           {/* Header */}
-          <header className="border-t border-b border-industrial bg-background h-16 flex items-center px-4 mt-2 mx-2">
-            <SidebarTrigger className="mr-4" />
+          <header className="border-t border-b border-industrial bg-background h-12 md:h-16 flex items-center px-3 md:px-4 mt-1 md:mt-2 mx-1 md:mx-2">
+            <SidebarTrigger className="mr-2 md:mr-4 h-8 w-8 md:h-10 md:w-10" />
             <div className="flex items-center justify-between w-full">
-              <div className="flex items-center space-x-3">
-                <CroftLogo size="sm" className="shrink-0" />
-                <h1 className="font-brutalist text-xl font-black uppercase tracking-wider text-foreground">
+              <div className="flex items-center space-x-2 md:space-x-3">
+                <CroftLogo size="sm" className="shrink-0 h-4 w-4 md:h-5 md:w-5" />
+                <h1 className="font-brutalist text-sm md:text-xl font-black uppercase tracking-wider text-foreground">
                   CROFT COMMON
                 </h1>
               </div>
@@ -52,7 +52,7 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto">
+          <main className="flex-1 overflow-auto">
             {children}
           </main>
         </div>
