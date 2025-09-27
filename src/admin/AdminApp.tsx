@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Toaster } from '@/components/ui/toaster';
@@ -15,7 +15,8 @@ import { SubscribersPage } from './pages/SubscribersPage';
 import { MomentsPage } from './pages/MomentsPage';
 import { CinemaPage } from './pages/CinemaPage';
 import LeadsList from '../pages/management/LeadsList';
-import LeadDetail from '../pages/management/LeadDetail';
+
+const LeadDetail = lazy(() => import('../pages/management/LeadDetail'));
 
 export const AdminApp = () => {
   const [ready, setReady] = useState(false);
