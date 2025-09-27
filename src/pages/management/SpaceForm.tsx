@@ -128,139 +128,147 @@ const SpaceForm = () => {
 
   return (
     <ManagementLayout>
-      <div className="max-w-2xl space-y-6">
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/management/spaces">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Link>
-          </Button>
-          
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">
-              {isEdit ? 'Edit Space' : 'Create Space'}
-            </h1>
-            <p className="text-muted-foreground">
-              {isEdit ? 'Update space details and capacities' : 'Add a new venue space'}
-            </p>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <Button variant="ghost" size="sm" asChild className="font-industrial">
+              <Link to="/management/spaces/venues" className="flex items-center space-x-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back</span>
+              </Link>
+            </Button>
+            
+            <div>
+              <h1 className="font-brutalist text-4xl font-black uppercase tracking-wider text-foreground">
+                {isEdit ? 'EDIT VENUE' : 'NEW VENUE'}
+              </h1>
+              <p className="font-industrial text-muted-foreground">
+                {isEdit ? 'Update venue details' : 'Add venue space'}
+              </p>
+            </div>
           </div>
         </div>
 
-        <Card>
+        <Card className="border-industrial">
           <CardHeader>
-            <CardTitle>Space Details</CardTitle>
-            <CardDescription>
-              Configure the basic information and capacities for this space
+            <CardTitle className="font-brutalist text-2xl font-black uppercase tracking-wide">VENUE DETAILS</CardTitle>
+            <CardDescription className="font-industrial">
+              Configure space information and capacities
             </CardDescription>
           </CardHeader>
           
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="name" className="font-industrial font-medium">Name *</Label>
                   <Input
                     id="name"
                     {...register('name')}
                     placeholder="e.g. Main Hall"
+                    className="font-industrial"
                   />
                   {errors.name && (
-                    <p className="text-sm text-destructive">{errors.name.message}</p>
+                    <p className="text-sm text-destructive font-industrial">{errors.name.message}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="slug">Slug *</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="slug" className="font-industrial font-medium">Identifier *</Label>
                   <Input
                     id="slug"
                     {...register('slug')}
                     placeholder="e.g. main-hall"
+                    className="font-mono text-sm"
                   />
                   {errors.slug && (
-                    <p className="text-sm text-destructive">{errors.slug.message}</p>
+                    <p className="text-sm text-destructive font-industrial">{errors.slug.message}</p>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
+              <div className="space-y-3">
+                <Label htmlFor="description" className="font-industrial font-medium">Description</Label>
                 <Textarea
                   id="description"
                   {...register('description')}
-                  placeholder="Brief description of the space..."
+                  placeholder="Space description..."
                   rows={3}
+                  className="font-industrial"
                 />
                 {errors.description && (
-                  <p className="text-sm text-destructive">{errors.description.message}</p>
+                  <p className="text-sm text-destructive font-industrial">{errors.description.message}</p>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="capacity_seated">Seated Capacity *</Label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="capacity_seated" className="font-industrial font-medium">Seated Capacity *</Label>
                   <Input
                     id="capacity_seated"
                     type="number"
                     min="0"
                     {...register('capacity_seated', { valueAsNumber: true })}
                     placeholder="0"
+                    className="font-industrial"
                   />
                   {errors.capacity_seated && (
-                    <p className="text-sm text-destructive">{errors.capacity_seated.message}</p>
+                    <p className="text-sm text-destructive font-industrial">{errors.capacity_seated.message}</p>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="capacity_standing">Standing Capacity *</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="capacity_standing" className="font-industrial font-medium">Standing Capacity *</Label>
                   <Input
                     id="capacity_standing"
                     type="number"
                     min="0"
                     {...register('capacity_standing', { valueAsNumber: true })}
                     placeholder="0"
+                    className="font-industrial"
                   />
                   {errors.capacity_standing && (
-                    <p className="text-sm text-destructive">{errors.capacity_standing.message}</p>
+                    <p className="text-sm text-destructive font-industrial">{errors.capacity_standing.message}</p>
+                  )}
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="display_order" className="font-industrial font-medium">Display Order</Label>
+                  <Input
+                    id="display_order"
+                    type="number"
+                    min="0"
+                    {...register('display_order', { valueAsNumber: true })}
+                    placeholder="0"
+                    className="font-industrial"
+                  />
+                  {errors.display_order && (
+                    <p className="text-sm text-destructive font-industrial">{errors.display_order.message}</p>
                   )}
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="display_order">Display Order</Label>
-                <Input
-                  id="display_order"
-                  type="number"
-                  min="0"
-                  {...register('display_order', { valueAsNumber: true })}
-                  placeholder="0"
-                />
-                {errors.display_order && (
-                  <p className="text-sm text-destructive">{errors.display_order.message}</p>
-                )}
-              </div>
-
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
                 <Switch
                   id="is_active"
                   {...register('is_active')}
                   onCheckedChange={(checked) => setValue('is_active', checked)}
                 />
-                <Label htmlFor="is_active">Active</Label>
+                <Label htmlFor="is_active" className="font-industrial font-medium">Active (available for bookings)</Label>
               </div>
 
-              <div className="flex items-center space-x-4 pt-4">
+              <div className="flex items-center space-x-4 pt-6 border-t border-industrial">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex items-center space-x-2"
+                  className="btn-primary font-brutalist uppercase tracking-wide flex items-center space-x-2"
                 >
                   <Save className="h-4 w-4" />
-                  <span>{isSubmitting ? 'Saving...' : isEdit ? 'Update Space' : 'Create Space'}</span>
+                  <span>{isSubmitting ? 'SAVING...' : isEdit ? 'UPDATE' : 'CREATE'}</span>
                 </Button>
                 
-                <Button variant="outline" asChild>
-                  <Link to="/management/spaces">Cancel</Link>
+                <Button variant="outline" asChild className="font-brutalist uppercase tracking-wide">
+                  <Link to="/management/spaces/venues">CANCEL</Link>
                 </Button>
               </div>
             </form>
