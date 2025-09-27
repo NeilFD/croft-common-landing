@@ -16,6 +16,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   Home, 
   Building2,
@@ -96,120 +97,182 @@ export const ManagementSidebar = () => {
   };
 
   return (
-    <Sidebar 
-      className="border-r bg-background"
-      collapsible="icon"
-    >
-      <SidebarHeader className="p-4">
-        {showText && (
-          <div className="font-industrial text-sm text-muted-foreground">
-            <div className="font-brutalist font-black uppercase tracking-wide text-foreground">MANAGEMENT</div>
-            <div className="capitalize text-[hsl(var(--accent-pink))]">{managementUser?.role}</div>
-          </div>
-        )}
-      </SidebarHeader>
+    <TooltipProvider>
+      <Sidebar 
+        className="border-r bg-background"
+        collapsible="icon"
+      >
+        <SidebarHeader className="p-4">
+          {showText && (
+            <div className="font-industrial text-sm text-muted-foreground">
+              <div className="font-brutalist font-black uppercase tracking-wide text-foreground">MANAGEMENT</div>
+              <div className="capitalize text-[hsl(var(--accent-pink))]">{managementUser?.role}</div>
+            </div>
+          )}
+        </SidebarHeader>
 
-      <SidebarContent className="bg-background">
-        {/* Management Modules Section */}
-        <SidebarGroup>
-          <Collapsible 
-            open={expandedSections.modules} 
-            onOpenChange={() => toggleSection('modules')}
-          >
-            <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center font-brutalist uppercase tracking-wide">
-                  <Settings className="mr-2 h-4 w-4" />
-                  {showText && "MGMT"}
-                </span>
-                {showText && <ChevronDown className="h-4 w-4" />}
-              </SidebarGroupLabel>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {managementModules.map((module) => (
-                    <SidebarMenuItem key={module.path}>
-                      <SidebarMenuButton 
-                        asChild
-                        className={getNavClass(isActive(module.path, module.exactMatch))}
-                      >
-                        <NavLink to={module.path} className="font-industrial">
-                          <module.icon className="mr-2 h-4 w-4" />
-                          {showText && module.name}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
+        <SidebarContent className="bg-background">
+          {/* Management Modules Section */}
+          <SidebarGroup>
+            {/* Always show section header, even when collapsed */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Collapsible 
+                    open={expandedSections.modules} 
+                    onOpenChange={() => toggleSection('modules')}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                        <span className="flex items-center font-brutalist uppercase tracking-wide">
+                          <Settings className="mr-2 h-4 w-4" />
+                          {showText && "MGMT"}
+                        </span>
+                        {showText && <ChevronDown className="h-4 w-4" />}
+                      </SidebarGroupLabel>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarGroupContent>
+                        <SidebarMenu>
+                          {managementModules.map((module) => (
+                            <SidebarMenuItem key={module.path}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <SidebarMenuButton 
+                                    asChild
+                                    className={getNavClass(isActive(module.path, module.exactMatch))}
+                                  >
+                                    <NavLink to={module.path} className="font-industrial">
+                                      <module.icon className="mr-2 h-4 w-4" />
+                                      {showText && module.name}
+                                    </NavLink>
+                                  </SidebarMenuButton>
+                                </TooltipTrigger>
+                                {!showText && (
+                                  <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                                    <p className="font-industrial">{module.name}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </SidebarMenuItem>
+                          ))}
+                        </SidebarMenu>
+                      </SidebarGroupContent>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </TooltipTrigger>
+              {!showText && (
+                <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                  <p className="font-industrial">Management</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </SidebarGroup>
 
-        {/* Spaces Event Management Section */}
-        <SidebarGroup>
-          <Collapsible 
-            open={expandedSections.spaces} 
-            onOpenChange={() => toggleSection('spaces')}
-          >
-            <CollapsibleTrigger asChild>
-              <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
-                <span className="flex items-center font-brutalist uppercase tracking-wide">
-                  <Building2 className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
-                  {showText && "SPACES"}
-                </span>
-                {showText && <ChevronDown className="h-4 w-4" />}
-              </SidebarGroupLabel>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {/* Spaces Dashboard */}
-                  <SidebarMenuItem>
-                    <SidebarMenuButton 
-                      asChild
-                      className={getNavClass(isActive('/management/spaces', true))}
-                    >
-                        <NavLink to="/management/spaces" className="font-industrial">
-                          <BarChart3 className="mr-2 h-4 w-4" />
-                          {showText && "Dashboard"}
-                        </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  
-                  {/* Sub-modules */}  
-                  {spacesSubModules.map((module) => (
-                    <SidebarMenuItem key={module.path}>
-                      <SidebarMenuButton 
-                        asChild
-                        className={getNavClass(isActive(module.path, module.exactMatch))}
-                      >
-                        <NavLink to={module.path} className="font-industrial">
-                          <module.icon className="mr-2 h-4 w-4" />
-                          {showText && module.name}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
-      </SidebarContent>
+          {/* Spaces Event Management Section */}
+          <SidebarGroup>
+            {/* Always show section header, even when collapsed */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div>
+                  <Collapsible 
+                    open={expandedSections.spaces} 
+                    onOpenChange={() => toggleSection('spaces')}
+                  >
+                    <CollapsibleTrigger asChild>
+                      <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                        <span className="flex items-center font-brutalist uppercase tracking-wide">
+                          <Building2 className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                          {showText && "SPACES"}
+                        </span>
+                        {showText && <ChevronDown className="h-4 w-4" />}
+                      </SidebarGroupLabel>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarGroupContent>
+                        <SidebarMenu>
+                          {/* Spaces Dashboard */}
+                          <SidebarMenuItem>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <SidebarMenuButton 
+                                  asChild
+                                  className={getNavClass(isActive('/management/spaces', true))}
+                                >
+                                  <NavLink to="/management/spaces" className="font-industrial">
+                                    <BarChart3 className="mr-2 h-4 w-4" />
+                                    {showText && "Dashboard"}
+                                  </NavLink>
+                                </SidebarMenuButton>
+                              </TooltipTrigger>
+                              {!showText && (
+                                <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                                  <p className="font-industrial">Spaces Dashboard</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </SidebarMenuItem>
+                          
+                          {/* Sub-modules */}  
+                          {spacesSubModules.map((module) => (
+                            <SidebarMenuItem key={module.path}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <SidebarMenuButton 
+                                    asChild
+                                    className={getNavClass(isActive(module.path, module.exactMatch))}
+                                  >
+                                    <NavLink to={module.path} className="font-industrial">
+                                      <module.icon className="mr-2 h-4 w-4" />
+                                      {showText && module.name}
+                                    </NavLink>
+                                  </SidebarMenuButton>
+                                </TooltipTrigger>
+                                {!showText && (
+                                  <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                                    <p className="font-industrial">{module.name}</p>
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </SidebarMenuItem>
+                          ))}
+                        </SidebarMenu>
+                      </SidebarGroupContent>
+                    </CollapsibleContent>
+                  </Collapsible>
+                </div>
+              </TooltipTrigger>
+              {!showText && (
+                <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                  <p className="font-industrial">Spaces - Event Management</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </SidebarGroup>
+        </SidebarContent>
 
-      <SidebarFooter className="p-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleNavigateToSite}
-          className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide"
-        >
-          <LogOut className="h-4 w-4" />
-          {showText && <span>SITE</span>}
-        </Button>
-      </SidebarFooter>
-    </Sidebar>
+        <SidebarFooter className="p-4">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNavigateToSite}
+                className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide"
+              >
+                <LogOut className="h-4 w-4" />
+                {showText && <span>SITE</span>}
+              </Button>
+            </TooltipTrigger>
+            {!showText && (
+              <TooltipContent side="right" className="bg-white border border-gray-200 text-gray-900 shadow-lg">
+                <p className="font-industrial">Back to Main Site</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </SidebarFooter>
+      </Sidebar>
+    </TooltipProvider>
   );
 };
