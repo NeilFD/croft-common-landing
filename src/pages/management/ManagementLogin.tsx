@@ -177,6 +177,12 @@ const ManagementLogin = () => {
 
     setIsLoading(true);
 
+    // UI fail-safe: never leave the button spinning indefinitely
+    const loadingFailSafe = setTimeout(() => {
+      console.warn('⏱️ Password update taking too long, auto-resetting UI state');
+      setIsLoading(false);
+    }, 25000);
+
     try {
       console.log('🔐 Attempting password update...');
 
@@ -215,16 +221,22 @@ const ManagementLogin = () => {
       console.log('✅ Password updated successfully');
       toast({
         title: "Password updated successfully",
-        description: "You can now sign in with your new password"
+        description: "Please sign in with your new password",
       });
-      
-      // Clear recovery states and navigate to management
+
+      // Clear recovery session and require a clean sign-in to avoid edge-case loops
+      try {
+        await supabase.auth.signOut();
+      } catch (e) {
+        console.warn('⚠️ Sign out after password reset failed (non-blocking):', e);
+      }
+
       setIsPasswordUpdateMode(false);
       setRecoveryInProgress(false);
       setNewPassword('');
       setConfirmPassword('');
       sessionStorage.removeItem('recovery');
-      navigate('/management');
+      navigate('/management/login');
     } catch (error) {
       console.error('🚨 Password update exception:', error);
       toast({
@@ -233,6 +245,7 @@ const ManagementLogin = () => {
         variant: "destructive"
       });
     } finally {
+      clearTimeout(loadingFailSafe);
       setIsLoading(false);
     }
   };
