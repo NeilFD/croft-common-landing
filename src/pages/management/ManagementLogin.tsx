@@ -200,43 +200,72 @@ const ManagementLogin = () => {
         return;
       }
 
-      // Prevent hanging UI: add a safety timeout for the update call
-      const timeout = new Promise<{ error: any }>((resolve) =>
-        setTimeout(() => resolve({ error: new Error('Request timed out') }), 20000)
-      );
-
-      const updatePromise = supabase.auth.updateUser({ password: newPassword });
-      const { error } = await Promise.race([updatePromise, timeout]) as { error: any };
-
-      if (error) {
-        console.error('🚨 Password update error:', error);
-        toast({
-          title: "Password update failed",
-          description: error.message || 'Please try again.',
-          variant: "destructive"
-        });
-        return;
-      }
-
-      console.log('✅ Password updated successfully');
-      toast({
-        title: "Password updated successfully",
-        description: "Please sign in with your new password",
-      });
-
-      // Clear recovery session and require a clean sign-in to avoid edge-case loops
+      // Best-effort token refresh (non-blocking for UI)
       try {
-        await supabase.auth.signOut();
+        await supabase.auth.refreshSession();
       } catch (e) {
-        console.warn('⚠️ Sign out after password reset failed (non-blocking):', e);
+        console.warn('⚠️ refreshSession failed (non-blocking):', e);
       }
 
-      setIsPasswordUpdateMode(false);
-      setRecoveryInProgress(false);
-      setNewPassword('');
-      setConfirmPassword('');
-      sessionStorage.removeItem('recovery');
-      navigate('/management/login');
+      // Run update with a watchdog to guarantee UI unblocks
+      let finished = false;
+      await new Promise<void>((resolve) => {
+        supabase.auth
+          .updateUser({ password: newPassword })
+          .then(({ error }) => {
+            if (error) {
+              console.error('🚨 Password update error:', error);
+              toast({
+                title: 'Password update failed',
+                description: error.message || 'Please try again.',
+                variant: 'destructive',
+              });
+            } else {
+              console.log('✅ Password updated successfully');
+              toast({
+                title: 'Password updated successfully',
+                description: 'Please sign in with your new password',
+              });
+
+              // Sign out and clean recovery flags before redirect
+              supabase.auth
+                .signOut()
+                .catch((e) => console.warn('⚠️ Sign out after password reset failed (non-blocking):', e));
+
+              setIsPasswordUpdateMode(false);
+              setRecoveryInProgress(false);
+              setNewPassword('');
+              setConfirmPassword('');
+              sessionStorage.removeItem('recovery');
+              navigate('/management/login');
+            }
+          })
+          .catch((err) => {
+            console.error('🚨 Password update exception:', err);
+            toast({
+              title: 'Password update failed',
+              description: err?.message || 'An unexpected error occurred',
+              variant: 'destructive',
+            });
+          })
+          .finally(() => {
+            finished = true;
+            resolve();
+          });
+
+        // Watchdog: if not finished in 12s, resolve to unblock UI
+        setTimeout(() => {
+          if (!finished) {
+            console.warn('⏱️ Password update watchdog fired');
+            toast({
+              title: 'Taking longer than expected',
+              description: 'Please try again, or request a new reset link.',
+              variant: 'destructive',
+            });
+            resolve();
+          }
+        }, 12000);
+      });
     } catch (error) {
       console.error('🚨 Password update exception:', error);
       toast({
