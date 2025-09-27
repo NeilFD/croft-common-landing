@@ -47,14 +47,29 @@ const ManagementLogin = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [recoveryInProgress, setRecoveryInProgress] = useState(initialRecovery);
 
-  // Immediate hash cleanup to strip dangling fragments from provider redirects
-  useEffect(() => {
+  // Utility: remove auth artefacts (# fragments and sensitive query params)
+  const stripAuthArtifacts = () => {
     try {
-      const hash = window.location.hash;
-      if (hash && (hash === '#' || hash.startsWith('#access_token') || hash.startsWith('#refresh_token') || hash.includes('type=recovery'))) {
-        window.history.replaceState({}, document.title, '/management/login');
-      }
+      const url = new URL(window.location.href);
+      const paramsToRemove = ['access_token','refresh_token','code','token_hash','token','type','error','error_description'];
+      paramsToRemove.forEach((p) => url.searchParams.delete(p));
+      url.hash = '';
+      const qs = url.searchParams.toString();
+      const path = url.pathname + (qs ? `?${qs}` : '');
+      window.history.replaceState({}, document.title, path);
     } catch { /* no-op */ }
+  };
+
+  // Utility: clean now and a bit later to override late hash writes by providers
+  const cleanUrlNowAndLater = () => {
+    stripAuthArtifacts();
+    requestAnimationFrame(() => stripAuthArtifacts());
+    setTimeout(stripAuthArtifacts, 150);
+    setTimeout(stripAuthArtifacts, 500);
+  };
+
+  useEffect(() => {
+    cleanUrlNowAndLater();
   }, []);
 
   useEffect(() => {
@@ -80,9 +95,9 @@ const ManagementLogin = () => {
         sessionStorage.setItem('recovery', '1');
       }
 
-      // Clean up a trailing hash fragment with no params (e.g. /management/login#)
-      if (window.location.hash === '#') {
-        window.history.replaceState({}, document.title, '/management/login');
+      // Clean up trailing hash or params
+      if (window.location.hash) {
+        stripAuthArtifacts();
       }
 
       try {
@@ -105,7 +120,7 @@ const ManagementLogin = () => {
           if (error) throw error;
 
           // Clean up URL
-          window.history.replaceState({}, document.title, '/management/login');
+          stripAuthArtifacts();
           return;
         }
 
@@ -114,7 +129,7 @@ const ManagementLogin = () => {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
 
-          window.history.replaceState({}, document.title, '/management/login');
+          stripAuthArtifacts();
           return;
         }
 
@@ -130,7 +145,7 @@ const ManagementLogin = () => {
           } as any);
           if (error) throw error;
 
-          window.history.replaceState({}, document.title, '/management/login');
+          stripAuthArtifacts();
           return;
         }
       } catch (err: any) {
@@ -149,12 +164,7 @@ const ManagementLogin = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       // Always clean recovery hashes on any auth event
-      try {
-        const h = window.location.hash;
-        if (h && (h === '#' || h.startsWith('#access_token') || h.startsWith('#refresh_token') || h.includes('type=recovery'))) {
-          window.history.replaceState({}, document.title, '/management/login');
-        }
-      } catch { /* no-op */ }
+      cleanUrlNowAndLater();
 
       if (event === 'PASSWORD_RECOVERY') {
         setRecoveryInProgress(true);
@@ -230,65 +240,41 @@ const ManagementLogin = () => {
         console.warn('⚠️ refreshSession failed (non-blocking):', e);
       }
 
-      // Run update with a watchdog to guarantee UI unblocks
-      let finished = false;
-      await new Promise<void>((resolve) => {
-        supabase.auth
-          .updateUser({ password: newPassword })
-          .then(({ error }) => {
-            if (error) {
-              console.error('🚨 Password update error:', error);
-              toast({
-                title: 'Password update failed',
-                description: error.message || 'Please try again.',
-                variant: 'destructive',
-              });
-            } else {
-              console.log('✅ Password updated successfully');
-              toast({
-                title: 'Password updated successfully',
-                description: 'Please sign in with your new password',
-              });
+      // Run update with a hard timeout to guarantee UI unblocks
+      let timedOut = false;
+      const race = await Promise.race([
+        supabase.auth.updateUser({ password: newPassword }),
+        new Promise<{ error: any }>((resolve) =>
+          setTimeout(() => { timedOut = true; resolve({ error: new Error('Request timed out') }); }, 12000)
+        ),
+      ] as const);
 
-              // Sign out and clean recovery flags before redirect
-              supabase.auth
-                .signOut()
-                .catch((e) => console.warn('⚠️ Sign out after password reset failed (non-blocking):', e));
+      const result = Array.isArray(race) ? race[0] : (race as any);
+      const err = (result && 'error' in result) ? (result as any).error : null;
 
-              setIsPasswordUpdateMode(false);
-              setRecoveryInProgress(false);
-              setNewPassword('');
-              setConfirmPassword('');
-              sessionStorage.removeItem('recovery');
-              navigate('/management/login');
-            }
-          })
-          .catch((err) => {
-            console.error('🚨 Password update exception:', err);
-            toast({
-              title: 'Password update failed',
-              description: err?.message || 'An unexpected error occurred',
-              variant: 'destructive',
-            });
-          })
-          .finally(() => {
-            finished = true;
-            resolve();
-          });
+      if (timedOut || err) {
+        console.warn('⚠️ Password update did not complete in time or returned error:', err);
+        toast({
+          title: timedOut ? 'Update timed out' : 'Password update failed',
+          description: timedOut ? 'Please try again, or request a new reset link.' : (err?.message || 'Please try again.'),
+          variant: 'destructive',
+        });
+      } else {
+        console.log('✅ Password updated successfully');
+        toast({
+          title: 'Password updated successfully',
+          description: 'Please sign in with your new password',
+        });
 
-        // Watchdog: if not finished in 12s, resolve to unblock UI
-        setTimeout(() => {
-          if (!finished) {
-            console.warn('⏱️ Password update watchdog fired');
-            toast({
-              title: 'Taking longer than expected',
-              description: 'Please try again, or request a new reset link.',
-              variant: 'destructive',
-            });
-            resolve();
-          }
-        }, 12000);
-      });
+        // Clean recovery state and enforce a fresh load on the production URL
+        try { await supabase.auth.signOut(); } catch (e) { console.warn('⚠️ Sign out after reset failed:', e); }
+        setIsPasswordUpdateMode(false);
+        setRecoveryInProgress(false);
+        setNewPassword('');
+        setConfirmPassword('');
+        sessionStorage.removeItem('recovery');
+        window.location.assign('https://www.croftcommontest.com/management/login');
+      }
     } catch (error) {
       console.error('🚨 Password update exception:', error);
       toast({
