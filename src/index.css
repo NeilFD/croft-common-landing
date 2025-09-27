@@ -69,6 +69,10 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
 
+    /* Popover/dropdown styling */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+
     /* Performance optimizations */
     --animation-duration-fast: 0.2s;
     --animation-duration-normal: 0.3s;
@@ -97,6 +101,10 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
+
+    /* Popover/dropdown styling */
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
   }
 }
 
