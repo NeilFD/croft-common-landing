@@ -53,6 +53,36 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          diff: Json | null
+          entity: string
+          entity_id: string | null
+          id: string
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          diff?: Json | null
+          entity: string
+          entity_id?: string | null
+          id?: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          diff?: Json | null
+          entity?: string
+          entity_id?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
       campaign_analytics: {
         Row: {
           campaign_id: string
@@ -2345,6 +2375,92 @@ export type Database = {
           },
         ]
       }
+      space_hours: {
+        Row: {
+          buffer_after_min: number | null
+          buffer_before_min: number | null
+          close_time: string | null
+          created_at: string
+          day_of_week: number
+          id: string
+          late_close_allowed: boolean | null
+          open_time: string | null
+          space_id: string
+          updated_at: string
+        }
+        Insert: {
+          buffer_after_min?: number | null
+          buffer_before_min?: number | null
+          close_time?: string | null
+          created_at?: string
+          day_of_week: number
+          id?: string
+          late_close_allowed?: boolean | null
+          open_time?: string | null
+          space_id: string
+          updated_at?: string
+        }
+        Update: {
+          buffer_after_min?: number | null
+          buffer_before_min?: number | null
+          close_time?: string | null
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          late_close_allowed?: boolean | null
+          open_time?: string | null
+          space_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "space_hours_space_id_fkey"
+            columns: ["space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      spaces: {
+        Row: {
+          capacity_seated: number | null
+          capacity_standing: number | null
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          capacity_seated?: number | null
+          capacity_standing?: number | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          capacity_seated?: number | null
+          capacity_standing?: number | null
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       streak_badges: {
         Row: {
           badge_description: string | null
@@ -2663,6 +2779,30 @@ export type Database = {
           to_page?: string
           transition_type?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["management_role"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["management_role"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["management_role"]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -3347,6 +3487,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_user_management_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["management_role"]
+      }
       get_user_type: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -3379,6 +3523,13 @@ export type Database = {
         Args: { "": unknown }
         Returns: unknown
       }
+      has_management_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["management_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: boolean
@@ -3398,6 +3549,15 @@ export type Database = {
       is_within_venue_bounds: {
         Args: { lat: number; lng: number }
         Returns: boolean
+      }
+      log_audit_entry: {
+        Args: {
+          _action: string
+          _diff?: Json
+          _entity: string
+          _entity_id: string
+        }
+        Returns: string
       }
       normalize_item_name: {
         Args: { item_name: string }
@@ -3470,6 +3630,7 @@ export type Database = {
       cms_content_type: "text" | "richtext" | "json"
       delivery_status: "sent" | "failed" | "deactivated" | "logged"
       loyalty_card_type: "regular" | "lucky7"
+      management_role: "admin" | "sales" | "ops" | "finance" | "readonly"
       notification_scope: "all" | "self"
       notification_status: "draft" | "queued" | "sending" | "sent" | "failed"
       time_block_enum:
@@ -3619,6 +3780,7 @@ export const Constants = {
       cms_content_type: ["text", "richtext", "json"],
       delivery_status: ["sent", "failed", "deactivated", "logged"],
       loyalty_card_type: ["regular", "lucky7"],
+      management_role: ["admin", "sales", "ops", "finance", "readonly"],
       notification_scope: ["all", "self"],
       notification_status: ["draft", "queued", "sending", "sent", "failed"],
       time_block_enum: [

@@ -159,19 +159,28 @@ const Footer = ({
             className="font-industrial text-xs text-background/50"
             as="div"
           />
-          <button 
-            onClick={() => setLinkModalOpen(true)}
-            className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
-          >
-            <CMSText
-              page="global"
-              section="footer"
-              contentKey="membership_link_text"
-              fallback="Link Membership"
-              className=""
-              as="div"
-            />
-          </button>
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => setLinkModalOpen(true)}
+              className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
+            >
+              <CMSText
+                page="global"
+                section="footer"
+                contentKey="membership_link_text"
+                fallback="Link Membership"
+                className=""
+                as="div"
+              />
+            </button>
+            
+            <a 
+              href="/management/login"
+              className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
+            >
+              Management Login
+            </a>
+          </div>
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center">

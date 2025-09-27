@@ -70,6 +70,13 @@ import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 import { ProtectedRoute } from '@/components/research/ProtectedRoute';
 import InteractionWatchdog from '@/components/InteractionWatchdog';
 
+// Management system components
+const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
+const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
+const SpacesList = lazy(() => import("./pages/management/SpacesList"));
+const SpaceForm = lazy(() => import("./pages/management/SpaceForm"));
+const SpaceDetail = lazy(() => import("./pages/management/SpaceDetail"));
+
 const queryClient = new QueryClient();
 
 
@@ -249,10 +256,19 @@ const App = () => {
                       <Route path="/cms/*" element={<CMS />} />
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/research" element={<ProtectedRoute><Research /></ProtectedRoute>} />
-                      <Route path="/uncommon-standards" element={<UncommonStandards />} />
-                      <Route path="/c/:token" element={<ClickRedirect />} />
-                      <Route path="/from-notification" element={<Index />} />
-                      <Route path="*" element={<NotFound />} />
+                       <Route path="/uncommon-standards" element={<UncommonStandards />} />
+                       
+                       {/* Management Routes */}
+                       <Route path="/management/login" element={<ManagementLogin />} />
+                       <Route path="/management" element={<ManagementDashboard />} />
+                       <Route path="/management/spaces" element={<SpacesList />} />
+                       <Route path="/management/spaces/new" element={<SpaceForm />} />
+                       <Route path="/management/spaces/:id" element={<SpaceDetail />} />
+                       <Route path="/management/spaces/:id/edit" element={<SpaceForm />} />
+                       
+                       <Route path="/c/:token" element={<ClickRedirect />} />
+                       <Route path="/from-notification" element={<Index />} />
+                       <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
                   </MembershipAuthProvider>
