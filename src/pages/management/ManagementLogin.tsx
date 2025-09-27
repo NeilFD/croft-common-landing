@@ -10,6 +10,29 @@ import { toast } from '@/hooks/use-toast';
 import { Mail, Eye, EyeOff } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
 
+// Synchronous detector to block redirects before effects run
+const detectRecoveryFromUrl = (): boolean => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const type = params.get('type') || hashParams.get('type');
+    return (
+      sessionStorage.getItem('recovery') === '1' ||
+      type === 'recovery' ||
+      params.has('token_hash') ||
+      params.has('token') ||
+      params.has('code') ||
+      hashParams.has('code') ||
+      params.has('access_token') ||
+      hashParams.has('access_token') ||
+      params.has('refresh_token') ||
+      hashParams.has('refresh_token')
+    );
+  } catch {
+    return false;
+  }
+};
+
 const ManagementLogin = () => {
   const { managementUser, loading } = useManagementAuth();
   const navigate = useNavigate();
@@ -18,17 +41,14 @@ const ManagementLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isResetMode, setIsResetMode] = useState(false);
-  const [isPasswordUpdateMode, setIsPasswordUpdateMode] = useState(false);
+  const initialRecovery = detectRecoveryFromUrl();
+  const [isPasswordUpdateMode, setIsPasswordUpdateMode] = useState(initialRecovery);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [recoveryInProgress, setRecoveryInProgress] = useState(false);
+  const [recoveryInProgress, setRecoveryInProgress] = useState(initialRecovery);
 
   useEffect(() => {
-    // Check if we were in recovery mode
-    if (sessionStorage.getItem('recovery')) {
-      setRecoveryInProgress(true);
-      setIsPasswordUpdateMode(true);
-    }
+    // Initial recovery is derived synchronously to block premature redirects
 
     // Handle password reset/auth tokens from URL (robust for multiple Supabase flows)
     const processAuthTokens = async () => {
@@ -115,7 +135,7 @@ const ManagementLogin = () => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [recoveryInProgress]);
+  }, []);
 
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
