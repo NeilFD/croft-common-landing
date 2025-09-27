@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { format } from "date-fns";
+import { utcToLocalDatetimeString, localDatetimeStringToUtc } from "@/lib/timezone-utils";
 import {
   Dialog,
   DialogContent,
@@ -79,12 +80,12 @@ export const BookingForm = ({
       space_id: selectedSpaceId || booking?.space_id || "",
       title: booking?.title || "",
       start_ts: booking?.start_ts 
-        ? format(new Date(booking.start_ts), "yyyy-MM-dd'T'HH:mm")
+        ? utcToLocalDatetimeString(booking.start_ts)
         : (initialDate && initialHour !== undefined
           ? format(new Date(initialDate.setHours(initialHour, 0)), "yyyy-MM-dd'T'HH:mm")
           : ""),
       end_ts: booking?.end_ts
-        ? format(new Date(booking.end_ts), "yyyy-MM-dd'T'HH:mm")
+        ? utcToLocalDatetimeString(booking.end_ts)
         : (initialDate && initialHour !== undefined
           ? format(new Date(initialDate.setHours(initialHour + 1, 0)), "yyyy-MM-dd'T'HH:mm")
           : ""),
@@ -100,8 +101,8 @@ export const BookingForm = ({
         form.reset({
           space_id: booking.space_id,
           title: booking.title,
-          start_ts: format(new Date(booking.start_ts), "yyyy-MM-dd'T'HH:mm"),
-          end_ts: format(new Date(booking.end_ts), "yyyy-MM-dd'T'HH:mm"),
+          start_ts: utcToLocalDatetimeString(booking.start_ts),
+          end_ts: utcToLocalDatetimeString(booking.end_ts),
           setup_min: booking.setup_min || 0,
           teardown_min: booking.teardown_min || 0,
         });
@@ -129,8 +130,8 @@ export const BookingForm = ({
         // Update existing booking
         await updateBooking.mutateAsync({
           title: data.title,
-          start_ts: data.start_ts,
-          end_ts: data.end_ts,
+          start_ts: localDatetimeStringToUtc(data.start_ts),
+          end_ts: localDatetimeStringToUtc(data.end_ts),
           setup_min: data.setup_min,
           teardown_min: data.teardown_min,
         });
@@ -140,8 +141,8 @@ export const BookingForm = ({
           space_id: data.space_id,
           lead_id: leadId || null,
           title: data.title,
-          start_ts: data.start_ts,
-          end_ts: data.end_ts,
+          start_ts: localDatetimeStringToUtc(data.start_ts),
+          end_ts: localDatetimeStringToUtc(data.end_ts),
           setup_min: data.setup_min,
           teardown_min: data.teardown_min,
         });
