@@ -47,6 +47,16 @@ const ManagementLogin = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [recoveryInProgress, setRecoveryInProgress] = useState(initialRecovery);
 
+  // Immediate hash cleanup to strip dangling fragments from provider redirects
+  useEffect(() => {
+    try {
+      const hash = window.location.hash;
+      if (hash && (hash === '#' || hash.startsWith('#access_token') || hash.startsWith('#refresh_token') || hash.includes('type=recovery'))) {
+        window.history.replaceState({}, document.title, '/management/login');
+      }
+    } catch { /* no-op */ }
+  }, []);
+
   useEffect(() => {
     // Initial recovery is derived synchronously to block premature redirects
 
@@ -138,13 +148,26 @@ const ManagementLogin = () => {
   // Also react to Supabase auth events in case the redirect established a recovery session
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      // Always clean recovery hashes on any auth event
+      try {
+        const h = window.location.hash;
+        if (h && (h === '#' || h.startsWith('#access_token') || h.startsWith('#refresh_token') || h.includes('type=recovery'))) {
+          window.history.replaceState({}, document.title, '/management/login');
+        }
+      } catch { /* no-op */ }
+
       if (event === 'PASSWORD_RECOVERY') {
         setRecoveryInProgress(true);
         setIsPasswordUpdateMode(true);
         sessionStorage.setItem('recovery', '1');
-      } else if (event === 'SIGNED_IN' && recoveryInProgress) {
-        // Keep recovery mode active even after sign in during recovery
-        setIsPasswordUpdateMode(true);
+      } else if (event === 'SIGNED_IN') {
+        // If sign-in came from a recovery redirect, keep reset UI visible
+        const h = window.location.hash;
+        if (h && (h.includes('type=recovery') || h.includes('access_token'))) {
+          setRecoveryInProgress(true);
+          setIsPasswordUpdateMode(true);
+          sessionStorage.setItem('recovery', '1');
+        }
       }
     });
     return () => {
