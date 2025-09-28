@@ -449,11 +449,11 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                   <div className="contract-content bg-white border-2 border-primary/10 rounded-xl shadow-xl overflow-hidden">
                     {/* Contract Header with Logo */}
                     <div className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 text-center relative">
-                      <div className="absolute top-4 left-4 bg-white rounded-lg p-2 shadow-md">
+                      <div className="absolute top-4 left-4 bg-white rounded-lg p-3 shadow-lg border border-white/20">
                         <img 
                           src={BRAND_LOGO} 
                           alt="Croft Common Logo" 
-                          className="w-8 h-8 object-contain"
+                          className="w-12 h-12 object-contain"
                           onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             target.style.display = 'none';
@@ -470,14 +470,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                     
                     {/* Contract Content */}
                     <div className="p-8 lg:p-12">
-                      <div 
-                        className="contract-text leading-relaxed text-sm"
-                        style={{
-                          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
-                          whiteSpace: 'pre-wrap',
-                          lineHeight: '1.6'
-                        }}
-                      >
+                      <div className="contract-text font-industrial text-base leading-relaxed whitespace-pre-wrap text-foreground">
                         {formatContractContent(contractData.content)}
                       </div>
                     </div>
