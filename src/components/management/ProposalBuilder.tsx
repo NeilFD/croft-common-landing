@@ -47,8 +47,18 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   const { data: existingItems } = useQuery({
     queryKey: ['event-line-items', eventId],
     queryFn: async () => {
+      // First check if this is a management event or regular event
+      const { data: managementEventData } = await supabase
+        .from('management_events')
+        .select('id')
+        .eq('id', eventId)
+        .maybeSingle();
+      
+      const isManagementEvent = !!managementEventData;
+      const tableName = isManagementEvent ? 'management_event_line_items' : 'event_line_items';
+      
       const { data, error } = await supabase
-        .from('event_line_items')
+        .from(tableName)
         .select('*')
         .eq('event_id', eventId)
         .order('sort_order');
@@ -77,7 +87,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
     mutationFn: async (items: LineItem[]) => {
       const { data, error } = await supabase.rpc('create_proposal', {
         p_event_id: eventId,
-        p_items: items.map(item => ({
+        p_line_items: items.map(item => ({
           type: item.type,
           description: item.description,
           qty: item.qty,

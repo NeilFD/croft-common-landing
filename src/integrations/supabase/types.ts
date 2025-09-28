@@ -1703,6 +1703,56 @@ export type Database = {
         }
         Relationships: []
       }
+      management_event_line_items: {
+        Row: {
+          created_at: string | null
+          description: string
+          event_id: string
+          id: string
+          per_person: boolean | null
+          qty: number | null
+          sort_order: number | null
+          tax_rate_pct: number | null
+          type: string
+          unit_price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          event_id: string
+          id?: string
+          per_person?: boolean | null
+          qty?: number | null
+          sort_order?: number | null
+          tax_rate_pct?: number | null
+          type: string
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          event_id?: string
+          id?: string
+          per_person?: boolean | null
+          qty?: number | null
+          sort_order?: number | null
+          tax_rate_pct?: number | null
+          type?: string
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "management_event_line_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "management_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       management_events: {
         Row: {
           budget: number | null
@@ -3921,7 +3971,11 @@ export type Database = {
       create_proposal: {
         Args:
           | { p_event_id: string; p_items: Json }
-          | { p_event_id: string; p_items: Json; p_service_charge_pct?: number }
+          | {
+              p_event_id: string
+              p_line_items: Json
+              p_service_charge_pct?: number
+            }
         Returns: {
           line_items_created: number
           proposal_id: string
