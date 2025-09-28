@@ -312,27 +312,22 @@ const loadTTFFont = async (label: string, url: string) => {
 // Create document
 const doc = new jsPDF('p', 'mm', 'a4');
 
-// Load branded fonts from Google Fonts GitHub (true TTF)
+// Load branded fonts from working TTF files
 try {
   const [
     oswaldRegular,
-    oswaldBold,
     workSansRegular,
     workSansBold,
   ] = await Promise.all([
-    loadTTFFont('Oswald-Regular', 'https://cdn.jsdelivr.net/npm/@fontsource/oswald/files/oswald-latin-400-normal.ttf'),
-    loadTTFFont('Oswald-Bold', 'https://cdn.jsdelivr.net/npm/@fontsource/oswald/files/oswald-latin-700-normal.ttf'),
-    loadTTFFont('WorkSans-Regular', 'https://cdn.jsdelivr.net/npm/@fontsource/work-sans/files/work-sans-latin-400-normal.ttf'),
-    loadTTFFont('WorkSans-Bold', 'https://cdn.jsdelivr.net/npm/@fontsource/work-sans/files/work-sans-latin-700-normal.ttf'),
+    loadTTFFont('Oswald-Regular', 'https://raw.githubusercontent.com/jongrover/all-google-fonts-ttf-only/master/fonts/Oswald-Regular.ttf'),
+    loadTTFFont('WorkSans-Regular', 'https://raw.githubusercontent.com/jongrover/all-google-fonts-ttf-only/master/fonts/WorkSans-Regular.ttf'),
+    loadTTFFont('WorkSans-Bold', 'https://raw.githubusercontent.com/jongrover/all-google-fonts-ttf-only/master/fonts/WorkSans-Bold.ttf'),
   ]);
 
   if (oswaldRegular) {
     doc.addFileToVFS('Oswald-Regular.ttf', oswaldRegular);
     doc.addFont('Oswald-Regular.ttf', 'Oswald', 'normal');
-  }
-  if (oswaldBold) {
-    doc.addFileToVFS('Oswald-Bold.ttf', oswaldBold);
-    doc.addFont('Oswald-Bold.ttf', 'Oswald', 'bold');
+    doc.addFont('Oswald-Regular.ttf', 'Oswald', 'bold'); // Use regular for bold too
   }
   if (workSansRegular) {
     doc.addFileToVFS('WorkSans-Regular.ttf', workSansRegular);
