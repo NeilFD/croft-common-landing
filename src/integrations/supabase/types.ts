@@ -826,6 +826,48 @@ export type Database = {
         }
         Relationships: []
       }
+      conflicts: {
+        Row: {
+          booking_id_1: string
+          booking_id_2: string
+          conflict_details: Json | null
+          conflict_type: string
+          created_at: string
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          booking_id_1: string
+          booking_id_2: string
+          conflict_details?: Json | null
+          conflict_type?: string
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          booking_id_1?: string
+          booking_id_2?: string
+          conflict_details?: Json | null
+          conflict_type?: string
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           category: string
@@ -3605,6 +3647,21 @@ export type Database = {
       create_management_event: {
         Args: { payload: Json }
         Returns: string
+      }
+      detect_booking_conflicts: {
+        Args: {
+          p_end_ts: string
+          p_exclude_booking_id?: string
+          p_space_id: string
+          p_start_ts: string
+        }
+        Returns: {
+          conflict_type: string
+          conflicting_booking_id: string
+          conflicting_end: string
+          conflicting_start: string
+          conflicting_title: string
+        }[]
       }
       ensure_membership_number: {
         Args: { user_id_input: string }
