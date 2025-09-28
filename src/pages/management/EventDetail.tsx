@@ -275,62 +275,139 @@ const EventDetail = () => {
           </TabsContent>
 
           <TabsContent value="overview">
-            <Card className="border-industrial">
-              <CardHeader>
-                <CardTitle className="font-brutalist uppercase tracking-wide">EVENT OVERVIEW</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
-                  <div>
-                    <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                      Event Code
-                    </Label>
-                    <p className="font-brutalist text-lg">{event.code}</p>
-                  </div>
-                  
-                  <div>
-                    <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                      Status
-                    </Label>
-                    <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} mt-1`}>
-                      {event.status}
-                    </Badge>
-                  </div>
+            <div className="space-y-6">
+              {/* Client Details Section */}
+              {(event.client_name || event.client_email || event.client_phone || event.budget) && (
+                <Card className="border-industrial">
+                  <CardHeader>
+                    <CardTitle className="font-brutalist uppercase tracking-wide">CLIENT DETAILS</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
+                      {event.client_name && (
+                        <div>
+                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                            Client Name
+                          </Label>
+                          <p className="font-industrial">{event.client_name}</p>
+                        </div>
+                      )}
+                      
+                      {event.client_email && (
+                        <div>
+                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                            Email Address
+                          </Label>
+                          <p className="font-industrial">
+                            <a href={`mailto:${event.client_email}`} className="text-primary hover:underline">
+                              {event.client_email}
+                            </a>
+                          </p>
+                        </div>
+                      )}
+                      
+                      {event.client_phone && (
+                        <div>
+                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                            Phone Number
+                          </Label>
+                          <p className="font-industrial">
+                            <a href={`tel:${event.client_phone}`} className="text-primary hover:underline">
+                              {event.client_phone}
+                            </a>
+                          </p>
+                        </div>
+                      )}
+                      
+                      {event.budget && (
+                        <div>
+                          <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                            Budget
+                          </Label>
+                          <p className="font-industrial">£{event.budget}</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-                  {event.event_type && (
+              {/* Event Information */}
+              <Card className="border-industrial">
+                <CardHeader>
+                  <CardTitle className="font-brutalist uppercase tracking-wide">EVENT INFORMATION</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
                     <div>
                       <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                        Event Type
+                        Event Code
                       </Label>
-                      <p className="font-industrial">{event.event_type}</p>
+                      <p className="font-brutalist text-lg">{event.code}</p>
                     </div>
-                  )}
-
-                  {event.headcount && (
+                    
                     <div>
                       <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                        Expected Headcount
+                        Status
                       </Label>
-                      <p className="font-industrial">{event.headcount}</p>
+                      <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} mt-1`}>
+                        {event.status}
+                      </Badge>
                     </div>
-                  )}
 
-                  <div>
-                    <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                      Created
-                    </Label>
-                    <p className="font-industrial">{format(new Date(event.created_at), 'dd MMM yyyy HH:mm')}</p>
-                  </div>
+                    {event.event_type && (
+                      <div>
+                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          Event Type
+                        </Label>
+                        <p className="font-industrial">{event.event_type}</p>
+                      </div>
+                    )}
 
-                  <div>
-                    <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                      Last Updated
-                    </Label>
-                    <p className="font-industrial">{format(new Date(event.updated_at), 'dd MMM yyyy HH:mm')}</p>
+                    {event.headcount && (
+                      <div>
+                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          Expected Headcount
+                        </Label>
+                        <p className="font-industrial">{event.headcount}</p>
+                      </div>
+                    )}
+
+                    {(event as any).start_date && (
+                      <div>
+                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          Event Date
+                        </Label>
+                        <p className="font-industrial">{format(new Date((event as any).start_date), 'dd MMM yyyy')}</p>
+                      </div>
+                    )}
+
+                    {(event as any).start_time && (
+                      <div>
+                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                          Start Time
+                        </Label>
+                        <p className="font-industrial">{(event as any).start_time}</p>
+                      </div>
+                    )}
+
+                    <div>
+                      <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                        Created
+                      </Label>
+                      <p className="font-industrial">{format(new Date(event.created_at), 'dd MMM yyyy HH:mm')}</p>
+                    </div>
+
+                    <div>
+                      <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                        Last Updated
+                      </Label>
+                      <p className="font-industrial">{format(new Date(event.updated_at), 'dd MMM yyyy HH:mm')}</p>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="notes">

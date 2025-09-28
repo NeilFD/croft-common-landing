@@ -69,18 +69,20 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
     setLoading(true);
 
     try {
+      // Parse budget number from text
+      const budgetNumber = formData.budget ? parseFloat(formData.budget.replace(/[£,\s-]/g, '').split(' ')[0]) || null : null;
+      
       const { data: eventId, error } = await supabase.rpc('create_management_event', {
-        payload: {
-          event_type: formData.event_type || null,
-          headcount: formData.headcount || null,
-          notes: formData.notes || null,
-          owner_id: formData.owner_id || null,
-          start_date: formData.start_date || null,
-          start_time: formData.start_time || null,
-          budget: formData.budget || null,
-          client_contact: formData.client_contact || null,
-          lead_id: leadId || null
-        }
+        p_event_type: formData.event_type || null,
+        p_headcount: formData.headcount ? parseInt(formData.headcount) : null,
+        p_notes: formData.notes || null,
+        p_start_date: formData.start_date || null,
+        p_start_time: formData.start_time || null,
+        p_budget: budgetNumber,
+        p_client_name: lead ? `${lead.first_name} ${lead.last_name}` : formData.client_contact || null,
+        p_client_email: lead?.email || null,
+        p_client_phone: lead?.phone || null,
+        p_lead_id: leadId || null
       });
 
       if (error) throw error;

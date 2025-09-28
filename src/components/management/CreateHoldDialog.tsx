@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 
 interface CreateHoldDialogProps {
   eventId: string;
@@ -41,6 +42,54 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
       return data;
     }
   });
+
+  const { data: event } = useQuery({
+    queryKey: ['management-event', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('management_events')
+        .select('*')
+        .eq('id', eventId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!eventId
+  });
+
+  // Pre-populate form when event data is available and dialog opens
+  useEffect(() => {
+    if (event && open) {
+      const eventDate = (event as any).start_date || format(new Date(), 'yyyy-MM-dd');
+      const eventTime = (event as any).start_time || '09:00';
+      const startDateTime = `${eventDate}T${eventTime}`;
+      
+      // Calculate end time based on headcount (larger events get more time)
+      const headcount = event.headcount || 20;
+      const baseHours = headcount > 50 ? 4 : headcount > 20 ? 3 : 2;
+      const endTime = new Date(`${startDateTime}:00`);
+      endTime.setHours(endTime.getHours() + baseHours);
+      const endDateTime = format(endTime, "yyyy-MM-dd'T'HH:mm");
+      
+      // Calculate setup/teardown based on headcount
+      const setupTime = headcount > 50 ? '60' : headcount > 20 ? '30' : '15';
+      const teardownTime = headcount > 50 ? '60' : headcount > 20 ? '30' : '15';
+      
+      // Generate title from event type
+      const title = event.event_type ? `${event.event_type} - Main Space` : 'Event Booking';
+      
+      setFormData({
+        space_id: '',
+        title,
+        start_ts: startDateTime,
+        end_ts: endDateTime,
+        setup_min: setupTime,
+        teardown_min: teardownTime,
+        status: 'hold_soft'
+      });
+    }
+  }, [event, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

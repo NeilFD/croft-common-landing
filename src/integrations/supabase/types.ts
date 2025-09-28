@@ -1555,6 +1555,10 @@ export type Database = {
       }
       management_events: {
         Row: {
+          budget: number | null
+          client_email: string | null
+          client_name: string | null
+          client_phone: string | null
           code: string | null
           created_at: string | null
           event_type: string | null
@@ -1570,6 +1574,10 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          budget?: number | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
           code?: string | null
           created_at?: string | null
           event_type?: string | null
@@ -1585,6 +1593,10 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          budget?: number | null
+          client_email?: string | null
+          client_name?: string | null
+          client_phone?: string | null
           code?: string | null
           created_at?: string | null
           event_type?: string | null
@@ -3658,7 +3670,20 @@ export type Database = {
         Returns: string
       }
       create_management_event: {
-        Args: { payload: Json }
+        Args:
+          | {
+              p_budget?: number
+              p_client_email?: string
+              p_client_name?: string
+              p_client_phone?: string
+              p_event_type: string
+              p_headcount: number
+              p_lead_id?: string
+              p_notes?: string
+              p_start_date?: string
+              p_start_time?: string
+            }
+          | { payload: Json }
         Returns: string
       }
       detect_booking_conflicts: {
