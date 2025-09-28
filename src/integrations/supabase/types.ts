@@ -922,7 +922,7 @@ export type Database = {
             foreignKeyName: "contracts_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -972,7 +972,7 @@ export type Database = {
             foreignKeyName: "event_line_items_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -1163,7 +1163,7 @@ export type Database = {
             foreignKeyName: "invoices_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
