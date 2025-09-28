@@ -75,9 +75,9 @@ const EventDetail = () => {
     enabled: !!(event as any)?.lead_id
   });
 
-  const clientName = (event as any).client_name || (linkedLead ? `${linkedLead.first_name} ${linkedLead.last_name}` : null);
-  const clientEmail = (event as any).client_email || linkedLead?.email || null;
-  const clientPhone = (event as any).client_phone || linkedLead?.phone || null;
+  const clientName = (event as any)?.client_name ?? (linkedLead ? `${linkedLead.first_name} ${linkedLead.last_name}` : null);
+  const clientEmail = (event as any)?.client_email ?? linkedLead?.email ?? null;
+  const clientPhone = (event as any)?.client_phone ?? linkedLead?.phone ?? null;
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!id) return;
