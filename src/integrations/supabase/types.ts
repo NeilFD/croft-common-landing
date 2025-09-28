@@ -2748,6 +2748,41 @@ export type Database = {
         }
         Relationships: []
       }
+      proposal_pdfs: {
+        Row: {
+          created_at: string
+          event_id: string
+          file_path: string
+          generated_at: string
+          id: string
+          public_url: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          file_path: string
+          generated_at?: string
+          id?: string
+          public_url: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          file_path?: string
+          generated_at?: string
+          id?: string
+          public_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_pdfs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "management_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_optin_events: {
         Row: {
           created_at: string

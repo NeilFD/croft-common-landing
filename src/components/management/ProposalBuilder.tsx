@@ -4,14 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Trash2, Plus, GripVertical, Eye } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Trash2, Plus, GripVertical, Eye, Share2, Mail, MessageCircle, Loader2 } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { shareViaWhatsApp } from '@/services/whatsappService';
 
 interface LineItem {
   id?: string;
@@ -44,6 +46,8 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   ]);
   
   const [serviceChargePct, setServiceChargePct] = useState<number>(0);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
   // Fetch existing line items
   const { data: existingItems } = useQuery({
@@ -191,6 +195,117 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
 
   const serviceChargeAmount = netSubtotal * (serviceChargePct / 100);
   const grandTotal = netSubtotal + vatTotal + serviceChargeAmount;
+
+  const generatePDF = async () => {
+    // For now, just use the eventId as a token substitute
+    const mockToken = `token_${eventId}`;
+    
+    if (!mockToken) {
+      toast({
+        title: "Error",
+        description: "Missing management token",
+        variant: "destructive"
+      });
+      return null;
+    }
+
+    setIsGeneratingPDF(true);
+    try {
+      const response = await supabase.functions.invoke('generate-proposal-pdf', {
+        body: {
+          eventId: eventId,
+          managementToken: mockToken
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  const handleEmailShare = async () => {
+    const pdfData = await generatePDF();
+    if (!pdfData) return;
+
+    setIsEmailLoading(true);
+    try {
+      const response = await supabase.functions.invoke('send-proposal-email', {
+        body: {
+          eventId: eventId,
+          managementToken: `token_${eventId}`,
+          pdfUrl: pdfData.pdfUrl,
+          fileName: pdfData.fileName
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+
+      toast({
+        title: "Email Sent",
+        description: `Proposal sent to ${response.data.sentTo}`,
+      });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send email",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEmailLoading(false);
+    }
+  };
+
+  const handleWhatsAppShare = async () => {
+    const pdfData = await generatePDF();
+    if (!pdfData) return;
+
+    try {
+      // Convert PDF URL to blob for WhatsApp sharing
+      const response = await fetch(pdfData.pdfUrl);
+      const blob = await response.blob();
+      
+      const mockWalkCard = {
+        id: eventId,
+        title: `Proposal ${eventDetails?.code || eventId}`,
+        date: eventDetails?.primary_date || new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        time_block: undefined,
+        weather_preset: undefined,
+        croft_zones: [],
+        created_by_user_id: '',
+        research_status: 'completed' as const,
+        status: 'Completed' as const
+      };
+
+      await shareViaWhatsApp(blob, mockWalkCard, ({ title, description, variant }) => {
+        toast({ title, description, variant: variant as any });
+      });
+    } catch (error) {
+      console.error('Error sharing via WhatsApp:', error);
+      toast({
+        title: "Error",
+        description: "Failed to share via WhatsApp",
+        variant: "destructive"
+      });
+    }
+  };
 
   const getTypeColor = (type: LineItem['type']) => {
     const colors = {
@@ -382,6 +497,10 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogTitle className="sr-only">Proposal Preview</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Preview of the event proposal including client details, event information, and cost breakdown
+                </DialogDescription>
                 <div className="bg-white text-black min-h-full">
                   {/* Header with Branding */}
                   <div className="border-b-4 border-black pb-6 mb-6">
@@ -517,6 +636,36 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                 </div>
               </DialogContent>
             </Dialog>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" disabled={isGeneratingPDF || isEmailLoading} className="font-industrial uppercase tracking-wider">
+                  {(isGeneratingPDF || isEmailLoading) ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Share2 className="h-4 w-4 mr-2" />
+                  )}
+                  SHARE
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg">
+                <DropdownMenuItem 
+                  onClick={handleEmailShare}
+                  disabled={isEmailLoading || isGeneratingPDF}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  Email to Client
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={handleWhatsAppShare}
+                  disabled={isGeneratingPDF || isEmailLoading}
+                  className="cursor-pointer hover:bg-gray-50"
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Share via WhatsApp
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardContent>
       </Card>
