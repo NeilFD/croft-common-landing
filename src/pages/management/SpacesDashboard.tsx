@@ -50,6 +50,38 @@ const SpacesDashboard = () => {
           </p>
         </div>
 
+        {/* System Overview */}
+        <Card className="border-industrial bg-gradient-to-r from-background to-secondary/10">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="font-brutalist uppercase tracking-wide text-base md:text-lg flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-accent-pink" />
+              SPACES MANAGEMENT SYSTEM
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 md:p-6 pt-0">
+            <div className="space-y-3">
+              <p className="font-industrial text-sm md:text-base text-foreground">
+                Streamlined event and booking coordination across four integrated modules:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm">
+                <div className="space-y-1">
+                  <p><span className="font-brutalist text-accent-pink">• LEADS:</span> Manage sales enquiries and convert simple bookings directly to the calendar</p>
+                  <p><span className="font-brutalist text-accent-pink">• EVENTS:</span> Coordinate complex multi-space events with unified planning and oversight</p>
+                </div>
+                <div className="space-y-1">
+                  <p><span className="font-brutalist text-accent-pink">• CALENDAR:</span> Schedule specific space bookings, manage holds, and view availability</p>
+                  <p><span className="font-brutalist text-accent-pink">• VENUES:</span> Configure spaces, availability, and capacity management</p>
+                </div>
+              </div>
+              <div className="mt-4 p-3 bg-secondary/20 rounded border-l-4 border-accent-pink">
+                <p className="font-brutalist text-xs md:text-sm">
+                  <strong>WORKFLOW:</strong> Simple bookings go Lead→Booking. Complex events use Lead→Event→Multiple Bookings.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Active Modules */}
         <div>
           <h2 className="font-brutalist text-xl md:text-2xl font-black uppercase tracking-wide text-foreground mb-3 md:mb-4">MODULES</h2>

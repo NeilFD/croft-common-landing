@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar, Loader2 } from "lucide-react";
+import { Calendar, CalendarDays } from "lucide-react";
 import { BookingForm } from "@/components/management/BookingForm";
+import { ConvertToEventButton } from "@/components/management/ConvertToEventButton";
 import { useRoleBasedAccess } from "@/hooks/useRoleBasedAccess";
 import { toast } from "@/hooks/use-toast";
 
@@ -27,7 +28,7 @@ export const ConvertToBookingButton = ({ leadId, leadTitle }: ConvertToBookingBu
   };
 
   return (
-    <>
+    <div className="flex flex-col sm:flex-row gap-2">
       <Button
         onClick={() => setShowBookingForm(true)}
         className="bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-industrial font-bold"
@@ -36,6 +37,11 @@ export const ConvertToBookingButton = ({ leadId, leadTitle }: ConvertToBookingBu
         CONVERT TO BOOKING
       </Button>
 
+      <ConvertToEventButton 
+        leadId={leadId} 
+        leadTitle={leadTitle} 
+      />
+
       <BookingForm
         isOpen={showBookingForm}
         onClose={() => setShowBookingForm(false)}
@@ -43,6 +49,6 @@ export const ConvertToBookingButton = ({ leadId, leadTitle }: ConvertToBookingBu
         initialDate={new Date()}
         initialHour={9}
       />
-    </>
+    </div>
   );
 };
