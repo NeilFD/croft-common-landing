@@ -525,6 +525,10 @@ const footerHeight = 18;
     // Set font based on content type
     try {
       switch (contentBlock.type) {
+        case 'major-divider':
+        case 'minor-divider':
+          doc.setFont('Oswald', 'bold');
+          break;
         case 'numbered-section':
         case 'label':
           doc.setFont('WorkSans', 'bold');
