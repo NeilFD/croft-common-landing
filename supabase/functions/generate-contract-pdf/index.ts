@@ -320,10 +320,10 @@ try {
     workSansRegular,
     workSansBold,
   ] = await Promise.all([
-    loadTTFFont('Oswald-Regular', 'https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald-Regular.ttf'),
-    loadTTFFont('Oswald-Bold', 'https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald-Bold.ttf'),
-    loadTTFFont('WorkSans-Regular', 'https://raw.githubusercontent.com/google/fonts/main/ofl/worksans/WorkSans-Regular.ttf'),
-    loadTTFFont('WorkSans-Bold', 'https://raw.githubusercontent.com/google/fonts/main/ofl/worksans/WorkSans-Bold.ttf'),
+    loadTTFFont('Oswald-Regular', 'https://cdn.jsdelivr.net/npm/@fontsource/oswald/files/oswald-latin-400-normal.ttf'),
+    loadTTFFont('Oswald-Bold', 'https://cdn.jsdelivr.net/npm/@fontsource/oswald/files/oswald-latin-700-normal.ttf'),
+    loadTTFFont('WorkSans-Regular', 'https://cdn.jsdelivr.net/npm/@fontsource/work-sans/files/work-sans-latin-400-normal.ttf'),
+    loadTTFFont('WorkSans-Bold', 'https://cdn.jsdelivr.net/npm/@fontsource/work-sans/files/work-sans-latin-700-normal.ttf'),
   ]);
 
   if (oswaldRegular) {
