@@ -449,11 +449,11 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                   <div className="contract-content bg-white border-2 border-primary/10 rounded-xl shadow-xl overflow-hidden">
                     {/* Contract Header with Logo */}
                     <div className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 text-center relative">
-                      <div className="absolute top-4 left-4">
+                      <div className="absolute top-4 left-4 bg-white rounded-lg p-2 shadow-md">
                         <img 
                           src={BRAND_LOGO} 
                           alt="Croft Common Logo" 
-                          className="w-12 h-12 object-contain opacity-90"
+                          className="w-8 h-8 object-contain"
                           onError={(e) => {
                             const target = e.currentTarget as HTMLImageElement;
                             target.style.display = 'none';
