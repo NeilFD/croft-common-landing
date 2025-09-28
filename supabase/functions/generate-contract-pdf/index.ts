@@ -254,7 +254,7 @@ async function createContractPDF(eventData: any, contractData: any, lineItems: a
 
   // Split contract content into pages
   let y = margin + headerHeight + 8;
-  const maxY = pageHeight - footerHeight - 10;
+  const maxY = pageHeight - footerHeight - 60; // Leave space for signatures
   const lineHeight = 4;
 
   doc.setFont('helvetica', 'normal');
@@ -306,6 +306,87 @@ async function createContractPDF(eventData: any, contractData: any, lineItems: a
       doc.text(splitLine, margin, y);
       y += lineHeight;
     }
+  }
+
+  // Add signature section
+  if (y > maxY - 40) {
+    doc.addPage();
+    const pageNum = doc.getNumberOfPages();
+    drawHeaderFooter(pageNum);
+    y = margin + headerHeight + 8;
+  }
+
+  y += 10; // Extra space before signatures
+
+  // Signature section header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('SIGNATURES', pageWidth / 2, y, { align: 'center' });
+  y += 10;
+
+  // Draw signature boxes side by side
+  const boxWidth = (pageWidth - margin * 2 - 10) / 2; // 10mm gap between boxes
+  const boxHeight = 25;
+  const signatureY = y;
+
+  // Croft Common signature box
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('CROFT COMMON', margin, y);
+  y += 5;
+  
+  doc.setDrawColor(0, 0, 0);
+  doc.setLineWidth(0.5);
+  doc.rect(margin, y, boxWidth, boxHeight);
+  
+  // Add Croft Common signature if available
+  if (contractData.staff_signature_data?.signature) {
+    try {
+      const staffSigData = await fetchImageDataUrl(contractData.staff_signature_data.signature);
+      if (staffSigData) {
+        doc.addImage(staffSigData, 'PNG', margin + 2, y + 2, boxWidth - 4, boxHeight - 4);
+      }
+    } catch (e) {
+      console.warn('Failed to load staff signature:', e);
+    }
+  }
+
+  // Client signature box
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.text('CLIENT', margin + boxWidth + 10, signatureY);
+  
+  doc.rect(margin + boxWidth + 10, signatureY + 5, boxWidth, boxHeight);
+  
+  // Add client signature if available
+  if (contractData.client_signature_data?.signature) {
+    try {
+      const clientSigData = await fetchImageDataUrl(contractData.client_signature_data.signature);
+      if (clientSigData) {
+        doc.addImage(clientSigData, 'PNG', margin + boxWidth + 12, signatureY + 7, boxWidth - 4, boxHeight - 4);
+      }
+    } catch (e) {
+      console.warn('Failed to load client signature:', e);
+    }
+  }
+
+  // Signature dates
+  y = signatureY + boxHeight + 8;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  
+  if (contractData.staff_signed_at) {
+    const staffDate = new Date(contractData.staff_signed_at).toLocaleDateString('en-GB');
+    doc.text(`Date: ${staffDate}`, margin, y);
+  } else {
+    doc.text('Date: ________________', margin, y);
+  }
+  
+  if (contractData.client_signed_at) {
+    const clientDate = new Date(contractData.client_signed_at).toLocaleDateString('en-GB');
+    doc.text(`Date: ${clientDate}`, margin + boxWidth + 10, y);
+  } else {
+    doc.text('Date: ________________', margin + boxWidth + 10, y);
   }
 
   const ab = doc.output('arraybuffer');
