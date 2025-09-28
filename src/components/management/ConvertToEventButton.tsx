@@ -31,7 +31,7 @@ export const ConvertToEventButton = ({ leadId, leadTitle }: ConvertToEventButton
       <Button
         onClick={() => setShowEventDialog(true)}
         variant="outline"
-        className="bg-secondary text-secondary-foreground hover:bg-secondary/80 border-2 border-foreground font-industrial font-bold"
+        className="bg-secondary text-secondary-foreground hover:bg-secondary/80 border-2 border-foreground font-industrial font-bold w-full justify-start"
       >
         <CalendarDays className="h-4 w-4 mr-2" />
         CONVERT TO EVENT

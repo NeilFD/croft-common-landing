@@ -28,10 +28,10 @@ export const ConvertToBookingButton = ({ leadId, leadTitle }: ConvertToBookingBu
   };
 
   return (
-    <div className="flex flex-col sm:flex-row gap-2">
+    <div className="flex flex-col gap-2 w-full">
       <Button
         onClick={() => setShowBookingForm(true)}
-        className="bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-industrial font-bold"
+        className="bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-industrial font-bold w-full justify-start"
       >
         <Calendar className="h-4 w-4 mr-2" />
         CONVERT TO BOOKING

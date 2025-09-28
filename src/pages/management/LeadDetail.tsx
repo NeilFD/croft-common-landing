@@ -211,71 +211,73 @@ export default function LeadDetail() {
 
   return (
     <ManagementLayout>
-      <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/management/spaces/leads">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Leads
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
-              {isNewLead ? 'Create New Lead' : `${lead!.first_name} ${lead!.last_name}`}
-            </h1>
-            <p className="text-muted-foreground">
-              {isNewLead ? 'Add a new lead to the system' : lead!.email}
-            </p>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="space-y-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            <Button variant="ghost" size="sm" asChild className="flex-shrink-0">
+              <Link to="/management/spaces/leads">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Leads
+              </Link>
+            </Button>
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">
+                {isNewLead ? 'Create New Lead' : `${lead!.first_name} ${lead!.last_name}`}
+              </h1>
+              <p className="text-muted-foreground truncate">
+                {isNewLead ? 'Add a new lead to the system' : lead!.email}
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
+            {!isNewLead && lead && (
+              <Select value={lead.status} onValueChange={handleStatusChange}>
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="qualified">Qualified</SelectItem>
+                  <SelectItem value="proposed">Proposed</SelectItem>
+                  <SelectItem value="won">Won</SelectItem>
+                  <SelectItem value="lost">Lost</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+            
+            {editing ? (
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  onClick={handleSave} 
+                  disabled={updateLead.isPending || createLead.isPending}
+                  className="flex-1 sm:flex-initial"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isNewLead ? 'Create Lead' : 'Save'}
+                </Button>
+                {!isNewLead && (
+                  <Button size="sm" variant="outline" onClick={handleCancel} className="flex-1 sm:flex-initial">
+                    <X className="h-4 w-4 mr-2" />
+                    Cancel
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <Button size="sm" onClick={handleEdit} className="w-full sm:w-auto">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </Button>
+            )}
           </div>
         </div>
-        
-        <div className="flex items-center gap-2">
-          {!isNewLead && lead && (
-            <Select value={lead.status} onValueChange={handleStatusChange}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="new">New</SelectItem>
-                <SelectItem value="qualified">Qualified</SelectItem>
-                <SelectItem value="proposed">Proposed</SelectItem>
-                <SelectItem value="won">Won</SelectItem>
-                <SelectItem value="lost">Lost</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-          
-          {editing ? (
-            <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                onClick={handleSave} 
-                disabled={updateLead.isPending || createLead.isPending}
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {isNewLead ? 'Create Lead' : 'Save'}
-              </Button>
-              {!isNewLead && (
-                <Button size="sm" variant="outline" onClick={handleCancel}>
-                  <X className="h-4 w-4 mr-2" />
-                  Cancel
-                </Button>
-              )}
-            </div>
-          ) : (
-            <Button size="sm" onClick={handleEdit}>
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
-          )}
-        </div>
-      </div>
 
-      <div className={isNewLead ? "space-y-6" : "grid grid-cols-1 lg:grid-cols-3 gap-6"}>
+      <div className={isNewLead ? "space-y-6" : "grid grid-cols-1 xl:grid-cols-3 gap-6"}>
         {/* Main Content */}
-        <div className={isNewLead ? "" : "lg:col-span-2 space-y-6"}>
+        <div className={isNewLead ? "" : "xl:col-span-2 space-y-6"}>
           {/* Lead Information */}
           <Card>
             <CardHeader>
@@ -603,6 +605,7 @@ export default function LeadDetail() {
         </div>
       </div>
 
+        </div>
       </div>
     </ManagementLayout>
   );
