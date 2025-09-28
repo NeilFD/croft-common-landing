@@ -108,6 +108,7 @@ export type Database = {
           end_ts: string
           event_id: string | null
           existing_rank: number | null
+          hold_type: Database["public"]["Enums"]["hold_type"] | null
           id: string
           lead_id: string | null
           setup_min: number | null
@@ -124,6 +125,7 @@ export type Database = {
           end_ts: string
           event_id?: string | null
           existing_rank?: number | null
+          hold_type?: Database["public"]["Enums"]["hold_type"] | null
           id?: string
           lead_id?: string | null
           setup_min?: number | null
@@ -140,6 +142,7 @@ export type Database = {
           end_ts?: string
           event_id?: string | null
           existing_rank?: number | null
+          hold_type?: Database["public"]["Enums"]["hold_type"] | null
           id?: string
           lead_id?: string | null
           setup_min?: number | null
@@ -4092,6 +4095,7 @@ export type Database = {
       cms_asset_type: "logo" | "icon" | "hero_image" | "carousel_image"
       cms_content_type: "text" | "richtext" | "json"
       delivery_status: "sent" | "failed" | "deactivated" | "logged"
+      hold_type: "soft_hold" | "hard_hold" | "option" | "tentative"
       loyalty_card_type: "regular" | "lucky7"
       management_role: "admin" | "sales" | "ops" | "finance" | "readonly"
       notification_scope: "all" | "self"
@@ -4242,6 +4246,7 @@ export const Constants = {
       cms_asset_type: ["logo", "icon", "hero_image", "carousel_image"],
       cms_content_type: ["text", "richtext", "json"],
       delivery_status: ["sent", "failed", "deactivated", "logged"],
+      hold_type: ["soft_hold", "hard_hold", "option", "tentative"],
       loyalty_card_type: ["regular", "lucky7"],
       management_role: ["admin", "sales", "ops", "finance", "readonly"],
       notification_scope: ["all", "self"],
