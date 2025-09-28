@@ -22,18 +22,10 @@ Deno.serve(async (req) => {
     const { eventId } = await req.json();
     console.log('Generating PDF for event:', eventId);
 
-    // Fetch event data with space details
+    // Fetch event data
     const { data: eventData, error: eventError } = await supabase
       .from('management_events')
-      .select(`
-        *,
-        spaces (
-          name,
-          capacity_seated,
-          capacity_standing,
-          description
-        )
-      `)
+      .select('*')
       .eq('id', eventId)
       .single();
 
