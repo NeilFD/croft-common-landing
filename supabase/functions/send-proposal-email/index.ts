@@ -52,9 +52,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    if (!eventData.contact_email) {
+    if (!eventData.client_email) {
       return new Response(
-        JSON.stringify({ error: 'No contact email found for this event' }),
+        JSON.stringify({ error: 'No client email found for this event' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -69,20 +69,19 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email with PDF attachment
     const emailResponse = await resend.emails.send({
       from: "Croft Common <hello@thehive-hospitality.com>",
-      to: [eventData.contact_email],
+      to: [eventData.client_email],
       subject: `Event Proposal - ${eventData.code || eventData.id}`,
       html: `
         <h2>Event Proposal</h2>
-        <p>Dear ${eventData.contact_name || 'Valued Client'},</p>
+        <p>Dear ${eventData.client_name || 'Valued Client'},</p>
         
-        <p>Please find attached your event proposal for <strong>${eventData.event_type || 'your event'}</strong> on <strong>${new Date(eventData.date).toLocaleDateString('en-GB')}</strong>.</p>
+        <p>Please find attached your event proposal for <strong>${eventData.event_type || 'your event'}</strong> on <strong>${new Date(eventData.primary_date).toLocaleDateString('en-GB')}</strong>.</p>
         
         <p><strong>Proposal Details:</strong></p>
         <ul>
           <li>Reference: ${eventData.code || eventData.id}</li>
-          <li>Date: ${new Date(eventData.date).toLocaleDateString('en-GB')}</li>
+          <li>Date: ${new Date(eventData.primary_date).toLocaleDateString('en-GB')}</li>
           <li>Headcount: ${eventData.headcount || 'TBC'} guests</li>
-          <li>Budget Range: £${eventData.budget_low || 0} - £${eventData.budget_high || 0}</li>
         </ul>
         
         <p>If you have any questions or would like to discuss this proposal further, please don't hesitate to contact us.</p>
@@ -119,7 +118,7 @@ const handler = async (req: Request): Promise<Response> => {
       JSON.stringify({ 
         success: true, 
         emailId: emailResponse.data?.id,
-        sentTo: eventData.contact_email
+        sentTo: eventData.client_email
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

@@ -131,7 +131,7 @@ const handler = async (req: Request): Promise<Response> => {
 
 function generatePDFHTML(eventData: any, lineItems: any[]): string {
   const currentDate = new Date().toLocaleDateString('en-GB');
-  const eventDate = new Date(eventData.date).toLocaleDateString('en-GB');
+  const eventDate = new Date(eventData.primary_date).toLocaleDateString('en-GB');
   
   // Calculate totals
   const serviceChargePct = eventData.service_charge_pct || 0;
