@@ -105,7 +105,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
   });
 
   // Sign contract mutation
-  // Generate contract PDF mutation
+  // Generate and download contract PDF mutation
   const generateContractPdf = useMutation({
     mutationFn: async () => {
       const { data, error } = await supabase.functions.invoke('generate-contract-pdf', {
@@ -115,11 +115,34 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
-      toast({
-        title: "Success",
-        description: "Contract PDF generated successfully",
-      });
+    onSuccess: async (data) => {
+      if (data?.url) {
+        // Download the PDF file
+        try {
+          const response = await fetch(data.url);
+          const blob = await response.blob();
+          const downloadUrl = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = `contract-${eventData?.code || eventId}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(downloadUrl);
+          
+          toast({
+            title: "Success",
+            description: "Contract PDF downloaded successfully",
+          });
+        } catch (downloadError) {
+          console.error('Download error:', downloadError);
+          toast({
+            title: "Download Error",
+            description: "PDF generated but download failed. Check the file in your browser downloads.",
+            variant: "destructive",
+          });
+        }
+      }
       refetchContract();
     },
     onError: (error: any) => {
@@ -608,89 +631,114 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                         : 'Contract awaiting Croft Common approval and signature'}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-3">
-                    <Button
-                      onClick={() => generateContractPdf.mutate()}
-                      disabled={generateContractPdf.isPending}
-                      variant="outline"
-                      className="border-primary/20 hover:bg-primary/5"
-                    >
-                      {generateContractPdf.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Generating PDF...
-                        </>
-                      ) : (
-                        <>
-                          <Download className="w-4 h-4 mr-2" />
-                          GENERATE PDF
-                        </>
-                      )}
-                    </Button>
-                    
-                    {contractData.signature_status === 'pending_client' && (
-                      <Button
-                        onClick={() => sendContractEmail.mutate()}
-                        disabled={sendContractEmail.isPending}
-                        variant="outline"
-                        className="border-primary/20 hover:bg-primary/5"
-                      >
-                        {sendContractEmail.isPending ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Mail className="w-4 h-4 mr-2" />
-                            SEND TO CLIENT
-                          </>
-                        )}
-                      </Button>
-                    )}
-                    
-                    {contractData.signature_status === 'pending_staff' && (
-                      <Button
-                        onClick={() => setShowSignature(true)}
-                        className="bg-accent-pink text-white hover:bg-accent-pink-dark font-semibold"
-                      >
-                        <PenTool className="w-4 h-4 mr-2" />
-                        SIGN AS CROFT COMMON
-                      </Button>
-                    )}
-                    
-                    {contractData.signature_status === 'pending_client' && (
-                      <Button
-                        onClick={() => setShowSignature(true)}
-                        variant="secondary"
-                        className="font-semibold"
-                      >
-                        <PenTool className="w-4 h-4 mr-2" />
-                        SIGN AS CLIENT
-                      </Button>
-                    )}
-                  </div>
+                   <div className="flex flex-wrap gap-3">
+                     <Button
+                       onClick={() => generateContractPdf.mutate()}
+                       disabled={generateContractPdf.isPending}
+                       variant="outline"
+                       className="border-primary/20 hover:bg-primary/5"
+                     >
+                       {generateContractPdf.isPending ? (
+                         <>
+                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                           Generating PDF...
+                         </>
+                       ) : (
+                         <>
+                           <Download className="w-4 h-4 mr-2" />
+                           {contractData.pdf_url ? 'DOWNLOAD PDF' : 'GENERATE PDF'}
+                         </>
+                       )}
+                     </Button>
+                     
+                     {contractData.signature_status === 'pending_client' && contractData.staff_signature_data && (
+                       <Button
+                         onClick={() => sendContractEmail.mutate()}
+                         disabled={sendContractEmail.isPending}
+                         variant="outline"
+                         className="border-primary/20 hover:bg-primary/5"
+                       >
+                         {sendContractEmail.isPending ? (
+                           <>
+                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                             Sending...
+                           </>
+                         ) : (
+                           <>
+                             <Mail className="w-4 h-4 mr-2" />
+                             SEND TO CLIENT
+                           </>
+                         )}
+                       </Button>
+                     )}
+                     
+                     {contractData.signature_status === 'pending_staff' && (
+                       <Button
+                         onClick={() => setShowSignature(true)}
+                         className="bg-accent-pink text-white hover:bg-accent-pink-dark font-semibold"
+                       >
+                         <PenTool className="w-4 h-4 mr-2" />
+                         SIGN AS CROFT COMMON
+                       </Button>
+                     )}
+                   </div>
                 </div>
               </div>
 
-              {/* Signature Display */}
-              {contractData.is_signed && contractData.signature_data && (
+              {/* Croft Common Signature Display */}
+              {contractData.staff_signature_data && contractData.staff_signed_at && (
+                <div className="bg-blue-50 p-6 border-t border-blue-200">
+                  <div className="flex items-start gap-4">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Check className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-blue-900 mb-2">Signed by Croft Common</h4>
+                      <div className="bg-white p-4 rounded-lg border border-blue-200 inline-block">
+                        <img 
+                          src={typeof contractData.staff_signature_data === 'object' && contractData.staff_signature_data && 'signature' in contractData.staff_signature_data ? contractData.staff_signature_data.signature as string : ''} 
+                          alt="Croft Common signature" 
+                          className="max-w-xs max-h-16 object-contain"
+                        />
+                      </div>
+                      <p className="text-sm text-blue-700 mt-2">
+                        Signed by authorised signatory on {new Date(contractData.staff_signed_at).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Client Signature Display */}
+              {contractData.is_signed && contractData.client_signature_data && (
                 <div className="bg-green-50 p-6 border-t border-green-200">
                   <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                       <Check className="w-5 h-5 text-green-600" />
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-green-900 mb-2">Contract Executed</h4>
+                      <h4 className="font-semibold text-green-900 mb-2">Contract Fully Executed</h4>
                       <div className="bg-white p-4 rounded-lg border border-green-200 inline-block">
                         <img 
-                          src={typeof contractData.signature_data === 'object' && contractData.signature_data && 'signature' in contractData.signature_data ? contractData.signature_data.signature as string : ''} 
-                          alt="Digital signature" 
+                          src={typeof contractData.client_signature_data === 'object' && contractData.client_signature_data && 'signature' in contractData.client_signature_data ? contractData.client_signature_data.signature as string : ''} 
+                          alt="Client signature" 
                           className="max-w-xs max-h-16 object-contain"
                         />
                       </div>
                       <p className="text-sm text-green-700 mt-2">
-                        Digitally signed and legally binding as of {new Date(contractData.signed_at!).toLocaleString('en-GB')}
+                        Client signature received and contract is legally binding as of {new Date(contractData.client_signed_at!).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
                       </p>
                     </div>
                   </div>
