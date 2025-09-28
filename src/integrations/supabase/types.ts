@@ -879,6 +879,8 @@ export type Database = {
       }
       contracts: {
         Row: {
+          client_signature_data: Json | null
+          client_signed_at: string | null
           content: string
           created_at: string | null
           event_id: string
@@ -887,11 +889,17 @@ export type Database = {
           is_signed: boolean | null
           pdf_url: string | null
           signature_data: Json | null
+          signature_status: string | null
           signed_at: string | null
+          staff_signature_data: Json | null
+          staff_signed_at: string | null
+          staff_signed_by: string | null
           updated_at: string | null
           version: number | null
         }
         Insert: {
+          client_signature_data?: Json | null
+          client_signed_at?: string | null
           content: string
           created_at?: string | null
           event_id: string
@@ -900,11 +908,17 @@ export type Database = {
           is_signed?: boolean | null
           pdf_url?: string | null
           signature_data?: Json | null
+          signature_status?: string | null
           signed_at?: string | null
+          staff_signature_data?: Json | null
+          staff_signed_at?: string | null
+          staff_signed_by?: string | null
           updated_at?: string | null
           version?: number | null
         }
         Update: {
+          client_signature_data?: Json | null
+          client_signed_at?: string | null
           content?: string
           created_at?: string | null
           event_id?: string
@@ -913,7 +927,11 @@ export type Database = {
           is_signed?: boolean | null
           pdf_url?: string | null
           signature_data?: Json | null
+          signature_status?: string | null
           signed_at?: string | null
+          staff_signature_data?: Json | null
+          staff_signed_at?: string | null
+          staff_signed_by?: string | null
           updated_at?: string | null
           version?: number | null
         }

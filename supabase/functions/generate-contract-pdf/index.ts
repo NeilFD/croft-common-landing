@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
 
     // Fetch line items for totals calculation
     const { data: lineItems, error: lineItemsError } = await supabase
-      .from('event_line_items')
+      .from('management_event_line_items')
       .select('*')
       .eq('event_id', eventId)
       .order('sort_order');

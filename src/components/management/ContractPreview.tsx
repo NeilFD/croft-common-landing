@@ -20,6 +20,15 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
   const queryClient = useQueryClient();
   const signaturePadRef = useRef<SignatureCanvas>(null);
   const [showSignature, setShowSignature] = useState(false);
+  
+  // Get current user
+  const { data: { user } = {} } = useQuery({
+    queryKey: ['user'],
+    queryFn: async () => {
+      const { data } = await supabase.auth.getUser();
+      return data;
+    }
+  });
 
   // Fetch event data
   const { data: eventData } = useQuery({
@@ -174,45 +183,85 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
     }
   });
 
-  const signContract = useMutation({
+  // Mutation to sign the contract as staff
+  const signContractAsStaff = useMutation({
     mutationFn: async (signatureData: string) => {
-      if (!contractData) throw new Error('No contract available to sign');
-      
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('contracts')
         .update({
-          is_signed: true,
-          signed_at: new Date().toISOString(),
-          signature_data: { signature: signatureData, timestamp: Date.now() },
-          is_immutable: true
+          staff_signature_data: { signature: signatureData },
+          staff_signed_at: new Date().toISOString(),
+          staff_signed_by: user?.id,
+          signature_status: 'pending_client'
         })
         .eq('id', contractData.id);
       
       if (error) throw error;
-      return data;
     },
     onSuccess: () => {
       toast({
-        title: "Contract Executed",
-        description: "Digital signature applied. Contract is now legally binding.",
+        title: "Success",
+        description: "Contract signed by Croft Common. Ready to send to client.",
       });
       setShowSignature(false);
       refetchContract();
       queryClient.invalidateQueries({ queryKey: ['contract', eventId] });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: "Signature Failed",
-        description: error.message || 'Failed to sign contract. Please try again.',
+        title: "Error", 
+        description: "Failed to sign contract",
         variant: "destructive",
       });
-    }
+      console.error('Contract signing error:', error);
+    },
+  });
+
+  // Mutation to sign the contract as client
+  const signContractAsClient = useMutation({
+    mutationFn: async (signatureData: string) => {
+      const { error } = await supabase
+        .from('contracts')
+        .update({
+          client_signature_data: { signature: signatureData },
+          client_signed_at: new Date().toISOString(),
+          signature_status: 'completed',
+          is_signed: true,
+          is_immutable: true
+        })
+        .eq('id', contractData.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Contract fully executed! All parties have signed.",
+      });
+      setShowSignature(false);
+      refetchContract();
+      queryClient.invalidateQueries({ queryKey: ['contract', eventId] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error", 
+        description: "Failed to sign contract",
+        variant: "destructive",
+      });
+      console.error('Contract signing error:', error);
+    },
   });
 
   const handleSign = () => {
-    if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
+    if (signaturePadRef.current && !signaturePadRef.current.isEmpty() && contractData) {
       const signatureData = signaturePadRef.current.toDataURL();
-      signContract.mutate(signatureData);
+      
+      // Determine which signature type based on current status
+      if (contractData.signature_status === 'pending_staff') {
+        signContractAsStaff.mutate(signatureData);
+      } else if (contractData.signature_status === 'pending_client') {
+        signContractAsClient.mutate(signatureData);
+      }
     } else {
       toast({
         title: "No Signature",
@@ -466,18 +515,25 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <Badge 
-                      variant={contractData.is_signed ? "default" : "secondary"}
-                      className={contractData.is_signed ? "bg-green-600 hover:bg-green-700" : ""}
+                      variant={contractData.signature_status === 'completed' ? "default" : "secondary"}
+                      className={contractData.signature_status === 'completed' ? "bg-green-600 hover:bg-green-700" : 
+                                contractData.signature_status === 'pending_client' ? "bg-blue-100 text-blue-800" : 
+                                "bg-yellow-100 text-yellow-800"}
                     >
-                      {contractData.is_signed ? (
+                      {contractData.signature_status === 'completed' ? (
                         <>
                           <Check className="w-3 h-3 mr-1" />
-                          SIGNED & EXECUTED
+                          FULLY EXECUTED
+                        </>
+                      ) : contractData.signature_status === 'pending_client' ? (
+                        <>
+                          <Clock className="w-3 h-3 mr-1" />
+                          AWAITING CLIENT SIGNATURE
                         </>
                       ) : (
                         <>
                           <Clock className="w-3 h-3 mr-1" />
-                          AWAITING SIGNATURE
+                          AWAITING STAFF SIGNATURE
                         </>
                       )}
                     </Badge>
@@ -545,9 +601,11 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                   <div>
                     <h4 className="font-semibold mb-1">Contract Actions</h4>
                     <p className="text-sm text-muted-foreground">
-                      {contractData.is_signed 
-                        ? 'Contract is signed and legally binding' 
-                        : 'Review contract and choose an action'}
+                      {contractData.signature_status === 'completed' 
+                        ? 'Contract is fully executed and legally binding' 
+                        : contractData.signature_status === 'pending_client'
+                        ? 'Croft Common has signed - awaiting client signature'
+                        : 'Contract awaiting Croft Common approval and signature'}
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-3">
@@ -569,31 +627,46 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                         </>
                       )}
                     </Button>
-                    <Button
-                      onClick={() => sendContractEmail.mutate()}
-                      disabled={sendContractEmail.isPending}
-                      variant="outline"
-                      className="border-primary/20 hover:bg-primary/5"
-                    >
-                      {sendContractEmail.isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Sending...
-                        </>
-                      ) : (
-                        <>
-                          <Mail className="w-4 h-4 mr-2" />
-                          SEND TO CLIENT
-                        </>
-                      )}
-                    </Button>
-                    {!contractData.is_signed && (
+                    
+                    {contractData.signature_status === 'pending_client' && (
+                      <Button
+                        onClick={() => sendContractEmail.mutate()}
+                        disabled={sendContractEmail.isPending}
+                        variant="outline"
+                        className="border-primary/20 hover:bg-primary/5"
+                      >
+                        {sendContractEmail.isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="w-4 h-4 mr-2" />
+                            SEND TO CLIENT
+                          </>
+                        )}
+                      </Button>
+                    )}
+                    
+                    {contractData.signature_status === 'pending_staff' && (
                       <Button
                         onClick={() => setShowSignature(true)}
                         className="bg-accent-pink text-white hover:bg-accent-pink-dark font-semibold"
                       >
                         <PenTool className="w-4 h-4 mr-2" />
-                        DIGITAL SIGNATURE
+                        SIGN AS CROFT COMMON
+                      </Button>
+                    )}
+                    
+                    {contractData.signature_status === 'pending_client' && (
+                      <Button
+                        onClick={() => setShowSignature(true)}
+                        variant="secondary"
+                        className="font-semibold"
+                      >
+                        <PenTool className="w-4 h-4 mr-2" />
+                        SIGN AS CLIENT
                       </Button>
                     )}
                   </div>
@@ -632,13 +705,35 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
       <Dialog open={showSignature} onOpenChange={setShowSignature}>
         <DialogContent className="max-w-2xl">
           <DialogHeader className="pb-6">
-            <DialogTitle className="text-xl font-semibold">Digital Contract Signature</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
+              {contractData?.signature_status === 'pending_staff' 
+                ? 'Sign as Croft Common Authorised Signatory'
+                : 'Sign as Client'
+              }
+            </DialogTitle>
             <DialogDescription>
-              By signing below, you acknowledge that you have read, understood, and agree to be legally bound by all terms and conditions of this contract.
+              {contractData?.signature_status === 'pending_staff' 
+                ? 'As an authorised signatory of Croft Common, please sign to approve this contract before sending to client.'
+                : 'After Croft Common approval, please sign below to execute the contract and make it legally binding.'
+              }
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-6">
+            {contractData?.signature_status === 'pending_client' && contractData.staff_signature_data && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <p className="text-sm text-green-800 font-medium">
+                  ✓ Already signed by Croft Common on {new Date(contractData.staff_signed_at).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </p>
+              </div>
+            )}
+            
             <div className="bg-muted/30 p-4 rounded-lg">
               <p className="text-sm font-medium mb-2">Legal Notice:</p>
               <p className="text-xs text-muted-foreground">
@@ -666,10 +761,10 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
             <div className="flex gap-3 pt-4">
               <Button
                 onClick={handleSign}
-                disabled={signContract.isPending}
+                disabled={signContractAsStaff.isPending || signContractAsClient.isPending}
                 className="flex-1 bg-accent-pink text-white hover:bg-accent-pink-dark font-semibold"
               >
-                {signContract.isPending ? (
+                {(signContractAsStaff.isPending || signContractAsClient.isPending) ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Processing Signature...
@@ -677,7 +772,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                 ) : (
                   <>
                     <PenTool className="w-4 h-4 mr-2" />
-                    EXECUTE CONTRACT
+                    {contractData?.signature_status === 'pending_staff' ? 'SIGN & APPROVE' : 'EXECUTE CONTRACT'}
                   </>
                 )}
               </Button>
@@ -685,7 +780,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
               <Button
                 variant="outline"
                 onClick={clearSignature}
-                disabled={signContract.isPending}
+                disabled={signContractAsStaff.isPending || signContractAsClient.isPending}
                 className="px-6"
               >
                 Clear Signature
@@ -694,7 +789,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
               <Button
                 variant="outline"
                 onClick={() => setShowSignature(false)}
-                disabled={signContract.isPending}
+                disabled={signContractAsStaff.isPending || signContractAsClient.isPending}
                 className="px-6"
               >
                 Cancel
