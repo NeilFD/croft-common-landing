@@ -31,7 +31,8 @@ import {
   TrendingUp,
   BarChart3,
   Users,
-  Calendar
+  Calendar,
+  CalendarDays
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -55,6 +56,12 @@ const spacesSubModules = [
     name: 'Calendar',
     path: '/management/spaces/calendar',
     icon: Calendar,
+    exactMatch: false
+  },
+  {
+    name: 'Events',
+    path: '/management/events',
+    icon: CalendarDays,
     exactMatch: false
   },
   {
