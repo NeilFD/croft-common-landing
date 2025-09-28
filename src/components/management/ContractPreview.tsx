@@ -260,8 +260,58 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
   const totals = calculateTotals();
 
   const formatContractContent = (content: string) => {
-    // Contract content is now fully formatted by the database function
-    return content;
+    const lines = content.split('\n');
+    const formattedElements: React.ReactNode[] = [];
+    
+    lines.forEach((line, index) => {
+      const trimmedLine = line.trim();
+      
+      // Main headers (surrounded by ═══)
+      if (trimmedLine.includes('═══')) {
+        formattedElements.push(
+          <div key={index} className="border-t-2 border-primary/20 my-6" />
+        );
+      }
+      // Section headers (surrounded by ───) 
+      else if (trimmedLine.includes('───')) {
+        formattedElements.push(
+          <div key={index} className="border-t border-primary/10 my-4" />
+        );
+      }
+      // Headers and titles (typically uppercase or starting with numbers/letters followed by periods)
+      else if (
+        trimmedLine.match(/^[A-Z\s]{3,}$/) || // All caps titles
+        trimmedLine.match(/^\d+\.\s/) || // Numbered sections
+        trimmedLine.match(/^[A-Z][A-Z\s]*:/) || // Title case headers with colons
+        trimmedLine.includes('EVENT HIRE AGREEMENT') ||
+        trimmedLine.includes('TERMS AND CONDITIONS') ||
+        trimmedLine.includes('CLIENT DETAILS') ||
+        trimmedLine.includes('EVENT DETAILS') ||
+        trimmedLine.includes('FINANCIAL SUMMARY')
+      ) {
+        formattedElements.push(
+          <div key={index} className="font-brutalist text-lg font-bold text-primary mb-3 mt-6">
+            {trimmedLine}
+          </div>
+        );
+      }
+      // Regular content lines
+      else if (trimmedLine.length > 0) {
+        formattedElements.push(
+          <div key={index} className="font-industrial text-foreground mb-2 leading-relaxed">
+            {line}
+          </div>
+        );
+      }
+      // Empty lines for spacing
+      else {
+        formattedElements.push(
+          <div key={index} className="h-3" />
+        );
+      }
+    });
+    
+    return <div className="space-y-1">{formattedElements}</div>;
   };
 
   return (
@@ -470,7 +520,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                     
                     {/* Contract Content */}
                     <div className="p-8 lg:p-12">
-                      <div className="contract-text font-industrial text-base leading-relaxed whitespace-pre-wrap text-foreground">
+                      <div className="contract-text text-base">
                         {formatContractContent(contractData.content)}
                       </div>
                     </div>
