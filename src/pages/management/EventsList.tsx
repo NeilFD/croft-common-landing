@@ -175,7 +175,7 @@ const EventsList = () => {
             ) : filteredEvents.length > 0 ? (
               <div className="grid gap-4 md:gap-6">
                 {filteredEvents.map((event) => (
-                  <Card key={event.id} className="border-industrial hover:shadow-brutal transition-all">
+                  <Card key={event.id} className="border-industrial hover:shadow-brutal transition-all max-w-full overflow-hidden">
                     <CardHeader className="pb-3 p-4 md:p-6">
                       <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
                         <div className="space-y-2">
@@ -223,15 +223,15 @@ const EventsList = () => {
                     </CardHeader>
                     
                     <CardContent className="p-4 md:p-6 pt-0">
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                         {event.notes && (
-                          <p className="font-industrial text-sm text-muted-foreground line-clamp-2 flex-1 mr-4">
+                          <p className="font-industrial text-sm text-muted-foreground line-clamp-2 flex-1 min-w-0 mr-0 sm:mr-4">
                             {event.notes}
                           </p>
                         )}
                         
                         {(event.client_email || event.client_phone) && (
-                          <div className="flex gap-2 text-xs text-muted-foreground mr-4">
+                          <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs text-muted-foreground mr-0 sm:mr-4 break-words">
                             {event.client_email && (
                               <a href={`mailto:${event.client_email}`} className="text-primary hover:underline font-industrial">
                                 {event.client_email}
@@ -248,7 +248,7 @@ const EventsList = () => {
                           </div>
                         )}
                         
-                        <Button asChild variant="outline" className="font-brutalist uppercase tracking-wide border-industrial">
+                        <Button asChild variant="outline" className="font-brutalist uppercase tracking-wide border-industrial w-full sm:w-auto sm:shrink-0">
                           <Link to={`/management/events/${event.id}`}>
                             VIEW EVENT
                           </Link>
