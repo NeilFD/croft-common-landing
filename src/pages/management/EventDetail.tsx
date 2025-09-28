@@ -58,6 +58,27 @@ const EventDetail = () => {
     }
   };
 
+  // Fetch linked lead for fallback contact details
+  const { data: linkedLead } = useQuery({
+    queryKey: ['lead-for-event', (event as any)?.lead_id],
+    queryFn: async () => {
+      const leadId = (event as any)?.lead_id;
+      if (!leadId) return null;
+      const { data, error } = await supabase
+        .from('leads')
+        .select('id, first_name, last_name, email, phone')
+        .eq('id', leadId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!(event as any)?.lead_id
+  });
+
+  const clientName = (event as any).client_name || (linkedLead ? `${linkedLead.first_name} ${linkedLead.last_name}` : null);
+  const clientEmail = (event as any).client_email || linkedLead?.email || null;
+  const clientPhone = (event as any).client_phone || linkedLead?.phone || null;
+
   const handleStatusUpdate = async (newStatus: string) => {
     if (!id) return;
 
@@ -130,6 +151,23 @@ const EventDetail = () => {
                 <p className="font-industrial text-muted-foreground text-sm md:text-base">
                   {event.event_type}
                 </p>
+              )}
+
+              {(clientName || clientEmail || clientPhone) && (
+                <div className="mt-1 space-x-2 font-industrial text-xs md:text-sm">
+                  {clientName && (
+                    <span className="text-[hsl(var(--foreground))] font-medium">{clientName}</span>
+                  )}
+                  {clientEmail && (
+                    <a href={`mailto:${clientEmail}`} className="text-primary hover:underline">{clientEmail}</a>
+                  )}
+                  {clientPhone && (
+                    <>
+                      <span className="text-muted-foreground">•</span>
+                      <a href={`tel:${clientPhone}`} className="text-primary hover:underline">{clientPhone}</a>
+                    </>
+                  )}
+                </div>
               )}
             </div>
           </div>
@@ -277,43 +315,43 @@ const EventDetail = () => {
           <TabsContent value="overview">
             <div className="space-y-6">
               {/* Client Details Section */}
-              {(event.client_name || event.client_email || event.client_phone || event.budget) && (
+              {(clientName || clientEmail || clientPhone || event.budget) && (
                 <Card className="border-industrial">
                   <CardHeader>
                     <CardTitle className="font-brutalist uppercase tracking-wide">CLIENT DETAILS</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
-                      {event.client_name && (
+                      {clientName && (
                         <div>
                           <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
                             Client Name
                           </Label>
-                          <p className="font-industrial">{event.client_name}</p>
+                          <p className="font-industrial">{clientName}</p>
                         </div>
                       )}
                       
-                      {event.client_email && (
+                      {clientEmail && (
                         <div>
                           <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
                             Email Address
                           </Label>
                           <p className="font-industrial">
-                            <a href={`mailto:${event.client_email}`} className="text-primary hover:underline">
-                              {event.client_email}
+                            <a href={`mailto:${clientEmail}`} className="text-primary hover:underline">
+                              {clientEmail}
                             </a>
                           </p>
                         </div>
                       )}
                       
-                      {event.client_phone && (
+                      {clientPhone && (
                         <div>
                           <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
                             Phone Number
                           </Label>
                           <p className="font-industrial">
-                            <a href={`tel:${event.client_phone}`} className="text-primary hover:underline">
-                              {event.client_phone}
+                            <a href={`tel:${clientPhone}`} className="text-primary hover:underline">
+                              {clientPhone}
                             </a>
                           </p>
                         </div>
@@ -373,23 +411,16 @@ const EventDetail = () => {
                       </div>
                     )}
 
-                    {(event as any).start_date && (
+                    {event.primary_date && (
                       <div>
                         <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
                           Event Date
                         </Label>
-                        <p className="font-industrial">{format(new Date((event as any).start_date), 'dd MMM yyyy')}</p>
+                        <p className="font-industrial">{format(new Date(event.primary_date), 'dd MMM yyyy')}</p>
                       </div>
                     )}
 
-                    {(event as any).start_time && (
-                      <div>
-                        <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                          Start Time
-                        </Label>
-                        <p className="font-industrial">{(event as any).start_time}</p>
-                      </div>
-                    )}
+                    {/* No explicit start time stored for management events yet */}
 
                     <div>
                       <Label className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">

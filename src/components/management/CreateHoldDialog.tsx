@@ -61,8 +61,8 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
   // Pre-populate form when event data is available and dialog opens
   useEffect(() => {
     if (event && open) {
-      const eventDate = (event as any).start_date || format(new Date(), 'yyyy-MM-dd');
-      const eventTime = (event as any).start_time || '09:00';
+      const eventDate = (event as any).primary_date || format(new Date(), 'yyyy-MM-dd');
+      const eventTime = '09:00';
       const startDateTime = `${eventDate}T${eventTime}`;
       
       // Calculate end time based on headcount (larger events get more time)
