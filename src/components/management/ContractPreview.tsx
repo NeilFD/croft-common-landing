@@ -246,7 +246,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
           staff_signature_data: signatureData,
           staff_signed_at: new Date().toISOString(),
           staff_signed_by: managementUser?.user?.id,
-          signature_status: 'staff_signed'
+          signature_status: 'pending_client'
         })
         .eq('event_id', eventId);
       
@@ -268,21 +268,6 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
         variant: "destructive",
       });
       console.error('Contract signing error:', error);
-    },
-  });
-
-  // Sign contract as client (disabled for staff)
-  const signContractAsClient = useMutation({
-    mutationFn: async ({ eventId, signatureData }: { eventId: string; signatureData: any }) => {
-      // This should never be called for staff users
-      throw new Error('Staff cannot sign as client');
-    },
-    onError: (error) => {
-      toast({
-        title: "Error", 
-        description: "Staff cannot sign as client",
-        variant: "destructive",
-      });
     },
   });
 
@@ -355,19 +340,19 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
     return lines.map((line, index) => {
       if (line.includes('═══')) {
         return (
-          <h2 key={index} className="text-lg font-black text-center py-4 text-primary uppercase tracking-wider border-b border-primary/20">
+          <h2 key={index} className="font-brutalist text-lg font-black text-center py-4 text-primary uppercase tracking-wider border-b border-primary/20">
             {line.replace(/═/g, '').trim()}
           </h2>
         );
       } else if (line.includes('───')) {
         return (
-          <h3 key={index} className="text-base font-bold py-3 text-primary/90 uppercase tracking-wide border-b border-primary/10">
+          <h3 key={index} className="font-brutalist text-base font-bold py-3 text-primary/90 uppercase tracking-wide border-b border-primary/10">
             {line.replace(/─/g, '').trim()}
           </h3>
         );
       } else if (line.trim().match(/^\d+\./)) {
         return (
-          <p key={index} className="font-semibold py-2 text-foreground">
+          <p key={index} className="font-brutalist font-semibold py-2 text-foreground">
             {line.trim()}
           </p>
         );
@@ -478,7 +463,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                     <Badge 
                       variant={contractData.signature_status === 'completed' ? "default" : "secondary"}
                       className={contractData.signature_status === 'completed' ? "bg-green-600 hover:bg-green-700" : 
-                                contractData.signature_status === 'staff_signed' ? "bg-blue-100 text-blue-800" : 
+                                contractData.staff_signature_data ? "bg-blue-100 text-blue-800" : 
                                 "bg-yellow-100 text-yellow-800"}
                     >
                       {contractData.signature_status === 'completed' ? (
@@ -486,10 +471,10 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                           <Check className="w-3 h-3 mr-1" />
                           FULLY EXECUTED
                         </>
-                      ) : contractData.signature_status === 'staff_signed' ? (
+                      ) : contractData.staff_signature_data ? (
                         <>
-                          <Clock className="w-3 h-3 mr-1" />
-                          AWAITING CLIENT SIGNATURE
+                          <Check className="w-3 h-3 mr-1" />
+                          READY TO SEND
                         </>
                       ) : (
                         <>
@@ -542,14 +527,14 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                   <div>
                     <p className="font-medium text-foreground mb-1">Contract Status</p>
                     <p className="text-sm text-muted-foreground">
-                      {contractData.signature_status === 'staff_signed' 
+                      {contractData.staff_signature_data 
                         ? 'Croft Common has signed - ready to send to client'
                         : 'Contract awaiting Croft Common signature'}
                     </p>
                   </div>
                   
-                  {contractData?.signature_status === 'pending_staff' && (
-                    <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
+                    {!contractData?.staff_signature_data && (
                       <Button
                         onClick={() => setShowSignature(true)}
                         className="bg-primary hover:bg-primary/90"
@@ -557,28 +542,26 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                         <PenTool className="h-4 w-4 mr-2" />
                         SIGN FOR CROFT COMMON
                       </Button>
-                    </div>
-                  )}
-                  
-                  {contractData?.signature_status === 'staff_signed' && (
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={() => sendContractEmail.mutate({ 
-                          eventId: eventId!,
-                          pdfUrl: contractData?.pdf_url || undefined
-                        })}
-                        disabled={sendContractEmail.isPending}
-                        className="bg-secondary hover:bg-secondary/90"
-                      >
-                        {sendContractEmail.isPending ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                        ) : (
-                          <Mail className="h-4 w-4 mr-2" />
-                        )}
-                        SEND TO CLIENT
-                      </Button>
-                      
-                      {contractData?.pdf_url && (
+                    )}
+                    
+                    {contractData?.staff_signature_data && (
+                      <>
+                        <Button
+                          onClick={() => sendContractEmail.mutate({ 
+                            eventId: eventId!,
+                            pdfUrl: contractData?.pdf_url || undefined
+                          })}
+                          disabled={sendContractEmail.isPending}
+                          className="bg-secondary hover:bg-secondary/90"
+                        >
+                          {sendContractEmail.isPending ? (
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                          ) : (
+                            <Mail className="h-4 w-4 mr-2" />
+                          )}
+                          SEND TO CLIENT
+                        </Button>
+                        
                         <Button
                           onClick={() => generateContractPdf.mutate(eventId!)}
                           disabled={generateContractPdf.isPending}
@@ -591,24 +574,24 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                           )}
                           DOWNLOAD SIGNED PDF
                         </Button>
-                      )}
-                    </div>
-                  )}
-                  
-                  {!contractData?.pdf_url && (
-                    <Button
-                      onClick={() => generateContractPdf.mutate(eventId!)}
-                      disabled={generateContractPdf.isPending}
-                      variant="outline"
-                    >
-                      {generateContractPdf.isPending ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                      ) : (
-                        <Download className="h-4 w-4 mr-2" />
-                      )}
-                      GENERATE PDF
-                    </Button>
-                  )}
+                      </>
+                    )}
+                    
+                    {!contractData?.pdf_url && !contractData?.staff_signature_data && (
+                      <Button
+                        onClick={() => generateContractPdf.mutate(eventId!)}
+                        disabled={generateContractPdf.isPending}
+                        variant="outline"
+                      >
+                        {generateContractPdf.isPending ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
+                        ) : (
+                          <Download className="h-4 w-4 mr-2" />
+                        )}
+                        GENERATE PDF
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -677,7 +660,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                     ) : (
                       <div className="h-20 border-2 border-dashed border-muted rounded flex items-center justify-center bg-muted/20">
                         <span className="text-sm text-muted-foreground font-industrial">
-                          {contractData?.signature_status === 'staff_signed' ? 'Ready for client signature' : 'Awaiting staff signature first'}
+                          {contractData?.staff_signature_data ? 'Ready for client signature' : 'Awaiting staff signature first'}
                         </span>
                       </div>
                     )}
