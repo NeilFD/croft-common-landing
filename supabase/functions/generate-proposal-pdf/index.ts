@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -55,13 +56,9 @@ Deno.serve(async (req) => {
 
     console.log('Line items retrieved:', lineItems?.length, 'items');
 
-    // Generate HTML content that matches the preview exactly
-    console.log('Generating PDF HTML content');
-    const htmlContent = generatePDFHTML(eventData, lineItems || []);
-    
-    // Convert HTML to PDF
-    console.log('Converting HTML to PDF');
-    const pdfData = await htmlToPDF(htmlContent);
+    // Generate PDF using jsPDF
+    console.log('Creating PDF with jsPDF');
+    const pdfData = await createProposalPDF(eventData, lineItems || []);
     console.log('PDF generated successfully, size:', pdfData.length, 'bytes');
 
     // Generate filename and upload to storage
@@ -132,7 +129,13 @@ Deno.serve(async (req) => {
   }
 });
 
-function generatePDFHTML(eventData: any, lineItems: any[]): string {
+async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint8Array> {
+  const doc = new jsPDF('p', 'mm', 'a4');
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const margin = 20;
+  
+  let yPos = margin;
   const currentDate = new Date().toLocaleDateString('en-GB');
   const eventDate = eventData.primary_date ? new Date(eventData.primary_date).toLocaleDateString('en-GB') : '28/09/2025';
   
@@ -141,320 +144,266 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
   let netSubtotal = 0;
   let vatTotal = 0;
 
-  const itemsHTML = lineItems.map((item, index) => {
-    // unit_price is VAT-inclusive (gross)
+  lineItems.forEach(item => {
     const lineGross = (item.qty || 1) * (item.unit_price || 0) * (item.per_person ? (eventData.headcount || 1) : 1);
-    const lineNet = lineGross / (1 + ((item.tax_rate_pct || 20) / 100)); // Net = Gross / (1 + VAT rate)
-    const lineVat = lineGross - lineNet; // VAT = Gross - Net
+    const lineNet = lineGross / 1.2; // VAT-inclusive to net
+    const lineVat = lineGross - lineNet;
     
-    netSubtotal += lineNet;
-    vatTotal += lineVat;
-
-    const typeColors = {
-      room: '#2563eb',
-      menu: '#059669', 
-      addon: '#3b82f6',
-      discount: '#dc2626'
-    };
-
-    return `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
-        <div style="flex: 1;">
-          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-            <span style="background-color: ${typeColors[item.type as keyof typeof typeColors] || '#6b7280'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
-              ${item.type.toUpperCase()}
-            </span>
-            <span style="font-weight: 500; font-size: 16px;">${item.description}</span>
-          </div>
-          <div style="font-size: 12px; color: #6b7280; margin-left: 64px;">
-            Qty: ${item.qty} × £${(item.unit_price || 0).toFixed(2)}${item.per_person ? ` × ${eventData.headcount} people` : ''}
-          </div>
-        </div>
-        <div style="text-align: right; min-width: 120px;">
-          <div style="font-weight: bold; font-size: 18px;">£${lineGross.toFixed(2)}</div>
-          <div style="font-size: 10px; color: #6b7280;">Net: £${lineNet.toFixed(2)}</div>
-          <div style="font-size: 10px; color: #6b7280;">VAT: £${lineVat.toFixed(2)}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
+    if (item.type === 'discount') {
+      netSubtotal -= lineNet;
+      vatTotal -= lineVat;
+    } else {
+      netSubtotal += lineNet;
+      vatTotal += lineVat;
+    }
+  });
 
   const serviceChargeAmount = netSubtotal * (serviceChargePct / 100);
   const grandTotal = netSubtotal + vatTotal + serviceChargeAmount;
 
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>Proposal - ${eventData.code || eventData.id}</title>
-      <style>
-        body { 
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; 
-          margin: 0; 
-          padding: 24px; 
-          color: #000; 
-          background: white;
-          line-height: 1.6;
-          font-size: 14px;
-        }
-        .header { 
-          border-bottom: 4px solid #000; 
-          padding-bottom: 24px; 
-          margin-bottom: 24px; 
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-        }
-        .logo-section {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-        .logo {
-          width: 48px;
-          height: 48px;
-          background: #000;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-weight: bold;
-          font-size: 16px;
-        }
-        .brand-text h1 {
-          font-size: 24px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          margin: 0;
-          margin-bottom: 4px;
-        }
-        .brand-text p {
-          font-size: 14px;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-          color: #6b7280;
-          margin: 0;
-          font-weight: 600;
-        }
-        .proposal-info h2 {
-          font-size: 20px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          margin: 0;
-          margin-bottom: 8px;
-        }
-        .proposal-details {
-          font-size: 12px;
-          color: #6b7280;
-        }
-        .details-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 32px;
-          margin-bottom: 32px;
-        }
-        .section-title {
-          font-size: 16px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          border-bottom: 2px solid #000;
-          padding-bottom: 8px;
-          margin-bottom: 16px;
-        }
-        .venue-section {
-          margin-bottom: 32px;
-        }
-        .venue-content {
-          background-color: #f9fafb;
-          padding: 16px;
-          border: 2px solid #d1d5db;
-        }
-        .proposal-section {
-          margin-bottom: 32px;
-        }
-        .totals-section {
-          border-top: 4px solid #000;
-          padding-top: 24px;
-          margin-bottom: 32px;
-        }
-        .total-line {
-          display: flex;
-          justify-content: space-between;
-          margin-bottom: 12px;
-          font-size: 16px;
-        }
-        .grand-total {
-          border-top: 2px solid #000;
-          padding-top: 12px;
-          display: flex;
-          justify-content: space-between;
-          font-size: 20px;
-          font-weight: bold;
-        }
-        .badge {
-          background-color: #6b7280;
-          color: white;
-          padding: 2px 8px;
-          border-radius: 4px;
-          font-size: 10px;
-          font-weight: 600;
-          text-transform: uppercase;
-          margin-left: 4px;
-        }
-        .footer-section {
-          border-top: 2px solid #000;
-          padding-top: 24px;
-          text-align: center;
-          color: #6b7280;
-          font-size: 12px;
-        }
-      </style>
-    </head>
-    <body>
-      <!-- Header with Branding -->
-      <div class="header">
-        <div class="logo-section">
-          <div class="logo">CC</div>
-          <div class="brand-text">
-            <h1>CROFT COMMON</h1>
-            <p>Private Events & Corporate Hire</p>
-          </div>
-        </div>
-        <div class="proposal-info">
-          <h2>PROPOSAL</h2>
-          <div class="proposal-details">
-            <p><strong>Proposal Ref:</strong> ${eventData.code || '2025002'}</p>
-            <p><strong>Date:</strong> ${currentDate}</p>
-            <p><strong>Version:</strong> v1</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Client and Event Details -->
-      <div class="details-grid">
-        <div>
-          <h3 class="section-title">CLIENT DETAILS</h3>
-          <div>
-            <p><strong>Name:</strong> ${eventData.client_name || 'Michael Brown'}</p>
-            <p><strong>Email:</strong> ${eventData.client_email || 'michael.brown@techcorp.com'}</p>
-            <p><strong>Phone:</strong> ${eventData.client_phone || '07987 654321'}</p>
-            <p><strong>Company:</strong> ${eventData.client_name || 'TechCorp Ltd'}</p>
-          </div>
-        </div>
-        <div>
-          <h3 class="section-title">EVENT DETAILS</h3>
-          <div>
-            <p><strong>Event Date:</strong> ${eventDate}</p>
-            <p><strong>Event Type:</strong> ${eventData.event_type || 'Presentation'}</p>
-            <p><strong>Headcount:</strong> ${eventData.headcount} guests</p>
-            <p><strong>Space:</strong> TBC</p>
-            <p><strong>Status:</strong> DRAFT<span class="badge">DRAFT</span></p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Venue Information -->
-      <div class="venue-section">
-        <h3 class="section-title">VENUE DETAILS</h3>
-        <div class="venue-content">
-          <p><strong>Space:</strong> TBC</p>
-          <p><strong>Capacity:</strong> TBC</p>
-          <p><strong>Setup:</strong> Theatre style with presentation equipment</p>
-        </div>
-      </div>
-
-      <!-- Line Items -->
-      <div class="proposal-section">
-        <h3 class="section-title">PROPOSAL BREAKDOWN</h3>
-        <div>
-          ${itemsHTML}
-        </div>
-      </div>
-
-      <!-- Totals -->
-      <div class="totals-section">
-        <div class="total-line">
-          <span>Net Subtotal:</span>
-          <span style="font-weight: bold;">£${netSubtotal.toFixed(2)}</span>
-        </div>
-        <div class="total-line">
-          <span>VAT (20%):</span>
-          <span style="font-weight: bold;">£${vatTotal.toFixed(2)}</span>
-        </div>
-        ${serviceChargePct > 0 ? `
-        <div class="total-line">
-          <span>Service Charge (${serviceChargePct}%):</span>
-          <span style="font-weight: bold;">£${serviceChargeAmount.toFixed(2)}</span>
-        </div>
-        ` : ''}
-        <div class="grand-total">
-          <span>GRAND TOTAL:</span>
-          <span>£${grandTotal.toFixed(2)}</span>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="footer-section">
-        <p><strong>CROFT COMMON</strong></p>
-        <p>Email: hello@thehive-hospitality.com | Web: www.croftcommontest.com</p>
-        <p>This proposal is valid for 14 days from the date of issue</p>
-      </div>
-    </body>
-    </html>
-  `;
-}
-
-async function htmlToPDF(html: string): Promise<Uint8Array> {
-  // Simple HTML to PDF conversion using basic text extraction
-  // This is a simplified implementation - for production, use a proper HTML-to-PDF library
+  // Header Section
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CROFT COMMON', margin, yPos);
   
-  const textContent = html
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-
-  // Create a simple PDF structure
-  const pdfHeader = `%PDF-1.4
-1 0 obj
-<< /Type /Catalog /Pages 2 0 R >>
-endobj
-2 0 obj
-<< /Type /Pages /Kids [3 0 R] /Count 1 >>
-endobj
-3 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>
-endobj
-4 0 obj
-<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
-endobj
-5 0 obj
-<< /Length ${textContent.length + 100} >>
-stream
-BT
-/F1 12 Tf
-72 720 Td
-(${textContent.substring(0, 500)}) Tj
-ET
-endstream
-endobj
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000245 00000 n 
-0000000317 00000 n 
-trailer
-<< /Size 6 /Root 1 0 R >>
-startxref
-${400 + textContent.length}
-%%EOF`;
-
-  return new TextEncoder().encode(pdfHeader);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Private Events & Corporate Hire', margin, yPos + 8);
+  
+  // Proposal info (top right)
+  doc.setFontSize(20);
+  doc.setFont('helvetica', 'bold');
+  doc.text('PROPOSAL', pageWidth - margin - 50, yPos, { align: 'right' });
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Proposal Ref: ${eventData.code || '2025002'}`, pageWidth - margin - 50, yPos + 10, { align: 'right' });
+  doc.text(`Date: ${currentDate}`, pageWidth - margin - 50, yPos + 16, { align: 'right' });
+  doc.text(`Version: v1`, pageWidth - margin - 50, yPos + 22, { align: 'right' });
+  
+  // Header line
+  yPos += 35;
+  doc.setLineWidth(2);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 15;
+  
+  // Client and Event Details (two columns)
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CLIENT DETAILS', margin, yPos);
+  doc.text('EVENT DETAILS', pageWidth / 2 + 10, yPos);
+  
+  // Underline section headers
+  doc.setLineWidth(1);
+  doc.line(margin, yPos + 2, margin + 60, yPos + 2);
+  doc.line(pageWidth / 2 + 10, yPos + 2, pageWidth / 2 + 70, yPos + 2);
+  
+  yPos += 10;
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  
+  // Client details (left column)
+  doc.setFont('helvetica', 'bold');
+  doc.text('Name: ', margin, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(eventData.client_name || 'Michael Brown', margin + 20, yPos);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Email: ', margin, yPos + 6);
+  doc.setFont('helvetica', 'normal');
+  doc.text(eventData.client_email || 'michael.brown@techcorp.com', margin + 20, yPos + 6);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Phone: ', margin, yPos + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(eventData.client_phone || '07987 654321', margin + 20, yPos + 12);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Company: ', margin, yPos + 18);
+  doc.setFont('helvetica', 'normal');
+  doc.text(eventData.client_name || 'TechCorp Ltd', margin + 20, yPos + 18);
+  
+  // Event details (right column)
+  doc.setFont('helvetica', 'bold');
+  doc.text('Event Date: ', pageWidth / 2 + 10, yPos);
+  doc.setFont('helvetica', 'normal');
+  doc.text(eventDate, pageWidth / 2 + 35, yPos);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Event Type: ', pageWidth / 2 + 10, yPos + 6);
+  doc.setFont('helvetica', 'normal');
+  doc.text(eventData.event_type || 'Presentation', pageWidth / 2 + 35, yPos + 6);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Headcount: ', pageWidth / 2 + 10, yPos + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`${eventData.headcount || 1} guests`, pageWidth / 2 + 35, yPos + 12);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Space: ', pageWidth / 2 + 10, yPos + 18);
+  doc.setFont('helvetica', 'normal');
+  doc.text('TBC', pageWidth / 2 + 35, yPos + 18);
+  
+  yPos += 35;
+  
+  // Venue Details Section
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('VENUE DETAILS', margin, yPos);
+  doc.setLineWidth(1);
+  doc.line(margin, yPos + 2, margin + 60, yPos + 2);
+  
+  yPos += 10;
+  
+  // Venue box
+  doc.setFillColor(249, 250, 251);
+  doc.rect(margin, yPos, pageWidth - 2 * margin, 20, 'F');
+  doc.setDrawColor(209, 213, 219);
+  doc.rect(margin, yPos, pageWidth - 2 * margin, 20);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Space: ', margin + 5, yPos + 6);
+  doc.setFont('helvetica', 'normal');
+  doc.text('TBC', margin + 20, yPos + 6);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Capacity: ', margin + 5, yPos + 12);
+  doc.setFont('helvetica', 'normal');
+  doc.text('TBC', margin + 25, yPos + 12);
+  
+  doc.setFont('helvetica', 'bold');
+  doc.text('Setup: ', margin + 5, yPos + 18);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Theatre style with presentation equipment', margin + 20, yPos + 18);
+  
+  yPos += 35;
+  
+  // Proposal Breakdown Section
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('PROPOSAL BREAKDOWN', margin, yPos);
+  doc.setLineWidth(1);
+  doc.line(margin, yPos + 2, margin + 80, yPos + 2);
+  
+  yPos += 15;
+  
+  // Line items
+  lineItems.forEach((item, index) => {
+    const lineGross = (item.qty || 1) * (item.unit_price || 0) * (item.per_person ? (eventData.headcount || 1) : 1);
+    const lineNet = lineGross / 1.2;
+    const lineVat = lineGross - lineNet;
+    
+    doc.setFontSize(10);
+    
+    // Type badge
+    doc.setFillColor(107, 114, 128); // Default gray
+    if (item.type === 'room') doc.setFillColor(37, 99, 235); // Blue
+    if (item.type === 'menu') doc.setFillColor(5, 150, 105); // Green
+    if (item.type === 'addon') doc.setFillColor(59, 130, 246); // Light blue
+    if (item.type === 'discount') doc.setFillColor(220, 38, 38); // Red
+    
+    doc.roundedRect(margin, yPos - 4, 25, 6, 1, 1, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.text(item.type.toUpperCase(), margin + 12.5, yPos, { align: 'center' });
+    
+    // Description
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.text(item.description, margin + 30, yPos);
+    
+    // Quantity details
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    const qtyText = `Qty: ${item.qty} × £${(item.unit_price || 0).toFixed(2)}${item.per_person ? ` × ${eventData.headcount} people` : ''}`;
+    doc.text(qtyText, margin + 30, yPos + 4);
+    
+    // Amounts (right side)
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`£${lineGross.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
+    
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(107, 114, 128);
+    doc.text(`Net: £${lineNet.toFixed(2)}`, pageWidth - margin - 30, yPos + 4, { align: 'right' });
+    doc.text(`VAT: £${lineVat.toFixed(2)}`, pageWidth - margin - 30, yPos + 8, { align: 'right' });
+    
+    // Line separator
+    yPos += 15;
+    doc.setDrawColor(229, 231, 235);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 5;
+    
+    doc.setTextColor(0, 0, 0);
+  });
+  
+  yPos += 10;
+  
+  // Totals Section
+  doc.setLineWidth(2);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 15;
+  
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  
+  // Net Subtotal
+  doc.text('Net Subtotal:', margin, yPos);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`£${netSubtotal.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
+  yPos += 8;
+  
+  // VAT
+  doc.setFont('helvetica', 'normal');
+  doc.text('VAT (20%):', margin, yPos);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`£${vatTotal.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
+  yPos += 8;
+  
+  // Service Charge (if applicable)
+  if (serviceChargePct > 0) {
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Service Charge (${serviceChargePct}%):`, margin, yPos);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`£${serviceChargeAmount.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
+    yPos += 8;
+  }
+  
+  // Grand Total
+  yPos += 5;
+  doc.setLineWidth(1);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
+  
+  doc.setFontSize(16);
+  doc.setFont('helvetica', 'bold');
+  doc.text('GRAND TOTAL:', margin, yPos);
+  doc.text(`£${grandTotal.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
+  
+  yPos += 25;
+  
+  // Footer
+  doc.setLineWidth(1);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
+  
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CROFT COMMON', pageWidth / 2, yPos, { align: 'center' });
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  yPos += 8;
+  doc.text('Unit 1-3, Croft Court, 48 Croft Street, London, SE8 4EX', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 6;
+  doc.text('Email: hello@thehive-hospitality.com | Phone: 020 7946 0958', pageWidth / 2, yPos, { align: 'center' });
+  yPos += 10;
+  doc.setFontSize(8);
+  doc.text('This proposal is valid for 30 days from the date of issue. Terms and conditions apply.', pageWidth / 2, yPos, { align: 'center' });
+  
+  return doc.output('arraybuffer');
 }
