@@ -22,10 +22,18 @@ Deno.serve(async (req) => {
     const { eventId } = await req.json();
     console.log('Generating PDF for event:', eventId);
 
-    // Fetch event data
+    // Fetch event data with space details
     const { data: eventData, error: eventError } = await supabase
       .from('management_events')
-      .select('*')
+      .select(`
+        *,
+        spaces (
+          name,
+          capacity_seated,
+          capacity_standing,
+          description
+        )
+      `)
       .eq('id', eventId)
       .single();
 
@@ -170,21 +178,23 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
   const headcount = eventData.headcount || 1;
   const serviceChargePct = Number(eventData.service_charge_pct || 0);
 
-  // Load brand assets (fonts + logo)
-  // Note: Using Google Fonts repo raw TTFs to embed true fonts (no paid services)
+  // Load brand assets (better font handling)
+  // Use system fonts with fallback - more reliable than external font embedding
+  let useCustomFonts = false;
   try {
-    const [workSansB64, oswaldBoldB64] = await Promise.all([
-      fetchBase64('https://github.com/google/fonts/raw/main/ofl/worksans/WorkSans-Regular.ttf'),
-      fetchBase64('https://github.com/google/fonts/raw/main/ofl/oswald/Oswald-Bold.ttf'),
-    ]);
-    doc.addFileToVFS('WorkSans-Regular.ttf', workSansB64);
-    doc.addFont('WorkSans-Regular.ttf', 'WorkSans', 'normal');
-    doc.addFileToVFS('Oswald-Bold.ttf', oswaldBoldB64);
-    doc.addFont('Oswald-Bold.ttf', 'Oswald', 'bold');
+    // Try to load Google Fonts via CDN for better reliability
+    const fontResponse = await fetch('https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Work+Sans:wght@400&display=swap');
+    if (fontResponse.ok) {
+      // If fonts are available, we could inject CSS but jsPDF doesn't support this directly
+      // Instead, we'll use the best available system fonts with proper styling
+      useCustomFonts = false; // Keep as false for now, use system fonts
+    }
   } catch (e) {
-    console.warn('Font embedding failed, falling back to Helvetica:', e);
+    console.warn('Google Fonts not accessible, using system fonts:', e);
+    useCustomFonts = false;
   }
 
+  // Load logo
   let logoDataUrl: string | null = null;
   try {
     logoDataUrl = await fetchImageDataUrl('https://www.croftcommontest.com/brand/logo.png');
@@ -201,14 +211,14 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
       } catch (_) {}
     }
     doc.setTextColor(0, 0, 0);
-    doc.setFont('Oswald', 'bold');
+    doc.setFont('helvetica', 'bold'); // Use system font
     doc.setFontSize(18);
     doc.text('CROFT COMMON', margin + (logoDataUrl ? 22 : 0), headerY + 8);
 
     // Right-aligned proposal meta
     doc.setFontSize(20);
     doc.text('PROPOSAL', pageWidth - margin, headerY + 4, { align: 'right' });
-    doc.setFont('WorkSans', 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     doc.text(`Proposal Ref: ${proposalRef}`, pageWidth - margin, headerY + 10, { align: 'right' });
     doc.text(`Date: ${currentDate}`, pageWidth - margin, headerY + 15, { align: 'right' });
@@ -225,11 +235,11 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
     doc.setDrawColor(220, 220, 220);
     doc.line(margin, footY - 4, pageWidth - margin, footY - 4);
 
-    doc.setFont('Oswald', 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.text('CROFT COMMON', pageWidth / 2, footY, { align: 'center' });
 
-    doc.setFont('WorkSans', 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.text('Unit 1-3, Croft Court, 48 Croft Street, London, SE8 4EX', pageWidth / 2, footY + 5, { align: 'center' });
     doc.text('hello@thehive-hospitality.com • 020 7946 0958', pageWidth / 2, footY + 9, { align: 'center' });
@@ -240,7 +250,7 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
   // Page 1 static header/footer via autoTable hook later, but we draw details ourselves
   // CLIENT + EVENT DETAILS
   let y = margin + headerHeight + 4;
-  doc.setFont('Oswald', 'bold');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text('CLIENT DETAILS', margin, y);
   doc.text('EVENT DETAILS', pageWidth / 2 + 6, y);
@@ -250,12 +260,12 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
   doc.line(pageWidth / 2 + 6, y + 1.5, pageWidth - margin, y + 1.5);
 
   y += 8;
-  doc.setFont('WorkSans', 'normal');
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
 
   // Left column (client)
   const leftX = margin;
-  doc.setFont('WorkSans', 'normal');
+  doc.setFont('helvetica', 'normal');
   doc.text('Name:', leftX, y);
   doc.text(String(eventData.client_name || 'Client'), leftX + 22, y);
   y += 5;
@@ -283,9 +293,9 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
     rightY += 5;
   }
 
-  // VENUE DETAILS box
+  // VENUE DETAILS box - using proper space data
   y = Math.max(y, rightY) + 8;
-  doc.setFont('Oswald', 'bold');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.text('VENUE DETAILS', margin, y);
   doc.setLineWidth(0.5);
@@ -297,12 +307,16 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
   doc.setDrawColor(220, 223, 228);
   doc.rect(margin, y, pageWidth - margin * 2, 18, 'FD');
 
-  doc.setFont('WorkSans', 'normal');
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
   doc.text('Space:', margin + 4, y + 6);
-  doc.text(String(eventData.space_name || 'TBC'), margin + 22, y + 6);
+  const spaceName = eventData.spaces?.name || eventData.venue_name || 'Croft Common';
+  doc.text(String(spaceName), margin + 22, y + 6);
   doc.text('Capacity:', margin + 4, y + 12);
-  doc.text(String(eventData.space_capacity || 'TBC'), margin + 22, y + 12);
+  const capacity = eventData.spaces?.capacity_seated 
+    ? `${eventData.spaces.capacity_seated} seated, ${eventData.spaces.capacity_standing || 0} standing`
+    : `${headcount} guests`;
+  doc.text(String(capacity), margin + 22, y + 12);
 
   // Totals calculation (net, VAT, service, gross)
   let netSubtotal = 0;
@@ -350,8 +364,8 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
     body: rows,
     startY: tableStartY,
     margin: { left: margin, right: margin, top: headerHeight + 6, bottom: footerHeight + 6 },
-    styles: { font: 'WorkSans', fontSize: 9, cellPadding: 2.5, lineColor: [229, 231, 235], lineWidth: 0.2, valign: 'middle' },
-    headStyles: { fillColor: [26, 26, 26], textColor: [255, 255, 255], font: 'Oswald', fontStyle: 'bold' },
+    styles: { font: 'helvetica', fontSize: 9, cellPadding: 2.5, lineColor: [229, 231, 235], lineWidth: 0.2, valign: 'middle' },
+    headStyles: { fillColor: [26, 26, 26], textColor: [255, 255, 255], font: 'helvetica', fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [250, 250, 250] },
     columnStyles: {
       0: { cellWidth: 26 }, // Type
@@ -383,27 +397,27 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
   doc.setLineWidth(0.6);
   doc.line(margin, finalY + 4, pageWidth - margin, finalY + 4);
   let ty = finalY + 12;
-  doc.setFont('WorkSans', 'normal');
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
 
   // Net Subtotal
   doc.text('Net Subtotal:', pageWidth - margin - 60, ty);
-  doc.setFont('Oswald', 'bold');
+  doc.setFont('helvetica', 'bold');
   doc.text(`£${netSubtotal.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
   ty += 6;
 
   // VAT
-  doc.setFont('WorkSans', 'normal');
+  doc.setFont('helvetica', 'normal');
   doc.text('VAT (20%):', pageWidth - margin - 60, ty);
-  doc.setFont('Oswald', 'bold');
+  doc.setFont('helvetica', 'bold');
   doc.text(`£${vatTotal.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
   ty += 6;
 
   // Service Charge
   if (serviceChargePct > 0) {
-    doc.setFont('WorkSans', 'normal');
+    doc.setFont('helvetica', 'normal');
     doc.text(`Service Charge (${serviceChargePct}%):`, pageWidth - margin - 60, ty);
-    doc.setFont('Oswald', 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(`£${serviceChargeAmount.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
     ty += 6;
   }
@@ -414,7 +428,7 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
   doc.setDrawColor(220, 220, 220);
   doc.line(pageWidth - margin - 60, ty, pageWidth - margin, ty);
   ty += 8;
-  doc.setFont('Oswald', 'bold');
+  doc.setFont('helvetica', 'bold');
   doc.setFontSize(13);
   doc.text('GRAND TOTAL:', pageWidth - margin - 60, ty);
   doc.text(`£${grandTotal.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
@@ -426,7 +440,7 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
     drawHeaderFooter(doc.getNumberOfPages());
     noteY = margin + headerHeight + 8;
   }
-  doc.setFont('WorkSans', 'normal');
+  doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.text('This proposal is valid for 30 days from the date of issue. Prices include VAT unless stated.', margin, noteY);
 
