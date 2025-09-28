@@ -226,14 +226,24 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
         }
       });
 
-      if (error) throw error;
+      console.log('PDF generation response:', { data, error });
+
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
       
       if (data?.url && data?.proposalCode) {
         // Invalidate proposal PDFs to update version count
         queryClient.invalidateQueries({ queryKey: ['proposal-pdfs', eventId] });
         return { url: data.url, proposalCode: data.proposalCode };
+      } else if (data?.pdfUrl) {
+        // Fallback to old format
+        queryClient.invalidateQueries({ queryKey: ['proposal-pdfs', eventId] });
+        return { url: data.pdfUrl, proposalCode: eventDetails?.code || eventId };
       } else {
-        throw new Error('No PDF URL or proposal code received');
+        console.error('Unexpected response format:', data);
+        throw new Error('PDF generated but unexpected response format');
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
