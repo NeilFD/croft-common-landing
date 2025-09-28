@@ -228,12 +228,12 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
 
       if (error) throw error;
       
-      if (data?.pdfUrl) {
+      if (data?.url && data?.proposalCode) {
         // Invalidate proposal PDFs to update version count
         queryClient.invalidateQueries({ queryKey: ['proposal-pdfs', eventId] });
-        return data.pdfUrl;
+        return { url: data.url, proposalCode: data.proposalCode };
       } else {
-        throw new Error('No PDF URL received');
+        throw new Error('No PDF URL or proposal code received');
       }
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -252,30 +252,36 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
     setSharingEmail(true);
     
     try {
-      const pdfUrl = await generatePDF();
-      if (!pdfUrl) return;
+      const response = await generatePDF();
+      if (!response?.proposalCode) return;
+
+      // Create clean proposal URL
+      const proposalUrl = `https://www.croftcommontest.com/functions/v1/proposal-redirect/${response.proposalCode}`;
 
       // Open mailto link with proposal details
       const subject = `Event Proposal - ${eventDetails?.code || eventId}`;
       const body = `Dear Client,
 
-Please find your event proposal attached below:
+Please find your event proposal at the link below:
 
-Proposal Reference: ${eventDetails?.code || eventId}
-Event Date: ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}
-Headcount: ${eventDetails?.headcount || headcount} guests
+${proposalUrl}
 
-Proposal PDF: ${pdfUrl}
+Event Details:
+- Event Type: ${eventDetails?.event_type || 'TBC'}
+- Date: ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}
+- Headcount: ${eventDetails?.headcount || headcount} guests
 
-If you have any questions, please don't hesitate to contact us.
+Please review the proposal and let us know if you have any questions or would like to make any changes.
+
+We look forward to hosting your event!
 
 Best regards,
 The Croft Common Team
 
----
-Croft Common
-hello@thehive-hospitality.com
-www.croftcommontest.com`;
+Contact Details:
+Tel: 0208 090 0090
+Email: hello@thehive-hospitality.com
+Web: www.croftcommontest.com`;
 
       const mailtoUrl = `mailto:${eventDetails?.client_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.open(mailtoUrl, '_blank');
@@ -300,20 +306,22 @@ www.croftcommontest.com`;
     setSharingWhatsApp(true);
     
     try {
-      const pdfUrl = await generatePDF();
-      if (!pdfUrl) return;
+      const response = await generatePDF();
+      if (!response?.proposalCode) return;
+
+      // Create clean proposal URL
+      const proposalUrl = `https://www.croftcommontest.com/functions/v1/proposal-redirect/${response.proposalCode}`;
 
       const message = `Hi! Here's your event proposal for ${eventDetails?.event_type || 'your event'} on ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}.
 
 Proposal Reference: ${eventDetails?.code || eventId}
-Headcount: ${eventDetails?.headcount || headcount} guests
 
-Download your proposal: ${pdfUrl}
+View proposal: ${proposalUrl}
 
-Any questions? Just let us know!
+Please review and let us know if you have any questions!
 
-Best regards,
-Croft Common Team`;
+Croft Common Team
+hello@thehive-hospitality.com`;
 
       // Use WhatsApp Web URL for sharing
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
