@@ -20,10 +20,10 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
 
   // Fetch event data
   const { data: event } = useQuery({
-    queryKey: ['event', eventId],
+    queryKey: ['management-event', eventId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('events')
+        .from('management_events')
         .select('*')
         .eq('id', eventId)
         .single();
@@ -67,10 +67,10 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
       });
       refetchContract();
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to generate contract",
+        description: `Failed to generate contract: ${error.message || 'Unknown error'}`,
         variant: "destructive",
       });
     }
@@ -128,10 +128,10 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
     if (!eventData) return content;
     
     return content
-      .replace(/{{client_name}}/g, eventData.title || 'Client Name')
-      .replace(/{{event_date}}/g, new Date(eventData.date).toLocaleDateString('en-GB'))
-      .replace(/{{event_type}}/g, eventData.category || 'Event')
-      .replace(/{{location}}/g, eventData.location || 'Venue');
+      .replace(/{{client_name}}/g, eventData.client_name || 'Client Name')
+      .replace(/{{event_date}}/g, eventData.primary_date ? new Date(eventData.primary_date).toLocaleDateString('en-GB') : 'Event Date')
+      .replace(/{{event_type}}/g, eventData.event_type || 'Event')
+      .replace(/{{location}}/g, eventData.venue_name || 'Venue');
   };
 
   return (
