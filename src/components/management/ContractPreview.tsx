@@ -177,48 +177,16 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
 
   // Send contract via email
   const sendContractEmail = useMutation({
-    mutationFn: async ({ eventId, pdfUrl }: { eventId: string; pdfUrl?: string }) => {
-      let finalPdfUrl = pdfUrl;
-      
-      // If no PDF URL provided, generate one first
-      if (!finalPdfUrl) {
-        console.log('No PDF URL provided, generating PDF first...');
-        const pdfResponse = await supabase.functions.invoke('generate-contract-pdf', {
-          body: { eventId }
-        });
-        
-        if (pdfResponse.error) {
-          throw new Error('Failed to generate PDF before sending email');
-        }
-        
-        finalPdfUrl = pdfResponse.data?.url;
-      }
-      
-      if (!finalPdfUrl) {
-        throw new Error('No PDF URL available');
-      }
-
+    mutationFn: async ({ eventId }: { eventId: string }) => {
       const fileName = `contract-${eventData?.code || eventId}.pdf`;
-      
-      console.log('📧 Sending contract email...', { eventId, finalPdfUrl, fileName });
-      
-      return Promise.race([
-        supabase.functions.invoke('send-contract-email', {
-          body: {
-            eventId,
-            pdfUrl: finalPdfUrl,
-            fileName
-          }
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Email sending timed out')), 30000)
-        )
-      ]).then((response: any) => {
-        if (response.error) {
-          throw new Error(response.error.message || 'Failed to send email');
-        }
-        return response.data;
+      console.log('📧 Sending contract email (server will generate fresh PDF)...', { eventId, fileName });
+      const response = await supabase.functions.invoke('send-contract-email', {
+        body: { eventId, fileName }
       });
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to send email');
+      }
+      return response.data;
     },
     onSuccess: (data) => {
       console.log('✅ Contract email sent:', data);
@@ -584,8 +552,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                       <>
                         <Button
                           onClick={() => sendContractEmail.mutate({ 
-                            eventId: eventId!,
-                            pdfUrl: contractData?.pdf_url || undefined
+                            eventId: eventId!
                           })}
                           disabled={sendContractEmail.isPending}
                           className="bg-secondary hover:bg-secondary/90"

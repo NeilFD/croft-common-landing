@@ -11,8 +11,8 @@ const corsHeaders = {
 
 interface SendContractEmailRequest {
   eventId: string;
-  pdfUrl: string;
-  fileName: string;
+  pdfUrl?: string;
+  fileName?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -21,11 +21,11 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { eventId, pdfUrl, fileName }: SendContractEmailRequest = await req.json();
+    const { eventId, fileName }: SendContractEmailRequest = await req.json();
 
-    if (!eventId || !pdfUrl) {
+    if (!eventId) {
       return new Response(
-        JSON.stringify({ error: 'Missing required parameters' }),
+        JSON.stringify({ error: 'Missing required parameter: eventId' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -68,12 +68,24 @@ const handler = async (req: Request): Promise<Response> => {
       .limit(1)
       .maybeSingle();
 
-    // Download PDF to attach
-    const pdfResponse = await fetch(pdfUrl);
+    // Always generate a fresh PDF for emailing
+    const genResp = await supabase.functions.invoke('generate-contract-pdf', {
+      body: { eventId }
+    });
+    if (genResp.error || !genResp.data?.url) {
+      throw new Error('Failed to generate PDF');
+    }
+    const freshPdfUrl = genResp.data.url;
+
+    // Download freshly generated PDF to attach
+    const pdfResponse = await fetch(freshPdfUrl);
     if (!pdfResponse.ok) {
-      throw new Error('Failed to fetch PDF');
+      throw new Error('Failed to fetch generated PDF');
     }
     const pdfBuffer = await pdfResponse.arrayBuffer();
+
+    // Determine filename if not provided
+    const safeFileName = fileName || `contract-${eventData.code || eventId}.pdf`;
 
     // Send email with PDF attachment
     const emailResponse = await resend.emails.send({
@@ -137,7 +149,7 @@ const handler = async (req: Request): Promise<Response> => {
       `,
       attachments: [
         {
-          filename: fileName,
+          filename: safeFileName,
           content: Array.from(new Uint8Array(pdfBuffer)),
         },
       ],
