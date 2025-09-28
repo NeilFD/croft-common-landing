@@ -249,12 +249,15 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   };
 
   const handleEmailShare = async () => {
-    const pdfUrl = await generatePDF();
-    if (!pdfUrl) return;
+    setSharingEmail(true);
+    
+    try {
+      const pdfUrl = await generatePDF();
+      if (!pdfUrl) return;
 
-    // Open mailto link with proposal details
-    const subject = `Event Proposal - ${eventDetails?.code || eventId}`;
-    const body = `Dear Client,
+      // Open mailto link with proposal details
+      const subject = `Event Proposal - ${eventDetails?.code || eventId}`;
+      const body = `Dear Client,
 
 Please find your event proposal attached below:
 
@@ -274,20 +277,32 @@ Croft Common
 hello@thehive-hospitality.com
 www.croftcommontest.com`;
 
-    const mailtoUrl = `mailto:${eventDetails?.client_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl, '_blank');
-    
-    toast({
-      title: "Email opened",
-      description: "Your email client should open with the proposal details.",
-    });
+      const mailtoUrl = `mailto:${eventDetails?.client_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.open(mailtoUrl, '_blank');
+      
+      toast({
+        title: "Email opened",
+        description: "Your email client should open with the proposal details.",
+      });
+    } catch (error) {
+      console.error('Error sharing via email:', error);
+      toast({
+        title: "Error",
+        description: "Failed to share via email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSharingEmail(false);
+    }
   };
 
   const handleWhatsAppShare = async () => {
-    const pdfUrl = await generatePDF();
-    if (!pdfUrl) return;
-
+    setSharingWhatsApp(true);
+    
     try {
+      const pdfUrl = await generatePDF();
+      if (!pdfUrl) return;
+
       const message = `Hi! Here's your event proposal for ${eventDetails?.event_type || 'your event'} on ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}.
 
 Proposal Reference: ${eventDetails?.code || eventId}
@@ -315,6 +330,8 @@ Croft Common Team`;
         description: "Failed to open WhatsApp. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setSharingWhatsApp(false);
     }
   };
 
