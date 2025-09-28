@@ -295,11 +295,6 @@ Web: www.croftcommontest.com`;
 
       const mailtoUrl = `mailto:${eventDetails?.client_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       window.open(mailtoUrl, '_blank');
-      
-      toast({
-        title: "Email opened",
-        description: "Your email client should open with the proposal details.",
-      });
     } catch (error) {
       console.error('Error sharing via email:', error);
       toast({
@@ -336,11 +331,6 @@ hello@thehive-hospitality.com`;
       // Use WhatsApp Web URL for sharing
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
       window.open(whatsappUrl, '_blank');
-      
-      toast({
-        title: "WhatsApp opened",
-        description: "WhatsApp should open with your proposal message ready to send.",
-      });
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
       toast({
@@ -527,7 +517,7 @@ hello@thehive-hospitality.com`;
             </div>
           </div>
           
-          <div className="mt-6 flex gap-4">
+          <div className="mt-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
             <Button 
               onClick={() => saveProposal.mutate(lineItems)}
               disabled={saveProposal.isPending}
