@@ -4006,7 +4006,7 @@ export type Database = {
         Returns: string
       }
       promote_hold: {
-        Args: { p_booking: string; p_new_status: string }
+        Args: { p_booking_id: string; p_new_status: string }
         Returns: undefined
       }
       reassign_lead: {
