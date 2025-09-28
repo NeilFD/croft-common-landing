@@ -877,6 +877,109 @@ export type Database = {
         }
         Relationships: []
       }
+      contracts: {
+        Row: {
+          content: string
+          created_at: string | null
+          event_id: string
+          id: string
+          is_immutable: boolean | null
+          is_signed: boolean | null
+          pdf_url: string | null
+          signature_data: Json | null
+          signed_at: string | null
+          updated_at: string | null
+          version: number | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          event_id: string
+          id?: string
+          is_immutable?: boolean | null
+          is_signed?: boolean | null
+          pdf_url?: string | null
+          signature_data?: Json | null
+          signed_at?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          is_immutable?: boolean | null
+          is_signed?: boolean | null
+          pdf_url?: string | null
+          signature_data?: Json | null
+          signed_at?: string | null
+          updated_at?: string | null
+          version?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_line_items: {
+        Row: {
+          created_at: string | null
+          description: string
+          event_id: string
+          id: string
+          per_person: boolean | null
+          qty: number | null
+          service_charge_pct: number | null
+          sort_order: number | null
+          tax_rate_pct: number | null
+          type: string
+          unit_price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          event_id: string
+          id?: string
+          per_person?: boolean | null
+          qty?: number | null
+          service_charge_pct?: number | null
+          sort_order?: number | null
+          tax_rate_pct?: number | null
+          type: string
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          event_id?: string
+          id?: string
+          per_person?: boolean | null
+          qty?: number | null
+          service_charge_pct?: number | null
+          sort_order?: number | null
+          tax_rate_pct?: number | null
+          type?: string
+          unit_price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_line_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           category: string
@@ -1017,6 +1120,53 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      invoices: {
+        Row: {
+          balance_due: number | null
+          created_at: string | null
+          due_date: string | null
+          event_id: string
+          id: string
+          number: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          total: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          balance_due?: number | null
+          created_at?: string | null
+          due_date?: string | null
+          event_id: string
+          id?: string
+          number?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          balance_due?: number | null
+          created_at?: string | null
+          due_date?: string | null
+          event_id?: string
+          id?: string
+          number?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       kitchen_vendor_inquiries: {
         Row: {
@@ -2347,6 +2497,44 @@ export type Database = {
           viewed_at?: string
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          invoice_id: string
+          method: string
+          received_at: string | null
+          stripe_charge_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          invoice_id: string
+          method: string
+          received_at?: string | null
+          stripe_charge_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          invoice_id?: string
+          method?: string
+          received_at?: string | null
+          stripe_charge_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pending_banners: {
         Row: {
@@ -3690,6 +3878,10 @@ export type Database = {
         Args: { payload: Json }
         Returns: string
       }
+      create_invoice: {
+        Args: { p_amount: number; p_due_date: string; p_event_id: string }
+        Returns: string
+      }
       create_lead: {
         Args: { client_ip?: string; payload: Json } | { payload: Json }
         Returns: string
@@ -3723,6 +3915,10 @@ export type Database = {
           | { payload: Json }
         Returns: string
       }
+      create_proposal: {
+        Args: { p_event_id: string; p_items: Json }
+        Returns: string
+      }
       detect_booking_conflicts: {
         Args: {
           p_end_ts: string
@@ -3740,6 +3936,10 @@ export type Database = {
       }
       ensure_membership_number: {
         Args: { user_id_input: string }
+        Returns: string
+      }
+      generate_contract: {
+        Args: { p_event_id: string }
         Returns: string
       }
       generate_membership_number: {
