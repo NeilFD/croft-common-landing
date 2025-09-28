@@ -133,7 +133,7 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
   const currentDate = new Date().toLocaleDateString('en-GB');
   const eventDate = new Date(eventData.primary_date).toLocaleDateString('en-GB');
   
-  // Calculate totals
+  // Calculate totals (same logic as frontend)
   const serviceChargePct = eventData.service_charge_pct || 0;
   let netSubtotal = 0;
   let vatTotal = 0;
@@ -147,13 +147,32 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
     netSubtotal += lineNet;
     vatTotal += lineVat;
 
+    const typeColors = {
+      room: '#2563eb', // blue
+      menu: '#059669', // emerald
+      addon: '#3b82f6', // blue
+      discount: '#dc2626' // red
+    };
+
     return `
-      <tr>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${item.description}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.qty || 1}${item.per_person ? ` × ${eventData.headcount}` : ''}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">£${(item.unit_price || 0).toFixed(2)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">£${lineGross.toFixed(2)}</td>
-      </tr>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e5e7eb;">
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+            <span style="background-color: ${typeColors[item.type as keyof typeof typeColors] || '#6b7280'}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 600; text-transform: uppercase;">
+              ${item.type.toUpperCase()}
+            </span>
+            <span style="font-weight: 500; font-size: 16px;">${item.description}</span>
+          </div>
+          <div style="font-size: 12px; color: #6b7280; margin-left: 64px;">
+            Qty: ${item.qty} × £${(item.unit_price || 0).toFixed(2)}${item.per_person ? ` × ${eventData.headcount} people` : ''}
+          </div>
+        </div>
+        <div style="text-align: right; min-width: 120px;">
+          <div style="font-weight: bold; font-size: 18px;">£${lineGross.toFixed(2)}</div>
+          <div style="font-size: 10px; color: #6b7280;">Net: £${lineNet.toFixed(2)}</div>
+          <div style="font-size: 10px; color: #6b7280;">VAT: £${lineVat.toFixed(2)}</div>
+        </div>
+      </div>
     `;
   }).join('');
 
@@ -167,104 +186,217 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
       <meta charset="utf-8">
       <title>Proposal - ${eventData.code || eventData.id}</title>
       <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; color: #1f2937; }
-        .header { text-align: center; margin-bottom: 40px; }
-        .logo { font-size: 24px; font-weight: bold; color: #1f2937; }
-        .section { margin-bottom: 30px; }
-        .title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #374151; }
-        .details { display: flex; justify-content: space-between; margin-bottom: 20px; }
-        .details-column { flex: 1; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { background-color: #f9fafb; padding: 12px 8px; text-align: left; font-weight: 600; }
-        .totals-table { margin-top: 20px; }
-        .totals-table td { padding: 8px; border: none; }
-        .grand-total { font-weight: bold; font-size: 16px; color: #1f2937; }
-        .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #6b7280; }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; }
-        .status-draft { background-color: #fef3c7; color: #92400e; }
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; 
+          margin: 0; 
+          padding: 24px; 
+          color: #000; 
+          background: white;
+          line-height: 1.4;
+        }
+        .header { 
+          border-bottom: 4px solid #000; 
+          padding-bottom: 24px; 
+          margin-bottom: 24px; 
+        }
+        .header-top {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 16px;
+        }
+        .brand-section {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .logo-placeholder {
+          width: 48px;
+          height: 48px;
+          background-color: #000;
+          border-radius: 4px;
+        }
+        .brand-text h1 {
+          font-size: 32px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          margin: 0;
+        }
+        .brand-text p {
+          font-size: 16px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: #6b7280;
+          margin: 4px 0 0 0;
+        }
+        .proposal-info {
+          text-align: right;
+        }
+        .proposal-info h2 {
+          font-size: 24px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          margin: 0 0 8px 0;
+        }
+        .proposal-meta {
+          font-size: 12px;
+          color: #6b7280;
+        }
+        .details-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 32px;
+          margin-bottom: 32px;
+        }
+        .details-section h3 {
+          font-size: 16px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          border-bottom: 2px solid #000;
+          padding-bottom: 8px;
+          margin: 0 0 16px 0;
+        }
+        .details-content {
+          font-size: 12px;
+        }
+        .details-content p {
+          margin: 8px 0;
+        }
+        .venue-section {
+          margin-bottom: 32px;
+        }
+        .venue-content {
+          background-color: #f9fafb;
+          padding: 16px;
+          border: 2px solid #d1d5db;
+        }
+        .breakdown-section {
+          margin-bottom: 32px;
+        }
+        .totals-section {
+          border-top: 4px solid #000;
+          padding-top: 24px;
+          margin-bottom: 32px;
+        }
+        .totals-row {
+          display: flex;
+          justify-content: space-between;
+          font-size: 16px;
+          margin: 12px 0;
+        }
+        .grand-total {
+          border-top: 2px solid #000;
+          padding-top: 12px;
+          font-size: 20px;
+          font-weight: bold;
+        }
+        .footer {
+          border-top: 2px solid #d1d5db;
+          padding-top: 24px;
+          margin-top: 32px;
+          text-align: center;
+          font-size: 12px;
+          color: #6b7280;
+        }
+        .footer p {
+          margin: 8px 0;
+        }
+        .footer .company-name {
+          font-weight: bold;
+          color: #000;
+        }
       </style>
     </head>
     <body>
       <div class="header">
-        <div class="logo">CROFT COMMON</div>
-        <p>Event Proposal</p>
-      </div>
-
-      <div class="section">
-        <div class="details">
-          <div class="details-column">
-            <div class="title">Proposal Details</div>
-            <p><strong>Proposal Reference:</strong> ${eventData.code || eventData.id}</p>
-            <p><strong>Date of Proposal:</strong> ${currentDate}</p>
-            <p><strong>Status:</strong> <span class="status-badge status-draft">${eventData.status || 'Draft'}</span></p>
+        <div class="header-top">
+          <div class="brand-section">
+            <div class="logo-placeholder"></div>
+            <div class="brand-text">
+              <h1>CROFT COMMON</h1>
+              <p>Private Events & Corporate Hire</p>
+            </div>
           </div>
-          <div class="details-column">
-            <div class="title">Client Information</div>
-            <p><strong>Name:</strong> ${eventData.contact_name || 'N/A'}</p>
-            <p><strong>Email:</strong> ${eventData.contact_email || 'N/A'}</p>
-            <p><strong>Phone:</strong> ${eventData.contact_phone || 'N/A'}</p>
+          <div class="proposal-info">
+            <h2>PROPOSAL</h2>
+            <div class="proposal-meta">
+              <p><strong>Proposal Ref:</strong> ${eventData.code || eventData.id}</p>
+              <p><strong>Date:</strong> ${currentDate}</p>
+              <p><strong>Version:</strong> v1</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="title">Event Details</div>
-        <div class="details">
-          <div class="details-column">
+      <div class="details-grid">
+        <div class="details-section">
+          <h3>CLIENT DETAILS</h3>
+          <div class="details-content">
+            <p><strong>Name:</strong> ${eventData.client_name || 'N/A'}</p>
+            <p><strong>Email:</strong> ${eventData.client_email || 'N/A'}</p>
+            <p><strong>Phone:</strong> ${eventData.client_phone || 'N/A'}</p>
+            <p><strong>Company:</strong> ${eventData.client_name || 'N/A'}</p>
+          </div>
+        </div>
+        <div class="details-section">
+          <h3>EVENT DETAILS</h3>
+          <div class="details-content">
             <p><strong>Event Date:</strong> ${eventDate}</p>
             <p><strong>Event Type:</strong> ${eventData.event_type || 'N/A'}</p>
             <p><strong>Headcount:</strong> ${eventData.headcount || 'N/A'} guests</p>
-          </div>
-          <div class="details-column">
-            <p><strong>Venue:</strong> TBC</p>
-            <p><strong>Capacity:</strong> TBC</p>
-            <p><strong>Budget Range:</strong> £${eventData.budget_low || 0} - £${eventData.budget_high || 0}</p>
+            <p><strong>Space:</strong> TBC</p>
+            <p><strong>Status:</strong> DRAFT</p>
           </div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="title">Proposal Breakdown</div>
-        <table>
-          <thead>
-            <tr>
-              <th>Description</th>
-              <th style="text-align: center;">Quantity</th>
-              <th style="text-align: right;">Unit Price</th>
-              <th style="text-align: right;">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsHTML}
-          </tbody>
-        </table>
+      <div class="venue-section">
+        <h3 style="font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #000; padding-bottom: 8px; margin: 0 0 16px 0;">VENUE DETAILS</h3>
+        <div class="venue-content">
+          <p><strong>Space:</strong> TBC</p>
+          <p><strong>Capacity:</strong> TBC</p>
+          <p><strong>Setup:</strong> Theatre style with presentation equipment</p>
+        </div>
+      </div>
 
-        <table class="totals-table" style="width: 300px; margin-left: auto;">
-          <tr>
-            <td><strong>Net Subtotal:</strong></td>
-            <td style="text-align: right;"><strong>£${netSubtotal.toFixed(2)}</strong></td>
-          </tr>
-          <tr>
-            <td>VAT (20%):</td>
-            <td style="text-align: right;">£${vatTotal.toFixed(2)}</td>
-          </tr>
-          ${serviceChargePct > 0 ? `
-          <tr>
-            <td>Service Charge (${serviceChargePct}%):</td>
-            <td style="text-align: right;">£${serviceChargeAmount.toFixed(2)}</td>
-          </tr>
-          ` : ''}
-          <tr class="grand-total">
-            <td><strong>Grand Total:</strong></td>
-            <td style="text-align: right;"><strong>£${grandTotal.toFixed(2)}</strong></td>
-          </tr>
-        </table>
+      <div class="breakdown-section">
+        <h3 style="font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #000; padding-bottom: 8px; margin: 0 0 16px 0;">PROPOSAL BREAKDOWN</h3>
+        <div>
+          ${itemsHTML}
+        </div>
+      </div>
+
+      <div class="totals-section">
+        <div class="totals-row">
+          <span>Net Subtotal:</span>
+          <span style="font-weight: bold;">£${netSubtotal.toFixed(2)}</span>
+        </div>
+        <div class="totals-row">
+          <span>VAT (20%):</span>
+          <span style="font-weight: bold;">£${vatTotal.toFixed(2)}</span>
+        </div>
+        ${serviceChargePct > 0 ? `
+        <div class="totals-row">
+          <span>Service Charge (${serviceChargePct}%):</span>
+          <span style="font-weight: bold;">£${serviceChargeAmount.toFixed(2)}</span>
+        </div>
+        ` : ''}
+        <div class="totals-row grand-total">
+          <span>GRAND TOTAL:</span>
+          <span>£${grandTotal.toFixed(2)}</span>
+        </div>
       </div>
 
       <div class="footer">
-        <p><strong>Croft Common</strong></p>
-        <p>hello@thehive-hospitality.com | www.croftcommontest.com</p>
-        <p>This proposal is valid for 30 days from the date of issue.</p>
+        <p class="company-name">CROFT COMMON</p>
+        <p>Unit 1-3, Croft Court, 48 Croft Street, London, SE8 4EX</p>
+        <p>Email: hello@thehive-hospitality.com | Phone: 020 7946 0958</p>
+        <p style="margin-top: 16px; font-size: 10px;">
+          This proposal is valid for 30 days from the date of issue. Terms and conditions apply.
+        </p>
       </div>
     </body>
     </html>
