@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -8,15 +8,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQuery } from '@tanstack/react-query';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Trash2 } from 'lucide-react';
 
-interface CreateHoldDialogProps {
+interface EditBookingDialogProps {
   eventId: string;
+  booking: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDialogProps) => {
+export const EditBookingDialog = ({ eventId, booking, open, onOpenChange }: EditBookingDialogProps) => {
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [formData, setFormData] = useState({
     space_id: '',
     title: '',
@@ -42,14 +46,34 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
     }
   });
 
+  useEffect(() => {
+    if (booking && open) {
+      // Format dates for datetime-local input
+      const formatDateTime = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toISOString().slice(0, 16);
+      };
+
+      setFormData({
+        space_id: booking.space_id || '',
+        title: booking.title || '',
+        start_ts: formatDateTime(booking.start_ts),
+        end_ts: formatDateTime(booking.end_ts),
+        setup_min: booking.setup_min?.toString() || '0',
+        teardown_min: booking.teardown_min?.toString() || '0',
+        status: booking.status || 'hold_soft'
+      });
+    }
+  }, [booking, open]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const { error } = await supabase.rpc('create_hold', {
-        payload: {
-          event_id: eventId,
+      const { error } = await supabase
+        .from('bookings')
+        .update({
           space_id: formData.space_id,
           title: formData.title,
           start_ts: formData.start_ts,
@@ -57,38 +81,41 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
           setup_min: parseInt(formData.setup_min) || 0,
           teardown_min: parseInt(formData.teardown_min) || 0,
           status: formData.status
-        }
-      });
+        })
+        .eq('id', booking.id);
 
-      if (error) {
-        if (error.message.includes('conflict_with_higher_or_equal_priority')) {
-          throw new Error('Cannot create hold - conflicts with existing booking of equal or higher priority');
-        }
-        if (error.message.includes('outside_trading_hours')) {
-          throw new Error('Booking is outside of trading hours');
-        }
-        throw error;
-      }
+      if (error) throw error;
 
-      toast.success('Hold created successfully');
+      toast.success('Booking updated successfully');
       queryClient.invalidateQueries({ queryKey: ['management-event', eventId] });
       onOpenChange(false);
-      
-      // Reset form
-      setFormData({
-        space_id: '',
-        title: '',
-        start_ts: '',
-        end_ts: '',
-        setup_min: '0',
-        teardown_min: '0',
-        status: 'hold_soft'
-      });
     } catch (error: any) {
-      console.error('Error creating hold:', error);
-      toast.error(error.message || 'Failed to create hold');
+      console.error('Error updating booking:', error);
+      toast.error(error.message || 'Failed to update booking');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleteLoading(true);
+
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .delete()
+        .eq('id', booking.id);
+
+      if (error) throw error;
+
+      toast.success('Booking deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['management-event', eventId] });
+      onOpenChange(false);
+    } catch (error: any) {
+      console.error('Error deleting booking:', error);
+      toast.error(error.message || 'Failed to delete booking');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -96,9 +123,9 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-brutalist uppercase tracking-wide">ADD SPACE BOOKING</DialogTitle>
+          <DialogTitle className="font-brutalist uppercase tracking-wide">EDIT BOOKING</DialogTitle>
           <DialogDescription className="font-industrial">
-            Book a space for this event. Each booking represents a specific time slot in a venue space.
+            Update space booking details
           </DialogDescription>
         </DialogHeader>
 
@@ -197,7 +224,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
 
           <div className="space-y-2">
             <Label htmlFor="status" className="font-industrial uppercase text-xs tracking-wide">
-              Hold Type
+              Status
             </Label>
             <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
               <SelectTrigger className="font-industrial">
@@ -206,11 +233,44 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
               <SelectContent>
                 <SelectItem value="hold_soft">Soft Hold</SelectItem>
                 <SelectItem value="hold_firm">Firm Hold</SelectItem>
+                <SelectItem value="definite">Definite</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex gap-3 pt-4">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="font-brutalist uppercase tracking-wide"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  DELETE
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-brutalist uppercase tracking-wide">DELETE BOOKING</AlertDialogTitle>
+                  <AlertDialogDescription className="font-industrial">
+                    Are you sure you want to delete this booking? This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="font-brutalist uppercase tracking-wide">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={deleteLoading}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 font-brutalist uppercase tracking-wide"
+                  >
+                    {deleteLoading ? 'DELETING...' : 'DELETE'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            
             <Button
               type="button"
               variant="outline"
@@ -224,7 +284,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
               disabled={loading || !formData.space_id || !formData.title || !formData.start_ts || !formData.end_ts}
               className="flex-1 btn-primary font-brutalist uppercase tracking-wide"
             >
-              {loading ? 'CREATING...' : 'ADD BOOKING'}
+              {loading ? 'UPDATING...' : 'UPDATE BOOKING'}
             </Button>
           </div>
         </form>

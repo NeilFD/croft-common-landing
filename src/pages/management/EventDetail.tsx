@@ -8,19 +8,21 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Calendar, Users, Building, Plus } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Building, Plus, Edit, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CreateHoldDialog } from '@/components/management/CreateHoldDialog';
 import { BookingsList } from '@/components/management/BookingsList';
 import { EventNotesTab } from '@/components/management/EventNotesTab';
 import { LateCloseTab } from '@/components/management/LateCloseTab';
+import { EditEventDialog } from '@/components/management/EditEventDialog';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showCreateHold, setShowCreateHold] = useState(false);
+  const [showEditEvent, setShowEditEvent] = useState(false);
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['management-event', id],
@@ -87,6 +89,20 @@ const EventDetail = () => {
   return (
     <ManagementLayout>
       <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+        {/* Breadcrumb */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground font-industrial">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/management/events')}
+            className="font-industrial p-0 h-auto text-muted-foreground hover:text-primary"
+          >
+            Events
+          </Button>
+          <ChevronRight className="h-4 w-4" />
+          <span>{event.code}</span>
+        </div>
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Button
@@ -118,6 +134,15 @@ const EventDetail = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              onClick={() => setShowEditEvent(true)}
+              variant="outline"
+              className="font-brutalist uppercase tracking-wide border-industrial"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              EDIT EVENT
+            </Button>
+            
             {event.status === 'draft' && (
               <Button
                 onClick={() => handleStatusUpdate('active')}
@@ -133,7 +158,7 @@ const EventDetail = () => {
               className="btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11"
             >
               <Plus className="h-4 w-4 mr-2" />
-              ADD HOLD
+              ADD SPACE BOOKING
             </Button>
           </div>
         </div>
@@ -180,14 +205,17 @@ const EventDetail = () => {
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center gap-3">
                 <Building className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
-                <div>
-                  <p className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
-                    Spaces Booked
-                  </p>
-                  <p className="font-brutalist text-lg font-black">
-                    {event.bookings?.length || 0}
-                  </p>
-                </div>
+                  <div>
+                    <p className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                      Space Bookings
+                    </p>
+                    <p className="font-brutalist text-lg font-black">
+                      {event.bookings?.length || 0}
+                    </p>
+                    <p className="font-industrial text-xs text-muted-foreground mt-1">
+                      {new Set(event.bookings?.map((b: any) => b.space?.name)).size || 0} unique spaces
+                    </p>
+                  </div>
               </div>
             </CardContent>
           </Card>
@@ -197,7 +225,7 @@ const EventDetail = () => {
         <Tabs defaultValue="bookings" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4 bg-[hsl(var(--muted))] border border-industrial">
             <TabsTrigger value="bookings" className="font-brutalist uppercase tracking-wide text-xs">
-              BOOKINGS
+              SPACE BOOKINGS
             </TabsTrigger>
             <TabsTrigger value="overview" className="font-brutalist uppercase tracking-wide text-xs">
               OVERVIEW
@@ -211,7 +239,15 @@ const EventDetail = () => {
           </TabsList>
 
           <TabsContent value="bookings">
-            <BookingsList eventId={id!} bookings={event.bookings || []} />
+            <div className="space-y-4">
+              <div className="bg-muted p-4 rounded-lg border border-industrial">
+                <p className="font-industrial text-sm text-muted-foreground">
+                  Each space booking represents a reserved time slot in a specific venue space. 
+                  You can book multiple time slots and different spaces for the same event.
+                </p>
+              </div>
+              <BookingsList eventId={id!} bookings={event.bookings || []} />
+            </div>
           </TabsContent>
 
           <TabsContent value="overview">
@@ -287,6 +323,13 @@ const EventDetail = () => {
         eventId={id!}
         open={showCreateHold}
         onOpenChange={setShowCreateHold}
+      />
+      
+      <EditEventDialog
+        eventId={id!}
+        event={event}
+        open={showEditEvent}
+        onOpenChange={setShowEditEvent}
       />
     </ManagementLayout>
   );

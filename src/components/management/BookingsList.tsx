@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Building, Clock, MoreVertical, Calendar } from 'lucide-react';
+import { Building, Clock, MoreVertical, Calendar, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+import { EditBookingDialog } from './EditBookingDialog';
 
 interface Booking {
   id: string;
@@ -28,6 +30,7 @@ interface BookingsListProps {
 
 export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
   const queryClient = useQueryClient();
+  const [editBooking, setEditBooking] = useState<any>(null);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -124,7 +127,15 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuContent align="end" className="w-48 bg-background border border-industrial">
+                  <DropdownMenuItem
+                    onClick={() => setEditBooking(booking)}
+                    className="font-industrial"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Booking
+                  </DropdownMenuItem>
+                  
                   {booking.status === 'hold_soft' && (
                     <>
                       <DropdownMenuItem
@@ -173,6 +184,15 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
           )}
         </Card>
       ))}
+      
+      {editBooking && (
+        <EditBookingDialog
+          eventId={eventId}
+          booking={editBooking}
+          open={!!editBooking}
+          onOpenChange={(open) => !open && setEditBooking(null)}
+        />
+      )}
     </div>
   );
 };
