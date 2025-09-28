@@ -78,7 +78,7 @@ const EventsList = () => {
 
   return (
     <ManagementLayout>
-      <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+      <div className="space-y-4 md:space-y-6 p-3 md:p-6 overflow-x-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">EVENTS</h1>
@@ -129,10 +129,10 @@ const EventsList = () => {
                     </SelectContent>
                   </Select>
                   
-                  <div className="flex gap-2 flex-1">
+                  <div className="flex flex-col sm:flex-row gap-2 w-full">
                     <Button 
                       onClick={handleSearch}
-                      className="btn-primary font-brutalist uppercase tracking-wide flex-1 sm:flex-none"
+                      className="btn-primary font-brutalist uppercase tracking-wide w-full sm:w-auto"
                     >
                       SEARCH
                     </Button>
@@ -141,7 +141,7 @@ const EventsList = () => {
                       <Button 
                         variant="outline" 
                         onClick={handleClearSearch}
-                        className="font-brutalist uppercase tracking-wide border-industrial flex-1 sm:flex-none"
+                        className="font-brutalist uppercase tracking-wide border-industrial w-full sm:w-auto"
                       >
                         CLEAR
                       </Button>
