@@ -46,8 +46,9 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   ]);
   
   const [serviceChargePct, setServiceChargePct] = useState<number>(0);
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
-  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [generatingPDF, setGeneratingPDF] = useState(false);
+  const [sharingEmail, setSharingEmail] = useState(false);
+  const [sharingWhatsApp, setSharingWhatsApp] = useState(false);
 
   // Fetch existing line items
   const { data: existingItems } = useQuery({
@@ -197,112 +198,101 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   const grandTotal = netSubtotal + vatTotal + serviceChargeAmount;
 
   const generatePDF = async () => {
-    // For now, just use the eventId as a token substitute
-    const mockToken = `token_${eventId}`;
-    
-    if (!mockToken) {
-      toast({
-        title: "Error",
-        description: "Missing management token",
-        variant: "destructive"
-      });
-      return null;
-    }
-
-    setIsGeneratingPDF(true);
     try {
-      const response = await supabase.functions.invoke('generate-proposal-pdf', {
-        body: {
-          eventId: eventId,
-          managementToken: mockToken
+      setGeneratingPDF(true);
+      
+      const { data, error } = await supabase.functions.invoke('generate-proposal-pdf', {
+        body: { 
+          eventId
         }
       });
 
-      if (response.error) {
-        throw new Error(response.error.message);
+      if (error) throw error;
+      
+      if (data?.pdfUrl) {
+        return data.pdfUrl;
+      } else {
+        throw new Error('No PDF URL received');
       }
-
-      return response.data;
     } catch (error) {
       console.error('Error generating PDF:', error);
       toast({
         title: "Error",
-        description: "Failed to generate PDF",
-        variant: "destructive"
+        description: "Failed to generate PDF. Please try again.",
+        variant: "destructive",
       });
       return null;
     } finally {
-      setIsGeneratingPDF(false);
+      setGeneratingPDF(false);
     }
   };
 
   const handleEmailShare = async () => {
-    const pdfData = await generatePDF();
-    if (!pdfData) return;
+    const pdfUrl = await generatePDF();
+    if (!pdfUrl) return;
 
-    setIsEmailLoading(true);
-    try {
-      const response = await supabase.functions.invoke('send-proposal-email', {
-        body: {
-          eventId: eventId,
-          managementToken: `token_${eventId}`,
-          pdfUrl: pdfData.pdfUrl,
-          fileName: pdfData.fileName
-        }
-      });
+    // Open mailto link with proposal details
+    const subject = `Event Proposal - ${eventDetails?.code || eventId}`;
+    const body = `Dear Client,
 
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
+Please find your event proposal attached below:
 
-      toast({
-        title: "Email Sent",
-        description: `Proposal sent to ${response.data.sentTo}`,
-      });
-    } catch (error) {
-      console.error('Error sending email:', error);
-      toast({
-        title: "Error",
-        description: "Failed to send email",
-        variant: "destructive"
-      });
-    } finally {
-      setIsEmailLoading(false);
-    }
+Proposal Reference: ${eventDetails?.code || eventId}
+Event Date: ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}
+Headcount: ${eventDetails?.headcount || headcount} guests
+
+Proposal PDF: ${pdfUrl}
+
+If you have any questions, please don't hesitate to contact us.
+
+Best regards,
+The Croft Common Team
+
+---
+Croft Common
+hello@thehive-hospitality.com
+www.croftcommontest.com`;
+
+    const mailtoUrl = `mailto:${eventDetails?.client_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl, '_blank');
+    
+    toast({
+      title: "Email opened",
+      description: "Your email client should open with the proposal details.",
+    });
   };
 
   const handleWhatsAppShare = async () => {
-    const pdfData = await generatePDF();
-    if (!pdfData) return;
+    const pdfUrl = await generatePDF();
+    if (!pdfUrl) return;
 
     try {
-      // Convert PDF URL to blob for WhatsApp sharing
-      const response = await fetch(pdfData.pdfUrl);
-      const blob = await response.blob();
-      
-      const mockWalkCard = {
-        id: eventId,
-        title: `Proposal ${eventDetails?.code || eventId}`,
-        date: eventDetails?.primary_date || new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        time_block: undefined,
-        weather_preset: undefined,
-        croft_zones: [],
-        created_by_user_id: '',
-        research_status: 'completed' as const,
-        status: 'Completed' as const
-      };
+      const message = `Hi! Here's your event proposal for ${eventDetails?.event_type || 'your event'} on ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}.
 
-      await shareViaWhatsApp(blob, mockWalkCard, ({ title, description, variant }) => {
-        toast({ title, description, variant: variant as any });
+Proposal Reference: ${eventDetails?.code || eventId}
+Headcount: ${eventDetails?.headcount || headcount} guests
+
+Download your proposal: ${pdfUrl}
+
+Any questions? Just let us know!
+
+Best regards,
+Croft Common Team`;
+
+      // Use WhatsApp Web URL for sharing
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+      
+      toast({
+        title: "WhatsApp opened",
+        description: "WhatsApp should open with your proposal message ready to send.",
       });
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
       toast({
-        title: "Error",
-        description: "Failed to share via WhatsApp",
-        variant: "destructive"
+        title: "Error", 
+        description: "Failed to open WhatsApp. Please try again.",
+        variant: "destructive",
       });
     }
   };
@@ -496,7 +486,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                   PREVIEW
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto pt-12 pr-12">
                 <DialogTitle className="sr-only">Proposal Preview</DialogTitle>
                 <DialogDescription className="sr-only">
                   Preview of the event proposal including client details, event information, and cost breakdown
@@ -638,8 +628,8 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
             </Dialog>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={isGeneratingPDF || isEmailLoading} className="font-industrial uppercase tracking-wider">
-                  {(isGeneratingPDF || isEmailLoading) ? (
+                <Button variant="outline" disabled={generatingPDF || sharingEmail || sharingWhatsApp} className="font-industrial uppercase tracking-wider">
+                  {(generatingPDF || sharingEmail || sharingWhatsApp) ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
                     <Share2 className="h-4 w-4 mr-2" />
@@ -650,7 +640,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
               <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg">
                 <DropdownMenuItem 
                   onClick={handleEmailShare}
-                  disabled={isEmailLoading || isGeneratingPDF}
+                  disabled={sharingEmail || generatingPDF}
                   className="cursor-pointer hover:bg-gray-50"
                 >
                   <Mail className="h-4 w-4 mr-2" />
@@ -658,7 +648,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={handleWhatsAppShare}
-                  disabled={isGeneratingPDF || isEmailLoading}
+                  disabled={generatingPDF || sharingWhatsApp}
                   className="cursor-pointer hover:bg-gray-50"
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />

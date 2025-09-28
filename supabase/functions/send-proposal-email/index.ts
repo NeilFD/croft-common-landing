@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from "npm:resend@4.0.0";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -11,7 +11,6 @@ const corsHeaders = {
 
 interface SendEmailRequest {
   eventId: string;
-  managementToken: string;
   pdfUrl: string;
   fileName: string;
 }
@@ -22,31 +21,33 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { eventId, managementToken, pdfUrl, fileName }: SendEmailRequest = await req.json();
+    const { eventId, pdfUrl, fileName }: SendEmailRequest = await req.json();
 
-    if (!eventId || !managementToken || !pdfUrl) {
+    if (!eventId || !pdfUrl) {
       return new Response(
         JSON.stringify({ error: 'Missing required parameters' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    console.log('Sending proposal email for event:', eventId);
+
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verify management token and get event details
+    // Get event details
     const { data: eventData, error: eventError } = await supabase
       .from('management_events')
       .select('*')
       .eq('id', eventId)
-      .eq('management_token', managementToken)
       .single();
 
     if (eventError || !eventData) {
+      console.error('Event fetch error:', eventError);
       return new Response(
-        JSON.stringify({ error: 'Invalid event or management token' }),
+        JSON.stringify({ error: 'Event not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

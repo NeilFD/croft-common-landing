@@ -8,7 +8,6 @@ const corsHeaders = {
 
 interface GeneratePDFRequest {
   eventId: string;
-  managementToken: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -17,21 +16,23 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { eventId, managementToken }: GeneratePDFRequest = await req.json();
+    const { eventId }: GeneratePDFRequest = await req.json();
 
-    if (!eventId || !managementToken) {
+    if (!eventId) {
       return new Response(
-        JSON.stringify({ error: 'Event ID and management token are required' }),
+        JSON.stringify({ error: 'Event ID is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Generating PDF for event:', eventId);
 
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Verify management token and get event details
+    // Get event details from management_events
     const { data: eventData, error: eventError } = await supabase
       .from('management_events')
       .select(`
@@ -40,22 +41,26 @@ const handler = async (req: Request): Promise<Response> => {
         bookings(status, space_id)
       `)
       .eq('id', eventId)
-      .eq('management_token', managementToken)
       .single();
 
     if (eventError || !eventData) {
+      console.error('Event fetch error:', eventError);
       return new Response(
-        JSON.stringify({ error: 'Invalid event or management token' }),
+        JSON.stringify({ error: 'Event not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get line items
+    console.log('Event data retrieved:', eventData.code || eventId);
+
+    // Get line items from management_event_line_items
     const { data: lineItems } = await supabase
-      .from('event_line_items')
+      .from('management_event_line_items')
       .select('*')
       .eq('event_id', eventId)
       .order('sort_order');
+
+    console.log('Line items retrieved:', lineItems?.length || 0, 'items');
 
     // Generate PDF content
     const pdfContent = generatePDFHTML(eventData, lineItems || []);
@@ -255,10 +260,89 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
 }
 
 async function htmlToPDF(html: string): Promise<Uint8Array> {
-  // For now, return a simple placeholder
-  // In production, you'd use Puppeteer or similar
-  const encoder = new TextEncoder();
-  return encoder.encode(html);
+  // Import pdf-lib for PDF generation
+  const { PDFDocument, rgb, StandardFonts } = await import('https://cdn.skypack.dev/pdf-lib@1.17.1');
+  
+  console.log('Generating PDF from HTML content');
+  
+  // Create a new PDF document
+  const pdfDoc = await PDFDocument.create();
+  const page = pdfDoc.addPage([595, 842]); // A4 size
+  
+  // Get fonts
+  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  
+  // Extract key content from HTML for PDF
+  const lines = html.split('\n').map(line => line.trim()).filter(line => line);
+  
+  let yPosition = 800;
+  const leftMargin = 50;
+  
+  // Simple HTML to text conversion for PDF
+  for (const line of lines) {
+    if (yPosition < 50) break; // Don't go below bottom margin
+    
+    if (line.includes('CROFT COMMON')) {
+      page.drawText('CROFT COMMON', {
+        x: leftMargin,
+        y: yPosition,
+        size: 24,
+        font: boldFont,
+        color: rgb(0, 0, 0),
+      });
+      yPosition -= 40;
+    } else if (line.includes('Event Proposal')) {
+      page.drawText('Event Proposal', {
+        x: leftMargin,
+        y: yPosition,
+        size: 16,
+        font: font,
+        color: rgb(0, 0, 0),
+      });
+      yPosition -= 30;
+    } else if (line.includes('<strong>') || line.includes('<b>')) {
+      // Extract text from bold tags
+      const text = line.replace(/<[^>]*>/g, '').replace(/&[^;]*;/g, ' ');
+      if (text.trim()) {
+        page.drawText(text.trim(), {
+          x: leftMargin,
+          y: yPosition,
+          size: 12,
+          font: boldFont,
+          color: rgb(0, 0, 0),
+        });
+        yPosition -= 20;
+      }
+    } else if (line.includes('<p>') || line.includes('<td>')) {
+      // Extract text from paragraph or table cell tags
+      const text = line.replace(/<[^>]*>/g, '').replace(/&[^;]*;/g, ' ');
+      if (text.trim() && !text.includes('style=')) {
+        page.drawText(text.trim(), {
+          x: leftMargin,
+          y: yPosition,
+          size: 10,
+          font: font,
+          color: rgb(0, 0, 0),
+        });
+        yPosition -= 15;
+      }
+    }
+  }
+  
+  // Add footer
+  page.drawText('Croft Common | hello@thehive-hospitality.com | www.croftcommontest.com', {
+    x: leftMargin,
+    y: 30,
+    size: 8,
+    font: font,
+    color: rgb(0.4, 0.4, 0.4),
+  });
+  
+  const pdfBytes = await pdfDoc.save();
+  console.log('PDF generated successfully, size:', pdfBytes.length, 'bytes');
+  
+  return pdfBytes;
 }
 
 serve(handler);

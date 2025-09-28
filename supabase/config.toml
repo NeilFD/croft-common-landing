@@ -231,3 +231,9 @@ verify_jwt = false
 
 [functions.revoke-wallet-pass]
 verify_jwt = true
+
+[functions.generate-proposal-pdf]
+verify_jwt = true
+
+[functions.send-proposal-email]
+verify_jwt = true
