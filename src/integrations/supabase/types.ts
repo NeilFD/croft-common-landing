@@ -107,6 +107,7 @@ export type Database = {
           created_by: string | null
           end_ts: string
           event_id: string | null
+          existing_rank: number | null
           id: string
           lead_id: string | null
           setup_min: number | null
@@ -122,6 +123,7 @@ export type Database = {
           created_by?: string | null
           end_ts: string
           event_id?: string | null
+          existing_rank?: number | null
           id?: string
           lead_id?: string | null
           setup_min?: number | null
@@ -137,6 +139,7 @@ export type Database = {
           created_by?: string | null
           end_ts?: string
           event_id?: string | null
+          existing_rank?: number | null
           id?: string
           lead_id?: string | null
           setup_min?: number | null
@@ -833,6 +836,7 @@ export type Database = {
           conflict_details: Json | null
           conflict_type: string
           created_at: string
+          existing_rank: number | null
           id: string
           resolved_at: string | null
           resolved_by: string | null
@@ -846,6 +850,7 @@ export type Database = {
           conflict_details?: Json | null
           conflict_type?: string
           created_at?: string
+          existing_rank?: number | null
           id?: string
           resolved_at?: string | null
           resolved_by?: string | null
@@ -859,6 +864,7 @@ export type Database = {
           conflict_details?: Json | null
           conflict_type?: string
           created_at?: string
+          existing_rank?: number | null
           id?: string
           resolved_at?: string | null
           resolved_by?: string | null
@@ -3586,6 +3592,10 @@ export type Database = {
       bump_rate_key: {
         Args: { max_hits: number; p_key: string; window_seconds: number }
         Returns: boolean
+      }
+      calculate_booking_rank: {
+        Args: { p_created_at: string; p_start_ts: string; p_status: string }
+        Returns: number
       }
       calculate_member_streak: {
         Args: { user_id_input: string }
