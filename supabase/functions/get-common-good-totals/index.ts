@@ -51,7 +51,7 @@ serve(async (req) => {
 
     // Paginate through all paid checkout sessions and sum totals for Common Good
     while (hasMore) {
-      const page = await stripe.checkout.sessions.list({
+      const page: any = await stripe.checkout.sessions.list({
         limit: 100,
         expand: ["data.line_items"],
         ...(starting_after ? { starting_after } : {}),

@@ -78,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
           sample: subscribers.slice(0, 3).map(s => ({
             email: s.email,
             name: s.name,
-            interests: s.profiles?.interests || []
+            interests: (s.profiles as any)?.interests || []
           }))
         }),
         { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
@@ -121,16 +121,16 @@ const handler = async (req: Request): Promise<Response> => {
           merge_fields: {
             FNAME: firstName,
             LNAME: lastName,
-            PHONE: subscriber.profiles?.phone_number || '',
-            BIRTHDAY: subscriber.profiles?.birthday ? formatBirthday(subscriber.profiles.birthday) : '',
+            PHONE: (subscriber.profiles as any)?.phone_number || '',
+            BIRTHDAY: (subscriber.profiles as any)?.birthday ? formatBirthday((subscriber.profiles as any).birthday) : '',
             CONSENT: subscriber.consent_timestamp || subscriber.created_at,
           },
           interests: {} as { [key: string]: boolean }
         };
 
         // Map interests if they exist
-        if (subscriber.profiles?.interests) {
-          subscriber.profiles.interests.forEach((interest: string) => {
+        if ((subscriber.profiles as any)?.interests) {
+          (subscriber.profiles as any).interests.forEach((interest: string) => {
             if (interestGroupsMap[interest]) {
               memberData.interests[interestGroupsMap[interest]] = true;
             }

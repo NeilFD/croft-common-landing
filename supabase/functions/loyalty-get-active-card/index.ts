@@ -73,7 +73,7 @@ serve(async (req) => {
     }
 
     // 3) Try to find an auth user for this email (loyalty is keyed by user_id)
-    const userId = await findUserIdByEmail(supabase, normEmail);
+    const userId = await findUserIdByEmail(supabase as any, normEmail);
     if (!userId) {
       return new Response(JSON.stringify({ linked: true, email: normEmail, userHasAccount: false }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }

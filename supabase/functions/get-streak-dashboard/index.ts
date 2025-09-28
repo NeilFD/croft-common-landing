@@ -293,10 +293,10 @@ function generateCalendarWeeks(streakWeeks: any[], currentWeekBoundaries: any, r
     ? Math.ceil((new Date(currentWeekStartDate).getTime() - new Date(userStartWeek).getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
     : 16;
     
-  console.log(`📅 Generating ${weeksToGenerate} weeks starting from ${startDate.toISOString().split('T')[0]}`);
+  console.log(`📅 Generating ${weeksToGenerate} weeks starting from ${(startDate instanceof Date ? startDate : new Date(startDate)).toISOString().split('T')[0]}`);
   
   for (let i = 0; i < weeksToGenerate; i++) {
-    const weekStart = getDatePlusWeeks(startDate.toISOString().split('T')[0], i);
+    const weekStart = getDatePlusWeeks((startDate instanceof Date ? startDate : new Date(startDate)).toISOString().split('T')[0], i);
     const weekEnd = getDatePlusWeeks(weekStart, 0, 6); // Add 6 days
     
     // Find matching week data by comparing week_start_date from database

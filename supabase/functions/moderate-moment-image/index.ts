@@ -257,7 +257,7 @@ serve(async (req) => {
           .from('member_moments')
           .update({
             moderation_status: 'needs_review',
-            moderation_reason: `System error: ${error.message}`,
+            moderation_reason: `System error: ${error instanceof Error ? error.message : String(error)}`,
             moderated_at: new Date().toISOString(),
             ai_confidence_score: 0,
             ai_flags: ['system_error']

@@ -20,7 +20,7 @@ interface PassData {
 
 // Utility function to calculate SHA1 hash from raw bytes
 async function sha1(data: Uint8Array): Promise<string> {
-  const hashBuffer = await crypto.subtle.digest('SHA-1', data);
+  const hashBuffer = await crypto.subtle.digest('SHA-1', data as any);
   return Array.from(new Uint8Array(hashBuffer))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('');
@@ -441,7 +441,8 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in create-wallet-pass function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

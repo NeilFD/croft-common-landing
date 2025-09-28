@@ -115,7 +115,7 @@ serve(async (req) => {
             .from('subscribers')
             .update({
               mailchimp_sync_status: 'failed',
-              sync_error: error.message || 'Unknown error'
+              sync_error: error instanceof Error ? error.message : String(error)
             })
             .eq('id', subscriber.id)
 
