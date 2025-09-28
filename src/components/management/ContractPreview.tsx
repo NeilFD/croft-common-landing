@@ -331,7 +331,7 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
       <div className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-6 rounded-lg shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-lg border border-primary/10">
               <img 
                 src={BRAND_LOGO} 
                 alt="Croft Common Logo" 
