@@ -1567,6 +1567,7 @@ export type Database = {
           late_close_approved_by: string | null
           late_close_reason: string | null
           late_close_requested: boolean | null
+          lead_id: string | null
           notes: string | null
           owner_id: string | null
           primary_date: string | null
@@ -1586,6 +1587,7 @@ export type Database = {
           late_close_approved_by?: string | null
           late_close_reason?: string | null
           late_close_requested?: boolean | null
+          lead_id?: string | null
           notes?: string | null
           owner_id?: string | null
           primary_date?: string | null
@@ -1605,13 +1607,36 @@ export type Database = {
           late_close_approved_by?: string | null
           late_close_reason?: string | null
           late_close_requested?: boolean | null
+          lead_id?: string | null
           notes?: string | null
           owner_id?: string | null
           primary_date?: string | null
           status?: string
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "management_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "management_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "management_events_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["possible_duplicate_id"]
+          },
+        ]
       }
       member_check_ins: {
         Row: {
@@ -3671,6 +3696,18 @@ export type Database = {
       }
       create_management_event: {
         Args:
+          | {
+              p_budget?: number
+              p_client_email?: string
+              p_client_name?: string
+              p_client_phone?: string
+              p_event_type: string
+              p_headcount: number
+              p_lead_id?: string
+              p_notes?: string
+              p_start_date?: string
+              p_start_time?: string
+            }
           | {
               p_budget?: number
               p_client_email?: string
