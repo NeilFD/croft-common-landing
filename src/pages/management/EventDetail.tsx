@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Calendar, Users, Building, Plus, Edit, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Building, Plus, Edit, ChevronRight, Eye, FileText, FileCheck, Receipt, StickyNote, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CreateHoldDialog } from '@/components/management/CreateHoldDialog';
@@ -323,26 +323,40 @@ const EventDetail = () => {
         {/* Event Details Tabs */}
         <Tabs defaultValue="bookings" className="space-y-4">
           <TabsList className="grid w-full grid-cols-7 bg-[hsl(var(--muted))] border border-industrial">
-            <TabsTrigger value="bookings" className="font-brutalist uppercase tracking-wide text-xs">
-              BOOKINGS
+            <TabsTrigger value="bookings" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <Calendar className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">BOOKINGS</span>
+              <span className="md:hidden">BOOK</span>
             </TabsTrigger>
-            <TabsTrigger value="overview" className="font-brutalist uppercase tracking-wide text-xs">
-              OVERVIEW
+            <TabsTrigger value="overview" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <Eye className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">OVERVIEW</span>
+              <span className="md:hidden">VIEW</span>
             </TabsTrigger>
-            <TabsTrigger value="proposals" className="font-brutalist uppercase tracking-wide text-xs">
-              PROPOSALS
+            <TabsTrigger value="proposals" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <FileText className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">PROPOSALS</span>
+              <span className="md:hidden">PROP</span>
             </TabsTrigger>
-            <TabsTrigger value="contracts" className="font-brutalist uppercase tracking-wide text-xs">
-              CONTRACTS
+            <TabsTrigger value="contracts" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <FileCheck className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">CONTRACTS</span>
+              <span className="md:hidden">CONT</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="font-brutalist uppercase tracking-wide text-xs">
-              INVOICES
+            <TabsTrigger value="invoices" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <Receipt className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">INVOICES</span>
+              <span className="md:hidden">INV</span>
             </TabsTrigger>
-            <TabsTrigger value="notes" className="font-brutalist uppercase tracking-wide text-xs">
-              NOTES
+            <TabsTrigger value="notes" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <StickyNote className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">NOTES</span>
+              <span className="md:hidden">NOTE</span>
             </TabsTrigger>
-            <TabsTrigger value="late-close" className="font-brutalist uppercase tracking-wide text-xs">
-              LATE CLOSE
+            <TabsTrigger value="late-close" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <Clock className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">LATE CLOSE</span>
+              <span className="md:hidden">LATE</span>
             </TabsTrigger>
           </TabsList>
 
