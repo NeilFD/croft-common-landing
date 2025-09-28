@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Plus, GripVertical } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Trash2, Plus, GripVertical, Eye } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -353,9 +354,83 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
             >
               {saveProposal.isPending ? 'SAVING...' : 'SAVE PROPOSAL'}
             </Button>
-            <Button variant="outline" className="font-industrial uppercase tracking-wider">
-              PREVIEW
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="font-industrial uppercase tracking-wider">
+                  <Eye className="h-4 w-4 mr-2" />
+                  PREVIEW
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="font-brutalist text-xl uppercase tracking-wider">
+                    PROPOSAL PREVIEW
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6 p-6">
+                  {/* Header */}
+                  <div className="text-center border-b-2 border-black pb-4">
+                    <h1 className="text-3xl font-brutalist uppercase tracking-wider">PROPOSAL</h1>
+                    <p className="text-muted-foreground mt-2">Event ID: {eventId}</p>
+                  </div>
+
+                  {/* Line Items */}
+                  <div className="space-y-4">
+                    <h2 className="text-xl font-brutalist uppercase tracking-wider border-b border-gray-300 pb-2">
+                      ITEMS
+                    </h2>
+                    <div className="space-y-2">
+                      {lineItems.map((item, index) => (
+                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="text-xs">
+                                {item.type.toUpperCase()}
+                              </Badge>
+                              <span className="font-medium">{item.description}</span>
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              Qty: {item.qty} × £{item.unit_price.toFixed(2)}
+                              {item.per_person && ` × ${headcount} people`}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-bold">£{calculateLineTotal(item).toFixed(2)}</div>
+                            <div className="text-xs text-muted-foreground">
+                              Net: £{calculateLineNet(item).toFixed(2)} | VAT: £{calculateLineVat(item).toFixed(2)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Totals */}
+                  <div className="border-t-2 border-black pt-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-lg">
+                        <span>Net Subtotal:</span>
+                        <span className="font-bold">£{netSubtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-lg">
+                        <span>VAT (20%):</span>
+                        <span className="font-bold">£{vatTotal.toFixed(2)}</span>
+                      </div>
+                      {serviceChargePct > 0 && (
+                        <div className="flex justify-between text-lg">
+                          <span>Service Charge ({serviceChargePct}%):</span>
+                          <span className="font-bold">£{serviceChargeAmount.toFixed(2)}</span>
+                        </div>
+                      )}
+                      <div className="border-t-2 border-black pt-2 flex justify-between text-2xl font-bold">
+                        <span>GRAND TOTAL:</span>
+                        <span>£{grandTotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
       </Card>
