@@ -1,12 +1,14 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Calendar, CalendarDays, BarChart3 } from 'lucide-react';
+import { Building2, Users, Calendar, CalendarDays, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
 
 const SpacesDashboard = () => {
   const { managementUser } = useManagementAuth();
+  const [showWorkflowDetails, setShowWorkflowDetails] = useState(false);
 
   const modules = [
     {
@@ -51,35 +53,47 @@ const SpacesDashboard = () => {
         </div>
 
         {/* System Overview */}
-        <Card className="border-industrial bg-gradient-to-r from-background to-secondary/10">
+        <Card className="border-industrial">
           <CardHeader className="p-4 md:p-6">
-            <CardTitle className="font-brutalist uppercase tracking-wide text-base md:text-lg flex items-center gap-2">
-              <BarChart3 className="h-5 w-5 text-accent-pink" />
-              SPACES MANAGEMENT SYSTEM
-            </CardTitle>
+            <button
+              onClick={() => setShowWorkflowDetails(!showWorkflowDetails)}
+              className="w-full flex items-center justify-between group"
+            >
+              <CardTitle className="font-brutalist uppercase tracking-wide text-base md:text-lg flex items-center gap-2">
+                <BarChart3 className="h-5 w-5 text-accent-pink" />
+                SPACES MANAGEMENT SYSTEM
+              </CardTitle>
+              {showWorkflowDetails ? (
+                <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              ) : (
+                <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+              )}
+            </button>
           </CardHeader>
-          <CardContent className="p-4 md:p-6 pt-0">
-            <div className="space-y-3">
-              <p className="font-industrial text-sm md:text-base text-foreground">
-                Streamlined event and booking coordination across four integrated modules:
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm">
-                <div className="space-y-1">
-                  <p><span className="font-brutalist text-accent-pink">• LEADS:</span> Manage sales enquiries and convert simple bookings directly to the calendar</p>
-                  <p><span className="font-brutalist text-accent-pink">• EVENTS:</span> Coordinate complex multi-space events with unified planning and oversight</p>
-                </div>
-                <div className="space-y-1">
-                  <p><span className="font-brutalist text-accent-pink">• CALENDAR:</span> Schedule specific space bookings, manage holds, and view availability</p>
-                  <p><span className="font-brutalist text-accent-pink">• VENUES:</span> Configure spaces, availability, and capacity management</p>
-                </div>
-              </div>
-              <div className="mt-4 p-3 bg-secondary/20 rounded border-l-4 border-accent-pink">
-                <p className="font-brutalist text-xs md:text-sm">
-                  <strong>WORKFLOW:</strong> Simple bookings go Lead→Booking. Complex events use Lead→Event→Multiple Bookings.
+          {showWorkflowDetails && (
+            <CardContent className="p-4 md:p-6 pt-0">
+              <div className="space-y-3">
+                <p className="font-industrial text-sm md:text-base text-foreground">
+                  Streamlined event and booking coordination across four integrated modules:
                 </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs md:text-sm">
+                  <div className="space-y-1">
+                    <p><span className="font-brutalist text-accent-pink">• LEADS:</span> Manage sales enquiries and convert simple bookings directly to the calendar</p>
+                    <p><span className="font-brutalist text-accent-pink">• EVENTS:</span> Coordinate complex multi-space events with unified planning and oversight</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p><span className="font-brutalist text-accent-pink">• CALENDAR:</span> Schedule specific space bookings, manage holds, and view availability</p>
+                    <p><span className="font-brutalist text-accent-pink">• VENUES:</span> Configure spaces, availability, and capacity management</p>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 border-l-4 border-accent-pink">
+                  <p className="font-brutalist text-xs md:text-sm">
+                    <strong>WORKFLOW:</strong> Simple bookings go Lead→Booking. Complex events use Lead→Event→Multiple Bookings.
+                  </p>
+                </div>
               </div>
-            </div>
-          </CardContent>
+            </CardContent>
+          )}
         </Card>
 
         {/* Active Modules */}
