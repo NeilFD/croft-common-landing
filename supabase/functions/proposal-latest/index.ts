@@ -15,37 +15,55 @@ Deno.serve(async (req) => {
 
   try {
     const url = new URL(req.url);
-    let code: string | null = null;
+    let identifier: string | null = null;
 
     if (req.method === 'GET') {
-      code = url.searchParams.get('code');
+      identifier = url.searchParams.get('code');
     } else if (req.method === 'POST') {
       const body = await req.json().catch(() => ({}));
-      code = body.code ?? null;
+      identifier = body.code ?? null;
     }
 
-    if (!code) {
-      return new Response(JSON.stringify({ error: 'Proposal code required' }), {
+    if (!identifier) {
+      return new Response(JSON.stringify({ error: 'Proposal code or ID required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Looking up latest PDF for proposal code:', code);
+    console.log('Looking up latest PDF for proposal identifier:', identifier);
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Find event by code
-    const { data: eventData, error: eventError } = await supabase
+    // Find event by code first, then try by UUID if not found
+    let eventData, eventError;
+    
+    // Try to find by code first
+    const codeResult = await supabase
       .from('management_events')
       .select('id, code')
-      .eq('code', code)
-      .single();
+      .eq('code', identifier)
+      .maybeSingle();
+    
+    if (codeResult.data) {
+      eventData = codeResult.data;
+      eventError = codeResult.error;
+    } else {
+      // If not found by code, try by UUID
+      const uuidResult = await supabase
+        .from('management_events')
+        .select('id, code')
+        .eq('id', identifier)
+        .maybeSingle();
+      
+      eventData = uuidResult.data;
+      eventError = uuidResult.error;
+    }
 
     if (eventError || !eventData) {
-      console.log('Event not found for code:', code, eventError);
+      console.log('Event not found for identifier:', identifier, eventError);
       return new Response(JSON.stringify({ error: 'Proposal not found' }), {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -76,7 +94,7 @@ Deno.serve(async (req) => {
       code: eventData.code,
     };
 
-    console.log('✅ Returning latest PDF JSON for code', code);
+    console.log('✅ Returning latest PDF JSON for identifier', identifier);
 
     return new Response(JSON.stringify(payload), {
       status: 200,

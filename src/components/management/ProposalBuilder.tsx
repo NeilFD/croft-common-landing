@@ -262,11 +262,21 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
     setSharingEmail(true);
     
     try {
+      // Ensure we have a valid event code before proceeding
+      if (!eventDetails?.code) {
+        toast({
+          title: "Error",
+          description: "Event code not available. Please save the proposal first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const response = await generatePDF();
       if (!response?.proposalCode) return;
 
-      // Create clean proposal URL
-      const proposalUrl = `https://www.croftcommontest.com/proposal/${response.proposalCode}`;
+      // Create clean proposal URL using event code
+      const proposalUrl = `https://www.croftcommontest.com/proposal/${eventDetails.code}`;
 
       // Open mailto link with proposal details
       const subject = `Event Proposal - ${eventDetails?.code || eventId}`;
@@ -311,11 +321,21 @@ Web: www.croftcommontest.com`;
     setSharingWhatsApp(true);
     
     try {
+      // Ensure we have a valid event code before proceeding
+      if (!eventDetails?.code) {
+        toast({
+          title: "Error",
+          description: "Event code not available. Please save the proposal first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const response = await generatePDF();
       if (!response?.proposalCode) return;
 
-      // Create clean proposal URL
-      const proposalUrl = `https://www.croftcommontest.com/proposal/${response.proposalCode}`;
+      // Create clean proposal URL using event code
+      const proposalUrl = `https://www.croftcommontest.com/proposal/${eventDetails.code}`;
 
       const message = `Hi! Here's your event proposal for ${eventDetails?.event_type || 'your event'} on ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}.
 
@@ -674,7 +694,7 @@ hello@thehive-hospitality.com`;
             </Dialog>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" disabled={generatingPDF || sharingEmail || sharingWhatsApp} className="font-industrial uppercase tracking-wider">
+                <Button variant="outline" disabled={generatingPDF || sharingEmail || sharingWhatsApp || !eventDetails?.code} className="font-industrial uppercase tracking-wider">
                   {(generatingPDF || sharingEmail || sharingWhatsApp) ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
@@ -686,7 +706,7 @@ hello@thehive-hospitality.com`;
               <DropdownMenuContent align="end" className="bg-white border border-gray-200 shadow-lg">
                 <DropdownMenuItem 
                   onClick={handleEmailShare}
-                  disabled={sharingEmail || generatingPDF}
+                  disabled={sharingEmail || generatingPDF || !eventDetails?.code}
                   className="cursor-pointer hover:bg-gray-50"
                 >
                   <Mail className="h-4 w-4 mr-2" />
@@ -694,7 +714,7 @@ hello@thehive-hospitality.com`;
                 </DropdownMenuItem>
                 <DropdownMenuItem 
                   onClick={handleWhatsAppShare}
-                  disabled={generatingPDF || sharingWhatsApp}
+                  disabled={generatingPDF || sharingWhatsApp || !eventDetails?.code}
                   className="cursor-pointer hover:bg-gray-50"
                 >
                   <MessageCircle className="h-4 w-4 mr-2" />
