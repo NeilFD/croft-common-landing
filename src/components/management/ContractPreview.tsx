@@ -338,30 +338,66 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
   const formatContractContent = (content: string) => {
     const lines = content.split('\n');
     return lines.map((line, index) => {
+      const trimmedLine = line.trim();
+      
+      // Main section headers with ═══
       if (line.includes('═══')) {
         return (
           <h2 key={index} className="font-brutalist text-lg font-black text-center py-4 text-primary uppercase tracking-wider border-b border-primary/20">
             {line.replace(/═/g, '').trim()}
           </h2>
         );
-      } else if (line.includes('───')) {
+      } 
+      // Subsection headers with ───
+      else if (line.includes('───')) {
         return (
           <h3 key={index} className="font-brutalist text-base font-bold py-3 text-primary/90 uppercase tracking-wide border-b border-primary/10">
             {line.replace(/─/g, '').trim()}
           </h3>
         );
-      } else if (line.trim().match(/^\d+\./)) {
+      } 
+      // Field labels (ending with colon like "CLIENT NAME:")
+      else if (trimmedLine.match(/^[A-Z\s]+:$/)) {
         return (
-          <p key={index} className="font-brutalist font-semibold py-2 text-foreground">
-            {line.trim()}
+          <p key={index} className="font-brutalist font-semibold py-1 text-foreground">
+            {trimmedLine}
           </p>
         );
-      } else if (line.trim() === '') {
-        return <div key={index} className="py-2" />;
-      } else {
+      }
+      // Main section numbers (like "1. DEFINITIONS", "2. PAYMENT TERMS")
+      else if (trimmedLine.match(/^\d+\.\s+[A-Z\s&]+$/)) {
         return (
-          <p key={index} className="leading-relaxed text-foreground/90 py-1">
-            {line.trim()}
+          <h4 key={index} className="font-brutalist text-base font-bold py-3 text-foreground uppercase tracking-wide">
+            {trimmedLine}
+          </h4>
+        );
+      }
+      // Subsection numbers with descriptions (like "4.1 Minimum spend requirements...")
+      else if (trimmedLine.match(/^\d+\.\d+\s+/)) {
+        const parts = trimmedLine.split(/^(\d+\.\d+)\s+/);
+        if (parts.length >= 3) {
+          return (
+            <p key={index} className="py-2">
+              <span className="font-brutalist font-semibold text-foreground">{parts[1]} </span>
+              <span className="font-industrial leading-relaxed text-foreground/90">{parts[2]}</span>
+            </p>
+          );
+        }
+        return (
+          <p key={index} className="font-industrial leading-relaxed text-foreground/90 py-1">
+            {trimmedLine}
+          </p>
+        );
+      }
+      // Empty lines
+      else if (trimmedLine === '') {
+        return <div key={index} className="py-1" />;
+      } 
+      // Regular body text
+      else {
+        return (
+          <p key={index} className="font-industrial leading-relaxed text-foreground/90 py-1">
+            {trimmedLine}
           </p>
         );
       }
