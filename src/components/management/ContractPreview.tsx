@@ -278,16 +278,19 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
           <div key={index} className="border-t border-primary/10 my-4" />
         );
       }
-      // Headers and titles (typically uppercase or starting with numbers/letters followed by periods)
+      // Main section titles (CLIENT DETAILS, EVENT DETAILS, etc.)
       else if (
-        trimmedLine.match(/^[A-Z\s]{3,}$/) || // All caps titles
-        trimmedLine.match(/^\d+\.\s/) || // Numbered sections
-        trimmedLine.match(/^[A-Z][A-Z\s]*:/) || // Title case headers with colons
+        trimmedLine === 'CLIENT DETAILS' ||
+        trimmedLine === 'EVENT DETAILS' ||
+        trimmedLine === 'EVENT SCHEDULE' ||
+        trimmedLine === 'SERVICES & PRICING' ||
+        trimmedLine === 'FINANCIAL SUMMARY' ||
+        trimmedLine === 'TERMS AND CONDITIONS' ||
         trimmedLine.includes('EVENT HIRE AGREEMENT') ||
-        trimmedLine.includes('TERMS AND CONDITIONS') ||
-        trimmedLine.includes('CLIENT DETAILS') ||
-        trimmedLine.includes('EVENT DETAILS') ||
-        trimmedLine.includes('FINANCIAL SUMMARY')
+        trimmedLine.includes('CROFT COMMON') ||
+        trimmedLine.includes('EVENT SERVICES CONTRACT') ||
+        trimmedLine.match(/^CONTRACT REF:/) ||
+        trimmedLine.match(/^DATE:/)
       ) {
         formattedElements.push(
           <div key={index} className="font-brutalist text-lg font-bold text-primary mb-3 mt-6">
@@ -295,7 +298,15 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
           </div>
         );
       }
-      // Regular content lines
+      // Numbered sections and terms
+      else if (trimmedLine.match(/^\d+\.\s/)) {
+        formattedElements.push(
+          <div key={index} className="font-brutalist text-base font-semibold text-primary mb-2 mt-4">
+            {trimmedLine}
+          </div>
+        );
+      }
+      // Regular content lines (including client/event data)
       else if (trimmedLine.length > 0) {
         formattedElements.push(
           <div key={index} className="font-industrial text-foreground mb-2 leading-relaxed">
