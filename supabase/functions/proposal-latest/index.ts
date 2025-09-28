@@ -55,11 +55,11 @@ Deno.serve(async (req) => {
     // Get the latest PDF for this event
     const { data: pdfData, error: pdfError } = await supabase
       .from('proposal_pdfs')
-      .select('public_url, generated_at, file_name')
+      .select('public_url, generated_at')
       .eq('event_id', eventData.id)
       .order('generated_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (pdfError || !pdfData) {
       console.log('PDF not found for event:', eventData.id, pdfError);
@@ -72,7 +72,6 @@ Deno.serve(async (req) => {
     const payload = {
       public_url: pdfData.public_url,
       generated_at: pdfData.generated_at,
-      file_name: (pdfData as any).file_name ?? null,
       event_id: eventData.id,
       code: eventData.code,
     };
