@@ -28,7 +28,7 @@ import { useLead, useLeadActivity, useUpdateLead, useAddLeadNote, useCreateLead,
 import { useSpaces } from '@/hooks/useSpaces';
 import { Link } from 'react-router-dom';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
-import { BookingForm } from '@/components/management/BookingForm';
+import { ConvertToBookingButton } from '@/components/management/ConvertToBookingButton';
 
 const STATUS_COLORS = {
   new: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -58,7 +58,6 @@ export default function LeadDetail() {
     message: '',
   });
   const [newNote, setNewNote] = useState('');
-  const [showBookingForm, setShowBookingForm] = useState(false);
 
   const { data: lead, isLoading } = useLead(isNewLead ? '' : id!);
   const { data: activity } = useLeadActivity(isNewLead ? '' : id!);
@@ -500,10 +499,10 @@ export default function LeadDetail() {
                     </a>
                   </Button>
                 )}
-                <Button variant="outline" className="w-full justify-start" onClick={() => setShowBookingForm(true)}>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Convert to Booking
-                </Button>
+                <ConvertToBookingButton 
+                  leadId={lead.id} 
+                  leadTitle={`${lead.event_type || 'Event'} - ${lead.first_name} ${lead.last_name}`}
+                />
               </CardContent>
             </Card>
           )}
@@ -604,16 +603,6 @@ export default function LeadDetail() {
         </div>
       </div>
 
-      {/* Booking Conversion Dialog - only show for existing leads */}
-      {!isNewLead && lead && (
-        <BookingForm 
-          isOpen={showBookingForm}
-          onClose={() => setShowBookingForm(false)}
-          leadId={lead.id}
-          selectedSpaceId={lead.preferred_space || undefined}
-          initialDate={lead.preferred_date ? new Date(lead.preferred_date) : undefined}
-        />
-      )}
       </div>
     </ManagementLayout>
   );

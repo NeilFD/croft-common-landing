@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/form";
 import { useSpaces } from "@/hooks/useSpaces";
 import { useCreateBooking, useUpdateBooking, type Booking } from "@/hooks/useBookings";
+import { useLead } from "@/hooks/useLeads";
 import { Loader2 } from "lucide-react";
 
 const bookingSchema = z.object({
@@ -71,6 +72,7 @@ export const BookingForm = ({
   leadId,
 }: BookingFormProps) => {
   const { data: spaces = [] } = useSpaces();
+  const { data: lead } = useLead(leadId || "");
   const createBooking = useCreateBooking();
   const updateBooking = useUpdateBooking(booking?.id || "");
 
@@ -107,22 +109,30 @@ export const BookingForm = ({
           teardown_min: booking.teardown_min || 0,
         });
       } else {
-        // Reset form for new bookings
+        // Reset form for new bookings - prioritize lead data
+        const leadTitle = lead 
+          ? `${lead.event_type || 'Event'} - ${lead.first_name} ${lead.last_name}`
+          : "";
+        
+        const leadDate = lead?.preferred_date ? new Date(lead.preferred_date) : initialDate;
+        const startHour = initialHour !== undefined ? initialHour : 9;
+        const endHour = startHour + (lead?.headcount ? Math.min(Math.max(Math.ceil(lead.headcount / 25), 2), 6) : 2);
+        
         form.reset({
-          space_id: selectedSpaceId || "",
-          title: "",
-          start_ts: initialDate && initialHour !== undefined
-            ? format(new Date(initialDate.setHours(initialHour, 0)), "yyyy-MM-dd'T'HH:mm")
+          space_id: lead?.preferred_space || selectedSpaceId || "",
+          title: leadTitle,
+          start_ts: leadDate && startHour !== undefined
+            ? format(new Date(leadDate.setHours(startHour, 0)), "yyyy-MM-dd'T'HH:mm")
             : "",
-          end_ts: initialDate && initialHour !== undefined
-            ? format(new Date(initialDate.setHours(initialHour + 1, 0)), "yyyy-MM-dd'T'HH:mm")
+          end_ts: leadDate && endHour !== undefined
+            ? format(new Date(leadDate.setHours(endHour, 0)), "yyyy-MM-dd'T'HH:mm")
             : "",
-          setup_min: 0,
-          teardown_min: 0,
+          setup_min: 30,
+          teardown_min: 30,
         });
       }
     }
-  }, [isOpen, booking, initialDate, initialHour, selectedSpaceId, form]);
+  }, [isOpen, booking, lead, initialDate, initialHour, selectedSpaceId, form]);
 
   const onSubmit = async (data: BookingFormData) => {
     try {
