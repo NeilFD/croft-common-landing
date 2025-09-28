@@ -32,14 +32,10 @@ const handler = async (req: Request): Promise<Response> => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Get event details from management_events
+    // Get event details from management_events (no nested relations to avoid errors)
     const { data: eventData, error: eventError } = await supabase
       .from('management_events')
-      .select(`
-        *,
-        spaces(name, capacity_seated, capacity_standing),
-        bookings(status, space_id)
-      `)
+      .select('*')
       .eq('id', eventId)
       .single();
 
@@ -68,6 +64,12 @@ const handler = async (req: Request): Promise<Response> => {
     // Convert HTML to PDF using browser automation
     const pdfBuffer = await htmlToPDF(pdfContent);
     
+    // Ensure proposals bucket exists and is public
+    const { error: bucketError } = await supabase.storage.createBucket('proposals', { public: true });
+    if (bucketError && !bucketError.message.includes('already exists')) {
+      console.warn('Bucket creation warning:', bucketError);
+    }
+
     // Store PDF in Supabase Storage
     const fileName = `proposal-${eventData.code || eventId}-${Date.now()}.pdf`;
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -100,6 +102,15 @@ const handler = async (req: Request): Promise<Response> => {
         generated_at: new Date().toISOString()
       });
 
+    // Add audit trail
+    await supabase.rpc('log_audit_entry', {
+      p_entity_id: eventId,
+      p_entity: 'management_events',
+      p_action: 'PDF_GENERATED',
+      p_actor_id: null,
+      p_diff: { file_name: fileName, pdf_url: publicUrl.publicUrl }
+    });
+
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -128,9 +139,10 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
   let vatTotal = 0;
 
   const itemsHTML = lineItems.map(item => {
-    const lineNet = (item.qty || 1) * (item.unit_price || 0) * (item.per_person ? (eventData.headcount || 1) : 1);
-    const lineVat = lineNet * ((item.tax_rate_pct || 20) / 100);
-    const lineTotal = lineNet + lineVat;
+    // unit_price is VAT-inclusive (gross)
+    const lineGross = (item.qty || 1) * (item.unit_price || 0) * (item.per_person ? (eventData.headcount || 1) : 1);
+    const lineNet = lineGross / (1 + ((item.tax_rate_pct || 20) / 100)); // Net = Gross / (1 + VAT rate)
+    const lineVat = lineGross - lineNet; // VAT = Gross - Net
     
     netSubtotal += lineNet;
     vatTotal += lineVat;
@@ -140,7 +152,7 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
         <td style="padding: 8px; border-bottom: 1px solid #e5e7eb;">${item.description}</td>
         <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: center;">${item.qty || 1}${item.per_person ? ` × ${eventData.headcount}` : ''}</td>
         <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">£${(item.unit_price || 0).toFixed(2)}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">£${lineTotal.toFixed(2)}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e5e7eb; text-align: right;">£${lineGross.toFixed(2)}</td>
       </tr>
     `;
   }).join('');
@@ -204,8 +216,8 @@ function generatePDFHTML(eventData: any, lineItems: any[]): string {
             <p><strong>Headcount:</strong> ${eventData.headcount || 'N/A'} guests</p>
           </div>
           <div class="details-column">
-            <p><strong>Venue:</strong> ${eventData.spaces?.name || 'N/A'}</p>
-            <p><strong>Capacity:</strong> ${eventData.spaces?.capacity_seated || 'N/A'} seated, ${eventData.spaces?.capacity_standing || 'N/A'} standing</p>
+            <p><strong>Venue:</strong> TBC</p>
+            <p><strong>Capacity:</strong> TBC</p>
             <p><strong>Budget Range:</strong> £${eventData.budget_low || 0} - £${eventData.budget_high || 0}</p>
           </div>
         </div>

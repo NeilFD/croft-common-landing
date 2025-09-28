@@ -81,11 +81,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
     queryFn: async () => {
       const { data, error } = await supabase
         .from('management_events')
-        .select(`
-          *,
-          spaces(name, capacity_seated, capacity_standing),
-          bookings(status)
-        `)
+        .select('*')
         .eq('id', eventId)
         .maybeSingle();
       
@@ -93,6 +89,27 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
       return data;
     }
   });
+
+  // Fetch proposal PDFs count for version tracking
+  const { data: proposalPdfs } = useQuery({
+    queryKey: ['proposal-pdfs', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('proposal_pdfs')
+        .select('id')
+        .eq('event_id', eventId);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Hydrate service charge from event details
+  React.useEffect(() => {
+    if (eventDetails?.service_charge_pct !== undefined) {
+      setServiceChargePct(eventDetails.service_charge_pct);
+    }
+  }, [eventDetails]);
 
   React.useEffect(() => {
     if (existingItems && existingItems.length > 0) {
@@ -132,7 +149,9 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
         title: "Success",
         description: "Proposal saved successfully",
       });
+      // Invalidate both queries to ensure service charge persists
       queryClient.invalidateQueries({ queryKey: ['event-line-items', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['event-details', eventId] });
     },
     onError: (error) => {
       console.error('create_proposal failed', error);
@@ -210,6 +229,8 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
       if (error) throw error;
       
       if (data?.pdfUrl) {
+        // Invalidate proposal PDFs to update version count
+        queryClient.invalidateQueries({ queryKey: ['proposal-pdfs', eventId] });
         return data.pdfUrl;
       } else {
         throw new Error('No PDF URL received');
@@ -507,7 +528,7 @@ Croft Common Team`;
                         <div className="text-sm text-muted-foreground space-y-1 mt-2">
                           <p><strong>Proposal Ref:</strong> {eventDetails?.code || '2025002'}</p>
                           <p><strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}</p>
-                          <p><strong>Version:</strong> 1.0</p>
+                          <p><strong>Version:</strong> v{(proposalPdfs?.length || 0) + 1}</p>
                         </div>
                       </div>
                     </div>
@@ -534,9 +555,9 @@ Croft Common Team`;
                         <p><strong>Event Date:</strong> {eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : '28/09/2025'}</p>
                         <p><strong>Event Type:</strong> {eventDetails?.event_type || 'Presentation'}</p>
                         <p><strong>Headcount:</strong> {eventDetails?.headcount || headcount} guests</p>
-                        <p><strong>Space:</strong> {eventDetails?.spaces?.[0]?.name || 'Rooftop Terrace'}</p>
-                        <p><strong>Status:</strong> <Badge variant={eventDetails?.bookings?.[0]?.status === 'confirmed' ? 'default' : 'secondary'} className="ml-1">
-                          {eventDetails?.bookings?.[0]?.status?.toUpperCase() || 'DRAFT'}
+                         <p><strong>Space:</strong> TBC</p>
+                         <p><strong>Status:</strong> <Badge variant="secondary" className="ml-1">
+                           DRAFT
                         </Badge></p>
                       </div>
                     </div>
@@ -548,8 +569,8 @@ Croft Common Team`;
                       VENUE DETAILS
                     </h3>
                     <div className="bg-gray-50 p-4 border-2 border-gray-300">
-                      <p><strong>Space:</strong> {eventDetails?.spaces?.[0]?.name || 'Rooftop Terrace'}</p>
-                      <p><strong>Capacity:</strong> {eventDetails?.spaces?.[0]?.capacity_seated || 60} seated, {eventDetails?.spaces?.[0]?.capacity_standing || 100} standing</p>
+                       <p><strong>Space:</strong> TBC</p>
+                       <p><strong>Capacity:</strong> TBC</p>
                       <p><strong>Setup:</strong> Theatre style with presentation equipment</p>
                     </div>
                   </div>
