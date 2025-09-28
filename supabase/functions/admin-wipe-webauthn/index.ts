@@ -111,6 +111,7 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('admin-wipe-webauthn error', error);
-    return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

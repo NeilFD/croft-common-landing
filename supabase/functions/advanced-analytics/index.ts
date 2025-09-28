@@ -203,10 +203,11 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Advanced analytics function error:', error);
+    const message = error instanceof Error ? error.message : String(error);
     return new Response(
       JSON.stringify({ 
         error: 'Failed to fetch advanced analytics data',
-        details: error.message 
+        details: message 
       }),
       { 
         status: 500, 

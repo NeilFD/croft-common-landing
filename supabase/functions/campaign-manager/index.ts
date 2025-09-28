@@ -184,10 +184,11 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Campaign manager function error:', error);
+    const message = error instanceof Error ? error.message : String(error);
     return new Response(
       JSON.stringify({ 
         error: 'Failed to process campaign request',
-        details: error.message 
+        details: message 
       }),
       { 
         status: 500, 

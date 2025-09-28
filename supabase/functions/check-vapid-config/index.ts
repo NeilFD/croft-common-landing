@@ -37,7 +37,7 @@ Deno.serve(async (req) => {
     console.log('📋 Retrieved VAPID configuration from secrets');
 
     const result: DiagnosticResult = {
-      vapidSubject,
+      vapidSubject: vapidSubject ?? null,
       vapidPublicKey: vapidPublicKey ? 'Present (hidden)' : null,
       vapidPrivateKey: vapidPrivateKey ? 'Present (hidden)' : null,
       subjectFormat: 'missing',
@@ -120,10 +120,10 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('❌ VAPID diagnostic error:', error);
-    
+    const message = error instanceof Error ? error.message : String(error);
     return new Response(JSON.stringify({ 
       error: 'Failed to check VAPID configuration',
-      details: error.message 
+      details: message 
     }), {
       status: 500,
       headers: { 

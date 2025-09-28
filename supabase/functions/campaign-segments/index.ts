@@ -293,10 +293,11 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Campaign segments function error:', error);
+    const message = error instanceof Error ? error.message : String(error);
     return new Response(
       JSON.stringify({ 
         error: 'Failed to process segment request',
-        details: error.message 
+        details: message 
       }),
       { 
         status: 500, 
@@ -381,7 +382,7 @@ async function previewSegment(supabase: any, filters: SegmentFilters): Promise<n
           const map = new Map(profiles.map((p: any) => [p.user_id, p.interests || []]));
           const requireAll = (filters.interestsLogic || 'match_any') === 'match_all';
           results = results.filter((m: any) => {
-            const userInterests: string[] = map.get(m.user_id) || [];
+            const userInterests: string[] = (map.get(m.user_id) as string[] | undefined) ?? [];
             const sel = filters.interests as string[];
             return requireAll ? sel.every(i => userInterests.includes(i)) : sel.some(i => userInterests.includes(i));
           });
@@ -469,7 +470,7 @@ async function calculateSegmentAvgSpend(supabase: any, filters: SegmentFilters):
           const map = new Map(profiles.map((p: any) => [p.user_id, p.interests || []]));
           const requireAll = (filters.interestsLogic || 'match_any') === 'match_all';
           results = results.filter((m: any) => {
-            const userInterests: string[] = map.get(m.user_id) || [];
+            const userInterests: string[] = (map.get(m.user_id) as string[] | undefined) ?? [];
             const sel = filters.interests as string[];
             return requireAll ? sel.every(i => userInterests.includes(i)) : sel.some(i => userInterests.includes(i));
           });
@@ -516,7 +517,7 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
       // Spending filters
       p_min_spend: filters.spendRange?.min || null,
       p_max_spend: filters.spendRange?.max || null,
-      p_tier_badges: (filters.tierBadges && filters.tierBadges.length > 0) ? filters.tier_badges : null,
+      p_tier_badges: (filters.tierBadges && filters.tierBadges.length > 0) ? filters.tierBadges : null,
       
       // Activity filters
       p_receipt_activity_period: filters.receiptActivityPeriod || null,
@@ -566,7 +567,7 @@ async function generateSegmentMembers(supabase: any, segmentId: string, filters:
           const map = new Map(profiles.map((p: any) => [p.user_id, p.interests || []]));
           const requireAll = (filters.interestsLogic || 'match_any') === 'match_all';
           results = results.filter((m: any) => {
-            const userInterests: string[] = map.get(m.user_id) || [];
+            const userInterests: string[] = (map.get(m.user_id) as string[] | undefined) ?? [];
             const sel = filters.interests as string[];
             return requireAll ? sel.every(i => userInterests.includes(i)) : sel.some(i => userInterests.includes(i));
           });
