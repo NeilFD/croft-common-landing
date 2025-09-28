@@ -60,9 +60,9 @@ const EventDetail = () => {
 
   // Fetch linked lead for fallback contact details
   const { data: linkedLead } = useQuery({
-    queryKey: ['lead-for-event', (event as any)?.lead_id],
+    queryKey: ['lead-for-event', event?.lead_id],
     queryFn: async () => {
-      const leadId = (event as any)?.lead_id;
+      const leadId = event?.lead_id;
       if (!leadId) return null;
       const { data, error } = await supabase
         .from('leads')
@@ -72,7 +72,7 @@ const EventDetail = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!(event as any)?.lead_id
+    enabled: !!event?.lead_id
   });
 
   // Heuristic fallback: try match a lead by preferred_date and type when no explicit link exists
@@ -92,12 +92,12 @@ const EventDetail = () => {
       if (error) return null; // silent fallback
       return data;
     },
-    enabled: !!event && !(event as any)?.client_email && !!event.primary_date && !!event.event_type
+    enabled: !!event && !event.client_email && !!event.primary_date && !!event.event_type
   });
 
-  const clientName = (event as any)?.client_name ?? (linkedLead ? `${linkedLead.first_name} ${linkedLead.last_name}` : (derivedLead ? `${derivedLead.first_name} ${derivedLead.last_name}` : null));
-  const clientEmail = (event as any)?.client_email ?? linkedLead?.email ?? derivedLead?.email ?? null;
-  const clientPhone = (event as any)?.client_phone ?? linkedLead?.phone ?? derivedLead?.phone ?? null;
+  const clientName = event?.client_name ?? (linkedLead ? `${linkedLead.first_name} ${linkedLead.last_name}` : (derivedLead ? `${derivedLead.first_name} ${derivedLead.last_name}` : null));
+  const clientEmail = event?.client_email ?? linkedLead?.email ?? derivedLead?.email ?? null;
+  const clientPhone = event?.client_phone ?? linkedLead?.phone ?? derivedLead?.phone ?? null;
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!id) return;
