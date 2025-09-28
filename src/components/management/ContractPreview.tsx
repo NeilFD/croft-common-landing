@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { FileText, PenTool, Mail, Loader2, Check, Clock } from 'lucide-react';
+import { FileText, PenTool, Mail, Loader2, Check, Clock, Download, Building, Users, CalendarDays, PoundSterling } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import SignatureCanvas from 'react-signature-canvas';
+import { BRAND_LOGO } from '@/data/brand';
 
 interface ContractPreviewProps {
   eventId: string;
@@ -52,6 +53,21 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
     }
   });
 
+  // Fetch line items for totals calculation
+  const { data: lineItems } = useQuery({
+    queryKey: ['event-line-items', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('event_line_items')
+        .select('*')
+        .eq('event_id', eventId)
+        .order('sort_order');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
   // Generate contract mutation
   const generateContract = useMutation({
     mutationFn: async () => {
@@ -80,6 +96,84 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
   });
 
   // Sign contract mutation
+  // Generate contract PDF mutation
+  const generateContractPdf = useMutation({
+    mutationFn: async () => {
+      const { data, error } = await supabase.functions.invoke('generate-contract-pdf', {
+        body: { eventId }
+      });
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Success",
+        description: "Contract PDF generated successfully",
+      });
+      refetchContract();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "PDF Generation Failed",
+        description: error.message || 'Failed to generate PDF. Please try again.',
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Send contract email mutation
+  const sendContractEmail = useMutation({
+    mutationFn: async () => {
+      if (!contractData?.pdf_url) {
+        // Generate PDF first if it doesn't exist
+        const pdfResult = await supabase.functions.invoke('generate-contract-pdf', {
+          body: { eventId }
+        });
+        
+        if (pdfResult.error) throw pdfResult.error;
+        
+        // Send email with generated PDF
+        const { data, error } = await supabase.functions.invoke('send-contract-email', {
+          body: { 
+            eventId,
+            pdfUrl: pdfResult.data.url,
+            fileName: `contract-${eventData?.code || eventId}.pdf`
+          }
+        });
+        
+        if (error) throw error;
+        return data;
+      } else {
+        // Send email with existing PDF
+        const { data, error } = await supabase.functions.invoke('send-contract-email', {
+          body: { 
+            eventId,
+            pdfUrl: contractData.pdf_url,
+            fileName: `contract-${eventData?.code || eventId}.pdf`
+          }
+        });
+        
+        if (error) throw error;
+        return data;
+      }
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Email Sent Successfully",
+        description: `Contract sent to ${data.sentTo}`,
+      });
+      refetchContract();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Email Send Failed",
+        description: error.message || 'Failed to send contract email. Please try again.',
+        variant: "destructive",
+      });
+    }
+  });
+
   const signContract = useMutation({
     mutationFn: async (signatureData: string) => {
       if (!contractData) throw new Error('No contract available to sign');
@@ -134,6 +228,37 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
     }
   };
 
+  // Calculate totals from line items
+  const calculateTotals = () => {
+    if (!lineItems || !eventData) return { net: 0, vat: 0, gross: 0, serviceCharge: 0, total: 0 };
+    
+    let net = 0;
+    let vat = 0;
+    let gross = 0;
+    
+    const headcount = eventData.headcount || 1;
+    
+    for (const item of lineItems) {
+      const qty = Number(item.qty || 1);
+      const unit = Number(item.unit_price || 0);
+      const multiplier = item.per_person ? headcount : 1;
+      const lineGross = qty * unit * multiplier;
+      const lineNet = lineGross / 1.2; // assuming 20% VAT included
+      const lineVat = lineGross - lineNet;
+      
+      net += lineNet;
+      vat += lineVat;
+      gross += lineGross;
+    }
+    
+    const serviceCharge = gross * (Number(eventData.service_charge_pct || 0) / 100);
+    const total = gross + serviceCharge;
+    
+    return { net, vat, gross, serviceCharge, total };
+  };
+
+  const totals = calculateTotals();
+
   const formatContractContent = (content: string) => {
     // Contract content is now fully formatted by the database function
     return content;
@@ -142,11 +267,22 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
   return (
     <div className="w-full space-y-6">
       {/* Header Section with Branding */}
-      <div className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-6 rounded-lg">
+      <div className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-6 rounded-lg shadow-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-              <FileText className="w-6 h-6" />
+            <div className="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+              <img 
+                src={BRAND_LOGO} 
+                alt="Croft Common Logo" 
+                className="w-10 h-10 object-contain"
+                onError={(e) => {
+                  const target = e.currentTarget as HTMLImageElement;
+                  const nextElement = target.nextElementSibling as HTMLElement;
+                  target.style.display = 'none';
+                  if (nextElement) nextElement.style.display = 'flex';
+                }}
+              />
+              <FileText className="w-8 h-8 hidden" />
             </div>
             <div>
               <h2 className="text-2xl font-brutalist tracking-tight">EVENT CONTRACT</h2>
@@ -154,11 +290,82 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
             </div>
           </div>
           <div className="text-right">
-            <p className="text-sm font-medium">CROFT COMMON</p>
-            <p className="text-xs text-primary-foreground/70">Events & Venue Services</p>
+            <h3 className="text-lg font-brutalist font-black">CROFT COMMON</h3>
+            <p className="text-xs text-primary-foreground/80">Events & Venue Services</p>
+            <p className="text-xs text-primary-foreground/60 mt-1">Unit 1-3, Croft Court, London SE8 4EX</p>
           </div>
         </div>
       </div>
+
+      {/* Totals Summary Card - Only show if contract exists */}
+      {contractData && (
+        <Card className="border-2 border-primary/20 bg-gradient-to-br from-white to-muted/30">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-brutalist font-black text-primary">FINANCIAL SUMMARY</h3>
+              <Badge variant="secondary" className="bg-green-50 text-green-700 border-green-200">
+                <PoundSterling className="w-3 h-3 mr-1" />
+                Contract Totals
+              </Badge>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center p-4 bg-white rounded-lg border border-muted">
+                <p className="text-sm text-muted-foreground font-industrial">Subtotal (Net)</p>
+                <p className="text-xl font-brutalist font-black text-foreground">£{totals.net.toFixed(2)}</p>
+              </div>
+              <div className="text-center p-4 bg-white rounded-lg border border-muted">
+                <p className="text-sm text-muted-foreground font-industrial">VAT (20%)</p>
+                <p className="text-xl font-brutalist font-black text-foreground">£{totals.vat.toFixed(2)}</p>
+              </div>
+              {totals.serviceCharge > 0 && (
+                <div className="text-center p-4 bg-white rounded-lg border border-muted">
+                  <p className="text-sm text-muted-foreground font-industrial">Service Charge</p>
+                  <p className="text-xl font-brutalist font-black text-foreground">£{totals.serviceCharge.toFixed(2)}</p>
+                </div>
+              )}
+              <div className="text-center p-6 bg-primary text-primary-foreground rounded-lg border-2 border-primary">
+                <p className="text-sm opacity-90 font-industrial">TOTAL DUE</p>
+                <p className="text-2xl font-brutalist font-black">£{totals.total.toFixed(2)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Event Summary Card - Only show if contract exists */}
+      {contractData && eventData && (
+        <Card className="border-muted/30">
+          <CardContent className="p-6">
+            <h3 className="text-lg font-brutalist font-black text-primary mb-4">EVENT SUMMARY</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="flex items-center gap-3">
+                <CalendarDays className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground font-industrial">Event Date</p>
+                  <p className="font-semibold">
+                    {eventData.primary_date ? new Date(eventData.primary_date).toLocaleDateString('en-GB') : 'TBC'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Users className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground font-industrial">Guest Count</p>
+                  <p className="font-semibold">{eventData.headcount || 'TBC'} guests</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <Building className="w-5 h-5 text-primary" />
+                <div>
+                  <p className="text-sm text-muted-foreground font-industrial">Event Type</p>
+                  <p className="font-semibold">{eventData.event_type || 'Private Event'}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Main Contract Card */}
       <Card className="border-2 border-primary/10">
@@ -250,23 +457,54 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
               </div>
 
               {/* Contract Actions */}
-              {!contractData.is_signed && (
-                <div className="bg-muted/20 p-6 border-t border-muted">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold mb-1">Ready to Execute Contract</h4>
-                      <p className="text-sm text-muted-foreground">
-                        Please review all terms carefully before signing
-                      </p>
-                    </div>
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        className="border-primary/20 hover:bg-primary/5"
-                      >
-                        <Mail className="w-4 h-4 mr-2" />
-                        SEND TO CLIENT
-                      </Button>
+              <div className="bg-muted/20 p-6 border-t border-muted">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <h4 className="font-semibold mb-1">Contract Actions</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {contractData.is_signed 
+                        ? 'Contract is signed and legally binding' 
+                        : 'Review contract and choose an action'}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    <Button
+                      onClick={() => generateContractPdf.mutate()}
+                      disabled={generateContractPdf.isPending}
+                      variant="outline"
+                      className="border-primary/20 hover:bg-primary/5"
+                    >
+                      {generateContractPdf.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Generating PDF...
+                        </>
+                      ) : (
+                        <>
+                          <Download className="w-4 h-4 mr-2" />
+                          GENERATE PDF
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      onClick={() => sendContractEmail.mutate()}
+                      disabled={sendContractEmail.isPending}
+                      variant="outline"
+                      className="border-primary/20 hover:bg-primary/5"
+                    >
+                      {sendContractEmail.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Mail className="w-4 h-4 mr-2" />
+                          SEND TO CLIENT
+                        </>
+                      )}
+                    </Button>
+                    {!contractData.is_signed && (
                       <Button
                         onClick={() => setShowSignature(true)}
                         className="bg-accent-pink text-white hover:bg-accent-pink-dark font-semibold"
@@ -274,10 +512,10 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
                         <PenTool className="w-4 h-4 mr-2" />
                         DIGITAL SIGNATURE
                       </Button>
-                    </div>
+                    )}
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Signature Display */}
               {contractData.is_signed && contractData.signature_data && (
