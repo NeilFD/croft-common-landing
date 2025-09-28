@@ -294,7 +294,7 @@ Email: hello@thehive-hospitality.com
 Web: www.croftcommontest.com`;
 
       const mailtoUrl = `mailto:${eventDetails?.client_email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.open(mailtoUrl, '_blank');
+      window.location.href = mailtoUrl;
     } catch (error) {
       console.error('Error sharing via email:', error);
       toast({
@@ -330,7 +330,7 @@ hello@thehive-hospitality.com`;
 
       // Use WhatsApp Web URL for sharing
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      window.open(whatsappUrl, '_blank');
+      window.location.href = whatsappUrl;
     } catch (error) {
       console.error('Error sharing via WhatsApp:', error);
       toast({
