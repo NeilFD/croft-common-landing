@@ -64,10 +64,36 @@ Deno.serve(async (req) => {
 
     console.log('Line items retrieved:', lineItems?.length, 'items');
 
-    // Generate PDF using jsPDF
-    console.log('Creating PDF with jsPDF');
-    const pdfData = await createProposalPDF(eventData, lineItems || []);
-    console.log('PDF generated successfully, size:', pdfData.length, 'bytes');
+    // Before generating PDF, derive venue from first booking -> spaces
+    let venue_space_name: string | null = null;
+    let venue_capacity_text: string | null = null;
+    try {
+      const { data: booking } = await supabase
+        .from('bookings')
+        .select('space_id, start_ts')
+        .eq('event_id', eventId)
+        .order('start_ts', { ascending: true })
+        .limit(1)
+        .single();
+      if (booking?.space_id) {
+        const { data: space } = await supabase
+          .from('spaces')
+          .select('name, capacity_seated, capacity_standing')
+          .eq('id', booking.space_id)
+          .single();
+        if (space) {
+          venue_space_name = space.name;
+          const seated = space.capacity_seated || 0;
+          const standing = space.capacity_standing || 0;
+          venue_capacity_text = seated || standing ? `${seated} seated, ${standing} standing` : null;
+        }
+      }
+    } catch (e) {
+      console.warn('Venue lookup failed:', e);
+    }
+
+    // Pass derived venue details down
+    const pdfData = await createProposalPDF({ ...eventData, venue_space_name, venue_capacity_text }, lineItems || []);
 
     // Generate filename and upload to storage
     const fileName = `proposal-${eventData.code || eventData.id}-${Date.now()}.pdf`;
@@ -178,29 +204,33 @@ async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint
   const headcount = eventData.headcount || 1;
   const serviceChargePct = Number(eventData.service_charge_pct || 0);
 
-  // Load brand assets (better font handling)
-  // Use system fonts with fallback - more reliable than external font embedding
-  let useCustomFonts = false;
+  // Load brand fonts from reliable raw GitHub URLs (variable TTFs)
+  let customFontsLoaded = false;
+  let headerFont = 'helvetica';
+  let bodyFont = 'helvetica';
   try {
-    // Try to load Google Fonts via CDN for better reliability
-    const fontResponse = await fetch('https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Work+Sans:wght@400&display=swap');
-    if (fontResponse.ok) {
-      // If fonts are available, we could inject CSS but jsPDF doesn't support this directly
-      // Instead, we'll use the best available system fonts with proper styling
-      useCustomFonts = false; // Keep as false for now, use system fonts
-    }
+    const [workSansB64, oswaldB64] = await Promise.all([
+      fetchBase64('https://raw.githubusercontent.com/google/fonts/main/ofl/worksans/WorkSans%5Bwght%5D.ttf'),
+      fetchBase64('https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald%5Bwght%5D.ttf'),
+    ]);
+    doc.addFileToVFS('WorkSans.ttf', workSansB64);
+    doc.addFont('WorkSans.ttf', 'WorkSans', 'normal');
+    doc.addFont('WorkSans.ttf', 'WorkSans', 'bold');
+
+    doc.addFileToVFS('Oswald.ttf', oswaldB64);
+    doc.addFont('Oswald.ttf', 'Oswald', 'normal');
+    doc.addFont('Oswald.ttf', 'Oswald', 'bold');
+
+    customFontsLoaded = true;
+    headerFont = 'Oswald';
+    bodyFont = 'WorkSans';
   } catch (e) {
-    console.warn('Google Fonts not accessible, using system fonts:', e);
-    useCustomFonts = false;
+    console.warn('Font embedding failed, falling back to Helvetica:', e);
+    customFontsLoaded = false;
+    headerFont = 'helvetica';
+    bodyFont = 'helvetica';
   }
 
-  // Load logo
-  let logoDataUrl: string | null = null;
-  try {
-    logoDataUrl = await fetchImageDataUrl('https://www.croftcommontest.com/brand/logo.png');
-  } catch (e) {
-    console.warn('Logo fetch failed, proceeding without logo:', e);
-  }
 
   const drawHeaderFooter = (pageNumber: number) => {
     // Header (repeated)
