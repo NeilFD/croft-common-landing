@@ -28,7 +28,10 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
     start_date: '',
     start_time: '09:00',
     budget: '',
-    client_contact: ''
+    client_contact: '',
+    client_name: '',
+    client_email: '',
+    client_phone: ''
   });
 
   const queryClient = useQueryClient();
@@ -59,7 +62,10 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
         start_date: lead.preferred_date || '',
         start_time: '09:00',
         budget: budgetText,
-        client_contact: clientContact
+        client_contact: clientContact,
+        client_name: `${lead.first_name} ${lead.last_name}`,
+        client_email: lead.email || '',
+        client_phone: lead.phone || ''
       });
     }
   }, [lead, open]);
@@ -103,7 +109,10 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
         start_date: '',
         start_time: '09:00',
         budget: '',
-        client_contact: ''
+        client_contact: '',
+        client_name: '',
+        client_email: '',
+        client_phone: ''
       });
     } catch (error: any) {
       console.error('Error creating event:', error);
@@ -192,14 +201,41 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="client_contact" className="font-industrial uppercase text-xs tracking-wide">
-                Client Contact
+              <Label htmlFor="client_name" className="font-industrial uppercase text-xs tracking-wide">
+                Client Name
               </Label>
               <Input
-                id="client_contact"
-                value={formData.client_contact}
-                onChange={(e) => setFormData({ ...formData, client_contact: e.target.value })}
-                placeholder="Client name and contact details"
+                id="client_name"
+                value={formData.client_name}
+                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                placeholder="Client full name"
+                className="font-industrial"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="client_email" className="font-industrial uppercase text-xs tracking-wide">
+                Client Email
+              </Label>
+              <Input
+                id="client_email"
+                type="email"
+                value={formData.client_email}
+                onChange={(e) => setFormData({ ...formData, client_email: e.target.value })}
+                placeholder="client@example.com"
+                className="font-industrial"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="client_phone" className="font-industrial uppercase text-xs tracking-wide">
+                Client Phone
+              </Label>
+              <Input
+                id="client_phone"
+                value={formData.client_phone}
+                onChange={(e) => setFormData({ ...formData, client_phone: e.target.value })}
+                placeholder="Client phone number"
                 className="font-industrial"
               />
             </div>

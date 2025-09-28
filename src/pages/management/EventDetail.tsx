@@ -172,31 +172,32 @@ const EventDetail = () => {
             
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">
-                  {event.code}
-                </h1>
-                <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)}`}>
+                <div className="space-y-1">
+                  <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">
+                    {event.event_type || 'Event'}
+                  </h1>
+                  {clientName && (
+                    <p className="font-industrial text-lg md:text-xl text-[hsl(var(--foreground))] font-medium">
+                      {clientName}
+                    </p>
+                  )}
+                  <p className="font-industrial text-sm md:text-base text-muted-foreground">
+                    {event.code}
+                  </p>
+                </div>
+                <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} ml-4`}>
                   {event.status}
                 </Badge>
               </div>
-              
-              {event.event_type && (
-                <p className="font-industrial text-muted-foreground text-sm md:text-base">
-                  {event.event_type}
-                </p>
-              )}
 
-              {(clientName || clientEmail || clientPhone) && (
-                <div className="mt-1 space-x-2 font-industrial text-xs md:text-sm">
-                  {clientName && (
-                    <span className="text-[hsl(var(--foreground))] font-medium">{clientName}</span>
-                  )}
+              {(clientEmail || clientPhone) && (
+                <div className="mt-3 space-x-2 font-industrial text-xs md:text-sm">
                   {clientEmail && (
                     <a href={`mailto:${clientEmail}`} className="text-primary hover:underline">{clientEmail}</a>
                   )}
                   {clientPhone && (
                     <>
-                      <span className="text-muted-foreground">•</span>
+                      {clientEmail && <span className="text-muted-foreground">•</span>}
                       <a href={`tel:${clientPhone}`} className="text-primary hover:underline">{clientPhone}</a>
                     </>
                   )}
