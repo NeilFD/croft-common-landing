@@ -280,7 +280,8 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
 
       // Open mailto link with proposal details
       const subject = `Event Proposal - ${eventDetails?.code || eventId}`;
-      const body = `Dear Client,
+      const clientFirstName = eventDetails?.client_name?.split(' ')[0] || 'Client';
+      const body = `Dear ${clientFirstName},
 
 Please find your event proposal at the link below:
 
