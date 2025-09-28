@@ -100,23 +100,23 @@ const EventsList = () => {
         <Card className="border-industrial">
           <CardContent className="p-4 md:p-6">
             <div className="space-y-4">
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1">
+              <div className="space-y-3">
+                <div className="w-full">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Search events by type, client, code, or notes..."
+                      placeholder="Search events..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 font-industrial"
+                      className="pl-10 font-industrial w-full"
                       onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     />
                   </div>
                 </div>
                 
-                <div className="flex gap-2 md:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full md:w-32 font-industrial">
+                    <SelectTrigger className="w-full sm:w-40 font-industrial">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -129,22 +129,24 @@ const EventsList = () => {
                     </SelectContent>
                   </Select>
                   
-                  <Button 
-                    onClick={handleSearch}
-                    className="btn-primary font-brutalist uppercase tracking-wide"
-                  >
-                    SEARCH
-                  </Button>
-                  
-                  {showResults && (
+                  <div className="flex gap-2 flex-1">
                     <Button 
-                      variant="outline" 
-                      onClick={handleClearSearch}
-                      className="font-brutalist uppercase tracking-wide border-industrial"
+                      onClick={handleSearch}
+                      className="btn-primary font-brutalist uppercase tracking-wide flex-1 sm:flex-none"
                     >
-                      CLEAR
+                      SEARCH
                     </Button>
-                  )}
+                    
+                    {showResults && (
+                      <Button 
+                        variant="outline" 
+                        onClick={handleClearSearch}
+                        className="font-brutalist uppercase tracking-wide border-industrial flex-1 sm:flex-none"
+                      >
+                        CLEAR
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
               
