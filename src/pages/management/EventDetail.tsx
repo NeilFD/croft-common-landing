@@ -16,6 +16,7 @@ import { BookingsList } from '@/components/management/BookingsList';
 import { EventNotesTab } from '@/components/management/EventNotesTab';
 import { LateCloseTab } from '@/components/management/LateCloseTab';
 import { EditEventDialog } from '@/components/management/EditEventDialog';
+import { EditContactDetailsDialog } from '@/components/management/EditContactDetailsDialog';
 import { ProposalBuilder } from '@/components/management/ProposalBuilder';
 import { ContractPreview } from '@/components/management/ContractPreview';
 import { InvoiceManager } from '@/components/management/InvoiceManager';
@@ -27,6 +28,7 @@ const EventDetail = () => {
   const queryClient = useQueryClient();
   const [showCreateHold, setShowCreateHold] = useState(false);
   const [showEditEvent, setShowEditEvent] = useState(false);
+  const [showEditContactDetails, setShowEditContactDetails] = useState(false);
 
   const { data: event, isLoading } = useQuery({
     queryKey: ['management-event', id],
@@ -194,22 +196,50 @@ const EventDetail = () => {
               </div>
 
               {(clientEmail || clientPhone) && (
-                <div className="mt-3 space-x-2 font-industrial text-xs md:text-sm">
-                  {clientEmail && (
-                    <a href={`mailto:${clientEmail}`} className="text-primary hover:underline">{clientEmail}</a>
-                  )}
-                  {clientPhone && (
-                    <>
-                      {clientEmail && <span className="text-muted-foreground">•</span>}
-                      <a href={`tel:${clientPhone}`} className="text-primary hover:underline">{clientPhone}</a>
-                    </>
-                  )}
+                <div className="mt-3 space-y-1">
+                  <div className="space-x-2 font-industrial text-xs md:text-sm">
+                    {clientEmail && (
+                      <a href={`mailto:${clientEmail}`} className="text-primary hover:underline">{clientEmail}</a>
+                    )}
+                    {clientPhone && (
+                      <>
+                        {clientEmail && <span className="text-muted-foreground">•</span>}
+                        <a href={`tel:${clientPhone}`} className="text-primary hover:underline">{clientPhone}</a>
+                      </>
+                    )}
+                  </div>
+                  <div className="text-xs text-muted-foreground font-industrial">
+                    {event?.client_name || event?.client_email || event?.client_phone ? 
+                      'Event-specific contact details' : 
+                      linkedLead ? 'Contact details from linked lead' : 
+                      derivedLead ? 'Contact details from matched lead' : 
+                      'No contact details available'
+                    }
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setShowEditContactDetails(true)}
+                    variant="outline"
+                    size="sm"
+                    className="font-brutalist uppercase tracking-wide border-industrial text-xs"
+                  >
+                    EDIT CONTACT
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Edit client contact details</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -529,12 +559,19 @@ const EventDetail = () => {
         onOpenChange={setShowCreateHold}
       />
       
-      <EditEventDialog
-        eventId={id!}
-        event={event}
-        open={showEditEvent}
-        onOpenChange={setShowEditEvent}
-      />
+        <EditEventDialog
+          eventId={id!}
+          event={event}
+          open={showEditEvent}
+          onOpenChange={setShowEditEvent}
+        />
+        
+        <EditContactDetailsDialog
+          eventId={id!}
+          event={event}
+          open={showEditContactDetails}
+          onOpenChange={setShowEditContactDetails}
+        />
     </ManagementLayout>
   );
 };
