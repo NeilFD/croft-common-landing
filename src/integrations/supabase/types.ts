@@ -3917,7 +3917,10 @@ export type Database = {
       }
       create_proposal: {
         Args: { p_event_id: string; p_items: Json }
-        Returns: string
+        Returns: {
+          line_items_created: number
+          proposal_id: string
+        }[]
       }
       detect_booking_conflicts: {
         Args: {
