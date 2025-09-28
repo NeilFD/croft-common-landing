@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Trash2, Plus, GripVertical, Eye } from 'lucide-react';
+import CroftLogo from '@/components/CroftLogo';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -63,6 +64,25 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
         .select('*')
         .eq('event_id', eventId)
         .order('sort_order');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch event details for proposal preview
+  const { data: eventDetails } = useQuery({
+    queryKey: ['event-details', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('management_events')
+        .select(`
+          *,
+          spaces(name, capacity_seated, capacity_standing),
+          bookings(status)
+        `)
+        .eq('id', eventId)
+        .maybeSingle();
       
       if (error) throw error;
       return data;
@@ -361,43 +381,97 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                   PREVIEW
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="font-brutalist text-xl uppercase tracking-wider">
-                    PROPOSAL PREVIEW
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6 p-6">
-                  {/* Header */}
-                  <div className="text-center border-b-2 border-black pb-4">
-                    <h1 className="text-3xl font-brutalist uppercase tracking-wider">PROPOSAL</h1>
-                    <p className="text-muted-foreground mt-2">Event ID: {eventId}</p>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <div className="bg-white text-black min-h-full">
+                  {/* Header with Branding */}
+                  <div className="border-b-4 border-black pb-6 mb-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <CroftLogo size="lg" className="h-12 w-12" />
+                        <div>
+                          <h1 className="text-3xl font-brutalist uppercase tracking-wider">CROFT COMMON</h1>
+                          <p className="text-lg font-industrial uppercase tracking-wide text-muted-foreground">Private Events & Corporate Hire</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <h2 className="text-2xl font-brutalist uppercase tracking-wider">PROPOSAL</h2>
+                        <div className="text-sm text-muted-foreground space-y-1 mt-2">
+                          <p><strong>Proposal Ref:</strong> {eventDetails?.code || '2025002'}</p>
+                          <p><strong>Date:</strong> {new Date().toLocaleDateString('en-GB')}</p>
+                          <p><strong>Version:</strong> 1.0</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Client and Event Details */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                      <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                        CLIENT DETAILS
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <p><strong>Name:</strong> {eventDetails?.client_name || 'Michael Brown'}</p>
+                        <p><strong>Email:</strong> {eventDetails?.client_email || 'michael.brown@techcorp.com'}</p>
+                        <p><strong>Phone:</strong> {eventDetails?.client_phone || '07987 654321'}</p>
+                        <p><strong>Company:</strong> {eventDetails?.client_name || 'TechCorp Ltd'}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                        EVENT DETAILS
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <p><strong>Event Date:</strong> {eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : '28/09/2025'}</p>
+                        <p><strong>Event Type:</strong> {eventDetails?.event_type || 'Presentation'}</p>
+                        <p><strong>Headcount:</strong> {eventDetails?.headcount || headcount} guests</p>
+                        <p><strong>Space:</strong> {eventDetails?.spaces?.[0]?.name || 'Rooftop Terrace'}</p>
+                        <p><strong>Status:</strong> <Badge variant={eventDetails?.bookings?.[0]?.status === 'confirmed' ? 'default' : 'secondary'} className="ml-1">
+                          {eventDetails?.bookings?.[0]?.status?.toUpperCase() || 'DRAFT'}
+                        </Badge></p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Venue Information */}
+                  <div className="mb-8">
+                    <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                      VENUE DETAILS
+                    </h3>
+                    <div className="bg-gray-50 p-4 border-2 border-gray-300">
+                      <p><strong>Space:</strong> {eventDetails?.spaces?.[0]?.name || 'Rooftop Terrace'}</p>
+                      <p><strong>Capacity:</strong> {eventDetails?.spaces?.[0]?.capacity_seated || 60} seated, {eventDetails?.spaces?.[0]?.capacity_standing || 100} standing</p>
+                      <p><strong>Setup:</strong> Theatre style with presentation equipment</p>
+                    </div>
                   </div>
 
                   {/* Line Items */}
-                  <div className="space-y-4">
-                    <h2 className="text-xl font-brutalist uppercase tracking-wider border-b border-gray-300 pb-2">
-                      ITEMS
-                    </h2>
-                    <div className="space-y-2">
+                  <div className="mb-8">
+                    <h3 className="text-lg font-brutalist uppercase tracking-wider border-b-2 border-black pb-2 mb-4">
+                      PROPOSAL BREAKDOWN
+                    </h3>
+                    <div className="space-y-3">
                       {lineItems.map((item, index) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100">
+                        <div key={index} className="flex justify-between items-center py-3 border-b border-gray-200">
                           <div className="flex-1">
-                            <div className="flex items-center gap-2">
-                              <Badge variant="outline" className="text-xs">
+                            <div className="flex items-center gap-3">
+                              <Badge className={getTypeColor(item.type)} variant="default">
                                 {item.type.toUpperCase()}
                               </Badge>
-                              <span className="font-medium">{item.description}</span>
+                              <span className="font-medium text-base">{item.description}</span>
                             </div>
-                            <div className="text-sm text-muted-foreground mt-1">
+                            <div className="text-sm text-muted-foreground mt-1 ml-16">
                               Qty: {item.qty} × £{item.unit_price.toFixed(2)}
                               {item.per_person && ` × ${headcount} people`}
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="font-bold">£{calculateLineTotal(item).toFixed(2)}</div>
+                          <div className="text-right min-w-[120px]">
+                            <div className="font-bold text-lg">£{calculateLineTotal(item).toFixed(2)}</div>
                             <div className="text-xs text-muted-foreground">
-                              Net: £{calculateLineNet(item).toFixed(2)} | VAT: £{calculateLineVat(item).toFixed(2)}
+                              Net: £{calculateLineNet(item).toFixed(2)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              VAT: £{calculateLineVat(item).toFixed(2)}
                             </div>
                           </div>
                         </div>
@@ -406,26 +480,38 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                   </div>
 
                   {/* Totals */}
-                  <div className="border-t-2 border-black pt-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-lg">
+                  <div className="border-t-4 border-black pt-6 mb-8">
+                    <div className="space-y-3 text-lg">
+                      <div className="flex justify-between">
                         <span>Net Subtotal:</span>
                         <span className="font-bold">£{netSubtotal.toFixed(2)}</span>
                       </div>
-                      <div className="flex justify-between text-lg">
+                      <div className="flex justify-between">
                         <span>VAT (20%):</span>
                         <span className="font-bold">£{vatTotal.toFixed(2)}</span>
                       </div>
                       {serviceChargePct > 0 && (
-                        <div className="flex justify-between text-lg">
+                        <div className="flex justify-between">
                           <span>Service Charge ({serviceChargePct}%):</span>
                           <span className="font-bold">£{serviceChargeAmount.toFixed(2)}</span>
                         </div>
                       )}
-                      <div className="border-t-2 border-black pt-2 flex justify-between text-2xl font-bold">
+                      <div className="border-t-2 border-black pt-3 flex justify-between text-2xl font-bold">
                         <span>GRAND TOTAL:</span>
                         <span>£{grandTotal.toFixed(2)}</span>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="border-t-2 border-gray-300 pt-6 mt-8 text-sm text-muted-foreground">
+                    <div className="text-center space-y-2">
+                      <p className="font-bold text-black">CROFT COMMON</p>
+                      <p>Unit 1-3, Croft Court, 48 Croft Street, London, SE8 4EX</p>
+                      <p>Email: hello@thehive-hospitality.com | Phone: 020 7946 0958</p>
+                      <p className="text-xs mt-4">
+                        This proposal is valid for 30 days from the date of issue. Terms and conditions apply.
+                      </p>
                     </div>
                   </div>
                 </div>
