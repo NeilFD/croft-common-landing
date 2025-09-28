@@ -55,19 +55,17 @@ const effectiveRpId = normalizeRpId(hostForRp);
     const options = await generateRegistrationOptions({
       rpName: 'Croft Common',
       rpID: effectiveRpId,
-      user: {
-        id: new TextEncoder().encode(handle),
-        name: userName,
-        displayName: safeDisplay,
-      },
+      userID: new TextEncoder().encode(handle),
+      userName: userName,
+      userDisplayName: safeDisplay,
       attestationType: 'none',
       authenticatorSelection: {
         authenticatorAttachment: 'platform',
         residentKey: 'required',
-        userVerification: 'required', // Force Face ID/Touch ID
+        userVerification: 'required',
       },
       extensions: {
-        credProps: true, // Help iOS understand credential properties
+        credProps: true,
       },
       excludeCredentials,
     });
@@ -83,6 +81,7 @@ const effectiveRpId = normalizeRpId(hostForRp);
     });
   } catch (error) {
     console.error('webauthn-register-options error', error);
-    return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

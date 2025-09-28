@@ -91,17 +91,24 @@ serve(async (req) => {
     if (!verification.verified || !verification.registrationInfo) {
       console.error('[webauthn-register-verify] Verification failed:', {
         verified: verification.verified,
-        hasRegistrationInfo: !!verification.registrationInfo,
-        verificationError: verification.verificationError
+        hasRegistrationInfo: !!verification.registrationInfo
       });
       return new Response(JSON.stringify({ 
         verified: false, 
-        error: verification.verificationError || 'Verification failed',
+        error: 'Verification failed',
         details: { verified: verification.verified, hasRegistrationInfo: !!verification.registrationInfo }
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { credentialID, credentialPublicKey, counter, credentialDeviceType, credentialBackedUp, credentialTransports } = verification.registrationInfo;
+    const regInfo: any = verification.registrationInfo;
+    const toB64u = (data: any): string => {
+      if (typeof data === 'string') return data;
+      const u8 = data instanceof Uint8Array ? data : new Uint8Array(data as ArrayBuffer);
+      return toBase64Url(u8);
+    };
+
+    const credIdB64u = toB64u(regInfo.credentialID);
+    const pubKeyB64u = toB64u(regInfo.credentialPublicKey);
 
     await supabase.from('webauthn_users').upsert({ user_handle: userHandle }).throwOnError();
 
@@ -110,12 +117,12 @@ serve(async (req) => {
       .from('webauthn_credentials')
       .upsert({
         user_handle: userHandle,
-        credential_id: toBase64Url(new Uint8Array(credentialID)),
-        public_key: toBase64Url(new Uint8Array(credentialPublicKey)),
-        counter: Number(counter ?? 0),
-        device_type: credentialDeviceType,
-        backed_up: credentialBackedUp,
-        transports: credentialTransports ?? null,
+        credential_id: credIdB64u,
+        public_key: pubKeyB64u,
+        counter: Number(regInfo.counter ?? 0),
+        device_type: regInfo.credentialDeviceType,
+        backed_up: regInfo.credentialBackedUp,
+        transports: regInfo.transports ?? null,
         last_used_at: new Date().toISOString(),
         rp_id: expectedRPID,
       }, { onConflict: 'credential_id' })
@@ -131,6 +138,7 @@ serve(async (req) => {
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('webauthn-register-verify error', error);
-    return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

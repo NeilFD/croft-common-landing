@@ -48,6 +48,19 @@ const EventDetail = () => {
     enabled: !!id
   });
 
+  const { data: bookings } = useQuery({
+    queryKey: ['event-bookings', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('id, title, start_ts, end_ts, setup_min, teardown_min, status, space:spaces(name)')
+        .eq('event_id', id);
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!id
+  });
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'draft': return 'bg-[hsl(var(--muted))] text-[hsl(var(--muted-foreground))]';
@@ -292,10 +305,10 @@ const EventDetail = () => {
                       Space Bookings
                     </p>
                     <p className="font-brutalist text-lg font-black">
-                      {event.bookings?.length || 0}
+                      {bookings?.length || 0}
                     </p>
                     <p className="font-industrial text-xs text-muted-foreground mt-1">
-                      {new Set(event.bookings?.map((b: any) => b.space?.name)).size || 0} unique spaces
+                      {new Set((bookings ?? []).map((b: any) => b.space?.name)).size || 0} unique spaces
                     </p>
                   </div>
               </div>
@@ -328,7 +341,7 @@ const EventDetail = () => {
                   You can book multiple time slots and different spaces for the same event.
                 </p>
               </div>
-              <BookingsList eventId={id!} bookings={event.bookings || []} />
+              <BookingsList eventId={id!} bookings={bookings || []} />
             </div>
           </TabsContent>
 

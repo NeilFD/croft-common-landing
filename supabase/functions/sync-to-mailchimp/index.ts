@@ -55,7 +55,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  let requestBody: SyncRequest;
+  let requestBody: SyncRequest = { email: '' } as SyncRequest;
   
   try {
     console.log('=== SYNC TO MAILCHIMP START ===')

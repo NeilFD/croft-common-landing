@@ -59,9 +59,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     for (const subscriber of pendingUsers) {
       try {
+        if (!subscriber.email) {
+          processed++;
+          continue;
+        }
+        const userId = await getUserIdByEmail(supabase, subscriber.email);
+        if (!userId) {
+          console.log(`⏭️ No auth user for ${subscriber.email}`);
+          processed++;
+          continue;
+        }
         // Check if user exists and is verified in auth
         const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(
-          await getUserIdByEmail(supabase, subscriber.email as string)
+          userId
         );
 
         if (userError || !user) {

@@ -144,11 +144,13 @@ serve(async (req) => {
     
   } catch (error) {
     console.error('❌ Test failed with error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const stack = error instanceof Error ? error.stack : undefined;
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message,
-        stack: error.stack
+        error: message,
+        stack
       }),
       {
         status: 500,

@@ -114,7 +114,7 @@ serve(async (req) => {
       expectedChallenge: challenge,
       expectedOrigin,
       expectedRPID,
-      authenticator,
+      authenticator: authenticator as any,
     });
 
     console.log('[webauthn-auth-verify] Verification result:', {
@@ -161,6 +161,7 @@ serve(async (req) => {
     }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('webauthn-auth-verify error', error);
-    return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ error: message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

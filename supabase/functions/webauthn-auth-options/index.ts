@@ -82,6 +82,11 @@ serve(async (req) => {
     return new Response(JSON.stringify({ options, rpId: effectiveRpId, origin: effectiveOrigin }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (error) {
     console.error('webauthn-auth-options error', error);
-    return new Response(JSON.stringify({ error: String(error?.message ?? error) }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    const message = error instanceof Error
+      ? error.message
+      : (typeof error === 'object' && error && 'message' in (error as any))
+        ? (error as any).message
+        : String(error);
+    return new Response(JSON.stringify({ error: message }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });
