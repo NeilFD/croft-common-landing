@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
+import { jsPDF } from 'https://esm.sh/jspdf@3.0.3';
 
 // Content sanitization utilities
 const sanitizeContentText = (content: string): string => {
@@ -9,6 +9,7 @@ const sanitizeContentText = (content: string): string => {
 
   // Normalise to prevent odd glyph combos
   let txt = (content as any).normalize?.('NFC') ?? content;
+  const originalLength = txt.length;
 
   txt = txt
     // HTML -> text
@@ -28,25 +29,41 @@ const sanitizeContentText = (content: string): string => {
     .replace(/[‘’‚‛]/g, "'")
     .replace(/[–—]/g, '-')
     .replace(/…/g, '...')
-    .replace(/[•·]/g, '- ')
+    .replace(/[•·∙]/g, '- ')
     // Box drawing and block chars -> safe markers
     .replace(/═+/g, '======')
     .replace(/─+/g, '------')
     .replace(/[█▓▒░]/g, '')
     // Strip control chars (except newline and tab)
     .replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, '')
-    // Whitespace cleanup
-    .replace(/\r\n/g, '\n')
+    // Normalise CRLF
+    .replace(/\r\n/g, '\n');
+
+  // ASCII-safe whitelist (preserve £ and %); remove everything else
+  txt = txt.replace(/[^A-Za-z0-9 \t\n\.,:;!\?'"()\[\]{}\/\\\-+&£%=_]/g, '');
+
+  // Collapse excessive blank lines and spaces
+  txt = txt
     .replace(/\n\s*\n\s*\n/g, '\n\n')
     .replace(/^[ \t]+|[ \t]+$/gm, '')
-    .trim();
+    .trim()
+    .replace(/[ \t]+/g, ' ');
 
-  return txt.replace(/[ \t]+/g, ' ');
+  try {
+    const removed = Math.max(0, originalLength - txt.length);
+    if (removed > 0) console.log(`Sanitiser removed approx ${removed} chars`);
+  } catch (_) {}
+
+  return txt;
 };
 
 // Format contract content for PDF - similar to preview logic
 const formatContractContent = (content: string) => {
   const cleanContent = sanitizeContentText(content);
+  try {
+    const removedApprox = Math.max(0, (content?.length || 0) - cleanContent.length);
+    console.log('Sanitised content preview:', cleanContent.slice(0, 120), '... Removed ~', removedApprox);
+  } catch (_) {}
   const lines = cleanContent.split('\n');
   
   return lines.map(line => {
@@ -56,10 +73,10 @@ const formatContractContent = (content: string) => {
       return { type: 'empty', content: '', fontSize: 8, fontStyle: 'normal' };
     }
 
-    // Any decorative divider line made of repeating non-word chars (%, -, =, _, *, ~, box drawing)
-    if (/^[%\-=_*~\u2500-\u257F\s]+$/.test(trimmed) && trimmed.length >= 6) {
-      // Guess major vs minor by the char used and length
-      const isMajor = /[=\u2550\u2551\u2552]/.test(trimmed) || trimmed.length >= 20;
+    // Any decorative divider or punctuation-heavy line
+    const punctRatio = (trimmed.replace(/[A-Za-z0-9£]+/g, '').length) / Math.max(trimmed.length, 1);
+    if ((/^[%\-=_*~\u2500-\u257F\s]+$/.test(trimmed) && trimmed.length >= 6) || (trimmed.length >= 8 && punctRatio >= 0.7)) {
+      const isMajor = /[=]{3,}|\u2550|\u2551|\u2552/.test(trimmed) || trimmed.length >= 20;
       return {
         type: isMajor ? 'major-divider' : 'minor-divider',
         content: '',
