@@ -55,6 +55,18 @@ const formatContractContent = (content: string) => {
     if (!trimmed) {
       return { type: 'empty', content: '', fontSize: 8, fontStyle: 'normal' };
     }
+
+    // Any decorative divider line made of repeating non-word chars (%, -, =, _, *, ~, box drawing)
+    if (/^[%\-=_*~\u2500-\u257F\s]+$/.test(trimmed) && trimmed.length >= 6) {
+      // Guess major vs minor by the char used and length
+      const isMajor = /[=\u2550\u2551\u2552]/.test(trimmed) || trimmed.length >= 20;
+      return {
+        type: isMajor ? 'major-divider' : 'minor-divider',
+        content: '',
+        fontSize: isMajor ? 12 : 10,
+        fontStyle: 'bold'
+      };
+    }
     
     // Major section dividers (with equals)
     if (trimmed.includes('======')) {
