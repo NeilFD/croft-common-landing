@@ -99,10 +99,12 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
       queryClient.invalidateQueries({ queryKey: ['event-line-items', eventId] });
     },
     onError: (error) => {
+      console.error('create_proposal failed', error);
+      const msg = (error as any)?.message || 'Failed to save proposal';
       toast({
-        title: "Error",
-        description: "Failed to save proposal",
-        variant: "destructive",
+        title: 'Error',
+        description: msg,
+        variant: 'destructive',
       });
     }
   });
