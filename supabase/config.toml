@@ -240,3 +240,6 @@ verify_jwt = false
 
 [functions.send-proposal-email]
 verify_jwt = true
+
+[functions.proposal-latest]
+verify_jwt = false
