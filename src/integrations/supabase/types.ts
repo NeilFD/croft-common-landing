@@ -3915,12 +3915,20 @@ export type Database = {
         Returns: boolean
       }
       log_audit_entry: {
-        Args: {
-          _action: string
-          _diff?: Json
-          _entity: string
-          _entity_id: string
-        }
+        Args:
+          | {
+              _action: string
+              _diff?: Json
+              _entity: string
+              _entity_id: string
+            }
+          | {
+              p_action: string
+              p_actor_id: string
+              p_diff?: Json
+              p_entity: string
+              p_entity_id: string
+            }
         Returns: string
       }
       normalize_item_name: {
