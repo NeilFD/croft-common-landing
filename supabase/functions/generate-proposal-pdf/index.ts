@@ -1,6 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { jsPDF } from 'https://esm.sh/jspdf@2.5.1';
-
+import autoTable from 'https://esm.sh/jspdf-autotable@5.0.2';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -130,280 +130,306 @@ Deno.serve(async (req) => {
 });
 
 async function createProposalPDF(eventData: any, lineItems: any[]): Promise<Uint8Array> {
+  // Helpers
+  const arrayBufferToBase64 = (buffer: ArrayBuffer) => {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+  };
+
+  const fetchBase64 = async (url: string) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch asset: ${url}`);
+    const ab = await res.arrayBuffer();
+    return arrayBufferToBase64(ab);
+  };
+
+  const fetchImageDataUrl = async (url: string) => {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch image: ${url}`);
+    const contentType = res.headers.get('content-type') || 'image/png';
+    const ab = await res.arrayBuffer();
+    const b64 = arrayBufferToBase64(ab);
+    return `data:${contentType};base64,${b64}`;
+  };
+
+  // Create document
   const doc = new jsPDF('p', 'mm', 'a4');
   const pageWidth = doc.internal.pageSize.width;
   const pageHeight = doc.internal.pageSize.height;
-  const margin = 20;
-  
-  let yPos = margin;
+  const margin = 18;
+  const headerHeight = 34;
+  const footerHeight = 18;
+
   const currentDate = new Date().toLocaleDateString('en-GB');
-  const eventDate = eventData.primary_date ? new Date(eventData.primary_date).toLocaleDateString('en-GB') : '28/09/2025';
-  
-  // Calculate totals (same logic as frontend)
-  const serviceChargePct = eventData.service_charge_pct || 0;
+  const eventDate = eventData.primary_date
+    ? new Date(eventData.primary_date).toLocaleDateString('en-GB')
+    : currentDate;
+  const proposalRef = eventData.code || String(eventData.id || '').slice(0, 8);
+  const headcount = eventData.headcount || 1;
+  const serviceChargePct = Number(eventData.service_charge_pct || 0);
+
+  // Load brand assets (fonts + logo)
+  // Note: Using Google Fonts repo raw TTFs to embed true fonts (no paid services)
+  try {
+    const [workSansB64, oswaldBoldB64] = await Promise.all([
+      fetchBase64('https://github.com/google/fonts/raw/main/ofl/worksans/WorkSans-Regular.ttf'),
+      fetchBase64('https://github.com/google/fonts/raw/main/ofl/oswald/Oswald-Bold.ttf'),
+    ]);
+    doc.addFileToVFS('WorkSans-Regular.ttf', workSansB64);
+    doc.addFont('WorkSans-Regular.ttf', 'WorkSans', 'normal');
+    doc.addFileToVFS('Oswald-Bold.ttf', oswaldBoldB64);
+    doc.addFont('Oswald-Bold.ttf', 'Oswald', 'bold');
+  } catch (e) {
+    console.warn('Font embedding failed, falling back to Helvetica:', e);
+  }
+
+  let logoDataUrl: string | null = null;
+  try {
+    logoDataUrl = await fetchImageDataUrl('https://www.croftcommontest.com/brand/logo.png');
+  } catch (e) {
+    console.warn('Logo fetch failed, proceeding without logo:', e);
+  }
+
+  const drawHeaderFooter = (pageNumber: number) => {
+    // Header (repeated)
+    const headerY = 12;
+    if (logoDataUrl) {
+      try {
+        doc.addImage(logoDataUrl, 'PNG', margin, headerY, 18, 18);
+      } catch (_) {}
+    }
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('Oswald', 'bold');
+    doc.setFontSize(18);
+    doc.text('CROFT COMMON', margin + (logoDataUrl ? 22 : 0), headerY + 8);
+
+    // Right-aligned proposal meta
+    doc.setFontSize(20);
+    doc.text('PROPOSAL', pageWidth - margin, headerY + 4, { align: 'right' });
+    doc.setFont('WorkSans', 'normal');
+    doc.setFontSize(9);
+    doc.text(`Proposal Ref: ${proposalRef}`, pageWidth - margin, headerY + 10, { align: 'right' });
+    doc.text(`Date: ${currentDate}`, pageWidth - margin, headerY + 15, { align: 'right' });
+    doc.text(`Version: v1`, pageWidth - margin, headerY + 20, { align: 'right' });
+
+    // Divider
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.6);
+    doc.line(margin, headerY + headerHeight - 6, pageWidth - margin, headerY + headerHeight - 6);
+
+    // Footer (repeated)
+    const footY = pageHeight - footerHeight + 3;
+    doc.setLineWidth(0.4);
+    doc.setDrawColor(220, 220, 220);
+    doc.line(margin, footY - 4, pageWidth - margin, footY - 4);
+
+    doc.setFont('Oswald', 'bold');
+    doc.setFontSize(10);
+    doc.text('CROFT COMMON', pageWidth / 2, footY, { align: 'center' });
+
+    doc.setFont('WorkSans', 'normal');
+    doc.setFontSize(8);
+    doc.text('Unit 1-3, Croft Court, 48 Croft Street, London, SE8 4EX', pageWidth / 2, footY + 5, { align: 'center' });
+    doc.text('hello@thehive-hospitality.com • 020 7946 0958', pageWidth / 2, footY + 9, { align: 'center' });
+
+    doc.text(`Page ${pageNumber}`, pageWidth - margin, footY + 9, { align: 'right' });
+  };
+
+  // Page 1 static header/footer via autoTable hook later, but we draw details ourselves
+  // CLIENT + EVENT DETAILS
+  let y = margin + headerHeight + 4;
+  doc.setFont('Oswald', 'bold');
+  doc.setFontSize(12);
+  doc.text('CLIENT DETAILS', margin, y);
+  doc.text('EVENT DETAILS', pageWidth / 2 + 6, y);
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.5);
+  doc.line(margin, y + 1.5, margin + 60, y + 1.5);
+  doc.line(pageWidth / 2 + 6, y + 1.5, pageWidth - margin, y + 1.5);
+
+  y += 8;
+  doc.setFont('WorkSans', 'normal');
+  doc.setFontSize(9);
+
+  // Left column (client)
+  const leftX = margin;
+  doc.setFont('WorkSans', 'normal');
+  doc.text('Name:', leftX, y);
+  doc.text(String(eventData.client_name || 'Client'), leftX + 22, y);
+  y += 5;
+  doc.text('Email:', leftX, y);
+  doc.text(String(eventData.client_email || eventData.contact_email || '—'), leftX + 22, y);
+  y += 5;
+  doc.text('Phone:', leftX, y);
+  doc.text(String(eventData.client_phone || '—'), leftX + 22, y);
+
+  // Right column (event)
+  let rightY = margin + headerHeight + 12;
+  const rightX = pageWidth / 2 + 6;
+  doc.text('Event Date:', rightX, rightY);
+  doc.text(eventDate, rightX + 28, rightY);
+  rightY += 5;
+  doc.text('Event Type:', rightX, rightY);
+  doc.text(String(eventData.event_type || '—'), rightX + 28, rightY);
+  rightY += 5;
+  doc.text('Headcount:', rightX, rightY);
+  doc.text(`${headcount} guests`, rightX + 28, rightY);
+  rightY += 5;
+  if (serviceChargePct > 0) {
+    doc.text('Service charge:', rightX, rightY);
+    doc.text(`${serviceChargePct}%`, rightX + 28, rightY);
+    rightY += 5;
+  }
+
+  // VENUE DETAILS box
+  y = Math.max(y, rightY) + 8;
+  doc.setFont('Oswald', 'bold');
+  doc.setFontSize(12);
+  doc.text('VENUE DETAILS', margin, y);
+  doc.setLineWidth(0.5);
+  doc.setDrawColor(200, 200, 200);
+  doc.line(margin, y + 1.5, margin + 60, y + 1.5);
+  y += 6;
+
+  doc.setFillColor(248, 249, 251);
+  doc.setDrawColor(220, 223, 228);
+  doc.rect(margin, y, pageWidth - margin * 2, 18, 'FD');
+
+  doc.setFont('WorkSans', 'normal');
+  doc.setFontSize(9);
+  doc.text('Space:', margin + 4, y + 6);
+  doc.text(String(eventData.space_name || 'TBC'), margin + 22, y + 6);
+  doc.text('Capacity:', margin + 4, y + 12);
+  doc.text(String(eventData.space_capacity || 'TBC'), margin + 22, y + 12);
+
+  // Totals calculation (net, VAT, service, gross)
   let netSubtotal = 0;
   let vatTotal = 0;
-
-  lineItems.forEach(item => {
-    const lineGross = (item.qty || 1) * (item.unit_price || 0) * (item.per_person ? (eventData.headcount || 1) : 1);
-    const lineNet = lineGross / 1.2; // VAT-inclusive to net
-    const lineVat = lineGross - lineNet;
-    
-    if (item.type === 'discount') {
-      netSubtotal -= lineNet;
-      vatTotal -= lineVat;
+  const rows: any[] = [];
+  for (const item of lineItems) {
+    const qty = Number(item.qty || 1);
+    const unit = Number(item.unit_price || 0);
+    const multiplier = item.per_person ? headcount : 1;
+    const gross = qty * unit * multiplier;
+    const net = gross / 1.2; // assuming 20% VAT included
+    const vat = gross - net;
+    if ((item.type || '').toLowerCase() === 'discount') {
+      netSubtotal -= net;
+      vatTotal -= vat;
     } else {
-      netSubtotal += lineNet;
-      vatTotal += lineVat;
+      netSubtotal += net;
+      vatTotal += vat;
     }
-  });
 
+    const qtyLabel = `${qty} × £${unit.toFixed(2)}${item.per_person ? ` × ${headcount}` : ''}`;
+    rows.push([
+      String((item.type || '').toUpperCase()),
+      String(item.description || ''),
+      qtyLabel,
+      `£${net.toFixed(2)}`,
+      `£${vat.toFixed(2)}`,
+      `£${gross.toFixed(2)}`,
+    ]);
+  }
   const serviceChargeAmount = netSubtotal * (serviceChargePct / 100);
   const grandTotal = netSubtotal + vatTotal + serviceChargeAmount;
 
-  // Header Section
-  doc.setFontSize(24);
-  doc.setFont('helvetica', 'bold');
-  doc.text('CROFT COMMON', margin, yPos);
-  
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Private Events & Corporate Hire', margin, yPos + 8);
-  
-  // Proposal info (top right)
-  doc.setFontSize(20);
-  doc.setFont('helvetica', 'bold');
-  doc.text('PROPOSAL', pageWidth - margin - 50, yPos, { align: 'right' });
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Proposal Ref: ${eventData.code || '2025002'}`, pageWidth - margin - 50, yPos + 10, { align: 'right' });
-  doc.text(`Date: ${currentDate}`, pageWidth - margin - 50, yPos + 16, { align: 'right' });
-  doc.text(`Version: v1`, pageWidth - margin - 50, yPos + 22, { align: 'right' });
-  
-  // Header line
-  yPos += 35;
-  doc.setLineWidth(2);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 15;
-  
-  // Client and Event Details (two columns)
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('CLIENT DETAILS', margin, yPos);
-  doc.text('EVENT DETAILS', pageWidth / 2 + 10, yPos);
-  
-  // Underline section headers
-  doc.setLineWidth(1);
-  doc.line(margin, yPos + 2, margin + 60, yPos + 2);
-  doc.line(pageWidth / 2 + 10, yPos + 2, pageWidth / 2 + 70, yPos + 2);
-  
-  yPos += 10;
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  
-  // Client details (left column)
-  doc.setFont('helvetica', 'bold');
-  doc.text('Name: ', margin, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.text(eventData.client_name || 'Michael Brown', margin + 20, yPos);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Email: ', margin, yPos + 6);
-  doc.setFont('helvetica', 'normal');
-  doc.text(eventData.client_email || 'michael.brown@techcorp.com', margin + 20, yPos + 6);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Phone: ', margin, yPos + 12);
-  doc.setFont('helvetica', 'normal');
-  doc.text(eventData.client_phone || '07987 654321', margin + 20, yPos + 12);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Company: ', margin, yPos + 18);
-  doc.setFont('helvetica', 'normal');
-  doc.text(eventData.client_name || 'TechCorp Ltd', margin + 20, yPos + 18);
-  
-  // Event details (right column)
-  doc.setFont('helvetica', 'bold');
-  doc.text('Event Date: ', pageWidth / 2 + 10, yPos);
-  doc.setFont('helvetica', 'normal');
-  doc.text(eventDate, pageWidth / 2 + 35, yPos);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Event Type: ', pageWidth / 2 + 10, yPos + 6);
-  doc.setFont('helvetica', 'normal');
-  doc.text(eventData.event_type || 'Presentation', pageWidth / 2 + 35, yPos + 6);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Headcount: ', pageWidth / 2 + 10, yPos + 12);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`${eventData.headcount || 1} guests`, pageWidth / 2 + 35, yPos + 12);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Space: ', pageWidth / 2 + 10, yPos + 18);
-  doc.setFont('helvetica', 'normal');
-  doc.text('TBC', pageWidth / 2 + 35, yPos + 18);
-  
-  yPos += 35;
-  
-  // Venue Details Section
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('VENUE DETAILS', margin, yPos);
-  doc.setLineWidth(1);
-  doc.line(margin, yPos + 2, margin + 60, yPos + 2);
-  
-  yPos += 10;
-  
-  // Venue box
-  doc.setFillColor(249, 250, 251);
-  doc.rect(margin, yPos, pageWidth - 2 * margin, 20, 'F');
-  doc.setDrawColor(209, 213, 219);
-  doc.rect(margin, yPos, pageWidth - 2 * margin, 20);
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Space: ', margin + 5, yPos + 6);
-  doc.setFont('helvetica', 'normal');
-  doc.text('TBC', margin + 20, yPos + 6);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Capacity: ', margin + 5, yPos + 12);
-  doc.setFont('helvetica', 'normal');
-  doc.text('TBC', margin + 25, yPos + 12);
-  
-  doc.setFont('helvetica', 'bold');
-  doc.text('Setup: ', margin + 5, yPos + 18);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Theatre style with presentation equipment', margin + 20, yPos + 18);
-  
-  yPos += 35;
-  
-  // Proposal Breakdown Section
-  doc.setFontSize(14);
-  doc.setFont('helvetica', 'bold');
-  doc.text('PROPOSAL BREAKDOWN', margin, yPos);
-  doc.setLineWidth(1);
-  doc.line(margin, yPos + 2, margin + 80, yPos + 2);
-  
-  yPos += 15;
-  
-  // Line items
-  lineItems.forEach((item, index) => {
-    const lineGross = (item.qty || 1) * (item.unit_price || 0) * (item.per_person ? (eventData.headcount || 1) : 1);
-    const lineNet = lineGross / 1.2;
-    const lineVat = lineGross - lineNet;
-    
-    doc.setFontSize(10);
-    
-    // Type badge
-    doc.setFillColor(107, 114, 128); // Default gray
-    if (item.type === 'room') doc.setFillColor(37, 99, 235); // Blue
-    if (item.type === 'menu') doc.setFillColor(5, 150, 105); // Green
-    if (item.type === 'addon') doc.setFillColor(59, 130, 246); // Light blue
-    if (item.type === 'discount') doc.setFillColor(220, 38, 38); // Red
-    
-    doc.roundedRect(margin, yPos - 4, 25, 6, 1, 1, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.text(item.type.toUpperCase(), margin + 12.5, yPos, { align: 'center' });
-    
-    // Description
-    doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'normal');
-    doc.text(item.description, margin + 30, yPos);
-    
-    // Quantity details
-    doc.setFontSize(8);
-    doc.setTextColor(107, 114, 128);
-    const qtyText = `Qty: ${item.qty} × £${(item.unit_price || 0).toFixed(2)}${item.per_person ? ` × ${eventData.headcount} people` : ''}`;
-    doc.text(qtyText, margin + 30, yPos + 4);
-    
-    // Amounts (right side)
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`£${lineGross.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
-    
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(107, 114, 128);
-    doc.text(`Net: £${lineNet.toFixed(2)}`, pageWidth - margin - 30, yPos + 4, { align: 'right' });
-    doc.text(`VAT: £${lineVat.toFixed(2)}`, pageWidth - margin - 30, yPos + 8, { align: 'right' });
-    
-    // Line separator
-    yPos += 15;
-    doc.setDrawColor(229, 231, 235);
-    doc.setLineWidth(0.5);
-    doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 5;
-    
-    doc.setTextColor(0, 0, 0);
+  // Items table with automatic pagination and repeated header/footer
+  const tableStartY = Math.max(y + 24, margin + headerHeight + 10);
+  autoTable(doc as any, {
+    head: [[
+      'TYPE',
+      'DESCRIPTION',
+      'QTY × PRICE',
+      'NET',
+      'VAT',
+      'LINE TOTAL',
+    ]],
+    body: rows,
+    startY: tableStartY,
+    margin: { left: margin, right: margin, top: headerHeight + 6, bottom: footerHeight + 6 },
+    styles: { font: 'WorkSans', fontSize: 9, cellPadding: 2.5, lineColor: [229, 231, 235], lineWidth: 0.2, valign: 'middle' },
+    headStyles: { fillColor: [26, 26, 26], textColor: [255, 255, 255], font: 'Oswald', fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [250, 250, 250] },
+    columnStyles: {
+      0: { cellWidth: 26 }, // Type
+      1: { cellWidth: 'auto' }, // Description (flex)
+      2: { cellWidth: 36 }, // Qty × Price
+      3: { cellWidth: 22, halign: 'right' }, // Net
+      4: { cellWidth: 22, halign: 'right' }, // VAT
+      5: { cellWidth: 28, halign: 'right' }, // Total
+    },
+    didDrawPage: (data: any) => {
+      drawHeaderFooter(data.pageNumber);
+    },
+    rowPageBreak: 'auto',
+    theme: 'grid',
   });
-  
-  yPos += 10;
-  
-  // Totals Section
-  doc.setLineWidth(2);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 15;
-  
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  
-  // Net Subtotal
-  doc.text('Net Subtotal:', margin, yPos);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`£${netSubtotal.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
-  yPos += 8;
-  
-  // VAT
-  doc.setFont('helvetica', 'normal');
-  doc.text('VAT (20%):', margin, yPos);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`£${vatTotal.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
-  yPos += 8;
-  
-  // Service Charge (if applicable)
-  if (serviceChargePct > 0) {
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Service Charge (${serviceChargePct}%):`, margin, yPos);
-    doc.setFont('helvetica', 'bold');
-    doc.text(`£${serviceChargeAmount.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
-    yPos += 8;
+
+  let finalY = (doc as any).lastAutoTable?.finalY || tableStartY;
+
+  // Totals block - ensure visible on last page (avoid overlapping footer)
+  const needed = serviceChargePct > 0 ? 40 : 32;
+  if (finalY + needed > pageHeight - footerHeight - 8) {
+    doc.addPage();
+    drawHeaderFooter(doc.getNumberOfPages());
+    finalY = margin + headerHeight + 8;
   }
-  
-  // Grand Total
-  yPos += 5;
-  doc.setLineWidth(1);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 10;
-  
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text('GRAND TOTAL:', margin, yPos);
-  doc.text(`£${grandTotal.toFixed(2)}`, pageWidth - margin - 30, yPos, { align: 'right' });
-  
-  yPos += 25;
-  
-  // Footer
-  doc.setLineWidth(1);
-  doc.line(margin, yPos, pageWidth - margin, yPos);
-  yPos += 10;
-  
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'bold');
-  doc.text('CROFT COMMON', pageWidth / 2, yPos, { align: 'center' });
-  
+
+  // Divider
+  doc.setDrawColor(26, 26, 26);
+  doc.setLineWidth(0.6);
+  doc.line(margin, finalY + 4, pageWidth - margin, finalY + 4);
+  let ty = finalY + 12;
+  doc.setFont('WorkSans', 'normal');
   doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  yPos += 8;
-  doc.text('Unit 1-3, Croft Court, 48 Croft Street, London, SE8 4EX', pageWidth / 2, yPos, { align: 'center' });
-  yPos += 6;
-  doc.text('Email: hello@thehive-hospitality.com | Phone: 020 7946 0958', pageWidth / 2, yPos, { align: 'center' });
-  yPos += 10;
+
+  // Net Subtotal
+  doc.text('Net Subtotal:', pageWidth - margin - 60, ty);
+  doc.setFont('Oswald', 'bold');
+  doc.text(`£${netSubtotal.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
+  ty += 6;
+
+  // VAT
+  doc.setFont('WorkSans', 'normal');
+  doc.text('VAT (20%):', pageWidth - margin - 60, ty);
+  doc.setFont('Oswald', 'bold');
+  doc.text(`£${vatTotal.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
+  ty += 6;
+
+  // Service Charge
+  if (serviceChargePct > 0) {
+    doc.setFont('WorkSans', 'normal');
+    doc.text(`Service Charge (${serviceChargePct}%):`, pageWidth - margin - 60, ty);
+    doc.setFont('Oswald', 'bold');
+    doc.text(`£${serviceChargeAmount.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
+    ty += 6;
+  }
+
+  // Grand Total
+  ty += 4;
+  doc.setLineWidth(0.4);
+  doc.setDrawColor(220, 220, 220);
+  doc.line(pageWidth - margin - 60, ty, pageWidth - margin, ty);
+  ty += 8;
+  doc.setFont('Oswald', 'bold');
+  doc.setFontSize(13);
+  doc.text('GRAND TOTAL:', pageWidth - margin - 60, ty);
+  doc.text(`£${grandTotal.toFixed(2)}`, pageWidth - margin, ty, { align: 'right' });
+
+  // Terms note (above footer)
+  let noteY = ty + 10;
+  if (noteY > pageHeight - footerHeight - 8) {
+    doc.addPage();
+    drawHeaderFooter(doc.getNumberOfPages());
+    noteY = margin + headerHeight + 8;
+  }
+  doc.setFont('WorkSans', 'normal');
   doc.setFontSize(8);
-  doc.text('This proposal is valid for 30 days from the date of issue. Terms and conditions apply.', pageWidth / 2, yPos, { align: 'center' });
-  
-  return doc.output('arraybuffer');
+  doc.text('This proposal is valid for 30 days from the date of issue. Prices include VAT unless stated.', margin, noteY);
+
+  const ab = doc.output('arraybuffer');
+  return new Uint8Array(ab);
 }
