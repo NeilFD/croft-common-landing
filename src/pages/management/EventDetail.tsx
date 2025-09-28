@@ -16,6 +16,9 @@ import { BookingsList } from '@/components/management/BookingsList';
 import { EventNotesTab } from '@/components/management/EventNotesTab';
 import { LateCloseTab } from '@/components/management/LateCloseTab';
 import { EditEventDialog } from '@/components/management/EditEventDialog';
+import { ProposalBuilder } from '@/components/management/ProposalBuilder';
+import { ContractPreview } from '@/components/management/ContractPreview';
+import { InvoiceManager } from '@/components/management/InvoiceManager';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const EventDetail = () => {
@@ -319,12 +322,21 @@ const EventDetail = () => {
 
         {/* Event Details Tabs */}
         <Tabs defaultValue="bookings" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4 bg-[hsl(var(--muted))] border border-industrial">
+          <TabsList className="grid w-full grid-cols-7 bg-[hsl(var(--muted))] border border-industrial">
             <TabsTrigger value="bookings" className="font-brutalist uppercase tracking-wide text-xs">
-              SPACE BOOKINGS
+              BOOKINGS
             </TabsTrigger>
             <TabsTrigger value="overview" className="font-brutalist uppercase tracking-wide text-xs">
               OVERVIEW
+            </TabsTrigger>
+            <TabsTrigger value="proposals" className="font-brutalist uppercase tracking-wide text-xs">
+              PROPOSALS
+            </TabsTrigger>
+            <TabsTrigger value="contracts" className="font-brutalist uppercase tracking-wide text-xs">
+              CONTRACTS
+            </TabsTrigger>
+            <TabsTrigger value="invoices" className="font-brutalist uppercase tracking-wide text-xs">
+              INVOICES
             </TabsTrigger>
             <TabsTrigger value="notes" className="font-brutalist uppercase tracking-wide text-xs">
               NOTES
@@ -473,6 +485,18 @@ const EventDetail = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="proposals">
+            <ProposalBuilder eventId={id!} headcount={event?.headcount} />
+          </TabsContent>
+
+          <TabsContent value="contracts">
+            <ContractPreview eventId={id!} />
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <InvoiceManager eventId={id!} />
           </TabsContent>
 
           <TabsContent value="notes">
