@@ -7,29 +7,41 @@ const sanitizeContentText = (content: string): string => {
     return '';
   }
 
-  return content
-    // Convert <br> and <br/> tags to line breaks
-    .replace(/<br\s*\/?>/gi, '\n')
-    // Convert <p> tags to line breaks (with double break for paragraphs)
+  // Normalise to prevent odd glyph combos
+  let txt = (content as any).normalize?.('NFC') ?? content;
+
+  txt = txt
+    // HTML -> text
+    .replace(/<br\s*\/?>(?![^]*<\/pre>)/gi, '\n')
     .replace(/<\/p>\s*<p[^>]*>/gi, '\n\n')
     .replace(/<\/?p[^>]*>/gi, '\n')
-    // Remove all other HTML tags
     .replace(/<[^>]*>/g, '')
-    // Convert HTML entities
+    // Entities
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
-    // Clean ASCII art characters that cause PDF encoding issues
+    // Smart punctuation to ASCII (keep £ intact)
+    .replace(/[“”„‟]/g, '"')
+    .replace(/[‘’‚‛]/g, "'")
+    .replace(/[–—]/g, '-')
+    .replace(/…/g, '...')
+    .replace(/[•·]/g, '- ')
+    // Box drawing and block chars -> safe markers
     .replace(/═+/g, '======')
     .replace(/─+/g, '------')
     .replace(/[█▓▒░]/g, '')
-    // Clean up excess whitespace
-    .replace(/\n\s*\n\s*\n/g, '\n\n') // Max 2 consecutive line breaks
-    .replace(/^\s+|\s+$/g, '') // Trim start and end
-    .replace(/[ \t]+/g, ' '); // Normalize spaces
+    // Strip control chars (except newline and tab)
+    .replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, '')
+    // Whitespace cleanup
+    .replace(/\r\n/g, '\n')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .replace(/^[ \t]+|[ \t]+$/gm, '')
+    .trim();
+
+  return txt.replace(/[ \t]+/g, ' ');
 };
 
 // Format contract content for PDF - similar to preview logic
@@ -254,55 +266,75 @@ async function createContractPDF(eventData: any, contractData: any, lineItems: a
     }
   };
 
-  // Load custom fonts
-  const loadGoogleFont = async (fontName: string, fontUrl: string) => {
-    try {
-      const response = await fetch(fontUrl);
-      const fontData = await response.arrayBuffer();
-      const base64Font = arrayBufferToBase64(fontData);
-      return base64Font;
-    } catch (e) {
-      console.warn(`Failed to load font ${fontName}:`, e);
-      return null;
-    }
-  };
-
-  // Create document
-  const doc = new jsPDF('p', 'mm', 'a4');
-  
-  // Load branded fonts
+// Load custom fonts (TTF)
+const loadTTFFont = async (label: string, url: string) => {
   try {
-    const oswaldRegular = await loadGoogleFont('Oswald-Regular', 'https://fonts.gstatic.com/s/oswald/v53/TK3_WkUHHAIjg75cFRf3bXL8LICs1_FvsUZiZQ.woff2');
-    const oswaldBold = await loadGoogleFont('Oswald-Bold', 'https://fonts.gstatic.com/s/oswald/v53/TK3_WkUHHAIjg75cFRf3bXL8LICs18NvsUZiZQ.woff2');
-    const workSansRegular = await loadGoogleFont('WorkSans-Regular', 'https://fonts.gstatic.com/s/worksans/v19/QGY_z_wNahGAdqQ43RhVcIgYvQA.woff2');
-    const workSansBold = await loadGoogleFont('WorkSans-Bold', 'https://fonts.gstatic.com/s/worksans/v19/QGY9z_wNahGAdqQ43Rh_ebrnlwyYfEPxPoGU3w.woff2');
-    
-    if (oswaldRegular) {
-      doc.addFileToVFS('Oswald-Regular.ttf', oswaldRegular);
-      doc.addFont('Oswald-Regular.ttf', 'Oswald', 'normal');
-    }
-    if (oswaldBold) {
-      doc.addFileToVFS('Oswald-Bold.ttf', oswaldBold);
-      doc.addFont('Oswald-Bold.ttf', 'Oswald', 'bold');
-    }
-    if (workSansRegular) {
-      doc.addFileToVFS('WorkSans-Regular.ttf', workSansRegular);
-      doc.addFont('WorkSans-Regular.ttf', 'WorkSans', 'normal');
-    }
-    if (workSansBold) {
-      doc.addFileToVFS('WorkSans-Bold.ttf', workSansBold);
-      doc.addFont('WorkSans-Bold.ttf', 'WorkSans', 'bold');
-    }
-    
-    console.log('✅ Custom fonts loaded successfully');
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`HTTP ${response.status} for ${label}`);
+    const fontData = await response.arrayBuffer();
+    const base64Font = arrayBufferToBase64(fontData);
+    return base64Font;
   } catch (e) {
-    console.warn('❌ Font loading failed, using system fonts:', e);
+    console.warn(`Failed to load font ${label}:`, e);
+    return null;
   }
-  const pageWidth = doc.internal.pageSize.width;
-  const pageHeight = doc.internal.pageSize.height;
-  const margin = 18;
-  const headerHeight = 34;
-  const footerHeight = 18;
+};
+
+// Create document
+const doc = new jsPDF('p', 'mm', 'a4');
+
+// Load branded fonts from Google Fonts GitHub (true TTF)
+try {
+  const [
+    oswaldRegular,
+    oswaldBold,
+    workSansRegular,
+    workSansBold,
+  ] = await Promise.all([
+    loadTTFFont('Oswald-Regular', 'https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald-Regular.ttf'),
+    loadTTFFont('Oswald-Bold', 'https://raw.githubusercontent.com/google/fonts/main/ofl/oswald/Oswald-Bold.ttf'),
+    loadTTFFont('WorkSans-Regular', 'https://raw.githubusercontent.com/google/fonts/main/ofl/worksans/WorkSans-Regular.ttf'),
+    loadTTFFont('WorkSans-Bold', 'https://raw.githubusercontent.com/google/fonts/main/ofl/worksans/WorkSans-Bold.ttf'),
+  ]);
+
+  if (oswaldRegular) {
+    doc.addFileToVFS('Oswald-Regular.ttf', oswaldRegular);
+    doc.addFont('Oswald-Regular.ttf', 'Oswald', 'normal');
+  }
+  if (oswaldBold) {
+    doc.addFileToVFS('Oswald-Bold.ttf', oswaldBold);
+    doc.addFont('Oswald-Bold.ttf', 'Oswald', 'bold');
+  }
+  if (workSansRegular) {
+    doc.addFileToVFS('WorkSans-Regular.ttf', workSansRegular);
+    doc.addFont('WorkSans-Regular.ttf', 'WorkSans', 'normal');
+  }
+  if (workSansBold) {
+    doc.addFileToVFS('WorkSans-Bold.ttf', workSansBold);
+    doc.addFont('WorkSans-Bold.ttf', 'WorkSans', 'bold');
+  }
+
+  console.log('✅ Custom TTF fonts loaded');
+  try {
+    // @ts-ignore
+    const fontList = (doc as any).getFontList ? (doc as any).getFontList() : {};
+    console.log('Font families registered:', Object.keys(fontList));
+  } catch (_) {}
+} catch (e) {
+  console.warn('❌ Font loading failed, using system fonts:', e);
+}
+
+// Set default font
+try {
+  doc.setFont('WorkSans', 'normal');
+} catch {
+  doc.setFont('helvetica', 'normal');
+}
+const pageWidth = doc.internal.pageSize.width;
+const pageHeight = doc.internal.pageSize.height;
+const margin = 18;
+const headerHeight = 34;
+const footerHeight = 18;
 
   const currentDate = new Date().toLocaleDateString('en-GB');
   const contractRef = eventData.code || String(eventData.id || '').slice(0, 8);
@@ -408,6 +440,7 @@ async function createContractPDF(eventData: any, contractData: any, lineItems: a
   const maxY = pageHeight - footerHeight - 60; // Leave space for signatures
 
   const formattedContent = formatContractContent(contractData.content);
+  try { console.log('Cleaned content sample:', sanitizeContentText(contractData.content).slice(0, 120)); } catch (_) {}
   
   for (const contentBlock of formattedContent) {
     // Check if we need a new page
@@ -424,22 +457,54 @@ async function createContractPDF(eventData: any, contractData: any, lineItems: a
       continue;
     }
 
+    // Handle divider blocks specially
+    if (contentBlock.type === 'major-divider') {
+      if (y > maxY - 12) {
+        doc.addPage();
+        const pageNum = doc.getNumberOfPages();
+        drawHeaderFooter(pageNum);
+        y = margin + headerHeight + 8;
+      }
+      const title = (contentBlock.content || '').trim();
+      if (title) {
+        try { doc.setFont('Oswald', 'bold'); } catch { doc.setFont('helvetica', 'bold'); }
+        doc.setFontSize(12);
+        doc.text(title, pageWidth / 2, y, { align: 'center' });
+        y += 6;
+      }
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.8);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 6;
+      continue;
+    }
+
+    if (contentBlock.type === 'minor-divider') {
+      if (y > maxY - 8) {
+        doc.addPage();
+        const pageNum = doc.getNumberOfPages();
+        drawHeaderFooter(pageNum);
+        y = margin + headerHeight + 8;
+      }
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.4);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 4;
+      continue;
+    }
+
     // Set font based on content type
     try {
       switch (contentBlock.type) {
-        case 'major-divider':
-          doc.setFont('Oswald', 'bold');
-          break;
-        case 'minor-divider':
         case 'numbered-section':
         case 'label':
           doc.setFont('WorkSans', 'bold');
           break;
+        case 'body':
         default:
           doc.setFont('WorkSans', 'normal');
       }
     } catch {
-      // Fallback to helvetica if custom fonts fail
       if (contentBlock.fontStyle === 'bold') {
         doc.setFont('helvetica', 'bold');
       } else {
@@ -448,13 +513,6 @@ async function createContractPDF(eventData: any, contractData: any, lineItems: a
     }
     
     doc.setFontSize(contentBlock.fontSize);
-
-    // Add extra spacing for major sections
-    if (contentBlock.type === 'major-divider') {
-      y += 6;
-    } else if (contentBlock.type === 'minor-divider') {
-      y += 4;
-    }
 
     // Split long lines and render
     const splitLines = doc.splitTextToSize(contentBlock.content, pageWidth - margin * 2);
@@ -467,15 +525,12 @@ async function createContractPDF(eventData: any, contractData: any, lineItems: a
         drawHeaderFooter(pageNum);
         y = margin + headerHeight + 8;
       }
-      
       doc.text(splitLine, margin, y);
       y += lineHeight;
     }
-    
-    // Add extra spacing after sections
-    if (contentBlock.type === 'major-divider') {
-      y += 3;
-    } else if (contentBlock.type === 'minor-divider' || contentBlock.type === 'numbered-section') {
+
+    // Extra spacing after sections
+    if (contentBlock.type === 'numbered-section') {
       y += 2;
     }
   }
