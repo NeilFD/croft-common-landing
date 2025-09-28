@@ -55,10 +55,10 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
 
   // Fetch line items for totals calculation
   const { data: lineItems } = useQuery({
-    queryKey: ['event-line-items', eventId],
+    queryKey: ['management-event-line-items', eventId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('event_line_items')
+        .from('management_event_line_items')
         .select('*')
         .eq('event_id', eventId)
         .order('sort_order');
@@ -444,13 +444,42 @@ export const ContractPreview: React.FC<ContractPreviewProps> = ({ eventId }) => 
               </div>
 
               {/* Contract Document Display */}
-              <div className="p-8 bg-white">
+              <div className="p-8 bg-gradient-to-br from-white via-muted/10 to-muted/20">
                 <div className="max-w-4xl mx-auto">
-                  <div className="contract-content bg-white border border-concrete/30 rounded-lg shadow-sm">
+                  <div className="contract-content bg-white border-2 border-primary/10 rounded-xl shadow-xl overflow-hidden">
+                    {/* Contract Header with Logo */}
+                    <div className="bg-gradient-to-r from-primary to-secondary text-primary-foreground p-8 text-center relative">
+                      <div className="absolute top-4 left-4">
+                        <img 
+                          src={BRAND_LOGO} 
+                          alt="Croft Common Logo" 
+                          className="w-12 h-12 object-contain opacity-90"
+                          onError={(e) => {
+                            const target = e.currentTarget as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                      <h1 className="text-3xl font-brutalist font-black tracking-wider">CROFT COMMON</h1>
+                      <p className="text-lg font-industrial tracking-wide opacity-90">EVENT SERVICES CONTRACT</p>
+                      <div className="mt-4 text-sm opacity-80">
+                        <p>Unit 1-3, Croft Court, 48 Croft Street, London SE8 4EX</p>
+                        <p>hello@thehive-hospitality.com • www.croftcommontest.com</p>
+                      </div>
+                    </div>
+                    
+                    {/* Contract Content */}
                     <div className="p-8 lg:p-12">
-                      <pre className="whitespace-pre-wrap text-sm leading-relaxed font-mono tracking-tight text-charcoal">
+                      <div 
+                        className="contract-text leading-relaxed text-sm"
+                        style={{
+                          fontFamily: 'Monaco, Menlo, "Ubuntu Mono", monospace',
+                          whiteSpace: 'pre-wrap',
+                          lineHeight: '1.6'
+                        }}
+                      >
                         {formatContractContent(contractData.content)}
-                      </pre>
+                      </div>
                     </div>
                   </div>
                 </div>
