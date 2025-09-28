@@ -84,7 +84,7 @@ const handler = async (req: Request): Promise<Response> => {
       console.log('✅ Audience ID obtained:', audienceId)
     } catch (audienceError) {
       console.error('❌ Failed to get/create audience:', audienceError)
-      throw new Error(`Audience creation failed: ${audienceError.message}`)
+      throw new Error(`Audience creation failed: ${(audienceError instanceof Error ? audienceError.message : String(audienceError))}`)
     }
     
     const { email, name, phone, birthday, interests, consent_given, consent_timestamp, action = 'upsert' } = requestBody;

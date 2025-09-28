@@ -180,7 +180,7 @@ serve(async (req: Request) => {
 
   } catch (error: any) {
     console.error('Error in process-receipt-streak:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error instanceof Error ? error.message : String(error)) }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -385,10 +385,10 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
   const { data: currentWeekBoundaries } = await supabase.rpc('get_current_week_boundaries');
   // Fix property access - get_current_week_boundaries returns an array
   const currentWeekStartDate = currentWeekBoundaries?.[0]?.week_start;
-  const currentWeek = weekStats?.find(w => w.week_start_date === currentWeekStartDate);
+  const currentWeek = weekStats?.find((w: any) => w.week_start_date === currentWeekStartDate);
 
-  const totalWeeksCompleted = weekStats?.filter(w => w.is_complete).length || 0;
-  const totalSetsCompleted = setStats?.filter(s => s.is_complete).length || 0;
+  const totalWeeksCompleted = weekStats?.filter((w: any) => w.is_complete).length || 0;
+  const totalSetsCompleted = setStats?.filter((s: any) => s.is_complete).length || 0;
   const currentSetProgress = setStats?.[0]?.completed_weeks || 0;
   const currentWeekReceipts = currentWeek?.receipt_count || 0;
   const totalCheckIns = checkInStats?.length || 0;
@@ -396,7 +396,7 @@ async function updateMemberStreaksSummary(supabase: any, userId: string) {
   // Calculate longest consecutive weeks
   let longestConsecutive = 0;
   let currentConsecutive = 0;
-  const sortedWeeks = weekStats?.sort((a, b) => new Date(a.week_start_date).getTime() - new Date(b.week_start_date).getTime()) || [];
+  const sortedWeeks = weekStats?.sort((a: any, b: any) => new Date(a.week_start_date).getTime() - new Date(b.week_start_date).getTime()) || [];
   
   for (let i = 0; i < sortedWeeks.length; i++) {
     if (sortedWeeks[i].is_complete) {
@@ -444,8 +444,8 @@ async function checkAndAwardBadges(supabase: any, userId: string) {
     .select('*')
     .eq('user_id', userId);
 
-  const completedWeeks = weekStats?.filter(w => w.is_complete).length || 0;
-  const completedSets = setStats?.filter(s => s.is_complete).length || 0;
+  const completedWeeks = weekStats?.filter((w: any) => w.is_complete).length || 0;
+  const completedSets = setStats?.filter((s: any) => s.is_complete).length || 0;
 
   const badges = [];
 

@@ -39,7 +39,7 @@ serve(async (req) => {
       console.log("✅ webpush imported successfully");
     } catch (webpushError) {
       console.error("❌ webpush import failed:", webpushError);
-      return new Response(JSON.stringify({ error: `webpush import failed: ${webpushError.message}` }), {
+      return new Response(JSON.stringify({ error: `webpush import failed: ${(webpushError instanceof Error ? webpushError.message : String(webpushError))}` }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders }
       });
@@ -52,7 +52,7 @@ serve(async (req) => {
       console.log("✅ VAPID details set successfully");
     } catch (vapidError) {
       console.error("❌ VAPID configuration failed:", vapidError);
-      return new Response(JSON.stringify({ error: `VAPID configuration failed: ${vapidError.message}` }), {
+      return new Response(JSON.stringify({ error: `VAPID configuration failed: ${(vapidError instanceof Error ? vapidError.message : String(vapidError))}` }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders }
       });
@@ -94,7 +94,7 @@ serve(async (req) => {
       console.log("✅ Database query successful");
     } catch (dbError) {
       console.error("❌ Database connection failed:", dbError);
-      return new Response(JSON.stringify({ error: `Database connection failed: ${dbError.message}` }), {
+      return new Response(JSON.stringify({ error: `Database connection failed: ${(dbError instanceof Error ? dbError.message : String(dbError))}` }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders }
       });

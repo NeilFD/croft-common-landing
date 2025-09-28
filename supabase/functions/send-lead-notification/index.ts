@@ -48,7 +48,7 @@ const handler = async (req: Request): Promise<Response> => {
       .eq('setting_key', 'leads_notify_recipients')
       .single();
 
-    const recipients = settings?.setting_value?.split(',').map(email => email.trim()) || ['neil@thehive-hospitality.com'];
+    const recipients = settings?.setting_value?.split(',').map((email: string) => email.trim()) || ['neil@thehive-hospitality.com'];
 
     // Format the subject line
     let subject = `New enquiry: ${leadData.first_name} ${leadData.last_name}`;

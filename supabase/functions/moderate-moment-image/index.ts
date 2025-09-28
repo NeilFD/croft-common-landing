@@ -273,7 +273,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Moderation system error',
-        details: error.message,
+        details: (error instanceof Error ? error.message : String(error)),
         status: 'needs_review'
       }),
       { 

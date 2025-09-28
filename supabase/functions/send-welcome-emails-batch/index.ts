@@ -61,7 +61,7 @@ const handler = async (req: Request): Promise<Response> => {
       try {
         // Check if user exists and is verified in auth
         const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(
-          await getUserIdByEmail(supabase, subscriber.email)
+          await getUserIdByEmail(supabase, subscriber.email as string)
         );
 
         if (userError || !user) {
@@ -131,7 +131,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error) {
     console.error('❌ Batch welcome email job failed:', error);
     return new Response(JSON.stringify({ 
-      error: error.message || 'Unknown error occurred' 
+      error: (error instanceof Error ? error.message : 'Unknown error occurred') 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
