@@ -16,6 +16,7 @@ import { BookingsList } from '@/components/management/BookingsList';
 import { EventNotesTab } from '@/components/management/EventNotesTab';
 import { LateCloseTab } from '@/components/management/LateCloseTab';
 import { EditEventDialog } from '@/components/management/EditEventDialog';
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -134,32 +135,55 @@ const EventDetail = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setShowEditEvent(true)}
-              variant="outline"
-              className="font-brutalist uppercase tracking-wide border-industrial"
-            >
-              <Edit className="h-4 w-4 mr-2" />
-              EDIT EVENT
-            </Button>
-            
-            {event.status === 'draft' && (
-              <Button
-                onClick={() => handleStatusUpdate('active')}
-                variant="outline"
-                className="font-brutalist uppercase tracking-wide border-industrial"
-              >
-                ACTIVATE
-              </Button>
-            )}
-            
-            <Button
-              onClick={() => setShowCreateHold(true)}
-              className="btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              ADD SPACE BOOKING
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setShowEditEvent(true)}
+                    variant="outline"
+                    className="font-brutalist uppercase tracking-wide border-industrial"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    EDIT EVENT
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Modify event details such as name, type, dates, and other event information</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              {event.status === 'draft' && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      onClick={() => handleStatusUpdate('active')}
+                      variant="outline"
+                      className="font-brutalist uppercase tracking-wide border-industrial"
+                    >
+                      ACTIVATE
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Change event status from draft to active. This confirms the event and makes it visible to operations teams</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => setShowCreateHold(true)}
+                    className="btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    ADD SPACE BOOKING
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Create a new space booking for this event. Each booking reserves a specific time slot in a venue space</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
 
