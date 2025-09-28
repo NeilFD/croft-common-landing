@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Calendar, Users, Building, Search, Filter } from 'lucide-react';
+import { Plus, Calendar, Users, Building, Search, Filter, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { CreateEventDialog } from '@/components/management/CreateEventDialog';
@@ -79,12 +79,20 @@ const EventsList = () => {
   return (
     <ManagementLayout>
       <div className="space-y-4 md:space-y-6 p-3 md:p-6 overflow-x-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">EVENTS</h1>
-            <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-              Manage multi-space events and bookings
-            </p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3 md:gap-4">
+            <Button variant="ghost" size="sm" asChild className="font-industrial">
+              <Link to="/management/spaces" className="flex items-center space-x-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span>Back</span>
+              </Link>
+            </Button>
+            <div>
+              <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">EVENTS</h1>
+              <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+                Manage multi-space events and bookings
+              </p>
+            </div>
           </div>
           
           <Button 
