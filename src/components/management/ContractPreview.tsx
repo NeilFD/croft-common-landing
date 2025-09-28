@@ -524,8 +524,8 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                           }}
                         />
                       </div>
-                      <h1 className="text-3xl font-black tracking-wider mb-2">CROFT COMMON</h1>
-                      <p className="text-lg opacity-90 tracking-wide">EVENT SERVICES CONTRACT</p>
+                      <h1 className="font-brutalist text-3xl font-black tracking-wider mb-2">CROFT COMMON</h1>
+                      <p className="font-brutalist text-lg opacity-90 tracking-wide uppercase">EVENT SERVICES CONTRACT</p>
                     </div>
 
                     {/* Contract Content */}
