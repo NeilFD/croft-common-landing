@@ -266,7 +266,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
       if (!response?.proposalCode) return;
 
       // Create clean proposal URL
-      const proposalUrl = `https://www.croftcommontest.com/functions/v1/proposal-redirect/${response.proposalCode}`;
+      const proposalUrl = `https://www.croftcommontest.com/proposal/${response.proposalCode}`;
 
       // Open mailto link with proposal details
       const subject = `Event Proposal - ${eventDetails?.code || eventId}`;
@@ -320,7 +320,7 @@ Web: www.croftcommontest.com`;
       if (!response?.proposalCode) return;
 
       // Create clean proposal URL
-      const proposalUrl = `https://www.croftcommontest.com/functions/v1/proposal-redirect/${response.proposalCode}`;
+      const proposalUrl = `https://www.croftcommontest.com/proposal/${response.proposalCode}`;
 
       const message = `Hi! Here's your event proposal for ${eventDetails?.event_type || 'your event'} on ${eventDetails?.primary_date ? new Date(eventDetails.primary_date).toLocaleDateString('en-GB') : 'TBC'}.
 

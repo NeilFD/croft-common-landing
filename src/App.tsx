@@ -41,6 +41,7 @@ const CommonGoodMessage = lazy(() => import("./pages/CommonGoodMessage"));
 const ClickRedirect = lazy(() => import("./pages/ClickRedirect"));
 const CroftCommonDateTime = lazy(() => import("./pages/CroftCommonDateTime"));
 const Book = lazy(() => import("./pages/Book"));
+const ProposalRedirect = lazy(() => import("./pages/ProposalRedirect"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminMemberAnalytics = lazy(() => import("./pages/AdminMemberAnalytics"));
 const EnhancedAdminMemberAnalytics = lazy(() => import("./pages/EnhancedAdminMemberAnalytics"));
@@ -297,6 +298,7 @@ const App = () => {
                        
                        <Route path="/c/:token" element={<ClickRedirect />} />
                        <Route path="/from-notification" element={<Index />} />
+                       <Route path="/proposal/:code" element={<ProposalRedirect />} />
                        <Route path="*" element={<NotFound />} />
                       </Routes>
                     </Suspense>
