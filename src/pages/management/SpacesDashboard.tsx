@@ -3,7 +3,7 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Calendar, BarChart3 } from 'lucide-react';
+import { Building2, Users, Calendar, CalendarDays, BarChart3 } from 'lucide-react';
 
 const SpacesDashboard = () => {
   const { managementUser } = useManagementAuth();
@@ -22,6 +22,13 @@ const SpacesDashboard = () => {
       icon: Calendar,
       href: '/management/spaces/calendar',
       stats: 'Event calendar'
+    },
+    {
+      title: 'EVENTS',
+      description: 'Multi-space event management',
+      icon: CalendarDays,
+      href: '/management/events',
+      stats: 'Event coordination'
     },
     {
       title: 'LEADS',
