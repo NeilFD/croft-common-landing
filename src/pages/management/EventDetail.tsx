@@ -75,9 +75,29 @@ const EventDetail = () => {
     enabled: !!(event as any)?.lead_id
   });
 
-  const clientName = (event as any)?.client_name ?? (linkedLead ? `${linkedLead.first_name} ${linkedLead.last_name}` : null);
-  const clientEmail = (event as any)?.client_email ?? linkedLead?.email ?? null;
-  const clientPhone = (event as any)?.client_phone ?? linkedLead?.phone ?? null;
+  // Heuristic fallback: try match a lead by preferred_date and type when no explicit link exists
+  const { data: derivedLead } = useQuery({
+    queryKey: ['lead-derived', id, event?.primary_date, event?.event_type, event?.headcount],
+    queryFn: async () => {
+      if (!event) return null;
+      let query = supabase
+        .from('leads')
+        .select('id, first_name, last_name, email, phone')
+        .eq('preferred_date', event.primary_date)
+        .eq('event_type', event.event_type)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const { data, error } = await query;
+      if (error) return null; // silent fallback
+      return data;
+    },
+    enabled: !!event && !(event as any)?.client_email && !!event.primary_date && !!event.event_type
+  });
+
+  const clientName = (event as any)?.client_name ?? (linkedLead ? `${linkedLead.first_name} ${linkedLead.last_name}` : (derivedLead ? `${derivedLead.first_name} ${derivedLead.last_name}` : null));
+  const clientEmail = (event as any)?.client_email ?? linkedLead?.email ?? derivedLead?.email ?? null;
+  const clientPhone = (event as any)?.client_phone ?? linkedLead?.phone ?? derivedLead?.phone ?? null;
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!id) return;
