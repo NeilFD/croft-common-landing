@@ -13,13 +13,11 @@ import { useToast } from '@/hooks/use-toast';
 
 interface LineItem {
   id?: string;
-  type: 'room' | 'menu' | 'addon' | 'discount' | 'service' | 'tax';
+  type: 'room' | 'menu' | 'addon' | 'discount';
   description: string;
   qty: number;
-  unit_price: number;
+  unit_price: number; // VAT-inclusive (gross) price
   per_person: boolean;
-  tax_rate_pct?: number;
-  service_charge_pct?: number;
   sort_order: number;
 }
 
@@ -37,11 +35,13 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
       type: 'room',
       description: 'Event Space Hire',
       qty: 1,
-      unit_price: 500,
+      unit_price: 600, // VAT-inclusive price (£500 + 20% VAT)
       per_person: false,
       sort_order: 0
     }
   ]);
+  
+  const [serviceChargePct, setServiceChargePct] = useState<number>(0);
 
   // Fetch existing line items
   const { data: existingItems } = useQuery({
@@ -67,8 +67,6 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
         qty: item.qty,
         unit_price: parseFloat(item.unit_price?.toString() || '0'),
         per_person: item.per_person,
-        tax_rate_pct: item.tax_rate_pct ? parseFloat(item.tax_rate_pct.toString()) : undefined,
-        service_charge_pct: item.service_charge_pct ? parseFloat(item.service_charge_pct.toString()) : undefined,
         sort_order: item.sort_order
       })));
     }
@@ -85,10 +83,9 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
           qty: item.qty,
           unit_price: item.unit_price,
           per_person: item.per_person,
-          tax_rate_pct: item.tax_rate_pct,
-          service_charge_pct: item.service_charge_pct,
           sort_order: item.sort_order
-        }))
+        })),
+        p_service_charge_pct: serviceChargePct
       });
       
       if (error) throw error;
@@ -131,26 +128,43 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
     setLineItems(newItems);
   };
 
-  const calculateLineTotal = (item: LineItem) => {
-    const baseAmount = item.qty * item.unit_price * (item.per_person ? headcount : 1);
-    const serviceCharge = item.service_charge_pct ? baseAmount * (item.service_charge_pct / 100) : 0;
-    const tax = item.tax_rate_pct ? (baseAmount + serviceCharge) * (item.tax_rate_pct / 100) : 0;
-    return baseAmount + serviceCharge + tax;
+  // Calculate net amount from VAT-inclusive price
+  const calculateLineNet = (item: LineItem) => {
+    const grossAmount = item.qty * item.unit_price * (item.per_person ? headcount : 1);
+    // For VAT-inclusive pricing, net = gross / 1.2
+    return grossAmount / 1.2;
   };
 
-  const subtotal = lineItems.reduce((sum, item) => {
-    if (item.type === 'discount') return sum - calculateLineTotal(item);
-    return sum + calculateLineTotal(item);
+  const calculateLineVat = (item: LineItem) => {
+    const grossAmount = item.qty * item.unit_price * (item.per_person ? headcount : 1);
+    const netAmount = calculateLineNet(item);
+    return grossAmount - netAmount;
+  };
+
+  const calculateLineTotal = (item: LineItem) => {
+    return item.qty * item.unit_price * (item.per_person ? headcount : 1);
+  };
+
+  // Calculate totals
+  const netSubtotal = lineItems.reduce((sum, item) => {
+    if (item.type === 'discount') return sum - calculateLineNet(item);
+    return sum + calculateLineNet(item);
   }, 0);
+
+  const vatTotal = lineItems.reduce((sum, item) => {
+    if (item.type === 'discount') return sum - calculateLineVat(item);
+    return sum + calculateLineVat(item);
+  }, 0);
+
+  const serviceChargeAmount = netSubtotal * (serviceChargePct / 100);
+  const grandTotal = netSubtotal + vatTotal + serviceChargeAmount;
 
   const getTypeColor = (type: LineItem['type']) => {
     const colors = {
       room: 'bg-primary text-primary-foreground',
       menu: 'bg-emerald-500 text-white',
       addon: 'bg-blue-500 text-white',
-      discount: 'bg-red-500 text-white',
-      service: 'bg-orange-500 text-white',
-      tax: 'bg-gray-500 text-white'
+      discount: 'bg-red-500 text-white'
     };
     return colors[type] || 'bg-gray-500 text-white';
   };
@@ -198,8 +212,6 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                       <SelectItem value="menu">Menu Package</SelectItem>
                       <SelectItem value="addon">Add-on</SelectItem>
                       <SelectItem value="discount">Discount</SelectItem>
-                      <SelectItem value="service">Service Charge</SelectItem>
-                      <SelectItem value="tax">Tax</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -226,9 +238,11 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor={`price-${index}`}>Unit Price (£)</Label>
+                  <Label htmlFor={`price-${index}`}>
+                    Gross Price (£) <span className="text-sm text-muted-foreground">(inc. VAT)</span>
+                  </Label>
                   <Input
                     id={`price-${index}`}
                     type="number"
@@ -248,37 +262,18 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
                   <Label htmlFor={`per-person-${index}`}>Per Person</Label>
                 </div>
 
-                <div>
-                  <Label htmlFor={`service-${index}`}>Service %</Label>
-                  <Input
-                    id={`service-${index}`}
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    value={item.service_charge_pct || ''}
-                    onChange={(e) => updateLineItem(index, { service_charge_pct: parseFloat(e.target.value) || undefined })}
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor={`tax-${index}`}>Tax %</Label>
-                  <Input
-                    id={`tax-${index}`}
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="100"
-                    value={item.tax_rate_pct || ''}
-                    onChange={(e) => updateLineItem(index, { tax_rate_pct: parseFloat(e.target.value) || undefined })}
-                  />
-                </div>
-
                 <div className="flex items-end">
-                  <div className="text-right">
-                    <Label>Line Total</Label>
-                    <div className="font-bold text-lg">
-                      £{calculateLineTotal(item).toFixed(2)}
+                  <div className="text-right w-full">
+                    <div className="space-y-1">
+                      <div className="text-sm text-muted-foreground">
+                        Net: £{calculateLineNet(item).toFixed(2)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        VAT: £{calculateLineVat(item).toFixed(2)}
+                      </div>
+                      <div className="font-bold text-lg">
+                        Total: £{calculateLineTotal(item).toFixed(2)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -301,14 +296,40 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="space-y-2 text-lg">
-            <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span className="font-bold">£{subtotal.toFixed(2)}</span>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="service-charge">Service Charge (%)</Label>
+              <Input
+                id="service-charge"
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                value={serviceChargePct}
+                onChange={(e) => setServiceChargePct(parseFloat(e.target.value) || 0)}
+                className="w-32"
+              />
             </div>
-            <div className="border-t-2 border-black pt-2 flex justify-between text-xl font-bold">
-              <span>GRAND TOTAL:</span>
-              <span>£{subtotal.toFixed(2)}</span>
+            
+            <div className="space-y-2 text-lg">
+              <div className="flex justify-between">
+                <span>Net Subtotal:</span>
+                <span className="font-bold">£{netSubtotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>VAT (20%):</span>
+                <span className="font-bold">£{vatTotal.toFixed(2)}</span>
+              </div>
+              {serviceChargePct > 0 && (
+                <div className="flex justify-between">
+                  <span>Service Charge ({serviceChargePct}%):</span>
+                  <span className="font-bold">£{serviceChargeAmount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="border-t-2 border-black pt-2 flex justify-between text-xl font-bold">
+                <span>GRAND TOTAL:</span>
+                <span>£{grandTotal.toFixed(2)}</span>
+              </div>
             </div>
           </div>
           

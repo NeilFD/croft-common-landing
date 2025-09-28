@@ -935,7 +935,6 @@ export type Database = {
           id: string
           per_person: boolean | null
           qty: number | null
-          service_charge_pct: number | null
           sort_order: number | null
           tax_rate_pct: number | null
           type: string
@@ -949,7 +948,6 @@ export type Database = {
           id?: string
           per_person?: boolean | null
           qty?: number | null
-          service_charge_pct?: number | null
           sort_order?: number | null
           tax_rate_pct?: number | null
           type: string
@@ -963,7 +961,6 @@ export type Database = {
           id?: string
           per_person?: boolean | null
           qty?: number | null
-          service_charge_pct?: number | null
           sort_order?: number | null
           tax_rate_pct?: number | null
           type?: string
@@ -995,6 +992,7 @@ export type Database = {
           management_token: string
           organizer: string
           price: number | null
+          service_charge_pct: number | null
           time: string
           title: string
           updated_at: string
@@ -1014,6 +1012,7 @@ export type Database = {
           management_token: string
           organizer: string
           price?: number | null
+          service_charge_pct?: number | null
           time: string
           title: string
           updated_at?: string
@@ -1033,6 +1032,7 @@ export type Database = {
           management_token?: string
           organizer?: string
           price?: number | null
+          service_charge_pct?: number | null
           time?: string
           title?: string
           updated_at?: string
@@ -1721,6 +1721,7 @@ export type Database = {
           notes: string | null
           owner_id: string | null
           primary_date: string | null
+          service_charge_pct: number | null
           status: string
           updated_at: string | null
         }
@@ -1741,6 +1742,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string | null
           primary_date?: string | null
+          service_charge_pct?: number | null
           status?: string
           updated_at?: string | null
         }
@@ -1761,6 +1763,7 @@ export type Database = {
           notes?: string | null
           owner_id?: string | null
           primary_date?: string | null
+          service_charge_pct?: number | null
           status?: string
           updated_at?: string | null
         }
@@ -3916,7 +3919,9 @@ export type Database = {
         Returns: string
       }
       create_proposal: {
-        Args: { p_event_id: string; p_items: Json }
+        Args:
+          | { p_event_id: string; p_items: Json }
+          | { p_event_id: string; p_items: Json; p_service_charge_pct?: number }
         Returns: {
           line_items_created: number
           proposal_id: string
