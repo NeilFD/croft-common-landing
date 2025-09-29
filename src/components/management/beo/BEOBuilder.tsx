@@ -84,12 +84,12 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="menu" className="font-['Work_Sans']">Menu</TabsTrigger>
-          <TabsTrigger value="staffing" className="font-['Work_Sans']">Staffing</TabsTrigger>
-          <TabsTrigger value="schedule" className="font-['Work_Sans']">Schedule</TabsTrigger>
-          <TabsTrigger value="layout" className="font-['Work_Sans']">Layout</TabsTrigger>
-          <TabsTrigger value="equipment" className="font-['Work_Sans']">Equipment</TabsTrigger>
-          <TabsTrigger value="contacts" className="font-['Work_Sans']">Contacts</TabsTrigger>
-          <TabsTrigger value="costs" className="font-['Work_Sans']">Costs</TabsTrigger>
+          <TabsTrigger value="staffing" className="font-['Work_Sans']">Staff</TabsTrigger>
+          <TabsTrigger value="schedule" className="font-['Work_Sans']">Time</TabsTrigger>
+          <TabsTrigger value="layout" className="font-['Work_Sans']">Room</TabsTrigger>
+          <TabsTrigger value="equipment" className="font-['Work_Sans']">Kit</TabsTrigger>
+          <TabsTrigger value="contacts" className="font-['Work_Sans']">People</TabsTrigger>
+          <TabsTrigger value="costs" className="font-['Work_Sans']">£</TabsTrigger>
         </TabsList>
 
         <TabsContent value="menu" className="space-y-4">
