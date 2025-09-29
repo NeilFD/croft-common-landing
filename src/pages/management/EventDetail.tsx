@@ -21,6 +21,8 @@ import { ProposalBuilder } from '@/components/management/ProposalBuilder';
 import { ContractPreview } from '@/components/management/ContractPreview';
 import { InvoiceManager } from '@/components/management/InvoiceManager';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
+import { BEOBuilder } from '@/components/management/beo/BEOBuilder';
+import { BEOVersions } from '@/components/management/beo/BEOVersions';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -352,7 +354,7 @@ const EventDetail = () => {
 
         {/* Event Details Tabs */}
         <Tabs defaultValue="bookings" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-7 bg-[hsl(var(--muted))] border border-industrial">
+          <TabsList className="grid w-full grid-cols-8 bg-[hsl(var(--muted))] border border-industrial">
             <TabsTrigger value="bookings" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <Calendar className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">BOOKINGS</span>
@@ -387,6 +389,11 @@ const EventDetail = () => {
               <Clock className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">LATE CLOSE</span>
               <span className="md:hidden">LATE</span>
+            </TabsTrigger>
+            <TabsTrigger value="beo" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <FileText className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">BEO</span>
+              <span className="md:hidden">BEO</span>
             </TabsTrigger>
           </TabsList>
 
@@ -549,6 +556,39 @@ const EventDetail = () => {
 
           <TabsContent value="late-close">
             <LateCloseTab event={event} />
+          </TabsContent>
+
+          <TabsContent value="beo">
+            <div className="space-y-6">
+              <div className="bg-muted p-4 rounded-lg border border-industrial">
+                <p className="font-industrial text-sm text-muted-foreground">
+                  The Banquet Event Order (BEO) is a comprehensive document that outlines all operational details 
+                  for your event including menu, staffing, schedule, room layouts, and equipment requirements.
+                </p>
+              </div>
+              
+              <Tabs defaultValue="builder" className="space-y-4">
+                <TabsList className="grid w-full grid-cols-2 bg-[hsl(var(--muted))]">
+                  <TabsTrigger value="builder" className="font-brutalist uppercase tracking-wide text-xs">
+                    BEO Builder
+                  </TabsTrigger>
+                  <TabsTrigger value="versions" className="font-brutalist uppercase tracking-wide text-xs">
+                    Generated Versions
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="builder">
+                  <BEOBuilder 
+                    eventId={id!} 
+                    eventData={event}
+                  />
+                </TabsContent>
+                
+                <TabsContent value="versions">
+                  <BEOVersions eventId={id!} />
+                </TabsContent>
+              </Tabs>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
