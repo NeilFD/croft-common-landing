@@ -32,7 +32,8 @@ import {
   BarChart3,
   Users,
   Calendar,
-  CalendarDays
+  CalendarDays,
+  Bot
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -42,6 +43,13 @@ const managementModules = [
     path: '/management',
     icon: Home,
     exactMatch: true
+  },
+  {
+    name: 'AI Assistant',
+    path: '/management/ai-assistant',
+    icon: Bot,
+    exactMatch: false,
+    badge: 'NEW'
   }
 ];
 
@@ -202,9 +210,16 @@ export const ManagementSidebar = () => {
                                 asChild
                                 className={getNavClass(isActive(module.path, module.exactMatch))}
                               >
-                                <NavLink to={module.path} className="font-industrial">
-                                  <module.icon className="mr-2 h-4 w-4" />
-                                  {module.name}
+                                <NavLink to={module.path} className="font-industrial flex items-center justify-between w-full">
+                                  <span className="flex items-center">
+                                    <module.icon className="mr-2 h-4 w-4" />
+                                    {module.name}
+                                  </span>
+                                  {module.badge && (
+                                    <span className="ml-auto text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                                      {module.badge}
+                                    </span>
+                                  )}
                                 </NavLink>
                               </SidebarMenuButton>
                             </TooltipTrigger>

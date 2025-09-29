@@ -76,6 +76,7 @@ import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
 // Management system components
 const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
+const ManagementAIAssistant = lazy(() => import("./pages/management/ManagementAIAssistant"));
 const SpacesDashboard = lazy(() => import("./pages/management/SpacesDashboard"));
 const VenuesList = lazy(() => import("./pages/management/VenuesList"));
 const SpaceForm = lazy(() => import("./pages/management/SpaceForm"));
@@ -273,6 +274,7 @@ const App = () => {
                         {/* Management Routes */}
                         <Route path="/management/login" element={<ManagementLogin />} />
                         <Route path="/management" element={<ManagementDashboard />} />
+                        <Route path="/management/ai-assistant" element={<ManagementAIAssistant />} />
                         
                         {/* Spaces Event Management System */}
                         <Route path="/management/spaces" element={<SpacesDashboard />} />
