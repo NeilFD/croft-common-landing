@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Bot, User } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 interface AIMessageBubbleProps {
   role: 'user' | 'assistant';
@@ -32,7 +33,9 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
               : 'bg-background'
           )}
         >
-          <p className="text-sm whitespace-pre-wrap font-industrial">{content}</p>
+          <div className="text-sm font-industrial prose prose-sm max-w-none prose-headings:font-brutalist prose-strong:text-foreground prose-em:text-foreground">
+            <ReactMarkdown>{content}</ReactMarkdown>
+          </div>
         </div>
         <span className="text-xs text-muted-foreground">
           {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

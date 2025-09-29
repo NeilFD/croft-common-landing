@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,8 +19,16 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build comprehensive system prompt based on user role and context
-    const systemPrompt = buildSystemPrompt(context);
+    // Initialize Supabase client with service role key
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch real data from database based on user's role
+    const realData = await fetchRealData(supabase, context?.user?.role);
+
+    // Build comprehensive system prompt with REAL data
+    const systemPrompt = buildSystemPrompt(context, realData);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -70,10 +79,70 @@ serve(async (req) => {
   }
 });
 
-function buildSystemPrompt(context: any): string {
+async function fetchRealData(supabase: any, userRole: string) {
+  try {
+    // Fetch events
+    const { data: events, error: eventsError } = await supabase
+      .from('management_events')
+      .select('id, title, event_type, event_date, status, attendee_count')
+      .order('event_date', { ascending: true })
+      .limit(50);
+
+    // Fetch spaces
+    const { data: spaces, error: spacesError } = await supabase
+      .from('spaces')
+      .select('id, name, capacity, venue_type')
+      .limit(20);
+
+    // Fetch leads
+    const { data: leads, error: leadsError } = await supabase
+      .from('management_leads')
+      .select('id, client_name, status, contact_date, estimated_value')
+      .order('contact_date', { ascending: false })
+      .limit(30);
+
+    // Fetch bookings
+    const { data: bookings, error: bookingsError } = await supabase
+      .from('bookings')
+      .select('id, title, start_ts, end_ts, status')
+      .order('start_ts', { ascending: true })
+      .limit(30);
+
+    return {
+      events: events || [],
+      spaces: spaces || [],
+      leads: leads || [],
+      bookings: bookings || [],
+      errors: {
+        events: eventsError?.message,
+        spaces: spacesError?.message,
+        leads: leadsError?.message,
+        bookings: bookingsError?.message
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching real data:", error);
+    return {
+      events: [],
+      spaces: [],
+      leads: [],
+      bookings: [],
+      errors: { general: "Failed to fetch data" }
+    };
+  }
+}
+
+function buildSystemPrompt(context: any, realData: any): string {
   const { user, page, currentDate } = context;
   
   return `You are Cleo, the Croft Common Management AI Assistant. You help the management team with their daily operations, data analysis, and workflow automation.
+
+**CRITICAL RULES - READ FIRST:**
+- You MUST ONLY use data provided in the "ACTUAL DATABASE DATA" section below
+- NEVER make up, invent, or hallucinate information
+- If data is not provided or unavailable, respond: "I don't have access to that specific information right now. Let me know if you'd like me to help with something else."
+- Always cite the source of your information (e.g., "Based on the ${realData.events?.length || 0} events in the system...")
+- Do NOT use markdown formatting with asterisks - write in plain text
 
 **Your Identity:**
 - Your name is Cleo
@@ -87,6 +156,28 @@ function buildSystemPrompt(context: any): string {
 
 **User Role & Permissions:**
 ${getRolePermissions(user?.role)}
+
+**ACTUAL DATABASE DATA:**
+
+EVENTS (${realData.events?.length || 0} total):
+${realData.events?.length > 0 ? realData.events.map((e: any) => 
+  `- ${e.title} (${e.event_type}) on ${e.event_date} - Status: ${e.status}, Attendees: ${e.attendee_count || 0}`
+).join('\n') : 'No events in the system'}
+
+SPACES (${realData.spaces?.length || 0} total):
+${realData.spaces?.length > 0 ? realData.spaces.map((s: any) => 
+  `- ${s.name} (${s.venue_type}) - Capacity: ${s.capacity || 'Not set'}`
+).join('\n') : 'No spaces configured'}
+
+LEADS (${realData.leads?.length || 0} total):
+${realData.leads?.length > 0 ? realData.leads.map((l: any) => 
+  `- ${l.client_name} - Status: ${l.status}, Contact: ${l.contact_date}, Value: £${l.estimated_value || 0}`
+).join('\n') : 'No leads in pipeline'}
+
+BOOKINGS (${realData.bookings?.length || 0} total):
+${realData.bookings?.length > 0 ? realData.bookings.map((b: any) => 
+  `- ${b.title} from ${b.start_ts} to ${b.end_ts} - Status: ${b.status}`
+).join('\n') : 'No bookings scheduled'}
 
 **Available Management Modules:**
 1. **Spaces & Venues**: Manage physical spaces, capacity, layouts, opening hours
