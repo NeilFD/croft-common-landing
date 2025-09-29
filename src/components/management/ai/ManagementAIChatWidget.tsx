@@ -45,12 +45,12 @@ export const ManagementAIChatWidget = () => {
     return (
       <Button
         onClick={toggleWidget}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all"
+        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-50 bg-gradient-to-br from-pink-500 to-primary hover:from-pink-600 hover:to-primary/90"
         size="icon"
       >
         <Bot className="h-6 w-6" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+          <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-pink-500 text-white text-xs flex items-center justify-center animate-pulse">
             {unreadCount}
           </span>
         )}
@@ -61,17 +61,20 @@ export const ManagementAIChatWidget = () => {
   return (
     <Card
       className={cn(
-        'fixed bottom-6 right-6 flex flex-col shadow-2xl transition-all',
-        isMinimized ? 'h-14 w-80' : 'h-[600px] w-[400px]'
+        'fixed bottom-6 right-6 flex flex-col shadow-2xl transition-all z-50 border-2',
+        isMinimized ? 'h-14 w-80' : 'h-[600px] w-[400px]',
+        'bg-background/95 backdrop-blur-md'
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b bg-muted/50 p-4">
+      <div className="flex items-center justify-between border-b bg-gradient-to-r from-pink-500/10 to-primary/10 p-4">
         <div className="flex items-center gap-2">
-          <Bot className="h-5 w-5 text-primary" />
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-pink-500 to-primary flex items-center justify-center">
+            <Bot className="h-4 w-4 text-white" />
+          </div>
           <div>
-            <h3 className="font-semibold text-sm">Management AI</h3>
-            <p className="text-xs text-muted-foreground">Always here to help</p>
+            <h3 className="font-semibold text-sm">Cleo</h3>
+            <p className="text-xs text-muted-foreground">Your AI assistant</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -99,8 +102,10 @@ export const ManagementAIChatWidget = () => {
           <ScrollArea className="flex-1" ref={scrollRef}>
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full p-6 text-center">
-                <Bot className="h-12 w-12 text-muted-foreground mb-4" />
-                <h4 className="font-semibold mb-2">How can I help you today?</h4>
+                <div className="h-16 w-16 rounded-full bg-gradient-to-br from-pink-500 to-primary flex items-center justify-center mb-4">
+                  <Bot className="h-8 w-8 text-white" />
+                </div>
+                <h4 className="font-semibold mb-2">Hi! I'm Cleo</h4>
                 <p className="text-sm text-muted-foreground mb-6">
                   Ask me about bookings, events, leads, or anything else related to management.
                 </p>
@@ -118,13 +123,13 @@ export const ManagementAIChatWidget = () => {
                 ))}
                 {isLoading && (
                   <div className="flex gap-3 p-4">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                      <Bot className="h-4 w-4 animate-pulse" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-primary">
+                      <Bot className="h-4 w-4 animate-pulse text-white" />
                     </div>
                     <div className="flex items-center gap-1">
-                      <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce" />
-                      <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:0.2s]" />
-                      <div className="h-2 w-2 rounded-full bg-muted-foreground animate-bounce [animation-delay:0.4s]" />
+                      <div className="h-2 w-2 rounded-full bg-pink-500 animate-bounce" />
+                      <div className="h-2 w-2 rounded-full bg-primary animate-bounce [animation-delay:0.2s]" />
+                      <div className="h-2 w-2 rounded-full bg-pink-500 animate-bounce [animation-delay:0.4s]" />
                     </div>
                   </div>
                 )}
@@ -149,7 +154,12 @@ export const ManagementAIChatWidget = () => {
                 disabled={isLoading}
                 className="flex-1"
               />
-              <Button type="submit" size="icon" disabled={isLoading || !input.trim()}>
+              <Button 
+                type="submit" 
+                size="icon" 
+                disabled={isLoading || !input.trim()}
+                className="bg-gradient-to-br from-pink-500 to-primary hover:from-pink-600 hover:to-primary/90"
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </form>
