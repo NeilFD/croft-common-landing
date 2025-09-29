@@ -90,10 +90,10 @@ async function fetchRealData(supabase: any, userRole: string) {
     
     if (eventsError) console.error("Events fetch error:", eventsError);
 
-    // Fetch spaces (with correct columns)
+    // Fetch spaces (removed venue_type column - doesn't exist in schema)
     const { data: spaces, error: spacesError } = await supabase
       .from('spaces')
-      .select('id, name, venue_type, max_people, min_people, sq_ft, floor_level, accessibility_features, available_amenities')
+      .select('id, name, max_people, min_people, sq_ft, floor_level, accessibility_features, available_amenities')
       .order('name')
       .limit(50);
     
@@ -333,10 +333,30 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
     eventSummary += `\n  Layouts: ${e.layouts.map((l: any) => `${l.space_name} (${l.layout_type}, ${l.capacity} capacity)`).join(', ')}`;
   }
   
-  // Add contract status if available
+  // Add FULL FINANCIAL LINE ITEMS breakdown
+  if (e.lineItems.length > 0) {
+    const totalRevenue = e.lineItems.reduce((sum: number, item: any) => {
+      const itemTotal = (item.unit_price || 0) * (item.qty || 1);
+      return sum + itemTotal;
+    }, 0);
+    
+    eventSummary += `\n  💰 REVENUE BREAKDOWN (Total: £${totalRevenue.toFixed(2)}):`;
+    e.lineItems.forEach((item: any) => {
+      const itemTotal = (item.unit_price || 0) * (item.qty || 1);
+      const perPersonNote = item.per_person ? ' per person' : '';
+      eventSummary += `\n    - ${item.type}: ${item.description} | £${item.unit_price}${perPersonNote} x ${item.qty} = £${itemTotal.toFixed(2)}`;
+    });
+  }
+  
+  // Add FULL CONTRACT CONTENT
   if (e.contracts.length > 0) {
     const latestContract = e.contracts[0];
-    eventSummary += `\n  Contract: v${latestContract.version} - ${latestContract.signature_status}${latestContract.is_signed ? ' (Signed)' : ''}`;
+    eventSummary += `\n  📋 CONTRACT v${latestContract.version} - ${latestContract.signature_status}${latestContract.is_signed ? ' ✓ SIGNED' : ' ⏳ Pending'}`;
+    if (latestContract.content) {
+      // Show first 800 characters of contract content
+      const preview = latestContract.content.substring(0, 800);
+      eventSummary += `\n  Contract Text:\n    ${preview}${latestContract.content.length > 800 ? '...(truncated, full contract available)' : ''}`;
+    }
   }
   
   return eventSummary;
@@ -344,7 +364,7 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
 
 SPACES (${realData.spaces?.length || 0} total):
 ${realData.spaces?.length > 0 ? realData.spaces.map((s: any) => 
-  `- ${s.name} (${s.venue_type}) - Max: ${s.max_people || 'N/A'}, Min: ${s.min_people || 'N/A'}, ${s.sq_ft ? `${s.sq_ft} sq ft` : 'Size TBC'}${s.floor_level ? `, Floor ${s.floor_level}` : ''}`
+  `- ${s.name} - Max: ${s.max_people || 'N/A'}, Min: ${s.min_people || 'N/A'}, ${s.sq_ft ? `${s.sq_ft} sq ft` : 'Size TBC'}${s.floor_level ? `, Floor ${s.floor_level}` : ''}`
 ).join('\n') : 'No spaces configured'}
 
 LEADS (${realData.leads?.length || 0} total):
