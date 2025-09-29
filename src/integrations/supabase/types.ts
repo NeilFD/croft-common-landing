@@ -4203,8 +4203,37 @@ export type Database = {
       }
     }
     Functions: {
+      add_equipment_item: {
+        Args: {
+          p_category: string
+          p_collection_time?: string
+          p_contact_details?: string
+          p_delivery_time?: string
+          p_event_id: string
+          p_hire_cost?: number
+          p_item_name: string
+          p_quantity?: number
+          p_setup_instructions?: string
+          p_specifications?: string
+          p_supplier?: string
+        }
+        Returns: string
+      }
       add_lead_note: {
         Args: { lead_id_param: string; note_body: string }
+        Returns: string
+      }
+      add_room_layout: {
+        Args: {
+          p_breakdown_time?: string
+          p_capacity?: number
+          p_event_id: string
+          p_layout_type: string
+          p_setup_notes?: string
+          p_setup_time?: string
+          p_space_name: string
+          p_special_requirements?: string
+        }
         Returns: string
       }
       approve_late_close: {
@@ -4339,6 +4368,10 @@ export type Database = {
       }
       ensure_membership_number: {
         Args: { user_id_input: string }
+        Returns: string
+      }
+      generate_beo_pdf: {
+        Args: { p_event_id: string }
         Returns: string
       }
       generate_contract: {
