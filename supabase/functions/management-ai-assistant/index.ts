@@ -90,37 +90,168 @@ async function fetchRealData(supabase: any, userRole: string) {
     
     if (eventsError) console.error("Events fetch error:", eventsError);
 
-    // Fetch spaces
+    // Fetch spaces (with correct columns)
     const { data: spaces, error: spacesError } = await supabase
       .from('spaces')
-      .select('id, name, capacity, venue_type')
-      .limit(20);
+      .select('id, name, venue_type, max_people, min_people, sq_ft, floor_level, accessibility_features, available_amenities')
+      .order('name')
+      .limit(50);
     
     if (spacesError) console.error("Spaces fetch error:", spacesError);
 
-    // Fetch leads
+    // Fetch leads (gracefully handle if table doesn't exist)
     const { data: leads, error: leadsError } = await supabase
       .from('management_leads')
       .select('id, client_name, status, contact_date, estimated_value')
       .order('contact_date', { ascending: false })
       .limit(30);
     
-    if (leadsError) console.error("Leads fetch error:", leadsError);
+    if (leadsError && leadsError.code !== 'PGRST205') console.error("Leads fetch error:", leadsError);
+    if (leadsError?.code === 'PGRST205') console.log("Leads table not yet created");
 
     // Fetch bookings
     const { data: bookings, error: bookingsError } = await supabase
       .from('bookings')
-      .select('id, title, start_ts, end_ts, status')
+      .select('id, title, start_ts, end_ts, status, space_id, event_id')
       .order('start_ts', { ascending: true })
-      .limit(30);
+      .limit(100);
     
     if (bookingsError) console.error("Bookings fetch error:", bookingsError);
 
+    // Fetch event schedules
+    const { data: eventSchedules, error: schedulesError } = await supabase
+      .from('event_schedule')
+      .select('event_id, time_label, scheduled_at, duration_minutes, responsible_role, notes')
+      .order('scheduled_at')
+      .limit(100);
+    
+    if (schedulesError) console.error("Event schedules fetch error:", schedulesError);
+
+    // Fetch event menus
+    const { data: eventMenus, error: menusError } = await supabase
+      .from('event_menus')
+      .select('event_id, course, item_name, description, allergens, price, notes')
+      .limit(200);
+    
+    if (menusError) console.error("Event menus fetch error:", menusError);
+
+    // Fetch event staffing
+    const { data: eventStaffing, error: staffingError } = await supabase
+      .from('event_staffing')
+      .select('event_id, role, qty, shift_start, shift_end, hourly_rate, notes')
+      .limit(100);
+    
+    if (staffingError) console.error("Event staffing fetch error:", staffingError);
+
+    // Fetch event equipment
+    const { data: eventEquipment, error: equipmentError } = await supabase
+      .from('event_equipment')
+      .select('event_id, category, item_name, quantity, specifications, supplier, hire_cost, delivery_time, collection_time, setup_instructions, contact_details')
+      .limit(150);
+    
+    if (equipmentError) console.error("Event equipment fetch error:", equipmentError);
+
+    // Fetch room layouts
+    const { data: roomLayouts, error: layoutsError } = await supabase
+      .from('event_room_layouts')
+      .select('event_id, space_name, layout_type, capacity, setup_time, breakdown_time, setup_notes, special_requirements')
+      .limit(100);
+    
+    if (layoutsError) console.error("Room layouts fetch error:", layoutsError);
+
+    // Fetch financial line items
+    const { data: lineItems, error: lineItemsError } = await supabase
+      .from('event_line_items')
+      .select('event_id, type, description, qty, unit_price, per_person, tax_rate_pct, sort_order')
+      .order('event_id, sort_order')
+      .limit(300);
+    
+    if (lineItemsError) console.error("Line items fetch error:", lineItemsError);
+
+    // Fetch BEO versions
+    const { data: beoVersions, error: beoError } = await supabase
+      .from('event_beo_versions')
+      .select('event_id, version_no, generated_at, generated_by, pdf_url, notes, is_final')
+      .order('generated_at', { ascending: false })
+      .limit(100);
+    
+    if (beoError) console.error("BEO versions fetch error:", beoError);
+
+    // Fetch contracts
+    const { data: contracts, error: contractsError } = await supabase
+      .from('contracts')
+      .select('event_id, version, content, pdf_url, signature_status, is_signed, client_signed_at, staff_signed_at, is_immutable, created_at')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    
+    if (contractsError) console.error("Contracts fetch error:", contractsError);
+
+    // Fetch audit logs (admin/finance only)
+    let auditLogs = [];
+    if (userRole === 'admin' || userRole === 'finance') {
+      const { data: logs, error: auditError } = await supabase
+        .from('audit_log')
+        .select('entity, entity_id, action, actor_id, diff, created_at')
+        .order('created_at', { ascending: false })
+        .limit(200);
+      
+      if (auditError) console.error("Audit logs fetch error:", auditError);
+      auditLogs = logs || [];
+    }
+
+    // Fetch conflicts
+    const { data: conflicts, error: conflictsError } = await supabase
+      .from('conflicts')
+      .select('booking_id_1, booking_id_2, conflict_type, severity, status, conflict_details, created_at, resolved_at, resolved_by')
+      .eq('status', 'active')
+      .limit(50);
+    
+    if (conflictsError) console.error("Conflicts fetch error:", conflictsError);
+
+    // Organize data by event for intelligent contextualization
+    const enrichedEvents = (events || []).map((event: any) => {
+      const eventId = event.id;
+      const schedule = (eventSchedules || []).filter((s: any) => s.event_id === eventId);
+      const menus = (eventMenus || []).filter((m: any) => m.event_id === eventId);
+      const staffing = (eventStaffing || []).filter((s: any) => s.event_id === eventId);
+      const equipment = (eventEquipment || []).filter((e: any) => e.event_id === eventId);
+      const layouts = (roomLayouts || []).filter((l: any) => l.event_id === eventId);
+      const items = (lineItems || []).filter((li: any) => li.event_id === eventId);
+      const beos = (beoVersions || []).filter((b: any) => b.event_id === eventId);
+      const eventContracts = (contracts || []).filter((c: any) => c.event_id === eventId);
+      const history = auditLogs.filter((a: any) => a.entity_id === eventId && a.entity === 'event');
+      
+      return {
+        ...event,
+        details: {
+          hasSchedule: schedule.length > 0,
+          hasMenus: menus.length > 0,
+          hasStaffing: staffing.length > 0,
+          hasEquipment: equipment.length > 0,
+          hasLayouts: layouts.length > 0,
+          hasFinancials: items.length > 0,
+          hasBEOs: beos.length > 0,
+          hasContracts: eventContracts.length > 0,
+          hasHistory: history.length > 0,
+        },
+        schedule,
+        menus,
+        staffing,
+        equipment,
+        layouts,
+        lineItems: items,
+        beos,
+        contracts: eventContracts,
+        auditHistory: history,
+      };
+    });
+
     return {
-      events: events || [],
+      enrichedEvents,
       spaces: spaces || [],
       leads: leads || [],
       bookings: bookings || [],
+      conflicts: conflicts || [],
       errors: {
         events: eventsError?.message,
         spaces: spacesError?.message,
@@ -131,10 +262,11 @@ async function fetchRealData(supabase: any, userRole: string) {
   } catch (error) {
     console.error("Error fetching real data:", error);
     return {
-      events: [],
+      enrichedEvents: [],
       spaces: [],
       leads: [],
       bookings: [],
+      conflicts: [],
       errors: { general: "Failed to fetch data" }
     };
   }
@@ -170,14 +302,49 @@ ${getRolePermissions(user?.role)}
 
 **ACTUAL DATABASE DATA:**
 
-EVENTS (${realData.events?.length || 0} total):
-${realData.events?.length > 0 ? realData.events.map((e: any) => 
-  `- ${e.event_type} (${e.code}) on ${e.primary_date} - Status: ${e.status}, Attendees: ${e.headcount || 'TBC'}, Client: ${e.client_name || 'N/A'}${e.budget ? `, Budget: £${e.budget}` : ''}`
-).join('\n') : 'No events scheduled yet'}
+EVENTS (${realData.enrichedEvents?.length || 0} total):
+${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => {
+  const details = [];
+  if (e.details.hasSchedule) details.push(`${e.schedule.length} schedule items`);
+  if (e.details.hasMenus) details.push(`${e.menus.length} menu items`);
+  if (e.details.hasStaffing) details.push(`${e.staffing.length} staff roles`);
+  if (e.details.hasEquipment) details.push(`${e.equipment.length} equipment items`);
+  if (e.details.hasLayouts) details.push(`${e.layouts.length} room layouts`);
+  if (e.details.hasFinancials) details.push(`${e.lineItems.length} line items`);
+  if (e.details.hasBEOs) details.push(`${e.beos.length} BEO versions`);
+  if (e.details.hasContracts) details.push(`${e.contracts.length} contracts`);
+  
+  let eventSummary = `EVENT: ${e.event_type} (${e.code}) on ${e.primary_date}
+  Status: ${e.status} | Attendees: ${e.headcount || 'TBC'} | Client: ${e.client_name || 'N/A'}${e.budget ? ` | Budget: £${e.budget}` : ''}`;
+  
+  if (details.length > 0) {
+    eventSummary += `\n  Details available: ${details.join(', ')}`;
+  }
+  
+  // Add schedule preview if available
+  if (e.schedule.length > 0) {
+    eventSummary += `\n  Key Times: ${e.schedule.slice(0, 3).map((s: any) => 
+      `${s.time_label} at ${new Date(s.scheduled_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+    ).join(', ')}${e.schedule.length > 3 ? '...' : ''}`;
+  }
+  
+  // Add layout preview if available
+  if (e.layouts.length > 0) {
+    eventSummary += `\n  Layouts: ${e.layouts.map((l: any) => `${l.space_name} (${l.layout_type}, ${l.capacity} capacity)`).join(', ')}`;
+  }
+  
+  // Add contract status if available
+  if (e.contracts.length > 0) {
+    const latestContract = e.contracts[0];
+    eventSummary += `\n  Contract: v${latestContract.version} - ${latestContract.signature_status}${latestContract.is_signed ? ' (Signed)' : ''}`;
+  }
+  
+  return eventSummary;
+}).join('\n\n') : 'No events scheduled yet'}
 
 SPACES (${realData.spaces?.length || 0} total):
 ${realData.spaces?.length > 0 ? realData.spaces.map((s: any) => 
-  `- ${s.name} (${s.venue_type}) - Capacity: ${s.capacity || 'Not set'}`
+  `- ${s.name} (${s.venue_type}) - Max: ${s.max_people || 'N/A'}, Min: ${s.min_people || 'N/A'}, ${s.sq_ft ? `${s.sq_ft} sq ft` : 'Size TBC'}${s.floor_level ? `, Floor ${s.floor_level}` : ''}`
 ).join('\n') : 'No spaces configured'}
 
 LEADS (${realData.leads?.length || 0} total):
@@ -189,6 +356,11 @@ BOOKINGS (${realData.bookings?.length || 0} total):
 ${realData.bookings?.length > 0 ? realData.bookings.map((b: any) => 
   `- ${b.title} from ${b.start_ts} to ${b.end_ts} - Status: ${b.status}`
 ).join('\n') : 'No bookings scheduled'}
+
+ACTIVE CONFLICTS (${realData.conflicts?.length || 0} total):
+${realData.conflicts?.length > 0 ? realData.conflicts.map((c: any) => 
+  `- ${c.conflict_type} (${c.severity}) between bookings ${c.booking_id_1} and ${c.booking_id_2}`
+).join('\n') : 'No active conflicts'}
 
 **Available Management Modules:**
 1. **Spaces & Venues**: Manage physical spaces, capacity, layouts, opening hours
