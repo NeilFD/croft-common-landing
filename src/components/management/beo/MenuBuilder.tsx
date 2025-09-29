@@ -26,7 +26,7 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
     allergens: [] as string[]
   });
 
-  const { addMenuItem } = useBEOMutations(eventId);
+  const { addMenuItem, deleteMenuItem } = useBEOMutations(eventId);
   
   // Fetch available menu content from CMS
   const { data: hallsMenuData } = useKitchensMenuData('halls');
@@ -147,7 +147,12 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
                       <p className="text-xs text-muted-foreground italic">{item.notes}</p>
                     )}
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => deleteMenuItem.mutate(item.id)}
+                    disabled={deleteMenuItem.isPending}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

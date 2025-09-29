@@ -25,7 +25,7 @@ export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staff
     notes: ''
   });
 
-  const { addStaffingRequirement } = useBEOMutations(eventId);
+  const { addStaffingRequirement, deleteStaffingRequirement } = useBEOMutations(eventId);
 
   const staffingRoles = [
     'Manager',
@@ -132,7 +132,12 @@ export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staff
                   )}
                 </div>
                 
-                <Button variant="ghost" size="sm">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => deleteStaffingRequirement.mutate(staff.id)}
+                  disabled={deleteStaffingRequirement.isPending}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

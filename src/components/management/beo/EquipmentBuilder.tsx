@@ -30,7 +30,7 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
     setup_instructions: ''
   });
 
-  const { addEquipmentItem } = useBEOMutations(eventId);
+  const { addEquipmentItem, deleteEquipmentItem } = useBEOMutations(eventId);
 
   const equipmentCategories = [
     'AV',
@@ -136,7 +136,12 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
                         <p className="text-sm text-muted-foreground mb-2">{item.specifications}</p>
                       )}
                     </div>
-                    <Button variant="ghost" size="sm">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => deleteEquipmentItem.mutate(item.id)}
+                      disabled={deleteEquipmentItem.isPending}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

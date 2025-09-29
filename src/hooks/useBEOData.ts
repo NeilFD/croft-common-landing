@@ -403,12 +403,122 @@ export const useBEOMutations = (eventId: string) => {
     }
   });
 
+  const deleteMenuItem = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('event_menus')
+        .delete()
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-menus', eventId] });
+      toast({ title: "Menu item deleted successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting menu item",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteStaffingRequirement = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('event_staffing')
+        .delete()
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-staffing', eventId] });
+      toast({ title: "Staffing requirement deleted successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting staffing requirement",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteScheduleItem = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('event_schedule')
+        .delete()
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-schedule', eventId] });
+      toast({ title: "Schedule item deleted successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting schedule item",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteRoomLayout = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('event_room_layouts')
+        .delete()
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-room-layouts', eventId] });
+      toast({ title: "Room layout deleted successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting room layout",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const deleteEquipmentItem = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase
+        .from('event_equipment')
+        .delete()
+        .eq('id', itemId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-equipment', eventId] });
+      toast({ title: "Equipment item deleted successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error deleting equipment item",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   return {
     addMenuItem,
     addStaffingRequirement,
     addScheduleItem,
     addRoomLayout,
     addEquipmentItem,
-    generateBEO
+    generateBEO,
+    deleteMenuItem,
+    deleteStaffingRequirement,
+    deleteScheduleItem,
+    deleteRoomLayout,
+    deleteEquipmentItem
   };
 };

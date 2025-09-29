@@ -31,7 +31,7 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
     notes: ''
   });
 
-  const { addScheduleItem } = useBEOMutations(eventId);
+  const { addScheduleItem, deleteScheduleItem } = useBEOMutations(eventId);
 
   const eventTimeLabels = [
     'Setup Start',
@@ -136,7 +136,12 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
                   )}
                 </div>
                 
-                <Button variant="ghost" size="sm">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => deleteScheduleItem.mutate(item.id)}
+                  disabled={deleteScheduleItem.isPending}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>

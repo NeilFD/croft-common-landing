@@ -27,7 +27,7 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
     special_requirements: ''
   });
 
-  const { addRoomLayout } = useBEOMutations(eventId);
+  const { addRoomLayout, deleteRoomLayout } = useBEOMutations(eventId);
 
   const spaceOptions = [
     'Main Hall',
@@ -105,7 +105,12 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
                       )}
                     </div>
                   </div>
-                  <Button variant="ghost" size="sm">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => deleteRoomLayout.mutate(layout.id)}
+                    disabled={deleteRoomLayout.isPending}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
