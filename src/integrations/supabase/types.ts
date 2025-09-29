@@ -945,6 +945,106 @@ export type Database = {
           },
         ]
       }
+      event_beo_versions: {
+        Row: {
+          event_id: string
+          generated_at: string | null
+          generated_by: string | null
+          id: string
+          is_final: boolean | null
+          notes: string | null
+          pdf_url: string | null
+          version_no: number
+        }
+        Insert: {
+          event_id: string
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          is_final?: boolean | null
+          notes?: string | null
+          pdf_url?: string | null
+          version_no: number
+        }
+        Update: {
+          event_id?: string
+          generated_at?: string | null
+          generated_by?: string | null
+          id?: string
+          is_final?: boolean | null
+          notes?: string | null
+          pdf_url?: string | null
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_beo_versions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_equipment: {
+        Row: {
+          category: string
+          collection_time: string | null
+          contact_details: string | null
+          created_at: string | null
+          delivery_time: string | null
+          event_id: string
+          hire_cost: number | null
+          id: string
+          item_name: string
+          quantity: number
+          setup_instructions: string | null
+          specifications: string | null
+          supplier: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          collection_time?: string | null
+          contact_details?: string | null
+          created_at?: string | null
+          delivery_time?: string | null
+          event_id: string
+          hire_cost?: number | null
+          id?: string
+          item_name: string
+          quantity?: number
+          setup_instructions?: string | null
+          specifications?: string | null
+          supplier?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          collection_time?: string | null
+          contact_details?: string | null
+          created_at?: string | null
+          delivery_time?: string | null
+          event_id?: string
+          hire_cost?: number | null
+          id?: string
+          item_name?: string
+          quantity?: number
+          setup_instructions?: string | null
+          specifications?: string | null
+          supplier?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_equipment_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_line_items: {
         Row: {
           created_at: string | null
@@ -991,6 +1091,194 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "management_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_menus: {
+        Row: {
+          allergens: string[] | null
+          course: string
+          created_at: string | null
+          description: string | null
+          event_id: string
+          id: string
+          item_name: string
+          notes: string | null
+          price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          allergens?: string[] | null
+          course: string
+          created_at?: string | null
+          description?: string | null
+          event_id: string
+          id?: string
+          item_name: string
+          notes?: string | null
+          price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          allergens?: string[] | null
+          course?: string
+          created_at?: string | null
+          description?: string | null
+          event_id?: string
+          id?: string
+          item_name?: string
+          notes?: string | null
+          price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_menus_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_room_layouts: {
+        Row: {
+          breakdown_time: string | null
+          capacity: number | null
+          created_at: string | null
+          event_id: string
+          id: string
+          layout_type: string
+          setup_notes: string | null
+          setup_time: string | null
+          space_name: string
+          special_requirements: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          breakdown_time?: string | null
+          capacity?: number | null
+          created_at?: string | null
+          event_id: string
+          id?: string
+          layout_type: string
+          setup_notes?: string | null
+          setup_time?: string | null
+          space_name: string
+          special_requirements?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          breakdown_time?: string | null
+          capacity?: number | null
+          created_at?: string | null
+          event_id?: string
+          id?: string
+          layout_type?: string
+          setup_notes?: string | null
+          setup_time?: string | null
+          space_name?: string
+          special_requirements?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_room_layouts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_schedule: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number | null
+          event_id: string
+          id: string
+          notes: string | null
+          responsible_role: string | null
+          scheduled_at: string
+          time_label: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          event_id: string
+          id?: string
+          notes?: string | null
+          responsible_role?: string | null
+          scheduled_at: string
+          time_label: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          event_id?: string
+          id?: string
+          notes?: string | null
+          responsible_role?: string | null
+          scheduled_at?: string
+          time_label?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_schedule_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_staffing: {
+        Row: {
+          created_at: string | null
+          event_id: string
+          hourly_rate: number | null
+          id: string
+          notes: string | null
+          qty: number
+          role: string
+          shift_end: string | null
+          shift_start: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_id: string
+          hourly_rate?: number | null
+          id?: string
+          notes?: string | null
+          qty?: number
+          role: string
+          shift_end?: string | null
+          shift_start?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_id?: string
+          hourly_rate?: number | null
+          id?: string
+          notes?: string | null
+          qty?: number
+          role?: string
+          shift_end?: string | null
+          shift_start?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_staffing_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
