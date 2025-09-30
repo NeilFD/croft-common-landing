@@ -96,13 +96,13 @@ Deno.serve(async (req) => {
     // Get current version count
     const { data: existingVersions } = await supabase
       .from('event_beo_versions')
-      .select('version_number')
+      .select('version_no')
       .eq('event_id', eventId)
-      .order('version_number', { ascending: false })
+      .order('version_no', { ascending: false })
       .limit(1);
 
     const nextVersion = (existingVersions && existingVersions.length > 0) 
-      ? existingVersions[0].version_number + 1 
+      ? existingVersions[0].version_no + 1 
       : 1;
 
     // Save version record
@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
       .from('event_beo_versions')
       .insert({
         event_id: eventId,
-        version_number: nextVersion,
+        version_no: nextVersion,
         pdf_url: signedUrl,
         generated_by: null,
         notes: 'Auto-generated BEO'
