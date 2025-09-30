@@ -40,6 +40,42 @@ export const MenuItemSelection: React.FC<MenuItemSelectionProps> = ({
   const { addMenuItem } = useBEOMutations(eventId);
   const { toast } = useToast();
 
+  // Menu type to CMS section mapping
+  const menuTypeSectionMap: Record<MenuType, string[]> = {
+    'plated-3-course': [
+      'Starter Selection',
+      'Main Course Selection', 
+      'Dessert Selection',
+      'Coffee & Tea'
+    ],
+    'deli-style': [
+      'Deli Style — Meetings & Conference Lunch',
+      'Sandwiches (Choose Three)',
+      'Salad Selection',
+      'Hot Food Options'
+    ],
+    'feast-style': [
+      'Feast Starters',
+      'Feast Mains',
+      'Feast Sides',
+      'Feast Desserts'
+    ],
+    'bespoke': [], // Bespoke has no predefined sections
+    'takeaway-sections': [
+      'Bites & Small Plates',
+      'Pizzas',
+      'Mains',
+      'Sides',
+      'Desserts'
+    ],
+    'pre-selected': [
+      'Pizza & Small Plates',
+      'The Big Grill',
+      'The Roast',
+      'The Hideout All In'
+    ]
+  };
+
   const getRelevantSections = useMemo(() => {
     const menuData = menuType.includes('takeaway') || menuType === 'pre-selected' 
       ? hideoutMenuData 
@@ -47,21 +83,21 @@ export const MenuItemSelection: React.FC<MenuItemSelectionProps> = ({
 
     if (!menuData) return [];
 
-    // Filter sections based on menu type
-    if (menuType === 'takeaway-sections') {
-      return menuData.filter(section => 
-        ['Bites & Small Plates', 'Pizzas', 'Mains', 'Sides', 'Desserts'].includes(section.title)
-      );
+    // For bespoke, return empty array (users add items manually)
+    if (menuType === 'bespoke') {
+      return [];
     }
 
-    if (menuType === 'pre-selected') {
-      return menuData.filter(section => 
-        ['Pizza & Small Plates', 'The Big Grill', 'The Roast', 'The Hideout All In'].includes(section.title)
-      );
-    }
-
-    // For other menu types, return all sections
-    return menuData;
+    // Get the allowed section titles for this menu type
+    const allowedSections = menuTypeSectionMap[menuType];
+    
+    // Filter sections to only include those that match the menu type
+    return menuData.filter(section => 
+      allowedSections.some(allowedTitle => 
+        section.title.toLowerCase().includes(allowedTitle.toLowerCase()) ||
+        allowedTitle.toLowerCase().includes(section.title.toLowerCase())
+      )
+    );
   }, [menuType, hallsMenuData, hideoutMenuData]);
 
   const toggleItem = (item: any, sectionTitle: string) => {
