@@ -804,7 +804,7 @@ ${baseData.spaces?.map((s: any) =>
       retrievedData.documents.forEach((doc: any, idx: number) => {
         prompt += `\n${idx + 1}. ${doc.title} [${doc.type}]`;
         if (doc.collection) prompt += ` | Collection: ${doc.collection}`;
-        prompt += `\n   Link: https://www.croftcommontest.com/management/common-knowledge/${doc.slug}`;
+        prompt += `\n   Link: https://www.croftcommontest.com/management/common-knowledge/d/${doc.slug}`;
         if (doc.description) prompt += `\n   Description: ${doc.description}`;
         if (doc.tags && doc.tags.length > 0) prompt += `\n   Tags: ${doc.tags.join(', ')}`;
         if (doc.zones && doc.zones.length > 0) prompt += `\n   Zones: ${doc.zones.join(', ')}`;
@@ -814,7 +814,16 @@ ${baseData.spaces?.map((s: any) =>
         }
         prompt += '\n';
       });
-      
+
+      // Provide full content for the primary document to ensure complete answers
+      const primary = retrievedData.documents[0];
+      if (primary?.content_full) {
+        const FULL_LIMIT = 80000; // guard against overly long prompts
+        const fullContent = primary.content_full.length > FULL_LIMIT
+          ? primary.content_full.substring(0, FULL_LIMIT)
+          : primary.content_full;
+        prompt += `\n🔎 Full Content — ${primary.title}:\n${fullContent}\n`;
+      }
       if (retrievedData.collections && retrievedData.collections.length > 0) {
         prompt += `\nAvailable Collections:\n`;
         retrievedData.collections.slice(0, 10).forEach((col: any) => {
