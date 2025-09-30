@@ -81,6 +81,7 @@ const CommonKnowledgeDashboard = lazy(() => import("./pages/management/CommonKno
 const CommonKnowledgeNew = lazy(() => import("./pages/management/CommonKnowledgeNew"));
 const CommonKnowledgeUpload = lazy(() => import("./pages/management/CommonKnowledgeUpload"));
 const CommonKnowledgeView = lazy(() => import("./pages/management/CommonKnowledgeView"));
+const FixDocument = lazy(() => import("./pages/management/FixDocument"));
 const SpacesDashboard = lazy(() => import("./pages/management/SpacesDashboard"));
 const VenuesList = lazy(() => import("./pages/management/VenuesList"));
 const SpaceForm = lazy(() => import("./pages/management/SpaceForm"));
@@ -286,6 +287,7 @@ const App = () => {
                         <Route path="/management/common-knowledge/new" element={<CommonKnowledgeNew />} />
                         <Route path="/management/common-knowledge/upload" element={<CommonKnowledgeUpload />} />
                         <Route path="/management/common-knowledge/d/:slug" element={<CommonKnowledgeView />} />
+                        <Route path="/management/fix-doc" element={<FixDocument />} />
                         
                         {/* Spaces Event Management System */}
                         <Route path="/management/spaces" element={<SpacesDashboard />} />

@@ -10,7 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Upload, FileText, File } from "lucide-react";
-import * as pdfjsLib from 'pdfjs-dist';
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
+
+// Configure pdfjs worker
+GlobalWorkerOptions.workerPort = new PdfWorker();
 
 interface Collection {
   id: string;
@@ -72,9 +76,11 @@ export default function CommonKnowledgeUpload() {
 
   const extractPdfText = async (file: File): Promise<string> => {
     try {
+      console.log('Starting PDF extraction...');
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pdf = await getDocument({ data: arrayBuffer }).promise;
       
+      console.log(`PDF loaded: ${pdf.numPages} pages`);
       let allText = '';
       const maxPages = Math.min(pdf.numPages, 100);
       
@@ -87,9 +93,16 @@ export default function CommonKnowledgeUpload() {
         allText += pageText + '\n';
       }
       
-      return allText.replace(/\s+/g, ' ').trim();
+      const extracted = allText.replace(/\s+/g, ' ').trim();
+      console.log(`Extracted ${extracted.length} characters`);
+      return extracted;
     } catch (error) {
       console.error('PDF extraction error:', error);
+      toast({
+        title: "PDF extraction failed",
+        description: "Document uploaded but text extraction failed",
+        variant: "destructive",
+      });
       return '';
     }
   };

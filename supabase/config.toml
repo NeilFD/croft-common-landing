@@ -274,3 +274,6 @@ verify_jwt = true
 [functions.update-document-content]
 verify_jwt = true
 
+[functions.reextract-document]
+verify_jwt = true
+
