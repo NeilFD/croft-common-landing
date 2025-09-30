@@ -25,10 +25,16 @@ export default function CommonKnowledgeDashboard() {
             />
           </div>
           <div className="flex gap-2">
-            <Button asChild>
+            <Button asChild variant="outline">
               <Link to="/management/common-knowledge/new">
-                <Plus className="h-4 w-4 mr-2" />
+                <FileText className="h-4 w-4 mr-2" />
                 New Document
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/management/common-knowledge/upload">
+                <Plus className="h-4 w-4 mr-2" />
+                Upload File
               </Link>
             </Button>
           </div>
@@ -38,8 +44,8 @@ export default function CommonKnowledgeDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <FileText className="h-5 w-5 text-primary" />
+              <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
+                <FileText className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
               </div>
               <div>
                 <p className="text-2xl font-brutalist font-bold">0</p>
@@ -49,8 +55,8 @@ export default function CommonKnowledgeDashboard() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-500/10">
-                <Star className="h-5 w-5 text-green-500" />
+              <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
+                <Star className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
               </div>
               <div>
                 <p className="text-2xl font-brutalist font-bold">0</p>
@@ -60,8 +66,8 @@ export default function CommonKnowledgeDashboard() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-500/10">
-                <Clock className="h-5 w-5 text-yellow-500" />
+              <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
+                <Clock className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
               </div>
               <div>
                 <p className="text-2xl font-brutalist font-bold">0</p>
@@ -71,8 +77,8 @@ export default function CommonKnowledgeDashboard() {
           </Card>
           <Card className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/10">
-                <Pin className="h-5 w-5 text-blue-500" />
+              <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
+                <Pin className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
               </div>
               <div>
                 <p className="text-2xl font-brutalist font-bold">0</p>
