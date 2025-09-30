@@ -187,6 +187,11 @@ export default function CommonKnowledgeView() {
     }
 
     try {
+      toast({
+        title: "Downloading...",
+        description: "Your file download is starting",
+      });
+
       const { data, error } = await supabase.storage
         .from("common-knowledge")
         .createSignedUrl(file.storage_path, 60);
@@ -194,14 +199,23 @@ export default function CommonKnowledgeView() {
       if (error) throw error;
       if (!data?.signedUrl) throw new Error("Failed to get download URL");
 
+      const response = await fetch(data.signedUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
       const link = document.createElement("a");
-      link.href = data.signedUrl;
+      link.href = blobUrl;
       link.download = file.filename;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
+
+      // Clean up the blob URL
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
 
       toast({
-        title: "Export started",
-        description: "Document download started",
+        title: "Download complete",
+        description: "Your file has been downloaded",
       });
     } catch (error: any) {
       toast({

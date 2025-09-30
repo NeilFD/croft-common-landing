@@ -1,10 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, ExternalLink } from "lucide-react";
-import * as pdfjsLib from "pdfjs-dist";
 import { supabase } from "@/integrations/supabase/client";
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+import { useToast } from "@/hooks/use-toast";
 
 interface DocumentViewerProps {
   fileId: string;
@@ -17,7 +15,7 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchAndDisplayFile();
@@ -37,11 +35,6 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
       if (!urlData?.signedUrl) throw new Error("Failed to get file URL");
 
       setFileUrl(urlData.signedUrl);
-
-      // Handle PDF rendering
-      if (mimeType === "application/pdf") {
-        await renderPDF(urlData.signedUrl);
-      }
     } catch (err: any) {
       console.error("Error fetching file:", err);
       setError(err.message || "Failed to load document");
@@ -50,47 +43,46 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
     }
   };
 
-  const renderPDF = async (url: string) => {
-    if (!containerRef.current) return;
-
+  const handleDownload = async () => {
+    if (!fileUrl) return;
+    
     try {
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      toast({
+        title: "Downloading...",
+        description: "Your file download is starting",
+      });
 
-      containerRef.current.innerHTML = "";
+      const response = await fetch(fileUrl);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the blob URL
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
 
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 1.5 });
-
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        if (!context) continue;
-
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
-        canvas.className = "mx-auto mb-4 shadow-lg";
-
-        containerRef.current.appendChild(canvas);
-
-        await page.render({
-          canvasContext: context,
-          viewport: viewport,
-        } as any).promise;
-      }
+      toast({
+        title: "Download complete",
+        description: "Your file has been downloaded",
+      });
     } catch (err: any) {
-      console.error("Error rendering PDF:", err);
-      setError("Failed to render PDF");
+      console.error("Download error:", err);
+      toast({
+        title: "Download failed",
+        description: err.message || "Failed to download file",
+        variant: "destructive",
+      });
     }
   };
 
-  const handleDownload = () => {
+  const handleOpenNewTab = () => {
     if (fileUrl) {
-      const link = document.createElement("a");
-      link.href = fileUrl;
-      link.download = filename;
-      link.click();
+      window.open(fileUrl, "_blank");
     }
   };
 
@@ -111,17 +103,33 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
     );
   }
 
-  // For PDFs, show the rendered canvas elements
+  // For PDFs, use native browser rendering
   if (mimeType === "application/pdf") {
     return (
       <div className="space-y-4">
         <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={handleOpenNewTab}>
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Open in New Tab
+          </Button>
           <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="h-4 w-4 mr-2" />
             Download PDF
           </Button>
         </div>
-        <div ref={containerRef} className="bg-muted/20 p-6 rounded-lg" />
+        <div className="bg-muted/20 p-2 rounded-lg">
+          <object
+            data={fileUrl || ""}
+            type="application/pdf"
+            className="w-full min-h-[800px] rounded"
+          >
+            <iframe
+              src={fileUrl || ""}
+              className="w-full min-h-[800px] rounded border-0"
+              title={filename}
+            />
+          </object>
+        </div>
       </div>
     );
   }
