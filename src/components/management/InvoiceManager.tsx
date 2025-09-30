@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DollarSign, Plus, Send, Eye, CreditCard } from 'lucide-react';
+import { FileText, Plus, Send, Eye, CreditCard, Pencil } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -26,6 +26,12 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
   const queryClient = useQueryClient();
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
   const [createInvoiceData, setCreateInvoiceData] = useState<CreateInvoiceData>({
+    amount: 0,
+    due_date: ''
+  });
+  const [viewInvoiceId, setViewInvoiceId] = useState<string | null>(null);
+  const [editInvoiceId, setEditInvoiceId] = useState<string | null>(null);
+  const [editInvoiceData, setEditInvoiceData] = useState<CreateInvoiceData>({
     amount: 0,
     due_date: ''
   });
@@ -83,6 +89,37 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
     }
   });
 
+  // Update invoice mutation
+  const updateInvoice = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CreateInvoiceData> }) => {
+      const { data: result, error } = await supabase
+        .from('invoices')
+        .update({
+          total: data.amount,
+          due_date: data.due_date
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+      return result;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Invoice updated successfully",
+      });
+      setEditInvoiceId(null);
+      queryClient.invalidateQueries({ queryKey: ['invoices', eventId] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update invoice",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Send invoice mutation
   const sendInvoice = useMutation({
     mutationFn: async (invoiceId: string) => {
@@ -97,14 +134,14 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
     onSuccess: () => {
       toast({
         title: "Success",
-        description: "Invoice sent successfully",
+        description: "Invoice marked as sent",
       });
       queryClient.invalidateQueries({ queryKey: ['invoices', eventId] });
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to send invoice",
+        description: "Failed to update invoice",
         variant: "destructive",
       });
     }
@@ -137,6 +174,28 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
     createInvoice.mutate(createInvoiceData);
   };
 
+  const handleEditInvoice = () => {
+    if (!editInvoiceId || !editInvoiceData.amount || !editInvoiceData.due_date) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    updateInvoice.mutate({ id: editInvoiceId, data: editInvoiceData });
+  };
+
+  const openEditDialog = (invoice: any) => {
+    setEditInvoiceId(invoice.id);
+    setEditInvoiceData({
+      amount: parseFloat(invoice.total.toString()),
+      due_date: invoice.due_date
+    });
+  };
+
+  const viewedInvoice = invoices?.find(inv => inv.id === viewInvoiceId);
+
   if (isLoading) {
     return <div>Loading invoices...</div>;
   }
@@ -147,7 +206,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
         <CardHeader className="bg-black text-white">
           <CardTitle className="font-brutalist text-xl uppercase tracking-wider flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
+              <FileText className="h-5 w-5" />
               INVOICE MANAGER
             </div>
             <Dialog open={showCreateInvoice} onOpenChange={setShowCreateInvoice}>
@@ -215,7 +274,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
         <CardContent className="p-6">
           {!invoices || invoices.length === 0 ? (
             <div className="text-center py-8">
-              <DollarSign className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+              <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
               <h3 className="text-lg font-semibold mb-2">No Invoices Created</h3>
               <p className="text-gray-600 mb-4">Create your first invoice to start billing for this event.</p>
             </div>
@@ -262,21 +321,41 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-2">
-                            <Button variant="ghost" size="sm">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => setViewInvoiceId(invoice.id)}
+                              title="View invoice"
+                            >
                               <Eye className="h-3 w-3" />
                             </Button>
                             {invoice.status === 'draft' && (
+                              <>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => openEditDialog(invoice)}
+                                  title="Edit invoice"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => sendInvoice.mutate(invoice.id)}
+                                  disabled={sendInvoice.isPending}
+                                  title="Mark as sent"
+                                >
+                                  <Send className="h-3 w-3" />
+                                </Button>
+                              </>
+                            )}
+                            {invoice.status === 'sent' && balance > 0 && (
                               <Button 
                                 variant="ghost" 
                                 size="sm"
-                                onClick={() => sendInvoice.mutate(invoice.id)}
-                                disabled={sendInvoice.isPending}
+                                title="Record payment"
                               >
-                                <Send className="h-3 w-3" />
-                              </Button>
-                            )}
-                            {invoice.status === 'sent' && balance > 0 && (
-                              <Button variant="ghost" size="sm">
                                 <CreditCard className="h-3 w-3" />
                               </Button>
                             )}
@@ -291,6 +370,122 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
           )}
         </CardContent>
       </Card>
+
+      {/* View Invoice Dialog */}
+      <Dialog open={!!viewInvoiceId} onOpenChange={() => setViewInvoiceId(null)}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="font-brutalist uppercase tracking-wider">
+              Invoice Details
+            </DialogTitle>
+          </DialogHeader>
+          {viewedInvoice && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Number</Label>
+                  <p className="font-mono font-semibold">{viewedInvoice.number}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <p>
+                    <Badge className={getStatusColor(viewedInvoice.status)}>
+                      {viewedInvoice.status.toUpperCase()}
+                    </Badge>
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Total</Label>
+                  <p className="font-semibold text-lg">£{parseFloat(viewedInvoice.total.toString()).toFixed(2)}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Due Date</Label>
+                  <p>{viewedInvoice.due_date ? format(new Date(viewedInvoice.due_date), 'dd/MM/yyyy') : '-'}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Paid</Label>
+                  <p className="font-semibold text-green-600">£{calculateTotalPaid(viewedInvoice.payments).toFixed(2)}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Balance</Label>
+                  <p className="font-semibold text-red-600">
+                    £{(parseFloat(viewedInvoice.total.toString()) - calculateTotalPaid(viewedInvoice.payments)).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+              {viewedInvoice.payments && viewedInvoice.payments.length > 0 && (
+                <div>
+                  <Label className="text-muted-foreground mb-2 block">Payment History</Label>
+                  <div className="space-y-2">
+                    {viewedInvoice.payments.map((payment: any) => (
+                      <div key={payment.id} className="flex justify-between items-center p-2 bg-muted rounded">
+                        <span className="text-sm">{format(new Date(payment.received_at), 'dd/MM/yyyy')}</span>
+                        <span className="text-sm font-semibold">£{parseFloat(payment.amount).toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Invoice Dialog */}
+      <Dialog open={!!editInvoiceId} onOpenChange={() => setEditInvoiceId(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-brutalist uppercase tracking-wider">
+              Edit Invoice
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-amount">Amount (£)</Label>
+              <Input
+                id="edit-amount"
+                type="number"
+                step="0.01"
+                min="0"
+                value={editInvoiceData.amount}
+                onChange={(e) => setEditInvoiceData(prev => ({
+                  ...prev,
+                  amount: parseFloat(e.target.value) || 0
+                }))}
+                placeholder="0.00"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-due_date">Due Date</Label>
+              <Input
+                id="edit-due_date"
+                type="date"
+                value={editInvoiceData.due_date}
+                onChange={(e) => setEditInvoiceData(prev => ({
+                  ...prev,
+                  due_date: e.target.value
+                }))}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleEditInvoice}
+                disabled={updateInvoice.isPending}
+                className="font-industrial uppercase tracking-wider flex-1"
+              >
+                {updateInvoice.isPending ? 'UPDATING...' : 'UPDATE'}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setEditInvoiceId(null)}
+                className="font-industrial uppercase tracking-wider"
+              >
+                CANCEL
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Summary Card */}
       {invoices && invoices.length > 0 && (
