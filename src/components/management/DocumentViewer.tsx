@@ -27,6 +27,7 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
