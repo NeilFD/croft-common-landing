@@ -426,6 +426,51 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
     eventSummary += `\n  Layouts: ${e.layouts.map((l: any) => `${l.space_name} (${l.layout_type}, ${l.capacity} capacity)`).join(', ')}`;
   }
   
+  // BEO (Banquet Event Order) Details - Enhanced display
+  if (e.beos.length > 0) {
+    const latestBeo = e.beos[0]; // Most recent BEO
+    eventSummary += `\n  📋 BEO: Version ${latestBeo.version_no}${latestBeo.is_final ? ' (FINAL)' : ' (DRAFT)'}`;
+    eventSummary += `\n     Generated: ${new Date(latestBeo.generated_at).toLocaleString('en-GB')}`;
+    if (latestBeo.pdf_url) {
+      eventSummary += `\n     PDF Available: ${latestBeo.pdf_url}`;
+    }
+    if (latestBeo.notes) {
+      eventSummary += `\n     Notes: ${latestBeo.notes}`;
+    }
+  }
+  
+  // Menu items detail (for BEO queries)
+  if (e.menus.length > 0) {
+    eventSummary += `\n  🍽️ MENU ITEMS (${e.menus.length} total):`;
+    e.menus.forEach((m: any) => {
+      eventSummary += `\n     ${m.course}: ${m.item_name}${m.price ? ` - £${m.price}` : ''}`;
+      if (m.description) eventSummary += `\n        ${m.description}`;
+      if (m.allergens && m.allergens.length > 0) eventSummary += `\n        Allergens: ${m.allergens.join(', ')}`;
+    });
+  }
+  
+  // Staffing detail (for BEO queries)
+  if (e.staffing.length > 0) {
+    eventSummary += `\n  👥 STAFFING (${e.staffing.length} roles):`;
+    e.staffing.forEach((s: any) => {
+      const shift = s.shift_start && s.shift_end 
+        ? `${new Date(s.shift_start).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} - ${new Date(s.shift_end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`
+        : 'TBC';
+      eventSummary += `\n     ${s.role} x${s.qty}${s.hourly_rate ? ` @ £${s.hourly_rate}/hr` : ''} | ${shift}`;
+      if (s.notes) eventSummary += ` | ${s.notes}`;
+    });
+  }
+  
+  // Equipment detail (for BEO queries)
+  if (e.equipment.length > 0) {
+    eventSummary += `\n  🔧 EQUIPMENT (${e.equipment.length} items):`;
+    e.equipment.slice(0, 5).forEach((eq: any) => {
+      eventSummary += `\n     ${eq.category}: ${eq.item_name} x${eq.quantity}${eq.hire_cost ? ` - £${eq.hire_cost}` : ''}`;
+      if (eq.supplier) eventSummary += ` (${eq.supplier})`;
+    });
+    if (e.equipment.length > 5) eventSummary += `\n     ...and ${e.equipment.length - 5} more items`;
+  }
+  
   // FINANCIALS - with fallback logic
   let financialSource = null;
   let financialData = null;
@@ -539,6 +584,16 @@ FOR QUESTIONS (Most common):
 - Use British English (organised, colour, etc.)
 - Lead with the answer, not preamble
 
+FOR BEO REQUESTS (Special handling):
+- When user asks for a BEO or BEO PDF, ALWAYS include the PDF URL if available
+- Format the URL as a clickable link in your response
+- Summarise BEO contents (menu, staffing, schedule) from the data above
+- If no BEO exists, offer to generate one
+- Example: "Here's the latest BEO for [Event] (Version 3, generated on 29 Sep):
+  📄 Download PDF: [URL]
+  
+  Contents: 4 menu items (Starters, Mains...), 2 staff roles, 5 schedule items"
+
 FOR ACTIONS (When asked to DO something):
 - Only return JSON when explicitly asked to CREATE, UPDATE, DELETE something
 - Format: {"type": "action", "action": "action_name", "params": {...}, "reasoning": "why"}
@@ -546,6 +601,8 @@ FOR ACTIONS (When asked to DO something):
 **Response Examples:**
 - "What events are coming up?" → "Hey! You've got 2 draft events: Michael Brown's presentation on 28 Sep and a social event on 6 Oct. Need details on either?"
 - "Show me spaces" → "Looking at your spaces - Main Hall fits 200, Common Room does 50, and the Terrace holds 30. Which one are you interested in?"
+- "Show me the BEO for 28th Sept event" → Provide PDF URL, version number, and summary of contents
+- "What's on the menu for the Sept 28 event?" → List all menu items from the MENU ITEMS section above
 - "Create a new event for Monday" → Return JSON action
 
 **Keep in Mind:**
@@ -575,32 +632,41 @@ function getRolePermissions(role: string): string {
 }
 
 function getAvailableActions(role: string): string {
-  const baseActions = "- Query data and generate reports\n- Search across modules";
+  const baseActions = "- Query data and generate reports\n- Search across modules\n- Display BEO details and provide PDF links";
   
   const actionsByRole: Record<string, string> = {
     admin: `${baseActions}
 - create_venue, update_venue, delete_venue
 - create_event, update_event, delete_event
 - create_booking, update_booking, resolve_conflict
-- generate_beo, update_beo_section
+- generate_beo (create new BEO version with all details)
+- update_beo_section (update menu, staffing, schedule, equipment, layouts)
+- send_beo_email (email BEO to client/team)
 - create_lead, assign_lead, update_lead_status
 - generate_contract, send_contract
+- generate_invoice
 - run_analytics, export_report`,
     
     sales: `${baseActions}
 - create_event, update_event
 - create_booking, update_booking
-- generate_beo, update_beo_section
+- generate_beo (create new BEO version)
+- update_beo_section (update BEO details)
+- send_beo_email (email BEO to client/team)
 - create_lead, assign_lead, update_lead_status
-- generate_contract, send_contract`,
+- generate_contract, send_contract
+- generate_invoice`,
     
     ops: `${baseActions}
 - update_booking (limited)
-- update_beo_section
+- generate_beo (create BEO version)
+- update_beo_section (update operational details)
+- send_beo_email (send to operations team)
 - generate_report (operational)`,
     
     finance: `${baseActions}
-- run_analytics, export_report (financial)`,
+- run_analytics, export_report (financial)
+- generate_invoice`,
     
     readonly: baseActions
   };
