@@ -13,6 +13,10 @@ import { DocumentShareDialog } from "@/components/management/DocumentShareDialog
 import { DocumentEditDialog } from "@/components/management/DocumentEditDialog";
 import { MoveFolderDialog } from "@/components/management/folders/MoveFolderDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { GlobalWorkerOptions, getDocument } from 'pdfjs-dist';
+import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
+
+GlobalWorkerOptions.workerPort = new PdfWorker();
 
 interface Collection {
   id: string;
@@ -121,6 +125,9 @@ export default function CommonKnowledgeView() {
       
       setIsPinned(!!pinData);
 
+      // Prepare holder for current version
+      let currentVersion: Version | null = null;
+
       // Fetch version if exists
       if (docData.version_current_id) {
         const { data: versionData, error: versionError } = await supabase
@@ -130,6 +137,7 @@ export default function CommonKnowledgeView() {
           .single();
 
         if (versionError) throw versionError;
+        currentVersion = versionData as Version;
         setVersion(versionData);
       }
 
@@ -144,6 +152,49 @@ export default function CommonKnowledgeView() {
 
       if (!fileError && fileData) {
         setFile(fileData);
+
+        // Auto-repair: if version content looks corrupt or too short, extract from PDF and update
+        if (currentVersion && (
+          !currentVersion.content_md ||
+          currentVersion.content_md.length < 200 ||
+          /^%PDF/.test(currentVersion.content_md) ||
+          /\x00/.test(currentVersion.content_md)
+        )) {
+          try {
+            const { data: signed, error: signErr } = await supabase
+              .storage
+              .from('common-knowledge')
+              .createSignedUrl(fileData.storage_path, 60);
+            if (signErr || !signed?.signedUrl) throw new Error(signErr?.message || 'Failed to sign URL');
+
+            const res = await fetch(signed.signedUrl);
+            if (!res.ok) throw new Error(`Download failed (${res.status})`);
+            const arrayBuffer = await res.arrayBuffer();
+
+            const pdf = await getDocument({ data: arrayBuffer }).promise;
+            let allText = '';
+            const maxPages = Math.min(pdf.numPages, 100);
+            for (let p = 1; p <= maxPages; p++) {
+              const page = await pdf.getPage(p);
+              const textContent = await page.getTextContent();
+              allText += textContent.items.map((it: any) => it.str || '').join(' ') + '\n';
+            }
+            const extracted = allText.replace(/\s+/g, ' ').trim();
+
+            if (extracted && extracted.length > 100) {
+              const { error: rpcErr } = await supabase.rpc('admin_update_doc_content', {
+                p_version_id: currentVersion.id,
+                p_content_md: extracted,
+                p_summary: extracted.substring(0, 500)
+              });
+              if (rpcErr) throw rpcErr;
+              setVersion({ ...currentVersion, content_md: extracted, summary: extracted.substring(0, 500) });
+              toast({ title: 'Document repaired', description: 'Extracted text has been indexed for search' });
+            }
+          } catch (repairErr: any) {
+            console.warn('Auto-repair failed:', repairErr?.message || repairErr);
+          }
+        }
       }
     } catch (error: any) {
       console.error("Error fetching document:", error);
