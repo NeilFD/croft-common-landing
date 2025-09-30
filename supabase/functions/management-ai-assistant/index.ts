@@ -9,13 +9,23 @@ const corsHeaders = {
 // ============= INTENT DETECTION & EVENT RESOLUTION =============
 
 interface Intent {
-  type: 'menu' | 'beo' | 'pdf' | 'schedule' | 'staffing' | 'equipment' | 'contract' | 'general';
+  type: 'menu' | 'beo' | 'pdf' | 'schedule' | 'staffing' | 'equipment' | 'contract' | 'knowledge' | 'document' | 'policy' | 'procedure' | 'general';
   eventIdentifier?: string;
+  searchQuery?: string;
   confidence: number;
 }
 
 function detectIntent(message: string, conversationHistory: any[] = []): Intent {
   const lower = message.toLowerCase();
+  
+  // Common Knowledge intent detection (check first for specificity)
+  if (/\b(policy|policies|procedure|procedures|guideline|guidelines|handbook|documentation|training|sop|standard operating|protocol)\b/i.test(lower)) {
+    return { type: 'policy', searchQuery: message, confidence: 0.95 };
+  }
+  
+  if (/\b(knowledge|document|documents|manual|guide|reference|wiki|info|information about|how to|what.?s our|what are our)\b/i.test(lower)) {
+    return { type: 'knowledge', searchQuery: message, confidence: 0.9 };
+  }
   
   // Menu intent detection
   if (/\b(menu|dish|food|drink|course|starter|main|dessert|allergen)\b/i.test(lower)) {
@@ -24,7 +34,7 @@ function detectIntent(message: string, conversationHistory: any[] = []): Intent 
   }
   
   // BEO/PDF intent detection
-  if (/\b(beo|banquet.?event.?order|pdf|document|send.?me|download)\b/i.test(lower)) {
+  if (/\b(beo|banquet.?event.?order|pdf|send.?me|download)\b/i.test(lower)) {
     const eventId = extractEventIdentifier(message, conversationHistory);
     return { type: 'beo', eventIdentifier: eventId, confidence: 0.9 };
   }
@@ -216,8 +226,145 @@ async function resolveEvent(supabase: any, identifier: string): Promise<string |
   return null;
 }
 
+async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
+  const retrieved: any = { documents: [], collections: [], totalDocs: 0 };
+  
+  try {
+    console.log('📚 Searching Common Knowledge for:', searchQuery);
+    
+    // Extract keywords from search query
+    const keywords = searchQuery.toLowerCase()
+      .replace(/[^\w\s]/g, '')
+      .split(/\s+/)
+      .filter(w => w.length > 3 && !['what', 'where', 'when', 'how', 'the', 'our', 'about', 'show', 'find', 'tell'].includes(w));
+    
+    console.log('🔍 Keywords:', keywords);
+    
+    // Build search query for full-text search
+    const searchTerms = keywords.join(' | '); // OR search
+    
+    // Search documents with full-text search on content
+    const { data: docs, error: docsError } = await supabase
+      .from('ck_doc_versions')
+      .select(`
+        id,
+        doc_id,
+        content_md,
+        summary,
+        version_no,
+        created_at,
+        ck_docs!inner (
+          id,
+          title,
+          slug,
+          type,
+          status,
+          tags,
+          zones,
+          description,
+          collection_id,
+          ck_collections (
+            id,
+            name,
+            slug
+          )
+        )
+      `)
+      .eq('ck_docs.status', 'approved')
+      .textSearch('search_text', searchTerms, { type: 'websearch' })
+      .order('created_at', { ascending: false })
+      .limit(10);
+    
+    if (docsError) {
+      console.error('Error searching documents:', docsError);
+      // Fallback to title/tag search if full-text fails
+      const { data: fallbackDocs } = await supabase
+        .from('ck_docs')
+        .select(`
+          id,
+          title,
+          slug,
+          type,
+          description,
+          tags,
+          zones,
+          collection_id,
+          ck_collections (
+            id,
+            name,
+            slug
+          ),
+          ck_doc_versions!inner (
+            id,
+            content_md,
+            summary,
+            version_no,
+            created_at
+          )
+        `)
+        .eq('status', 'approved')
+        .or(keywords.map(k => `title.ilike.%${k}%,tags.cs.{${k}}`).join(','))
+        .order('updated_at', { ascending: false })
+        .limit(10);
+      
+      if (fallbackDocs && fallbackDocs.length > 0) {
+        retrieved.documents = fallbackDocs.map((doc: any) => ({
+          id: doc.id,
+          title: doc.title,
+          type: doc.type,
+          description: doc.description,
+          tags: doc.tags,
+          zones: doc.zones,
+          collection: doc.ck_collections?.name,
+          content: doc.ck_doc_versions[0]?.content_md?.substring(0, 500),
+          summary: doc.ck_doc_versions[0]?.summary,
+          slug: doc.slug,
+        }));
+      }
+    } else if (docs && docs.length > 0) {
+      retrieved.documents = docs.map((version: any) => ({
+        id: version.ck_docs.id,
+        title: version.ck_docs.title,
+        type: version.ck_docs.type,
+        description: version.ck_docs.description,
+        tags: version.ck_docs.tags,
+        zones: version.ck_docs.zones,
+        collection: version.ck_docs.ck_collections?.name,
+        content: version.content_md?.substring(0, 500),
+        summary: version.summary,
+        slug: version.ck_docs.slug,
+      }));
+    }
+    
+    // Get all collections for context
+    const { data: collections } = await supabase
+      .from('ck_collections')
+      .select('id, name, slug')
+      .order('name');
+    
+    retrieved.collections = collections || [];
+    retrieved.totalDocs = retrieved.documents.length;
+    
+    console.log(`✓ Found ${retrieved.totalDocs} relevant documents`);
+    
+  } catch (error) {
+    console.error('Error retrieving Common Knowledge data:', error);
+  }
+  
+  return retrieved;
+}
+
 async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null) {
   const retrieved: any = { intent: intent.type };
+  
+  // Handle Common Knowledge intents separately (no event needed)
+  if (intent.type === 'knowledge' || intent.type === 'policy' || intent.type === 'procedure' || intent.type === 'document') {
+    if (intent.searchQuery) {
+      const ckData = await retrieveCommonKnowledgeData(supabase, intent.searchQuery);
+      return { ...retrieved, ...ckData };
+    }
+    return retrieved;
+  }
   
   if (!eventId) {
     return retrieved;
@@ -597,6 +744,32 @@ ${baseData.spaces?.map((s: any) =>
   if (retrievedData && Object.keys(retrievedData).length > 1) {
     prompt += `\n**━━━ RETRIEVED DATA (Use this as source of truth for this query) ━━━**\n`;
     
+    // Common Knowledge data
+    if (retrievedData.documents && retrievedData.documents.length > 0) {
+      prompt += `\n📚 COMMON KNOWLEDGE DOCUMENTS (${retrievedData.totalDocs} found):\n`;
+      
+      retrievedData.documents.forEach((doc: any, idx: number) => {
+        prompt += `\n${idx + 1}. ${doc.title} [${doc.type}]`;
+        if (doc.collection) prompt += ` | Collection: ${doc.collection}`;
+        prompt += `\n   Link: https://www.croftcommontest.com/management/common-knowledge/view/${doc.slug}`;
+        if (doc.description) prompt += `\n   Description: ${doc.description}`;
+        if (doc.tags && doc.tags.length > 0) prompt += `\n   Tags: ${doc.tags.join(', ')}`;
+        if (doc.zones && doc.zones.length > 0) prompt += `\n   Zones: ${doc.zones.join(', ')}`;
+        if (doc.summary) prompt += `\n   Summary: ${doc.summary}`;
+        if (doc.content) {
+          prompt += `\n   Content Preview: ${doc.content.substring(0, 300)}${doc.content.length > 300 ? '...' : ''}`;
+        }
+        prompt += '\n';
+      });
+      
+      if (retrievedData.collections && retrievedData.collections.length > 0) {
+        prompt += `\nAvailable Collections:\n`;
+        retrievedData.collections.slice(0, 10).forEach((col: any) => {
+          prompt += `  • ${col.name}\n`;
+        });
+      }
+    }
+    
     // Event context
     if (retrievedData.event) {
       const e = retrievedData.event;
@@ -712,6 +885,14 @@ FOR BEO/PDF REQUESTS:
 - Make it clear and clickable by including the full https:// URL
 - Provide version number and generation date
 - Example: "Here's the BEO (Version 3, generated 29 Sep): https://www.croftcommontest.com/beo/view?f=..."
+
+FOR COMMON KNOWLEDGE QUESTIONS:
+- If documents are in RETRIEVED DATA, list them with their titles and links
+- Quote relevant excerpts from the content preview
+- Provide the full document link for detailed reading
+- Mention the collection/folder if relevant
+- Example: "I found our Health & Safety policy - here's the key point: [quote from content]. Full document: https://www.croftcommontest.com/management/common-knowledge/view/health-safety-policy"
+- If multiple documents match, list them and offer to elaborate on any specific one
 
 FOR SCHEDULE QUESTIONS:
 - List times and activities from RETRIEVED DATA if available
