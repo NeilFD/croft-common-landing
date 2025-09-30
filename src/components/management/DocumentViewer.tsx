@@ -10,9 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
-import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import PdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?worker";
 
-GlobalWorkerOptions.workerSrc = pdfWorker;
+GlobalWorkerOptions.workerPort = new PdfWorker();
 
 interface DocumentViewerProps {
   fileId: string;
@@ -49,25 +49,27 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
         if (error || !data) throw error || new Error("Failed to download file for preview");
         const buffer = await data.arrayBuffer();
         const pdf = await getDocument({ data: buffer }).promise;
+        console.info("PDF preview: loaded", { pages: pdf.numPages, filename });
         const container = previewContainerRef.current;
         if (!container) return;
         container.innerHTML = "";
 
           for (let pageNum = 1; pageNum <= pdf.numPages && !cancelled; pageNum++) {
             const page = await pdf.getPage(pageNum);
-            const viewport = page.getViewport({ scale: 1.25 });
+            const cssScale = 1.25;
+            const outputScale = window.devicePixelRatio || 1;
+            const viewport = page.getViewport({ scale: cssScale * outputScale });
             const canvas = document.createElement("canvas");
             const ctx = canvas.getContext("2d");
             if (!ctx) continue;
-            const outputScale = window.devicePixelRatio || 1;
-            canvas.style.width = `${viewport.width}px`;
-            canvas.style.height = `${viewport.height}px`;
-            canvas.width = Math.floor(viewport.width * outputScale);
-            canvas.height = Math.floor(viewport.height * outputScale);
+            canvas.width = Math.floor(viewport.width);
+            canvas.height = Math.floor(viewport.height);
+            canvas.style.width = `${Math.floor(viewport.width / outputScale)}px`;
+            canvas.style.height = `${Math.floor(viewport.height / outputScale)}px`;
             canvas.className = "mx-auto mb-4 shadow";
             container.appendChild(canvas);
-            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : undefined;
-            await page.render({ canvasContext: ctx, viewport, transform } as any).promise;
+            await page.render({ canvasContext: ctx, viewport } as any).promise;
+            console.info("PDF preview: rendered page", pageNum);
           }
       } catch (e) {
         console.error("PDF render error", e);
