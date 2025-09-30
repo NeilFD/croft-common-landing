@@ -434,13 +434,20 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
   if (e.lineItems.length > 0) {
     financialSource = 'proposal_items';
     const headcount = e.headcount || 0;
-    const totalRevenue = e.lineItems.reduce((sum: number, item: any) => {
+    
+    // Calculate subtotal (before taxes and service)
+    const subtotal = e.lineItems.reduce((sum: number, item: any) => {
       const multiplier = item.per_person ? headcount : 1;
       const itemTotal = (item.unit_price || 0) * (item.qty || 1) * multiplier;
       return sum + itemTotal;
     }, 0);
     
-    eventSummary += `\n  💰 FINANCIALS (Source: Proposal line items | Total: £${totalRevenue.toFixed(2)}):`;
+    // Calculate Service Charge (10%) - VAT is typically included in unit prices
+    const serviceChargeRate = 0.10;
+    const serviceCharge = subtotal * serviceChargeRate;
+    const totalWithService = subtotal + serviceCharge;
+    
+    eventSummary += `\n  💰 FINANCIALS (Source: Proposal line items):`;
     e.lineItems.forEach((item: any) => {
       const multiplier = item.per_person ? headcount : 1;
       const itemTotal = (item.unit_price || 0) * (item.qty || 1) * multiplier;
@@ -450,6 +457,12 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
         eventSummary += `\n    - ${item.type}: ${item.description} | £${item.unit_price} x ${item.qty} = £${itemTotal.toFixed(2)}`;
       }
     });
+    eventSummary += `\n    ────────────────`;
+    eventSummary += `\n    Subtotal: £${subtotal.toFixed(2)}`;
+    eventSummary += `\n    Service Charge (10%): £${serviceCharge.toFixed(2)}`;
+    eventSummary += `\n    ════════════════`;
+    eventSummary += `\n    TOTAL (inc. VAT & Service): £${totalWithService.toFixed(2)}`;
+    eventSummary += `\n    (VAT included in prices above)`;
   }
   // Priority 2: Parse contract if no line items
   else if (e.contracts.length > 0 && e.contracts[0].content) {
