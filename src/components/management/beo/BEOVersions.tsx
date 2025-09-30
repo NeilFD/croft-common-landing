@@ -27,13 +27,20 @@ export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
         if (data?.signedUrl) url = data.signedUrl;
       }
 
+      // Fetch the PDF and download via Blob to avoid Chrome/extension blocking
+      const res = await fetch(url, { credentials: 'omit' });
+      if (!res.ok) throw new Error('Failed to fetch PDF');
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
       const link = document.createElement('a');
-      link.href = url;
+      link.href = objectUrl;
       link.download = `BEO-v${versionNo}-${eventId.substring(0, 8)}.pdf`;
-      link.target = '_blank';
+      link.rel = 'noopener';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
     } catch (error) {
       console.error('Error downloading PDF:', error);
       alert('Failed to download PDF. Please try again.');
