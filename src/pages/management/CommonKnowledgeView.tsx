@@ -7,7 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Edit, Share2, Download, History, Pin, Clock } from "lucide-react";
-import ReactMarkdown from "react-markdown";
+import { DocumentViewer } from "@/components/management/DocumentViewer";
+import { DocumentHistoryDialog } from "@/components/management/DocumentHistoryDialog";
+import { DocumentShareDialog } from "@/components/management/DocumentShareDialog";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Document {
   id: string;
@@ -26,6 +29,14 @@ interface Version {
   content_md: string;
   summary: string;
   created_at: string;
+}
+
+interface FileData {
+  id: string;
+  filename: string;
+  storage_path: string;
+  mime: string;
+  size: number;
 }
 
 const STATUS_COLORS = {
@@ -52,9 +63,14 @@ export default function CommonKnowledgeView() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [doc, setDoc] = useState<Document | null>(null);
   const [version, setVersion] = useState<Version | null>(null);
+  const [file, setFile] = useState<FileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isPinned, setIsPinned] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -75,6 +91,17 @@ export default function CommonKnowledgeView() {
       if (docError) throw docError;
       setDoc(docData);
 
+      // Check if document is pinned
+      const { data: pinData } = await supabase
+        .from("ck_pins")
+        .select("id")
+        .eq("doc_id", docData.id)
+        .eq("user_id", (await supabase.auth.getUser()).data.user?.id)
+        .maybeSingle();
+      
+      setIsPinned(!!pinData);
+
+      // Fetch version if exists
       if (docData.version_current_id) {
         const { data: versionData, error: versionError } = await supabase
           .from("ck_doc_versions")
@@ -85,6 +112,19 @@ export default function CommonKnowledgeView() {
         if (versionError) throw versionError;
         setVersion(versionData);
       }
+
+      // Fetch file if exists
+      const { data: fileData, error: fileError } = await supabase
+        .from("ck_files")
+        .select("*")
+        .eq("doc_id", docData.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (!fileError && fileData) {
+        setFile(fileData);
+      }
     } catch (error: any) {
       console.error("Error fetching document:", error);
       toast({
@@ -94,6 +134,78 @@ export default function CommonKnowledgeView() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const togglePin = useMutation({
+    mutationFn: async () => {
+      const user = await supabase.auth.getUser();
+      if (!user.data.user || !doc) return;
+
+      if (isPinned) {
+        const { error } = await supabase
+          .from("ck_pins")
+          .delete()
+          .eq("doc_id", doc.id)
+          .eq("user_id", user.data.user.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("ck_pins")
+          .insert({ doc_id: doc.id, user_id: user.data.user.id });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      setIsPinned(!isPinned);
+      toast({
+        title: isPinned ? "Unpinned" : "Pinned",
+        description: isPinned ? "Document unpinned" : "Document pinned successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ["pinned-docs"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update pin status",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleExport = async () => {
+    if (!file) {
+      toast({
+        title: "No file",
+        description: "No file available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase.storage
+        .from("common-knowledge")
+        .createSignedUrl(file.storage_path, 60);
+
+      if (error) throw error;
+      if (!data?.signedUrl) throw new Error("Failed to get download URL");
+
+      const link = document.createElement("a");
+      link.href = data.signedUrl;
+      link.download = file.filename;
+      link.click();
+
+      toast({
+        title: "Export started",
+        description: "Document download started",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Export failed",
+        description: error.message || "Failed to export document",
+        variant: "destructive",
+      });
     }
   };
 
@@ -135,23 +247,43 @@ export default function CommonKnowledgeView() {
           </Button>
 
           <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Pin className="h-4 w-4 mr-2" />
-              Pin
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => togglePin.mutate()}
+              disabled={togglePin.isPending}
+            >
+              <Pin className={`h-4 w-4 mr-2 ${isPinned ? 'fill-current' : ''}`} />
+              {isPinned ? "Unpin" : "Pin"}
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setHistoryOpen(true)}
+            >
               <History className="h-4 w-4 mr-2" />
               History
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShareOpen(true)}
+            >
               <Share2 className="h-4 w-4 mr-2" />
               Share
             </Button>
-            <Button variant="outline" size="sm">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExport}
+            >
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            <Button size="sm">
+            <Button 
+              size="sm"
+              onClick={() => navigate(`/management/common-knowledge/edit/${doc.slug}`)}
+            >
               <Edit className="h-4 w-4 mr-2" />
               Edit
             </Button>
@@ -191,12 +323,39 @@ export default function CommonKnowledgeView() {
             </div>
 
             {/* Content */}
-            <div className="prose prose-sm max-w-none font-industrial">
-              <ReactMarkdown>{version.content_md}</ReactMarkdown>
-            </div>
+            {file ? (
+              <DocumentViewer
+                fileId={file.id}
+                storagePath={file.storage_path}
+                filename={file.filename}
+                mimeType={file.mime}
+              />
+            ) : version ? (
+              <div className="prose prose-sm max-w-none font-industrial bg-muted/20 p-6 rounded-lg">
+                <p className="text-muted-foreground">
+                  This document has metadata but no file attached. Content preview is not available.
+                </p>
+              </div>
+            ) : (
+              <div className="prose prose-sm max-w-none font-industrial bg-muted/20 p-6 rounded-lg">
+                <p className="text-muted-foreground">No content available for this document.</p>
+              </div>
+            )}
           </div>
         </Card>
       </div>
+
+      <DocumentHistoryDialog
+        open={historyOpen}
+        onOpenChange={setHistoryOpen}
+        docId={doc.id}
+      />
+
+      <DocumentShareDialog
+        open={shareOpen}
+        onOpenChange={setShareOpen}
+        docSlug={doc.slug}
+      />
     </ManagementLayout>
   );
 }
