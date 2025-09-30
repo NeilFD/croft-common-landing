@@ -247,14 +247,35 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
         .limit(1);
       
       if (beos && beos.length > 0 && beos[0].pdf_url) {
-        // Get signed URL for the PDF
-        const { data: signedData } = await supabase.functions.invoke('get-beo-signed-url', {
-          body: { pdfUrl: beos[0].pdf_url }
-        });
+        // Derive storage path (supports legacy absolute URLs)
+        const raw = beos[0].pdf_url as string;
+        const marker = '/beo-documents/';
+        let targetFile = raw;
+        if (raw.startsWith('http')) {
+          const idx = raw.indexOf(marker);
+          if (idx !== -1) targetFile = raw.substring(idx + marker.length);
+        } else if (raw.startsWith('beo-documents/')) {
+          targetFile = raw.substring('beo-documents/'.length);
+        }
+        
+        // Create signed URL (fallback)
+        try {
+          const { data: signed } = await supabase.storage
+            .from('beo-documents')
+            .createSignedUrl(targetFile, 60 * 60);
+          retrieved.beoSignedUrl = signed?.signedUrl;
+        } catch (e) {
+          console.warn('Failed to create signed URL directly, will rely on proxy:', e);
+        }
+        
+        // Provide proxy URL to avoid Chrome/storage blocking
+        const supabaseUrlForFn = Deno.env.get('SUPABASE_URL');
+        if (supabaseUrlForFn) {
+          retrieved.beoProxyUrl = `${supabaseUrlForFn}/functions/v1/proxy-beo-pdf?fileName=${encodeURIComponent(targetFile)}`;
+        }
         
         retrieved.latestBeo = beos[0];
-        retrieved.beoSignedUrl = signedData?.signedUrl;
-        console.log(`📄 Retrieved BEO v${beos[0].version_no} with signed URL`);
+        console.log(`📄 Retrieved BEO v${beos[0].version_no} with proxy + signed URL`);
       }
     }
     
@@ -623,7 +644,9 @@ Attendees: ${e.headcount || 'TBC'}${e.budget ? `\nBudget: £${e.budget}` : ''}\n
       prompt += `\n📋 BEO (Banquet Event Order):\n`;
       prompt += `  Version: ${beo.version_no}${beo.is_final ? ' (FINAL)' : ' (DRAFT)'}\n`;
       prompt += `  Generated: ${new Date(beo.generated_at).toLocaleString('en-GB')}\n`;
-      if (retrievedData.beoSignedUrl) {
+      if (retrievedData.beoProxyUrl) {
+        prompt += `  📄 View PDF: ${retrievedData.beoProxyUrl}\n`;
+      } else if (retrievedData.beoSignedUrl) {
         prompt += `  📄 Download PDF: ${retrievedData.beoSignedUrl}\n`;
       }
       if (beo.notes) {
@@ -690,10 +713,10 @@ FOR MENU QUESTIONS:
 - Example: "The menu includes: Starters - Charred Octopus, Wood-Roast Aubergine; Mains - Roast Cod; Desserts - Churros"
 
 FOR BEO/PDF REQUESTS:
-- If BEO data is in RETRIEVED DATA section, output the actual PDF download URL from the data
+- If BEO data is in RETRIEVED DATA, output the proxy PDF URL (beoProxyUrl) for viewing
 - Make it clear and clickable by including the full https:// URL
 - Provide version number and generation date
-- Example: "Here's the BEO (Version 3, generated 29 Sep): https://xccidvoxhpgcnwinnyin.supabase.co/storage/v1/object/sign/..."
+- Example: "Here's the BEO (Version 3, generated 29 Sep): https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/proxy-beo-pdf?fileName=..."
 
 FOR SCHEDULE QUESTIONS:
 - List times and activities from RETRIEVED DATA if available

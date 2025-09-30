@@ -262,3 +262,9 @@ verify_jwt = true
 [functions.generate-invoice-pdf]
 verify_jwt = true
 
+[functions.get-beo-signed-url]
+verify_jwt = false
+
+[functions.proxy-beo-pdf]
+verify_jwt = false
+
