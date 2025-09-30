@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { FileText, Download, Calendar, User } from 'lucide-react';
 import { useBEOVersions } from '@/hooks/useBEOData';
 import { format } from 'date-fns';
+import { supabase } from '@/integrations/supabase/client';
 
 interface BEOVersionsProps {
   eventId: string;
@@ -15,9 +16,19 @@ export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
 
   const handleDownload = async (pdfUrl: string, versionNo: number) => {
     try {
-      // Open the signed URL directly - it will download the PDF
+      let url = pdfUrl;
+      // Legacy records used public URL but the bucket is private
+      if (pdfUrl.includes('/storage/v1/object/public/beo-documents/')) {
+        const fileName = pdfUrl.split('/beo-documents/')[1];
+        const { data, error } = await supabase.functions.invoke('get-beo-signed-url', {
+          body: { fileName }
+        });
+        if (error) throw error;
+        if (data?.signedUrl) url = data.signedUrl;
+      }
+
       const link = document.createElement('a');
-      link.href = pdfUrl;
+      link.href = url;
       link.download = `BEO-v${versionNo}-${eventId.substring(0, 8)}.pdf`;
       link.target = '_blank';
       document.body.appendChild(link);
