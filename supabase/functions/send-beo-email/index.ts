@@ -31,6 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Fetch event details to get client email
+    console.log("🔎 Querying management_events for event", { eventId });
     const { data: event, error: eventError } = await supabase
       .from("management_events")
       .select("client_email, code, event_type")
@@ -59,8 +60,8 @@ const handler = async (req: Request): Promise<Response> => {
         const fileName = pdfUrl.split('/beo-documents/')[1];
         const { data: signedData } = await supabase.storage
           .from('beo-documents')
-          .createSignedUrl(fileName, 60);
-        
+          .createSignedUrl(fileName, 300);
+
         if (signedData?.signedUrl) {
           url = signedData.signedUrl;
         }
