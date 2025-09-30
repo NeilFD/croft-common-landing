@@ -23,8 +23,8 @@ function detectIntent(message: string, conversationHistory: any[] = []): Intent 
     return { type: 'policy', searchQuery: message, confidence: 0.95 };
   }
   
-  if (/\b(knowledge|document|documents|manual|guide|reference|wiki|info|information about|how to|what.?s our|what are our|what are the|what is the|principle|principles|value|values|ethos|hospitality|croft common)\b/i.test(lower)) {
-    return { type: 'knowledge', searchQuery: message, confidence: 0.9 };
+  if (/\b(knowledge|document|documents|manual|guide|reference|wiki|info|information about|how to|what.?s our|what are our|what are the|what is the|principle|principles|value|values|ethos|hospitality|croft common|plan|plans|strategy|strategic|roadmap|playbook|brief|handbook|sop|standard operating|marketing|marketing plan)\b/i.test(lower)) {
+    return { type: 'knowledge', searchQuery: message, confidence: 0.92 };
   }
   
   // Menu intent detection
