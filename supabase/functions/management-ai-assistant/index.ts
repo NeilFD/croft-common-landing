@@ -182,8 +182,8 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
   }
   
   try {
-    // Retrieve menu data for menu intent
-    if (intent.type === 'menu') {
+    // Retrieve menu data for menu or BEO intent (people often ask "menu on the BEO")
+    if (intent.type === 'menu' || intent.type === 'beo' || intent.type === 'pdf') {
       const { data: menus } = await supabase
         .from('event_menus')
         .select('course, item_name, description, allergens, price, notes')
@@ -569,6 +569,9 @@ Attendees: ${e.headcount || 'TBC'}${e.budget ? `\nBudget: £${e.budget}` : ''}\n
           prompt += '\n';
         });
       });
+    } else if (retrievedData.event) {
+      // Be explicit to avoid hallucinating from financials
+      prompt += `\n🍽️ MENU ITEMS: None found for this event in the database.\n`;
     }
     
     // BEO data
