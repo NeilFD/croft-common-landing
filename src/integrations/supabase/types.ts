@@ -981,7 +981,7 @@ export type Database = {
             foreignKeyName: "event_beo_versions_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -1040,7 +1040,7 @@ export type Database = {
             foreignKeyName: "event_equipment_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -1137,7 +1137,7 @@ export type Database = {
             foreignKeyName: "event_menus_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -1187,7 +1187,7 @@ export type Database = {
             foreignKeyName: "event_room_layouts_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -1231,7 +1231,7 @@ export type Database = {
             foreignKeyName: "event_schedule_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -1278,7 +1278,7 @@ export type Database = {
             foreignKeyName: "event_staffing_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
