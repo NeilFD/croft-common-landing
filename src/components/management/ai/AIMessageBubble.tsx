@@ -11,6 +11,11 @@ interface AIMessageBubbleProps {
 export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubbleProps) => {
   const isUser = role === 'user';
 
+  // Process content for better line break rendering
+  const processedContent = content
+    .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with 2
+    .replace(/([^\n])\n([^\n])/g, '$1  \n$2'); // Convert single newlines to markdown line breaks
+
   return (
     <div className={cn('flex gap-3 p-4', isUser ? 'flex-row-reverse' : 'flex-row')}>
       <div
@@ -27,14 +32,22 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
       <div className={cn('flex flex-col gap-1 max-w-[80%]', isUser && 'items-end')}>
         <div
           className={cn(
-            'rounded-lg px-4 py-2 border-2 border-foreground',
+            'rounded-lg px-4 py-3 border-2 border-foreground',
             isUser
               ? 'bg-background'
               : 'bg-background'
           )}
         >
-          <div className="text-sm font-industrial prose prose-sm max-w-none prose-headings:font-brutalist prose-strong:text-foreground prose-em:text-foreground">
-            <ReactMarkdown>{content}</ReactMarkdown>
+          <div className="text-sm font-industrial prose prose-sm max-w-none prose-headings:font-brutalist prose-strong:text-foreground prose-em:text-foreground prose-p:my-2 prose-ul:my-2 prose-li:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed">{children}</p>,
+                ul: ({ children }) => <ul className="space-y-1 ml-4">{children}</ul>,
+                li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+              }}
+            >
+              {processedContent}
+            </ReactMarkdown>
           </div>
         </div>
         <span className="text-xs text-muted-foreground">
