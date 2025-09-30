@@ -28,12 +28,12 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("menu");
 
-  // Validate that the event exists in the database
+  // Validate that the event exists in the management_events table
   const { data: eventExists, isLoading: eventCheckLoading } = useQuery({
     queryKey: ['event-exists', eventId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('events')
+        .from('management_events')
         .select('id')
         .eq('id', eventId)
         .maybeSingle();
