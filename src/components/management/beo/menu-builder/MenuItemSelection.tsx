@@ -211,7 +211,7 @@ export const MenuItemSelection: React.FC<MenuItemSelectionProps> = ({
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-['Work_Sans'] font-medium text-sm">{item.name}</span>
                         {item.price && (
-                          <Badge variant="secondary" className="text-xs">£{item.price}</Badge>
+                          <Badge variant="secondary" className="text-xs">{item.price}</Badge>
                         )}
                       </div>
                       {item.description && (
