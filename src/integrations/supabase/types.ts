@@ -4686,6 +4686,10 @@ export type Database = {
         }
         Returns: string
       }
+      admin_update_doc_content: {
+        Args: { p_content_md: string; p_summary?: string; p_version_id: string }
+        Returns: boolean
+      }
       approve_late_close: {
         Args: { p_event: string }
         Returns: undefined

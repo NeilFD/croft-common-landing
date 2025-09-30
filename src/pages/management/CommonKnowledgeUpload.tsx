@@ -213,17 +213,15 @@ export default function CommonKnowledgeUpload() {
           const extractedText = await extractPdfText(file);
           
           if (extractedText.length > 100) {
-            // Update version with extracted content
-            const { error: updateError } = await supabase.functions.invoke('update-document-content', {
-              body: {
-                versionId: versionData.id,
-                contentMd: extractedText,
-                summary: extractedText.substring(0, 500),
-              }
+            // Update version with extracted content via RPC (SECURITY DEFINER)
+            const { error: rpcError } = await supabase.rpc('admin_update_doc_content', {
+              p_version_id: versionData.id,
+              p_content_md: extractedText,
+              p_summary: extractedText.substring(0, 500)
             });
 
-            if (updateError) {
-              console.warn('Failed to update extracted content:', updateError);
+            if (rpcError) {
+              console.warn('Failed to update extracted content:', rpcError);
             }
           }
         } catch (extractError) {
