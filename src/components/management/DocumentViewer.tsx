@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, ExternalLink } from "lucide-react";
+import { Download, Eye, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface DocumentViewerProps {
   fileId: string;
@@ -15,6 +21,7 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -80,12 +87,6 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
     }
   };
 
-  const handleOpenNewTab = () => {
-    if (fileUrl) {
-      window.open(fileUrl, "_blank");
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -103,34 +104,42 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
     );
   }
 
-  // For PDFs, use native browser rendering
+  // For PDFs, show action buttons
   if (mimeType === "application/pdf") {
     return (
-      <div className="space-y-4">
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={handleOpenNewTab}>
-            <ExternalLink className="h-4 w-4 mr-2" />
-            Open in New Tab
+      <>
+        <div className="flex items-center justify-center gap-3 p-8 bg-muted/20 rounded-lg">
+          <Button variant="outline" onClick={() => setPreviewOpen(true)}>
+            <Eye className="h-4 w-4 mr-2" />
+            Preview PDF
           </Button>
-          <Button variant="outline" size="sm" onClick={handleDownload}>
+          <Button variant="outline" onClick={handleDownload}>
             <Download className="h-4 w-4 mr-2" />
             Download PDF
           </Button>
         </div>
-        <div className="bg-muted/20 p-2 rounded-lg">
-          <object
-            data={fileUrl || ""}
-            type="application/pdf"
-            className="w-full min-h-[800px] rounded"
-          >
-            <iframe
-              src={fileUrl || ""}
-              className="w-full min-h-[800px] rounded border-0"
-              title={filename}
-            />
-          </object>
-        </div>
-      </div>
+
+        <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+          <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle>{filename}</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-hidden">
+              <object
+                data={fileUrl || ""}
+                type="application/pdf"
+                className="w-full h-full rounded"
+              >
+                <iframe
+                  src={fileUrl || ""}
+                  className="w-full h-full rounded border-0"
+                  title={filename}
+                />
+              </object>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
@@ -142,7 +151,7 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8 bg-muted/20 rounded-lg">
         <div className="text-center space-y-4">
-          <ExternalLink className="h-16 w-16 mx-auto text-muted-foreground" />
+          <FileText className="h-16 w-16 mx-auto text-muted-foreground" />
           <div>
             <h3 className="font-semibold text-lg mb-2">Word Document</h3>
             <p className="text-muted-foreground mb-4">
