@@ -6,12 +6,19 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Edit, Share2, Download, History, Pin, Clock } from "lucide-react";
+import { ArrowLeft, Edit, Share2, Download, History, Pin, Clock, FolderInput } from "lucide-react";
 import { DocumentViewer } from "@/components/management/DocumentViewer";
 import { DocumentHistoryDialog } from "@/components/management/DocumentHistoryDialog";
 import { DocumentShareDialog } from "@/components/management/DocumentShareDialog";
 import { DocumentEditDialog } from "@/components/management/DocumentEditDialog";
+import { MoveFolderDialog } from "@/components/management/folders/MoveFolderDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+interface Collection {
+  id: string;
+  name: string;
+  parent_id: string | null;
+}
 
 interface Document {
   id: string;
@@ -23,6 +30,7 @@ interface Document {
   updated_at: string;
   version_current_id: string;
   description?: string;
+  collection_id?: string | null;
 }
 
 interface Version {
@@ -71,9 +79,11 @@ export default function CommonKnowledgeView() {
   const [file, setFile] = useState<FileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPinned, setIsPinned] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -84,6 +94,13 @@ export default function CommonKnowledgeView() {
   const fetchDocument = async () => {
     try {
       setLoading(true);
+
+      // Fetch collections
+      const { data: colls } = await supabase
+        .from("ck_collections")
+        .select("*")
+        .order("name");
+      setCollections(colls || []);
 
       const { data: docData, error: docError } = await supabase
         .from("ck_docs")
@@ -276,6 +293,14 @@ export default function CommonKnowledgeView() {
             <Button 
               variant="outline" 
               size="sm"
+              onClick={() => setMoveOpen(true)}
+            >
+              <FolderInput className="h-4 w-4 mr-2" />
+              Move to Folder
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
               onClick={() => setHistoryOpen(true)}
             >
               <History className="h-4 w-4 mr-2" />
@@ -393,6 +418,16 @@ export default function CommonKnowledgeView() {
         onOpenChange={setEditOpen}
         document={doc}
         onUpdate={fetchDocument}
+      />
+
+      <MoveFolderDialog
+        open={moveOpen}
+        onOpenChange={setMoveOpen}
+        documentId={doc.id}
+        documentTitle={doc.title}
+        currentFolderId={doc.collection_id || null}
+        collections={collections}
+        onSuccess={fetchDocument}
       />
     </ManagementLayout>
   );
