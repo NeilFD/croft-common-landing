@@ -10,9 +10,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
-import PdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?worker";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-GlobalWorkerOptions.workerPort = new PdfWorker();
+GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface DocumentViewerProps {
   fileId: string;
@@ -53,18 +53,22 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
         if (!container) return;
         container.innerHTML = "";
 
-        for (let pageNum = 1; pageNum <= pdf.numPages && !cancelled; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const viewport = page.getViewport({ scale: 1.25 });
-          const canvas = document.createElement("canvas");
-          const ctx = canvas.getContext("2d");
-          if (!ctx) continue;
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-          canvas.className = "mx-auto mb-4 shadow";
-          container.appendChild(canvas);
-          await page.render({ canvasContext: ctx, viewport } as any).promise;
-        }
+          for (let pageNum = 1; pageNum <= pdf.numPages && !cancelled; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const viewport = page.getViewport({ scale: 1.25 });
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            if (!ctx) continue;
+            const outputScale = window.devicePixelRatio || 1;
+            canvas.style.width = `${viewport.width}px`;
+            canvas.style.height = `${viewport.height}px`;
+            canvas.width = Math.floor(viewport.width * outputScale);
+            canvas.height = Math.floor(viewport.height * outputScale);
+            canvas.className = "mx-auto mb-4 shadow";
+            container.appendChild(canvas);
+            const transform = outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : undefined;
+            await page.render({ canvasContext: ctx, viewport, transform } as any).promise;
+          }
       } catch (e) {
         console.error("PDF render error", e);
       } finally {
