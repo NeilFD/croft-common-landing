@@ -16,7 +16,7 @@ import {
   Check, 
   Clock, 
   Loader2,
-  DollarSign,
+  PoundSterling,
   Users,
   CalendarDays,
   MapPin
@@ -417,7 +417,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
                   <span className="text-muted-foreground">Croft Common</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <DollarSign className="w-4 h-4 text-primary/70" />
+                  <PoundSterling className="w-4 h-4 text-primary/70" />
                   <span className="font-medium">£{totals.total.toFixed(2)}</span>
                   <span className="text-muted-foreground">total</span>
                 </div>
