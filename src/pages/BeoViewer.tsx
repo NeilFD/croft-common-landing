@@ -19,12 +19,8 @@ const BeoViewer = () => {
 
   // Configure pdf.js worker
   useEffect(() => {
-    try {
-      // @ts-expect-error pdfjs types may not accept string union
-      GlobalWorkerOptions.workerSrc = workerSrc as string;
-    } catch (e) {
-      console.warn('Failed to set pdf.js worker src', e);
-    }
+    // pdfjs worker for rendering
+    GlobalWorkerOptions.workerSrc = workerSrc as unknown as string;
   }, []);
 
   useEffect(() => {
@@ -90,7 +86,7 @@ const BeoViewer = () => {
     const container = containerRef.current;
     if (!container) return;
     container.innerHTML = '';
-    const loadingTask = pdfjsLib.getDocument({ data: pdfData, disableWorker: true });
+    const loadingTask = getDocument({ data: pdfData });
     loadingTask.promise.then(async (pdf) => {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -102,7 +98,7 @@ const BeoViewer = () => {
         canvas.style.display = 'block';
         canvas.style.margin = '0 auto 1rem auto';
         container.appendChild(canvas);
-        await page.render({ canvasContext: context!, viewport }).promise;
+        await page.render({ canvasContext: context!, viewport, canvas }).promise;
       }
     }).catch((e) => {
       console.error('PDF render error:', e);
@@ -174,12 +170,8 @@ const BeoViewer = () => {
           </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden">
-        <iframe
-          src={pdfUrl}
-          className="w-full h-full border-0"
-          title="BEO PDF Viewer"
-        />
+      <div className="flex-1 overflow-auto">
+        <div ref={containerRef} className="w-full h-full p-4" />
       </div>
     </div>
   );
