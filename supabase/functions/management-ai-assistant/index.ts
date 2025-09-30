@@ -272,6 +272,73 @@ async function fetchRealData(supabase: any, userRole: string) {
   }
 }
 
+/**
+ * Parse contract content to extract financial data
+ */
+function parseContractFinancials(contractContent: string): any {
+  if (!contractContent) return null;
+
+  try {
+    const financials: any = {
+      lineItems: [],
+      subtotal: 0,
+      vatRate: 0,
+      vatAmount: 0,
+      serviceChargeRate: 0,
+      serviceChargeAmount: 0,
+      total: 0
+    };
+
+    // Extract line items from services section
+    const itemRegex = /([A-Z][^£\n]+?)\s+£([\d,]+\.?\d*)\s+x\s+(\d+)\s+=\s+£([\d,]+\.?\d*)/gi;
+    let match;
+    
+    while ((match = itemRegex.exec(contractContent)) !== null) {
+      const [_, description, unitPrice, qty, total] = match;
+      financials.lineItems.push({
+        description: description.trim(),
+        unitPrice: parseFloat(unitPrice.replace(/,/g, '')),
+        qty: parseInt(qty),
+        total: parseFloat(total.replace(/,/g, ''))
+      });
+    }
+
+    // Extract financial summary
+    const subtotalMatch = contractContent.match(/Subtotal:\s*£([\d,]+\.?\d*)/i);
+    if (subtotalMatch) {
+      financials.subtotal = parseFloat(subtotalMatch[1].replace(/,/g, ''));
+    }
+
+    const vatMatch = contractContent.match(/VAT\s*\((\d+)%\):\s*£([\d,]+\.?\d*)/i);
+    if (vatMatch) {
+      financials.vatRate = parseFloat(vatMatch[1]);
+      financials.vatAmount = parseFloat(vatMatch[2].replace(/,/g, ''));
+    }
+
+    const serviceMatch = contractContent.match(/Service\s+charge\s*\((\d+)%\):\s*£([\d,]+\.?\d*)/i);
+    if (serviceMatch) {
+      financials.serviceChargeRate = parseFloat(serviceMatch[1]);
+      financials.serviceChargeAmount = parseFloat(serviceMatch[2].replace(/,/g, ''));
+    }
+
+    const totalMatch = contractContent.match(/Total\s+due:\s*£([\d,]+\.?\d*)/i);
+    if (totalMatch) {
+      financials.total = parseFloat(totalMatch[1].replace(/,/g, ''));
+    }
+
+    // Validate we extracted something useful
+    if (financials.lineItems.length > 0 || financials.total > 0) {
+      console.log(`✓ Contract financials parsed: ${financials.lineItems.length} items, total £${financials.total}`);
+      return financials;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Failed to parse contract financials:', error);
+    return null;
+  }
+}
+
 function buildSystemPrompt(context: any, realData: any): string {
   const { user, page, currentDate } = context;
   
@@ -333,29 +400,57 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
     eventSummary += `\n  Layouts: ${e.layouts.map((l: any) => `${l.space_name} (${l.layout_type}, ${l.capacity} capacity)`).join(', ')}`;
   }
   
-  // Add FULL FINANCIAL LINE ITEMS breakdown
+  // FINANCIALS - with fallback logic
+  let financialSource = null;
+  let financialData = null;
+  
+  // Priority 1: Use event line items if available
   if (e.lineItems.length > 0) {
+    financialSource = 'proposal_items';
     const totalRevenue = e.lineItems.reduce((sum: number, item: any) => {
       const itemTotal = (item.unit_price || 0) * (item.qty || 1);
       return sum + itemTotal;
     }, 0);
     
-    eventSummary += `\n  💰 REVENUE BREAKDOWN (Total: £${totalRevenue.toFixed(2)}):`;
+    eventSummary += `\n  💰 FINANCIALS (Source: Proposal line items | Total: £${totalRevenue.toFixed(2)}):`;
     e.lineItems.forEach((item: any) => {
       const itemTotal = (item.unit_price || 0) * (item.qty || 1);
       const perPersonNote = item.per_person ? ' per person' : '';
       eventSummary += `\n    - ${item.type}: ${item.description} | £${item.unit_price}${perPersonNote} x ${item.qty} = £${itemTotal.toFixed(2)}`;
     });
   }
+  // Priority 2: Parse contract if no line items
+  else if (e.contracts.length > 0 && e.contracts[0].content) {
+    const parsedFinancials = parseContractFinancials(e.contracts[0].content);
+    if (parsedFinancials && parsedFinancials.total > 0) {
+      financialSource = 'contract_summary';
+      eventSummary += `\n  💰 FINANCIALS (Source: Signed contract | Total: £${parsedFinancials.total.toFixed(2)}):`;
+      
+      if (parsedFinancials.lineItems.length > 0) {
+        parsedFinancials.lineItems.forEach((item: any) => {
+          eventSummary += `\n    - ${item.description} | £${item.unitPrice.toFixed(2)} x ${item.qty} = £${item.total.toFixed(2)}`;
+        });
+      }
+      
+      // Add VAT and service charge breakdown
+      if (parsedFinancials.subtotal > 0) {
+        eventSummary += `\n    Subtotal: £${parsedFinancials.subtotal.toFixed(2)}`;
+      }
+      if (parsedFinancials.vatAmount > 0) {
+        eventSummary += `\n    VAT (${parsedFinancials.vatRate}%): £${parsedFinancials.vatAmount.toFixed(2)}`;
+      }
+      if (parsedFinancials.serviceChargeAmount > 0) {
+        eventSummary += `\n    Service charge (${parsedFinancials.serviceChargeRate}%): £${parsedFinancials.serviceChargeAmount.toFixed(2)}`;
+      }
+    }
+  }
   
-  // Add FULL CONTRACT CONTENT
+  // CONTRACT STATUS
   if (e.contracts.length > 0) {
     const latestContract = e.contracts[0];
     eventSummary += `\n  📋 CONTRACT v${latestContract.version} - ${latestContract.signature_status}${latestContract.is_signed ? ' ✓ SIGNED' : ' ⏳ Pending'}`;
-    if (latestContract.content) {
-      // Show first 800 characters of contract content
-      const preview = latestContract.content.substring(0, 800);
-      eventSummary += `\n  Contract Text:\n    ${preview}${latestContract.content.length > 800 ? '...(truncated, full contract available)' : ''}`;
+    if (latestContract.is_signed && latestContract.client_signed_at) {
+      eventSummary += ` (Signed: ${new Date(latestContract.client_signed_at).toLocaleDateString('en-GB')})`;
     }
   }
   
