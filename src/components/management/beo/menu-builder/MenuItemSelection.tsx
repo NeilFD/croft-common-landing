@@ -207,19 +207,19 @@ export const MenuItemSelection: React.FC<MenuItemSelectionProps> = ({
                       checked={isSelected}
                       onCheckedChange={() => toggleItem(item, section.title)}
                     />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="font-['Work_Sans'] font-medium text-sm">{item.name}</span>
-                        {item.price && (
-                          <Badge variant="secondary" className="text-xs">{item.price}</Badge>
+                    <div className="flex-1 flex items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="font-['Work_Sans'] font-medium text-sm mb-1">{item.name}</div>
+                        {item.description && (
+                          <p className="text-xs text-muted-foreground">{item.description}</p>
                         )}
                       </div>
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground">{item.description}</p>
+                      {item.price && (
+                        <Badge variant="secondary" className="text-xs shrink-0">{item.price}</Badge>
                       )}
                     </div>
                     {isSelected && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <Label htmlFor={`qty-${key}`} className="text-xs whitespace-nowrap">Qty:</Label>
                         <Input
                           id={`qty-${key}`}
