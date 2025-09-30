@@ -91,29 +91,47 @@ serve(async (req) => {
 
 async function extractPdfContent(fileData: Blob, storagePath: string, supabaseUrl: string, supabaseServiceKey: string): Promise<string> {
   try {
-    // Get public URL or signed URL for the PDF
-    const filePath = storagePath;
-    
-    // Use an external PDF text extraction API (pdf.co or similar)
-    // For now, we'll use a simple text extraction approach
+    // Try robust text extraction using pdfjs-dist (Deno-compatible via esm.sh)
     const arrayBuffer = await fileData.arrayBuffer();
     const bytes = new Uint8Array(arrayBuffer);
-    
-    // Convert to text by looking for text content in PDF
-    // This is a basic extraction - for production, use a proper PDF library
+
+    try {
+      const pdfjsLib: any = await import('https://esm.sh/pdfjs-dist@5.4.149/build/pdf.mjs');
+      const loadingTask = pdfjsLib.getDocument({ data: bytes });
+      const pdf = await loadingTask.promise;
+
+      let allText = '';
+      const maxPages = Math.min(pdf.numPages ?? 0, 100); // safety cap
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = (textContent.items || [])
+          .map((it: any) => (typeof it.str === 'string' ? it.str : (it.text ?? '')))
+          .join(' ');
+        allText += pageText + '\n';
+      }
+
+      let cleaned = allText
+        .replace(/[\u0000-\u001F\u007F]/g, ' ') // control chars
+        .replace(/\s+/g, ' ')
+        .replace(/\s*\n\s*/g, '\n')
+        .trim();
+
+      if (cleaned.length >= 100) return cleaned;
+      // Fall through to basic decoding if too short (likely scanned PDF)
+    } catch (pdfjsErr) {
+      console.error('pdfjs-dist extraction failed, falling back:', pdfjsErr);
+    }
+
+    // Basic fallback: decode bytes and keep readable characters
     const decoder = new TextDecoder('utf-8');
     let text = decoder.decode(bytes);
-    
-    // Extract readable text from PDF (basic approach)
-    // Remove binary data and keep only readable text
-    text = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ');
-    text = text.replace(/\s+/g, ' ').trim();
-    
-    // If we got very little text, it might be an image-based PDF
+    text = text.replace(/[^\x20-\x7E\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
+
     if (text.length < 100) {
-      return `PDF content available but requires OCR processing. File: ${storagePath.split('/').pop()}`;
+      return `PDF content available but may require OCR processing. File: ${storagePath.split('/').pop()}`;
     }
-    
+
     return text;
   } catch (error) {
     console.error('PDF extraction error:', error);
