@@ -268,14 +268,11 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
           console.warn('Failed to create signed URL directly, will rely on proxy:', e);
         }
         
-        // Provide proxy URL to avoid Chrome/storage blocking
-        const supabaseUrlForFn = Deno.env.get('SUPABASE_URL');
-        if (supabaseUrlForFn) {
-          retrieved.beoProxyUrl = `${supabaseUrlForFn}/functions/v1/proxy-beo-pdf?fileName=${encodeURIComponent(targetFile)}`;
-        }
+        // Generate viewer path for first-party inline display
+        retrieved.beoViewerPath = `https://www.croftcommontest.com/beo/view?f=${encodeURIComponent(targetFile)}`;
         
         retrieved.latestBeo = beos[0];
-        console.log(`📄 Retrieved BEO v${beos[0].version_no} with proxy + signed URL`);
+        console.log(`📄 Retrieved BEO v${beos[0].version_no} with viewer path`);
       }
     }
     
@@ -644,10 +641,8 @@ Attendees: ${e.headcount || 'TBC'}${e.budget ? `\nBudget: £${e.budget}` : ''}\n
       prompt += `\n📋 BEO (Banquet Event Order):\n`;
       prompt += `  Version: ${beo.version_no}${beo.is_final ? ' (FINAL)' : ' (DRAFT)'}\n`;
       prompt += `  Generated: ${new Date(beo.generated_at).toLocaleString('en-GB')}\n`;
-      if (retrievedData.beoProxyUrl) {
-        prompt += `  📄 View PDF: ${retrievedData.beoProxyUrl}\n`;
-      } else if (retrievedData.beoSignedUrl) {
-        prompt += `  📄 Download PDF: ${retrievedData.beoSignedUrl}\n`;
+      if (retrievedData.beoViewerPath) {
+        prompt += `  📄 View PDF: ${retrievedData.beoViewerPath}\n`;
       }
       if (beo.notes) {
         prompt += `  Notes: ${beo.notes}\n`;
@@ -713,10 +708,10 @@ FOR MENU QUESTIONS:
 - Example: "The menu includes: Starters - Charred Octopus, Wood-Roast Aubergine; Mains - Roast Cod; Desserts - Churros"
 
 FOR BEO/PDF REQUESTS:
-- If BEO data is in RETRIEVED DATA, output the proxy PDF URL (beoProxyUrl) for viewing
+- If BEO data is in RETRIEVED DATA, output the viewer URL (beoViewerPath) for viewing
 - Make it clear and clickable by including the full https:// URL
 - Provide version number and generation date
-- Example: "Here's the BEO (Version 3, generated 29 Sep): https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/proxy-beo-pdf?fileName=..."
+- Example: "Here's the BEO (Version 3, generated 29 Sep): https://www.croftcommontest.com/beo/view?f=..."
 
 FOR SCHEDULE QUESTIONS:
 - List times and activities from RETRIEVED DATA if available

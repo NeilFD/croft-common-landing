@@ -40,6 +40,26 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Normalize fileName: decode, strip prefix, remove query params
+    if (fileName) {
+      try {
+        fileName = decodeURIComponent(fileName);
+      } catch (e) {
+        // If decode fails, use as-is
+      }
+      // Strip /beo-documents/ prefix if present
+      if (fileName.startsWith("/beo-documents/")) {
+        fileName = fileName.substring("/beo-documents/".length);
+      } else if (fileName.startsWith("beo-documents/")) {
+        fileName = fileName.substring("beo-documents/".length);
+      }
+      // Remove query params like ?token=...
+      const qIdx = fileName.indexOf("?");
+      if (qIdx !== -1) {
+        fileName = fileName.substring(0, qIdx);
+      }
+    }
+
     if (!fileName) {
       return new Response(JSON.stringify({ error: "Missing fileName" }), {
         status: 400,

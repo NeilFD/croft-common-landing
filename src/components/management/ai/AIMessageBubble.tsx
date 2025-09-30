@@ -16,8 +16,8 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
     return text.replace(
       /(https?:\/\/[^\s]+)/g,
       (url) => {
-        // For BEO PDF links, show a cleaner display name
-        if (url.includes('beo-documents') && url.includes('.pdf')) {
+        // For BEO viewer routes, show a cleaner display name
+        if (url.includes('/beo/view?f=') || (url.includes('beo-documents') && url.includes('.pdf')) || url.includes('proxy-beo-pdf')) {
           return `[📄 View BEO PDF](${url})`;
         }
         // For other long URLs, show them as-is

@@ -87,6 +87,7 @@ const LeadDetail = lazy(() => import("./pages/management/LeadDetail"));
 const BookingDetail = lazy(() => import("./pages/management/BookingDetail"));
 const EventsList = lazy(() => import("./pages/management/EventsList"));
 const EventDetail = lazy(() => import("./pages/management/EventDetail"));
+const BeoViewer = lazy(() => import("./pages/BeoViewer"));
 
 const queryClient = new QueryClient();
 
@@ -293,10 +294,13 @@ const App = () => {
                         <Route path="/management/events" element={<EventsList />} />
                         <Route path="/management/events/:id" element={<EventDetail />} />
                         
-                        {/* Leads & Sales Sub-routes */}
-                        <Route path="/management/spaces/leads" element={<LeadsList />} />
-                        <Route path="/management/spaces/leads/new" element={<LeadDetail />} />
-                        <Route path="/management/spaces/leads/:id" element={<LeadDetail />} />
+                         {/* Leads & Sales Sub-routes */}
+                         <Route path="/management/spaces/leads" element={<LeadsList />} />
+                         <Route path="/management/spaces/leads/new" element={<LeadDetail />} />
+                         <Route path="/management/spaces/leads/:id" element={<LeadDetail />} />
+                        
+                        {/* BEO PDF Viewer */}
+                        <Route path="/beo/view" element={<BeoViewer />} />
                        
                        <Route path="/c/:token" element={<ClickRedirect />} />
                        <Route path="/from-notification" element={<Index />} />
