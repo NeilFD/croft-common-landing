@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Trash2, RotateCcw, Pencil } from 'lucide-react';
 import { EventMenu, useBEOMutations } from '@/hooks/useBEOData';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useKitchensMenuData } from '@/hooks/useKitchensCMSData';
 import { MenuTypeSelection, MenuType } from './menu-builder/MenuTypeSelection';
 import { MenuTypeConfirmation } from './menu-builder/MenuTypeConfirmation';
@@ -100,30 +101,52 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
                     <div key={item.id} className="p-3 border rounded-lg">
                       {editingId === item.id ? (
                         <div className="space-y-3">
-                          <Input
-                            value={editForm.item_name || ''}
-                            onChange={(e) => setEditForm({...editForm, item_name: e.target.value})}
-                            placeholder="Item name"
-                          />
-                          <Input
-                            value={editForm.description || ''}
-                            onChange={(e) => setEditForm({...editForm, description: e.target.value})}
-                            placeholder="Description"
-                          />
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={editForm.price || ''}
-                            onChange={(e) => setEditForm({...editForm, price: e.target.value})}
-                            placeholder="Price"
-                          />
+                          <div>
+                            <Label>Item Name</Label>
+                            <Input
+                              value={editForm.item_name || ''}
+                              onChange={(e) => setEditForm({...editForm, item_name: e.target.value})}
+                              placeholder="Item name"
+                            />
+                          </div>
+                          <div>
+                            <Label>Quantity</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={editForm.quantity || '1'}
+                              onChange={(e) => setEditForm({...editForm, quantity: e.target.value})}
+                              placeholder="Quantity"
+                            />
+                          </div>
+                          <div>
+                            <Label>Description</Label>
+                            <Input
+                              value={editForm.description || ''}
+                              onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                              placeholder="Description"
+                            />
+                          </div>
+                          <div>
+                            <Label>Price (£)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={editForm.price || ''}
+                              onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                              placeholder="Price"
+                            />
+                          </div>
                           <div className="flex gap-2">
                             <Button
                               size="sm"
                               onClick={() => {
+                                const baseItemName = editForm.item_name.replace(/\s*\(x\d+\)$/, '');
+                                const quantity = parseInt(editForm.quantity || '1');
                                 updateMenuItem.mutate({
                                   id: item.id,
-                                  ...editForm,
+                                  item_name: `${baseItemName} (x${quantity})`,
+                                  description: editForm.description,
                                   price: editForm.price ? parseFloat(editForm.price) : undefined
                                 });
                                 setEditingId(null);
@@ -163,20 +186,26 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
                             )}
                           </div>
                           <div className="flex gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => {
-                                setEditingId(item.id);
-                                setEditForm({
-                                  item_name: item.item_name,
-                                  description: item.description || '',
-                                  price: item.price || ''
-                                });
-                              }}
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => {
+                                  setEditingId(item.id);
+                                  // Extract quantity from item name like "Churros (x8)"
+                                  const qtyMatch = item.item_name.match(/\(x(\d+)\)/);
+                                  const quantity = qtyMatch ? qtyMatch[1] : '1';
+                                  const baseItemName = item.item_name.replace(/\s*\(x\d+\)$/, '');
+                                  
+                                  setEditForm({
+                                    item_name: baseItemName,
+                                    quantity: quantity,
+                                    description: item.description || '',
+                                    price: item.price || ''
+                                  });
+                                }}
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </Button>
                             <Button 
                               variant="ghost" 
                               size="sm"
