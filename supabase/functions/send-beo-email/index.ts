@@ -32,8 +32,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Fetch event details to get client email
     const { data: event, error: eventError } = await supabase
-      .from("events")
-      .select("client_email, event_code, event_name")
+      .from("management_events")
+      .select("client_email, code, event_type")
       .eq("id", eventId)
       .single();
 
@@ -47,7 +47,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("No client email found for this event");
     }
 
-    console.log(`✅ Found event: ${event.event_name}, sending to: ${event.client_email}`);
+    console.log(`✅ Found event: ${event.event_type}, sending to: ${event.client_email}`);
 
     // Download the PDF
     let pdfBuffer: ArrayBuffer;
@@ -89,7 +89,7 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     // Send email with PDF attachment
-    const emailSubject = `Banquet Event Order - ${event.event_code || event.event_name}`;
+    const emailSubject = `Banquet Event Order - ${event.code || event.event_type}`;
     const emailResponse = await resend.emails.send({
       from: "Croft Common <hello@thehive-hospitality.com>",
       to: [event.client_email],
@@ -108,8 +108,8 @@ const handler = async (req: Request): Promise<Response> => {
             </p>
             
             <div style="background-color: #ffffff; border-left: 4px solid #1a1a1a; padding: 15px; margin: 20px 0;">
-              <p style="margin: 0; color: #333;"><strong>Event:</strong> ${event.event_name || 'Your Event'}</p>
-              ${event.event_code ? `<p style="margin: 5px 0 0 0; color: #333;"><strong>Reference:</strong> ${event.event_code}</p>` : ''}
+              <p style="margin: 0; color: #333;"><strong>Event:</strong> ${event.event_type || 'Your Event'}</p>
+              ${event.code ? `<p style="margin: 5px 0 0 0; color: #333;"><strong>Reference:</strong> ${event.code}</p>` : ''}
               <p style="margin: 5px 0 0 0; color: #333;"><strong>BEO Version:</strong> ${versionNo}</p>
             </div>
             
@@ -135,7 +135,7 @@ const handler = async (req: Request): Promise<Response> => {
       `,
       attachments: [
         {
-          filename: `BEO-v${versionNo}-${event.event_code || eventId.substring(0, 8)}.pdf`,
+          filename: `BEO-v${versionNo}-${event.code || eventId.substring(0, 8)}.pdf`,
           content: base64Pdf,
         },
       ],
