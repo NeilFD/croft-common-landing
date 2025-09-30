@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Upload, FileText, File } from "lucide-react";
 
 const DOC_TYPES = [
@@ -32,6 +33,7 @@ export default function CommonKnowledgeUpload() {
   const [formData, setFormData] = useState({
     title: "",
     type: "",
+    description: "",
   });
 
   const generateSlug = (title: string) => {
@@ -71,14 +73,32 @@ export default function CommonKnowledgeUpload() {
       const slug = generateSlug(formData.title);
 
       // Create document first
-      const { data: docId, error: docError } = await supabase.rpc("rpc_ck_create_doc", {
-        p_title: formData.title,
-        p_slug: slug,
-        p_type: formData.type as any,
-        p_content_md: `Uploaded file: ${file.name}`,
-      });
+      const { data: docData, error: docError } = await supabase
+        .from('ck_docs')
+        .insert({
+          title: formData.title,
+          slug: slug,
+          type: formData.type as any,
+          description: formData.description || null,
+          status: 'draft',
+        })
+        .select('id')
+        .single();
 
       if (docError) throw docError;
+      const docId = docData.id;
+
+      // Create initial version
+      const { error: versionError } = await supabase
+        .from('ck_doc_versions')
+        .insert({
+          doc_id: docId,
+          version_no: 1,
+          content_md: `Uploaded file: ${file.name}`,
+          summary: formData.description || `Document: ${formData.title}`,
+        });
+
+      if (versionError) throw versionError;
 
       // Upload file to storage
       const fileExt = file.name.split('.').pop();
@@ -224,6 +244,17 @@ export default function CommonKnowledgeUpload() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Brief description of the document (optional)"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows={4}
+              />
             </div>
 
             <div className="flex gap-3 justify-end">

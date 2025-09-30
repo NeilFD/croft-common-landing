@@ -21,6 +21,7 @@ interface Document {
   created_at: string;
   updated_at: string;
   version_current_id: string;
+  description?: string;
 }
 
 interface Version {
@@ -297,6 +298,11 @@ export default function CommonKnowledgeView() {
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2 flex-1">
                   <h1 className="text-3xl font-brutalist font-bold">{doc.title}</h1>
+                  {doc.description && (
+                    <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+                      {doc.description}
+                    </p>
+                  )}
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge className={STATUS_COLORS[doc.status as keyof typeof STATUS_COLORS]}>
                       {doc.status.replace("_", " ")}

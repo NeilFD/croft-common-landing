@@ -608,6 +608,7 @@ export type Database = {
           ack_required: boolean | null
           collection_id: string | null
           created_at: string
+          description: string | null
           id: string
           owner_id: string | null
           slug: string
@@ -624,6 +625,7 @@ export type Database = {
           ack_required?: boolean | null
           collection_id?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           owner_id?: string | null
           slug: string
@@ -640,6 +642,7 @@ export type Database = {
           ack_required?: boolean | null
           collection_id?: string | null
           created_at?: string
+          description?: string | null
           id?: string
           owner_id?: string | null
           slug?: string
