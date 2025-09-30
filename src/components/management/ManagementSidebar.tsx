@@ -169,6 +169,23 @@ export const ManagementSidebar = () => {
                       <TooltipTrigger asChild>
                         <SidebarMenuButton
                           asChild
+                          className={getNavClass(isActive('/management/common-knowledge', false))}
+                        >
+                          <NavLink to="/management/common-knowledge">
+                            <BookOpen className="h-5 w-5" />
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                        <p className="font-industrial">Common Knowledge</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
                           className={getNavClass(isActive('/management/spaces', true))}
                         >
                           <NavLink to="/management/spaces">
