@@ -221,9 +221,17 @@ async function createBEOPDF(
       doc.addFont('WorkSans-Bold.ttf', 'WorkSans', 'bold');
     }
 
-    console.log('✅ Custom TTF fonts loaded');
+    console.log('✅ Custom TTF fonts loaded successfully');
+    
+    // Verify fonts are available
+    try {
+      const fontList = (doc as any).getFontList();
+      console.log('Available fonts:', Object.keys(fontList));
+    } catch (err) {
+      console.log('Could not get font list');
+    }
   } catch (e) {
-    console.warn('❌ Font loading failed, using system fonts:', e);
+    console.error('❌ Font loading failed:', e);
   }
 
   // Set default font
@@ -334,14 +342,20 @@ async function createBEOPDF(
   // EVENT DETAILS SECTION
   try {
     doc.setFont('Oswald', 'bold');
-  } catch {
-    doc.setFont('helvetica', 'bold');
+  } catch (e) {
+    console.warn('Oswald bold not available, using normal');
+    try {
+      doc.setFont('Oswald', 'normal');
+    } catch (e2) {
+      console.warn('Oswald normal not available, using helvetica');
+      doc.setFont('helvetica', 'bold');
+    }
   }
   doc.setFontSize(12);
-  doc.setTextColor(217, 70, 239); // Accent pink
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('EVENT DETAILS', margin, y);
   y += 2;
-  doc.setDrawColor(217, 70, 239); // Accent pink divider
+  doc.setDrawColor(0, 0, 0); // Black divider
   doc.setLineWidth(0.5);
   doc.line(margin, y, pageWidth - margin, y);
   y += 8;
@@ -456,10 +470,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(217, 70, 239); // Accent pink
+    doc.setTextColor(0, 0, 0); // Black
     doc.text('MENU', margin, y);
     y += 2;
-    doc.setDrawColor(217, 70, 239); // Accent pink divider
+    doc.setDrawColor(0, 0, 0); // Black divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -544,10 +558,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(217, 70, 239); // Accent pink
+    doc.setTextColor(0, 0, 0); // Black
     doc.text('EVENT SCHEDULE', margin, y);
     y += 2;
-    doc.setDrawColor(217, 70, 239); // Accent pink divider
+    doc.setDrawColor(0, 0, 0); // Black divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -619,10 +633,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(217, 70, 239); // Accent pink
+    doc.setTextColor(0, 0, 0); // Black
     doc.text('STAFFING REQUIREMENTS', margin, y);
     y += 2;
-    doc.setDrawColor(217, 70, 239); // Accent pink divider
+    doc.setDrawColor(0, 0, 0); // Black divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -688,10 +702,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(217, 70, 239); // Accent pink
+    doc.setTextColor(0, 0, 0); // Black
     doc.text('ROOM LAYOUTS', margin, y);
     y += 2;
-    doc.setDrawColor(217, 70, 239); // Accent pink divider
+    doc.setDrawColor(0, 0, 0); // Black divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -772,10 +786,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(217, 70, 239); // Accent pink
+    doc.setTextColor(0, 0, 0); // Black
     doc.text('EQUIPMENT', margin, y);
     y += 2;
-    doc.setDrawColor(217, 70, 239); // Accent pink divider
+    doc.setDrawColor(0, 0, 0); // Black divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
