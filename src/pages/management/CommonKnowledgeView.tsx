@@ -10,6 +10,7 @@ import { ArrowLeft, Edit, Share2, Download, History, Pin, Clock } from "lucide-r
 import { DocumentViewer } from "@/components/management/DocumentViewer";
 import { DocumentHistoryDialog } from "@/components/management/DocumentHistoryDialog";
 import { DocumentShareDialog } from "@/components/management/DocumentShareDialog";
+import { DocumentEditDialog } from "@/components/management/DocumentEditDialog";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface Document {
@@ -72,6 +73,7 @@ export default function CommonKnowledgeView() {
   const [isPinned, setIsPinned] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
 
   useEffect(() => {
     if (slug) {
@@ -283,7 +285,7 @@ export default function CommonKnowledgeView() {
             </Button>
             <Button 
               size="sm"
-              onClick={() => navigate(`/management/common-knowledge/edit/${doc.slug}`)}
+              onClick={() => setEditOpen(true)}
             >
               <Edit className="h-4 w-4 mr-2" />
               Edit
@@ -361,6 +363,13 @@ export default function CommonKnowledgeView() {
         open={shareOpen}
         onOpenChange={setShareOpen}
         docSlug={doc.slug}
+      />
+
+      <DocumentEditDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        document={doc}
+        onUpdate={fetchDocument}
       />
     </ManagementLayout>
   );
