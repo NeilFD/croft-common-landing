@@ -647,9 +647,10 @@ FOR MENU QUESTIONS:
 - Example: "The menu includes: Starters - Charred Octopus, Wood-Roast Aubergine; Mains - Roast Cod; Desserts - Churros"
 
 FOR BEO/PDF REQUESTS:
-- If BEO data is in RETRIEVED DATA section, include the download PDF link
+- If BEO data is in RETRIEVED DATA section, output the actual PDF download URL from the data
+- Make it clear and clickable by including the full https:// URL
 - Provide version number and generation date
-- Example: "Here's the BEO (Version 3, generated 29 Sep): [PDF link]"
+- Example: "Here's the BEO (Version 3, generated 29 Sep): https://xccidvoxhpgcnwinnyin.supabase.co/storage/v1/object/sign/..."
 
 FOR SCHEDULE QUESTIONS:
 - List times and activities from RETRIEVED DATA if available

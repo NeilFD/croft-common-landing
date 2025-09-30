@@ -11,8 +11,17 @@ interface AIMessageBubbleProps {
 export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubbleProps) => {
   const isUser = role === 'user';
 
-  // Process content for better line break rendering
-  const processedContent = content
+  // Auto-linkify URLs in the content
+  const linkifyContent = (text: string) => {
+    // Replace URLs with markdown links
+    return text.replace(
+      /(https?:\/\/[^\s]+)/g,
+      '[$1]($1)'
+    );
+  };
+
+  // Process content for better line break rendering and auto-linkify URLs
+  const processedContent = linkifyContent(content)
     .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with 2
     .replace(/([^\n])\n([^\n])/g, '$1  \n$2'); // Convert single newlines to markdown line breaks
 
@@ -44,6 +53,16 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
                 p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed">{children}</p>,
                 ul: ({ children }) => <ul className="space-y-1 ml-4">{children}</ul>,
                 li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                a: ({ href, children }) => (
+                  <a 
+                    href={href} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-accent-pink hover:text-accent-pink-dark underline font-medium"
+                  >
+                    {children}
+                  </a>
+                ),
               }}
             >
               {processedContent}
