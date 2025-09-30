@@ -316,7 +316,8 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
           tags: doc.tags,
           zones: doc.zones,
           collection: doc.ck_collections?.name,
-          content: doc.ck_doc_versions[0]?.content_md?.substring(0, 500),
+          content_full: doc.ck_doc_versions[0]?.content_md || '',
+          content: doc.ck_doc_versions[0]?.content_md ? doc.ck_doc_versions[0]?.content_md.substring(0, 1200) : '',
           summary: doc.ck_doc_versions[0]?.summary,
           slug: doc.slug,
         }));
@@ -330,7 +331,8 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
         tags: version.ck_docs.tags,
         zones: version.ck_docs.zones,
         collection: version.ck_docs.ck_collections?.name,
-        content: version.content_md?.substring(0, 500),
+        content_full: version.content_md || '',
+        content: version.content_md ? version.content_md.substring(0, 1200) : '',
         summary: version.summary,
         slug: version.ck_docs.slug,
       }));
@@ -377,7 +379,8 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
           tags: doc.tags,
           zones: doc.zones,
           collection: doc.ck_collections?.name,
-          content: doc.ck_doc_versions[0]?.content_md?.substring(0, 500),
+          content_full: doc.ck_doc_versions[0]?.content_md || '',
+          content: doc.ck_doc_versions[0]?.content_md ? doc.ck_doc_versions[0]?.content_md.substring(0, 1200) : '',
           summary: doc.ck_doc_versions[0]?.summary,
           slug: doc.slug,
         }));
@@ -941,7 +944,7 @@ FOR COMMON KNOWLEDGE QUESTIONS:
 - Quote relevant excerpts from the content preview
 - Provide the full document link for detailed reading
 - Mention the collection/folder if relevant
-- Example: "I found our Health & Safety policy - here's the key point: [quote from content]. Full document: https://www.croftcommontest.com/management/common-knowledge/view/health-safety-policy"
+- Example: "I found our Health & Safety policy - here's the key point: [quote from content]. Full document: https://www.croftcommontest.com/management/common-knowledge/d/health-safety-policy"
 - If multiple documents match, list them and offer to elaborate on any specific one
 
 FOR SCHEDULE QUESTIONS:
