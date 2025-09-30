@@ -13,8 +13,20 @@ interface BEOVersionsProps {
 export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
   const { data: versions = [], isLoading } = useBEOVersions(eventId);
 
-  const handleDownload = (pdfUrl: string, version: number) => {
-    window.open(pdfUrl, '_blank');
+  const handleDownload = async (pdfUrl: string, versionNo: number) => {
+    try {
+      // Open the signed URL directly - it will download the PDF
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `BEO-v${versionNo}-${eventId.substring(0, 8)}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      alert('Failed to download PDF. Please try again.');
+    }
   };
 
   if (isLoading) {
