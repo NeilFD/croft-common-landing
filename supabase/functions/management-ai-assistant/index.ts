@@ -236,7 +236,9 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
     const keywords = searchQuery.toLowerCase()
       .replace(/[^\w\s]/g, '')
       .split(/\s+/)
-      .filter(w => w.length > 3 && !['what', 'where', 'when', 'how', 'the', 'our', 'about', 'show', 'find', 'tell'].includes(w));
+      .filter(w => w.length > 3 && ![
+        'what','where','when','which','whats','whats','the','our','about','show','find','tell','give','could','would','should','please','need','want','have','with','from','into','that','this','those','these','some','more','most','very','much','many','any','your','yours','you','me','can','cant','able','summary','summarise','summarize','provide','info','information'
+      ].includes(w));
     
     console.log('🔍 Keywords:', keywords);
     
@@ -384,6 +386,53 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
           summary: doc.ck_doc_versions[0]?.summary,
           slug: doc.slug,
         }));
+      } else {
+        console.log('🔎 Title/tags fallback empty — trying content search...');
+        const { data: contentDocs } = await supabase
+          .from('ck_docs')
+          .select(`
+            id,
+            title,
+            slug,
+            type,
+            description,
+            tags,
+            zones,
+            collection_id,
+            ck_collections (
+              id,
+              name,
+              slug
+            ),
+            ck_doc_versions!inner (
+              id,
+              content_md,
+              summary,
+              version_no,
+              created_at
+            )
+          `)
+          .eq('status', 'approved')
+          .or(keywords.map(k => `ck_doc_versions.content_md.ilike.%${k}%`).join(','))
+          .order('updated_at', { ascending: false })
+          .limit(10);
+        
+        if (contentDocs && contentDocs.length > 0) {
+          console.log(`✓ Content search found ${contentDocs.length} documents`);
+          retrieved.documents = contentDocs.map((doc: any) => ({
+            id: doc.id,
+            title: doc.title,
+            type: doc.type,
+            description: doc.description,
+            tags: doc.tags,
+            zones: doc.zones,
+            collection: doc.ck_collections?.name,
+            content_full: doc.ck_doc_versions[0]?.content_md || '',
+            content: doc.ck_doc_versions[0]?.content_md ? doc.ck_doc_versions[0]?.content_md.substring(0, 1200) : '',
+            summary: doc.ck_doc_versions[0]?.summary,
+            slug: doc.slug,
+          }));
+        }
       }
     }
     
