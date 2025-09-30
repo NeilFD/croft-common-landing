@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Upload, FileText, File } from "lucide-react";
+import * as pdfjsLib from 'pdfjs-dist';
 
 interface Collection {
   id: string;
@@ -67,6 +68,30 @@ export default function CommonKnowledgeUpload() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
+  };
+
+  const extractPdfText = async (file: File): Promise<string> => {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      let allText = '';
+      const maxPages = Math.min(pdf.numPages, 100);
+      
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str || '')
+          .join(' ');
+        allText += pageText + '\n';
+      }
+      
+      return allText.replace(/\s+/g, ' ').trim();
+    } catch (error) {
+      console.error('PDF extraction error:', error);
+      return '';
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,23 +194,28 @@ export default function CommonKnowledgeUpload() {
 
       if (fileError) throw fileError;
 
-      // Extract content from the uploaded file
-      try {
-        const { error: extractError } = await supabase.functions.invoke('extract-document-content', {
-          body: {
-            storagePath: filePath,
-            docId: docId,
-            versionId: versionData.id,
-          }
-        });
+      // Extract content client-side for PDFs
+      if (file.type === 'application/pdf') {
+        try {
+          const extractedText = await extractPdfText(file);
+          
+          if (extractedText.length > 100) {
+            // Update version with extracted content
+            const { error: updateError } = await supabase.functions.invoke('update-document-content', {
+              body: {
+                versionId: versionData.id,
+                contentMd: extractedText,
+                summary: extractedText.substring(0, 500),
+              }
+            });
 
-        if (extractError) {
-          console.warn('Content extraction failed:', extractError);
-          // Don't fail the upload if extraction fails
+            if (updateError) {
+              console.warn('Failed to update extracted content:', updateError);
+            }
+          }
+        } catch (extractError) {
+          console.warn('PDF extraction error:', extractError);
         }
-      } catch (extractError) {
-        console.warn('Content extraction error:', extractError);
-        // Don't fail the upload if extraction fails
       }
 
       toast({

@@ -23,7 +23,7 @@ function detectIntent(message: string, conversationHistory: any[] = []): Intent 
     return { type: 'policy', searchQuery: message, confidence: 0.95 };
   }
   
-  if (/\b(knowledge|document|documents|manual|guide|reference|wiki|info|information about|how to|what.?s our|what are our)\b/i.test(lower)) {
+  if (/\b(knowledge|document|documents|manual|guide|reference|wiki|info|information about|how to|what.?s our|what are our|what are the|what is the|principle|principles|value|values|ethos|hospitality|croft common)\b/i.test(lower)) {
     return { type: 'knowledge', searchQuery: message, confidence: 0.9 };
   }
   
@@ -334,6 +334,54 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
         summary: version.summary,
         slug: version.ck_docs.slug,
       }));
+    } else {
+      // No full-text results - try fallback title/tag/slug search
+      console.log('🔄 No full-text results, trying title/tags fallback...');
+      
+      const { data: fallbackDocs } = await supabase
+        .from('ck_docs')
+        .select(`
+          id,
+          title,
+          slug,
+          type,
+          description,
+          tags,
+          zones,
+          collection_id,
+          ck_collections (
+            id,
+            name,
+            slug
+          ),
+          ck_doc_versions!inner (
+            id,
+            content_md,
+            summary,
+            version_no,
+            created_at
+          )
+        `)
+        .eq('status', 'approved')
+        .or(keywords.map(k => `title.ilike.%${k}%,tags.cs.{${k}},slug.ilike.%${k}%`).join(','))
+        .order('updated_at', { ascending: false })
+        .limit(10);
+      
+      if (fallbackDocs && fallbackDocs.length > 0) {
+        console.log(`✓ Fallback found ${fallbackDocs.length} documents`);
+        retrieved.documents = fallbackDocs.map((doc: any) => ({
+          id: doc.id,
+          title: doc.title,
+          type: doc.type,
+          description: doc.description,
+          tags: doc.tags,
+          zones: doc.zones,
+          collection: doc.ck_collections?.name,
+          content: doc.ck_doc_versions[0]?.content_md?.substring(0, 500),
+          summary: doc.ck_doc_versions[0]?.summary,
+          slug: doc.slug,
+        }));
+      }
     }
     
     // Get all collections for context
