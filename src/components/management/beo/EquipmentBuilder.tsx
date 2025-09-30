@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Wrench, Truck } from 'lucide-react';
+import { Plus, Trash2, Wrench, Truck, Pencil } from 'lucide-react';
 import { EventEquipment, useBEOMutations } from '@/hooks/useBEOData';
 import { format, parseISO } from 'date-fns';
 
@@ -17,6 +17,7 @@ interface EquipmentBuilderProps {
 
 export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equipment }) => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     category: '',
     item_name: '',
@@ -30,7 +31,7 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
     setup_instructions: ''
   });
 
-  const { addEquipmentItem, deleteEquipmentItem } = useBEOMutations(eventId);
+  const { addEquipmentItem, deleteEquipmentItem, updateEquipmentItem } = useBEOMutations(eventId);
 
   const equipmentCategories = [
     'AV',
@@ -48,7 +49,7 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    addEquipmentItem.mutate({
+    const equipmentData = {
       category: formData.category,
       item_name: formData.item_name,
       quantity: parseInt(formData.quantity),
@@ -59,23 +60,46 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
       supplier: formData.supplier || undefined,
       contact_details: formData.contact_details || undefined,
       setup_instructions: formData.setup_instructions || undefined
-    }, {
-      onSuccess: () => {
-        setFormData({
-          category: '',
-          item_name: '',
-          quantity: '1',
-          specifications: '',
-          delivery_time: '',
-          collection_time: '',
-          hire_cost: '',
-          supplier: '',
-          contact_details: '',
-          setup_instructions: ''
-        });
-        setShowAddForm(false);
-      }
-    });
+    };
+    
+    if (editingId) {
+      updateEquipmentItem.mutate({ id: editingId, ...equipmentData }, {
+        onSuccess: () => {
+          setFormData({
+            category: '',
+            item_name: '',
+            quantity: '1',
+            specifications: '',
+            delivery_time: '',
+            collection_time: '',
+            hire_cost: '',
+            supplier: '',
+            contact_details: '',
+            setup_instructions: ''
+          });
+          setEditingId(null);
+          setShowAddForm(false);
+        }
+      });
+    } else {
+      addEquipmentItem.mutate(equipmentData, {
+        onSuccess: () => {
+          setFormData({
+            category: '',
+            item_name: '',
+            quantity: '1',
+            specifications: '',
+            delivery_time: '',
+            collection_time: '',
+            hire_cost: '',
+            supplier: '',
+            contact_details: '',
+            setup_instructions: ''
+          });
+          setShowAddForm(false);
+        }
+      });
+    }
   };
 
   const groupedEquipment = equipment.reduce((acc, item) => {
@@ -136,14 +160,38 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
                         <p className="text-sm text-muted-foreground mb-2">{item.specifications}</p>
                       )}
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => deleteEquipmentItem.mutate(item.id)}
-                      disabled={deleteEquipmentItem.isPending}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          setEditingId(item.id);
+                          setFormData({
+                            category: item.category,
+                            item_name: item.item_name,
+                            quantity: item.quantity.toString(),
+                            specifications: item.specifications || '',
+                            delivery_time: item.delivery_time || '',
+                            collection_time: item.collection_time || '',
+                            hire_cost: item.hire_cost?.toString() || '',
+                            supplier: item.supplier || '',
+                            contact_details: item.contact_details || '',
+                            setup_instructions: item.setup_instructions || ''
+                          });
+                          setShowAddForm(true);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => deleteEquipmentItem.mutate(item.id)}
+                        disabled={deleteEquipmentItem.isPending}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -194,13 +242,32 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="font-['Oswald'] text-lg">Add Equipment</CardTitle>
+            <CardTitle className="font-['Oswald'] text-lg">
+              {editingId ? 'Edit Equipment' : 'Add Equipment'}
+            </CardTitle>
             <Button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => {
+                if (!showAddForm) {
+                  setEditingId(null);
+                  setFormData({
+                    category: '',
+                    item_name: '',
+                    quantity: '',
+                    specifications: '',
+                    delivery_time: '',
+                    collection_time: '',
+                    hire_cost: '',
+                    supplier: '',
+                    contact_details: '',
+                    setup_instructions: ''
+                  });
+                }
+                setShowAddForm(!showAddForm);
+              }}
               variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Equipment
+              {editingId ? 'Cancel Edit' : 'Add Equipment'}
             </Button>
           </div>
         </CardHeader>
@@ -334,9 +401,9 @@ export const EquipmentBuilder: React.FC<EquipmentBuilderProps> = ({ eventId, equ
                 </Button>
                 <Button
                   type="submit"
-                  disabled={addEquipmentItem.isPending}
+                  disabled={addEquipmentItem.isPending || updateEquipmentItem.isPending}
                 >
-                  Add Equipment
+                  {editingId ? 'Update Item' : 'Add Item'}
                 </Button>
               </div>
             </form>

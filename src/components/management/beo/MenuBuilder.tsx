@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, RotateCcw } from 'lucide-react';
+import { Trash2, RotateCcw, Pencil } from 'lucide-react';
 import { EventMenu, useBEOMutations } from '@/hooks/useBEOData';
+import { Input } from '@/components/ui/input';
 import { useKitchensMenuData } from '@/hooks/useKitchensCMSData';
 import { MenuTypeSelection, MenuType } from './menu-builder/MenuTypeSelection';
 import { MenuTypeConfirmation } from './menu-builder/MenuTypeConfirmation';
@@ -20,7 +21,9 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
   const [wizardStep, setWizardStep] = useState<WizardStep>('type-selection');
   const [selectedMenuType, setSelectedMenuType] = useState<MenuType | null>(null);
 
-  const { deleteMenuItem } = useBEOMutations(eventId);
+  const { deleteMenuItem, updateMenuItem } = useBEOMutations(eventId);
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+  const [editForm, setEditForm] = React.useState<any>({});
   
   // Fetch available menu content from CMS
   const { data: hallsMenuData } = useKitchensMenuData('halls');
@@ -94,35 +97,97 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
                     {course}
                   </h4>
                   {items.map((item) => (
-                    <div key={item.id} className="flex items-start justify-between p-3 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-['Work_Sans'] font-medium text-sm">{item.item_name}</span>
-                          {item.price && (
-                            <Badge variant="secondary" className="text-xs">£{item.price}</Badge>
-                          )}
-                        </div>
-                        {item.description && (
-                          <p className="text-xs text-muted-foreground mb-1">{item.description}</p>
-                        )}
-                        {item.allergens && item.allergens.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {item.allergens.map((allergen) => (
-                              <Badge key={allergen} variant="outline" className="text-xs">
-                                {allergen}
-                              </Badge>
-                            ))}
+                    <div key={item.id} className="p-3 border rounded-lg">
+                      {editingId === item.id ? (
+                        <div className="space-y-3">
+                          <Input
+                            value={editForm.item_name || ''}
+                            onChange={(e) => setEditForm({...editForm, item_name: e.target.value})}
+                            placeholder="Item name"
+                          />
+                          <Input
+                            value={editForm.description || ''}
+                            onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+                            placeholder="Description"
+                          />
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editForm.price || ''}
+                            onChange={(e) => setEditForm({...editForm, price: e.target.value})}
+                            placeholder="Price"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                updateMenuItem.mutate({
+                                  id: item.id,
+                                  ...editForm,
+                                  price: editForm.price ? parseFloat(editForm.price) : undefined
+                                });
+                                setEditingId(null);
+                              }}
+                            >
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingId(null)}
+                            >
+                              Cancel
+                            </Button>
                           </div>
-                        )}
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => deleteMenuItem.mutate(item.id)}
-                        disabled={deleteMenuItem.isPending}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-['Work_Sans'] font-medium text-sm">{item.item_name}</span>
+                              {item.price && (
+                                <Badge variant="secondary" className="text-xs">£{item.price}</Badge>
+                              )}
+                            </div>
+                            {item.description && (
+                              <p className="text-xs text-muted-foreground mb-1">{item.description}</p>
+                            )}
+                            {item.allergens && item.allergens.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {item.allergens.map((allergen) => (
+                                  <Badge key={allergen} variant="outline" className="text-xs">
+                                    {allergen}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => {
+                                setEditingId(item.id);
+                                setEditForm({
+                                  item_name: item.item_name,
+                                  description: item.description || '',
+                                  price: item.price || ''
+                                });
+                              }}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="sm"
+                              onClick={() => deleteMenuItem.mutate(item.id)}
+                              disabled={deleteMenuItem.isPending}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

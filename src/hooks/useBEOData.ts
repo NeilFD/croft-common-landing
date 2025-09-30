@@ -538,6 +538,165 @@ export const useBEOMutations = (eventId: string) => {
     }
   });
 
+  const updateMenuItem = useMutation({
+    mutationFn: async (params: {
+      id: string;
+      course?: string;
+      item_name?: string;
+      description?: string;
+      price?: number;
+      notes?: string;
+      allergens?: string[];
+    }) => {
+      const { id, ...updates } = params;
+      const { data, error } = await supabase
+        .from('event_menus')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-menus', eventId] });
+      toast({ title: "Menu item updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating menu item",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateStaffingRequirement = useMutation({
+    mutationFn: async (params: {
+      id: string;
+      role?: string;
+      qty?: number;
+      shift_start?: string;
+      shift_end?: string;
+      hourly_rate?: number;
+      notes?: string;
+    }) => {
+      const { id, ...updates } = params;
+      const { data, error } = await supabase
+        .from('event_staffing')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-staffing', eventId] });
+      toast({ title: "Staffing requirement updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating staffing requirement",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateScheduleItem = useMutation({
+    mutationFn: async (params: {
+      id: string;
+      time_label?: string;
+      scheduled_at?: string;
+      duration_minutes?: number;
+      responsible_role?: string;
+      notes?: string;
+    }) => {
+      const { id, ...updates } = params;
+      const { data, error } = await supabase
+        .from('event_schedule')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-schedule', eventId] });
+      toast({ title: "Schedule item updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating schedule item",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateRoomLayout = useMutation({
+    mutationFn: async (params: {
+      id: string;
+      space_name?: string;
+      layout_type?: string;
+      capacity?: number;
+      setup_notes?: string;
+      setup_time?: string;
+      breakdown_time?: string;
+      special_requirements?: string;
+    }) => {
+      const { id, ...updates } = params;
+      const { data, error } = await supabase
+        .from('event_room_layouts')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-room-layouts', eventId] });
+      toast({ title: "Room layout updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating room layout",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const updateEquipmentItem = useMutation({
+    mutationFn: async (params: {
+      id: string;
+      category?: string;
+      item_name?: string;
+      quantity?: number;
+      specifications?: string;
+      delivery_time?: string;
+      collection_time?: string;
+      hire_cost?: number;
+      supplier?: string;
+      contact_details?: string;
+      setup_instructions?: string;
+    }) => {
+      const { id, ...updates } = params;
+      const { data, error } = await supabase
+        .from('event_equipment')
+        .update(updates)
+        .eq('id', id);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-equipment', eventId] });
+      toast({ title: "Equipment item updated successfully" });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating equipment item",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   return {
     addMenuItem,
     addStaffingRequirement,
@@ -549,6 +708,11 @@ export const useBEOMutations = (eventId: string) => {
     deleteStaffingRequirement,
     deleteScheduleItem,
     deleteRoomLayout,
-    deleteEquipmentItem
+    deleteEquipmentItem,
+    updateMenuItem,
+    updateStaffingRequirement,
+    updateScheduleItem,
+    updateRoomLayout,
+    updateEquipmentItem
   };
 };

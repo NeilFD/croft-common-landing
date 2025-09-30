@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Users } from 'lucide-react';
+import { Plus, Trash2, Users, Pencil } from 'lucide-react';
 import { EventStaffing, useBEOMutations } from '@/hooks/useBEOData';
 
 interface StaffingBuilderProps {
@@ -16,6 +16,7 @@ interface StaffingBuilderProps {
 
 export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staffing }) => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     role: '',
     qty: '1',
@@ -25,7 +26,7 @@ export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staff
     notes: ''
   });
 
-  const { addStaffingRequirement, deleteStaffingRequirement } = useBEOMutations(eventId);
+  const { addStaffingRequirement, deleteStaffingRequirement, updateStaffingRequirement } = useBEOMutations(eventId);
 
   const staffingRoles = [
     'Manager',
@@ -45,26 +46,45 @@ export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staff
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    addStaffingRequirement.mutate({
+    const staffingData = {
       role: formData.role,
       qty: parseInt(formData.qty),
       shift_start: formData.shift_start || undefined,
       shift_end: formData.shift_end || undefined,
       hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : undefined,
       notes: formData.notes || undefined
-    }, {
-      onSuccess: () => {
-        setFormData({
-          role: '',
-          qty: '1',
-          shift_start: '',
-          shift_end: '',
-          hourly_rate: '',
-          notes: ''
-        });
-        setShowAddForm(false);
-      }
-    });
+    };
+    
+    if (editingId) {
+      updateStaffingRequirement.mutate({ id: editingId, ...staffingData }, {
+        onSuccess: () => {
+          setFormData({
+            role: '',
+            qty: '1',
+            shift_start: '',
+            shift_end: '',
+            hourly_rate: '',
+            notes: ''
+          });
+          setEditingId(null);
+          setShowAddForm(false);
+        }
+      });
+    } else {
+      addStaffingRequirement.mutate(staffingData, {
+        onSuccess: () => {
+          setFormData({
+            role: '',
+            qty: '1',
+            shift_start: '',
+            shift_end: '',
+            hourly_rate: '',
+            notes: ''
+          });
+          setShowAddForm(false);
+        }
+      });
+    }
   };
 
   const getTotalStaffByRole = () => {
@@ -132,14 +152,34 @@ export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staff
                   )}
                 </div>
                 
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => deleteStaffingRequirement.mutate(staff.id)}
-                  disabled={deleteStaffingRequirement.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setEditingId(staff.id);
+                      setFormData({
+                        role: staff.role,
+                        qty: staff.qty.toString(),
+                        shift_start: staff.shift_start || '',
+                        shift_end: staff.shift_end || '',
+                        hourly_rate: staff.hourly_rate?.toString() || '',
+                        notes: staff.notes || ''
+                      });
+                      setShowAddForm(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => deleteStaffingRequirement.mutate(staff.id)}
+                    disabled={deleteStaffingRequirement.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -150,13 +190,28 @@ export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staff
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="font-['Oswald'] text-lg">Add Staffing Requirement</CardTitle>
+            <CardTitle className="font-['Oswald'] text-lg">
+              {editingId ? 'Edit Staffing Requirement' : 'Add Staffing Requirement'}
+            </CardTitle>
             <Button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => {
+                if (!showAddForm) {
+                  setEditingId(null);
+                  setFormData({
+                    role: '',
+                    qty: '1',
+                    shift_start: '',
+                    shift_end: '',
+                    hourly_rate: '',
+                    notes: ''
+                  });
+                }
+                setShowAddForm(!showAddForm);
+              }}
               variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Staff Role
+              {editingId ? 'Cancel Edit' : 'Add Staffing'}
             </Button>
           </div>
         </CardHeader>
@@ -250,9 +305,9 @@ export const StaffingBuilder: React.FC<StaffingBuilderProps> = ({ eventId, staff
                 </Button>
                 <Button
                   type="submit"
-                  disabled={addStaffingRequirement.isPending}
+                  disabled={addStaffingRequirement.isPending || updateStaffingRequirement.isPending}
                 >
-                  Add Staffing Requirement
+                  {editingId ? 'Update Requirement' : 'Add Requirement'}
                 </Button>
               </div>
             </form>

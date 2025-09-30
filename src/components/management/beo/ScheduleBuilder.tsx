@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Clock, Calendar } from 'lucide-react';
+import { Plus, Trash2, Clock, Calendar, Pencil } from 'lucide-react';
 import { EventSchedule, useBEOMutations } from '@/hooks/useBEOData';
 import { format, parseISO } from 'date-fns';
 import { utcToLocalDate } from '@/lib/timezone-utils';
@@ -23,6 +23,7 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
   eventData 
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     time_label: '',
     scheduled_date: eventData?.date || '',
@@ -32,7 +33,7 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
     notes: ''
   });
 
-  const { addScheduleItem, deleteScheduleItem } = useBEOMutations(eventId);
+  const { addScheduleItem, deleteScheduleItem, updateScheduleItem } = useBEOMutations(eventId);
 
   const eventTimeLabels = [
     'Setup Start',
@@ -70,25 +71,44 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
     
     const scheduledAt = `${formData.scheduled_date}T${formData.scheduled_time}:00`;
     
-    addScheduleItem.mutate({
+    const scheduleData = {
       time_label: formData.time_label,
       scheduled_at: scheduledAt,
       duration_minutes: formData.duration_minutes ? parseInt(formData.duration_minutes) : undefined,
       responsible_role: formData.responsible_role || undefined,
       notes: formData.notes || undefined
-    }, {
-      onSuccess: () => {
-        setFormData({
-          time_label: '',
-          scheduled_date: eventData?.date || '',
-          scheduled_time: '',
-          duration_minutes: '',
-          responsible_role: '',
-          notes: ''
-        });
-        setShowAddForm(false);
-      }
-    });
+    };
+
+    if (editingId) {
+      updateScheduleItem.mutate({ id: editingId, ...scheduleData }, {
+        onSuccess: () => {
+          setFormData({
+            time_label: '',
+            scheduled_date: eventData?.date || '',
+            scheduled_time: '',
+            duration_minutes: '',
+            responsible_role: '',
+            notes: ''
+          });
+          setEditingId(null);
+          setShowAddForm(false);
+        }
+      });
+    } else {
+      addScheduleItem.mutate(scheduleData, {
+        onSuccess: () => {
+          setFormData({
+            time_label: '',
+            scheduled_date: eventData?.date || '',
+            scheduled_time: '',
+            duration_minutes: '',
+            responsible_role: '',
+            notes: ''
+          });
+          setShowAddForm(false);
+        }
+      });
+    }
   };
 
   const sortedSchedule = [...schedule].sort((a, b) => 
@@ -137,14 +157,35 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
                   )}
                 </div>
                 
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => deleteScheduleItem.mutate(item.id)}
-                  disabled={deleteScheduleItem.isPending}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => {
+                      setEditingId(item.id);
+                      const localDate = utcToLocalDate(item.scheduled_at);
+                      setFormData({
+                        time_label: item.time_label,
+                        scheduled_date: format(localDate, 'yyyy-MM-dd'),
+                        scheduled_time: format(localDate, 'HH:mm'),
+                        duration_minutes: item.duration_minutes?.toString() || '',
+                        responsible_role: item.responsible_role || '',
+                        notes: item.notes || ''
+                      });
+                      setShowAddForm(true);
+                    }}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => deleteScheduleItem.mutate(item.id)}
+                    disabled={deleteScheduleItem.isPending}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             ))}
             
@@ -161,13 +202,28 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="font-['Oswald'] text-lg">Add Schedule Item</CardTitle>
+            <CardTitle className="font-['Oswald'] text-lg">
+              {editingId ? 'Edit Schedule Item' : 'Add Schedule Item'}
+            </CardTitle>
             <Button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => {
+                if (!showAddForm) {
+                  setEditingId(null);
+                  setFormData({
+                    time_label: '',
+                    scheduled_date: eventData?.date || '',
+                    scheduled_time: '',
+                    duration_minutes: '',
+                    responsible_role: '',
+                    notes: ''
+                  });
+                }
+                setShowAddForm(!showAddForm);
+              }}
               variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Schedule Item
+              {editingId ? 'Cancel Edit' : 'Add Schedule Item'}
             </Button>
           </div>
         </CardHeader>
@@ -270,9 +326,9 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={addScheduleItem.isPending}
+                  disabled={addScheduleItem.isPending || updateScheduleItem.isPending}
                 >
-                  Add Schedule Item
+                  {editingId ? 'Update Item' : 'Add Item'}
                 </Button>
               </div>
             </form>

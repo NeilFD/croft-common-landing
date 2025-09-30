@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Layout } from 'lucide-react';
+import { Plus, Trash2, Layout, Pencil } from 'lucide-react';
 import { EventRoomLayout, useBEOMutations } from '@/hooks/useBEOData';
 import { format, parseISO } from 'date-fns';
 
@@ -17,6 +17,7 @@ interface RoomLayoutBuilderProps {
 
 export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, layouts }) => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     space_name: '',
     layout_type: '',
@@ -27,7 +28,7 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
     special_requirements: ''
   });
 
-  const { addRoomLayout, deleteRoomLayout } = useBEOMutations(eventId);
+  const { addRoomLayout, deleteRoomLayout, updateRoomLayout } = useBEOMutations(eventId);
 
   const spaceOptions = [
     'Main Hall',
@@ -57,7 +58,7 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    addRoomLayout.mutate({
+    const layoutData = {
       space_name: formData.space_name,
       layout_type: formData.layout_type,
       capacity: formData.capacity ? parseInt(formData.capacity) : undefined,
@@ -65,20 +66,40 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
       setup_time: formData.setup_time || undefined,
       breakdown_time: formData.breakdown_time || undefined,
       special_requirements: formData.special_requirements || undefined
-    }, {
-      onSuccess: () => {
-        setFormData({
-          space_name: '',
-          layout_type: '',
-          capacity: '',
-          setup_notes: '',
-          setup_time: '',
-          breakdown_time: '',
-          special_requirements: ''
-        });
-        setShowAddForm(false);
-      }
-    });
+    };
+    
+    if (editingId) {
+      updateRoomLayout.mutate({ id: editingId, ...layoutData }, {
+        onSuccess: () => {
+          setFormData({
+            space_name: '',
+            layout_type: '',
+            capacity: '',
+            setup_notes: '',
+            setup_time: '',
+            breakdown_time: '',
+            special_requirements: ''
+          });
+          setEditingId(null);
+          setShowAddForm(false);
+        }
+      });
+    } else {
+      addRoomLayout.mutate(layoutData, {
+        onSuccess: () => {
+          setFormData({
+            space_name: '',
+            layout_type: '',
+            capacity: '',
+            setup_notes: '',
+            setup_time: '',
+            breakdown_time: '',
+            special_requirements: ''
+          });
+          setShowAddForm(false);
+        }
+      });
+    }
   };
 
   return (
@@ -105,14 +126,35 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
                       )}
                     </div>
                   </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => deleteRoomLayout.mutate(layout.id)}
-                    disabled={deleteRoomLayout.isPending}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        setEditingId(layout.id);
+                        setFormData({
+                          space_name: layout.space_name,
+                          layout_type: layout.layout_type,
+                          capacity: layout.capacity?.toString() || '',
+                          setup_notes: layout.setup_notes || '',
+                          setup_time: layout.setup_time || '',
+                          breakdown_time: layout.breakdown_time || '',
+                          special_requirements: layout.special_requirements || ''
+                        });
+                        setShowAddForm(true);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => deleteRoomLayout.mutate(layout.id)}
+                      disabled={deleteRoomLayout.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -157,13 +199,29 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="font-['Oswald'] text-lg">Add Room Layout</CardTitle>
+            <CardTitle className="font-['Oswald'] text-lg">
+              {editingId ? 'Edit Room Layout' : 'Add Room Layout'}
+            </CardTitle>
             <Button
-              onClick={() => setShowAddForm(!showAddForm)}
+              onClick={() => {
+                if (!showAddForm) {
+                  setEditingId(null);
+                  setFormData({
+                    space_name: '',
+                    layout_type: '',
+                    capacity: '',
+                    setup_notes: '',
+                    setup_time: '',
+                    breakdown_time: '',
+                    special_requirements: ''
+                  });
+                }
+                setShowAddForm(!showAddForm);
+              }}
               variant="outline"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Room Layout
+              {editingId ? 'Cancel Edit' : 'Add Room Layout'}
             </Button>
           </div>
         </CardHeader>
@@ -274,9 +332,9 @@ export const RoomLayoutBuilder: React.FC<RoomLayoutBuilderProps> = ({ eventId, l
                 </Button>
                 <Button
                   type="submit"
-                  disabled={addRoomLayout.isPending}
+                  disabled={addRoomLayout.isPending || updateRoomLayout.isPending}
                 >
-                  Add Room Layout
+                  {editingId ? 'Update Layout' : 'Add Layout'}
                 </Button>
               </div>
             </form>
