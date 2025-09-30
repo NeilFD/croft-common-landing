@@ -46,12 +46,6 @@ const managementModules = [
     exactMatch: true
   },
   {
-    name: 'Common Knowledge',
-    path: '/management/common-knowledge',
-    icon: BookOpen,
-    exactMatch: false
-  },
-  {
     name: 'AI Assistant',
     path: '/management/ai-assistant',
     icon: Bot,
@@ -97,6 +91,7 @@ export const ManagementSidebar = () => {
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     modules: true,
+    knowledge: true,
     spaces: true,
   });
 
@@ -236,6 +231,50 @@ export const ManagementSidebar = () => {
                           </Tooltip>
                         </SidebarMenuItem>
                       ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
+
+          {/* Common Knowledge Section */}
+          {showText && (
+            <SidebarGroup>
+              <Collapsible 
+                open={expandedSections.knowledge} 
+                onOpenChange={() => toggleSection('knowledge')}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                      <BookOpen className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      COMMON KNOWLEDGE
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.knowledge ? 'rotate-180' : ''}`} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton 
+                              asChild
+                              className={getNavClass(isActive('/management/common-knowledge', false))}
+                            >
+                              <NavLink to="/management/common-knowledge" className="font-industrial">
+                                <BookOpen className="mr-2 h-4 w-4" />
+                                Dashboard
+                              </NavLink>
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                            <p className="font-industrial">Knowledge Dashboard</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </SidebarMenuItem>
                     </SidebarMenu>
                   </SidebarGroupContent>
                 </CollapsibleContent>
