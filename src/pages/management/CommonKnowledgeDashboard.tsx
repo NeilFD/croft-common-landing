@@ -19,6 +19,10 @@ interface Document {
   updated_at: string;
 }
 
+interface PinnedDocument extends Document {
+  pinned_at: string;
+}
+
 const TYPE_LABELS: Record<string, string> = {
   ethos: "Ethos",
   sop: "SOP",
@@ -43,6 +47,7 @@ export default function CommonKnowledgeDashboard() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [pinnedDocuments, setPinnedDocuments] = useState<PinnedDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
@@ -59,6 +64,10 @@ export default function CommonKnowledgeDashboard() {
     try {
       setLoading(true);
       
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
       // Fetch all documents
       const { data: docs, error } = await supabase
         .from("ck_docs")
@@ -74,16 +83,41 @@ export default function CommonKnowledgeDashboard() {
       const approved = docs?.filter(d => d.status === "approved").length || 0;
       const in_review = docs?.filter(d => d.status === "in_review").length || 0;
       
-      // Fetch pinned count
-      const { count: pinnedCount } = await supabase
+      // Fetch pinned documents with details
+      const { data: pins, error: pinsError } = await supabase
         .from("ck_pins")
-        .select("*", { count: "exact", head: true });
+        .select(`
+          created_at,
+          ck_docs (
+            id,
+            title,
+            slug,
+            type,
+            status,
+            created_at,
+            updated_at
+          )
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (pinsError) throw pinsError;
+
+      // Transform pinned data
+      const pinnedDocs = (pins || [])
+        .filter(pin => pin.ck_docs)
+        .map(pin => ({
+          ...(pin.ck_docs as any),
+          pinned_at: pin.created_at,
+        }));
+
+      setPinnedDocuments(pinnedDocs);
 
       setStats({
         total,
         approved,
         in_review,
-        pinned: pinnedCount || 0,
+        pinned: pinnedDocs.length,
       });
     } catch (error: any) {
       console.error("Error fetching documents:", error);
@@ -247,18 +281,55 @@ export default function CommonKnowledgeDashboard() {
             <h2 className="text-xl font-brutalist font-bold">Pinned Documents</h2>
           </div>
           
-          <Card className="p-8 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="p-4 rounded-full bg-muted">
-                <Pin className="h-8 w-8 text-muted-foreground" />
+          {pinnedDocuments.length === 0 ? (
+            <Card className="p-8 text-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="p-4 rounded-full bg-muted">
+                  <Pin className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-muted-foreground">
+                    Pin important documents for quick access
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-muted-foreground">
-                  Pin important documents for quick access
-                </p>
-              </div>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {pinnedDocuments.map((doc) => (
+                <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
+                  <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer border-[hsl(var(--accent-pink))]/20">
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                            <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h3 className="font-brutalist font-bold text-sm truncate">{doc.title}</h3>
+                              <Pin className="h-3 w-3 text-[hsl(var(--accent-pink))] fill-current shrink-0" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              {TYPE_LABELS[doc.type]}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={STATUS_COLORS[doc.status as keyof typeof STATUS_COLORS]} variant="secondary">
+                          {doc.status.replace("_", " ")}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Pinned {new Date(doc.pinned_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </Card>
+                </Link>
+              ))}
             </div>
-          </Card>
+          )}
         </div>
       </div>
     </ManagementLayout>

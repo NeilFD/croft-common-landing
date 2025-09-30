@@ -299,7 +299,15 @@ export default function CommonKnowledgeView() {
             <div className="space-y-4 border-b pb-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2 flex-1">
-                  <h1 className="text-3xl font-brutalist font-bold">{doc.title}</h1>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-brutalist font-bold">{doc.title}</h1>
+                    {isPinned && (
+                      <div className="flex items-center gap-1 px-2 py-1 bg-[hsl(var(--accent-pink))]/10 text-[hsl(var(--accent-pink))] text-xs font-bold uppercase rounded">
+                        <Pin className="h-3 w-3 fill-current" />
+                        Pinned
+                      </div>
+                    )}
+                  </div>
                   {doc.description && (
                     <p className="text-sm text-muted-foreground leading-relaxed mt-2">
                       {doc.description}
