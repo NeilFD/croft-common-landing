@@ -40,39 +40,33 @@ export const MenuItemSelection: React.FC<MenuItemSelectionProps> = ({
   const { addMenuItem } = useBEOMutations(eventId);
   const { toast } = useToast();
 
-  // Menu type to CMS section mapping
+  // Menu type to CMS section mapping - using exact section names from database
   const menuTypeSectionMap: Record<MenuType, string[]> = {
     'plated-3-course': [
-      'Starter Selection',
-      'Main Course Selection', 
-      'Dessert Selection',
-      'Coffee & Tea'
+      'Starters',
+      'Mains', 
+      'Desserts'
     ],
     'deli-style': [
-      'Deli Style — Meetings & Conference Lunch',
       'Sandwiches (Choose Three)',
-      'Salad Selection',
-      'Hot Food Options'
+      'Salads (Choose Three)',
+      'Sweets (Choose Two)'
     ],
     'feast-style': [
-      'Feast Starters',
-      'Feast Mains',
-      'Feast Sides',
-      'Feast Desserts'
+      'The Common Table — £35pp',
+      'The Boards — £50pp',
+      'The Feast — £70pp'
     ],
     'bespoke': [], // Bespoke has no predefined sections
     'takeaway-sections': [
-      'Bites & Small Plates',
-      'Pizzas',
-      'Mains',
-      'Sides',
-      'Desserts'
+      'BITES & SMALL PLATES',
+      'PIZZAS',
+      'MAINS',
+      'SIDES',
+      'DESSERTS'
     ],
     'pre-selected': [
-      'Pizza & Small Plates',
-      'The Big Grill',
-      'The Roast',
-      'The Hideout All In'
+      'PRE-BUILT (PER HEAD)'
     ]
   };
 
@@ -91,12 +85,9 @@ export const MenuItemSelection: React.FC<MenuItemSelectionProps> = ({
     // Get the allowed section titles for this menu type
     const allowedSections = menuTypeSectionMap[menuType];
     
-    // Filter sections to only include those that match the menu type
+    // Filter sections to only include exact matches
     return menuData.filter(section => 
-      allowedSections.some(allowedTitle => 
-        section.title.toLowerCase().includes(allowedTitle.toLowerCase()) ||
-        allowedTitle.toLowerCase().includes(section.title.toLowerCase())
-      )
+      allowedSections.includes(section.title)
     );
   }, [menuType, hallsMenuData, hideoutMenuData]);
 
