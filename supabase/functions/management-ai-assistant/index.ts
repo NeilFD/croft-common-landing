@@ -758,8 +758,10 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - ONLY use data from the RETRIEVED DATA section below (if present) or the DATABASE OVERVIEW
 - NEVER make up, invent, or hallucinate information
 - If data isn't available, say: "I don't have that info right now - can I help with something else?"
-- Do NOT use markdown formatting with asterisks - write in plain text
 - Use British English (organised, colour, etc.)
+- Use proper line breaks for readability - add blank lines between sections
+- When listing multiple items, put each on its own line
+- Break up long text into short, readable paragraphs
 
 **Your Personality:**
 - Your name is Cleo
@@ -799,7 +801,7 @@ ${baseData.spaces?.map((s: any) =>
       retrievedData.documents.forEach((doc: any, idx: number) => {
         prompt += `\n${idx + 1}. ${doc.title} [${doc.type}]`;
         if (doc.collection) prompt += ` | Collection: ${doc.collection}`;
-        prompt += `\n   Link: https://www.croftcommontest.com/management/common-knowledge/view/${doc.slug}`;
+        prompt += `\n   Link: https://www.croftcommontest.com/management/common-knowledge/${doc.slug}`;
         if (doc.description) prompt += `\n   Description: ${doc.description}`;
         if (doc.tags && doc.tags.length > 0) prompt += `\n   Tags: ${doc.tags.join(', ')}`;
         if (doc.zones && doc.zones.length > 0) prompt += `\n   Zones: ${doc.zones.join(', ')}`;
