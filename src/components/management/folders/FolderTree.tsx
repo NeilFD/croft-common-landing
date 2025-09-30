@@ -1,4 +1,4 @@
-import { ChevronRight, ChevronDown, Folder, FolderOpen } from "lucide-react";
+import { ChevronRight, ChevronDown, Folder, FolderOpen, Home } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { FolderContextMenu } from "./FolderContextMenu";
@@ -94,14 +94,16 @@ const TreeNode = ({
           )}
           {!hasChildren && <div className="w-5" />}
           
-          {isExpanded && hasChildren ? (
+          {isRoot ? (
+            <Home className="h-4 w-4 text-primary" />
+          ) : isExpanded && hasChildren ? (
             <FolderOpen className="h-4 w-4 text-primary" />
           ) : (
             <Folder className="h-4 w-4 text-muted-foreground" />
           )}
           
           <span className="flex-1 truncate text-sm">
-            {collection?.name || "All Documents"}
+            {collection?.name || "Home"}
           </span>
         </div>
       </FolderContextMenu>
