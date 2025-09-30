@@ -5180,15 +5180,23 @@ export type Database = {
         Returns: undefined
       }
       rpc_ck_create_doc: {
-        Args: {
-          p_collection_id?: string
-          p_content_md?: string
-          p_slug: string
-          p_tags?: string[]
-          p_title: string
-          p_type: Database["public"]["Enums"]["ck_doc_type"]
-          p_zones?: string[]
-        }
+        Args:
+          | {
+              p_collection_id?: string
+              p_content_md: string
+              p_slug: string
+              p_title: string
+              p_type: string
+            }
+          | {
+              p_collection_id?: string
+              p_content_md?: string
+              p_slug: string
+              p_tags?: string[]
+              p_title: string
+              p_type: Database["public"]["Enums"]["ck_doc_type"]
+              p_zones?: string[]
+            }
         Returns: string
       }
       rpc_ck_get_signed_url: {
