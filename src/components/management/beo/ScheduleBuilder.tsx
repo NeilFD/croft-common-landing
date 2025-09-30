@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, Trash2, Clock, Calendar } from 'lucide-react';
 import { EventSchedule, useBEOMutations } from '@/hooks/useBEOData';
 import { format, parseISO } from 'date-fns';
+import { utcToLocalDate } from '@/lib/timezone-utils';
 
 interface ScheduleBuilderProps {
   eventId: string;
@@ -114,7 +115,7 @@ export const ScheduleBuilder: React.FC<ScheduleBuilderProps> = ({
               <div key={item.id} className="flex items-start gap-4 p-4 border rounded-lg">
                 <div className="flex-shrink-0 w-20 text-center">
                   <div className="font-['Work_Sans'] font-medium text-lg">
-                    {format(parseISO(item.scheduled_at), 'HH:mm')}
+                    {format(utcToLocalDate(item.scheduled_at), 'HH:mm')}
                   </div>
                   {item.duration_minutes && (
                     <div className="text-xs text-muted-foreground">

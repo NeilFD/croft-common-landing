@@ -404,20 +404,30 @@ export const useBEOMutations = (eventId: string) => {
 
   const generateBEO = useMutation({
     mutationFn: async () => {
+      console.log('Generating BEO PDF for event:', eventId);
       const { data, error } = await supabase.functions.invoke('generate-beo-pdf', {
         body: { eventId }
       });
-      if (error) throw error;
+      console.log('BEO generation response:', { data, error });
+      if (error) {
+        console.error('BEO generation error:', error);
+        throw error;
+      }
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('BEO generated successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['beo-versions', eventId] });
-      toast({ title: "BEO generated successfully" });
+      toast({ 
+        title: "BEO generated successfully",
+        description: "Your BEO PDF has been created and saved."
+      });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('BEO generation mutation error:', error);
       toast({
         title: "Error generating BEO",
-        description: error.message,
+        description: error?.message || 'Failed to generate BEO PDF. Please check console for details.',
         variant: "destructive"
       });
     }
