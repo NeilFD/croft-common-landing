@@ -6,11 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { FileText, Plus, Send, Eye, CreditCard, Pencil } from 'lucide-react';
+import { FileText, Plus, Mail, Eye, CreditCard, Pencil } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { ShareInvoiceDialog } from './ShareInvoiceDialog';
 
 interface InvoiceManagerProps {
   eventId: string;
@@ -34,6 +35,22 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
   const [editInvoiceData, setEditInvoiceData] = useState<CreateInvoiceData>({
     amount: 0,
     due_date: ''
+  });
+  const [shareInvoiceId, setShareInvoiceId] = useState<string | null>(null);
+
+  // Fetch event data for client email
+  const { data: eventData } = useQuery({
+    queryKey: ['management-event', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('management_events')
+        .select('*')
+        .eq('id', eventId)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
   });
 
   // Fetch invoices
@@ -120,32 +137,6 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
     }
   });
 
-  // Send invoice mutation
-  const sendInvoice = useMutation({
-    mutationFn: async (invoiceId: string) => {
-      const { data, error } = await supabase
-        .from('invoices')
-        .update({ status: 'sent' })
-        .eq('id', invoiceId);
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Invoice marked as sent",
-      });
-      queryClient.invalidateQueries({ queryKey: ['invoices', eventId] });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update invoice",
-        variant: "destructive",
-      });
-    }
-  });
 
   const getStatusColor = (status: string) => {
     const colors = {
@@ -195,6 +186,11 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
   };
 
   const viewedInvoice = invoices?.find(inv => inv.id === viewInvoiceId);
+  const shareInvoice = invoices?.find(inv => inv.id === shareInvoiceId);
+
+  const handleShareSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['invoices', eventId] });
+  };
 
   if (isLoading) {
     return <div>Loading invoices...</div>;
@@ -342,11 +338,10 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
                                 <Button 
                                   variant="ghost" 
                                   size="sm"
-                                  onClick={() => sendInvoice.mutate(invoice.id)}
-                                  disabled={sendInvoice.isPending}
-                                  title="Mark as sent"
+                                  onClick={() => setShareInvoiceId(invoice.id)}
+                                  title="Share via email"
                                 >
-                                  <Send className="h-3 w-3" />
+                                  <Mail className="h-3 w-3" />
                                 </Button>
                               </>
                             )}
@@ -486,6 +481,17 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Share Invoice Dialog */}
+      {shareInvoice && (
+        <ShareInvoiceDialog
+          invoice={shareInvoice}
+          eventData={eventData}
+          open={!!shareInvoiceId}
+          onOpenChange={(open) => !open && setShareInvoiceId(null)}
+          onSuccess={handleShareSuccess}
+        />
+      )}
 
       {/* Summary Card */}
       {invoices && invoices.length > 0 && (
