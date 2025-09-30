@@ -77,6 +77,9 @@ import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
 const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
 const ManagementAIAssistant = lazy(() => import("./pages/management/ManagementAIAssistant"));
+const CommonKnowledgeDashboard = lazy(() => import("./pages/management/CommonKnowledgeDashboard"));
+const CommonKnowledgeNew = lazy(() => import("./pages/management/CommonKnowledgeNew"));
+const CommonKnowledgeView = lazy(() => import("./pages/management/CommonKnowledgeView"));
 const SpacesDashboard = lazy(() => import("./pages/management/SpacesDashboard"));
 const VenuesList = lazy(() => import("./pages/management/VenuesList"));
 const SpaceForm = lazy(() => import("./pages/management/SpaceForm"));
@@ -276,6 +279,11 @@ const App = () => {
                         <Route path="/management/login" element={<ManagementLogin />} />
                         <Route path="/management" element={<ManagementDashboard />} />
                         <Route path="/management/ai-assistant" element={<ManagementAIAssistant />} />
+                        
+                        {/* Common Knowledge Routes */}
+                        <Route path="/management/common-knowledge" element={<CommonKnowledgeDashboard />} />
+                        <Route path="/management/common-knowledge/new" element={<CommonKnowledgeNew />} />
+                        <Route path="/management/common-knowledge/d/:slug" element={<CommonKnowledgeView />} />
                         
                         {/* Spaces Event Management System */}
                         <Route path="/management/spaces" element={<SpacesDashboard />} />

@@ -437,6 +437,397 @@ export type Database = {
         }
         Relationships: []
       }
+      ck_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          doc_id: string | null
+          id: string
+          meta: Json | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          doc_id?: string | null
+          id?: string
+          meta?: Json | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          doc_id?: string | null
+          id?: string
+          meta?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_audit_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "ck_docs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_collections: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          parent_id: string | null
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          parent_id?: string | null
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_collections_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "ck_collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_comments: {
+        Row: {
+          body: string
+          created_at: string
+          doc_id: string
+          id: string
+          resolved_at: string | null
+          selection_anchor: string | null
+          user_id: string
+          version_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          doc_id: string
+          id?: string
+          resolved_at?: string | null
+          selection_anchor?: string | null
+          user_id: string
+          version_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          doc_id?: string
+          id?: string
+          resolved_at?: string | null
+          selection_anchor?: string | null
+          user_id?: string
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_comments_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "ck_docs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ck_comments_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "ck_doc_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_doc_versions: {
+        Row: {
+          content_html: string | null
+          content_md: string
+          created_at: string
+          doc_id: string
+          editor_id: string | null
+          id: string
+          search_text: unknown | null
+          summary: string | null
+          version_no: number
+        }
+        Insert: {
+          content_html?: string | null
+          content_md: string
+          created_at?: string
+          doc_id: string
+          editor_id?: string | null
+          id?: string
+          search_text?: unknown | null
+          summary?: string | null
+          version_no: number
+        }
+        Update: {
+          content_html?: string | null
+          content_md?: string
+          created_at?: string
+          doc_id?: string
+          editor_id?: string | null
+          id?: string
+          search_text?: unknown | null
+          summary?: string | null
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_doc_versions_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "ck_docs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_docs: {
+        Row: {
+          ack_due_date: string | null
+          ack_required: boolean | null
+          collection_id: string | null
+          created_at: string
+          id: string
+          owner_id: string | null
+          slug: string
+          status: Database["public"]["Enums"]["ck_doc_status"]
+          tags: string[] | null
+          title: string
+          type: Database["public"]["Enums"]["ck_doc_type"]
+          updated_at: string
+          version_current_id: string | null
+          zones: string[] | null
+        }
+        Insert: {
+          ack_due_date?: string | null
+          ack_required?: boolean | null
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          slug: string
+          status?: Database["public"]["Enums"]["ck_doc_status"]
+          tags?: string[] | null
+          title: string
+          type: Database["public"]["Enums"]["ck_doc_type"]
+          updated_at?: string
+          version_current_id?: string | null
+          zones?: string[] | null
+        }
+        Update: {
+          ack_due_date?: string | null
+          ack_required?: boolean | null
+          collection_id?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string | null
+          slug?: string
+          status?: Database["public"]["Enums"]["ck_doc_status"]
+          tags?: string[] | null
+          title?: string
+          type?: Database["public"]["Enums"]["ck_doc_type"]
+          updated_at?: string
+          version_current_id?: string | null
+          zones?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_docs_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "ck_collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_current_version"
+            columns: ["version_current_id"]
+            isOneToOne: false
+            referencedRelation: "ck_doc_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_files: {
+        Row: {
+          created_at: string
+          doc_id: string
+          filename: string
+          id: string
+          mime: string
+          size: number
+          storage_path: string
+          version_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          doc_id: string
+          filename: string
+          id?: string
+          mime: string
+          size: number
+          storage_path: string
+          version_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          doc_id?: string
+          filename?: string
+          id?: string
+          mime?: string
+          size?: number
+          storage_path?: string
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_files_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "ck_docs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ck_files_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "ck_doc_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_pins: {
+        Row: {
+          created_at: string
+          doc_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          doc_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          doc_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_pins_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "ck_docs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_read_receipts: {
+        Row: {
+          acknowledged: boolean | null
+          doc_id: string
+          id: string
+          read_at: string
+          user_id: string
+          version_id: string | null
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          doc_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+          version_id?: string | null
+        }
+        Update: {
+          acknowledged?: boolean | null
+          doc_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+          version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_read_receipts_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "ck_docs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ck_read_receipts_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "ck_doc_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ck_shares: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          doc_id: string
+          expires_at: string | null
+          grantee_id: string
+          grantee_type: Database["public"]["Enums"]["ck_grantee_type"]
+          id: string
+          level: Database["public"]["Enums"]["ck_share_level"]
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          doc_id: string
+          expires_at?: string | null
+          grantee_id: string
+          grantee_type: Database["public"]["Enums"]["ck_grantee_type"]
+          id?: string
+          level: Database["public"]["Enums"]["ck_share_level"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          doc_id?: string
+          expires_at?: string | null
+          grantee_id?: string
+          grantee_type?: Database["public"]["Enums"]["ck_grantee_type"]
+          id?: string
+          level?: Database["public"]["Enums"]["ck_share_level"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ck_shares_doc_id_fkey"
+            columns: ["doc_id"]
+            isOneToOne: false
+            referencedRelation: "ck_docs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cms_brand_assets: {
         Row: {
           asset_key: string
@@ -4322,6 +4713,14 @@ export type Database = {
           time_remaining_seconds: number
         }[]
       }
+      ck_has_doc_access: {
+        Args: {
+          _doc_id: string
+          _min_level?: Database["public"]["Enums"]["ck_share_level"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       cleanup_expired_otp_codes: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -4777,6 +5176,46 @@ export type Database = {
         Args: { p_event: string; p_reason: string }
         Returns: undefined
       }
+      rpc_ck_create_doc: {
+        Args: {
+          p_collection_id?: string
+          p_content_md?: string
+          p_slug: string
+          p_tags?: string[]
+          p_title: string
+          p_type: Database["public"]["Enums"]["ck_doc_type"]
+          p_zones?: string[]
+        }
+        Returns: string
+      }
+      rpc_ck_get_signed_url: {
+        Args: { p_storage_path: string }
+        Returns: string
+      }
+      rpc_ck_keyword_search: {
+        Args: {
+          p_limit?: number
+          p_query: string
+          p_status?: Database["public"]["Enums"]["ck_doc_status"]
+          p_type?: Database["public"]["Enums"]["ck_doc_type"]
+        }
+        Returns: {
+          doc_id: string
+          rank: number
+          slug: string
+          status: Database["public"]["Enums"]["ck_doc_status"]
+          title: string
+          type: Database["public"]["Enums"]["ck_doc_type"]
+        }[]
+      }
+      rpc_ck_new_version: {
+        Args: { p_content_md: string; p_doc_id: string; p_summary?: string }
+        Returns: string
+      }
+      rpc_ck_publish: {
+        Args: { p_doc_id: string }
+        Returns: boolean
+      }
       set_ledger_password: {
         Args: { password_input: string; user_id_input: string }
         Returns: boolean
@@ -4846,6 +5285,21 @@ export type Database = {
       }
     }
     Enums: {
+      ck_doc_status: "draft" | "in_review" | "approved"
+      ck_doc_type:
+        | "ethos"
+        | "sop"
+        | "standard"
+        | "policy"
+        | "training"
+        | "menu"
+        | "legal"
+        | "finance"
+        | "marketing"
+        | "licence"
+        | "briefing"
+      ck_grantee_type: "role" | "user" | "link"
+      ck_share_level: "view" | "comment" | "edit" | "manage"
       cms_asset_type: "logo" | "icon" | "hero_image" | "carousel_image"
       cms_content_type: "text" | "richtext" | "json"
       delivery_status: "sent" | "failed" | "deactivated" | "logged"
@@ -4997,6 +5451,22 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      ck_doc_status: ["draft", "in_review", "approved"],
+      ck_doc_type: [
+        "ethos",
+        "sop",
+        "standard",
+        "policy",
+        "training",
+        "menu",
+        "legal",
+        "finance",
+        "marketing",
+        "licence",
+        "briefing",
+      ],
+      ck_grantee_type: ["role", "user", "link"],
+      ck_share_level: ["view", "comment", "edit", "manage"],
       cms_asset_type: ["logo", "icon", "hero_image", "carousel_image"],
       cms_content_type: ["text", "richtext", "json"],
       delivery_status: ["sent", "failed", "deactivated", "logged"],

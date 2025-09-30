@@ -1,7 +1,7 @@
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, BarChart3 } from 'lucide-react';
+import { Building2, BarChart3, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -9,6 +9,13 @@ const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
 
   const quickActions = [
+    {
+      title: 'COMMON KNOWLEDGE',
+      description: 'Operational docs & SOPs',
+      icon: BookOpen,
+      href: '/management/common-knowledge',
+      color: 'text-[hsl(var(--accent-pink))]'
+    },
     {
       title: 'SPACES',
       description: 'Event management system',
@@ -40,8 +47,8 @@ const ManagementDashboard = () => {
               </CardHeader>
               <CardContent className="p-4 md:p-6 pt-0">
                 <Button asChild className="w-full btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11">
-                  <Link to="/management/spaces" className="flex items-center justify-center space-x-2">
-                    <Building2 className="h-4 w-4" />
+                  <Link to={action.href} className="flex items-center justify-center space-x-2">
+                    <action.icon className="h-4 w-4" />
                     <span>OPEN</span>
                   </Link>
                 </Button>

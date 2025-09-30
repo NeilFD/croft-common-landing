@@ -33,7 +33,8 @@ import {
   Users,
   Calendar,
   CalendarDays,
-  Bot
+  Bot,
+  BookOpen
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -43,6 +44,12 @@ const managementModules = [
     path: '/management',
     icon: Home,
     exactMatch: true
+  },
+  {
+    name: 'Common Knowledge',
+    path: '/management/common-knowledge',
+    icon: BookOpen,
+    exactMatch: false
   },
   {
     name: 'AI Assistant',
