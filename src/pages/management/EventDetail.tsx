@@ -365,6 +365,11 @@ const EventDetail = () => {
               <span className="hidden md:inline">OVERVIEW</span>
               <span className="md:hidden">VIEW</span>
             </TabsTrigger>
+            <TabsTrigger value="beo" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <FileText className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">BEO</span>
+              <span className="md:hidden">BEO</span>
+            </TabsTrigger>
             <TabsTrigger value="proposals" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <FileText className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">PROPOSALS</span>
@@ -389,11 +394,6 @@ const EventDetail = () => {
               <Clock className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">LATE CLOSE</span>
               <span className="md:hidden">LATE</span>
-            </TabsTrigger>
-            <TabsTrigger value="beo" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
-              <FileText className="h-3 w-3 md:hidden" />
-              <span className="hidden md:inline">BEO</span>
-              <span className="md:hidden">BEO</span>
             </TabsTrigger>
           </TabsList>
 
@@ -538,26 +538,6 @@ const EventDetail = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="proposals">
-            <ProposalBuilder eventId={id!} headcount={event?.headcount} />
-          </TabsContent>
-
-          <TabsContent value="contracts">
-            <ContractPreview eventId={id!} />
-          </TabsContent>
-
-          <TabsContent value="invoices">
-            <InvoiceManager eventId={id!} />
-          </TabsContent>
-
-          <TabsContent value="notes">
-            <EventNotesTab eventId={id!} notes={event.notes} />
-          </TabsContent>
-
-          <TabsContent value="late-close">
-            <LateCloseTab event={event} />
-          </TabsContent>
-
           <TabsContent value="beo">
             <div className="space-y-6">
               <div className="bg-muted p-4 rounded-lg border border-industrial">
@@ -589,6 +569,26 @@ const EventDetail = () => {
                 </TabsContent>
               </Tabs>
             </div>
+          </TabsContent>
+
+          <TabsContent value="proposals">
+            <ProposalBuilder eventId={id!} headcount={event?.headcount} />
+          </TabsContent>
+
+          <TabsContent value="contracts">
+            <ContractPreview eventId={id!} />
+          </TabsContent>
+
+          <TabsContent value="invoices">
+            <InvoiceManager eventId={id!} />
+          </TabsContent>
+
+          <TabsContent value="notes">
+            <EventNotesTab eventId={id!} notes={event.notes} />
+          </TabsContent>
+
+          <TabsContent value="late-close">
+            <LateCloseTab event={event} />
           </TabsContent>
         </Tabs>
       </div>
