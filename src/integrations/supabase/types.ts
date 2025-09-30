@@ -986,6 +986,53 @@ export type Database = {
           },
         ]
       }
+      event_contacts: {
+        Row: {
+          contact_type: string
+          created_at: string
+          email: string | null
+          event_id: string
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          contact_type: string
+          created_at?: string
+          email?: string | null
+          event_id: string
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          contact_type?: string
+          created_at?: string
+          email?: string | null
+          event_id?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_contacts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "management_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_equipment: {
         Row: {
           category: string
