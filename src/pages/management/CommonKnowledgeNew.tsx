@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ManagementLayout } from "@/components/management/ManagementLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,12 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft } from "lucide-react";
+
+interface Collection {
+  id: string;
+  name: string;
+  parent_id: string | null;
+}
 
 const DOC_TYPES = [
   { value: "ethos", label: "Ethos" },
@@ -29,11 +35,31 @@ export default function CommonKnowledgeNew() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     type: "",
     content: "",
+    collection_id: "",
   });
+
+  useEffect(() => {
+    fetchCollections();
+  }, []);
+
+  const fetchCollections = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("ck_collections")
+        .select("*")
+        .order("name");
+
+      if (error) throw error;
+      setCollections(data || []);
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+    }
+  };
 
   const generateSlug = (title: string) => {
     return title
@@ -54,6 +80,7 @@ export default function CommonKnowledgeNew() {
         p_slug: slug,
         p_type: formData.type as any,
         p_content_md: formData.content,
+        p_collection_id: formData.collection_id || null,
       });
 
       if (error) throw error;
@@ -115,6 +142,26 @@ export default function CommonKnowledgeNew() {
                   {DOC_TYPES.map((type) => (
                     <SelectItem key={type.value} value={type.value}>
                       {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="folder">Folder</Label>
+              <Select
+                value={formData.collection_id}
+                onValueChange={(value) => setFormData({ ...formData, collection_id: value })}
+              >
+                <SelectTrigger id="folder">
+                  <SelectValue placeholder="Select a folder (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">No folder</SelectItem>
+                  {collections.map((collection) => (
+                    <SelectItem key={collection.id} value={collection.id}>
+                      {collection.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
