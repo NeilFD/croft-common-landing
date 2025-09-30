@@ -11,12 +11,18 @@ interface AIMessageBubbleProps {
 export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubbleProps) => {
   const isUser = role === 'user';
 
-  // Auto-linkify URLs in the content
+  // Auto-linkify URLs in the content with shortened display text
   const linkifyContent = (text: string) => {
-    // Replace URLs with markdown links
     return text.replace(
       /(https?:\/\/[^\s]+)/g,
-      '[$1]($1)'
+      (url) => {
+        // For BEO PDF links, show a cleaner display name
+        if (url.includes('beo-documents') && url.includes('.pdf')) {
+          return `[📄 View BEO PDF](${url})`;
+        }
+        // For other long URLs, show them as-is
+        return `[${url}](${url})`;
+      }
     );
   };
 
@@ -58,7 +64,7 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
                     href={href} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-accent-pink hover:text-accent-pink-dark underline font-medium"
+                    className="text-accent-pink hover:text-accent-pink-dark underline font-medium break-all inline-block max-w-full"
                   >
                     {children}
                   </a>
