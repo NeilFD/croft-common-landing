@@ -439,14 +439,16 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
     }
   }
   
-  // Menu items detail (for BEO queries)
+  // Menu items detail (IMPORTANT: This is actual food/drink items, NOT financial line items)
   if (e.menus.length > 0) {
-    eventSummary += `\n  🍽️ MENU ITEMS (${e.menus.length} total):`;
+    eventSummary += `\n  🍽️ ACTUAL MENU - FOOD & DRINK ITEMS (${e.menus.length} dishes):`;
     e.menus.forEach((m: any) => {
-      eventSummary += `\n     ${m.course}: ${m.item_name}${m.price ? ` - £${m.price}` : ''}`;
-      if (m.description) eventSummary += `\n        ${m.description}`;
-      if (m.allergens && m.allergens.length > 0) eventSummary += `\n        Allergens: ${m.allergens.join(', ')}`;
+      eventSummary += `\n     • ${m.course}: ${m.item_name}`;
+      if (m.description) eventSummary += ` - ${m.description}`;
+      if (m.price) eventSummary += ` [£${m.price}]`;
+      if (m.allergens && m.allergens.length > 0) eventSummary += ` | ⚠️ Allergens: ${m.allergens.join(', ')}`;
     });
+    eventSummary += `\n  ────────────────`;
   }
   
   // Staffing detail (for BEO queries)
@@ -594,6 +596,15 @@ FOR BEO REQUESTS (Special handling):
   
   Contents: 4 menu items (Starters, Mains...), 2 staff roles, 5 schedule items"
 
+FOR MENU QUESTIONS (CRITICAL):
+- When user asks "what's on the menu" or "menu items", they want FOOD/DRINK dishes from the "ACTUAL MENU - FOOD & DRINK ITEMS" section
+- DO NOT confuse this with financial line items (which show pricing like "Food | GBP25 per person")
+- List the actual dish names by course: Starters, Mains, Desserts, etc.
+- Example: "The menu for this event includes:
+  Starters: Charred Octopus with Potato & Aioli, Wood-Roast Aubergine
+  Mains: Roast Cod with Brown Shrimp Butter
+  Desserts: Churros with Dark Chocolate"
+
 FOR ACTIONS (When asked to DO something):
 - Only return JSON when explicitly asked to CREATE, UPDATE, DELETE something
 - Format: {"type": "action", "action": "action_name", "params": {...}, "reasoning": "why"}
@@ -602,7 +613,7 @@ FOR ACTIONS (When asked to DO something):
 - "What events are coming up?" → "Hey! You've got 2 draft events: Michael Brown's presentation on 28 Sep and a social event on 6 Oct. Need details on either?"
 - "Show me spaces" → "Looking at your spaces - Main Hall fits 200, Common Room does 50, and the Terrace holds 30. Which one are you interested in?"
 - "Show me the BEO for 28th Sept event" → Provide PDF URL, version number, and summary of contents
-- "What's on the menu for the Sept 28 event?" → List all menu items from the MENU ITEMS section above
+- "What's on the menu?" or "What are the menu items?" → "The menu for Michael Brown's event includes: Starters - Charred Octopus with Potato & Aioli (x10), Wood-Roast Aubergine (x4); Mains - Roast Cod with Brown Shrimp Butter (x10); Desserts - Churros with Dark Chocolate (x10)"
 - "Create a new event for Monday" → Return JSON action
 
 **Keep in Mind:**
