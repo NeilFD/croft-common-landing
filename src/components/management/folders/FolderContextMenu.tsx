@@ -27,7 +27,7 @@ export function FolderContextMenu({
   return (
     <ContextMenu>
       <ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-      <ContextMenuContent className="w-56 bg-card">
+      <ContextMenuContent className="w-56 bg-background text-foreground shadow-lg ring-1 ring-border">
         <ContextMenuItem onClick={onCreateFolder}>
           <FolderPlus className="mr-2 h-4 w-4" />
           New Folder
