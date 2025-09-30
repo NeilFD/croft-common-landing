@@ -93,7 +93,8 @@ async function fetchRealData(supabase: any, userRole: string) {
     // Fetch spaces (removed venue_type column - doesn't exist in schema)
     const { data: spaces, error: spacesError } = await supabase
       .from('spaces')
-      .select('id, name, max_people, min_people, sq_ft, floor_level, accessibility_features, available_amenities')
+      .select('id, name, description, capacity_seated, capacity_standing, display_order, is_active')
+      .order('display_order', { ascending: true })
       .order('name')
       .limit(50);
     
@@ -160,10 +161,11 @@ async function fetchRealData(supabase: any, userRole: string) {
     if (layoutsError) console.error("Room layouts fetch error:", layoutsError);
 
     // Fetch financial line items
-    const { data: lineItems, error: lineItemsError } = await supabase
-      .from('event_line_items')
+  const { data: lineItems, error: lineItemsError } = await supabase
+      .from('management_event_line_items')
       .select('event_id, type, description, qty, unit_price, per_person, tax_rate_pct, sort_order')
-      .order('event_id, sort_order')
+      .order('event_id', { ascending: true })
+      .order('sort_order', { ascending: true })
       .limit(300);
     
     if (lineItemsError) console.error("Line items fetch error:", lineItemsError);
@@ -279,6 +281,7 @@ function parseContractFinancials(contractContent: string): any {
   if (!contractContent) return null;
 
   try {
+    const text = contractContent.replace(/\r/g, '');
     const financials: any = {
       lineItems: [],
       subtotal: 0,
@@ -289,46 +292,69 @@ function parseContractFinancials(contractContent: string): any {
       total: 0
     };
 
-    // Extract line items from services section
-    const itemRegex = /([A-Z][^£\n]+?)\s+£([\d,]+\.?\d*)\s+x\s+(\d+)\s+=\s+£([\d,]+\.?\d*)/gi;
-    let match;
-    
-    while ((match = itemRegex.exec(contractContent)) !== null) {
-      const [_, description, unitPrice, qty, total] = match;
-      financials.lineItems.push({
-        description: description.trim(),
-        unitPrice: parseFloat(unitPrice.replace(/,/g, '')),
-        qty: parseInt(qty),
-        total: parseFloat(total.replace(/,/g, ''))
-      });
+    // Patterns for line items (handle both "qty × £unit" and "£unit × qty", allow x or ×, optional "people", optional bullets)
+    const itemPatterns = [
+      /^\s*[•\-\u2022]?\s*(.+?)\s*-\s*(\d+)\s*(?:people\s*)?[x×]\s*£([\d,]+\.?\d*)\s*=\s*£([\d,]+\.?\d*)/gim,
+      /^\s*[•\-\u2022]?\s*(.+?)\s*-\s*£([\d,]+\.?\d*)\s*[x×]\s*(\d+)\s*=\s*£([\d,]+\.?\d*)/gim,
+    ];
+
+    for (const pattern of itemPatterns) {
+      let m: RegExpExecArray | null;
+      while ((m = pattern.exec(text)) !== null) {
+        // Normalise capture groups to: description, unitPrice, qty, total
+        let description = (m[1] || '').trim();
+        let unitPrice: string, qty: string, total: string;
+        if (pattern === itemPatterns[0]) {
+          qty = m[2];
+          unitPrice = m[3];
+          total = m[4];
+        } else {
+          unitPrice = m[2];
+          qty = m[3];
+          total = m[4];
+        }
+        financials.lineItems.push({
+          description,
+          unitPrice: parseFloat(unitPrice.replace(/,/g, '')),
+          qty: parseInt(qty),
+          total: parseFloat(total.replace(/,/g, '')),
+        });
+      }
     }
 
-    // Extract financial summary
-    const subtotalMatch = contractContent.match(/Subtotal:\s*£([\d,]+\.?\d*)/i);
+    // Financial summary with robust variants
+    const subtotalMatch = text.match(/Subtotal(?:\s*\([^)]+\))?\s*:\s*£([\d,]+\.?\d*)/i);
     if (subtotalMatch) {
       financials.subtotal = parseFloat(subtotalMatch[1].replace(/,/g, ''));
     }
 
-    const vatMatch = contractContent.match(/VAT\s*\((\d+)%\):\s*£([\d,]+\.?\d*)/i);
+    const vatMatch = text.match(/VAT\s*\((\d+)%\)\s*:\s*£([\d,]+\.?\d*)/i);
     if (vatMatch) {
       financials.vatRate = parseFloat(vatMatch[1]);
       financials.vatAmount = parseFloat(vatMatch[2].replace(/,/g, ''));
     }
 
-    const serviceMatch = contractContent.match(/Service\s+charge\s*\((\d+)%\):\s*£([\d,]+\.?\d*)/i);
+    const serviceMatch = text.match(/Service\s*Charge\s*\((\d+)%\)\s*:\s*£([\d,]+\.?\d*)/i);
     if (serviceMatch) {
       financials.serviceChargeRate = parseFloat(serviceMatch[1]);
       financials.serviceChargeAmount = parseFloat(serviceMatch[2].replace(/,/g, ''));
     }
 
-    const totalMatch = contractContent.match(/Total\s+due:\s*£([\d,]+\.?\d*)/i);
+    const totalMatch = text.match(/(TOTAL AMOUNT DUE|Total Amount Due|Total due|Total Due|Total)\s*:\s*£([\d,]+\.?\d*)/i);
     if (totalMatch) {
-      financials.total = parseFloat(totalMatch[1].replace(/,/g, ''));
+      financials.total = parseFloat(totalMatch[2].replace(/,/g, ''));
     }
 
-    // Validate we extracted something useful
+    // Derive missing pieces if possible
+    if (financials.subtotal === 0 && financials.lineItems.length > 0) {
+      financials.subtotal = financials.lineItems.reduce((s: number, it: any) => s + (it.total || ((it.unitPrice || 0) * (it.qty || 1))), 0);
+    }
+    if (financials.total === 0 && financials.subtotal > 0) {
+      financials.total = financials.subtotal + (financials.vatAmount || 0) + (financials.serviceChargeAmount || 0);
+    }
+
     if (financials.lineItems.length > 0 || financials.total > 0) {
-      console.log(`✓ Contract financials parsed: ${financials.lineItems.length} items, total £${financials.total}`);
+      console.log(`✓ Contract financials parsed: ${financials.lineItems.length} items, total £${financials.total.toFixed(2)}`);
       return financials;
     }
 
@@ -348,7 +374,7 @@ function buildSystemPrompt(context: any, realData: any): string {
 - You MUST ONLY use data provided in the "ACTUAL DATABASE DATA" section below
 - NEVER make up, invent, or hallucinate information
 - If data isn't available, say: "I don't have access to that info right now. Want me to help with something else?"
-- Always reference real data when answering (e.g., "Looking at your ${realData.events?.length || 0} events...")
+- Always reference real data when answering (e.g., "Looking at your ${realData.enrichedEvents?.length || 0} events...")
 - Do NOT use markdown formatting with asterisks - write in plain text
 
 **Your Personality:**
@@ -459,7 +485,7 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
 
 SPACES (${realData.spaces?.length || 0} total):
 ${realData.spaces?.length > 0 ? realData.spaces.map((s: any) => 
-  `- ${s.name} - Max: ${s.max_people || 'N/A'}, Min: ${s.min_people || 'N/A'}, ${s.sq_ft ? `${s.sq_ft} sq ft` : 'Size TBC'}${s.floor_level ? `, Floor ${s.floor_level}` : ''}`
+  `- ${s.name} — Seated: ${s.capacity_seated ?? 'TBC'}, Standing: ${s.capacity_standing ?? 'TBC'}`
 ).join('\n') : 'No spaces configured'}
 
 LEADS (${realData.leads?.length || 0} total):
