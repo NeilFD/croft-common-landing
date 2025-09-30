@@ -1482,6 +1482,9 @@ export type Database = {
           event_id: string
           id: string
           number: string | null
+          pdf_url: string | null
+          sent_at: string | null
+          sent_to: string | null
           status: string
           stripe_payment_intent_id: string | null
           total: number | null
@@ -1494,6 +1497,9 @@ export type Database = {
           event_id: string
           id?: string
           number?: string | null
+          pdf_url?: string | null
+          sent_at?: string | null
+          sent_to?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           total?: number | null
@@ -1506,6 +1512,9 @@ export type Database = {
           event_id?: string
           id?: string
           number?: string | null
+          pdf_url?: string | null
+          sent_at?: string | null
+          sent_to?: string | null
           status?: string
           stripe_payment_intent_id?: string | null
           total?: number | null

@@ -258,3 +258,7 @@ verify_jwt = true
 
 [functions.management-ai-assistant]
 verify_jwt = true
+
+[functions.generate-invoice-pdf]
+verify_jwt = true
+
