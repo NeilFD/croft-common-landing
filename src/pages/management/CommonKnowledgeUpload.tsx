@@ -160,6 +160,7 @@ export default function CommonKnowledgeUpload() {
         .from('ck_files')
         .insert({
           doc_id: docId,
+          version_id: versionData.id,
           storage_path: filePath,
           filename: file.name,
           mime: file.type,
@@ -167,6 +168,25 @@ export default function CommonKnowledgeUpload() {
         });
 
       if (fileError) throw fileError;
+
+      // Extract content from the uploaded file
+      try {
+        const { error: extractError } = await supabase.functions.invoke('extract-document-content', {
+          body: {
+            storagePath: filePath,
+            docId: docId,
+            versionId: versionData.id,
+          }
+        });
+
+        if (extractError) {
+          console.warn('Content extraction failed:', extractError);
+          // Don't fail the upload if extraction fails
+        }
+      } catch (extractError) {
+        console.warn('Content extraction error:', extractError);
+        // Don't fail the upload if extraction fails
+      }
 
       toast({
         title: "File uploaded",

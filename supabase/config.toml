@@ -268,3 +268,6 @@ verify_jwt = false
 [functions.proxy-beo-pdf]
 verify_jwt = false
 
+[functions.extract-document-content]
+verify_jwt = true
+
