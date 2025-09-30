@@ -201,16 +201,15 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
             <DialogHeader>
               <DialogTitle>{filename}</DialogTitle>
             </DialogHeader>
-            <div className="flex-1 overflow-hidden">
-              {previewLoading ? (
-                <div className="flex items-center justify-center h-full">
+            <div className="flex-1 overflow-hidden relative">
+              <div
+                ref={previewContainerRef}
+                className="w-full h-full overflow-auto bg-muted/20 p-4 rounded"
+              />
+              {previewLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-background/80">
                   <p className="text-muted-foreground">Preparing preview…</p>
                 </div>
-              ) : (
-                <div
-                  ref={previewContainerRef}
-                  className="w-full h-full overflow-auto bg-muted/20 p-4 rounded"
-                />
               )}
             </div>
           </DialogContent>
