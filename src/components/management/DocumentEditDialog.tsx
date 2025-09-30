@@ -242,7 +242,10 @@ export function DocumentEditDialog({
             <Button
               type="button"
               variant="destructive"
-              onClick={() => setDeleteDialogOpen(true)}
+              onClick={() => {
+                onOpenChange(false); // Close edit dialog first
+                setTimeout(() => setDeleteDialogOpen(true), 100); // Then open delete dialog
+              }}
               disabled={loading}
               className="sm:mr-auto"
             >
@@ -279,7 +282,15 @@ export function DocumentEditDialog({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel 
+              disabled={loading}
+              onClick={() => {
+                setDeleteDialogOpen(false);
+                setTimeout(() => onOpenChange(true), 100); // Reopen edit dialog if cancelled
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               disabled={loading}
