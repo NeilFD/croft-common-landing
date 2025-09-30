@@ -253,7 +253,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
         summary,
         version_no,
         created_at,
-        ck_docs!inner (
+        ck_docs!ck_doc_versions_doc_id_fkey (
           id,
           title,
           slug,
