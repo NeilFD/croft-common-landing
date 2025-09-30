@@ -171,6 +171,16 @@ export default function CommonKnowledgeDashboard() {
     setCreateFolderOpen(true);
   };
 
+  const handleRenameFolder = (collection: Collection) => {
+    setContextFolder(collection);
+    setRenameFolderOpen(true);
+  };
+
+  const handleDeleteFolder = (collection: Collection) => {
+    setContextFolder(collection);
+    setDeleteFolderOpen(true);
+  };
+
   const handleCopyFolder = async () => {
     if (!contextFolder) return;
     
@@ -235,7 +245,10 @@ export default function CommonKnowledgeDashboard() {
               collections={collections}
               selectedFolderId={selectedFolderId}
               onSelectFolder={setSelectedFolderId}
-              onContextMenu={handleFolderContextMenu}
+              onCreateFolder={handleCreateFolder}
+              onRename={handleRenameFolder}
+              onDelete={handleDeleteFolder}
+              onCopy={handleCopyFolder}
             />
           </div>
         </div>
