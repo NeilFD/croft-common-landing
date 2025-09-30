@@ -33,7 +33,8 @@ Deno.serve(async (req) => {
           event_type,
           client_name,
           client_email,
-          primary_date
+          primary_date,
+          headcount
         )
       `)
       .eq('id', invoiceId)
@@ -68,8 +69,10 @@ Deno.serve(async (req) => {
     // Generate PDF
     const pdfBytes = await createInvoicePDF(invoice);
 
-    // Upload to storage
-    const fileName = `invoice-${invoice.number.replace(/\//g, '-')}.pdf`;
+    // Upload to storage with cleaner filename
+    const eventCode = invoice.event?.code || 'NO-CODE';
+    const invoiceNum = invoice.number.replace(/\//g, '-');
+    const fileName = `invoice-${invoiceNum}-${eventCode}.pdf`;
     const { data: uploadData, error: uploadError } = await supabaseClient
       .storage
       .from('invoice-documents')
@@ -202,12 +205,24 @@ async function createInvoicePDF(invoice: any): Promise<Uint8Array> {
   // Line items
   doc.setFont('helvetica', 'normal');
   let subtotal = 0;
+  const headcount = invoice.event?.headcount || 1;
 
   if (invoice.line_items && invoice.line_items.length > 0) {
     invoice.line_items.forEach((item: any) => {
       const qty = item.qty || 1;
       const price = parseFloat(item.unit_price || 0);
-      const total = qty * price;
+      
+      // Calculate total based on per_person flag
+      let total;
+      let displayQty;
+      if (item.per_person) {
+        total = qty * price * headcount;
+        displayQty = `${qty} × ${headcount}`;
+      } else {
+        total = qty * price;
+        displayQty = qty.toString();
+      }
+      
       subtotal += total;
 
       // Check if we need a new page
@@ -217,7 +232,7 @@ async function createInvoicePDF(invoice: any): Promise<Uint8Array> {
       }
 
       doc.text(item.description || 'Item', col1, yPos, { maxWidth: 75 });
-      doc.text(qty.toString(), col2, yPos);
+      doc.text(displayQty, col2, yPos);
       doc.text(`£${price.toFixed(2)}`, col3, yPos);
       doc.text(`£${total.toFixed(2)}`, col4, yPos);
       yPos += 7;
