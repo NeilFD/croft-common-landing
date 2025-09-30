@@ -17,25 +17,50 @@ export const useManagementAuth = () => {
   useEffect(() => {
     const getSession = async () => {
       try {
+        console.log('🔑 useManagementAuth: Getting session...');
         const { data: { session } } = await supabase.auth.getSession();
+        console.log('🔑 useManagementAuth: Session:', session?.user?.email);
         
         if (session?.user) {
-          // Get user's management role
-          const { data: roleData } = await supabase
-            .rpc('get_user_management_role', { _user_id: session.user.id });
+          // Get user's management role with timeout
+          console.log('🔑 useManagementAuth: Fetching role for user:', session.user.id);
           
-          setManagementUser({
-            user: session.user,
-            role: roleData as ManagementRole,
-            hasAccess: !!roleData
-          });
+          const rolePromise = supabase.rpc('get_user_management_role', { _user_id: session.user.id });
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Role fetch timeout')), 5000)
+          );
+          
+          try {
+            const { data: roleData, error: roleError } = await Promise.race([
+              rolePromise,
+              timeoutPromise
+            ]) as any;
+            
+            console.log('🔑 useManagementAuth: Role data:', roleData, 'Error:', roleError);
+            
+            setManagementUser({
+              user: session.user,
+              role: roleData as ManagementRole,
+              hasAccess: !!roleData
+            });
+          } catch (roleErr) {
+            console.error('🔑 useManagementAuth: Role fetch failed:', roleErr);
+            // Set user without role on timeout/error
+            setManagementUser({
+              user: session.user,
+              role: null,
+              hasAccess: false
+            });
+          }
         } else {
+          console.log('🔑 useManagementAuth: No session found');
           setManagementUser(null);
         }
       } catch (error) {
-        console.error('Error getting management session:', error);
+        console.error('🔑 useManagementAuth: Error getting management session:', error);
         setManagementUser(null);
       } finally {
+        console.log('🔑 useManagementAuth: Setting loading to false');
         setLoading(false);
       }
     };
@@ -44,14 +69,30 @@ export const useManagementAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
-        const { data: roleData } = await supabase
-          .rpc('get_user_management_role', { _user_id: session.user.id });
-        
-        setManagementUser({
-          user: session.user,
-          role: roleData as ManagementRole,
-          hasAccess: !!roleData
-        });
+        try {
+          const rolePromise = supabase.rpc('get_user_management_role', { _user_id: session.user.id });
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Role fetch timeout')), 5000)
+          );
+          
+          const { data: roleData } = await Promise.race([
+            rolePromise,
+            timeoutPromise
+          ]) as any;
+          
+          setManagementUser({
+            user: session.user,
+            role: roleData as ManagementRole,
+            hasAccess: !!roleData
+          });
+        } catch (err) {
+          console.error('🔑 useManagementAuth: Role fetch failed in auth change:', err);
+          setManagementUser({
+            user: session.user,
+            role: null,
+            hasAccess: false
+          });
+        }
       } else {
         setManagementUser(null);
       }
