@@ -318,10 +318,12 @@ export default function CommonKnowledgeView() {
                       {doc.status.replace("_", " ")}
                     </Badge>
                     <Badge variant="outline">{TYPE_LABELS[doc.type]}</Badge>
-                    <Badge variant="outline">
-                      <Clock className="h-3 w-3 mr-1" />
-                      Version {version.version_no}
-                    </Badge>
+                    {version && (
+                      <Badge variant="outline">
+                        <Clock className="h-3 w-3 mr-1" />
+                        Version {version.version_no}
+                      </Badge>
+                    )}
                   </div>
                 </div>
               </div>
@@ -346,15 +348,14 @@ export default function CommonKnowledgeView() {
                 filename={file.filename}
                 mimeType={file.mime}
               />
-            ) : version ? (
-              <div className="prose prose-sm max-w-none font-industrial bg-muted/20 p-6 rounded-lg">
-                <p className="text-muted-foreground">
-                  This document has metadata but no file attached. Content preview is not available.
-                </p>
-              </div>
             ) : (
               <div className="prose prose-sm max-w-none font-industrial bg-muted/20 p-6 rounded-lg">
-                <p className="text-muted-foreground">No content available for this document.</p>
+                <p className="text-muted-foreground">
+                  {version 
+                    ? "This document has metadata but no file attached. Content preview is not available."
+                    : "No content available for this document yet. Upload a file or add content to get started."
+                  }
+                </p>
               </div>
             )}
           </div>
