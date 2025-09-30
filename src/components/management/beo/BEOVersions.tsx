@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Download, Calendar, User, Mail } from 'lucide-react';
-import { useBEOVersions, useBEOMutations } from '@/hooks/useBEOData';
+import { useBEOVersions } from '@/hooks/useBEOData';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,7 +13,6 @@ interface BEOVersionsProps {
 
 export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
   const { data: versions = [], isLoading } = useBEOVersions(eventId);
-  const { sendBEOEmail } = useBEOMutations(eventId);
 
   const handleDownload = async (pdfUrl: string, versionNo: number) => {
     try {
@@ -45,6 +44,39 @@ export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
     } catch (error) {
       console.error('Error downloading PDF:', error);
       alert('Failed to download PDF. Please try again.');
+    }
+  };
+
+  const handleShareEmail = async (pdfUrl: string, versionNo: number) => {
+    try {
+      let url = pdfUrl;
+      // Legacy records used public URL but the bucket is private
+      if (pdfUrl.includes('/storage/v1/object/public/beo-documents/')) {
+        const fileName = pdfUrl.split('/beo-documents/')[1];
+        const { data, error } = await supabase.storage
+          .from('beo-documents')
+          .createSignedUrl(fileName, 3600); // 1 hour expiry
+        if (error) throw error;
+        if (data?.signedUrl) url = data.signedUrl;
+      }
+
+      const subject = encodeURIComponent(`Banquet Event Order - Version ${versionNo}`);
+      const body = encodeURIComponent(
+        `Please find the Banquet Event Order (BEO) for your upcoming event at Croft Common.\n\n` +
+        `Download the BEO PDF here:\n${url}\n\n` +
+        `This document contains all the details of your event including menu selections, timings, room layouts, and special requirements.\n\n` +
+        `Please review carefully and contact us if you have any questions or require changes.\n\n` +
+        `We look forward to hosting your event at Croft Common.\n\n` +
+        `Best regards,\n` +
+        `Croft Common\n` +
+        `The Hive, 51 Lever Street, Manchester, M1 1FN\n` +
+        `Email: hello@thehive-hospitality.com`
+      );
+
+      window.location.href = `mailto:?subject=${subject}&body=${body}`;
+    } catch (error) {
+      console.error('Error preparing email:', error);
+      alert('Failed to prepare email. Please try again.');
     }
   };
 
@@ -103,11 +135,7 @@ export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
                   {version.pdf_url && (
                     <>
                       <Button
-                        onClick={() => sendBEOEmail.mutate({
-                          versionNo: version.version_no,
-                          pdfUrl: version.pdf_url!
-                        })}
-                        disabled={sendBEOEmail.isPending}
+                        onClick={() => handleShareEmail(version.pdf_url!, version.version_no)}
                         variant="default"
                         size="sm"
                       >
