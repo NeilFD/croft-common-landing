@@ -433,16 +433,22 @@ ${realData.enrichedEvents?.length > 0 ? realData.enrichedEvents.map((e: any) => 
   // Priority 1: Use event line items if available
   if (e.lineItems.length > 0) {
     financialSource = 'proposal_items';
+    const headcount = e.headcount || 0;
     const totalRevenue = e.lineItems.reduce((sum: number, item: any) => {
-      const itemTotal = (item.unit_price || 0) * (item.qty || 1);
+      const multiplier = item.per_person ? headcount : 1;
+      const itemTotal = (item.unit_price || 0) * (item.qty || 1) * multiplier;
       return sum + itemTotal;
     }, 0);
     
     eventSummary += `\n  💰 FINANCIALS (Source: Proposal line items | Total: £${totalRevenue.toFixed(2)}):`;
     e.lineItems.forEach((item: any) => {
-      const itemTotal = (item.unit_price || 0) * (item.qty || 1);
-      const perPersonNote = item.per_person ? ' per person' : '';
-      eventSummary += `\n    - ${item.type}: ${item.description} | £${item.unit_price}${perPersonNote} x ${item.qty} = £${itemTotal.toFixed(2)}`;
+      const multiplier = item.per_person ? headcount : 1;
+      const itemTotal = (item.unit_price || 0) * (item.qty || 1) * multiplier;
+      if (item.per_person) {
+        eventSummary += `\n    - ${item.type}: ${item.description} | £${item.unit_price} per person x ${item.qty} x ${headcount} guests = £${itemTotal.toFixed(2)}`;
+      } else {
+        eventSummary += `\n    - ${item.type}: ${item.description} | £${item.unit_price} x ${item.qty} = £${itemTotal.toFixed(2)}`;
+      }
     });
   }
   // Priority 2: Parse contract if no line items
