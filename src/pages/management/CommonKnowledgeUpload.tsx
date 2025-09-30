@@ -311,14 +311,13 @@ export default function CommonKnowledgeUpload() {
             <div className="space-y-2">
               <Label htmlFor="folder">Folder</Label>
               <Select
-                value={formData.collection_id}
+                value={formData.collection_id || undefined}
                 onValueChange={(value) => setFormData({ ...formData, collection_id: value })}
               >
                 <SelectTrigger id="folder">
-                  <SelectValue placeholder="Select a folder (optional)" />
+                  <SelectValue placeholder="No folder (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No folder</SelectItem>
                   {collections.map((collection) => (
                     <SelectItem key={collection.id} value={collection.id}>
                       {collection.name}
