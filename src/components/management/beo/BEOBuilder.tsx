@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Loader, Plus, FileText } from 'lucide-react';
+import { Loader, Plus, FileText, AlertCircle } from 'lucide-react';
 import { useEventMenus, useEventStaffing, useEventSchedule, useEventRoomLayouts, useEventEquipment, useBEOMutations } from '@/hooks/useBEOData';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { MenuBuilder } from './MenuBuilder';
 import { StaffingBuilder } from './StaffingBuilder';
 import { ScheduleBuilder } from './ScheduleBuilder';
@@ -25,6 +28,21 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState("menu");
 
+  // Validate that the event exists in the database
+  const { data: eventExists, isLoading: eventCheckLoading } = useQuery({
+    queryKey: ['event-exists', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('id')
+        .eq('id', eventId)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return !!data;
+    }
+  });
+
   const { data: menus = [], isLoading: menusLoading } = useEventMenus(eventId);
   const { data: staffing = [], isLoading: staffingLoading } = useEventStaffing(eventId);
   const { data: schedule = [], isLoading: scheduleLoading } = useEventSchedule(eventId);
@@ -33,7 +51,7 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
 
   const { generateBEO } = useBEOMutations(eventId);
 
-  const isLoading = menusLoading || staffingLoading || scheduleLoading || layoutsLoading || equipmentLoading;
+  const isLoading = eventCheckLoading || menusLoading || staffingLoading || scheduleLoading || layoutsLoading || equipmentLoading;
 
   const handleGenerateBEO = () => {
     generateBEO.mutate(undefined, {
@@ -48,6 +66,21 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
       <div className="flex items-center justify-center p-8">
         <Loader className="h-6 w-6 animate-spin" />
         <span className="ml-2 text-muted-foreground">Loading BEO data...</span>
+      </div>
+    );
+  }
+
+  // Show error if event doesn't exist
+  if (!eventCheckLoading && eventExists === false) {
+    return (
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Event Not Found</AlertTitle>
+          <AlertDescription>
+            The event with ID {eventId} does not exist in the database. Please check the URL or contact support if you believe this is an error.
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }

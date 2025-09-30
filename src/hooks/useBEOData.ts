@@ -225,10 +225,14 @@ export const useBEOMutations = (eventId: string) => {
       queryClient.invalidateQueries({ queryKey: ['event-menus', eventId] });
       toast({ title: "Menu item added successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error adding menu item:', error);
+      const errorMessage = error?.message?.includes('foreign key constraint')
+        ? 'This event does not exist. Please check the event details.'
+        : 'Failed to add menu item. Please try again.';
       toast({
-        title: "Error adding menu item",
-        description: error.message,
+        title: "Error",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -261,10 +265,14 @@ export const useBEOMutations = (eventId: string) => {
       queryClient.invalidateQueries({ queryKey: ['event-staffing', eventId] });
       toast({ title: "Staffing requirement added successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error adding staffing requirement:', error);
+      const errorMessage = error?.message?.includes('foreign key constraint')
+        ? 'This event does not exist. Please check the event details.'
+        : 'Failed to add staffing requirement. Please try again.';
       toast({
-        title: "Error adding staffing requirement",
-        description: error.message,
+        title: "Error",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -295,10 +303,14 @@ export const useBEOMutations = (eventId: string) => {
       queryClient.invalidateQueries({ queryKey: ['event-schedule', eventId] });
       toast({ title: "Schedule item added successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error adding schedule item:', error);
+      const errorMessage = error?.message?.includes('foreign key constraint')
+        ? 'This event does not exist. Please check the event details.'
+        : 'Failed to add schedule item. Please try again.';
       toast({
-        title: "Error adding schedule item",
-        description: error.message,
+        title: "Error",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -331,10 +343,14 @@ export const useBEOMutations = (eventId: string) => {
       queryClient.invalidateQueries({ queryKey: ['event-room-layouts', eventId] });
       toast({ title: "Room layout added successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error adding room layout:', error);
+      const errorMessage = error?.message?.includes('foreign key constraint')
+        ? 'This event does not exist. Please check the event details.'
+        : 'Failed to add room layout. Please try again.';
       toast({
-        title: "Error adding room layout",
-        description: error.message,
+        title: "Error",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -373,10 +389,14 @@ export const useBEOMutations = (eventId: string) => {
       queryClient.invalidateQueries({ queryKey: ['event-equipment', eventId] });
       toast({ title: "Equipment item added successfully" });
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      console.error('Error adding equipment item:', error);
+      const errorMessage = error?.message?.includes('foreign key constraint')
+        ? 'This event does not exist. Please check the event details.'
+        : 'Failed to add equipment item. Please try again.';
       toast({
-        title: "Error adding equipment item",
-        description: error.message,
+        title: "Error",
+        description: errorMessage,
         variant: "destructive"
       });
     }
