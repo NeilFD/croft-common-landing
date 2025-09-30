@@ -50,8 +50,16 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
         const buffer = await data.arrayBuffer();
         const pdf = await getDocument({ data: buffer }).promise;
         console.info("PDF preview: loaded", { pages: pdf.numPages, filename });
-        const container = previewContainerRef.current;
-        if (!container) return;
+        let container = previewContainerRef.current;
+        if (!container) {
+          console.warn("PDF preview: container not ready, waiting a frame");
+          await new Promise((r) => requestAnimationFrame(() => r(null)));
+          container = previewContainerRef.current;
+        }
+        if (!container) {
+          console.error("PDF preview: container still missing, aborting render");
+          return;
+        }
         container.innerHTML = "";
 
           for (let pageNum = 1; pageNum <= pdf.numPages && !cancelled; pageNum++) {
@@ -71,7 +79,17 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
             await page.render({ canvasContext: ctx, viewport } as any).promise;
             console.info("PDF preview: rendered page", pageNum);
           }
-      } catch (e) {
+
+          if (container && container.childElementCount === 0) {
+            console.warn("PDF preview: no pages rendered, using iframe fallback");
+            const blobUrl = URL.createObjectURL(new Blob([buffer], { type: "application/pdf" }));
+            const iframe = document.createElement("iframe");
+            iframe.src = blobUrl;
+            iframe.className = "w-full h-full rounded border";
+            iframe.style.height = "100%";
+            container.appendChild(iframe);
+          }
+        } catch (e) {
         console.error("PDF render error", e);
       } finally {
         if (!cancelled) setPreviewLoading(false);
