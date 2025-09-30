@@ -56,6 +56,17 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
     setWizardStep('type-selection');
   };
 
+  // Define standard course order for logical sequencing
+  const courseOrder: { [key: string]: number } = {
+    'Canapés': 1, 'Canapes': 1, 'Amuse-Bouche': 2,
+    'Starters': 3, 'Starter': 3, 'Appetizers': 3, 'Appetizer': 3,
+    'Soup': 4, 'Soups': 4, 'Salad': 5, 'Salads': 5, 'Fish': 6,
+    'Mains': 7, 'Main': 7, 'Main Course': 7, 'Entrée': 7, 'Entree': 7,
+    'Sides': 8, 'Side': 8, 'Vegetables': 8, 'Cheese': 9,
+    'Desserts': 10, 'Dessert': 10, 'Sweets': 10, 'Pudding': 10,
+    'Coffee': 11, 'Tea': 11, 'Digestifs': 12
+  };
+
   const groupedMenus = menus.reduce((acc, menu) => {
     if (!acc[menu.course]) {
       acc[menu.course] = [];
@@ -63,6 +74,16 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
     acc[menu.course].push(menu);
     return acc;
   }, {} as Record<string, EventMenu[]>);
+
+  // Sort courses intelligently
+  const sortedCourses = Object.keys(groupedMenus).sort((a, b) => {
+    const orderA = courseOrder[a] || courseOrder[a.toLowerCase()] || 999;
+    const orderB = courseOrder[b] || courseOrder[b.toLowerCase()] || 999;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    return a.localeCompare(b);
+  });
 
   return (
     <div className="space-y-6">
@@ -92,12 +113,12 @@ export const MenuBuilder: React.FC<MenuBuilderProps> = ({ eventId, menus }) => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {Object.entries(groupedMenus).map(([course, items]) => (
+              {sortedCourses.map((course) => (
                 <div key={course} className="space-y-2">
                   <h4 className="font-['Work_Sans'] font-semibold text-sm text-muted-foreground">
                     {course}
                   </h4>
-                  {items.map((item) => (
+                  {groupedMenus[course].map((item) => (
                     <div key={item.id} className="p-3 border rounded-lg">
                       {editingId === item.id ? (
                         <div className="space-y-3">

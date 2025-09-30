@@ -253,5 +253,8 @@ verify_jwt = true
 [functions.generate-beo-pdf]
 verify_jwt = true
 
+[functions.send-beo-email]
+verify_jwt = true
+
 [functions.management-ai-assistant]
 verify_jwt = true

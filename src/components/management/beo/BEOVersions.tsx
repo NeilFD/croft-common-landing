@@ -2,8 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Download, Calendar, User } from 'lucide-react';
-import { useBEOVersions } from '@/hooks/useBEOData';
+import { FileText, Download, Calendar, User, Mail } from 'lucide-react';
+import { useBEOVersions, useBEOMutations } from '@/hooks/useBEOData';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -13,6 +13,7 @@ interface BEOVersionsProps {
 
 export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
   const { data: versions = [], isLoading } = useBEOVersions(eventId);
+  const { sendBEOEmail } = useBEOMutations(eventId);
 
   const handleDownload = async (pdfUrl: string, versionNo: number) => {
     try {
@@ -100,14 +101,28 @@ export const BEOVersions: React.FC<BEOVersionsProps> = ({ eventId }) => {
                 
                 <div className="flex items-center gap-2">
                   {version.pdf_url && (
-                    <Button
-                      onClick={() => handleDownload(version.pdf_url!, version.version_no)}
-                      variant="outline"
-                      size="sm"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download PDF
-                    </Button>
+                    <>
+                      <Button
+                        onClick={() => sendBEOEmail.mutate({
+                          versionNo: version.version_no,
+                          pdfUrl: version.pdf_url!
+                        })}
+                        disabled={sendBEOEmail.isPending}
+                        variant="default"
+                        size="sm"
+                      >
+                        <Mail className="h-4 w-4 mr-2" />
+                        Share via Email
+                      </Button>
+                      <Button
+                        onClick={() => handleDownload(version.pdf_url!, version.version_no)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download PDF
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>

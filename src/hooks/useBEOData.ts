@@ -697,6 +697,36 @@ export const useBEOMutations = (eventId: string) => {
     }
   });
 
+  const sendBEOEmail = useMutation({
+    mutationFn: async (params: {
+      versionNo: number;
+      pdfUrl: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke('send-beo-email', {
+        body: {
+          eventId,
+          versionNo: params.versionNo,
+          pdfUrl: params.pdfUrl
+        }
+      });
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      toast({ 
+        title: "BEO sent successfully",
+        description: `Email sent to ${data.recipient || 'client'}`
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error sending BEO email",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
   return {
     addMenuItem,
     addStaffingRequirement,
@@ -704,6 +734,7 @@ export const useBEOMutations = (eventId: string) => {
     addRoomLayout,
     addEquipmentItem,
     generateBEO,
+    sendBEOEmail,
     deleteMenuItem,
     deleteStaffingRequirement,
     deleteScheduleItem,
