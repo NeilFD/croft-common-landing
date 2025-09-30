@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { jsPDF } from 'https://esm.sh/jspdf@3.0.3';
+import jsPDF from 'https://esm.sh/jspdf@2.5.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,28 +28,38 @@ Deno.serve(async (req) => {
       .from('invoices')
       .select(`
         *,
-        event:management_events(
-          event_code,
-          event_name,
+        event:management_events!event_id(
+          code,
+          event_type,
           client_name,
           client_email,
-          start_date,
-          end_date
-        ),
-        line_items:event_line_items(
-          description,
-          qty,
-          unit_price,
-          type
-        ),
-        payments(
-          amount,
-          method,
-          received_at
+          primary_date
         )
       `)
       .eq('id', invoiceId)
       .single();
+
+    if (invoiceError) {
+      console.error('Error fetching invoice:', invoiceError);
+      throw invoiceError;
+    }
+
+    // Fetch line items separately
+    const { data: lineItems, error: lineItemsError } = await supabaseClient
+      .from('management_event_line_items')
+      .select('*')
+      .eq('event_id', invoice.event_id)
+      .order('sort_order');
+
+    // Fetch payments separately
+    const { data: payments, error: paymentsError } = await supabaseClient
+      .from('invoice_payments')
+      .select('*')
+      .eq('invoice_id', invoiceId);
+
+    // Combine data
+    invoice.line_items = lineItems || [];
+    invoice.payments = payments || [];
 
     if (invoiceError) throw invoiceError;
 
@@ -130,7 +140,7 @@ async function createInvoicePDF(invoice: any): Promise<Uint8Array> {
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text(`Invoice No: ${invoice.number}`, pageWidth - margin, margin + 8, { align: 'right' });
-  doc.text(`Date: ${new Date(invoice.issued_at).toLocaleDateString('en-GB')}`, pageWidth - margin, margin + 13, { align: 'right' });
+  doc.text(`Date: ${new Date(invoice.created_at).toLocaleDateString('en-GB')}`, pageWidth - margin, margin + 13, { align: 'right' });
   doc.text(`Due: ${new Date(invoice.due_date).toLocaleDateString('en-GB')}`, pageWidth - margin, margin + 18, { align: 'right' });
   
   yPos = margin + 25;
@@ -159,12 +169,12 @@ async function createInvoicePDF(invoice: any): Promise<Uint8Array> {
 
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text(`Event: ${invoice.event?.event_name || 'Event'}`, margin, yPos);
+  doc.text(`Event: ${invoice.event?.event_type || 'Event'}`, margin, yPos);
   yPos += 5;
-  doc.text(`Code: ${invoice.event?.event_code || 'N/A'}`, margin, yPos);
+  doc.text(`Code: ${invoice.event?.code || 'N/A'}`, margin, yPos);
   yPos += 5;
-  if (invoice.event?.start_date) {
-    doc.text(`Date: ${new Date(invoice.event.start_date).toLocaleDateString('en-GB')}`, margin, yPos);
+  if (invoice.event?.primary_date) {
+    doc.text(`Date: ${new Date(invoice.event.primary_date).toLocaleDateString('en-GB')}`, margin, yPos);
     yPos += 5;
   }
   yPos += 10;
