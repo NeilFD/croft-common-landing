@@ -25,14 +25,30 @@ const BeoViewer = () => {
         setIsLoading(true);
         setError(null);
 
-        const { data, error: invokeError } = await supabase.functions.invoke('proxy-beo-pdf', {
-          body: { fileName }
+        // Fetch the PDF as a Blob from the edge function and render via blob: URL
+        const { data: sessionData } = await supabase.auth.getSession();
+        const accessToken = sessionData?.session?.access_token;
+
+        // Build full edge function URL (public) and send auth for verify_jwt
+        // Note: We import SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY from the client
+        const { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } = await import('@/integrations/supabase/client');
+        const functionUrl = `${SUPABASE_URL}/functions/v1/proxy-beo-pdf?fileName=${encodeURIComponent(fileName)}`;
+
+        const res = await fetch(functionUrl, {
+          headers: {
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+            apikey: SUPABASE_PUBLISHABLE_KEY,
+            Accept: 'application/pdf'
+          }
         });
 
-        if (invokeError) throw invokeError;
+        if (!res.ok) throw new Error(`Function fetch failed: ${res.status}`);
 
-        // Convert response to blob
-        const blob = new Blob([data], { type: 'application/pdf' });
+        const blob = await res.blob();
+        if (blob.type !== 'application/pdf') {
+          // Still set but warn; Chrome viewer expects correct type
+          console.warn('Unexpected blob type from proxy-beo-pdf:', blob.type);
+        }
         const url = URL.createObjectURL(blob);
         setPdfUrl(url);
       } catch (err) {
