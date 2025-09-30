@@ -14,54 +14,60 @@ interface Intent {
   confidence: number;
 }
 
-function detectIntent(message: string): Intent {
+function detectIntent(message: string, conversationHistory: any[] = []): Intent {
   const lower = message.toLowerCase();
   
   // Menu intent detection
   if (/\b(menu|dish|food|drink|course|starter|main|dessert|allergen)\b/i.test(lower)) {
-    const eventId = extractEventIdentifier(message);
+    const eventId = extractEventIdentifier(message, conversationHistory);
     return { type: 'menu', eventIdentifier: eventId, confidence: 0.9 };
   }
   
   // BEO/PDF intent detection
   if (/\b(beo|banquet.?event.?order|pdf|document|send.?me|download)\b/i.test(lower)) {
-    const eventId = extractEventIdentifier(message);
+    const eventId = extractEventIdentifier(message, conversationHistory);
     return { type: 'beo', eventIdentifier: eventId, confidence: 0.9 };
   }
   
   // Schedule intent detection
   if (/\b(schedule|timing|timeline|when|time|agenda)\b/i.test(lower)) {
-    const eventId = extractEventIdentifier(message);
+    const eventId = extractEventIdentifier(message, conversationHistory);
     return { type: 'schedule', eventIdentifier: eventId, confidence: 0.8 };
   }
   
   // Staffing intent detection
   if (/\b(staff|team|role|who.?work)\b/i.test(lower)) {
-    const eventId = extractEventIdentifier(message);
+    const eventId = extractEventIdentifier(message, conversationHistory);
     return { type: 'staffing', eventIdentifier: eventId, confidence: 0.8 };
   }
   
   // Equipment intent detection
   if (/\b(equipment|av|audio|visual|setup|hire)\b/i.test(lower)) {
-    const eventId = extractEventIdentifier(message);
+    const eventId = extractEventIdentifier(message, conversationHistory);
     return { type: 'equipment', eventIdentifier: eventId, confidence: 0.8 };
   }
   
   // Contract intent detection
   if (/\b(contract|agreement|sign|signature)\b/i.test(lower)) {
-    const eventId = extractEventIdentifier(message);
+    const eventId = extractEventIdentifier(message, conversationHistory);
     return { type: 'contract', eventIdentifier: eventId, confidence: 0.8 };
   }
   
   // General fallback
-  const eventId = extractEventIdentifier(message);
+  const eventId = extractEventIdentifier(message, conversationHistory);
   return { type: 'general', eventIdentifier: eventId, confidence: 0.5 };
 }
 
-function extractEventIdentifier(message: string): string | undefined {
-  // Try to extract event code (e.g., "2025002")
-  const codeMatch = message.match(/\b(20\d{2}\d{3})\b/);
-  if (codeMatch) return codeMatch[1];
+function extractEventIdentifier(message: string, conversationHistory: any[] = []): string | undefined {
+  // Improved event code pattern - more flexible
+  const codeMatch = message.match(/\b(event\s*(?:no\.?|number|#)?\s*)?(?:20\d{2}\d{3})\b/i);
+  if (codeMatch) {
+    const extractedCode = codeMatch[0].match(/20\d{2}\d{3}/);
+    if (extractedCode) {
+      console.log(`✓ Found explicit event code: ${extractedCode[0]}`);
+      return extractedCode[0];
+    }
+  }
   
   // Try to extract date (e.g., "28 Sep", "28th September", "Sept 28")
   const datePatterns = [
@@ -71,7 +77,43 @@ function extractEventIdentifier(message: string): string | undefined {
   
   for (const pattern of datePatterns) {
     const match = message.match(pattern);
-    if (match) return match[0];
+    if (match) {
+      console.log(`✓ Found date reference: ${match[0]}`);
+      return match[0];
+    }
+  }
+  
+  // Check if message references a previous event ("that event", "this event", "the event")
+  const contextReferences = /\b(that|this|the|same)\s+(event|one|booking)\b/i;
+  if (contextReferences.test(message) && conversationHistory.length > 0) {
+    console.log(`🔍 Detected contextual reference, searching conversation history...`);
+    
+    // Search last 5 messages for event identifiers
+    const recentMessages = conversationHistory.slice(-5).reverse();
+    
+    for (const msg of recentMessages) {
+      if (!msg?.content) continue;
+      
+      const content = msg.content;
+      
+      // Look for event codes
+      const historyCodeMatch = content.match(/\b(20\d{2}\d{3})\b/);
+      if (historyCodeMatch) {
+        console.log(`✓ Found event code in history: ${historyCodeMatch[1]}`);
+        return historyCodeMatch[1];
+      }
+      
+      // Look for dates
+      for (const pattern of datePatterns) {
+        const historyDateMatch = content.match(pattern);
+        if (historyDateMatch) {
+          console.log(`✓ Found date in history: ${historyDateMatch[0]}`);
+          return historyDateMatch[0];
+        }
+      }
+    }
+    
+    console.log(`✗ No event identifier found in conversation history`);
   }
   
   // Return undefined if no identifier found
@@ -322,9 +364,10 @@ serve(async (req) => {
     const latestMessage = messages[messages.length - 1]?.content || '';
     
     console.log('🎯 Processing message:', latestMessage.substring(0, 100));
+    console.log('📚 Conversation history length:', messages.length);
 
-    // Detect intent and extract event identifier
-    const intent = detectIntent(latestMessage);
+    // Detect intent and extract event identifier (pass conversation history for context)
+    const intent = detectIntent(latestMessage, messages);
     console.log('🔍 Detected intent:', intent);
 
     // Resolve event if identifier found
