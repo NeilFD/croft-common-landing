@@ -333,7 +333,7 @@ export default function CommonKnowledgeDashboard() {
               </Card>
             </div>
 
-            {/* Recent documents or Folder contents */}
+            {/* Folder contents - only when folder selected */}
             {selectedFolderId && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -353,9 +353,7 @@ export default function CommonKnowledgeDashboard() {
                         <BookOpen className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <div>
-                        <h3 className="font-brutalist font-bold mb-2">
-                          No documents in this folder
-                        </h3>
+                        <h3 className="font-brutalist font-bold mb-2">No documents in this folder</h3>
                         <p className="text-muted-foreground mb-4">
                           Add documents to this folder to organize your content
                         </p>
@@ -371,31 +369,31 @@ export default function CommonKnowledgeDashboard() {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {filteredDocuments.map((doc) => (
-                    <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
-                      <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
-                        <div className="space-y-3">
-                          <div className="flex items-start gap-3">
-                            <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
-                              <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                      <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
+                        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
+                          <div className="space-y-3">
+                            <div className="flex items-start gap-3">
+                              <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                                <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words">{doc.title}</h3>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {TYPE_LABELS[doc.type]}
+                                </p>
+                              </div>
                             </div>
-                            <div className="min-w-0 flex-1">
-                              <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words">{doc.title}</h3>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                {TYPE_LABELS[doc.type]}
-                              </p>
+                            <div className="flex items-center gap-2">
+                              <Badge className={STATUS_COLORS[doc.status as keyof typeof STATUS_COLORS]} variant="secondary">
+                                {doc.status.replace("_", " ")}
+                              </Badge>
                             </div>
+                            <p className="text-xs text-muted-foreground">
+                              Updated {new Date(doc.updated_at).toLocaleDateString()}
+                            </p>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Badge className={STATUS_COLORS[doc.status as keyof typeof STATUS_COLORS]} variant="secondary">
-                              {doc.status.replace("_", " ")}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Updated {new Date(doc.updated_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </Card>
-                    </Link>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -404,7 +402,7 @@ export default function CommonKnowledgeDashboard() {
 
             {/* Dashboard view - only when no folder selected */}
             {!selectedFolderId && (
-              <>
+              <div className="space-y-8">
                 {/* Recent activity */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -468,61 +466,61 @@ export default function CommonKnowledgeDashboard() {
                   )}
                 </div>
 
-                {/* Pinned documents section */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-brutalist font-bold">Pinned Documents</h2>
-                </div>
-                
-                {pinnedDocuments.length === 0 ? (
-                  <Card className="p-8 text-center">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="p-4 rounded-full bg-muted">
-                        <Pin className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground">
-                          Pin important documents for quick access
-                        </p>
-                      </div>
-                    </div>
-                  </Card>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {pinnedDocuments.map((doc) => (
-                      <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
-                        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer border-[hsl(var(--accent-pink))]/20">
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3">
-                              <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
-                                <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
-                              </div>
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words flex-1">{doc.title}</h3>
-                                  <Pin className="h-3 w-3 text-[hsl(var(--accent-pink))] fill-current shrink-0" />
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  {TYPE_LABELS[doc.type]}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge className={STATUS_COLORS[doc.status as keyof typeof STATUS_COLORS]} variant="secondary">
-                                {doc.status.replace("_", " ")}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Pinned {new Date(doc.pinned_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </Card>
-                      </Link>
-                    ))}
+                {/* Pinned documents */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-brutalist font-bold">Pinned Documents</h2>
                   </div>
-                )}
+                  
+                  {pinnedDocuments.length === 0 ? (
+                    <Card className="p-8 text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="p-4 rounded-full bg-muted">
+                          <Pin className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">
+                            Pin important documents for quick access
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {pinnedDocuments.map((doc) => (
+                        <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
+                          <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer border-[hsl(var(--accent-pink))]/20">
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-3">
+                                <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                                  <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words flex-1">{doc.title}</h3>
+                                    <Pin className="h-3 w-3 text-[hsl(var(--accent-pink))] fill-current shrink-0" />
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {TYPE_LABELS[doc.type]}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={STATUS_COLORS[doc.status as keyof typeof STATUS_COLORS]} variant="secondary">
+                                  {doc.status.replace("_", " ")}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Pinned {new Date(doc.pinned_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              </>
             )}
           </div>
         </div>
