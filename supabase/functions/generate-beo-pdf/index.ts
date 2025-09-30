@@ -269,15 +269,12 @@ async function createBEOPDF(
     }
     
     doc.setTextColor(0, 0, 0);
-    try {
-      doc.setFont('Oswald', 'bold');
-    } catch {
-      doc.setFont('helvetica', 'bold');
-    }
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(18);
     doc.text('CROFT COMMON', margin + (logoDataUrl ? 22 : 0), headerY + 8);
 
-    // Right-aligned BEO meta
+    // Right-aligned BEO meta - use Oswald for title
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(20);
     doc.text('BANQUET EVENT ORDER', pageWidth - margin, headerY + 4, { align: 'right' });
     try {
@@ -301,11 +298,7 @@ async function createBEOPDF(
     doc.setDrawColor(220, 220, 220);
     doc.line(margin, footY - 4, pageWidth - margin, footY - 4);
 
-    try {
-      doc.setFont('Oswald', 'bold');
-    } catch {
-      doc.setFont('helvetica', 'bold');
-    }
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(10);
     doc.text('CROFT COMMON', pageWidth / 2, footY, { align: 'center' });
 
@@ -466,7 +459,49 @@ async function createBEOPDF(
 
     doc.setTextColor(0, 0, 0);
 
-    const courses = Array.from(new Set(menuData.map((item: any) => item.course)));
+    // Define standard course order
+    const courseOrder: { [key: string]: number } = {
+      'Canapés': 1,
+      'Canapes': 1,
+      'Amuse-Bouche': 2,
+      'Starters': 3,
+      'Starter': 3,
+      'Appetizers': 3,
+      'Appetizer': 3,
+      'Soup': 4,
+      'Soups': 4,
+      'Salad': 5,
+      'Salads': 5,
+      'Fish': 6,
+      'Mains': 7,
+      'Main': 7,
+      'Main Course': 7,
+      'Entrée': 7,
+      'Entree': 7,
+      'Sides': 8,
+      'Side': 8,
+      'Vegetables': 8,
+      'Cheese': 9,
+      'Desserts': 10,
+      'Dessert': 10,
+      'Sweets': 10,
+      'Pudding': 10,
+      'Coffee': 11,
+      'Tea': 11,
+      'Digestifs': 12
+    };
+
+    // Get unique courses and sort them intelligently
+    const courses = Array.from(new Set(menuData.map((item: any) => item.course)))
+      .sort((a, b) => {
+        const orderA = courseOrder[a] || courseOrder[a.toLowerCase()] || 999;
+        const orderB = courseOrder[b] || courseOrder[b.toLowerCase()] || 999;
+        if (orderA !== orderB) {
+          return orderA - orderB;
+        }
+        // If same order or not in map, sort alphabetically
+        return a.localeCompare(b);
+      });
     
     for (const course of courses) {
       checkAndAddPage(20);
