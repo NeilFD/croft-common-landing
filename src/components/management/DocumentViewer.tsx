@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Eye, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+
+GlobalWorkerOptions.workerSrc = pdfWorker;
 
 interface DocumentViewerProps {
   fileId: string;
@@ -22,45 +26,59 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
   const [error, setError] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
-  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchAndDisplayFile();
   }, [fileId, storagePath]);
 
-  // Prepare a same-origin blob URL for preview to avoid Chrome cross-origin PDF blocking
+  // Render PDF pages into canvases inside the modal to avoid Chrome plugin blocking
   useEffect(() => {
-    let tempUrl: string | null = null;
+    if (!previewOpen || mimeType !== "application/pdf" || !fileUrl) return;
+    let cancelled = false;
 
-    const preparePreview = async () => {
-      if (!fileUrl || mimeType !== "application/pdf" || !previewOpen || previewBlobUrl) return;
+    const renderPreview = async () => {
       try {
         setPreviewLoading(true);
-        const res = await fetch(fileUrl);
-        const blob = await res.blob();
-        tempUrl = URL.createObjectURL(blob);
-        setPreviewBlobUrl(tempUrl);
+        const { data, error } = await supabase.storage
+          .from("common-knowledge")
+          .download(storagePath);
+        if (error || !data) throw error || new Error("Failed to download file for preview");
+        const buffer = await data.arrayBuffer();
+        const pdf = await getDocument({ data: buffer }).promise;
+        const container = previewContainerRef.current;
+        if (!container) return;
+        container.innerHTML = "";
+
+        for (let pageNum = 1; pageNum <= pdf.numPages && !cancelled; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({ scale: 1.25 });
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          if (!ctx) continue;
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          canvas.className = "mx-auto mb-4 shadow";
+          container.appendChild(canvas);
+          await page.render({ canvasContext: ctx, viewport } as any).promise;
+        }
       } catch (e) {
-        console.error("Preview fetch error", e);
-        setPreviewBlobUrl(null);
+        console.error("PDF render error", e);
       } finally {
-        setPreviewLoading(false);
+        if (!cancelled) setPreviewLoading(false);
       }
     };
 
-    preparePreview();
+    renderPreview();
 
     return () => {
-      // Revoke when dialog closes or component unmounts
-      if (!previewOpen && previewBlobUrl) {
-        URL.revokeObjectURL(previewBlobUrl);
-        setPreviewBlobUrl(null);
-      }
-      if (tempUrl) URL.revokeObjectURL(tempUrl);
+      cancelled = true;
+      const container = previewContainerRef.current;
+      if (container) container.innerHTML = "";
     };
-  }, [previewOpen, fileUrl, mimeType, previewBlobUrl]);
+  }, [previewOpen, fileUrl, mimeType]);
 
   const fetchAndDisplayFile = async () => {
     try {
@@ -85,26 +103,26 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
   };
 
   const handleDownload = async () => {
-    if (!fileUrl) return;
-    
     try {
       toast({
         title: "Downloading...",
         description: "Your file download is starting",
       });
 
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      
+      const { data, error } = await supabase.storage
+        .from("common-knowledge")
+        .download(storagePath);
+      if (error || !data) throw error || new Error("Failed to download file");
+
+      const blobUrl = URL.createObjectURL(data);
+
       const link = document.createElement("a");
       link.href = blobUrl;
       link.download = filename;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      
-      // Clean up the blob URL
+
       setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
 
       toast({
@@ -159,20 +177,15 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
               <DialogTitle>{filename}</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden">
-              {previewLoading && (
+              {previewLoading ? (
                 <div className="flex items-center justify-center h-full">
                   <p className="text-muted-foreground">Preparing preview…</p>
                 </div>
-              )}
-              {!previewLoading && previewBlobUrl && (
-                <object data={previewBlobUrl} type="application/pdf" className="w-full h-full rounded">
-                  <iframe src={previewBlobUrl} className="w-full h-full rounded border-0" title={filename} />
-                </object>
-              )}
-              {!previewLoading && !previewBlobUrl && (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-muted-foreground">Preview unavailable</p>
-                </div>
+              ) : (
+                <div
+                  ref={previewContainerRef}
+                  className="w-full h-full overflow-auto bg-muted/20 p-4 rounded"
+                />
               )}
             </div>
           </DialogContent>
