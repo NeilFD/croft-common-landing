@@ -340,17 +340,7 @@ async function createBEOPDF(
   };
 
   // EVENT DETAILS SECTION
-  try {
-    doc.setFont('Oswald', 'bold');
-  } catch (e) {
-    console.warn('Oswald bold not available, using normal');
-    try {
-      doc.setFont('Oswald', 'normal');
-    } catch (e2) {
-      console.warn('Oswald normal not available, using helvetica');
-      doc.setFont('helvetica', 'bold');
-    }
-  }
+  doc.setFont('Oswald', 'normal');
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0); // Black
   doc.text('EVENT DETAILS', margin, y);
@@ -464,11 +454,7 @@ async function createBEOPDF(
   if (menuData && menuData.length > 0) {
     checkAndAddPage(30);
     
-    try {
-      doc.setFont('Oswald', 'bold');
-    } catch {
-      doc.setFont('helvetica', 'bold');
-    }
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0); // Black
     doc.text('MENU', margin, y);
@@ -552,11 +538,7 @@ async function createBEOPDF(
   if (scheduleData && scheduleData.length > 0) {
     checkAndAddPage(30);
     
-    try {
-      doc.setFont('Oswald', 'bold');
-    } catch {
-      doc.setFont('helvetica', 'bold');
-    }
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0); // Black
     doc.text('EVENT SCHEDULE', margin, y);
@@ -627,11 +609,7 @@ async function createBEOPDF(
   if (staffingData && staffingData.length > 0) {
     checkAndAddPage(30);
     
-    try {
-      doc.setFont('Oswald', 'bold');
-    } catch {
-      doc.setFont('helvetica', 'bold');
-    }
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0); // Black
     doc.text('STAFFING REQUIREMENTS', margin, y);
@@ -696,11 +674,7 @@ async function createBEOPDF(
   if (layoutData && layoutData.length > 0) {
     checkAndAddPage(30);
     
-    try {
-      doc.setFont('Oswald', 'bold');
-    } catch {
-      doc.setFont('helvetica', 'bold');
-    }
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0); // Black
     doc.text('ROOM LAYOUTS', margin, y);
@@ -780,11 +754,7 @@ async function createBEOPDF(
   if (equipmentData && equipmentData.length > 0) {
     checkAndAddPage(30);
     
-    try {
-      doc.setFont('Oswald', 'bold');
-    } catch {
-      doc.setFont('helvetica', 'bold');
-    }
+    doc.setFont('Oswald', 'normal');
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0); // Black
     doc.text('EQUIPMENT', margin, y);
