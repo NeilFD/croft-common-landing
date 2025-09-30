@@ -22,11 +22,45 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
   const [error, setError] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewBlobUrl, setPreviewBlobUrl] = useState<string | null>(null);
+  const [previewLoading, setPreviewLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchAndDisplayFile();
   }, [fileId, storagePath]);
+
+  // Prepare a same-origin blob URL for preview to avoid Chrome cross-origin PDF blocking
+  useEffect(() => {
+    let tempUrl: string | null = null;
+
+    const preparePreview = async () => {
+      if (!fileUrl || mimeType !== "application/pdf" || !previewOpen || previewBlobUrl) return;
+      try {
+        setPreviewLoading(true);
+        const res = await fetch(fileUrl);
+        const blob = await res.blob();
+        tempUrl = URL.createObjectURL(blob);
+        setPreviewBlobUrl(tempUrl);
+      } catch (e) {
+        console.error("Preview fetch error", e);
+        setPreviewBlobUrl(null);
+      } finally {
+        setPreviewLoading(false);
+      }
+    };
+
+    preparePreview();
+
+    return () => {
+      // Revoke when dialog closes or component unmounts
+      if (!previewOpen && previewBlobUrl) {
+        URL.revokeObjectURL(previewBlobUrl);
+        setPreviewBlobUrl(null);
+      }
+      if (tempUrl) URL.revokeObjectURL(tempUrl);
+    };
+  }, [previewOpen, fileUrl, mimeType, previewBlobUrl]);
 
   const fetchAndDisplayFile = async () => {
     try {
@@ -125,17 +159,21 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
               <DialogTitle>{filename}</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden">
-              <object
-                data={fileUrl || ""}
-                type="application/pdf"
-                className="w-full h-full rounded"
-              >
-                <iframe
-                  src={fileUrl || ""}
-                  className="w-full h-full rounded border-0"
-                  title={filename}
-                />
-              </object>
+              {previewLoading && (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Preparing preview…</p>
+                </div>
+              )}
+              {!previewLoading && previewBlobUrl && (
+                <object data={previewBlobUrl} type="application/pdf" className="w-full h-full rounded">
+                  <iframe src={previewBlobUrl} className="w-full h-full rounded border-0" title={filename} />
+                </object>
+              )}
+              {!previewLoading && !previewBlobUrl && (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-muted-foreground">Preview unavailable</p>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
