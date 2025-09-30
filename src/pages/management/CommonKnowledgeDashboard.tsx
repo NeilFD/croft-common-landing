@@ -333,47 +333,44 @@ export default function CommonKnowledgeDashboard() {
               </Card>
             </div>
 
-            {/* Recent documents */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-brutalist font-bold">
-                  {selectedFolderId 
-                    ? collections.find(c => c.id === selectedFolderId)?.name || "Documents"
-                    : "Recent Documents"}
-                </h2>
-              </div>
-              
-              {loading ? (
-                <Card className="p-8 text-center">
-                  <p className="text-muted-foreground">Loading documents...</p>
-                </Card>
-              ) : filteredDocuments.length === 0 ? (
-                <Card className="p-8 text-center">
-                  <div className="flex flex-col items-center gap-4">
-                    <div className="p-4 rounded-full bg-muted">
-                      <BookOpen className="h-8 w-8 text-muted-foreground" />
+            {/* Recent documents or Folder contents */}
+            {selectedFolderId && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-brutalist font-bold">
+                    {collections.find(c => c.id === selectedFolderId)?.name || "Documents"}
+                  </h2>
+                </div>
+                
+                {loading ? (
+                  <Card className="p-8 text-center">
+                    <p className="text-muted-foreground">Loading documents...</p>
+                  </Card>
+                ) : filteredDocuments.length === 0 ? (
+                  <Card className="p-8 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="p-4 rounded-full bg-muted">
+                        <BookOpen className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <h3 className="font-brutalist font-bold mb-2">
+                          No documents in this folder
+                        </h3>
+                        <p className="text-muted-foreground mb-4">
+                          Add documents to this folder to organize your content
+                        </p>
+                        <Button asChild>
+                          <Link to="/management/common-knowledge/new">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Document
+                          </Link>
+                        </Button>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-brutalist font-bold mb-2">
-                        {selectedFolderId ? "No documents in this folder" : "No documents yet"}
-                      </h3>
-                      <p className="text-muted-foreground mb-4">
-                        {selectedFolderId 
-                          ? "Add documents to this folder to organize your content"
-                          : "Create your first document to start building your knowledge base"}
-                      </p>
-                      <Button asChild>
-                        <Link to="/management/common-knowledge/new">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Create Document
-                        </Link>
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredDocuments.map((doc) => (
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredDocuments.map((doc) => (
                     <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
                       <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
                         <div className="space-y-3">
@@ -399,13 +396,79 @@ export default function CommonKnowledgeDashboard() {
                         </div>
                       </Card>
                     </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
-            {/* Pinned documents section */}
+            {/* Dashboard view - only when no folder selected */}
             {!selectedFolderId && (
+              <>
+                {/* Recent activity */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-brutalist font-bold">Recent Activity</h2>
+                  </div>
+                  
+                  {loading ? (
+                    <Card className="p-8 text-center">
+                      <p className="text-muted-foreground">Loading documents...</p>
+                    </Card>
+                  ) : documents.length === 0 ? (
+                    <Card className="p-8 text-center">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="p-4 rounded-full bg-muted">
+                          <BookOpen className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                        <div>
+                          <h3 className="font-brutalist font-bold mb-2">No documents yet</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Create your first document to start building your knowledge base
+                          </p>
+                          <Button asChild>
+                            <Link to="/management/common-knowledge/new">
+                              <Plus className="h-4 w-4 mr-2" />
+                              Create Document
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {documents.slice(0, 10).map((doc) => (
+                        <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
+                          <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
+                            <div className="space-y-3">
+                              <div className="flex items-start gap-3">
+                                <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                                  <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words">{doc.title}</h3>
+                                  <p className="text-xs text-muted-foreground mt-1">
+                                    {TYPE_LABELS[doc.type]}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge className={STATUS_COLORS[doc.status as keyof typeof STATUS_COLORS]} variant="secondary">
+                                  {doc.status.replace("_", " ")}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Updated {new Date(doc.updated_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </Card>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Pinned documents section */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h2 className="text-xl font-brutalist font-bold">Pinned Documents</h2>
@@ -459,6 +522,7 @@ export default function CommonKnowledgeDashboard() {
                   </div>
                 )}
               </div>
+              </>
             )}
           </div>
         </div>
