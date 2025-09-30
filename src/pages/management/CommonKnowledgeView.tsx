@@ -222,7 +222,7 @@ export default function CommonKnowledgeView() {
     );
   }
 
-  if (!doc || !version) {
+  if (!doc) {
     return (
       <ManagementLayout>
         <div className="p-3 md:p-6">

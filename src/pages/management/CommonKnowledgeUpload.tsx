@@ -72,6 +72,10 @@ export default function CommonKnowledgeUpload() {
     try {
       const slug = generateSlug(formData.title);
 
+      // Get current user for ownership
+      const { data: authData } = await supabase.auth.getUser();
+      const ownerId = authData?.user?.id || null;
+
       // Create document first
       const { data: docData, error: docError } = await supabase
         .from('ck_docs')
@@ -81,6 +85,7 @@ export default function CommonKnowledgeUpload() {
           type: formData.type as any,
           description: formData.description || null,
           status: 'draft',
+          owner_id: ownerId,
         })
         .select('id')
         .single();
@@ -88,17 +93,27 @@ export default function CommonKnowledgeUpload() {
       if (docError) throw docError;
       const docId = docData.id;
 
-      // Create initial version
-      const { error: versionError } = await supabase
+      // Create initial version and set as current
+      const { data: versionData, error: versionError } = await supabase
         .from('ck_doc_versions')
         .insert({
           doc_id: docId,
           version_no: 1,
           content_md: `Uploaded file: ${file.name}`,
           summary: formData.description || `Document: ${formData.title}`,
-        });
+        })
+        .select('id')
+        .single();
 
       if (versionError) throw versionError;
+
+      // Update document with current version id
+      const { error: updateDocError } = await supabase
+        .from('ck_docs')
+        .update({ version_current_id: versionData.id })
+        .eq('id', docId);
+
+      if (updateDocError) throw updateDocError;
 
       // Upload file to storage
       const fileExt = file.name.split('.').pop();
