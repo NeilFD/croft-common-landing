@@ -677,9 +677,6 @@ ${getPageContext(page)}
   return prompt;
 }
 
-Help ${user?.firstName || 'the user'} efficiently manage their work at Croft Common.`;
-}
-
 function getRolePermissions(role: string): string {
   const permissions = {
     admin: "Full access - Can create, edit, delete anything. Access to all financial data and audit logs.",
