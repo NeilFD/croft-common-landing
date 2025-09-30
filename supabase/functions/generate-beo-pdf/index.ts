@@ -194,10 +194,12 @@ async function createBEOPDF(
   try {
     const [
       oswaldRegular,
+      oswaldBold,
       workSansRegular,
       workSansBold,
     ] = await Promise.all([
       loadTTFFont('Oswald-Regular', 'https://raw.githubusercontent.com/jongrover/all-google-fonts-ttf-only/master/fonts/Oswald-Regular.ttf'),
+      loadTTFFont('Oswald-Bold', 'https://raw.githubusercontent.com/jongrover/all-google-fonts-ttf-only/master/fonts/Oswald-Bold.ttf'),
       loadTTFFont('WorkSans-Regular', 'https://raw.githubusercontent.com/jongrover/all-google-fonts-ttf-only/master/fonts/WorkSans-Regular.ttf'),
       loadTTFFont('WorkSans-Bold', 'https://raw.githubusercontent.com/jongrover/all-google-fonts-ttf-only/master/fonts/WorkSans-Bold.ttf'),
     ]);
@@ -205,7 +207,10 @@ async function createBEOPDF(
     if (oswaldRegular) {
       doc.addFileToVFS('Oswald-Regular.ttf', oswaldRegular);
       doc.addFont('Oswald-Regular.ttf', 'Oswald', 'normal');
-      doc.addFont('Oswald-Regular.ttf', 'Oswald', 'bold');
+    }
+    if (oswaldBold) {
+      doc.addFileToVFS('Oswald-Bold.ttf', oswaldBold);
+      doc.addFont('Oswald-Bold.ttf', 'Oswald', 'bold');
     }
     if (workSansRegular) {
       doc.addFileToVFS('WorkSans-Regular.ttf', workSansRegular);
@@ -333,10 +338,10 @@ async function createBEOPDF(
     doc.setFont('helvetica', 'bold');
   }
   doc.setFontSize(12);
-  doc.setTextColor(44, 95, 45);
+  doc.setTextColor(217, 70, 239); // Accent pink
   doc.text('EVENT DETAILS', margin, y);
   y += 2;
-  doc.setDrawColor(44, 95, 45);
+  doc.setDrawColor(217, 70, 239); // Accent pink divider
   doc.setLineWidth(0.5);
   doc.line(margin, y, pageWidth - margin, y);
   y += 8;
@@ -451,10 +456,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(44, 95, 45);
+    doc.setTextColor(217, 70, 239); // Accent pink
     doc.text('MENU', margin, y);
     y += 2;
-    doc.setDrawColor(44, 95, 45);
+    doc.setDrawColor(217, 70, 239); // Accent pink divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -539,10 +544,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(44, 95, 45);
+    doc.setTextColor(217, 70, 239); // Accent pink
     doc.text('EVENT SCHEDULE', margin, y);
     y += 2;
-    doc.setDrawColor(44, 95, 45);
+    doc.setDrawColor(217, 70, 239); // Accent pink divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -614,10 +619,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(44, 95, 45);
+    doc.setTextColor(217, 70, 239); // Accent pink
     doc.text('STAFFING REQUIREMENTS', margin, y);
     y += 2;
-    doc.setDrawColor(44, 95, 45);
+    doc.setDrawColor(217, 70, 239); // Accent pink divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -683,10 +688,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(44, 95, 45);
+    doc.setTextColor(217, 70, 239); // Accent pink
     doc.text('ROOM LAYOUTS', margin, y);
     y += 2;
-    doc.setDrawColor(44, 95, 45);
+    doc.setDrawColor(217, 70, 239); // Accent pink divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
@@ -767,10 +772,10 @@ async function createBEOPDF(
       doc.setFont('helvetica', 'bold');
     }
     doc.setFontSize(12);
-    doc.setTextColor(44, 95, 45);
+    doc.setTextColor(217, 70, 239); // Accent pink
     doc.text('EQUIPMENT', margin, y);
     y += 2;
-    doc.setDrawColor(44, 95, 45);
+    doc.setDrawColor(217, 70, 239); // Accent pink divider
     doc.setLineWidth(0.5);
     doc.line(margin, y, pageWidth - margin, y);
     y += 8;
