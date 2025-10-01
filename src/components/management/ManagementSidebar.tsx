@@ -99,7 +99,7 @@ export const ManagementSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { managementUser, signOut } = useManagementAuth();
-  const { canAccessAdmin, canAccessCMS, canAccessResearch } = useRoleBasedAccess();
+  const { canAccessAdmin, canAccessCMS, canAccessResearch, canAccessFeedback } = useRoleBasedAccess();
   const currentPath = location.pathname;
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -291,6 +291,25 @@ export const ManagementSidebar = () => {
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
+                  {canAccessFeedback() && (
+                    <SidebarMenuItem>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            asChild
+                            className={getNavClass(isActive('/management/feedback', false))}
+                          >
+                            <NavLink to="/management/feedback">
+                              <MessageSquare className="h-5 w-5" />
+                            </NavLink>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                          <p className="font-industrial">Feedback</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </SidebarMenuItem>
+                  )}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

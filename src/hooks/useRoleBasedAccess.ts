@@ -47,6 +47,11 @@ export const useRoleBasedAccess = () => {
     return hasRole('admin') || hasRole('sales') || hasRole('ops');
   };
 
+  const canAccessFeedback = () => {
+    // Feedback access for admin and sales
+    return hasRole('admin') || hasRole('sales');
+  };
+
   return {
     canViewSensitiveData,
     canCreateBookings,
@@ -58,5 +63,6 @@ export const useRoleBasedAccess = () => {
     canAccessCMS,
     canAccessAdmin,
     canAccessResearch,
+    canAccessFeedback,
   };
 };

@@ -77,6 +77,7 @@ import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
 const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
 const ManagementAIAssistant = lazy(() => import("./pages/management/ManagementAIAssistant"));
+const FeedbackManagement = lazy(() => import("./pages/management/FeedbackManagement"));
 const CommonKnowledgeDashboard = lazy(() => import("./pages/management/CommonKnowledgeDashboard"));
 const CommonKnowledgeNew = lazy(() => import("./pages/management/CommonKnowledgeNew"));
 const CommonKnowledgeUpload = lazy(() => import("./pages/management/CommonKnowledgeUpload"));
@@ -287,6 +288,7 @@ const App = () => {
                         <Route path="/management/login" element={<ManagementLogin />} />
                         <Route path="/management" element={<ManagementDashboard />} />
                         <Route path="/management/ai-assistant" element={<ManagementAIAssistant />} />
+                        <Route path="/management/feedback" element={<FeedbackManagement />} />
                         
                         {/* CMS under Management */}
                         <Route path="/management/cms/kitchens" element={<CMSKitchens />} />

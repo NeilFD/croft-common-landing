@@ -2,13 +2,13 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { useRoleBasedAccess } from '@/hooks/useRoleBasedAccess';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical } from 'lucide-react';
+import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
-  const { canAccessAdmin, canAccessCMS, canAccessResearch } = useRoleBasedAccess();
+  const { canAccessAdmin, canAccessCMS, canAccessResearch, canAccessFeedback } = useRoleBasedAccess();
 
   const allQuickActions = [
     {
@@ -50,6 +50,14 @@ const ManagementDashboard = () => {
       href: '/management/research',
       color: 'text-[hsl(var(--accent-pink))]',
       show: canAccessResearch()
+    },
+    {
+      title: 'FEEDBACK',
+      description: 'Customer feedback & sentiment',
+      icon: MessageSquare,
+      href: '/management/feedback',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessFeedback()
     }
   ];
 
