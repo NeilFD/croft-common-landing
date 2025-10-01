@@ -158,7 +158,6 @@ export default function CommonKnowledgeNew() {
                   <SelectValue placeholder="Select a folder (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No folder</SelectItem>
                   {collections.map((collection) => (
                     <SelectItem key={collection.id} value={collection.id}>
                       {collection.name}
