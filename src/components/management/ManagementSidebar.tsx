@@ -782,9 +782,9 @@ export const ManagementSidebar = () => {
                                   <TooltipTrigger asChild>
                                     <SidebarMenuButton 
                                       asChild
-                                      className={getNavClass(isActive('/management/admin/member-analytics', false))}
+                                      className={getNavClass(isActive('/management/admin/analytics/member-analytics', false))}
                                     >
-                                      <NavLink to="/management/admin/member-analytics" className="font-industrial">
+                                      <NavLink to="/management/admin/analytics/member-analytics" className="font-industrial">
                                         <Database className="mr-2 h-4 w-4" />
                                         Member Database
                                       </NavLink>
