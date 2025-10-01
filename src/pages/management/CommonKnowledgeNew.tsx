@@ -105,7 +105,7 @@ export default function CommonKnowledgeNew() {
 
   return (
     <ManagementLayout>
-      <div className="max-w-3xl space-y-6 p-3 md:p-6">
+      <div className="w-full max-w-3xl mx-auto space-y-6 p-3 md:p-6">
         <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">CREATE DOCUMENT</h1>
         <Button
           variant="ghost"
