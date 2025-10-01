@@ -492,12 +492,12 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
       // Get feedback statistics
       let query = supabase
         .from('feedback_submissions')
-        .select('overall_rating, hospitality_rating, food_rating, drink_rating, team_rating, venue_rating, price_rating, is_anonymous, message, created_at')
-        .order('created_at', { ascending: false });
+        .select('overall_rating, hospitality_rating, food_rating, drink_rating, team_rating, venue_rating, price_rating, is_anonymous, message, submitted_at, created_at')
+        .order('submitted_at', { ascending: false });
       
       // Apply date filter if specified
       if (dateFilter) {
-        query = query.gte('created_at', dateFilter);
+        query = query.gte('submitted_at', dateFilter);
       } else {
         query = query.limit(50);
       }
@@ -523,7 +523,7 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
           .map(f => ({
             message: f.message,
             overall_rating: f.overall_rating,
-            date: f.created_at,
+            date: f.submitted_at || f.created_at,
           }));
         
         retrieved.feedbackStats = {
@@ -823,7 +823,7 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
   try {
     switch (functionName) {
       case "get_management_data": {
-        const { data_type, event_identifier, filters, include_related } = args;
+        const { data_type, event_identifier, filters, include_related, time_period } = args;
         
         // Use existing intent detection and data retrieval logic
         const intent = {
