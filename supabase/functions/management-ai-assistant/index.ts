@@ -291,20 +291,151 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
   try {
     console.log('📚 Searching Common Knowledge for:', searchQuery);
     
-    // Extract keywords from search query
-    const keywords = searchQuery.toLowerCase()
+    // Extract keywords from search query - MORE PERMISSIVE
+    const allWords = searchQuery.toLowerCase()
       .replace(/[^\w\s]/g, '')
       .split(/\s+/)
-      .filter(w => w.length > 3 && ![
-        'what','where','when','which','whats','whats','the','our','about','show','find','tell','give','could','would','should','please','need','want','have','with','from','into','that','this','those','these','some','more','most','very','much','many','any','your','yours','you','me','can','cant','able','summary','summarise','summarize','provide','info','information'
-      ].includes(w));
+      .filter(w => w.length > 0);
     
+    // Keep more keywords, only filter out very common stopwords
+    const keywords = allWords.filter(w => ![
+      'the','our','about','show','find','tell','give','could','would','should','please','need','want','have','with','from','into','that','this','those','these','some','more','most','very','much','many','any','your','yours','you','me','can','cant','able','provide','info','information','a','an','and','or','but','for','at','by','to','of','in','on','is','are','was','were','be','been','being'
+    ].includes(w));
+    
+    console.log('🔍 All words:', allWords);
     console.log('🔍 Keywords:', keywords);
     
-    // Build search query for full-text search
+    // STRATEGY 1: Try collection/folder search first if query mentions folders/collections
+    const folderWords = ['folder', 'collection', 'category', 'section'];
+    const mentionsFolder = allWords.some(w => folderWords.includes(w));
+    
+    if (mentionsFolder && keywords.length > 0) {
+      console.log('🗂️ Folder/collection search detected');
+      const { data: collectionDocs } = await supabase
+        .from('ck_docs')
+        .select(`
+          id,
+          title,
+          slug,
+          type,
+          description,
+          tags,
+          zones,
+          collection_id,
+          ck_collections (
+            id,
+            name,
+            slug
+          ),
+          ck_doc_versions!inner (
+            id,
+            content_md,
+            summary,
+            version_no,
+            created_at
+          )
+        `)
+        .eq('status', 'approved')
+        .or(keywords.map(k => `ck_collections.name.ilike.%${k}%,ck_collections.slug.ilike.%${k}%`).join(','))
+        .order('updated_at', { ascending: false })
+        .limit(10);
+      
+      if (collectionDocs && collectionDocs.length > 0) {
+        console.log(`✓ Found ${collectionDocs.length} documents via collection search`);
+        retrieved.documents = collectionDocs.map((doc: any) => ({
+          id: doc.id,
+          title: doc.title,
+          type: doc.type,
+          description: doc.description,
+          tags: doc.tags,
+          zones: doc.zones,
+          collection: doc.ck_collections?.name,
+          content_full: doc.ck_doc_versions[0]?.content_md || '',
+          content: doc.ck_doc_versions[0]?.content_md || '',
+          summary: doc.ck_doc_versions[0]?.summary,
+          slug: doc.slug,
+        }));
+        
+        retrieved.totalDocs = collectionDocs.length;
+        retrieved.searchMethod = 'collection_match';
+        
+        // Still get collections for context
+        const { data: collections } = await supabase
+          .from('ck_collections')
+          .select('id, name, slug, description')
+          .order('name');
+        retrieved.collections = collections || [];
+        
+        console.log(`✓ Found ${retrieved.documents.length} relevant documents`);
+        return retrieved;
+      }
+    }
+    
+    // STRATEGY 2: Multi-keyword title/description search (more flexible)
+    // Try matching ANY keyword in title or description
+    const { data: titleDocs } = await supabase
+      .from('ck_docs')
+      .select(`
+        id,
+        title,
+        slug,
+        type,
+        description,
+        tags,
+        zones,
+        collection_id,
+        ck_collections (
+          id,
+          name,
+          slug
+        ),
+        ck_doc_versions!inner (
+          id,
+          content_md,
+          summary,
+          version_no,
+          created_at
+        )
+      `)
+      .eq('status', 'approved')
+      .or(keywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%,tags.cs.{${k}},ck_collections.name.ilike.%${k}%`).join(','))
+      .order('updated_at', { ascending: false })
+      .limit(10);
+    
+    if (titleDocs && titleDocs.length > 0) {
+      console.log(`✓ Found ${titleDocs.length} documents via title/description search`);
+      retrieved.documents = titleDocs.map((doc: any) => ({
+        id: doc.id,
+        title: doc.title,
+        type: doc.type,
+        description: doc.description,
+        tags: doc.tags,
+        zones: doc.zones,
+        collection: doc.ck_collections?.name,
+        content_full: doc.ck_doc_versions[0]?.content_md || '',
+        content: doc.ck_doc_versions[0]?.content_md || '',
+        summary: doc.ck_doc_versions[0]?.summary,
+        slug: doc.slug,
+      }));
+      
+      retrieved.totalDocs = titleDocs.length;
+      retrieved.searchMethod = 'title_description_match';
+      
+      // Get collections for context
+      const { data: collections } = await supabase
+        .from('ck_collections')
+        .select('id, name, slug, description')
+        .order('name');
+      retrieved.collections = collections || [];
+      
+      console.log(`✓ Found ${retrieved.documents.length} relevant documents`);
+      return retrieved;
+    }
+    
+    // STRATEGY 3: Full-text search as fallback
+    console.log('🔍 Trying full-text search...');
     const searchTerms = keywords.join(' | '); // OR search
     
-    // Search documents with full-text search on content
     const { data: docs, error: docsError } = await supabase
       .from('ck_doc_versions')
       .select(`
@@ -337,53 +468,9 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
       .limit(10);
     
     if (docsError) {
-      console.error('Error searching documents:', docsError);
-      // Fallback to title/tag search if full-text fails
-      const { data: fallbackDocs } = await supabase
-        .from('ck_docs')
-        .select(`
-          id,
-          title,
-          slug,
-          type,
-          description,
-          tags,
-          zones,
-          collection_id,
-          ck_collections (
-            id,
-            name,
-            slug
-          ),
-          ck_doc_versions!inner (
-            id,
-            content_md,
-            summary,
-            version_no,
-            created_at
-          )
-        `)
-        .eq('status', 'approved')
-        .or(keywords.map(k => `title.ilike.%${k}%,tags.cs.{${k}}`).join(','))
-        .order('updated_at', { ascending: false })
-        .limit(10);
-      
-      if (fallbackDocs && fallbackDocs.length > 0) {
-        retrieved.documents = fallbackDocs.map((doc: any) => ({
-          id: doc.id,
-          title: doc.title,
-          type: doc.type,
-          description: doc.description,
-          tags: doc.tags,
-          zones: doc.zones,
-          collection: doc.ck_collections?.name,
-          content_full: doc.ck_doc_versions[0]?.content_md || '',
-          content: doc.ck_doc_versions[0]?.content_md || '', // Provide FULL content, not truncated
-          summary: doc.ck_doc_versions[0]?.summary,
-          slug: doc.slug,
-        }));
-      }
+      console.warn('Full-text search error:', docsError.message);
     } else if (docs && docs.length > 0) {
+      console.log(`✓ Found ${docs.length} documents via full-text search`);
       retrieved.documents = docs.map((version: any) => ({
         id: version.ck_docs.id,
         title: version.ck_docs.title,
@@ -393,15 +480,18 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
         zones: version.ck_docs.zones,
         collection: version.ck_docs.ck_collections?.name,
         content_full: version.content_md || '',
-        content: version.content_md || '', // Provide FULL content, not truncated
+        content: version.content_md || '',
         summary: version.summary,
         slug: version.ck_docs.slug,
       }));
-    } else {
-      // No full-text results - try fallback title/tag/slug search
-      console.log('🔄 No full-text results, trying title/tags fallback...');
-      
-      const { data: fallbackDocs } = await supabase
+      retrieved.totalDocs = docs.length;
+      retrieved.searchMethod = 'fulltext_match';
+    }
+    
+    // STRATEGY 4: Content search as last resort
+    if (retrieved.documents.length === 0 && keywords.length > 0) {
+      console.log('🔎 Trying content search as last resort...');
+      const { data: contentDocs } = await supabase
         .from('ck_docs')
         .select(`
           id,
@@ -426,13 +516,13 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
           )
         `)
         .eq('status', 'approved')
-        .or(keywords.map(k => `title.ilike.%${k}%,tags.cs.{${k}},slug.ilike.%${k}%`).join(','))
+        .or(keywords.map(k => `ck_doc_versions.content_md.ilike.%${k}%`).join(','))
         .order('updated_at', { ascending: false })
         .limit(10);
       
-      if (fallbackDocs && fallbackDocs.length > 0) {
-        console.log(`✓ Fallback found ${fallbackDocs.length} documents`);
-        retrieved.documents = fallbackDocs.map((doc: any) => ({
+      if (contentDocs && contentDocs.length > 0) {
+        console.log(`✓ Content search found ${contentDocs.length} documents`);
+        retrieved.documents = contentDocs.map((doc: any) => ({
           id: doc.id,
           title: doc.title,
           type: doc.type,
@@ -441,57 +531,12 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
           zones: doc.zones,
           collection: doc.ck_collections?.name,
           content_full: doc.ck_doc_versions[0]?.content_md || '',
-          content: doc.ck_doc_versions[0]?.content_md || '', // Provide FULL content, not truncated
+          content: doc.ck_doc_versions[0]?.content_md || '',
           summary: doc.ck_doc_versions[0]?.summary,
           slug: doc.slug,
         }));
-      } else {
-        console.log('🔎 Title/tags fallback empty — trying content search...');
-        const { data: contentDocs } = await supabase
-          .from('ck_docs')
-          .select(`
-            id,
-            title,
-            slug,
-            type,
-            description,
-            tags,
-            zones,
-            collection_id,
-            ck_collections (
-              id,
-              name,
-              slug
-            ),
-            ck_doc_versions!inner (
-              id,
-              content_md,
-              summary,
-              version_no,
-              created_at
-            )
-          `)
-          .eq('status', 'approved')
-          .or(keywords.map(k => `ck_doc_versions.content_md.ilike.%${k}%`).join(','))
-          .order('updated_at', { ascending: false })
-          .limit(10);
-        
-        if (contentDocs && contentDocs.length > 0) {
-          console.log(`✓ Content search found ${contentDocs.length} documents`);
-          retrieved.documents = contentDocs.map((doc: any) => ({
-            id: doc.id,
-            title: doc.title,
-            type: doc.type,
-            description: doc.description,
-            tags: doc.tags,
-            zones: doc.zones,
-            collection: doc.ck_collections?.name,
-            content_full: doc.ck_doc_versions[0]?.content_md || '',
-            content: doc.ck_doc_versions[0]?.content_md || '', // Provide FULL content, not truncated
-            summary: doc.ck_doc_versions[0]?.summary,
-            slug: doc.slug,
-          }));
-        }
+        retrieved.totalDocs = contentDocs.length;
+        retrieved.searchMethod = 'content_match';
       }
     }
     
@@ -1474,8 +1519,12 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
    - Example: "What feedback did we get?" → Call get_management_data with data_type="feedback"
 
 2. **search_knowledge_base** - For policies, procedures, operational questions:
-   - Example: "What's our fire safety policy?" → Call search_knowledge_base with query="fire safety"
+   - Search is INTELLIGENT and FLEXIBLE - it matches partial words, synonyms, and context
+   - You DON'T need exact folder names or titles - the search will find relevant documents
+   - Example: "What's our fire safety policy?" → Call search_knowledge_base with query="fire safety policy"
+   - Example: "Do we have a strategic marketing plan?" → Call search_knowledge_base with query="strategic marketing plan"
    - Example: "How do we handle dietary requirements?" → Call search_knowledge_base with query="dietary requirements"
+   - TIP: Use descriptive queries with key concepts - the search handles broad queries well
 
 3. **get_analytics** - For insights, trends, analytics:
    - Example: "How's our feedback trending?" → Call get_analytics with type="feedback"
