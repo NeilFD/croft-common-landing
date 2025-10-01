@@ -4808,10 +4808,7 @@ export type Database = {
               p_line_items: Json
               p_service_charge_pct?: number
             }
-        Returns: {
-          line_items_created: number
-          proposal_id: string
-        }[]
+        Returns: Json
       }
       detect_booking_conflicts: {
         Args: {
