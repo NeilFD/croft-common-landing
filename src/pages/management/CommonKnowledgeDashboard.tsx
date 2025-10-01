@@ -270,16 +270,16 @@ export default function CommonKnowledgeDashboard() {
                 />
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none">
+                <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none whitespace-nowrap">
                   <Link to="/management/common-knowledge/new">
-                    <FileText className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">New Document</span>
+                    <FileText className="h-4 w-4 mr-2" />
+                    <span>New Document</span>
                   </Link>
                 </Button>
-                <Button asChild size="sm" className="flex-1 sm:flex-none">
+                <Button asChild size="sm" className="flex-1 sm:flex-none whitespace-nowrap">
                   <Link to="/management/common-knowledge/upload">
-                    <Plus className="h-4 w-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Upload File</span>
+                    <Plus className="h-4 w-4 mr-2" />
+                    <span>Upload File</span>
                   </Link>
                 </Button>
               </div>
@@ -287,7 +287,7 @@ export default function CommonKnowledgeDashboard() {
 
             {/* Quick stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-              <Card className="p-3 md:p-4">
+              <Card className="p-3 md:p-4 cursor-default">
                 <div className="flex items-center gap-2 md:gap-3">
                   <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
                     <FileText className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
@@ -298,7 +298,7 @@ export default function CommonKnowledgeDashboard() {
                   </div>
                 </div>
               </Card>
-              <Card className="p-3 md:p-4">
+              <Card className="p-3 md:p-4 cursor-default">
                 <div className="flex items-center gap-2 md:gap-3">
                   <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
                     <Star className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
@@ -309,7 +309,7 @@ export default function CommonKnowledgeDashboard() {
                   </div>
                 </div>
               </Card>
-              <Card className="p-3 md:p-4">
+              <Card className="p-3 md:p-4 cursor-default">
                 <div className="flex items-center gap-2 md:gap-3">
                   <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
                     <Clock className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
@@ -320,7 +320,7 @@ export default function CommonKnowledgeDashboard() {
                   </div>
                 </div>
               </Card>
-              <Card className="p-3 md:p-4">
+              <Card className="p-3 md:p-4 cursor-default">
                 <div className="flex items-center gap-2 md:gap-3">
                   <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
                     <Pin className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
