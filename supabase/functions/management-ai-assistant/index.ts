@@ -825,46 +825,51 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
       }
       
       case "get_analytics": {
-        const { type, time_period, filters } = args;
+        const { type, time_period, filters, event_identifier } = args;
         
-        // Fetch analytics based on type
-        let analyticsData = null;
+        // Map analytics type to intent
+        const intent = {
+          type: type === 'feedback' ? 'feedback' :
+                type === 'conflicts' ? 'schedule' :
+                type,
+          eventIdentifier: event_identifier || null
+        };
         
-        if (type === 'feedback') {
-          // Get feedback analytics
-          const { data } = await supabase
-            .from('event_feedback')
-            .select('*')
-            .order('submitted_at', { ascending: false })
-            .limit(100);
-            
-          const stats = {
-            totalSubmissions: data?.length || 0,
-            avgRating: data?.reduce((sum: number, f: any) => sum + (f.overall_rating || 0), 0) / (data?.length || 1),
-            sentimentBreakdown: data?.reduce((acc: any, f: any) => {
-              const sentiment = f.sentiment || 'neutral';
-              acc[sentiment] = (acc[sentiment] || 0) + 1;
-              return acc;
-            }, {}),
-            recentTrends: "Improving - average rating up 0.3 points this month"
-          };
-          
-          analyticsData = stats;
-        } else if (type === 'conflicts') {
-          // Get booking conflicts
-          const { data } = await supabase
+        // Resolve event if identifier provided
+        let resolvedEventId = null;
+        if (event_identifier) {
+          resolvedEventId = await resolveEvent(supabase, event_identifier);
+        }
+        
+        // Use existing comprehensive data retrieval logic
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId);
+        
+        // For conflicts, get additional conflict data
+        if (type === 'conflicts') {
+          const { data: conflictData } = await supabase
             .from('conflicts')
             .select('*')
             .eq('status', 'active')
             .order('created_at', { ascending: false });
             
-          analyticsData = {
-            active_conflicts: data?.length || 0,
-            conflicts: data || [],
-            severity_breakdown: data?.reduce((acc: any, c: any) => {
-              acc[c.severity] = (acc[c.severity] || 0) + 1;
-              return acc;
-            }, {})
+          return {
+            success: true,
+            analytics_type: type,
+            time_period: time_period || "month",
+            data: {
+              ...data,
+              active_conflicts: conflictData?.length || 0,
+              conflicts: conflictData || [],
+              severity_breakdown: conflictData?.reduce((acc: any, c: any) => {
+                acc[c.severity] = (acc[c.severity] || 0) + 1;
+                return acc;
+              }, {})
+            },
+            metadata: {
+              calculated_at: new Date().toISOString(),
+              confidence: "high",
+              data_freshness: "real-time"
+            }
           };
         }
         
@@ -872,10 +877,11 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
           success: true,
           analytics_type: type,
           time_period: time_period || "month",
-          data: analyticsData,
+          data,
           metadata: {
             calculated_at: new Date().toISOString(),
-            confidence: "high"
+            confidence: "high",
+            data_freshness: "real-time"
           }
         };
       }
