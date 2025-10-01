@@ -1,29 +1,59 @@
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
+import { useRoleBasedAccess } from '@/hooks/useRoleBasedAccess';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, BarChart3, BookOpen } from 'lucide-react';
+import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
+  const { canAccessAdmin, canAccessCMS, canAccessResearch } = useRoleBasedAccess();
 
-  const quickActions = [
+  const allQuickActions = [
     {
       title: 'COMMON KNOWLEDGE',
       description: 'Operational docs & SOPs',
       icon: BookOpen,
       href: '/management/common-knowledge',
-      color: 'text-[hsl(var(--accent-pink))]'
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: true
     },
     {
       title: 'SPACES',
       description: 'Event management system',
       icon: Building2,
       href: '/management/spaces',
-      color: 'text-[hsl(var(--accent-pink))]'
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: true
+    },
+    {
+      title: 'ADMIN',
+      description: 'System administration',
+      icon: Shield,
+      href: '/management/admin',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessAdmin()
+    },
+    {
+      title: 'CMS',
+      description: 'Content management',
+      icon: Layout,
+      href: '/management/cms',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessCMS()
+    },
+    {
+      title: 'RESEARCH',
+      description: 'Research & development',
+      icon: FlaskConical,
+      href: '/management/research',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessResearch()
     }
   ];
+
+  const quickActions = allQuickActions.filter(action => action.show);
 
   return (
     <ManagementLayout>
