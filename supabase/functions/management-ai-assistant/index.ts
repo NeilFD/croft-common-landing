@@ -346,7 +346,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
     console.log('🎯 Strategy 0: Exact phrase and all-keywords-AND on title...');
     const normalizedQuery = searchQuery.toLowerCase().trim();
     
-    // Try exact phrase match on title
+    // Try exact phrase match on title first
     let { data: exactMatches } = await supabase
       .from('ck_docs')
       .select(`
@@ -357,11 +357,19 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
       .eq('status', 'approved')
       .ilike('title', `%${normalizedQuery}%`)
       .order('updated_at', { ascending: false })
-      .limit(5);
+      .limit(10);
+    
+    console.log(`🔍 Strategy 0a (exact phrase): Found ${exactMatches?.length || 0} matches`);
+    if (exactMatches && exactMatches.length > 0) {
+      console.log('📋 Exact phrase matches:', exactMatches.map((d: any) => d.title));
+    }
     
     // If no exact match, try all-keywords-AND (all words must appear in title)
     if (!exactMatches || exactMatches.length === 0) {
       console.log('🔍 Strategy 0b: All-keywords-AND on title...');
+      console.log('🔍 Looking for ALL these words in title:', allWords);
+      
+      // Get ALL approved docs with versions - no arbitrary limit
       const { data: allKeywordDocs } = await supabase
         .from('ck_docs')
         .select(`
@@ -370,14 +378,33 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
           ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
         `)
         .eq('status', 'approved')
-        .limit(50);
+        .order('updated_at', { ascending: false });
       
-      if (allKeywordDocs) {
+      console.log(`📊 Retrieved ${allKeywordDocs?.length || 0} total approved documents`);
+      
+      if (allKeywordDocs && allKeywordDocs.length > 0) {
+        // Debug: Show first few titles
+        console.log('📋 Sample titles:', allKeywordDocs.slice(0, 5).map((d: any) => d.title));
+        
         // Filter to docs where ALL original keywords appear in title
         exactMatches = allKeywordDocs.filter((doc: any) => {
           const titleLower = doc.title.toLowerCase();
-          return allWords.every(word => titleLower.includes(word));
-        }).slice(0, 5);
+          const matches = allWords.every(word => {
+            const hasWord = titleLower.includes(word);
+            if (!hasWord) {
+              console.log(`❌ "${doc.title}" missing keyword: "${word}"`);
+            }
+            return hasWord;
+          });
+          
+          if (matches) {
+            console.log(`✅ "${doc.title}" matches ALL keywords`);
+          }
+          
+          return matches;
+        }).slice(0, 10);
+        
+        console.log(`🎯 After ALL-keywords filter: Found ${exactMatches.length} matches`);
       }
     }
     
@@ -412,11 +439,15 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
     
     // STRATEGY 1: Folder name match with recursive hierarchy
     console.log('🗂️ Strategy 1: Searching folder names (with hierarchy)...');
+    console.log('🔍 Searching for keywords in folder names:', keywords);
+    
     const { data: collectionResults } = await supabase
       .from('ck_collections')
       .select('id, name, slug, parent_id')
       .or(keywords.map(k => `name.ilike.%${k}%,slug.ilike.%${k}%`).join(','))
-      .limit(10);
+      .limit(20);
+    
+    console.log(`📊 Retrieved ${collectionResults?.length || 0} folders from database`);
     
     if (collectionResults && collectionResults.length > 0) {
       console.log(`✅ Found ${collectionResults.length} matching folders:`, collectionResults.map((c: any) => c.name));
@@ -493,10 +524,13 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
     
     // STRATEGY 2: Document title + description (WITHOUT joined filter issues)
     console.log('📝 Strategy 2: Searching document titles + descriptions...');
+    console.log('🔍 Searching for ANY keyword in title/description:', keywords);
     
     // Search titles and descriptions separately to avoid PostgREST join filter issues
     const titleOrFilters = keywords.map(k => `title.ilike.%${k}%`).join(',');
     const descOrFilters = keywords.map(k => `description.ilike.%${k}%`).join(',');
+    
+    console.log('🔍 Title filters:', titleOrFilters.substring(0, 100) + '...');
     
     const { data: titleResults } = await supabase
       .from('ck_docs')
@@ -510,8 +544,11 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
       .order('updated_at', { ascending: false })
       .limit(20);
     
+    console.log(`📊 Strategy 2 retrieved ${titleResults?.length || 0} documents`);
+    
     if (titleResults && titleResults.length > 0) {
       console.log(`✅ Found ${titleResults.length} documents by title/description`);
+      console.log('📋 Sample results:', titleResults.slice(0, 3).map((d: any) => d.title));
       
       // Score results
       const scoredResults = titleResults.map((doc: any) => {
@@ -1641,12 +1678,14 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - Use proper line breaks for readability - add blank lines between sections
 
 **TERMINOLOGY - CRITICAL:**
-- Users will refer to "collections" as "FOLDERS" - this is the correct user-facing terminology
-- ALWAYS use "folders" or "folder" when communicating with users, NEVER say "collections"
-- When users say "folder", "directory", or "category", they mean the same as database "collections"
-- Example: User says "What's in the Marketing folder?" → You say "In the Marketing folder, there are..."
+- ALWAYS use "folder" or "folders" when referring to document collections
+- NEVER EVER use "collection" or "collections" in your responses to users
+- When citing documents, ALWAYS mention which folder they're in: "In the [Folder Name] folder, the [Document Title] shows..."
+- Example: User says "What's in the Marketing folder?" → You say "In the Marketing folder, there are X documents including..."
+- Example: User asks "strategic marketing plan" → You say "In the Marketing folder, the Strategic Marketing Plan document states..."
 - Example: User asks "Do we have folders for contracts?" → You say "Yes, we have folders organised by..."
-- NEVER correct users or explain that folders are called collections - just use their terminology
+- NEVER correct users or explain database structure - just use "folder" naturally in all responses
+- When you get search results, cite the folder location prominently to help users find documents
 
 **YOUR FUNCTION TOOLS (Use these proactively!):**
 
@@ -1657,15 +1696,16 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
    - Example: "What feedback did we get?" → Call get_management_data with data_type="feedback"
 
 2. **search_knowledge_base** - For policies, procedures, documents in folders:
-   - Search is VERY INTELLIGENT and works with broad, natural queries
+   - Search is VERY INTELLIGENT and finds documents even with broad queries
    - Handles partial matches, synonyms, and semantic similarity automatically
-   - You DON'T need exact folder names or document titles - be confident and search!
-   - Search understands context: "marketing document" finds "Strategic Marketing Plan"
-   - Example: "What's our fire safety policy?" → Call search_knowledge_base with query="fire safety policy"
-   - Example: "strategic marketing document" → Call search_knowledge_base with query="strategic marketing"
-   - Example: "dietary requirements" → Call search_knowledge_base with query="dietary requirements"
-   - Example: "what's in the marketing folder?" → Call search_knowledge_base with query="marketing"
-   - TIP: Use natural, descriptive queries - the search is smart and will find what users need
+   - You DON'T need exact folder names or document titles - search confidently!
+   - Search understands context: "marketing document" WILL find "Strategic Marketing Plan"
+   - ALWAYS mention the folder location when citing documents in your response
+   - Example: "What's our fire safety policy?" → Call search_knowledge_base("fire safety policy") → Cite: "In the [Folder] folder, the Fire Safety Policy states..."
+   - Example: "strategic marketing document" → Call search_knowledge_base("strategic marketing") → Cite: "In the Marketing folder, the Strategic Marketing Plan outlines..."
+   - Example: "dietary requirements" → Call search_knowledge_base("dietary requirements") → Cite results with folder context
+   - Example: "what's in the marketing folder?" → Call search_knowledge_base("marketing") → List documents with their folder
+   - TIP: Use natural, descriptive queries - the search is smart and WILL find relevant documents
 
 3. **get_analytics** - For insights, trends, analytics:
    - Example: "How's our feedback trending?" → Call get_analytics with type="feedback"
