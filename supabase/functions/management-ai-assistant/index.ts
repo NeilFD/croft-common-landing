@@ -459,18 +459,50 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
   return retrieved;
 }
 
-async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null) {
+async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null, timePeriod?: string) {
   const retrieved: any = { intent: intent.type };
   
   // Handle Feedback/Reviews intent (no event needed)
   if (intent.type === 'feedback' || intent.type === 'reviews') {
     try {
+      // Calculate date filter based on time period
+      let dateFilter = null;
+      const now = new Date();
+      
+      if (timePeriod) {
+        switch (timePeriod) {
+          case 'week':
+            dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            break;
+          case 'month':
+            dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            break;
+          case 'quarter':
+            dateFilter = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
+            break;
+          case 'year':
+            dateFilter = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
+            break;
+          case 'all_time':
+          default:
+            dateFilter = null;
+        }
+      }
+      
       // Get feedback statistics
-      const { data: feedbackData } = await supabase
+      let query = supabase
         .from('feedback_submissions')
-        .select('overall_rating, hospitality_rating, food_rating, drink_rating, team_rating, venue_rating, price_rating, is_anonymous, message, submitted_at')
-        .order('submitted_at', { ascending: false })
-        .limit(50);
+        .select('overall_rating, hospitality_rating, food_rating, drink_rating, team_rating, venue_rating, price_rating, is_anonymous, message, created_at')
+        .order('created_at', { ascending: false });
+      
+      // Apply date filter if specified
+      if (dateFilter) {
+        query = query.gte('created_at', dateFilter);
+      } else {
+        query = query.limit(50);
+      }
+      
+      const { data: feedbackData } = await query;
       
       if (feedbackData && feedbackData.length > 0) {
         // Calculate overall statistics
@@ -491,11 +523,12 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
           .map(f => ({
             message: f.message,
             overall_rating: f.overall_rating,
-            date: f.submitted_at,
+            date: f.created_at,
           }));
         
         retrieved.feedbackStats = {
           totalSubmissions: totalCount,
+          timePeriod: timePeriod || 'all_time',
           averageRatings: {
             overall: Math.round(avgOverall * 10) / 10,
             hospitality: Math.round(avgHospitality * 10) / 10,
@@ -509,7 +542,26 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
           recentComments,
         };
         
-        console.log(`📊 Retrieved feedback statistics: ${totalCount} submissions, avg overall: ${retrieved.feedbackStats.averageRatings.overall}`);
+        console.log(`📊 Retrieved feedback statistics: ${totalCount} submissions for period '${timePeriod || 'all_time'}', avg overall: ${retrieved.feedbackStats.averageRatings.overall}`);
+      } else {
+        // No feedback in selected period
+        retrieved.feedbackStats = {
+          totalSubmissions: 0,
+          timePeriod: timePeriod || 'all_time',
+          averageRatings: {
+            overall: 0,
+            hospitality: 0,
+            food: 0,
+            drink: 0,
+            team: 0,
+            venue: 0,
+            price: 0,
+          },
+          anonymousPercentage: 0,
+          recentComments: [],
+          message: `No feedback submissions found for the selected time period (${timePeriod || 'all time'}).`
+        };
+        console.log(`📊 No feedback found for period '${timePeriod || 'all_time'}'`);
       }
     } catch (error) {
       console.error('Error retrieving feedback data:', error);
@@ -791,8 +843,8 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
           resolvedEventId = await resolveEvent(supabase, event_identifier);
         }
         
-        // Retrieve targeted data
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId);
+        // Retrieve targeted data (pass time_period for feedback)
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period);
         
         return {
           success: true,
@@ -841,8 +893,8 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
           resolvedEventId = await resolveEvent(supabase, event_identifier);
         }
         
-        // Use existing comprehensive data retrieval logic
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId);
+        // Use existing comprehensive data retrieval logic with time period
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period);
         
         // For conflicts, get additional conflict data
         if (type === 'conflicts') {
