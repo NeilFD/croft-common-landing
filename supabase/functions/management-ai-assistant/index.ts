@@ -303,7 +303,7 @@ async function getAllChildFolderIds(supabase: any, parentIds: string[]): Promise
 }
 
 async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, serviceRoleClient?: any) {
-  // Use service role client for knowledge base queries if provided
+  // Use service role client for knowledge base queries to bypass RLS
   const dbClient = serviceRoleClient || supabase;
   const retrieved: any = { documents: [], collections: [], totalDocs: 0 };
   
@@ -1127,7 +1127,7 @@ const FUNCTION_TOOLS = [
 ];
 
 // Function execution handler
-async function executeFunction(functionName: string, args: any, supabase: any, userRole: string) {
+async function executeFunction(functionName: string, args: any, supabase: any, userRole: string, serviceRoleClient?: any) {
   console.log(`🔧 Executing function: ${functionName}`, JSON.stringify(args).substring(0, 200));
   
   try {
@@ -1171,7 +1171,7 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
       
       case "search_knowledge_base": {
         const { query, document_type, limit } = args;
-        const data = await retrieveCommonKnowledgeData(supabase, query);
+        const data = await retrieveCommonKnowledgeData(supabase, query, serviceRoleClient);
         
         return {
           success: true,
@@ -1293,10 +1293,55 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Initialize Supabase client with service role key
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Verify user authentication and role
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'No authorization header' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Create client with user's token for role verification
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    // Verify user has management role
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      console.error('Auth error:', userError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check management role
+    const { data: roleData } = await supabaseClient
+      .rpc('get_user_management_role', { _user_id: user.id });
+    
+    if (!roleData) {
+      console.error('No management role for user:', user.id);
+      return new Response(JSON.stringify({ error: 'Unauthorized - no management role' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('✅ Authenticated user:', user.email, 'Role:', roleData);
+
+    // Create service role client for knowledge base queries
+    const serviceRoleClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { global: { headers: { Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` } } }
+    );
+
+    // Use supabaseClient for regular operations (respects RLS)
+    const supabase = supabaseClient;
 
     console.log('🎯 Processing message with function calling enabled');
     console.log('📚 Conversation history length:', messages.length);
@@ -1384,7 +1429,8 @@ serve(async (req) => {
                   accumulatedFunctionCall.name,
                   fnArgs,
                   supabase,
-                  context?.user?.role
+                  context?.user?.role,
+                  serviceRoleClient
                 );
 
                 console.log('✅ Function result:', JSON.stringify(functionResult).substring(0, 200));
@@ -1450,7 +1496,8 @@ serve(async (req) => {
                     'get_analytics',
                     { type: 'feedback', time_period: period },
                     supabase,
-                    context?.user?.role
+                    context?.user?.role,
+                    serviceRoleClient
                   );
                   const toolCallId = 'call_' + Date.now();
                   const finalMessages = [
