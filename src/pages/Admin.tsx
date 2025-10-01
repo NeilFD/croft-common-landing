@@ -22,11 +22,7 @@ const Admin: React.FC = () => {
     return <Navigate to="/management/login" replace />;
   }
 
-  return (
-    <ManagementLayout>
-      <AdminApp />
-    </ManagementLayout>
-  );
+  return <AdminApp />;
 };
 
 export default Admin;

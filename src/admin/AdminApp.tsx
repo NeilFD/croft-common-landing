@@ -19,16 +19,16 @@ export const AdminApp = () => {
     <>
       <Routes>
         <Route path="/" element={<AdminDashboard />} />
-        <Route path="/notifications/compose" element={<NotificationCompose />} />
-        <Route path="/notifications/history" element={<NotificationHistory />} />
-        <Route path="/analytics/opt-in" element={<OptInAnalytics />} />
-        <Route path="/analytics/users" element={<UserAnalyticsPage />} />
-        <Route path="/analytics/granular" element={<GranularAnalyticsPage />} />
-        <Route path="/management/subscribers" element={<SubscribersPage />} />
-        <Route path="/management/moments" element={<MomentsPage />} />
-        <Route path="/management/cinema" element={<CinemaPage />} />
-        <Route path="/management/leads" element={<LeadsList />} />
-        <Route path="/management/leads/:id" element={<LeadDetail />} />
+        <Route path="notifications/compose" element={<NotificationCompose />} />
+        <Route path="notifications/history" element={<NotificationHistory />} />
+        <Route path="analytics/opt-in" element={<OptInAnalytics />} />
+        <Route path="analytics/users" element={<UserAnalyticsPage />} />
+        <Route path="analytics/granular" element={<GranularAnalyticsPage />} />
+        <Route path="management/subscribers" element={<SubscribersPage />} />
+        <Route path="management/moments" element={<MomentsPage />} />
+        <Route path="management/cinema" element={<CinemaPage />} />
+        <Route path="management/leads" element={<LeadsList />} />
+        <Route path="management/leads/:id" element={<LeadDetail />} />
         <Route path="*" element={<Navigate to="/management/admin" replace />} />
       </Routes>
       <Toaster />

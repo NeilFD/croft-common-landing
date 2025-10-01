@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, NavLink, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
+import { useRoleBasedAccess } from '@/hooks/useRoleBasedAccess';
 import {
   Sidebar,
   SidebarContent,
@@ -37,7 +38,15 @@ import {
   BookOpen,
   Layout,
   Shield,
-  FlaskConical
+  FlaskConical,
+  Bell,
+  Send,
+  History,
+  UserCheck,
+  Camera,
+  Film,
+  Database,
+  ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -90,6 +99,7 @@ export const ManagementSidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { managementUser, signOut } = useManagementAuth();
+  const { canAccessAdmin, canAccessCMS, canAccessResearch } = useRoleBasedAccess();
   const currentPath = location.pathname;
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
@@ -97,6 +107,9 @@ export const ManagementSidebar = () => {
     knowledge: true,
     spaces: true,
     admin: true,
+    adminNotifications: false,
+    adminAnalytics: false,
+    adminManagement: false,
     cms: true,
     research: true,
   });
@@ -126,6 +139,16 @@ export const ManagementSidebar = () => {
   }
   if (isOnAdminRoute && !expandedSections.admin) {
     setExpandedSections(prev => ({ ...prev, admin: true }));
+    // Expand admin subsections based on current path
+    if (currentPath.startsWith('/management/admin/notifications')) {
+      setExpandedSections(prev => ({ ...prev, adminNotifications: true }));
+    }
+    if (currentPath.startsWith('/management/admin/analytics')) {
+      setExpandedSections(prev => ({ ...prev, adminAnalytics: true }));
+    }
+    if (currentPath.startsWith('/management/admin/management')) {
+      setExpandedSections(prev => ({ ...prev, adminManagement: true }));
+    }
   }
   if (isOnCMSRoute && !expandedSections.cms) {
     setExpandedSections(prev => ({ ...prev, cms: true }));
@@ -437,7 +460,7 @@ export const ManagementSidebar = () => {
           )}
 
           {/* CMS Section */}
-          {showText && (
+          {showText && canAccessCMS() && (
             <SidebarGroup>
               <Collapsible 
                 open={expandedSections.cms} 
@@ -481,7 +504,7 @@ export const ManagementSidebar = () => {
           )}
 
           {/* Admin Section */}
-          {showText && (
+          {showText && canAccessAdmin() && (
             <SidebarGroup>
               <Collapsible 
                 open={expandedSections.admin} 
@@ -499,23 +522,246 @@ export const ManagementSidebar = () => {
                 <CollapsibleContent>
                   <SidebarGroupContent>
                     <SidebarMenu>
+                      {/* Overview */}
                       <SidebarMenuItem>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <SidebarMenuButton 
                               asChild
-                              className={getNavClass(isActive('/management/admin', false))}
+                              className={getNavClass(isActive('/management/admin', true))}
                             >
-                              <NavLink to="/management/admin" className="font-industrial">
-                                <Shield className="mr-2 h-4 w-4" />
-                                Dashboard
+                              <NavLink to="/management/admin" end className="font-industrial">
+                                <Home className="mr-2 h-4 w-4" />
+                                Overview
                               </NavLink>
                             </SidebarMenuButton>
                           </TooltipTrigger>
                           <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
-                            <p className="font-industrial">Admin Dashboard</p>
+                            <p className="font-industrial">Admin Overview</p>
                           </TooltipContent>
                         </Tooltip>
+                      </SidebarMenuItem>
+
+                      {/* Notifications Subsection */}
+                      <SidebarMenuItem>
+                        <Collapsible
+                          open={expandedSections.adminNotifications}
+                          onOpenChange={(open) => setExpandedSections(prev => ({ ...prev, adminNotifications: open }))}
+                        >
+                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-industrial">
+                            <div className="flex items-center gap-2">
+                              <Bell className="h-4 w-4" />
+                              <span>Notifications</span>
+                            </div>
+                            <ChevronRight className={`h-3 w-3 transition-transform ${expandedSections.adminNotifications ? 'rotate-90' : ''}`} />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <SidebarMenu className="ml-4 mt-1">
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/notifications/compose', false))}
+                                    >
+                                      <NavLink to="/management/admin/notifications/compose" className="font-industrial">
+                                        <Send className="mr-2 h-4 w-4" />
+                                        Compose
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Compose Notification</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/notifications/history', false))}
+                                    >
+                                      <NavLink to="/management/admin/notifications/history" className="font-industrial">
+                                        <History className="mr-2 h-4 w-4" />
+                                        History
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Notification History</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                            </SidebarMenu>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </SidebarMenuItem>
+
+                      {/* Analytics Subsection */}
+                      <SidebarMenuItem>
+                        <Collapsible
+                          open={expandedSections.adminAnalytics}
+                          onOpenChange={(open) => setExpandedSections(prev => ({ ...prev, adminAnalytics: open }))}
+                        >
+                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-industrial">
+                            <div className="flex items-center gap-2">
+                              <BarChart3 className="h-4 w-4" />
+                              <span>Analytics</span>
+                            </div>
+                            <ChevronRight className={`h-3 w-3 transition-transform ${expandedSections.adminAnalytics ? 'rotate-90' : ''}`} />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <SidebarMenu className="ml-4 mt-1">
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/analytics/opt-in', false))}
+                                    >
+                                      <NavLink to="/management/admin/analytics/opt-in" className="font-industrial">
+                                        <TrendingUp className="mr-2 h-4 w-4" />
+                                        Opt-in Analytics
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Opt-in Analytics</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/analytics/users', false))}
+                                    >
+                                      <NavLink to="/management/admin/analytics/users" className="font-industrial">
+                                        <Users className="mr-2 h-4 w-4" />
+                                        User Analytics
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">User Analytics</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/analytics/granular', false))}
+                                    >
+                                      <NavLink to="/management/admin/analytics/granular" className="font-industrial">
+                                        <BarChart3 className="mr-2 h-4 w-4" />
+                                        Granular Analytics
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Granular Analytics</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                            </SidebarMenu>
+                          </CollapsibleContent>
+                        </Collapsible>
+                      </SidebarMenuItem>
+
+                      {/* Management Subsection */}
+                      <SidebarMenuItem>
+                        <Collapsible
+                          open={expandedSections.adminManagement}
+                          onOpenChange={(open) => setExpandedSections(prev => ({ ...prev, adminManagement: open }))}
+                        >
+                          <CollapsibleTrigger className="flex items-center justify-between w-full px-2 py-1.5 text-sm hover:bg-accent/50 rounded-md font-industrial">
+                            <div className="flex items-center gap-2">
+                              <Settings className="h-4 w-4" />
+                              <span>Management</span>
+                            </div>
+                            <ChevronRight className={`h-3 w-3 transition-transform ${expandedSections.adminManagement ? 'rotate-90' : ''}`} />
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <SidebarMenu className="ml-4 mt-1">
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/management/subscribers', false))}
+                                    >
+                                      <NavLink to="/management/admin/management/subscribers" className="font-industrial">
+                                        <UserCheck className="mr-2 h-4 w-4" />
+                                        Subscribers
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Subscribers</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/management/moments', false))}
+                                    >
+                                      <NavLink to="/management/admin/management/moments" className="font-industrial">
+                                        <Camera className="mr-2 h-4 w-4" />
+                                        Moments Moderation
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Moments Moderation</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/management/cinema', false))}
+                                    >
+                                      <NavLink to="/management/admin/management/cinema" className="font-industrial">
+                                        <Film className="mr-2 h-4 w-4" />
+                                        Cinema Management
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Cinema Management</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/member-analytics', false))}
+                                    >
+                                      <NavLink to="/management/admin/member-analytics" className="font-industrial">
+                                        <Database className="mr-2 h-4 w-4" />
+                                        Member Database
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Member Database</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                            </SidebarMenu>
+                          </CollapsibleContent>
+                        </Collapsible>
                       </SidebarMenuItem>
                     </SidebarMenu>
                   </SidebarGroupContent>
@@ -525,7 +771,7 @@ export const ManagementSidebar = () => {
           )}
 
           {/* Research Section */}
-          {showText && (
+          {showText && canAccessResearch() && (
             <SidebarGroup>
               <Collapsible 
                 open={expandedSections.research} 
