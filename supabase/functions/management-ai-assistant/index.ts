@@ -349,7 +349,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     const normalizedQuery = searchQuery.toLowerCase().trim();
     
     // Try exact phrase match on title first
-    let { data: exactMatches } = await supabase
+    let { data: exactMatches } = await dbClient
       .from('ck_docs')
       .select(`
         id, title, slug, type, description, tags, zones, collection_id, updated_at,
@@ -372,7 +372,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       console.log('🔍 Looking for ALL these words in title:', allWords);
       
       // Get ALL approved docs with versions - no arbitrary limit
-      const { data: allKeywordDocs } = await supabase
+      const { data: allKeywordDocs } = await dbClient
         .from('ck_docs')
         .select(`
           id, title, slug, type, description, tags, zones, collection_id, updated_at,
@@ -430,7 +430,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       retrieved.searchMethod = 'exact_title_match';
       
       // Get all folders for context
-      const { data: collections } = await supabase
+      const { data: collections } = await dbClient
         .from('ck_collections')
         .select('id, name, slug, parent_id')
         .order('name');
@@ -443,7 +443,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     console.log('🗂️ Strategy 1: Searching folder names (with hierarchy)...');
     console.log('🔍 Searching for keywords in folder names:', keywords);
     
-    const { data: collectionResults } = await supabase
+    const { data: collectionResults } = await dbClient
       .from('ck_collections')
       .select('id, name, slug, parent_id')
       .or(keywords.map(k => `name.ilike.%${k}%,slug.ilike.%${k}%`).join(','))
@@ -456,7 +456,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       
       // Get all child folders recursively
       const rootFolderIds = collectionResults.map((c: any) => c.id);
-      const allFolderIds = await getAllChildFolderIds(supabase, rootFolderIds);
+      const allFolderIds = await getAllChildFolderIds(dbClient, rootFolderIds);
       
       console.log(`🔍 Including ${allFolderIds.length} folders (with subfolders)`);
       
@@ -534,7 +534,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     
     console.log('🔍 Title filters:', titleOrFilters.substring(0, 100) + '...');
     
-    const { data: titleResults } = await supabase
+    const { data: titleResults } = await dbClient
       .from('ck_docs')
       .select(`
         id, title, slug, type, description, tags, zones, collection_id, updated_at,
@@ -592,7 +592,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       retrieved.searchMethod = 'title_description_match';
       
       // Get all folders for context
-      const { data: collections } = await supabase
+      const { data: collections } = await dbClient
         .from('ck_collections')
         .select('id, name, slug')
         .order('name');
@@ -605,7 +605,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     console.log('🔍 Strategy 3: Full-text search (with titles)...');
     const searchTerms = keywords.join(' | '); // OR search
     
-    const { data: docs, error: docsError } = await supabase
+    const { data: docs, error: docsError } = await dbClient
       .from('ck_doc_versions')
       .select(`
         id,
@@ -660,7 +660,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     // STRATEGY 4: Content search as last resort
     if (retrieved.documents.length === 0 && keywords.length > 0) {
       console.log('🔎 Trying content search as last resort...');
-      const { data: contentDocs } = await supabase
+      const { data: contentDocs } = await dbClient
         .from('ck_docs')
         .select(`
           id,
@@ -710,7 +710,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     }
     
     // Get all collections for context
-    const { data: collections } = await supabase
+    const { data: collections } = await dbClient
       .from('ck_collections')
       .select('id, name, slug')
       .order('name');
@@ -1333,12 +1333,19 @@ serve(async (req) => {
 
     console.log('✅ Authenticated user:', user.email, 'Role:', roleData);
 
-    // Create service role client for knowledge base queries
-    const serviceRoleClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { global: { headers: { Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` } } }
-    );
+    // Create service role client for knowledge base queries (only if key is set)
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    let serviceRoleClient: any | undefined = undefined;
+    if (serviceRoleKey && serviceRoleKey.trim().length > 0) {
+      serviceRoleClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        serviceRoleKey,
+        { global: { headers: { Authorization: `Bearer ${serviceRoleKey}` } } }
+      );
+      console.log('🔐 Using service role client for knowledge base queries');
+    } else {
+      console.warn('⚠️ SUPABASE_SERVICE_ROLE_KEY not set; falling back to RLS-scoped client for knowledge queries');
+    }
 
     // Use supabaseClient for regular operations (respects RLS)
     const supabase = supabaseClient;
