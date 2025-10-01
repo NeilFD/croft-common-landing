@@ -519,27 +519,42 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
   // Handle Feedback/Reviews intent (no event needed)
   if (intent.type === 'feedback' || intent.type === 'reviews') {
     try {
-      // Calculate date filter based on time period
-      let dateFilter = null;
+      // Calculate date filter based on time period (supports start/end bounds)
+      let startISO: string | null = null;
+      let endISO: string | null = null;
       const now = new Date();
+      const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
       
       if (timePeriod) {
         switch (timePeriod) {
+          case 'today': {
+            const start = startOfDay(now);
+            startISO = start.toISOString();
+            endISO = new Date(start.getTime() + 24 * 60 * 60 * 1000).toISOString();
+            break;
+          }
+          case 'yesterday': {
+            const start = new Date(startOfDay(now).getTime() - 24 * 60 * 60 * 1000);
+            startISO = start.toISOString();
+            endISO = new Date(start.getTime() + 24 * 60 * 60 * 1000).toISOString();
+            break;
+          }
           case 'week':
-            dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+            startISO = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
             break;
           case 'month':
-            dateFilter = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+            startISO = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
             break;
           case 'quarter':
-            dateFilter = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
+            startISO = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000).toISOString();
             break;
           case 'year':
-            dateFilter = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
+            startISO = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000).toISOString();
             break;
           case 'all_time':
           default:
-            dateFilter = null;
+            startISO = null;
+            endISO = null;
         }
       }
       
@@ -550,10 +565,14 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
         .select(`${feedbackCols.overall_rating}, ${feedbackCols.hospitality_rating}, ${feedbackCols.food_rating}, ${feedbackCols.drink_rating}, ${feedbackCols.team_rating}, ${feedbackCols.venue_rating}, ${feedbackCols.price_rating}, ${feedbackCols.is_anonymous}, ${feedbackCols.message}, ${feedbackCols.created_at}`)
         .order(feedbackCols.created_at, { ascending: false });
       
-      // Apply date filter if specified
-      if (dateFilter) {
-        query = query.gte(feedbackCols.created_at, dateFilter);
-      } else {
+      // Apply date filters if specified
+      if (startISO) {
+        query = query.gte(feedbackCols.created_at, startISO);
+      }
+      if (endISO) {
+        query = query.lt(feedbackCols.created_at, endISO);
+      }
+      if (!startISO && !endISO) {
         query = query.limit(50);
       }
       
@@ -861,7 +880,7 @@ const FUNCTION_TOOLS = [
           },
           time_period: {
             type: "string",
-            enum: ["week", "month", "quarter", "year", "all_time"],
+          enum: ["today", "yesterday", "week", "month", "quarter", "year", "all_time"],
             description: "Time period for analytics",
             default: "month"
           },
@@ -927,8 +946,10 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
           success: true,
           query,
           document_type: document_type || "all",
-          results: data.slice(0, limit || 5),
-          total_found: data.length,
+          results: (data.documents || []).slice(0, limit || 5),
+          total_found: data.totalDocs || (data.documents?.length || 0),
+          documents: data.documents || [],
+          collections: data.collections || [],
           metadata: {
             search_quality: "high",
             timestamp: new Date().toISOString()
@@ -1011,6 +1032,21 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
       error: error instanceof Error ? error.message : "Function execution failed"
     };
   }
+}
+
+// Natural language time phrase mapper for analytics/feedback
+function mapTimePhraseToPeriod(text: string): 'today' | 'yesterday' | 'week' | 'month' | 'quarter' | 'year' | 'all_time' {
+  const t = (text || '').toLowerCase();
+  if (/\btoday\b/.test(t)) return 'today';
+  if (/\byesterday\b/.test(t)) return 'yesterday';
+  if (/(this|current)\s+week/.test(t)) return 'week';
+  if (/last\s+week/.test(t)) return 'week';
+  if (/(this|current)\s+month/.test(t)) return 'month';
+  if (/last\s+month/.test(t)) return 'month';
+  if (/quarter|q\d/.test(t)) return 'quarter';
+  if (/year|12\s*months/.test(t)) return 'year';
+  if (/all\s*time|ever|since\s+launch/.test(t)) return 'all_time';
+  return 'month';
 }
 
 serve(async (req) => {
@@ -1157,6 +1193,50 @@ serve(async (req) => {
                     const { done: finalDone, value: finalValue } = await finalReader.read();
                     if (finalDone) break;
                     controller.enqueue(finalValue);
+                  }
+                }
+              } else {
+                // No function call detected — enforce tool-first fallback for feedback/reviews
+                const lastUserMessage = messages?.slice().reverse().find((m: any) => m.role === 'user')?.content || '';
+                const inferred = detectIntent(lastUserMessage, messages);
+                if (inferred.type === 'feedback' || inferred.type === 'reviews') {
+                  const period = mapTimePhraseToPeriod(lastUserMessage);
+                  console.log(`🔁 Fallback: forcing get_analytics(type=feedback, time_period=${period})`);
+                  const functionResult = await executeFunction(
+                    'get_analytics',
+                    { type: 'feedback', time_period: period },
+                    supabase,
+                    context?.user?.role
+                  );
+                  const finalMessages = [
+                    ...messages,
+                    {
+                      role: "assistant",
+                      content: null,
+                      tool_calls: [{
+                        id: "call_" + Date.now(),
+                        type: "function",
+                        function: { name: 'get_analytics', arguments: JSON.stringify({ type: 'feedback', time_period: period }) }
+                      }]
+                    },
+                    { role: "tool", tool_call_id: "call_" + Date.now(), content: JSON.stringify(functionResult) }
+                  ];
+                  const finalResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                    method: "POST",
+                    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      model: "google/gemini-2.5-flash",
+                      messages: [ { role: "system", content: systemPrompt }, ...finalMessages ],
+                      stream: true,
+                    }),
+                  });
+                  const finalReader = finalResponse.body?.getReader();
+                  if (finalReader) {
+                    while (true) {
+                      const { done: finalDone, value: finalValue } = await finalReader.read();
+                      if (finalDone) break;
+                      controller.enqueue(finalValue);
+                    }
                   }
                 }
               }
