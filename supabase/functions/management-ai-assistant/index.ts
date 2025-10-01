@@ -727,7 +727,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
   return retrieved;
 }
 
-async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null, timePeriod?: string, dateRange?: { start_date?: string; end_date?: string }) {
+async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null, timePeriod?: string, dateRange?: { start_date?: string; end_date?: string }, serviceRoleClient?: any) {
   const retrieved: any = { intent: intent.type };
   
   // Handle Feedback/Reviews intent (no event needed)
@@ -883,7 +883,9 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
   // Handle Common Knowledge intents separately (no event needed)
   if (intent.type === 'knowledge' || intent.type === 'policy' || intent.type === 'procedure' || intent.type === 'document') {
     if (intent.searchQuery) {
-      const ckData = await retrieveCommonKnowledgeData(supabase, intent.searchQuery);
+      console.log('🔐 Using service role client for knowledge base query in retrieveTargetedData');
+      const dbClient = serviceRoleClient || supabase;
+      const ckData = await retrieveCommonKnowledgeData(dbClient, intent.searchQuery);
       return { ...retrieved, ...ckData };
     }
     return retrieved;
@@ -1154,7 +1156,7 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
         }
         
         // Retrieve targeted data (pass time_period for feedback)
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range);
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range, serviceRoleClient);
         
         return {
           success: true,
@@ -1206,7 +1208,7 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
         }
         
         // Use existing comprehensive data retrieval logic with time period
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range);
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range, serviceRoleClient);
         
         // For conflicts, get additional conflict data
         if (type === 'conflicts') {
