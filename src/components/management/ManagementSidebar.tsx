@@ -667,6 +667,42 @@ export const ManagementSidebar = () => {
                                   </TooltipContent>
                                 </Tooltip>
                               </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/analytics/member-analytics', false))}
+                                    >
+                                      <NavLink to="/management/admin/analytics/member-analytics" className="font-industrial">
+                                        <Users className="mr-2 h-4 w-4" />
+                                        Member Analytics
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Member Analytics</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
+                              <SidebarMenuItem>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <SidebarMenuButton 
+                                      asChild
+                                      className={getNavClass(isActive('/management/admin/analytics/member-analytics-legacy', false))}
+                                    >
+                                      <NavLink to="/management/admin/analytics/member-analytics-legacy" className="font-industrial">
+                                        <Users className="mr-2 h-4 w-4" />
+                                        Legacy Member Analytics
+                                      </NavLink>
+                                    </SidebarMenuButton>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                                    <p className="font-industrial">Legacy Member Analytics</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </SidebarMenuItem>
                             </SidebarMenu>
                           </CollapsibleContent>
                         </Collapsible>

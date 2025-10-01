@@ -13,6 +13,8 @@ import { CinemaPage } from './pages/CinemaPage';
 import LeadsList from '../pages/management/LeadsList';
 
 const LeadDetail = lazy(() => import('../pages/management/LeadDetail'));
+const AdminMemberAnalytics = lazy(() => import('../pages/AdminMemberAnalytics'));
+const EnhancedAdminMemberAnalytics = lazy(() => import('../pages/EnhancedAdminMemberAnalytics'));
 
 export const AdminApp = () => {
   return (
@@ -24,6 +26,8 @@ export const AdminApp = () => {
         <Route path="analytics/opt-in" element={<OptInAnalytics />} />
         <Route path="analytics/users" element={<UserAnalyticsPage />} />
         <Route path="analytics/granular" element={<GranularAnalyticsPage />} />
+        <Route path="analytics/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
+        <Route path="analytics/member-analytics-legacy" element={<AdminMemberAnalytics />} />
         <Route path="management/subscribers" element={<SubscribersPage />} />
         <Route path="management/moments" element={<MomentsPage />} />
         <Route path="management/cinema" element={<CinemaPage />} />

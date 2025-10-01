@@ -296,8 +296,6 @@ const App = () => {
                         
                         {/* Admin under Management */}
                         <Route path="/management/admin/*" element={<Admin />} />
-                        <Route path="/management/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
-                        <Route path="/management/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
                         
                         {/* Research under Management */}
                         <Route path="/management/research" element={<Research />} />
