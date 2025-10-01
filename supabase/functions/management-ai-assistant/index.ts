@@ -302,7 +302,9 @@ async function getAllChildFolderIds(supabase: any, parentIds: string[]): Promise
   return [...parentIds, ...childIds, ...grandchildIds];
 }
 
-async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
+async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, serviceRoleClient?: any) {
+  // Use service role client for knowledge base queries if provided
+  const dbClient = serviceRoleClient || supabase;
   const retrieved: any = { documents: [], collections: [], totalDocs: 0 };
   
   try {
