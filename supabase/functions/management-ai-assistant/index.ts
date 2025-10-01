@@ -1155,56 +1155,67 @@ serve(async (req) => {
               // If we detected a function call, execute it and get final response
               if (functionCallDetected && accumulatedFunctionCall) {
                 console.log('🎯 Function call detected, executing...');
-                
+
+                // Parse tool arguments safely before execution (critical)
+                let fnArgs: any = accumulatedFunctionCall.arguments;
+                if (typeof fnArgs === 'string') {
+                  try {
+                    fnArgs = JSON.parse(fnArgs);
+                  } catch (e) {
+                    console.error('Failed to parse function arguments before execution:', e);
+                  }
+                }
+
                 const functionResult = await executeFunction(
                   accumulatedFunctionCall.name,
-                  accumulatedFunctionCall.arguments,
+                  fnArgs,
                   supabase,
                   context?.user?.role
                 );
-                
+
                 console.log('✅ Function result:', JSON.stringify(functionResult).substring(0, 200));
-                
+
                 // Make second AI request with function result
-                const toolCallId = "call_" + Date.now();
+                const toolCallId = 'call_' + Date.now();
                 const finalMessages = [
                   ...messages,
                   {
-                    role: "assistant",
+                    role: 'assistant',
                     content: null,
                     tool_calls: [{
                       id: toolCallId,
-                      type: "function",
+                      type: 'function',
                       function: {
                         name: accumulatedFunctionCall.name,
-                        arguments: JSON.stringify(accumulatedFunctionCall.arguments)
+                        arguments: JSON.stringify(fnArgs)
                       }
                     }]
                   },
                   {
-                    role: "tool",
+                    role: 'tool',
                     tool_call_id: toolCallId,
                     content: JSON.stringify(functionResult)
                   }
                 ];
-                
-                const finalResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-                  method: "POST",
+
+                console.log('🔁 Requesting final model answer with tool result...');
+                const finalResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+                  method: 'POST',
                   headers: {
                     Authorization: `Bearer ${LOVABLE_API_KEY}`,
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
-                    model: "google/gemini-2.5-flash",
+                    model: 'google/gemini-2.5-flash',
                     messages: [
-                      { role: "system", content: systemPrompt },
+                      { role: 'system', content: systemPrompt },
                       ...finalMessages,
                     ],
                     tools: FUNCTION_TOOLS,
                     stream: true,
                   }),
                 });
-                
+
                 // Stream the final response
                 const finalReader = finalResponse.body?.getReader();
                 if (finalReader) {
@@ -1227,26 +1238,26 @@ serve(async (req) => {
                     supabase,
                     context?.user?.role
                   );
-                  const toolCallId = "call_" + Date.now();
+                  const toolCallId = 'call_' + Date.now();
                   const finalMessages = [
                     ...messages,
                     {
-                      role: "assistant",
+                      role: 'assistant',
                       content: null,
                       tool_calls: [{
                         id: toolCallId,
-                        type: "function",
+                        type: 'function',
                         function: { name: 'get_analytics', arguments: JSON.stringify({ type: 'feedback', time_period: period }) }
                       }]
                     },
-                    { role: "tool", tool_call_id: toolCallId, content: JSON.stringify(functionResult) }
+                    { role: 'tool', tool_call_id: toolCallId, content: JSON.stringify(functionResult) }
                   ];
-                  const finalResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-                    method: "POST",
-                    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+                  const finalResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                      model: "google/gemini-2.5-flash",
-                      messages: [ { role: "system", content: systemPrompt }, ...finalMessages ],
+                      model: 'google/gemini-2.5-flash',
+                      messages: [ { role: 'system', content: systemPrompt }, ...finalMessages ],
                       tools: FUNCTION_TOOLS,
                       stream: true,
                     }),
@@ -1447,7 +1458,11 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - ONLY use data from function results or the DATABASE OVERVIEW as fallback
 - NEVER make up, invent, or hallucinate information
 - If you need data, call the appropriate function first
-- Use British English (organised, colour, etc.)
+- Use British English (organised, colour, etc.) and always use £ (never $)
+- For feedback/reviews questions do NOT ask for an event ID unless the user explicitly mentions an event; default to organisation-wide stats for a sensible time period
+- For feedback/reviews, call get_analytics with type="feedback" and infer time_period from the user’s wording (e.g. “today”, “this week”)
+- Never mention or refer to membership tiers
+- All links must use https://www.croftcommontest.com
 - Use proper line breaks for readability - add blank lines between sections
 
 **YOUR FUNCTION TOOLS (Use these proactively!):**
