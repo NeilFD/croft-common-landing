@@ -53,7 +53,7 @@ const ManagementDashboard = () => {
     },
     {
       title: 'FEEDBACK',
-      description: 'Customer feedback & sentiment',
+      description: 'Guest feedback',
       icon: MessageSquare,
       href: '/management/feedback',
       color: 'text-[hsl(var(--accent-pink))]',
