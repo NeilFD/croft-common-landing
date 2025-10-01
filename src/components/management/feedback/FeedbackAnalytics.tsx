@@ -124,7 +124,7 @@ export function FeedbackAnalytics({ data, dateRange }: FeedbackAnalyticsProps) {
                   <ul className="space-y-2">
                     {sentimentAnalysis.keyPositives.map((positive: string, idx: number) => (
                       <li key={idx} className="p-3 bg-green-50 dark:bg-green-950 rounded-lg text-sm">
-                        {positive}
+                        {positive.replace(/\*\*/g, '')}
                       </li>
                     ))}
                   </ul>
@@ -141,7 +141,7 @@ export function FeedbackAnalytics({ data, dateRange }: FeedbackAnalyticsProps) {
                   <ul className="space-y-2">
                     {sentimentAnalysis.keyNegatives.map((negative: string, idx: number) => (
                       <li key={idx} className="p-3 bg-red-50 dark:bg-red-950 rounded-lg text-sm">
-                        {negative}
+                        {negative.replace(/\*\*/g, '')}
                       </li>
                     ))}
                   </ul>
@@ -153,12 +153,12 @@ export function FeedbackAnalytics({ data, dateRange }: FeedbackAnalyticsProps) {
                 <div>
                   <h4 className="font-semibold mb-2 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-blue-500" />
-                    Recommendations
+                    Top 3 Recommendations
                   </h4>
                   <ul className="space-y-2">
-                    {sentimentAnalysis.recommendations.map((rec: string, idx: number) => (
+                    {sentimentAnalysis.recommendations.slice(0, 3).map((rec: string, idx: number) => (
                       <li key={idx} className="p-3 bg-blue-50 dark:bg-blue-950 rounded-lg text-sm">
-                        {rec}
+                        {rec.replace(/\*\*/g, '')}
                       </li>
                     ))}
                   </ul>

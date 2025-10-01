@@ -42,9 +42,9 @@ Please provide:
 1. Overall sentiment (positive, neutral, or negative) with confidence level
 2. Key positives (3-5 specific things customers loved)
 3. Key negatives / areas for improvement (3-5 specific issues to address)
-4. Actionable recommendations (3-5 concrete steps to improve)
+4. Top 3 Recommendations - provide exactly 3 concrete, actionable steps to improve
 
-Focus on patterns across multiple feedback entries. Be specific and actionable.`;
+Focus on patterns across multiple feedback entries. Be specific and actionable. Do NOT use markdown formatting (no ** or bold markers).`;
 
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
