@@ -471,6 +471,16 @@
   opacity: 0.8;
 }
 
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Anti-selection and gesture optimization */
 .gesture-container {
   user-select: none !important;

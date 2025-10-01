@@ -321,85 +321,93 @@ export default function CommonKnowledgeView() {
 
   return (
     <ManagementLayout>
-      <div className="space-y-6 p-3 md:p-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => navigate("/management/common-knowledge")}
+            className="shrink-0"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 overflow-x-auto pb-2 w-full sm:w-auto no-scrollbar">
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => togglePin.mutate()}
               disabled={togglePin.isPending}
+              className="shrink-0"
             >
-              <Pin className={`h-4 w-4 mr-2 ${isPinned ? 'fill-current' : ''}`} />
-              {isPinned ? "Unpin" : "Pin"}
+              <Pin className={`h-4 w-4 ${isPinned ? 'fill-current mr-2' : 'sm:mr-2'}`} />
+              <span className="hidden sm:inline">{isPinned ? "Unpin" : "Pin"}</span>
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setMoveOpen(true)}
+              className="shrink-0"
             >
-              <FolderInput className="h-4 w-4 mr-2" />
-              Move to Folder
+              <FolderInput className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Move</span>
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setHistoryOpen(true)}
+              className="shrink-0"
             >
-              <History className="h-4 w-4 mr-2" />
-              History
+              <History className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">History</span>
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={() => setShareOpen(true)}
+              className="shrink-0"
             >
-              <Share2 className="h-4 w-4 mr-2" />
-              Share
+              <Share2 className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Share</span>
             </Button>
             <Button 
               variant="outline" 
               size="sm"
               onClick={handleExport}
+              className="shrink-0"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Export
+              <Download className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Export</span>
             </Button>
             <Button 
               size="sm"
               onClick={() => setEditOpen(true)}
+              className="shrink-0"
             >
-              <Edit className="h-4 w-4 mr-2" />
-              Edit
+              <Edit className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Edit</span>
             </Button>
           </div>
         </div>
 
-        <Card className="p-8">
-          <div className="space-y-6">
+        <Card className="p-4 md:p-6 lg:p-8">
+          <div className="space-y-4 md:space-y-6">
             {/* Header */}
-            <div className="space-y-4 border-b pb-6">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-2 flex-1">
-                  <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-brutalist font-bold">{doc.title}</h1>
+            <div className="space-y-3 md:space-y-4 border-b pb-4 md:pb-6">
+              <div className="flex flex-col gap-3">
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2 md:gap-3 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-brutalist font-bold break-words flex-1 min-w-0">{doc.title}</h1>
                     {isPinned && (
-                      <div className="flex items-center gap-1 px-2 py-1 bg-[hsl(var(--accent-pink))]/10 text-[hsl(var(--accent-pink))] text-xs font-bold uppercase rounded">
+                      <div className="flex items-center gap-1 px-2 py-1 bg-[hsl(var(--accent-pink))]/10 text-[hsl(var(--accent-pink))] text-xs font-bold uppercase rounded shrink-0">
                         <Pin className="h-3 w-3 fill-current" />
-                        Pinned
+                        <span className="hidden sm:inline">Pinned</span>
                       </div>
                     )}
                   </div>
                   {doc.description && (
-                    <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                       {doc.description}
                     </p>
                   )}
@@ -418,12 +426,12 @@ export default function CommonKnowledgeView() {
                 </div>
               </div>
 
-              <div className="flex gap-6 text-sm text-muted-foreground">
-                <div>
+              <div className="flex flex-wrap gap-3 md:gap-6 text-xs sm:text-sm text-muted-foreground">
+                <div className="whitespace-nowrap">
                   <span className="font-medium">Created:</span>{" "}
                   {new Date(doc.created_at).toLocaleDateString()}
                 </div>
-                <div>
+                <div className="whitespace-nowrap">
                   <span className="font-medium">Last updated:</span>{" "}
                   {new Date(doc.updated_at).toLocaleDateString()}
                 </div>

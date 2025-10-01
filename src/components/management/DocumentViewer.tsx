@@ -185,26 +185,26 @@ export function DocumentViewer({ fileId, storagePath, filename, mimeType }: Docu
   if (mimeType === "application/pdf") {
     return (
       <>
-        <div className="flex items-center justify-center gap-3 p-8 bg-muted/20 rounded-lg">
-          <Button variant="outline" onClick={() => setPreviewOpen(true)}>
-            <Eye className="h-4 w-4 mr-2" />
-            Preview PDF
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 p-4 sm:p-8 bg-muted/20 rounded-lg">
+          <Button variant="outline" onClick={() => setPreviewOpen(true)} size="sm" className="w-full sm:w-auto">
+            <Eye className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Preview PDF</span>
           </Button>
-          <Button variant="outline" onClick={handleDownload}>
-            <Download className="h-4 w-4 mr-2" />
-            Download PDF
+          <Button variant="outline" onClick={handleDownload} size="sm" className="w-full sm:w-auto">
+            <Download className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Download PDF</span>
           </Button>
         </div>
 
         <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-          <DialogContent className="max-w-5xl h-[90vh] flex flex-col">
+          <DialogContent className="max-w-5xl w-[95vw] h-[90vh] flex flex-col p-3 sm:p-6">
             <DialogHeader>
-              <DialogTitle>{filename}</DialogTitle>
+              <DialogTitle className="text-sm sm:text-base break-words pr-8">{filename}</DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden relative">
               <div
                 ref={previewContainerRef}
-                className="w-full h-full overflow-auto bg-muted/20 p-4 rounded"
+                className="w-full h-full overflow-auto bg-muted/20 p-2 sm:p-4 rounded"
               />
               {previewLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/80">

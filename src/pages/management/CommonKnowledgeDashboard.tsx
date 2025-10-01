@@ -226,9 +226,9 @@ export default function CommonKnowledgeDashboard() {
 
   return (
     <ManagementLayout>
-      <div className="flex gap-6 h-full">
-        {/* Sidebar with folder tree */}
-        <div className="w-64 border-r flex flex-col shrink-0">
+      <div className="flex flex-col md:flex-row gap-4 md:gap-6 h-full">
+        {/* Sidebar with folder tree - hidden on mobile, shown in sheet/drawer on mobile */}
+        <div className="hidden md:flex md:w-64 border-r flex-col shrink-0">
           <div className="flex items-center justify-between mb-4 pt-6 px-4">
             <h2 className="font-brutalist font-bold">FOLDERS</h2>
             <Button
@@ -254,80 +254,80 @@ export default function CommonKnowledgeDashboard() {
         </div>
 
         {/* Main content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="space-y-6 p-3 md:p-6">
-            <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">COMMON KNOWLEDGE</h1>
+        <div className="flex-1 overflow-y-auto min-w-0">
+          <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+            <h1 className="text-brutalist text-xl sm:text-2xl md:text-4xl font-black uppercase tracking-wider break-words">COMMON KNOWLEDGE</h1>
             
             {/* Header with search and new doc button */}
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div className="relative flex-1 max-w-md">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search documents, SOPs, policies..."
+                  placeholder="Search documents..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
+                  className="pl-9 w-full"
                 />
               </div>
-              <div className="flex gap-2">
-                <Button asChild variant="outline">
+              <div className="flex gap-2 flex-wrap">
+                <Button asChild variant="outline" size="sm" className="flex-1 sm:flex-none">
                   <Link to="/management/common-knowledge/new">
-                    <FileText className="h-4 w-4 mr-2" />
-                    New Document
+                    <FileText className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">New Document</span>
                   </Link>
                 </Button>
-                <Button asChild>
+                <Button asChild size="sm" className="flex-1 sm:flex-none">
                   <Link to="/management/common-knowledge/upload">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Upload File
+                    <Plus className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Upload File</span>
                   </Link>
                 </Button>
               </div>
             </div>
 
             {/* Quick stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
-                    <FileText className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                    <FileText className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-brutalist font-bold">{stats.total}</p>
-                    <p className="text-sm text-muted-foreground">Total Docs</p>
-                  </div>
-                </div>
-              </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
-                    <Star className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-brutalist font-bold">{stats.approved}</p>
-                    <p className="text-sm text-muted-foreground">Approved</p>
+                  <div className="min-w-0">
+                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.total}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">Total Docs</p>
                   </div>
                 </div>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
-                    <Clock className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                    <Star className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-brutalist font-bold">{stats.in_review}</p>
-                    <p className="text-sm text-muted-foreground">In Review</p>
+                  <div className="min-w-0">
+                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.approved}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">Approved</p>
                   </div>
                 </div>
               </Card>
-              <Card className="p-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10">
-                    <Pin className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                    <Clock className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-brutalist font-bold">{stats.pinned}</p>
-                    <p className="text-sm text-muted-foreground">Pinned</p>
+                  <div className="min-w-0">
+                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.in_review}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">In Review</p>
+                  </div>
+                </div>
+              </Card>
+              <Card className="p-3 md:p-4">
+                <div className="flex items-center gap-2 md:gap-3">
+                  <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
+                    <Pin className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xl md:text-2xl font-brutalist font-bold">{stats.pinned}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground truncate">Pinned</p>
                   </div>
                 </div>
               </Card>
@@ -335,9 +335,9 @@ export default function CommonKnowledgeDashboard() {
 
             {/* Folder contents - only when folder selected */}
             {selectedFolderId && (
-              <div className="space-y-4">
+                  <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-brutalist font-bold">
+                  <h2 className="text-lg md:text-xl font-brutalist font-bold break-words">
                     {collections.find(c => c.id === selectedFolderId)?.name || "Documents"}
                   </h2>
                 </div>
@@ -367,17 +367,17 @@ export default function CommonKnowledgeDashboard() {
                     </div>
                   </Card>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                     {filteredDocuments.map((doc) => (
                       <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
-                        <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
-                          <div className="space-y-3">
-                            <div className="flex items-start gap-3">
+                        <Card className="p-3 md:p-4 hover:shadow-lg transition-shadow cursor-pointer">
+                          <div className="space-y-2 md:space-y-3">
+                            <div className="flex items-start gap-2 md:gap-3">
                               <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
-                                <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                                <File className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words">{doc.title}</h3>
+                                <h3 className="font-brutalist font-bold text-xs md:text-sm line-clamp-2 break-words">{doc.title}</h3>
                                 <p className="text-xs text-muted-foreground mt-1">
                                   {TYPE_LABELS[doc.type]}
                                 </p>
@@ -406,7 +406,7 @@ export default function CommonKnowledgeDashboard() {
                 {/* Recent activity */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xl font-brutalist font-bold">Recent Activity</h2>
+                    <h2 className="text-lg md:text-xl font-brutalist font-bold break-words">Recent Activity</h2>
                   </div>
                   
                   {loading ? (
@@ -434,17 +434,17 @@ export default function CommonKnowledgeDashboard() {
                       </div>
                     </Card>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                       {documents.slice(0, 10).map((doc) => (
                         <Link key={doc.id} to={`/management/common-knowledge/d/${doc.slug}`}>
-                          <Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
-                            <div className="space-y-3">
-                              <div className="flex items-start gap-3">
+                          <Card className="p-3 md:p-4 hover:shadow-lg transition-shadow cursor-pointer">
+                            <div className="space-y-2 md:space-y-3">
+                              <div className="flex items-start gap-2 md:gap-3">
                                 <div className="p-2 rounded-lg bg-[hsl(var(--accent-pink))]/10 shrink-0">
-                                  <File className="h-5 w-5 text-[hsl(var(--accent-pink))]" />
+                                  <File className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                  <h3 className="font-brutalist font-bold text-sm line-clamp-2 break-words">{doc.title}</h3>
+                                  <h3 className="font-brutalist font-bold text-xs md:text-sm line-clamp-2 break-words">{doc.title}</h3>
                                   <p className="text-xs text-muted-foreground mt-1">
                                     {TYPE_LABELS[doc.type]}
                                   </p>
