@@ -32,6 +32,21 @@ export const useRoleBasedAccess = () => {
     return hasRole('admin') || hasRole('sales');
   };
 
+  const canAccessCMS = () => {
+    // CMS access for admin and sales roles
+    return hasRole('admin') || hasRole('sales');
+  };
+
+  const canAccessAdmin = () => {
+    // Admin panel only for admin role
+    return hasRole('admin');
+  };
+
+  const canAccessResearch = () => {
+    // Research access for admin, sales, and ops
+    return hasRole('admin') || hasRole('sales') || hasRole('ops');
+  };
+
   return {
     canViewSensitiveData,
     canCreateBookings,
@@ -40,5 +55,8 @@ export const useRoleBasedAccess = () => {
     hideEmailPhone,
     canManageSpaces,
     canEditBookings,
+    canAccessCMS,
+    canAccessAdmin,
+    canAccessResearch,
   };
 };

@@ -1,45 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { useManagementAuth } from '@/hooks/useManagementAuth';
+import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RunTab } from '@/components/research/RunTab';
 import { ManageTab } from '@/components/research/ManageTab';
 import { AnalysisTab } from '@/components/research/AnalysisTab';
-import CroftLogo from '@/components/CroftLogo';
 
 const Research = () => {
+  const { managementUser, loading } = useManagementAuth();
   const [activeTab, setActiveTab] = useState('run');
 
-  useEffect(() => {
-    const { body } = document;
-    // Reset any accidental global pointer blocking
-    if (body.style.pointerEvents === 'none') {
-      body.style.pointerEvents = 'auto';
-    }
-    body.classList.remove('gesture-drawing');
-    body.removeAttribute('data-pointer-blocked');
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="font-brutalist text-xl mb-2">Loading...</div>
+          <div className="font-industrial text-muted-foreground">Verifying access...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!managementUser?.hasAccess) {
+    return <Navigate to="/management/login" replace />;
+  }
 
   return (
-    <div className="relative z-[60] min-h-screen bg-background pointer-events-auto">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-4">
-          <div className="flex items-center gap-3">
-            <CroftLogo size="sm" enableDevPanel={false} />
-            <div className="min-w-0 flex-1">
-              <h1 className="font-bold text-lg sm:text-xl truncate">Croft Common</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground">Field Research</p>
-            </div>
-          </div>
+    <ManagementLayout>
+      <div className="p-4 md:p-6 lg:p-8">
+        <div className="mb-6">
+          <h1 className="font-brutalist text-2xl md:text-3xl font-black uppercase tracking-wider mb-2">
+            Field Research
+          </h1>
+          <p className="font-industrial text-sm text-muted-foreground">
+            Conduct venue research and capacity analysis
+          </p>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="container mx-auto px-2 sm:px-4 py-3 sm:py-6">
-        <Tabs value={activeTab} onValueChange={(v) => { console.log('Research Tabs change:', v); setActiveTab(v); }} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
-            <TabsTrigger value="run" className="text-xs sm:text-sm px-2 sm:px-3">Run</TabsTrigger>
-            <TabsTrigger value="manage" className="text-xs sm:text-sm px-2 sm:px-3">Manage</TabsTrigger>
-            <TabsTrigger value="analysis" className="text-xs sm:text-sm px-2 sm:px-3">Analysis</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="run">Run</TabsTrigger>
+            <TabsTrigger value="manage">Manage</TabsTrigger>
+            <TabsTrigger value="analysis">Analysis</TabsTrigger>
           </TabsList>
 
           <TabsContent value="run" className="space-y-6">
@@ -54,8 +57,8 @@ const Research = () => {
             <AnalysisTab />
           </TabsContent>
         </Tabs>
-      </main>
-    </div>
+      </div>
+    </ManagementLayout>
   );
 };
 

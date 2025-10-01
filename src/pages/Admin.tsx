@@ -1,22 +1,32 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useManagementAuth } from "@/hooks/useManagementAuth";
+import { ManagementLayout } from "@/components/management/ManagementLayout";
 import { AdminApp } from "../admin/AdminApp";
 
 const Admin: React.FC = () => {
-  const [booted, setBooted] = useState(false);
+  const { managementUser, loading } = useManagementAuth();
 
-  useEffect(() => {
-    // Ensure SW doesn't interfere with admin auth flow
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then((regs) => {
-        for (const reg of regs) reg.unregister();
-      }).catch(() => void 0);
-    }
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="font-brutalist text-xl mb-2">Loading...</div>
+          <div className="font-industrial text-muted-foreground">Verifying access...</div>
+        </div>
+      </div>
+    );
+  }
 
-    setBooted(true);
-  }, []);
+  if (!managementUser?.hasAccess) {
+    return <Navigate to="/management/login" replace />;
+  }
 
-  if (!booted) return null;
-  return <AdminApp />;
+  return (
+    <ManagementLayout>
+      <AdminApp />
+    </ManagementLayout>
+  );
 };
 
 export default Admin;

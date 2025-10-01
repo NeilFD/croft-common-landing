@@ -34,7 +34,10 @@ import {
   Calendar,
   CalendarDays,
   Bot,
-  BookOpen
+  BookOpen,
+  Layout,
+  Shield,
+  FlaskConical
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -93,6 +96,9 @@ export const ManagementSidebar = () => {
     modules: true,
     knowledge: true,
     spaces: true,
+    admin: true,
+    cms: true,
+    research: true,
   });
 
   const toggleSection = (section: string) => {
@@ -109,10 +115,23 @@ export const ManagementSidebar = () => {
     return currentPath.startsWith(path);
   };
 
-  // Keep Spaces section expanded when on any spaces sub-route
+  // Keep sections expanded when on their routes
   const isOnSpacesRoute = currentPath.startsWith('/management/spaces');
+  const isOnAdminRoute = currentPath.startsWith('/management/admin');
+  const isOnCMSRoute = currentPath.startsWith('/management/cms');
+  const isOnResearchRoute = currentPath.startsWith('/management/research');
+  
   if (isOnSpacesRoute && !expandedSections.spaces) {
     setExpandedSections(prev => ({ ...prev, spaces: true }));
+  }
+  if (isOnAdminRoute && !expandedSections.admin) {
+    setExpandedSections(prev => ({ ...prev, admin: true }));
+  }
+  if (isOnCMSRoute && !expandedSections.cms) {
+    setExpandedSections(prev => ({ ...prev, cms: true }));
+  }
+  if (isOnResearchRoute && !expandedSections.research) {
+    setExpandedSections(prev => ({ ...prev, research: true }));
   }
 
   const getNavClass = (isActiveItem: boolean) =>
@@ -195,6 +214,57 @@ export const ManagementSidebar = () => {
                       </TooltipTrigger>
                       <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
                         <p className="font-industrial">Spaces</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          className={getNavClass(isActive('/management/cms', false))}
+                        >
+                          <NavLink to="/management/cms">
+                            <Layout className="h-5 w-5" />
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                        <p className="font-industrial">CMS</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          className={getNavClass(isActive('/management/admin', false))}
+                        >
+                          <NavLink to="/management/admin">
+                            <Shield className="h-5 w-5" />
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                        <p className="font-industrial">Admin</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          className={getNavClass(isActive('/management/research', false))}
+                        >
+                          <NavLink to="/management/research">
+                            <FlaskConical className="h-5 w-5" />
+                          </NavLink>
+                        </SidebarMenuButton>
+                      </TooltipTrigger>
+                      <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                        <p className="font-industrial">Research</p>
                       </TooltipContent>
                     </Tooltip>
                   </SidebarMenuItem>
@@ -359,6 +429,138 @@ export const ManagementSidebar = () => {
                           </Tooltip>
                         </SidebarMenuItem>
                       ))}
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
+
+          {/* CMS Section */}
+          {showText && (
+            <SidebarGroup>
+              <Collapsible 
+                open={expandedSections.cms} 
+                onOpenChange={() => toggleSection('cms')}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                      <Layout className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      CMS
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.cms ? 'rotate-180' : ''}`} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton 
+                              asChild
+                              className={getNavClass(isActive('/management/cms', false))}
+                            >
+                              <NavLink to="/management/cms" className="font-industrial">
+                                <Layout className="mr-2 h-4 w-4" />
+                                Dashboard
+                              </NavLink>
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                            <p className="font-industrial">CMS Dashboard</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
+
+          {/* Admin Section */}
+          {showText && (
+            <SidebarGroup>
+              <Collapsible 
+                open={expandedSections.admin} 
+                onOpenChange={() => toggleSection('admin')}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                      <Shield className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      ADMIN
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.admin ? 'rotate-180' : ''}`} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton 
+                              asChild
+                              className={getNavClass(isActive('/management/admin', false))}
+                            >
+                              <NavLink to="/management/admin" className="font-industrial">
+                                <Shield className="mr-2 h-4 w-4" />
+                                Dashboard
+                              </NavLink>
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                            <p className="font-industrial">Admin Dashboard</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroupContent>
+                </CollapsibleContent>
+              </Collapsible>
+            </SidebarGroup>
+          )}
+
+          {/* Research Section */}
+          {showText && (
+            <SidebarGroup>
+              <Collapsible 
+                open={expandedSections.research} 
+                onOpenChange={() => toggleSection('research')}
+              >
+                <CollapsibleTrigger asChild>
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                    <span className="flex items-center font-brutalist uppercase tracking-wide">
+                      <FlaskConical className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      RESEARCH
+                    </span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.research ? 'rotate-180' : ''}`} />
+                  </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarGroupContent>
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <SidebarMenuButton 
+                              asChild
+                              className={getNavClass(isActive('/management/research', false))}
+                            >
+                              <NavLink to="/management/research" className="font-industrial">
+                                <FlaskConical className="mr-2 h-4 w-4" />
+                                Field Research
+                              </NavLink>
+                            </SidebarMenuButton>
+                          </TooltipTrigger>
+                          <TooltipContent side="right" className="bg-background text-foreground border border-border shadow-lg">
+                            <p className="font-industrial">Field Research</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </SidebarMenuItem>
                     </SidebarMenu>
                   </SidebarGroupContent>
                 </CollapsibleContent>

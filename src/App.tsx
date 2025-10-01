@@ -263,24 +263,44 @@ const App = () => {
                       <Route path="/CroftCommonDateTime" element={<Navigate to="/croft-common-datetime" replace />} />
                       <Route path="/croftcommondatetime" element={<Navigate to="/croft-common-datetime" replace />} />
                       <Route path="/book" element={<Book />} />
-                       <Route path="/admin/*" element={<Admin />} />
-                   <Route path="/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
-                   <Route path="/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
-                   <Route path="/enquire" element={<EnquirePage />} />
+                      {/* Old Admin routes - redirect to management */}
+                      <Route path="/admin/*" element={<Navigate to="/management/admin" replace />} />
+                      <Route path="/admin/member-analytics" element={<Navigate to="/management/admin/member-analytics" replace />} />
+                      <Route path="/admin/member-analytics-legacy" element={<Navigate to="/management/admin/member-analytics-legacy" replace />} />
+                      
+                      {/* Old CMS routes - redirect to management */}
+                      <Route path="/cms/login" element={<Navigate to="/management/login" replace />} />
+                      <Route path="/cms/kitchens" element={<Navigate to="/management/cms/kitchens" replace />} />
+                      <Route path="/cms/faq/:page" element={<Navigate to="/management/cms/faq/:page" replace />} />
+                      <Route path="/cms/visual/:page/*" element={<Navigate to="/management/cms/visual/:page" replace />} />
+                      <Route path="/cms/*" element={<Navigate to="/management/cms" replace />} />
+                      
+                      {/* Old Research route - redirect to management */}
+                      <Route path="/research" element={<Navigate to="/management/research" replace />} />
+                      
+                      <Route path="/enquire" element={<EnquirePage />} />
                       <Route path="/profile" element={<MemberProfile />} />
-                      <Route path="/cms/login" element={<CMSLogin />} />
-                      <Route path="/cms/kitchens" element={<CMSKitchens />} />
-                      <Route path="/cms/faq/:page" element={<CMSFAQPage />} />
-                      <Route path="/cms/visual/:page/*" element={<CMSVisual />} />
-                      <Route path="/cms/*" element={<CMS />} />
                       <Route path="/notifications" element={<Notifications />} />
-                      <Route path="/research" element={<ProtectedRoute><Research /></ProtectedRoute>} />
-                       <Route path="/uncommon-standards" element={<UncommonStandards />} />
+                      <Route path="/uncommon-standards" element={<UncommonStandards />} />
                        
                         {/* Management Routes */}
                         <Route path="/management/login" element={<ManagementLogin />} />
                         <Route path="/management" element={<ManagementDashboard />} />
                         <Route path="/management/ai-assistant" element={<ManagementAIAssistant />} />
+                        
+                        {/* CMS under Management */}
+                        <Route path="/management/cms/kitchens" element={<CMSKitchens />} />
+                        <Route path="/management/cms/faq/:page" element={<CMSFAQPage />} />
+                        <Route path="/management/cms/visual/:page/*" element={<CMSVisual />} />
+                        <Route path="/management/cms/*" element={<CMS />} />
+                        
+                        {/* Admin under Management */}
+                        <Route path="/management/admin/*" element={<Admin />} />
+                        <Route path="/management/admin/member-analytics" element={<EnhancedAdminMemberAnalytics />} />
+                        <Route path="/management/admin/member-analytics-legacy" element={<AdminMemberAnalytics />} />
+                        
+                        {/* Research under Management */}
+                        <Route path="/management/research" element={<Research />} />
                         
                         {/* Common Knowledge Routes */}
                         <Route path="/management/common-knowledge" element={<CommonKnowledgeDashboard />} />
