@@ -9,7 +9,7 @@ const corsHeaders = {
 // ============= INTENT DETECTION & EVENT RESOLUTION =============
 
 interface Intent {
-  type: 'menu' | 'beo' | 'pdf' | 'schedule' | 'staffing' | 'equipment' | 'contract' | 'knowledge' | 'document' | 'policy' | 'procedure' | 'general';
+  type: 'menu' | 'beo' | 'pdf' | 'schedule' | 'staffing' | 'equipment' | 'contract' | 'knowledge' | 'document' | 'policy' | 'procedure' | 'feedback' | 'reviews' | 'general';
   eventIdentifier?: string;
   searchQuery?: string;
   confidence: number;
@@ -17,6 +17,11 @@ interface Intent {
 
 function detectIntent(message: string, conversationHistory: any[] = []): Intent {
   const lower = message.toLowerCase();
+  
+  // Feedback/Reviews intent detection (check first for specificity)
+  if (/\b(feedback|review|reviews|rating|ratings|satisfaction|customer|guest|score|scores|sentiment|comment|comments|testimonial|testimonials|average rating|average score)\b/i.test(lower)) {
+    return { type: 'feedback', searchQuery: message, confidence: 0.95 };
+  }
   
   // Common Knowledge intent detection (check first for specificity)
   if (/\b(policy|policies|procedure|procedures|guideline|guidelines|handbook|documentation|training|sop|standard operating|protocol)\b/i.test(lower)) {
@@ -457,6 +462,62 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
 async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null) {
   const retrieved: any = { intent: intent.type };
   
+  // Handle Feedback/Reviews intent (no event needed)
+  if (intent.type === 'feedback' || intent.type === 'reviews') {
+    try {
+      // Get feedback statistics
+      const { data: feedbackData } = await supabase
+        .from('feedback_submissions')
+        .select('overall_rating, hospitality_rating, food_rating, drink_rating, team_rating, venue_rating, price_rating, is_anonymous, message, submitted_at')
+        .order('submitted_at', { ascending: false })
+        .limit(50);
+      
+      if (feedbackData && feedbackData.length > 0) {
+        // Calculate overall statistics
+        const totalCount = feedbackData.length;
+        const avgOverall = feedbackData.reduce((sum, f) => sum + (f.overall_rating || 0), 0) / totalCount;
+        const avgHospitality = feedbackData.reduce((sum, f) => sum + (f.hospitality_rating || 0), 0) / totalCount;
+        const avgFood = feedbackData.reduce((sum, f) => sum + (f.food_rating || 0), 0) / totalCount;
+        const avgDrink = feedbackData.reduce((sum, f) => sum + (f.drink_rating || 0), 0) / totalCount;
+        const avgTeam = feedbackData.reduce((sum, f) => sum + (f.team_rating || 0), 0) / totalCount;
+        const avgVenue = feedbackData.reduce((sum, f) => sum + (f.venue_rating || 0), 0) / totalCount;
+        const avgPrice = feedbackData.reduce((sum, f) => sum + (f.price_rating || 0), 0) / totalCount;
+        const anonymousCount = feedbackData.filter(f => f.is_anonymous).length;
+        
+        // Get recent comments
+        const recentComments = feedbackData
+          .filter(f => f.message && f.message.trim().length > 0)
+          .slice(0, 10)
+          .map(f => ({
+            message: f.message,
+            overall_rating: f.overall_rating,
+            date: f.submitted_at,
+          }));
+        
+        retrieved.feedbackStats = {
+          totalSubmissions: totalCount,
+          averageRatings: {
+            overall: Math.round(avgOverall * 10) / 10,
+            hospitality: Math.round(avgHospitality * 10) / 10,
+            food: Math.round(avgFood * 10) / 10,
+            drink: Math.round(avgDrink * 10) / 10,
+            team: Math.round(avgTeam * 10) / 10,
+            venue: Math.round(avgVenue * 10) / 10,
+            price: Math.round(avgPrice * 10) / 10,
+          },
+          anonymousPercentage: Math.round((anonymousCount / totalCount) * 100),
+          recentComments,
+        };
+        
+        console.log(`📊 Retrieved feedback statistics: ${totalCount} submissions, avg overall: ${retrieved.feedbackStats.averageRatings.overall}`);
+      }
+    } catch (error) {
+      console.error('Error retrieving feedback data:', error);
+    }
+    
+    return retrieved;
+  }
+  
   // Handle Common Knowledge intents separately (no event needed)
   if (intent.type === 'knowledge' || intent.type === 'policy' || intent.type === 'procedure' || intent.type === 'document') {
     if (intent.searchQuery) {
@@ -650,6 +711,7 @@ serve(async (req) => {
       menuCount: retrievedData.menus?.length || 0,
       hasBeoUrl: !!retrievedData.beoSignedUrl,
       scheduleCount: retrievedData.schedule?.length || 0,
+      hasFeedbackStats: !!retrievedData.feedbackStats,
     });
 
     // Fetch minimal base data for context (overview only)

@@ -71,10 +71,31 @@ Focus on patterns across multiple feedback entries. Be specific and actionable.`
     const aiData = await aiResponse.json();
     const analysisText = aiData.choices?.[0]?.message?.content || '';
 
+    console.log('AI Analysis Response:', analysisText);
+
+    // Calculate sentiment from actual ratings as fallback
+    const avgRating = feedbackData.reduce((sum: number, f: any) => sum + (f.overall_rating || 0), 0) / feedbackData.length;
+    let calculatedSentiment = 'neutral';
+    let calculatedConfidence = 0.7;
+    
+    if (avgRating >= 4.5) {
+      calculatedSentiment = 'positive';
+      calculatedConfidence = 0.9 + (avgRating - 4.5) * 0.2; // 0.9-1.0 for 4.5-5.0
+    } else if (avgRating >= 3.5) {
+      calculatedSentiment = 'positive';
+      calculatedConfidence = 0.7 + (avgRating - 3.5) * 0.2; // 0.7-0.9 for 3.5-4.5
+    } else if (avgRating >= 2.5) {
+      calculatedSentiment = 'neutral';
+      calculatedConfidence = 0.6 + (avgRating - 2.5) * 0.1;
+    } else {
+      calculatedSentiment = 'negative';
+      calculatedConfidence = 0.8 + (2.5 - avgRating) * 0.1;
+    }
+
     // Parse the AI response to extract structured data
     const lines = analysisText.split('\n');
-    let overallSentiment = 'neutral';
-    let confidence = 0.7;
+    let overallSentiment = calculatedSentiment; // Use calculated as default
+    let confidence = calculatedConfidence;
     const keyPositives: string[] = [];
     const keyNegatives: string[] = [];
     const recommendations: string[] = [];
@@ -85,17 +106,26 @@ Focus on patterns across multiple feedback entries. Be specific and actionable.`
       const trimmed = line.trim();
       if (!trimmed) continue;
       
+      // Look for explicit sentiment mentions and override if found
       if (trimmed.toLowerCase().includes('overall sentiment')) {
-        if (trimmed.toLowerCase().includes('positive')) overallSentiment = 'positive';
-        else if (trimmed.toLowerCase().includes('negative')) overallSentiment = 'negative';
+        if (trimmed.toLowerCase().includes('positive') || trimmed.toLowerCase().includes('excellent') || trimmed.toLowerCase().includes('outstanding')) {
+          overallSentiment = 'positive';
+        } else if (trimmed.toLowerCase().includes('negative') || trimmed.toLowerCase().includes('poor')) {
+          overallSentiment = 'negative';
+        } else if (trimmed.toLowerCase().includes('neutral') || trimmed.toLowerCase().includes('mixed')) {
+          overallSentiment = 'neutral';
+        }
         
         const confMatch = trimmed.match(/(\d+)%/);
-        if (confMatch) confidence = parseInt(confMatch[1]) / 100;
-      } else if (trimmed.toLowerCase().includes('key positive') || trimmed.toLowerCase().includes('positives:')) {
+        if (confMatch) {
+          const parsedConf = parseInt(confMatch[1]) / 100;
+          if (parsedConf > 0 && parsedConf <= 1) confidence = parsedConf;
+        }
+      } else if (trimmed.toLowerCase().includes('key positive') || trimmed.toLowerCase().includes('positives:') || trimmed.toLowerCase().includes('strengths:')) {
         currentSection = 'positives';
-      } else if (trimmed.toLowerCase().includes('key negative') || trimmed.toLowerCase().includes('improvement') || trimmed.toLowerCase().includes('negatives:')) {
+      } else if (trimmed.toLowerCase().includes('key negative') || trimmed.toLowerCase().includes('improvement') || trimmed.toLowerCase().includes('negatives:') || trimmed.toLowerCase().includes('concerns:')) {
         currentSection = 'negatives';
-      } else if (trimmed.toLowerCase().includes('recommendation')) {
+      } else if (trimmed.toLowerCase().includes('recommendation') || trimmed.toLowerCase().includes('action')) {
         currentSection = 'recommendations';
       } else if (trimmed.match(/^[\d\-\*•]+/) && currentSection) {
         const cleanText = trimmed.replace(/^[\d\-\*•\.\)]+\s*/, '').trim();
@@ -106,6 +136,8 @@ Focus on patterns across multiple feedback entries. Be specific and actionable.`
         }
       }
     }
+
+    console.log('Parsed Sentiment:', { overallSentiment, confidence, avgRating, calculatedSentiment });
 
     return new Response(
       JSON.stringify({
