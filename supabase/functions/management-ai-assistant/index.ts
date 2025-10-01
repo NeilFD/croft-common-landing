@@ -6,6 +6,60 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ============= DATABASE SCHEMA CONSTANTS =============
+// Define exact column names from database to prevent typos
+const SCHEMA = {
+  feedback_submissions: {
+    id: 'id',
+    user_id: 'user_id',
+    name: 'name',
+    email: 'email',
+    message: 'message',
+    is_anonymous: 'is_anonymous',
+    source_page: 'source_page',
+    hospitality_rating: 'hospitality_rating',
+    food_rating: 'food_rating',
+    drink_rating: 'drink_rating',
+    team_rating: 'team_rating',
+    venue_rating: 'venue_rating',
+    price_rating: 'price_rating',
+    overall_rating: 'overall_rating',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  },
+  events: {
+    id: 'id',
+    user_id: 'user_id',
+    title: 'title',
+    description: 'description',
+    date: 'date',
+    time: 'time',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  },
+  bookings: {
+    id: 'id',
+    space_id: 'space_id',
+    lead_id: 'lead_id',
+    event_id: 'event_id',
+    title: 'title',
+    start_ts: 'start_ts',
+    end_ts: 'end_ts',
+    status: 'status',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  },
+  contracts: {
+    id: 'id',
+    event_id: 'event_id',
+    version: 'version',
+    content: 'content',
+    is_signed: 'is_signed',
+    created_at: 'created_at',
+    updated_at: 'updated_at'
+  }
+} as const;
+
 // ============= INTENT DETECTION & EVENT RESOLUTION =============
 
 interface Intent {
@@ -490,14 +544,15 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
       }
       
       // Get feedback statistics
+      const feedbackCols = SCHEMA.feedback_submissions;
       let query = supabase
         .from('feedback_submissions')
-        .select('overall_rating, hospitality_rating, food_rating, drink_rating, team_rating, venue_rating, price_rating, is_anonymous, message, submitted_at, created_at')
-        .order('submitted_at', { ascending: false });
+        .select(`${feedbackCols.overall_rating}, ${feedbackCols.hospitality_rating}, ${feedbackCols.food_rating}, ${feedbackCols.drink_rating}, ${feedbackCols.team_rating}, ${feedbackCols.venue_rating}, ${feedbackCols.price_rating}, ${feedbackCols.is_anonymous}, ${feedbackCols.message}, ${feedbackCols.created_at}`)
+        .order(feedbackCols.created_at, { ascending: false });
       
       // Apply date filter if specified
       if (dateFilter) {
-        query = query.gte('submitted_at', dateFilter);
+        query = query.gte(feedbackCols.created_at, dateFilter);
       } else {
         query = query.limit(50);
       }
@@ -523,8 +578,13 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
           .map(f => ({
             message: f.message,
             overall_rating: f.overall_rating,
-            date: f.submitted_at || f.created_at,
+            date: f.created_at,
           }));
+        
+        console.log(`✓ Retrieved ${recentComments.length} feedback comments`);
+        if (recentComments.length > 0) {
+          console.log(`  Most recent: ${recentComments[0].date} - Rating: ${recentComments[0].overall_rating}/5`);
+        }
         
         retrieved.feedbackStats = {
           totalSubmissions: totalCount,
