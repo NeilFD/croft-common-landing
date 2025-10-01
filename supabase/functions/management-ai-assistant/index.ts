@@ -1035,6 +1035,49 @@ Attendees: ${e.headcount || 'TBC'}${e.budget ? `\nBudget: £${e.budget}` : ''}\n
       });
     }
     
+    // Feedback data
+    if (retrievedData.feedbackStats) {
+      const stats = retrievedData.feedbackStats;
+      prompt += `\n💬 FEEDBACK STATISTICS:\n`;
+      prompt += `  Total Submissions: ${stats.totalSubmissions}\n`;
+      prompt += `  Average Rating: ${stats.avgRating ? stats.avgRating.toFixed(1) : 'N/A'}/5.0\n`;
+      
+      if (stats.ratingDistribution) {
+        prompt += `  Rating Distribution:\n`;
+        Object.entries(stats.ratingDistribution)
+          .sort(([a], [b]) => Number(b) - Number(a))
+          .forEach(([rating, count]) => {
+            prompt += `    ${'⭐'.repeat(Number(rating))}: ${count} (${((Number(count) / stats.totalSubmissions) * 100).toFixed(0)}%)\n`;
+          });
+      }
+      
+      if (stats.sentimentBreakdown) {
+        prompt += `  Sentiment Breakdown:\n`;
+        Object.entries(stats.sentimentBreakdown).forEach(([sentiment, count]) => {
+          const emoji = sentiment === 'positive' ? '😊' : sentiment === 'negative' ? '😞' : '😐';
+          prompt += `    ${emoji} ${sentiment.charAt(0).toUpperCase() + sentiment.slice(1)}: ${count} (${((Number(count) / stats.totalSubmissions) * 100).toFixed(0)}%)\n`;
+        });
+      }
+      
+      if (stats.recentFeedback && stats.recentFeedback.length > 0) {
+        prompt += `\n  Recent Feedback (${stats.recentFeedback.length} most recent):\n`;
+        stats.recentFeedback.forEach((fb: any, idx: number) => {
+          prompt += `\n  ${idx + 1}. Rating: ${fb.overall_rating}/5`;
+          if (fb.event_code) prompt += ` | Event: ${fb.event_code}`;
+          if (fb.submitted_at) prompt += ` | ${new Date(fb.submitted_at).toLocaleDateString('en-GB')}`;
+          if (fb.sentiment) prompt += ` | Sentiment: ${fb.sentiment}`;
+          if (fb.food_quality) prompt += `\n     Food: ${fb.food_quality}/5`;
+          if (fb.service_quality) prompt += ` | Service: ${fb.service_quality}/5`;
+          if (fb.venue_atmosphere) prompt += ` | Venue: ${fb.venue_atmosphere}/5`;
+          if (fb.value_for_money) prompt += ` | Value: ${fb.value_for_money}/5`;
+          if (fb.comments) prompt += `\n     "${fb.comments.substring(0, 200)}${fb.comments.length > 200 ? '...' : ''}"`;
+          if (fb.highlights && fb.highlights.length > 0) prompt += `\n     Highlights: ${fb.highlights.join(', ')}`;
+          if (fb.improvements && fb.improvements.length > 0) prompt += `\n     Improvements: ${fb.improvements.join(', ')}`;
+          prompt += '\n';
+        });
+      }
+    }
+    
     prompt += `\n**━━━ END RETRIEVED DATA ━━━**\n`;
   }
 
@@ -1070,6 +1113,13 @@ FOR COMMON KNOWLEDGE QUESTIONS:
 FOR SCHEDULE QUESTIONS:
 - List times and activities from RETRIEVED DATA if available
 - Format times in 24-hour UK format (e.g., 14:30)
+
+FOR FEEDBACK QUESTIONS:
+- If feedback data is in RETRIEVED DATA, provide statistics and insights
+- Include average ratings, sentiment breakdown, and rating distribution
+- Quote relevant comments from recent feedback when helpful
+- Highlight trends (e.g., "Most feedback is positive with 4-5 star ratings")
+- Example: "The event has an average rating of 4.5/5 based on 12 submissions. 75% rated it 5 stars. Recent feedback highlights: great food quality, excellent service."
 
 FOR ACTIONS (When asked to DO something):
 - Only return JSON when explicitly asked to CREATE, UPDATE, DELETE something
