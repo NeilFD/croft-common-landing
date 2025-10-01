@@ -285,6 +285,23 @@ async function resolveEvent(supabase: any, identifier: string): Promise<string |
   return null;
 }
 
+// Helper to recursively get all child folder IDs
+async function getAllChildFolderIds(supabase: any, parentIds: string[]): Promise<string[]> {
+  if (parentIds.length === 0) return [];
+  
+  const { data: children } = await supabase
+    .from('ck_collections')
+    .select('id')
+    .in('parent_id', parentIds);
+  
+  if (!children || children.length === 0) return parentIds;
+  
+  const childIds = children.map((c: any) => c.id);
+  const grandchildIds = await getAllChildFolderIds(supabase, childIds);
+  
+  return [...parentIds, ...childIds, ...grandchildIds];
+}
+
 async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
   const retrieved: any = { documents: [], collections: [], totalDocs: 0 };
   
@@ -325,56 +342,12 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
     console.log('🔍 Original words:', allWords);
     console.log('🔍 Expanded keywords:', keywords);
     
-    // STRATEGY 1: Folder name match (highest priority)
-    console.log('🗂️ Strategy 1: Searching folder names...');
-    const { data: collectionResults } = await supabase
-      .from('ck_collections')
-      .select('id, name, slug, parent_id')
-      .or(keywords.map(k => `name.ilike.%${k}%,slug.ilike.%${k}%`).join(','))
-      .limit(10);
+    // STRATEGY 0: Exact phrase and all-keywords-AND on title (highest precision)
+    console.log('🎯 Strategy 0: Exact phrase and all-keywords-AND on title...');
+    const normalizedQuery = searchQuery.toLowerCase().trim();
     
-    if (collectionResults && collectionResults.length > 0) {
-      console.log(`✅ Found ${collectionResults.length} matching folders:`, collectionResults.map((c: any) => c.name));
-      
-      // Get all documents in these folders
-      const collectionIds = collectionResults.map((c: any) => c.id);
-      const { data: folderDocs } = await supabase
-        .from('ck_docs')
-        .select(`
-          id, title, slug, type, description, tags, zones, collection_id, updated_at,
-          ck_collections(name, slug),
-          ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
-        `)
-        .eq('status', 'approved')
-        .in('collection_id', collectionIds)
-        .order('updated_at', { ascending: false })
-        .limit(20);
-      
-      if (folderDocs && folderDocs.length > 0) {
-        console.log(`✅ Found ${folderDocs.length} documents in matching folders`);
-        retrieved.documents = folderDocs.map((doc: any) => ({
-          id: doc.id,
-          title: doc.title,
-          type: doc.type,
-          description: doc.description,
-          tags: doc.tags,
-          zones: doc.zones,
-          collection: doc.ck_collections?.name,
-          content_full: doc.ck_doc_versions[0]?.content_md || '',
-          content: doc.ck_doc_versions[0]?.content_md || '',
-          summary: doc.ck_doc_versions[0]?.summary,
-          slug: doc.slug,
-        }));
-        retrieved.totalDocs = folderDocs.length;
-        retrieved.searchMethod = 'folder_match';
-        retrieved.collections = collectionResults;
-        return retrieved;
-      }
-    }
-    
-    // STRATEGY 2: Document title + folder name combined
-    console.log('📝 Strategy 2: Searching document titles + folder names...');
-    const { data: titleResults } = await supabase
+    // Try exact phrase match on title
+    let { data: exactMatches } = await supabase
       .from('ck_docs')
       .select(`
         id, title, slug, type, description, tags, zones, collection_id, updated_at,
@@ -382,13 +355,35 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
         ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
       `)
       .eq('status', 'approved')
-      .or(keywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%,ck_collections.name.ilike.%${k}%`).join(','))
+      .ilike('title', `%${normalizedQuery}%`)
       .order('updated_at', { ascending: false })
-      .limit(15);
+      .limit(5);
     
-    if (titleResults && titleResults.length > 0) {
-      console.log(`✅ Found ${titleResults.length} documents by title/description/folder`);
-      retrieved.documents = titleResults.map((doc: any) => ({
+    // If no exact match, try all-keywords-AND (all words must appear in title)
+    if (!exactMatches || exactMatches.length === 0) {
+      console.log('🔍 Strategy 0b: All-keywords-AND on title...');
+      const { data: allKeywordDocs } = await supabase
+        .from('ck_docs')
+        .select(`
+          id, title, slug, type, description, tags, zones, collection_id, updated_at,
+          ck_collections(name, slug),
+          ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
+        `)
+        .eq('status', 'approved')
+        .limit(50);
+      
+      if (allKeywordDocs) {
+        // Filter to docs where ALL original keywords appear in title
+        exactMatches = allKeywordDocs.filter((doc: any) => {
+          const titleLower = doc.title.toLowerCase();
+          return allWords.every(word => titleLower.includes(word));
+        }).slice(0, 5);
+      }
+    }
+    
+    if (exactMatches && exactMatches.length > 0) {
+      console.log(`✅ Strategy 0: Found ${exactMatches.length} exact/AND title matches`);
+      retrieved.documents = exactMatches.map((doc: any) => ({
         id: doc.id,
         title: doc.title,
         type: doc.type,
@@ -400,11 +395,164 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
         content: doc.ck_doc_versions[0]?.content_md || '',
         summary: doc.ck_doc_versions[0]?.summary,
         slug: doc.slug,
+        matchReason: 'exact_title_match'
       }));
-      retrieved.totalDocs = titleResults.length;
+      retrieved.totalDocs = exactMatches.length;
+      retrieved.searchMethod = 'exact_title_match';
+      
+      // Get all folders for context
+      const { data: collections } = await supabase
+        .from('ck_collections')
+        .select('id, name, slug, parent_id')
+        .order('name');
+      retrieved.collections = collections || [];
+      
+      return retrieved;
+    }
+    
+    // STRATEGY 1: Folder name match with recursive hierarchy
+    console.log('🗂️ Strategy 1: Searching folder names (with hierarchy)...');
+    const { data: collectionResults } = await supabase
+      .from('ck_collections')
+      .select('id, name, slug, parent_id')
+      .or(keywords.map(k => `name.ilike.%${k}%,slug.ilike.%${k}%`).join(','))
+      .limit(10);
+    
+    if (collectionResults && collectionResults.length > 0) {
+      console.log(`✅ Found ${collectionResults.length} matching folders:`, collectionResults.map((c: any) => c.name));
+      
+      // Get all child folders recursively
+      const rootFolderIds = collectionResults.map((c: any) => c.id);
+      const allFolderIds = await getAllChildFolderIds(supabase, rootFolderIds);
+      
+      console.log(`🔍 Including ${allFolderIds.length} folders (with subfolders)`);
+      
+      // Get all documents in these folders and subfolders
+      const { data: folderDocs } = await supabase
+        .from('ck_docs')
+        .select(`
+          id, title, slug, type, description, tags, zones, collection_id, updated_at,
+          ck_collections(name, slug, parent_id),
+          ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
+        `)
+        .eq('status', 'approved')
+        .in('collection_id', allFolderIds)
+        .order('updated_at', { ascending: false })
+        .limit(25);
+      
+      if (folderDocs && folderDocs.length > 0) {
+        console.log(`✅ Found ${folderDocs.length} documents in matching folders (including subfolders)`);
+        
+        // Score and sort results
+        const scoredDocs = folderDocs.map((doc: any) => {
+          let score = 0;
+          const titleLower = doc.title.toLowerCase();
+          const descLower = (doc.description || '').toLowerCase();
+          
+          // Higher score for matching keywords in title
+          allWords.forEach(word => {
+            if (titleLower.includes(word)) score += 10;
+            if (descLower.includes(word)) score += 3;
+          });
+          
+          // Boost for exact folder match
+          const isRootFolder = rootFolderIds.includes(doc.collection_id);
+          if (isRootFolder) score += 20;
+          
+          // Recent docs get slight boost
+          const daysSinceUpdate = (Date.now() - new Date(doc.updated_at).getTime()) / (1000 * 60 * 60 * 24);
+          if (daysSinceUpdate < 30) score += 2;
+          
+          return { doc, score };
+        });
+        
+        scoredDocs.sort((a, b) => b.score - a.score);
+        
+        retrieved.documents = scoredDocs.slice(0, 20).map(({ doc, score }: any) => ({
+          id: doc.id,
+          title: doc.title,
+          type: doc.type,
+          description: doc.description,
+          tags: doc.tags,
+          zones: doc.zones,
+          collection: doc.ck_collections?.name,
+          content_full: doc.ck_doc_versions[0]?.content_md || '',
+          content: doc.ck_doc_versions[0]?.content_md || '',
+          summary: doc.ck_doc_versions[0]?.summary,
+          slug: doc.slug,
+          matchReason: 'folder_match',
+          score
+        }));
+        retrieved.totalDocs = scoredDocs.length;
+        retrieved.searchMethod = 'folder_hierarchy_match';
+        retrieved.collections = collectionResults;
+        retrieved.folderContext = `${collectionResults.length} folders (${allFolderIds.length} including subfolders)`;
+        return retrieved;
+      }
+    }
+    
+    // STRATEGY 2: Document title + description (WITHOUT joined filter issues)
+    console.log('📝 Strategy 2: Searching document titles + descriptions...');
+    
+    // Search titles and descriptions separately to avoid PostgREST join filter issues
+    const titleOrFilters = keywords.map(k => `title.ilike.%${k}%`).join(',');
+    const descOrFilters = keywords.map(k => `description.ilike.%${k}%`).join(',');
+    
+    const { data: titleResults } = await supabase
+      .from('ck_docs')
+      .select(`
+        id, title, slug, type, description, tags, zones, collection_id, updated_at,
+        ck_collections(name, slug),
+        ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
+      `)
+      .eq('status', 'approved')
+      .or(`${titleOrFilters},${descOrFilters}`)
+      .order('updated_at', { ascending: false })
+      .limit(20);
+    
+    if (titleResults && titleResults.length > 0) {
+      console.log(`✅ Found ${titleResults.length} documents by title/description`);
+      
+      // Score results
+      const scoredResults = titleResults.map((doc: any) => {
+        let score = 0;
+        const titleLower = doc.title.toLowerCase();
+        const descLower = (doc.description || '').toLowerCase();
+        
+        // Count keyword matches
+        allWords.forEach(word => {
+          if (titleLower.includes(word)) score += 15;
+          if (descLower.includes(word)) score += 5;
+        });
+        
+        // Boost if all keywords appear
+        const allInTitle = allWords.every(w => titleLower.includes(w));
+        if (allInTitle) score += 30;
+        
+        return { doc, score };
+      });
+      
+      scoredResults.sort((a, b) => b.score - a.score);
+      
+      retrieved.documents = scoredResults.slice(0, 15).map(({ doc, score }: any) => ({
+        id: doc.id,
+        title: doc.title,
+        type: doc.type,
+        description: doc.description,
+        tags: doc.tags,
+        zones: doc.zones,
+        collection: doc.ck_collections?.name,
+        content_full: doc.ck_doc_versions[0]?.content_md || '',
+        content: doc.ck_doc_versions[0]?.content_md || '',
+        summary: doc.ck_doc_versions[0]?.summary,
+        slug: doc.slug,
+        matchReason: 'title_description_match',
+        score
+      }));
+      retrieved.totalDocs = scoredResults.length;
       retrieved.searchMethod = 'title_description_match';
       
-      // Get all collections for context
+      // Get all folders for context
       const { data: collections } = await supabase
         .from('ck_collections')
         .select('id, name, slug')
@@ -414,8 +562,8 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
       return retrieved;
     }
     
-    // STRATEGY 3: Full-text search as fallback
-    console.log('🔍 Strategy 3: Full-text search...');
+    // STRATEGY 3: Full-text search (now includes titles!)
+    console.log('🔍 Strategy 3: Full-text search (with titles)...');
     const searchTerms = keywords.join(' | '); // OR search
     
     const { data: docs, error: docsError } = await supabase
@@ -1566,10 +1714,14 @@ ${baseData.spaces?.map((s: any) =>
     // Common Knowledge data
     if (retrievedData.documents && retrievedData.documents.length > 0) {
       prompt += `\n📚 COMMON KNOWLEDGE DOCUMENTS (${retrievedData.totalDocs} found):\n`;
+      if (retrievedData.searchMethod) prompt += `Search method: ${retrievedData.searchMethod}\n`;
+      if (retrievedData.folderContext) prompt += `Folder context: ${retrievedData.folderContext}\n`;
       
       retrievedData.documents.forEach((doc: any, idx: number) => {
         prompt += `\n${idx + 1}. ${doc.title} [${doc.type}]`;
         if (doc.collection) prompt += ` | Folder: ${doc.collection}`;
+        if (doc.matchReason) prompt += ` | Match: ${doc.matchReason}`;
+        if (doc.score) prompt += ` (score: ${doc.score})`;
         prompt += `\n   Link: https://www.croftcommontest.com/management/common-knowledge/d/${doc.slug}`;
         if (doc.description) prompt += `\n   Description: ${doc.description}`;
         if (doc.tags && doc.tags.length > 0) prompt += `\n   Tags: ${doc.tags.join(', ')}`;
@@ -1591,11 +1743,12 @@ ${baseData.spaces?.map((s: any) =>
         prompt += `\n🔎 Full Content — ${primary.title}:\n${fullContent}\n`;
       }
       if (retrievedData.collections && retrievedData.collections.length > 0) {
-        prompt += `\nAvailable Folders:\n`;
+        prompt += `\nAvailable Folders (always use this terminology with users):\n`;
         retrievedData.collections.slice(0, 10).forEach((col: any) => {
           prompt += `  • ${col.name}\n`;
         });
       }
+      prompt += `\nIMPORTANT: When citing documents, always mention their "Folder" location to help users find them.\n`;
     }
     
     // Event context
