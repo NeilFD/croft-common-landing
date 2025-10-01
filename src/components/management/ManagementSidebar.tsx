@@ -159,7 +159,7 @@ export const ManagementSidebar = () => {
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                      <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
                         <p className="font-industrial">Management</p>
                       </TooltipContent>
                     </Tooltip>
@@ -176,7 +176,7 @@ export const ManagementSidebar = () => {
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                      <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
                         <p className="font-industrial">Common Knowledge</p>
                       </TooltipContent>
                     </Tooltip>
@@ -193,7 +193,7 @@ export const ManagementSidebar = () => {
                           </NavLink>
                         </SidebarMenuButton>
                       </TooltipTrigger>
-                      <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                      <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
                         <p className="font-industrial">Spaces</p>
                       </TooltipContent>
                     </Tooltip>
@@ -242,7 +242,7 @@ export const ManagementSidebar = () => {
                                 </NavLink>
                               </SidebarMenuButton>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                            <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
                               <p className="font-industrial">{module.name}</p>
                             </TooltipContent>
                           </Tooltip>
@@ -287,9 +287,9 @@ export const ManagementSidebar = () => {
                               </NavLink>
                             </SidebarMenuButton>
                           </TooltipTrigger>
-                          <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
-                            <p className="font-industrial">Knowledge Dashboard</p>
-                          </TooltipContent>
+                      <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
+                        <p className="font-industrial">Knowledge Dashboard</p>
+                      </TooltipContent>
                         </Tooltip>
                       </SidebarMenuItem>
                     </SidebarMenu>
@@ -332,9 +332,9 @@ export const ManagementSidebar = () => {
                               </NavLink>
                             </SidebarMenuButton>
                           </TooltipTrigger>
-                          <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
-                            <p className="font-industrial">Spaces Dashboard</p>
-                          </TooltipContent>
+                      <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
+                        <p className="font-industrial">Spaces Dashboard</p>
+                      </TooltipContent>
                         </Tooltip>
                       </SidebarMenuItem>
                       
@@ -353,7 +353,7 @@ export const ManagementSidebar = () => {
                                 </NavLink>
                               </SidebarMenuButton>
                             </TooltipTrigger>
-                            <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+                            <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
                               <p className="font-industrial">{module.name}</p>
                             </TooltipContent>
                           </Tooltip>
@@ -381,7 +381,7 @@ export const ManagementSidebar = () => {
               </Button>
             </TooltipTrigger>
             {!showText && (
-              <TooltipContent side="right" className="bg-card text-foreground border border-border shadow-lg">
+              <TooltipContent side="right" className="bg-card/100 text-foreground border border-border shadow-lg backdrop-blur-none">
                 <p className="font-industrial">Back to Main Site</p>
               </TooltipContent>
             )}
