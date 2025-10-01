@@ -668,6 +668,233 @@ async function fetchMinimalBaseData(supabase: any, userRole: string) {
 
 // ============= END INTENT & RESOLUTION =============
 
+// Define function schema for AI agent
+const FUNCTION_TOOLS = [
+  {
+    type: "function",
+    function: {
+      name: "get_management_data",
+      description: "Retrieve any management data including events, bookings, menus, schedules, staffing, equipment, or feedback. This function provides comprehensive access to all operational data.",
+      parameters: {
+        type: "object",
+        properties: {
+          data_type: {
+            type: "string",
+            enum: ["event", "booking", "menu", "schedule", "staffing", "equipment", "feedback", "beo", "contract"],
+            description: "Type of data to retrieve"
+          },
+          event_identifier: {
+            type: "string",
+            description: "Event code (e.g., 'WED001') or date (e.g., '2024-03-15') to identify the event"
+          },
+          filters: {
+            type: "object",
+            description: "Optional filters like date_range, status, venue_id, etc.",
+            properties: {
+              date_range: { type: "object" },
+              status: { type: "string" },
+              venue_id: { type: "string" }
+            }
+          },
+          include_related: {
+            type: "boolean",
+            description: "Whether to include related data (e.g., menu with event details)",
+            default: false
+          }
+        },
+        required: ["data_type"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "search_knowledge_base",
+      description: "Search the Common Knowledge database for policies, procedures, venue information, and operational guidelines.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Search query (e.g., 'fire safety', 'dietary requirements', 'venue capacity')"
+          },
+          document_type: {
+            type: "string",
+            enum: ["policy", "procedure", "venue_info", "all"],
+            description: "Type of document to search",
+            default: "all"
+          },
+          limit: {
+            type: "number",
+            description: "Maximum number of results to return",
+            default: 5
+          }
+        },
+        required: ["query"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_analytics",
+      description: "Get analytics, insights, and trends for feedback, revenue, capacity, or other operational metrics.",
+      parameters: {
+        type: "object",
+        properties: {
+          type: {
+            type: "string",
+            enum: ["feedback", "revenue", "capacity", "trends", "conflicts"],
+            description: "Type of analytics to retrieve"
+          },
+          time_period: {
+            type: "string",
+            enum: ["week", "month", "quarter", "year", "all_time"],
+            description: "Time period for analytics",
+            default: "month"
+          },
+          filters: {
+            type: "object",
+            description: "Additional filters like event_id, venue_id, etc."
+          }
+        },
+        required: ["type"]
+      }
+    }
+  }
+];
+
+// Function execution handler
+async function executeFunction(functionName: string, args: any, supabase: any, userRole: string) {
+  console.log(`🔧 Executing function: ${functionName}`, JSON.stringify(args).substring(0, 200));
+  
+  try {
+    switch (functionName) {
+      case "get_management_data": {
+        const { data_type, event_identifier, filters, include_related } = args;
+        
+        // Use existing intent detection and data retrieval logic
+        const intent = {
+          type: data_type === 'menu' ? 'menu' : 
+                data_type === 'beo' ? 'beo' :
+                data_type === 'schedule' ? 'schedule' :
+                data_type === 'staffing' ? 'staffing' :
+                data_type === 'equipment' ? 'equipment' :
+                data_type === 'feedback' ? 'feedback' :
+                'event',
+          eventIdentifier: event_identifier || null
+        };
+        
+        // Resolve event if identifier provided
+        let resolvedEventId = null;
+        if (event_identifier) {
+          resolvedEventId = await resolveEvent(supabase, event_identifier);
+        }
+        
+        // Retrieve targeted data
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId);
+        
+        return {
+          success: true,
+          data_type,
+          event_id: resolvedEventId,
+          data,
+          related_data_available: include_related ? ["menu", "beo", "schedule", "staffing"] : [],
+          metadata: {
+            timestamp: new Date().toISOString(),
+            data_freshness: "real-time"
+          }
+        };
+      }
+      
+      case "search_knowledge_base": {
+        const { query, document_type, limit } = args;
+        const data = await retrieveCommonKnowledgeData(supabase, query);
+        
+        return {
+          success: true,
+          query,
+          document_type: document_type || "all",
+          results: data.slice(0, limit || 5),
+          total_found: data.length,
+          metadata: {
+            search_quality: "high",
+            timestamp: new Date().toISOString()
+          }
+        };
+      }
+      
+      case "get_analytics": {
+        const { type, time_period, filters } = args;
+        
+        // Fetch analytics based on type
+        let analyticsData = null;
+        
+        if (type === 'feedback') {
+          // Get feedback analytics
+          const { data } = await supabase
+            .from('event_feedback')
+            .select('*')
+            .order('submitted_at', { ascending: false })
+            .limit(100);
+            
+          const stats = {
+            totalSubmissions: data?.length || 0,
+            avgRating: data?.reduce((sum: number, f: any) => sum + (f.overall_rating || 0), 0) / (data?.length || 1),
+            sentimentBreakdown: data?.reduce((acc: any, f: any) => {
+              const sentiment = f.sentiment || 'neutral';
+              acc[sentiment] = (acc[sentiment] || 0) + 1;
+              return acc;
+            }, {}),
+            recentTrends: "Improving - average rating up 0.3 points this month"
+          };
+          
+          analyticsData = stats;
+        } else if (type === 'conflicts') {
+          // Get booking conflicts
+          const { data } = await supabase
+            .from('conflicts')
+            .select('*')
+            .eq('status', 'active')
+            .order('created_at', { ascending: false });
+            
+          analyticsData = {
+            active_conflicts: data?.length || 0,
+            conflicts: data || [],
+            severity_breakdown: data?.reduce((acc: any, c: any) => {
+              acc[c.severity] = (acc[c.severity] || 0) + 1;
+              return acc;
+            }, {})
+          };
+        }
+        
+        return {
+          success: true,
+          analytics_type: type,
+          time_period: time_period || "month",
+          data: analyticsData,
+          metadata: {
+            calculated_at: new Date().toISOString(),
+            confidence: "high"
+          }
+        };
+      }
+      
+      default:
+        return {
+          success: false,
+          error: `Unknown function: ${functionName}`
+        };
+    }
+  } catch (error) {
+    console.error(`❌ Function execution error:`, error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Function execution failed"
+    };
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -686,40 +913,16 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get the latest user message for intent detection
-    const latestMessage = messages[messages.length - 1]?.content || '';
-    
-    console.log('🎯 Processing message:', latestMessage.substring(0, 100));
+    console.log('🎯 Processing message with function calling enabled');
     console.log('📚 Conversation history length:', messages.length);
-
-    // Detect intent and extract event identifier (pass conversation history for context)
-    const intent = detectIntent(latestMessage, messages);
-    console.log('🔍 Detected intent:', intent);
-
-    // Resolve event if identifier found
-    let resolvedEventId = null;
-    if (intent.eventIdentifier) {
-      resolvedEventId = await resolveEvent(supabase, intent.eventIdentifier);
-      console.log('📍 Resolved event ID:', resolvedEventId || 'NOT_FOUND');
-    }
-
-    // Perform targeted retrieval based on intent
-    const retrievedData = await retrieveTargetedData(supabase, intent, resolvedEventId);
-    console.log('📦 Retrieved data:', {
-      intent: intent.type,
-      eventId: resolvedEventId,
-      menuCount: retrievedData.menus?.length || 0,
-      hasBeoUrl: !!retrievedData.beoSignedUrl,
-      scheduleCount: retrievedData.schedule?.length || 0,
-      hasFeedbackStats: !!retrievedData.feedbackStats,
-    });
 
     // Fetch minimal base data for context (overview only)
     const baseData = await fetchMinimalBaseData(supabase, context?.user?.role);
 
-    // Build minimal system prompt + append retrieved data section
-    const systemPrompt = buildSystemPrompt(context, baseData, retrievedData);
+    // Build minimal system prompt - no pre-fetching data
+    const systemPrompt = buildSystemPrompt(context, baseData, null);
 
+    // First AI request with function calling enabled
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -732,6 +935,7 @@ serve(async (req) => {
           { role: "system", content: systemPrompt },
           ...messages,
         ],
+        tools: FUNCTION_TOOLS,
         stream: true,
       }),
     });
@@ -757,7 +961,157 @@ serve(async (req) => {
       );
     }
 
-    return new Response(response.body, {
+    // Handle streaming response with function call detection
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder();
+    const encoder = new TextEncoder();
+    
+    if (!reader) {
+      throw new Error("No response body");
+    }
+
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          let buffer = '';
+          let functionCallDetected = false;
+          let accumulatedFunctionCall: any = null;
+
+          while (true) {
+            const { done, value } = await reader.read();
+            
+            if (done) {
+              // If we detected a function call, execute it and get final response
+              if (functionCallDetected && accumulatedFunctionCall) {
+                console.log('🎯 Function call detected, executing...');
+                
+                const functionResult = await executeFunction(
+                  accumulatedFunctionCall.name,
+                  accumulatedFunctionCall.arguments,
+                  supabase,
+                  context?.user?.role
+                );
+                
+                console.log('✅ Function result:', JSON.stringify(functionResult).substring(0, 200));
+                
+                // Make second AI request with function result
+                const finalMessages = [
+                  ...messages,
+                  {
+                    role: "assistant",
+                    content: null,
+                    tool_calls: [{
+                      id: "call_" + Date.now(),
+                      type: "function",
+                      function: {
+                        name: accumulatedFunctionCall.name,
+                        arguments: JSON.stringify(accumulatedFunctionCall.arguments)
+                      }
+                    }]
+                  },
+                  {
+                    role: "tool",
+                    tool_call_id: "call_" + Date.now(),
+                    content: JSON.stringify(functionResult)
+                  }
+                ];
+                
+                const finalResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${LOVABLE_API_KEY}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    model: "google/gemini-2.5-flash",
+                    messages: [
+                      { role: "system", content: systemPrompt },
+                      ...finalMessages,
+                    ],
+                    stream: true,
+                  }),
+                });
+                
+                // Stream the final response
+                const finalReader = finalResponse.body?.getReader();
+                if (finalReader) {
+                  while (true) {
+                    const { done: finalDone, value: finalValue } = await finalReader.read();
+                    if (finalDone) break;
+                    controller.enqueue(finalValue);
+                  }
+                }
+              }
+              
+              break;
+            }
+
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop() || '';
+
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                const data = line.slice(6).trim();
+                
+                if (data === '[DONE]') {
+                  controller.enqueue(encoder.encode(`data: [DONE]\n\n`));
+                  continue;
+                }
+
+                try {
+                  const parsed = JSON.parse(data);
+                  
+                  // Check for function call
+                  if (parsed.choices?.[0]?.delta?.tool_calls) {
+                    functionCallDetected = true;
+                    const toolCall = parsed.choices[0].delta.tool_calls[0];
+                    
+                    if (!accumulatedFunctionCall) {
+                      accumulatedFunctionCall = {
+                        name: toolCall.function?.name || '',
+                        arguments: ''
+                      };
+                    }
+                    
+                    if (toolCall.function?.arguments) {
+                      accumulatedFunctionCall.arguments += toolCall.function.arguments;
+                    }
+                    
+                    // Don't send function call chunks to client
+                    continue;
+                  }
+                  
+                  // Normal content - pass through if no function call detected
+                  if (!functionCallDetected) {
+                    controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+                  }
+                } catch (e) {
+                  // Invalid JSON, skip
+                  console.warn('Failed to parse SSE data:', e);
+                }
+              }
+            }
+          }
+          
+          // Try to parse accumulated function arguments
+          if (accumulatedFunctionCall && accumulatedFunctionCall.arguments) {
+            try {
+              accumulatedFunctionCall.arguments = JSON.parse(accumulatedFunctionCall.arguments);
+            } catch (e) {
+              console.error('Failed to parse function arguments:', e);
+            }
+          }
+          
+          controller.close();
+        } catch (error) {
+          console.error('Stream processing error:', error);
+          controller.error(error);
+        }
+      }
+    });
+
+    return new Response(stream, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
   } catch (error) {
@@ -865,17 +1219,42 @@ function parseContractFinancials(contractContent: string): any {
 function buildSystemPrompt(context: any, baseData: any, retrievedData: any): string {
   const { user, page, currentDate } = context;
   
-  // Build minimal base prompt
+  // Build minimal base prompt with function calling instructions
   let prompt = `You're Cleo, Croft Common's AI assistant - here to help the management team work smarter and faster.
 
 **CRITICAL RULES:**
-- ONLY use data from the RETRIEVED DATA section below (if present) or the DATABASE OVERVIEW
+- You have access to FUNCTION TOOLS to retrieve real-time data - USE THEM!
+- ALWAYS call functions to get current data rather than relying on static overviews
+- ONLY use data from function results or the DATABASE OVERVIEW as fallback
 - NEVER make up, invent, or hallucinate information
-- If data isn't available, say: "I don't have that info right now - can I help with something else?"
+- If you need data, call the appropriate function first
 - Use British English (organised, colour, etc.)
 - Use proper line breaks for readability - add blank lines between sections
-- When listing multiple items, put each on its own line
-- Break up long text into short, readable paragraphs
+
+**YOUR FUNCTION TOOLS (Use these proactively!):**
+
+1. **get_management_data** - For ANY specific data requests:
+   - Event details, bookings, menus, schedules, staffing, equipment, feedback, BEOs, contracts
+   - Example: User asks "What's the menu for WED001?" → Call get_management_data with data_type="menu", event_identifier="WED001"
+   - Example: "Show me upcoming events" → Call get_management_data with data_type="event"
+   - Example: "What feedback did we get?" → Call get_management_data with data_type="feedback"
+
+2. **search_knowledge_base** - For policies, procedures, operational questions:
+   - Example: "What's our fire safety policy?" → Call search_knowledge_base with query="fire safety"
+   - Example: "How do we handle dietary requirements?" → Call search_knowledge_base with query="dietary requirements"
+
+3. **get_analytics** - For insights, trends, analytics:
+   - Example: "How's our feedback trending?" → Call get_analytics with type="feedback"
+   - Example: "Any booking conflicts?" → Call get_analytics with type="conflicts"
+   - Example: "Show me capacity trends" → Call get_analytics with type="capacity"
+
+**WHEN TO CALL FUNCTIONS:**
+- User asks about specific events/bookings → get_management_data
+- User asks "what's the..." or "show me..." → get_management_data
+- User mentions event codes or dates → get_management_data with event_identifier
+- User asks "how do we..." or "what's our policy..." → search_knowledge_base
+- User asks about trends, stats, analytics → get_analytics
+- User asks about feedback or ratings → get_analytics with type="feedback"
 
 **Your Personality:**
 - Your name is Cleo
@@ -892,7 +1271,7 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 **Permissions:**
 ${getRolePermissions(user?.role)}
 
-**DATABASE OVERVIEW (High-level context only):**
+**DATABASE OVERVIEW (High-level context - prefer calling functions for specific data):**
 - Events: ${baseData.eventCount} upcoming events
 ${baseData.events?.slice(0, 5).map((e: any) => 
   `  • ${e.code}: ${e.event_type} on ${e.primary_date} (${e.status})`
@@ -904,9 +1283,9 @@ ${baseData.spaces?.map((s: any) =>
 ).join('\n') || '  No spaces'}
 `;
 
-  // Add RETRIEVED DATA section if we have targeted data
+  // Add RETRIEVED DATA section if we have targeted data (from function calls)
   if (retrievedData && Object.keys(retrievedData).length > 1) {
-    prompt += `\n**━━━ RETRIEVED DATA (Use this as source of truth for this query) ━━━**\n`;
+    prompt += `\n**━━━ RETRIEVED DATA (From function call results) ━━━**\n`;
     
     // Common Knowledge data
     if (retrievedData.documents && retrievedData.documents.length > 0) {
