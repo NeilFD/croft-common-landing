@@ -47,59 +47,74 @@ export function FeedbackTable({ data, isLoading }: FeedbackTableProps) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Customer</TableHead>
-              <TableHead>Overall</TableHead>
-              <TableHead>Ratings</TableHead>
+              <TableHead className="w-[120px]">Date</TableHead>
+              <TableHead className="w-[160px]">Customer</TableHead>
+              <TableHead className="w-[80px] text-center">Overall</TableHead>
+              <TableHead className="w-[70px] text-center">Hosp.</TableHead>
+              <TableHead className="w-[70px] text-center">Food</TableHead>
+              <TableHead className="w-[70px] text-center">Drink</TableHead>
+              <TableHead className="w-[70px] text-center">Team</TableHead>
+              <TableHead className="w-[70px] text-center">Venue</TableHead>
+              <TableHead className="w-[70px] text-center">Price</TableHead>
               <TableHead>Comment</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right w-[140px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {data.map((feedback) => (
-              <TableRow key={feedback.id} className="cursor-pointer hover:bg-muted/50">
+              <TableRow key={feedback.id} className="hover:bg-muted/50">
                 <TableCell className="font-medium">
                   {format(new Date(feedback.created_at), 'MMM dd, yyyy')}
                   <div className="text-xs text-muted-foreground">
                     {format(new Date(feedback.created_at), 'HH:mm')}
                   </div>
                 </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  <div>
-                    <div>{feedback.is_anonymous ? 'Anonymous' : feedback.name || 'Unknown'}</div>
-                    {feedback.is_anonymous && (
-                      <Badge variant="outline" className="text-xs mt-1">Anonymous</Badge>
-                    )}
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 flex-shrink-0" />
+                    <div className="truncate">
+                      <div className="truncate">{feedback.is_anonymous ? 'Anonymous' : feedback.name || 'Unknown'}</div>
+                      {feedback.is_anonymous && (
+                        <Badge variant="outline" className="text-xs mt-0.5">Anon</Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full ${getRatingColor(feedback.overall_rating)} flex items-center justify-center text-white font-bold text-sm`}>
-                    {feedback.overall_rating?.toFixed(1) || 'N/A'}
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className={`inline-flex items-center justify-center w-10 h-10 rounded-full ${getRatingColor(feedback.overall_rating)} text-white font-bold text-sm`}>
+                    {feedback.overall_rating?.toFixed(1) || '-'}
                   </div>
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {[
-                    { key: 'hospitality', value: feedback.hospitality_rating },
-                    { key: 'food', value: feedback.food_rating },
-                    { key: 'drink', value: feedback.drink_rating },
-                    { key: 'team', value: feedback.team_rating },
-                    { key: 'venue', value: feedback.venue_rating },
-                    { key: 'price', value: feedback.price_rating }
-                  ].map(({ key, value }) => (
-                    value && (
-                      <Badge key={key} variant="secondary" className="text-xs">
-                        {key}: {value?.toFixed(1)}
-                      </Badge>
-                    )
-                  ))}
-                </div>
-              </TableCell>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="font-medium text-sm">
+                    {feedback.hospitality_rating?.toFixed(1) || '-'}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="font-medium text-sm">
+                    {feedback.food_rating?.toFixed(1) || '-'}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="font-medium text-sm">
+                    {feedback.drink_rating?.toFixed(1) || '-'}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="font-medium text-sm">
+                    {feedback.team_rating?.toFixed(1) || '-'}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="font-medium text-sm">
+                    {feedback.venue_rating?.toFixed(1) || '-'}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <div className="font-medium text-sm">
+                    {feedback.price_rating?.toFixed(1) || '-'}
+                  </div>
+                </TableCell>
                 <TableCell className="max-w-xs">
                   <div className="truncate text-sm text-muted-foreground">
                     {feedback.message || 'No comment'}
