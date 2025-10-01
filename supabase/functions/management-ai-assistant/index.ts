@@ -428,7 +428,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
             zones: doc.zones,
             collection: doc.ck_collections?.name,
             content_full: doc.ck_doc_versions[0]?.content_md || '',
-            content: doc.ck_doc_versions[0]?.content_md ? doc.ck_doc_versions[0]?.content_md.substring(0, 1200) : '',
+            content: doc.ck_doc_versions[0]?.content_md || '', // Provide FULL content, not truncated
             summary: doc.ck_doc_versions[0]?.summary,
             slug: doc.slug,
           }));

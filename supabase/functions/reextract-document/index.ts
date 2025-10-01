@@ -16,10 +16,94 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { docSlug } = await req.json();
+    const { docSlug, batchAll } = await req.json();
 
+    // Batch mode: re-extract all documents with empty/placeholder content
+    if (batchAll) {
+      console.log('🔄 Batch re-extraction mode: processing all documents with placeholder content...');
+      
+      const { data: docsToProcess, error: fetchError } = await supabase
+        .from('ck_docs')
+        .select(`
+          id,
+          slug,
+          version_current_id,
+          ck_files (
+            id,
+            storage_path,
+            mime
+          )
+        `)
+        .not('version_current_id', 'is', null);
+      
+      if (fetchError) throw fetchError;
+      
+      console.log(`Found ${docsToProcess?.length || 0} documents to check`);
+      
+      let processed = 0;
+      let errors = 0;
+      
+      for (const doc of docsToProcess || []) {
+        try {
+          const file = (doc.ck_files as any)?.[0];
+          if (!file?.storage_path) continue;
+          
+          // Check if content needs re-extraction
+          const { data: version } = await supabase
+            .from('ck_doc_versions')
+            .select('content_md')
+            .eq('id', doc.version_current_id)
+            .single();
+          
+          if (!version?.content_md || 
+              version.content_md.includes('Text extraction pending') ||
+              version.content_md.includes('uploaded but') ||
+              version.content_md.length < 100) {
+            
+            console.log(`Re-extracting ${doc.slug}...`);
+            
+            // Call extract-document-content edge function
+            const extractResponse = await fetch(`${supabaseUrl}/functions/v1/extract-document-content`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                storagePath: file.storage_path,
+                docId: doc.id,
+                versionId: doc.version_current_id,
+              }),
+            });
+            
+            if (extractResponse.ok) {
+              processed++;
+              console.log(`✅ Processed ${doc.slug}`);
+            } else {
+              errors++;
+              console.error(`❌ Failed to process ${doc.slug}`);
+            }
+          }
+        } catch (err) {
+          errors++;
+          console.error(`Error processing ${doc.slug}:`, err);
+        }
+      }
+      
+      return new Response(
+        JSON.stringify({ 
+          success: true,
+          processed,
+          errors,
+          message: `Batch re-extraction complete: ${processed} processed, ${errors} errors`
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Single document mode
     if (!docSlug) {
-      throw new Error('docSlug is required');
+      throw new Error('docSlug is required for single document re-extraction');
     }
 
     console.log(`Re-extracting document: ${docSlug}`);
@@ -43,78 +127,42 @@ serve(async (req) => {
     }
 
     const storagePath = (docData.ck_files as any)?.[0]?.storage_path;
-    const mime = (docData.ck_files as any)?.[0]?.mime;
+    const versionId = docData.version_current_id;
 
-    if (!storagePath || mime !== 'application/pdf') {
-      throw new Error('No PDF file found for this document');
+    if (!storagePath) {
+      throw new Error('No file found for this document');
     }
 
-    console.log(`Downloading file from storage: ${storagePath}`);
+    console.log(`Calling extract-document-content for ${docSlug}...`);
 
-    // Download the file
-    const { data: fileData, error: downloadError } = await supabase.storage
-      .from('common-knowledge')
-      .download(storagePath);
+    // Call the extract-document-content edge function directly
+    const extractResponse = await fetch(`${supabaseUrl}/functions/v1/extract-document-content`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseServiceKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        storagePath,
+        docId: docData.id,
+        versionId,
+      }),
+    });
 
-    if (downloadError || !fileData) {
-      throw new Error(`Failed to download file: ${downloadError?.message}`);
+    if (!extractResponse.ok) {
+      const errorText = await extractResponse.text();
+      throw new Error(`Extraction failed: ${errorText}`);
     }
 
-    console.log(`File downloaded, size: ${fileData.size} bytes`);
-
-    // Simple text extraction from PDF
-    const arrayBuffer = await fileData.arrayBuffer();
-    const bytes = new Uint8Array(arrayBuffer);
+    const result = await extractResponse.json();
     
-    // Try basic UTF-8 decoding and filter readable text
-    const decoder = new TextDecoder('utf-8', { fatal: false });
-    let rawText = decoder.decode(bytes);
-    
-    // Extract text between common PDF markers
-    const textMatches = rawText.match(/\(([^)]{10,})\)/g);
-    let extractedText = '';
-    
-    if (textMatches) {
-      extractedText = textMatches
-        .map(m => m.slice(1, -1))
-        .join(' ')
-        .replace(/\\n/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-    
-    // Fallback: just clean the raw text
-    if (!extractedText || extractedText.length < 100) {
-      extractedText = rawText
-        .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
-    }
-
-    console.log(`Extracted ${extractedText.length} characters`);
-
-    if (extractedText.length < 100) {
-      throw new Error('Extracted text too short - PDF may be scanned or encrypted');
-    }
-
-    // Update the version with extracted content
-    const { error: updateError } = await supabase
-      .from('ck_doc_versions')
-      .update({
-        content_md: extractedText,
-        summary: extractedText.substring(0, 500),
-      })
-      .eq('id', docData.version_current_id);
-
-    if (updateError) throw updateError;
-
-    console.log(`Successfully updated version ${docData.version_current_id}`);
+    console.log(`✅ Successfully re-extracted ${docSlug}`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        extractedLength: extractedText.length,
-        preview: extractedText.substring(0, 200) 
+        extractedLength: result.contentLength,
+        preview: result.summary
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

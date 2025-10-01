@@ -101,7 +101,9 @@ async function extractPdfContent(fileData: Blob, storagePath: string, supabaseUr
       const pdf = await loadingTask.promise;
 
       let allText = '';
-      const maxPages = Math.min(pdf.numPages ?? 0, 100); // safety cap
+      const maxPages = Math.min(pdf.numPages ?? 0, 500); // Increased cap for larger docs
+      console.log(`📄 Extracting ${maxPages} pages from PDF...`);
+      
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const textContent = await page.getTextContent();
@@ -116,6 +118,8 @@ async function extractPdfContent(fileData: Blob, storagePath: string, supabaseUr
         .replace(/\s+/g, ' ')
         .replace(/\s*\n\s*/g, '\n')
         .trim();
+
+      console.log(`✅ Extracted ${cleaned.length} characters from PDF`);
 
       if (cleaned.length >= 100) return cleaned;
       // Fall through to basic decoding if too short (likely scanned PDF)
@@ -141,11 +145,46 @@ async function extractPdfContent(fileData: Blob, storagePath: string, supabaseUr
 
 async function extractDocxContent(fileData: Blob): Promise<string> {
   try {
-    // For DOCX, we'd need a proper library
-    // For now, return placeholder
-    return `DOCX document uploaded. Text extraction pending.`;
+    console.log('📄 Extracting DOCX content using JSZip...');
+    // Import JSZip for DOCX extraction
+    const JSZip = (await import('https://esm.sh/jszip@3.10.1')).default;
+    
+    const arrayBuffer = await fileData.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    
+    // DOCX files contain the main document in word/document.xml
+    const documentXml = await zip.file('word/document.xml')?.async('string');
+    
+    if (!documentXml) {
+      console.error('No word/document.xml found in DOCX');
+      return `DOCX document uploaded but could not extract content.`;
+    }
+    
+    // Extract text from XML - handle paragraphs, lists, tables
+    // Remove all XML tags but preserve structure with newlines
+    let text = documentXml
+      .replace(/<w:p\b[^>]*>/g, '\n') // Paragraph breaks
+      .replace(/<w:br[^>]*>/g, '\n') // Line breaks
+      .replace(/<w:tab[^>]*>/g, '\t') // Tabs
+      .replace(/<w:t\b[^>]*>([^<]*)<\/w:t>/g, '$1') // Extract text nodes
+      .replace(/<[^>]+>/g, '') // Remove all other XML tags
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/\n\s*\n\s*\n/g, '\n\n') // Normalize multiple newlines
+      .trim();
+    
+    console.log(`✅ Extracted ${text.length} characters from DOCX`);
+    
+    if (text.length < 50) {
+      return `DOCX document uploaded but content appears empty.`;
+    }
+    
+    return text;
   } catch (error) {
     console.error('DOCX extraction error:', error);
-    return `DOCX document uploaded. Text extraction pending.`;
+    return `DOCX document uploaded. Error during extraction: ${error.message}`;
   }
 }
