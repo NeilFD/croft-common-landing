@@ -513,7 +513,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
   return retrieved;
 }
 
-async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null, timePeriod?: string) {
+async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null, timePeriod?: string, dateRange?: { start_date?: string; end_date?: string }) {
   const retrieved: any = { intent: intent.type };
   
   // Handle Feedback/Reviews intent (no event needed)
@@ -557,8 +557,25 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
             endISO = null;
         }
       }
-      
-      // Get feedback statistics
+
+      // Honour explicit date range if provided via filters
+      if (dateRange && (dateRange.start_date || dateRange.end_date)) {
+        try {
+          if (dateRange.start_date) {
+            const s = new Date(dateRange.start_date);
+            if (!isNaN(s.getTime())) startISO = s.toISOString();
+          }
+          if (dateRange.end_date) {
+            // make end exclusive by adding one day
+            const e = new Date(dateRange.end_date);
+            if (!isNaN(e.getTime())) endISO = new Date(e.getTime() + 24 * 60 * 60 * 1000).toISOString();
+          }
+        } catch (e) {
+          console.warn('Invalid date_range provided to feedback analytics:', dateRange, e);
+        }
+      }
+
+      console.log(`🗓️ Feedback date window => startISO: ${startISO || 'none'} | endISO: ${endISO || 'none'}`);
       const feedbackCols = SCHEMA.feedback_submissions;
       let query = supabase
         .from('feedback_submissions')
@@ -923,7 +940,7 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
         }
         
         // Retrieve targeted data (pass time_period for feedback)
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period);
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range);
         
         return {
           success: true,
@@ -975,7 +992,7 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
         }
         
         // Use existing comprehensive data retrieval logic with time period
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period);
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range);
         
         // For conflicts, get additional conflict data
         if (type === 'conflicts') {
@@ -1149,13 +1166,14 @@ serve(async (req) => {
                 console.log('✅ Function result:', JSON.stringify(functionResult).substring(0, 200));
                 
                 // Make second AI request with function result
+                const toolCallId = "call_" + Date.now();
                 const finalMessages = [
                   ...messages,
                   {
                     role: "assistant",
                     content: null,
                     tool_calls: [{
-                      id: "call_" + Date.now(),
+                      id: toolCallId,
                       type: "function",
                       function: {
                         name: accumulatedFunctionCall.name,
@@ -1165,7 +1183,7 @@ serve(async (req) => {
                   },
                   {
                     role: "tool",
-                    tool_call_id: "call_" + Date.now(),
+                    tool_call_id: toolCallId,
                     content: JSON.stringify(functionResult)
                   }
                 ];
@@ -1182,6 +1200,7 @@ serve(async (req) => {
                       { role: "system", content: systemPrompt },
                       ...finalMessages,
                     ],
+                    tools: FUNCTION_TOOLS,
                     stream: true,
                   }),
                 });
@@ -1208,18 +1227,19 @@ serve(async (req) => {
                     supabase,
                     context?.user?.role
                   );
+                  const toolCallId = "call_" + Date.now();
                   const finalMessages = [
                     ...messages,
                     {
                       role: "assistant",
                       content: null,
                       tool_calls: [{
-                        id: "call_" + Date.now(),
+                        id: toolCallId,
                         type: "function",
                         function: { name: 'get_analytics', arguments: JSON.stringify({ type: 'feedback', time_period: period }) }
                       }]
                     },
-                    { role: "tool", tool_call_id: "call_" + Date.now(), content: JSON.stringify(functionResult) }
+                    { role: "tool", tool_call_id: toolCallId, content: JSON.stringify(functionResult) }
                   ];
                   const finalResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
                     method: "POST",
@@ -1227,6 +1247,7 @@ serve(async (req) => {
                     body: JSON.stringify({
                       model: "google/gemini-2.5-flash",
                       messages: [ { role: "system", content: systemPrompt }, ...finalMessages ],
+                      tools: FUNCTION_TOOLS,
                       stream: true,
                     }),
                   });
