@@ -291,58 +291,68 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
   try {
     console.log('📚 Searching Common Knowledge for:', searchQuery);
     
-    // Extract keywords from search query - MORE PERMISSIVE
+    // Synonym expansion for semantic matching
+    const synonymMap: Record<string, string[]> = {
+      'document': ['plan', 'strategy', 'guide', 'policy', 'procedure', 'doc', 'file'],
+      'plan': ['document', 'strategy', 'guide', 'planning'],
+      'marketing': ['marketing', 'promotion', 'advertising', 'brand', 'communications'],
+      'strategic': ['strategic', 'strategy', 'planning', 'plan'],
+      'folder': ['collection', 'directory', 'category', 'section'],
+      'menu': ['menu', 'food', 'drink', 'dining', 'catering'],
+      'contract': ['contract', 'agreement', 'terms'],
+      'staff': ['staff', 'employee', 'team', 'personnel', 'staffing'],
+      'venue': ['venue', 'space', 'room', 'location'],
+      'fire': ['fire', 'safety', 'emergency'],
+      'dietary': ['dietary', 'allergen', 'allergy', 'food']
+    };
+    
+    // Extract keywords - very permissive
     const allWords = searchQuery.toLowerCase()
-      .replace(/[^\w\s]/g, '')
+      .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(w => w.length > 0);
+      .filter(w => w.length > 2)
+      .filter(w => !['the','and','for','are','but','not','you','can','has','what','when','where','who','how','our','out','any'].includes(w));
     
-    // Keep more keywords, only filter out very common stopwords
-    const keywords = allWords.filter(w => ![
-      'the','our','about','show','find','tell','give','could','would','should','please','need','want','have','with','from','into','that','this','those','these','some','more','most','very','much','many','any','your','yours','you','me','can','cant','able','provide','info','information','a','an','and','or','but','for','at','by','to','of','in','on','is','are','was','were','be','been','being'
-    ].includes(w));
+    // Expand with synonyms
+    const expandedKeywords = new Set(allWords);
+    allWords.forEach(word => {
+      if (synonymMap[word]) {
+        synonymMap[word].forEach(syn => expandedKeywords.add(syn));
+      }
+    });
+    const keywords = Array.from(expandedKeywords);
     
-    console.log('🔍 All words:', allWords);
-    console.log('🔍 Keywords:', keywords);
+    console.log('🔍 Original words:', allWords);
+    console.log('🔍 Expanded keywords:', keywords);
     
-    // STRATEGY 1: Try collection/folder search first if query mentions folders/collections
-    const folderWords = ['folder', 'collection', 'category', 'section'];
-    const mentionsFolder = allWords.some(w => folderWords.includes(w));
+    // STRATEGY 1: Folder name match (highest priority)
+    console.log('🗂️ Strategy 1: Searching folder names...');
+    const { data: collectionResults } = await supabase
+      .from('ck_collections')
+      .select('id, name, slug, parent_id')
+      .or(keywords.map(k => `name.ilike.%${k}%,slug.ilike.%${k}%`).join(','))
+      .limit(10);
     
-    if (mentionsFolder && keywords.length > 0) {
-      console.log('🗂️ Folder/collection search detected');
-      const { data: collectionDocs } = await supabase
+    if (collectionResults && collectionResults.length > 0) {
+      console.log(`✅ Found ${collectionResults.length} matching folders:`, collectionResults.map((c: any) => c.name));
+      
+      // Get all documents in these folders
+      const collectionIds = collectionResults.map((c: any) => c.id);
+      const { data: folderDocs } = await supabase
         .from('ck_docs')
         .select(`
-          id,
-          title,
-          slug,
-          type,
-          description,
-          tags,
-          zones,
-          collection_id,
-          ck_collections (
-            id,
-            name,
-            slug
-          ),
-          ck_doc_versions!inner (
-            id,
-            content_md,
-            summary,
-            version_no,
-            created_at
-          )
+          id, title, slug, type, description, tags, zones, collection_id, updated_at,
+          ck_collections(name, slug),
+          ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
         `)
         .eq('status', 'approved')
-        .or(keywords.map(k => `ck_collections.name.ilike.%${k}%,ck_collections.slug.ilike.%${k}%`).join(','))
+        .in('collection_id', collectionIds)
         .order('updated_at', { ascending: false })
-        .limit(10);
+        .limit(20);
       
-      if (collectionDocs && collectionDocs.length > 0) {
-        console.log(`✓ Found ${collectionDocs.length} documents via collection search`);
-        retrieved.documents = collectionDocs.map((doc: any) => ({
+      if (folderDocs && folderDocs.length > 0) {
+        console.log(`✅ Found ${folderDocs.length} documents in matching folders`);
+        retrieved.documents = folderDocs.map((doc: any) => ({
           id: doc.id,
           title: doc.title,
           type: doc.type,
@@ -355,56 +365,30 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
           summary: doc.ck_doc_versions[0]?.summary,
           slug: doc.slug,
         }));
-        
-        retrieved.totalDocs = collectionDocs.length;
-        retrieved.searchMethod = 'collection_match';
-        
-        // Still get collections for context
-        const { data: collections } = await supabase
-          .from('ck_collections')
-          .select('id, name, slug, description')
-          .order('name');
-        retrieved.collections = collections || [];
-        
-        console.log(`✓ Found ${retrieved.documents.length} relevant documents`);
+        retrieved.totalDocs = folderDocs.length;
+        retrieved.searchMethod = 'folder_match';
+        retrieved.collections = collectionResults;
         return retrieved;
       }
     }
     
-    // STRATEGY 2: Multi-keyword title/description search (more flexible)
-    // Try matching ANY keyword in title or description
-    const { data: titleDocs } = await supabase
+    // STRATEGY 2: Document title + folder name combined
+    console.log('📝 Strategy 2: Searching document titles + folder names...');
+    const { data: titleResults } = await supabase
       .from('ck_docs')
       .select(`
-        id,
-        title,
-        slug,
-        type,
-        description,
-        tags,
-        zones,
-        collection_id,
-        ck_collections (
-          id,
-          name,
-          slug
-        ),
-        ck_doc_versions!inner (
-          id,
-          content_md,
-          summary,
-          version_no,
-          created_at
-        )
+        id, title, slug, type, description, tags, zones, collection_id, updated_at,
+        ck_collections(name, slug),
+        ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
       `)
       .eq('status', 'approved')
-      .or(keywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%,tags.cs.{${k}},ck_collections.name.ilike.%${k}%`).join(','))
+      .or(keywords.map(k => `title.ilike.%${k}%,description.ilike.%${k}%,ck_collections.name.ilike.%${k}%`).join(','))
       .order('updated_at', { ascending: false })
-      .limit(10);
+      .limit(15);
     
-    if (titleDocs && titleDocs.length > 0) {
-      console.log(`✓ Found ${titleDocs.length} documents via title/description search`);
-      retrieved.documents = titleDocs.map((doc: any) => ({
+    if (titleResults && titleResults.length > 0) {
+      console.log(`✅ Found ${titleResults.length} documents by title/description/folder`);
+      retrieved.documents = titleResults.map((doc: any) => ({
         id: doc.id,
         title: doc.title,
         type: doc.type,
@@ -417,23 +401,21 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string) {
         summary: doc.ck_doc_versions[0]?.summary,
         slug: doc.slug,
       }));
-      
-      retrieved.totalDocs = titleDocs.length;
+      retrieved.totalDocs = titleResults.length;
       retrieved.searchMethod = 'title_description_match';
       
-      // Get collections for context
+      // Get all collections for context
       const { data: collections } = await supabase
         .from('ck_collections')
-        .select('id, name, slug, description')
+        .select('id, name, slug')
         .order('name');
       retrieved.collections = collections || [];
       
-      console.log(`✓ Found ${retrieved.documents.length} relevant documents`);
       return retrieved;
     }
     
     // STRATEGY 3: Full-text search as fallback
-    console.log('🔍 Trying full-text search...');
+    console.log('🔍 Strategy 3: Full-text search...');
     const searchTerms = keywords.join(' | '); // OR search
     
     const { data: docs, error: docsError } = await supabase
@@ -1510,6 +1492,14 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - All links must use https://www.croftcommontest.com
 - Use proper line breaks for readability - add blank lines between sections
 
+**TERMINOLOGY - CRITICAL:**
+- Users will refer to "collections" as "FOLDERS" - this is the correct user-facing terminology
+- ALWAYS use "folders" or "folder" when communicating with users, NEVER say "collections"
+- When users say "folder", "directory", or "category", they mean the same as database "collections"
+- Example: User says "What's in the Marketing folder?" → You say "In the Marketing folder, there are..."
+- Example: User asks "Do we have folders for contracts?" → You say "Yes, we have folders organised by..."
+- NEVER correct users or explain that folders are called collections - just use their terminology
+
 **YOUR FUNCTION TOOLS (Use these proactively!):**
 
 1. **get_management_data** - For ANY specific data requests:
@@ -1518,13 +1508,16 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
    - Example: "Show me upcoming events" → Call get_management_data with data_type="event"
    - Example: "What feedback did we get?" → Call get_management_data with data_type="feedback"
 
-2. **search_knowledge_base** - For policies, procedures, operational questions:
-   - Search is INTELLIGENT and FLEXIBLE - it matches partial words, synonyms, and context
-   - You DON'T need exact folder names or titles - the search will find relevant documents
+2. **search_knowledge_base** - For policies, procedures, documents in folders:
+   - Search is VERY INTELLIGENT and works with broad, natural queries
+   - Handles partial matches, synonyms, and semantic similarity automatically
+   - You DON'T need exact folder names or document titles - be confident and search!
+   - Search understands context: "marketing document" finds "Strategic Marketing Plan"
    - Example: "What's our fire safety policy?" → Call search_knowledge_base with query="fire safety policy"
-   - Example: "Do we have a strategic marketing plan?" → Call search_knowledge_base with query="strategic marketing plan"
-   - Example: "How do we handle dietary requirements?" → Call search_knowledge_base with query="dietary requirements"
-   - TIP: Use descriptive queries with key concepts - the search handles broad queries well
+   - Example: "strategic marketing document" → Call search_knowledge_base with query="strategic marketing"
+   - Example: "dietary requirements" → Call search_knowledge_base with query="dietary requirements"
+   - Example: "what's in the marketing folder?" → Call search_knowledge_base with query="marketing"
+   - TIP: Use natural, descriptive queries - the search is smart and will find what users need
 
 3. **get_analytics** - For insights, trends, analytics:
    - Example: "How's our feedback trending?" → Call get_analytics with type="feedback"
@@ -1576,7 +1569,7 @@ ${baseData.spaces?.map((s: any) =>
       
       retrievedData.documents.forEach((doc: any, idx: number) => {
         prompt += `\n${idx + 1}. ${doc.title} [${doc.type}]`;
-        if (doc.collection) prompt += ` | Collection: ${doc.collection}`;
+        if (doc.collection) prompt += ` | Folder: ${doc.collection}`;
         prompt += `\n   Link: https://www.croftcommontest.com/management/common-knowledge/d/${doc.slug}`;
         if (doc.description) prompt += `\n   Description: ${doc.description}`;
         if (doc.tags && doc.tags.length > 0) prompt += `\n   Tags: ${doc.tags.join(', ')}`;
@@ -1598,7 +1591,7 @@ ${baseData.spaces?.map((s: any) =>
         prompt += `\n🔎 Full Content — ${primary.title}:\n${fullContent}\n`;
       }
       if (retrievedData.collections && retrievedData.collections.length > 0) {
-        prompt += `\nAvailable Collections:\n`;
+        prompt += `\nAvailable Folders:\n`;
         retrievedData.collections.slice(0, 10).forEach((col: any) => {
           prompt += `  • ${col.name}\n`;
         });
