@@ -6,6 +6,7 @@ import { ManagementSidebar } from './ManagementSidebar';
 import CroftLogo from '@/components/CroftLogo';
 import { ManagementAIProvider } from '@/contexts/ManagementAIContext';
 import { ManagementAIChatWidget } from './ai/ManagementAIChatWidget';
+import { SafeAreaTopCap } from '@/components/SafeAreaTopCap';
 
 interface ManagementLayoutProps {
   children: ReactNode;
@@ -36,8 +37,12 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
 
   return (
     <ManagementAIProvider>
+      <SafeAreaTopCap />
       <SidebarProvider defaultOpen={false}>
-        <div className="min-h-screen flex w-full bg-background">
+        <div 
+          className="min-h-screen flex w-full bg-background"
+          style={{ paddingTop: 'env(safe-area-inset-top)' }}
+        >
           <ManagementSidebar />
           
           <div className="flex flex-col flex-1 min-w-0">
