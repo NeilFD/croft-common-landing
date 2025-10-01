@@ -13,10 +13,29 @@ interface FeedbackAnalyticsProps {
 
 export function FeedbackAnalytics({ data, dateRange }: FeedbackAnalyticsProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showOnDemand, setShowOnDemand] = useState(false);
+  const [onDemandReport, setOnDemandReport] = useState<any>(null);
 
-  // Generate AI sentiment analysis
-  const { data: sentimentAnalysis, isLoading: isLoadingSentiment, refetch: refetchSentiment } = useQuery({
-    queryKey: ['feedback-sentiment', dateRange, data.length],
+  // Fetch stored daily report (default)
+  const { data: dailyReport, isLoading: isLoadingDaily } = useQuery({
+    queryKey: ['feedback-daily-report'],
+    queryFn: async () => {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: report, error } = await supabase
+        .from('feedback_daily_reports')
+        .select('*')
+        .eq('report_date', today)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+      return report;
+    },
+  });
+
+  // Generate on-demand analysis (temporary, not stored)
+  const { data: onDemandAnalysis, isLoading: isLoadingOnDemand, refetch: refetchOnDemand } = useQuery({
+    queryKey: ['feedback-on-demand', data.length],
     queryFn: async () => {
       if (!data.length) return null;
 
@@ -30,20 +49,28 @@ export function FeedbackAnalytics({ data, dateRange }: FeedbackAnalyticsProps) {
       if (error) throw error;
       return analysisData;
     },
-    enabled: data.length > 0
+    enabled: false // Only run when manually triggered
   });
 
   const manualAnalyze = async () => {
     setIsAnalyzing(true);
     try {
-      await refetchSentiment();
-      toast.success('Sentiment analysis updated');
+      const result = await refetchOnDemand();
+      if (result.data) {
+        setOnDemandReport(result.data);
+        setShowOnDemand(true);
+        toast.success('On-demand analysis complete');
+      }
     } catch (error) {
       toast.error('Failed to analyze feedback');
     } finally {
       setIsAnalyzing(false);
     }
   };
+
+  // Determine which report to show
+  const sentimentAnalysis = showOnDemand ? onDemandReport : dailyReport;
+  const isLoadingSentiment = showOnDemand ? isLoadingOnDemand : isLoadingDaily;
 
   // Calculate category averages
   const categoryAverages = useMemo(() => {
@@ -84,16 +111,29 @@ export function FeedbackAnalytics({ data, dateRange }: FeedbackAnalyticsProps) {
                 <Brain className="w-5 h-5" />
                 AI Sentiment Analysis
               </CardTitle>
-              <CardDescription>Powered by Cleo AI</CardDescription>
+              <CardDescription>
+                {showOnDemand ? 'On-demand report (not stored)' : 'Daily report generated at 03:00'}
+              </CardDescription>
             </div>
-            <Button 
-              onClick={manualAnalyze} 
-              disabled={isAnalyzing || isLoadingSentiment}
-              variant="outline"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              {isAnalyzing ? 'Analyzing...' : 'Refresh Analysis'}
-            </Button>
+            <div className="flex gap-2">
+              {showOnDemand && (
+                <Button 
+                  onClick={() => setShowOnDemand(false)} 
+                  variant="ghost"
+                  size="sm"
+                >
+                  Back to Daily Report
+                </Button>
+              )}
+              <Button 
+                onClick={manualAnalyze} 
+                disabled={isAnalyzing || isLoadingSentiment}
+                variant="outline"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {isAnalyzing ? 'Analyzing...' : 'Generate On-Demand Report'}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>

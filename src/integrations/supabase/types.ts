@@ -1787,6 +1787,51 @@ export type Database = {
         }
         Relationships: []
       }
+      feedback_daily_reports: {
+        Row: {
+          average_ratings: Json
+          confidence: number
+          created_at: string
+          feedback_count: number
+          id: string
+          key_negatives: Json
+          key_positives: Json
+          overall_sentiment: string
+          raw_analysis: string | null
+          recommendations: Json
+          report_date: string
+          updated_at: string
+        }
+        Insert: {
+          average_ratings?: Json
+          confidence: number
+          created_at?: string
+          feedback_count?: number
+          id?: string
+          key_negatives?: Json
+          key_positives?: Json
+          overall_sentiment: string
+          raw_analysis?: string | null
+          recommendations?: Json
+          report_date: string
+          updated_at?: string
+        }
+        Update: {
+          average_ratings?: Json
+          confidence?: number
+          created_at?: string
+          feedback_count?: number
+          id?: string
+          key_negatives?: Json
+          key_positives?: Json
+          overall_sentiment?: string
+          raw_analysis?: string | null
+          recommendations?: Json
+          report_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       feedback_submissions: {
         Row: {
           created_at: string
