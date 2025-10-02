@@ -2,7 +2,7 @@
 // Handles caching, push notifications, and app communication
 
 // Cache names for versioning
-const CACHE_NAME = 'croft-app-v1.9';
+const CACHE_NAME = 'croft-app-v2.0';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
 // Install event - cache essential assets
@@ -74,8 +74,11 @@ self.addEventListener('fetch', (event) => {
       return;
     }
 
-    // SPA navigation: stale-while-revalidate for instant load
-    if (event.request.mode === 'navigate') {
+    const requestDestination = event.request.destination;
+    
+    // CRITICAL: Navigation requests only - serve cached HTML
+    if (event.request.mode === 'navigate' || requestDestination === 'document') {
+      console.log('🔔 SW: Navigate request for:', url.pathname);
       event.respondWith(
         (async () => {
           const cache = await caches.open(CACHE_NAME);
@@ -111,25 +114,50 @@ self.addEventListener('fetch', (event) => {
       return;
     }
 
-    // Generic network-first for same-origin GET
+    // CRITICAL: Script, style, font, image requests - NEVER serve index.html
+    // Use network-first, then cache fallback, but NO HTML fallback
+    if (['script', 'style', 'font', 'image'].includes(requestDestination)) {
+      console.log('🔔 SW: Asset request:', requestDestination, url.pathname);
+      event.respondWith(
+        fetch(event.request)
+          .then(async (resp) => {
+            if (resp && resp.status === 200) {
+              const cache = await caches.open(CACHE_NAME);
+              cache.put(event.request, resp.clone()).catch(e => 
+                console.warn('SW: cache.put failed', e)
+              );
+            }
+            return resp;
+          })
+          .catch(async () => {
+            // For assets, only return cached asset, NOT index.html
+            const cached = await caches.match(event.request);
+            if (cached) {
+              console.log('🔔 SW: Serving cached asset:', url.pathname);
+              return cached;
+            }
+            console.error('🔔 SW: Asset not found:', url.pathname);
+            return Response.error();
+          })
+      );
+      return;
+    }
+
+    // All other requests - network-first with cache fallback
     event.respondWith(
       fetch(event.request)
         .then(async (resp) => {
-          try {
-            if (resp && resp.status === 200) {
-              const cache = await caches.open(CACHE_NAME);
-              cache.put(event.request, resp.clone());
-            }
-          } catch (e) {
-            console.warn('SW: cache.put failed', e);
+          if (resp && resp.status === 200) {
+            const cache = await caches.open(CACHE_NAME);
+            cache.put(event.request, resp.clone()).catch(e => 
+              console.warn('SW: cache.put failed', e)
+            );
           }
           return resp;
         })
         .catch(async () => {
           const cached = await caches.match(event.request);
-          if (cached) return cached;
-          const cachedHome = await caches.match('/');
-          return cachedHome || Response.error();
+          return cached || Response.error();
         })
     );
   } catch (e) {

@@ -4,6 +4,42 @@ import { mountNotificationsOverlay } from './NotificationsPromptOverlay';
 import { supabase } from '@/integrations/supabase/client';
 import { BRAND_LOGO } from '@/data/brand';
 
+// Prefetch critical routes after idle
+function prefetchCriticalRoutes() {
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => {
+      console.log('[PWA] Prefetching critical routes');
+      import('../pages/Book').catch(e => console.warn('[PWA] Failed to prefetch Book', e));
+      import('../pages/management/ManagementLogin').catch(e => console.warn('[PWA] Failed to prefetch ManagementLogin', e));
+    }, { timeout: 2000 });
+  } else {
+    setTimeout(() => {
+      console.log('[PWA] Prefetching critical routes (fallback)');
+      import('../pages/Book').catch(e => console.warn('[PWA] Failed to prefetch Book', e));
+      import('../pages/management/ManagementLogin').catch(e => console.warn('[PWA] Failed to prefetch ManagementLogin', e));
+    }, 3000);
+  }
+}
+
+// Setup service worker controller change handler for auto-reload
+function setupControllerChangeHandler() {
+  let hasReloaded = sessionStorage.getItem('sw-reloaded') === 'true';
+  
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    console.log('[PWA] New service worker activated');
+    
+    // Only reload once to prevent infinite loops
+    if (!hasReloaded) {
+      sessionStorage.setItem('sw-reloaded', 'true');
+      console.log('[PWA] Reloading to activate new service worker');
+      setTimeout(() => {
+        sessionStorage.removeItem('sw-reloaded');
+      }, 5000);
+      window.location.reload();
+    }
+  });
+}
+
 export const initializePWA = async () => {
   const startMark = 'pwa-init-start';
   const endMark = 'pwa-init-end';
@@ -18,6 +54,11 @@ export const initializePWA = async () => {
     }
     
     console.log('[PWA] Starting initialization sequence');
+    
+    // Setup controller change handler early
+    if ('serviceWorker' in navigator) {
+      setupControllerChangeHandler();
+    }
     
     // Less aggressive cache clearing - only clear truly problematic ones
     if ('caches' in window) {
@@ -55,6 +96,9 @@ export const initializePWA = async () => {
     try {
       reg = await registerServiceWorker();
       console.log('[PWA] Service worker registered successfully');
+      
+      // Start prefetching critical routes
+      prefetchCriticalRoutes();
     } catch (e) {
       console.error('[PWA] Service worker registration failed:', e);
       // Continue without service worker - app should still work
