@@ -220,7 +220,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
     return sum + calculateLineVat(item);
   }, 0);
 
-  const serviceChargeAmount = netSubtotal * (serviceChargePct / 100);
+  const serviceChargeAmount = (netSubtotal + vatTotal) * (serviceChargePct / 100);
   const grandTotal = netSubtotal + vatTotal + serviceChargeAmount;
 
   const generatePDF = async () => {
