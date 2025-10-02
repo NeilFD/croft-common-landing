@@ -36,18 +36,17 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
   const headcount = eventData?.headcount || 1;
   const menuCost = menus.reduce((sum, menu) => sum + (menu.price || 0), 0);
 
-  // Service charge
+  // Service charge (excluding staffing as it's not a customer cost)
   const serviceChargeRate = eventData?.service_charge_pct || 0;
-  const serviceCharge = (venueCost + equipmentCost + staffingCost + menuCost) * (serviceChargeRate / 100);
+  const serviceCharge = (venueCost + equipmentCost + menuCost) * (serviceChargeRate / 100);
 
-  const subtotal = venueCost + equipmentCost + staffingCost + menuCost;
+  const subtotal = venueCost + equipmentCost + menuCost;
   const total = subtotal + serviceCharge;
 
   const costBreakdown = [
     { label: 'Venue Hire', amount: venueCost, category: 'venue' },
     { label: 'Menu & Catering', amount: menuCost, category: 'menu' },
     { label: 'Equipment Hire', amount: equipmentCost, category: 'equipment' },
-    { label: 'Staffing', amount: staffingCost, category: 'staffing' },
     { label: 'Service Charge', amount: serviceCharge, category: 'service', rate: serviceChargeRate }
   ];
 
@@ -130,13 +129,13 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
               </div>
             </div>
 
-            <div className="text-center p-4 border rounded-lg">
-              <div className="font-['Work_Sans'] font-medium text-2xl text-primary">
+            <div className="text-center p-4 border rounded-lg bg-muted/30">
+              <div className="font-['Work_Sans'] font-medium text-2xl text-muted-foreground">
                 £{staffingCost.toFixed(0)}
               </div>
               <div className="text-sm text-muted-foreground">Staffing</div>
               <div className="text-xs text-muted-foreground mt-1">
-                {total > 0 ? ((staffingCost / total) * 100).toFixed(1) : 0}% of total
+                Internal reference only
               </div>
             </div>
           </div>
@@ -198,10 +197,10 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
 
       {/* Detailed Staffing Costs */}
       {staffing.length > 0 && (
-        <Card>
+        <Card className="bg-muted/30">
           <CardHeader>
-            <CardTitle className="font-['Oswald'] text-lg">Staffing Costs</CardTitle>
-            <CardDescription>Based on 8-hour shifts (estimates)</CardDescription>
+            <CardTitle className="font-['Oswald'] text-lg">Staffing Costs (Internal Reference)</CardTitle>
+            <CardDescription>Based on 8-hour shifts - Not included in customer total</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -237,9 +236,9 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-2 text-sm text-muted-foreground">
+            <p>• <strong>Staffing costs are for internal reference only</strong> and not included in customer totals</p>
             <p>• Equipment costs are based on hire charges specified in equipment records</p>
-            <p>• Staffing costs are estimated using 8-hour shifts; adjust based on actual requirements</p>
-            <p>• Service charges are calculated on the subtotal of all costs</p>
+            <p>• Service charges are calculated on venue, menu, and equipment costs only</p>
             <p>• Additional costs may apply for extended hours, overtime, or special requirements</p>
             <p>• All costs are excluding VAT unless otherwise specified</p>
           </div>
