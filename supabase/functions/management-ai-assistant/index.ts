@@ -862,8 +862,66 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
   return retrieved;
 }
 
-async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null, timePeriod?: string, dateRange?: { start_date?: string; end_date?: string }, serviceRoleClient?: any) {
+async function retrieveTargetedData(supabase: any, intent: Intent, eventId: string | null, timePeriod?: string, dateRange?: { start_date?: string; end_date?: string }, filters?: any, serviceRoleClient?: any) {
   const retrieved: any = { intent: intent.type };
+  
+  // Handle Event listing intent (when no specific event ID but want to list events)
+  if (intent.type === 'event' && !eventId && filters) {
+    try {
+      console.log('📅 Retrieving events with filters:', filters);
+      
+      let query = supabase
+        .from('events')
+        .select(`
+          id, event_code, event_date, client_name, event_type, attendee_count, 
+          status, total_value, venue_name, primary_contact_name, primary_contact_email,
+          lead_id
+        `)
+        .order('event_date', { ascending: true });
+      
+      // Apply status filter
+      if (filters.status) {
+        if (filters.status === 'upcoming') {
+          const today = new Date().toISOString().split('T')[0];
+          query = query.gte('event_date', today).in('status', ['definite', 'provisional']);
+        } else {
+          query = query.eq('status', filters.status);
+        }
+      }
+      
+      // Apply date range filter
+      if (filters.date_range) {
+        if (filters.date_range.start_date) {
+          query = query.gte('event_date', filters.date_range.start_date);
+        }
+        if (filters.date_range.end_date) {
+          query = query.lte('event_date', filters.date_range.end_date);
+        }
+      }
+      
+      // Limit results
+      query = query.limit(50);
+      
+      const { data: events, error } = await query;
+      
+      if (error) {
+        console.error('Error retrieving events:', error);
+      } else if (events && events.length > 0) {
+        console.log(`✅ Retrieved ${events.length} events`);
+        retrieved.events = events;
+        retrieved.event_count = events.length;
+      } else {
+        console.log('📅 No events found matching filters');
+        retrieved.events = [];
+        retrieved.event_count = 0;
+        retrieved.message = 'No events found matching the specified criteria.';
+      }
+    } catch (error) {
+      console.error('Error in event listing:', error);
+    }
+    
+    return retrieved;
+  }
   
   // Handle Feedback/Reviews intent (no event needed)
   if (intent.type === 'feedback' || intent.type === 'reviews') {
@@ -1290,8 +1348,8 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
           resolvedEventId = await resolveEvent(supabase, event_identifier);
         }
         
-        // Retrieve targeted data (pass time_period for feedback)
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range, serviceRoleClient);
+        // Retrieve targeted data (pass time_period and filters)
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range, filters, serviceRoleClient);
         
         return {
           success: true,
@@ -1343,7 +1401,7 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
         }
         
         // Use existing comprehensive data retrieval logic with time period
-        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range, serviceRoleClient);
+        const data = await retrieveTargetedData(supabase, intent, resolvedEventId, time_period, filters?.date_range, filters, serviceRoleClient);
         
         // For conflicts, get additional conflict data
         if (type === 'conflicts') {
