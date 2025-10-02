@@ -1,113 +1,138 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 
-// Removes stray disabled attributes from non-form elements to prevent accidental click-blocking overlays
+/**
+ * Consolidated interaction guard that removes disabled attributes from non-form elements
+ * and neutralises invisible overlays that block interactions.
+ * Combines InteractionWatchdog and DeadZoneGuard functionality.
+ */
 export default function InteractionWatchdog() {
   const location = useLocation();
 
-  useEffect(() => {
+  const scan = useCallback(() => {
     const isNative = Capacitor.isNativePlatform();
-    const allowed = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'OPTION', 'FIELDSET']);
-    const nodes = Array.from(document.querySelectorAll('[disabled]')) as HTMLElement[];
-    let fixed = 0;
-
-    for (const el of nodes) {
-      if (!allowed.has(el.tagName)) {
-        el.removeAttribute('disabled');
-        fixed++;
-      }
-    }
-
-    // Enhanced center grid probing for problematic elements
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const cx = Math.round(vw / 2);
     const cy = Math.round(vh / 2);
     
-    // 3x3 grid around center
+    console.log(`[InteractionWatchdog] Starting scan (${isNative ? 'NATIVE' : 'DESKTOP'} mode)`);
+
+    // 1. Remove stray disabled attributes from non-form elements
+    const allowed = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'OPTION', 'FIELDSET']);
+    const disabledNodes = Array.from(document.querySelectorAll('[disabled]')) as HTMLElement[];
+    let disabledFixed = 0;
+
+    for (const el of disabledNodes) {
+      if (!allowed.has(el.tagName)) {
+        el.removeAttribute('disabled');
+        disabledFixed++;
+      }
+    }
+
+    // 2. Check for large invisible overlays and problematic elements
     const probePoints = [
+      // Center 3x3 grid
       [cx - 50, cy - 50], [cx, cy - 50], [cx + 50, cy - 50],
       [cx - 50, cy], [cx, cy], [cx + 50, cy],
-      [cx - 50, cy + 50], [cx, cy + 50], [cx + 50, cy + 50]
+      [cx - 50, cy + 50], [cx, cy + 50], [cx + 50, cy + 50],
+      // Additional coverage
+      [Math.round(vw * 0.25), cy],
+      [Math.round(vw * 0.75), cy],
+      [cx, Math.round(vh * 0.35)],
+      [cx, Math.round(vh * 0.65)]
     ];
 
-    let centerFixed = 0;
     const processedElements = new Set<HTMLElement>();
+    let overlayFixed = 0;
+
+    // Unified opacity threshold
+    const opacityThreshold = isNative ? 0.15 : 0.1;
 
     for (const [x, y] of probePoints) {
       const stack = document.elementsFromPoint(x, y);
-      const topElement = stack[0] as HTMLElement;
       
-      if (!topElement || processedElements.has(topElement)) continue;
-      processedElements.add(topElement);
-      
-      const cs = getComputedStyle(topElement);
-      
-      // Check for misleading cursor with no real interactivity and low opacity
-      const opacityThreshold = isNative ? 0.15 : 0.1;
-      
-      if (cs.cursor === 'pointer' && 
-          !topElement.onclick && 
-          !topElement.getAttribute('href') && 
-          !topElement.getAttribute('role')?.includes('button') &&
-          parseFloat(cs.opacity || '1') < opacityThreshold) {
+      for (const el of stack) {
+        const he = el as HTMLElement;
+        if (!he || processedElements.has(he)) continue;
         
-        topElement.style.pointerEvents = 'none';
+        const cs = getComputedStyle(he);
+        if (cs.pointerEvents === 'none') continue;
+
+        const rect = he.getBoundingClientRect();
+        const area = rect.width * rect.height;
+        const viewportArea = vw * vh;
+        const coverageThreshold = isNative ? 0.15 : 0.25;
         
-        // Apply additional native-specific fixes
-        if (isNative) {
-          topElement.style.touchAction = 'none';
-          (topElement.style as any).webkitTouchCallout = 'none';
-          (topElement.style as any).webkitUserSelect = 'none';
-          console.warn('[InteractionWatchdog] Applied native-specific fixes to center element:', topElement);
+        const isLarge = area > viewportArea * coverageThreshold;
+        const isFixed = cs.position === 'fixed' || cs.position === 'absolute';
+        const nearlyInvisible = parseFloat(cs.opacity || '1') <= opacityThreshold || cs.visibility === 'hidden';
+        const hasMisleadingCursor = cs.cursor === 'pointer' && 
+          !he.onclick && 
+          !he.getAttribute('href') && 
+          !he.getAttribute('role')?.includes('button');
+
+        // Fix large invisible overlays or misleading cursor elements
+        if ((isLarge && isFixed && nearlyInvisible) || (nearlyInvisible && hasMisleadingCursor)) {
+          processedElements.add(he);
+          he.style.pointerEvents = 'none';
+          
+          // Simplified native fixes - less aggressive
+          if (isNative && nearlyInvisible) {
+            he.style.touchAction = 'none';
+          }
+          
+          he.setAttribute('data-debug-neutralised', hasMisleadingCursor ? 'misleading-cursor' : 'invisible-overlay');
+          overlayFixed++;
+          console.warn('[InteractionWatchdog] Neutralised element:', {
+            tag: he.tagName,
+            reason: hasMisleadingCursor ? 'misleading-cursor' : 'invisible-overlay',
+            opacity: cs.opacity,
+            cursor: cs.cursor
+          });
+          break; // Move to next probe point
         }
-        
-        topElement.setAttribute('data-debug-neutralised', 'center-probe');
-        centerFixed++;
+
+        // Check for stuck transition overlays
+        if (he.hasAttribute('data-transition-overlay')) {
+          const opacity = parseFloat(cs.opacity || '1');
+          if (opacity < opacityThreshold && cs.pointerEvents !== 'none') {
+            processedElements.add(he);
+            he.style.pointerEvents = 'none';
+            if (isNative) {
+              he.style.touchAction = 'none';
+            }
+            he.setAttribute('data-debug-neutralised', 'transition-overlay');
+            overlayFixed++;
+            console.warn('[InteractionWatchdog] Fixed stuck transition overlay');
+            break;
+          }
+        }
       }
     }
 
-    // Check for stuck high z-index overlays that might be blocking interactions
-    const overlays = Array.from(document.querySelectorAll('[data-transition-overlay]')) as HTMLElement[];
-    let overlayFixed = 0;
-    
-    for (const overlay of overlays) {
-      const styles = getComputedStyle(overlay);
-      const opacity = parseFloat(styles.opacity || '1');
-      const pointerEvents = styles.pointerEvents;
-      
-      // If overlay is nearly invisible but still has pointer events, fix it
-      const overlayOpacityThreshold = isNative ? 0.15 : 0.1;
-      
-      if (opacity < overlayOpacityThreshold && pointerEvents !== 'none') {
-        overlay.style.pointerEvents = 'none';
-        
-        // Apply additional native-specific fixes
-        if (isNative) {
-          overlay.style.touchAction = 'none';
-          (overlay.style as any).webkitTouchCallout = 'none';
-          overlay.style.visibility = 'hidden';
-          overlay.style.transform = 'translateZ(-1px)';
-        }
-        
-        overlayFixed++;
-        console.warn('[InteractionWatchdog] Fixed stuck transition overlay');
-      }
+    // Log summary
+    if (disabledFixed > 0) {
+      console.warn(`[InteractionWatchdog] Removed ${disabledFixed} stray disabled attribute(s)`);
     }
-
-    if (fixed > 0) {
-      console.warn(`[InteractionWatchdog] Removed ${fixed} stray disabled attribute(s).`);
-    }
-    
-    if (centerFixed > 0) {
-      console.warn(`[InteractionWatchdog] Fixed ${centerFixed} center-blocking element(s).`);
-    }
-    
     if (overlayFixed > 0) {
-      console.warn(`[InteractionWatchdog] Fixed ${overlayFixed} stuck overlay(s).`);
+      console.warn(`[InteractionWatchdog] Fixed ${overlayFixed} blocking element(s)`);
     }
-  }, [location.pathname]);
+  }, []);
+
+  useEffect(() => {
+    // Run scan after a short delay to let the page settle
+    const timeoutId = setTimeout(scan, 300);
+    
+    // Re-scan on resize
+    window.addEventListener('resize', scan);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', scan);
+    };
+  }, [location.pathname, scan]);
 
   return null;
 }

@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 /**
  * Dev-only utility to inspect and visualise click blockers.
  * Enable by adding ?debugclick=1 to the URL.
+ * Also shows PWA status for debugging.
  */
 export default function ClickProbe() {
   const enabledRef = useRef<boolean>(false);
@@ -12,6 +13,15 @@ export default function ClickProbe() {
     const enabled = params.has('debugclick');
     enabledRef.current = enabled;
     if (!enabled) return;
+
+    // Log PWA status for debugging
+    const isPWA = document.documentElement.getAttribute('data-standalone') === 'true';
+    const swReg = (window as any).__pwaReg;
+    console.log('[ClickProbe] Debug mode active', {
+      isPWA,
+      hasServiceWorker: !!swReg,
+      userAgent: navigator.userAgent
+    });
 
     const highlight = (el: Element, colour = 'hsl(var(--accent-pink))') => {
       const originalOutline = (el as HTMLElement).style.outline;

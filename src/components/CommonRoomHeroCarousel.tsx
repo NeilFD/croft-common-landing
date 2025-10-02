@@ -12,7 +12,6 @@ import { commonRoomMenuData } from '@/data/menuData';
 import CroftLogo from './CroftLogo';
 import { useAuth } from '@/hooks/useAuth';
 import ClickProbe from './dev/ClickProbe';
-import DeadZoneGuard from './dev/DeadZoneGuard';
 import CursorInspector from './dev/CursorInspector';
 
 const CommonRoomHeroCarousel = () => {
@@ -98,8 +97,7 @@ const CommonRoomHeroCarousel = () => {
         isDrawing={gestureState.isDrawing} 
       />
 
-      {/* Route-local guards and debugging */}
-      <DeadZoneGuard />
+      {/* Debugging utilities */}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debugclick') && <ClickProbe />}
       {typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('debugclick') && <CursorInspector />}
 
