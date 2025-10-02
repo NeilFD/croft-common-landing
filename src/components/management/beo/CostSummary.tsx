@@ -135,6 +135,9 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
               </div>
               <div className="text-sm text-muted-foreground">Staffing</div>
               <div className="text-xs text-muted-foreground mt-1">
+                {total > 0 ? ((staffingCost / (total + staffingCost)) * 100).toFixed(1) : 0}% of total
+              </div>
+              <div className="text-xs text-muted-foreground italic">
                 Internal reference only
               </div>
             </div>
