@@ -175,8 +175,8 @@ serve(async (req) => {
           type: 'menu',
           description: `${course} - ${item.item_name}`,
           qty: 1,
-          unit_price: item.price || 0, // Default to 0 if no price set
-          per_person: true,
+          unit_price: item.price || 0, // Price is total for the dish (already includes quantity)
+          per_person: false, // DO NOT multiply by headcount
           sort_order: sortOrder++
         });
       });
