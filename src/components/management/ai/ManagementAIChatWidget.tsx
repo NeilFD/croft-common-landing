@@ -222,11 +222,11 @@ export const ManagementAIChatWidget = () => {
           </div>
 
           {/* Input */}
-          <div className="border-t p-4 pb-6">
+          <div className="relative border-t p-4 pb-6">
             {isRecording && (
-              <div className="mb-3 flex items-center gap-2 text-xs font-industrial bg-accent-pink/10 p-2.5 rounded-lg border border-accent-pink animate-in fade-in slide-in-from-bottom-2">
+              <div className="absolute -top-14 left-4 right-4 flex items-center gap-2 text-xs font-industrial bg-accent-pink/95 backdrop-blur-sm p-2.5 rounded-lg border-2 border-accent-pink shadow-lg animate-in fade-in slide-in-from-bottom-2">
                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-foreground">Listening...</span>
+                <span className="text-foreground font-medium">Listening...</span>
               </div>
             )}
             <form
