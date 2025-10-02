@@ -68,9 +68,8 @@ export const ManagementAIChatWidget = () => {
 
       <Card
         className={cn(
-          'fixed flex flex-col shadow-2xl transition-all z-50 border-2',
-          'inset-4 md:inset-auto md:bottom-6 md:right-6',
-          isMinimized ? 'h-14 w-auto md:w-80' : 'h-full md:h-[600px] w-full md:w-[400px]',
+          'fixed bottom-6 right-6 flex flex-col shadow-2xl transition-all z-50 border-2',
+          isMinimized ? 'h-14 w-80' : 'h-[600px] w-[400px]',
           'bg-background/95 backdrop-blur-md'
         )}
       >
