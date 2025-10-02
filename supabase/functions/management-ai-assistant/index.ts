@@ -1377,6 +1377,10 @@ const FUNCTION_TOOLS = [
             enum: ["feedback", "revenue", "capacity", "trends", "conflicts"],
             description: "Type of analytics to retrieve"
           },
+          event_identifier: {
+            type: "string",
+            description: "Event code (e.g. '2025002') or a natural date like '7th October' - required for revenue queries"
+          },
           time_period: {
             type: "string",
           enum: ["today", "yesterday", "week", "month", "quarter", "year", "all_time"],
@@ -1457,13 +1461,16 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
       }
       
       case "get_analytics": {
-        const { type, time_period, filters, event_identifier } = args;
+        const { type, time_period, filters } = args;
+        
+        // Tolerant event identifier extraction - check multiple locations
+        const eventIdent = args.event_identifier ?? filters?.event_identifier ?? filters?.event_id;
         
         // Handle revenue/financial queries
         if (type === 'revenue' || type === 'financial' || type === 'budget') {
           let resolvedEventId = null;
-          if (event_identifier) {
-            resolvedEventId = await resolveEvent(supabase, event_identifier);
+          if (eventIdent) {
+            resolvedEventId = await resolveEvent(supabase, eventIdent);
           }
           
           if (!resolvedEventId) {
@@ -1493,13 +1500,13 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
           type: type === 'feedback' ? 'feedback' :
                 type === 'conflicts' ? 'schedule' :
                 type,
-          eventIdentifier: event_identifier || null
+          eventIdentifier: eventIdent || null
         };
         
         // Resolve event if identifier provided
         let resolvedEventId = null;
-        if (event_identifier) {
-          resolvedEventId = await resolveEvent(supabase, event_identifier);
+        if (eventIdent) {
+          resolvedEventId = await resolveEvent(supabase, eventIdent);
         }
         
         // Use existing comprehensive data retrieval logic with time period
@@ -1726,6 +1733,32 @@ serve(async (req) => {
                     fnArgs = JSON.parse(fnArgs);
                   } catch (e) {
                     console.error('Failed to parse function arguments before execution:', e);
+                  }
+                }
+
+                // Auto-infer event_identifier for revenue queries if missing
+                if (accumulatedFunctionCall.name === 'get_analytics' && fnArgs) {
+                  const isRevenueQuery = fnArgs.type === 'revenue' || fnArgs.type === 'financial' || fnArgs.type === 'budget';
+                  
+                  if (isRevenueQuery && !fnArgs.event_identifier) {
+                    // First, try to copy from filters
+                    if (fnArgs.filters?.event_identifier) {
+                      fnArgs.event_identifier = fnArgs.filters.event_identifier;
+                      console.log('📋 Copied event_identifier from filters:', fnArgs.event_identifier);
+                    } else if (fnArgs.filters?.event_id) {
+                      fnArgs.event_identifier = fnArgs.filters.event_id;
+                      console.log('📋 Copied event_id from filters as event_identifier:', fnArgs.event_identifier);
+                    } else {
+                      // Try to infer from user's message
+                      const lastUserMsg = messages.slice().reverse().find((m: any) => m.role === 'user');
+                      if (lastUserMsg?.content) {
+                        const inferred = extractEventIdentifier(lastUserMsg.content, messages);
+                        if (inferred) {
+                          fnArgs.event_identifier = inferred;
+                          console.log('🔍 Inferred event_identifier from user message:', inferred);
+                        }
+                      }
+                    }
                   }
                 }
 
