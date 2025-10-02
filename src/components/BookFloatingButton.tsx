@@ -31,7 +31,16 @@ const BookFloatingButton: React.FC<BookFloatingButtonProps> = ({ className = "" 
           e.stopPropagation();
           return;
         }
+        const startingPath = location.pathname;
         navigate('/book');
+        
+        // Aggressive fallback for iOS PWA
+        setTimeout(() => {
+          if (location.pathname === startingPath) {
+            console.warn('[BookButton] Fallback forcing navigation to /book');
+            window.location.replace('/book?bypass-cache=' + Date.now());
+          }
+        }, 400);
       }}
       className={cn(
         `fixed bottom-36 right-8 ${zIndexClass} w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing border-2 border-background/30 backdrop-blur-sm bg-background/10 hover:border-background before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0`,

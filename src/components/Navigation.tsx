@@ -82,9 +82,9 @@ const Navigation = () => {
       fallbackTimer = window.setTimeout(() => {
         if (location.pathname === startingPath) {
           console.warn('[Navigation] Fallback forcing navigation to', path, 'from source', source);
-          window.location.assign(path);
+          window.location.replace(path + '?bypass-cache=' + Date.now());
         }
-      }, 700);
+      }, 400);
     };
     
     if (path === '/') {

@@ -35,6 +35,34 @@ import('./mobile/initStatusBar')
   })
   .catch((err) => { console.warn('[StatusBar] Init skipped:', err); });
 
+// Chunk-load error recovery for iOS PWA
+let hasRecovered = false;
+const recoverFromChunkError = async (error: any) => {
+  if (hasRecovered) return;
+  const msg = error?.message || String(error);
+  if (msg.includes('ChunkLoadError') || msg.includes('Failed to fetch dynamically imported module')) {
+    hasRecovered = true;
+    console.error('[ChunkLoad] Detected chunk load failure, recovering:', msg);
+    try {
+      const reg = await navigator.serviceWorker?.getRegistration();
+      if (reg) await reg.unregister();
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map(name => caches.delete(name)));
+    } catch (e) {
+      console.warn('[ChunkLoad] Recovery cleanup failed:', e);
+    }
+    window.location.replace(window.location.pathname + '?bypass-cache=' + Date.now());
+  }
+};
+
+window.addEventListener('error', (event) => {
+  recoverFromChunkError(event.error);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  recoverFromChunkError(event.reason);
+});
+
 // Initialize PWA with better error handling
 requestAnimationFrame(() => {
   import('./pwa/deferredPWA')
@@ -48,5 +76,6 @@ requestAnimationFrame(() => {
     })
     .catch((err) => {
       console.error('[PWA] Module load failed:', err);
+      recoverFromChunkError(err);
     });
 });

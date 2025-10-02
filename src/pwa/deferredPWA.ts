@@ -47,13 +47,17 @@ export const initializePWA = async () => {
   try {
     performance.mark(startMark);
     
+    // Detect iOS PWA mode
+    const isIOSPWA = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                     (window.navigator as any).standalone === true;
+    
     const path = window.location.pathname;
     if (path.startsWith('/admin')) {
       console.log('[PWA] Skipping initialization for admin paths');
       return;
     }
     
-    console.log('[PWA] Starting initialization sequence');
+    console.log('[PWA] Starting initialization sequence', { isIOSPWA, path });
     
     // Setup controller change handler early
     if ('serviceWorker' in navigator) {
@@ -96,6 +100,16 @@ export const initializePWA = async () => {
     try {
       reg = await registerServiceWorker();
       console.log('[PWA] Service worker registered successfully');
+      
+      // Force update check on iOS PWA
+      if (isIOSPWA) {
+        console.log('[PWA] iOS PWA detected, forcing SW update check');
+        await reg.update();
+        if (reg.waiting) {
+          console.log('[PWA] New SW waiting, triggering SKIP_WAITING');
+          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        }
+      }
       
       // Start prefetching critical routes
       prefetchCriticalRoutes();
