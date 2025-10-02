@@ -1192,7 +1192,80 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
     console.error('Error retrieving targeted data:', error);
   }
   
+  // Always retrieve financial data for event queries
+  if (eventId) {
+    try {
+      const financials = await calculateEventRevenue(supabase, eventId);
+      retrieved.financials = financials;
+    } catch (error) {
+      console.error('Error calculating event revenue:', error);
+    }
+  }
+  
   return retrieved;
+}
+
+// Calculate event revenue from line items with proper gross/service charge handling
+async function calculateEventRevenue(supabase: any, eventId: string) {
+  try {
+    console.log(`💰 Calculating revenue for event ${eventId}`);
+    
+    // Get all line items for the event (these are GROSS prices)
+    const { data: lineItems, error: lineError } = await supabase
+      .from('management_event_line_items')
+      .select('description, price, quantity')
+      .eq('event_id', eventId);
+    
+    if (lineError) {
+      console.error('Error fetching line items:', lineError);
+      return null;
+    }
+    
+    // Get service charge percentage from the event
+    const { data: event, error: eventError } = await supabase
+      .from('management_events')
+      .select('service_charge_pct')
+      .eq('id', eventId)
+      .maybeSingle();
+    
+    if (eventError) {
+      console.error('Error fetching event:', eventError);
+      return null;
+    }
+    
+    const serviceChargePct = event?.service_charge_pct || 0;
+    
+    // Calculate gross subtotal (sum of all line items)
+    const grossSubtotal = lineItems?.reduce((sum, item) => {
+      const itemTotal = (item.price || 0) * (item.quantity || 1);
+      return sum + itemTotal;
+    }, 0) || 0;
+    
+    // Service charge is applied to the gross subtotal
+    const serviceChargeAmount = (grossSubtotal * serviceChargePct) / 100;
+    
+    // Total is gross subtotal + service charge
+    const totalGross = grossSubtotal + serviceChargeAmount;
+    
+    // Extract VAT for display purposes (VAT is 20%, embedded in gross prices)
+    const vatAmount = (totalGross / 1.20) * 0.20;
+    
+    console.log(`💰 Revenue calculated: Gross Subtotal £${grossSubtotal.toFixed(2)}, Service Charge (${serviceChargePct}%) £${serviceChargeAmount.toFixed(2)}, Total £${totalGross.toFixed(2)}`);
+    
+    return {
+      grossSubtotal: Number(grossSubtotal.toFixed(2)),
+      serviceChargePct,
+      serviceChargeAmount: Number(serviceChargeAmount.toFixed(2)),
+      totalGross: Number(totalGross.toFixed(2)),
+      vatAmount: Number(vatAmount.toFixed(2)),
+      lineItems: lineItems || [],
+      itemCount: lineItems?.length || 0,
+      source: 'management_event_line_items'
+    };
+  } catch (error) {
+    console.error('Error in calculateEventRevenue:', error);
+    return null;
+  }
 }
 
 async function fetchMinimalBaseData(supabase: any, userRole: string) {
@@ -1385,6 +1458,35 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
       
       case "get_analytics": {
         const { type, time_period, filters, event_identifier } = args;
+        
+        // Handle revenue/financial queries
+        if (type === 'revenue' || type === 'financial' || type === 'budget') {
+          let resolvedEventId = null;
+          if (event_identifier) {
+            resolvedEventId = await resolveEvent(supabase, event_identifier);
+          }
+          
+          if (!resolvedEventId) {
+            return {
+              success: false,
+              error: "Event identifier required for revenue queries. Please specify an event code or date."
+            };
+          }
+          
+          const financials = await calculateEventRevenue(supabase, resolvedEventId);
+          
+          return {
+            success: true,
+            analytics_type: 'revenue',
+            event_id: resolvedEventId,
+            data: { financials },
+            metadata: {
+              calculated_at: new Date().toISOString(),
+              confidence: "high",
+              data_freshness: "real-time"
+            }
+          };
+        }
         
         // Map analytics type to intent
         const intent = {
@@ -1928,6 +2030,19 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - All links must use https://www.croftcommontest.com
 - Use proper line breaks for readability - add blank lines between sections
 
+**FINANCIAL DATA (Revenue, Budget, Pricing):**
+- All prices in the system are GROSS (VAT-inclusive)
+- Service charge is calculated on the gross subtotal (NOT on net)
+- Financial data comes from management_event_line_items table
+- When asked about revenue/costs/pricing/budget:
+  1. State the gross subtotal (sum of line items)
+  2. State the service charge percentage and amount
+  3. State the total (subtotal + service charge)
+  4. You can mention approximate VAT for reference (total / 1.20 * 0.20)
+  5. Always mention the source is from BEO line items
+  6. Offer to show the BEO viewer link for full details
+- Example: "The revenue for event 2025002 is £971.30 (£883 gross subtotal + £88.30 service charge at 10%). This includes VAT of approximately £161.88. Would you like to see the full BEO?"
+
 **TERMINOLOGY - CRITICAL:**
 - ALWAYS use "folder" or "folders" when referring to document collections
 - NEVER EVER use "collection" or "collections" in your responses to users
@@ -1958,10 +2073,12 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
    - Example: "what's in the marketing folder?" → Call search_knowledge_base("marketing") → List documents with their folder
    - TIP: Use natural, descriptive queries - the search is smart and WILL find relevant documents
 
-3. **get_analytics** - For insights, trends, analytics:
+3. **get_analytics** - For insights, trends, analytics, and financial data:
    - Example: "How's our feedback trending?" → Call get_analytics with type="feedback"
    - Example: "Any booking conflicts?" → Call get_analytics with type="conflicts"
    - Example: "Show me capacity trends" → Call get_analytics with type="capacity"
+   - Example: "What's the revenue for event X?" → Call get_analytics with type="revenue", event_identifier="X"
+   - Example: "What's the budget for 7th October?" → Call get_analytics with type="revenue", event_identifier="7th October"
 
 **WHEN TO CALL FUNCTIONS:**
 - User asks about specific events/bookings → get_management_data
@@ -1970,6 +2087,7 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - User asks "how do we..." or "what's our policy..." → search_knowledge_base
 - User asks about trends, stats, analytics → get_analytics
 - User asks about feedback or ratings → get_analytics with type="feedback"
+- User asks about revenue, costs, budget, pricing → get_analytics with type="revenue" and event_identifier
 
 **Your Personality:**
 - Your name is Cleo
@@ -2078,6 +2196,26 @@ Attendees: ${e.headcount || 'TBC'}${e.budget ? `\nBudget: £${e.budget}` : ''}\n
     } else if (retrievedData.event) {
       // Be explicit to avoid hallucinating from financials
       prompt += `\n🍽️ MENU ITEMS: None found for this event in the database.\n`;
+    }
+    
+    // Financial data
+    if (retrievedData.financials) {
+      const fin = retrievedData.financials;
+      prompt += `\n💰 FINANCIAL DATA:\n`;
+      prompt += `  Gross Subtotal: £${fin.grossSubtotal} (from ${fin.itemCount} line items)\n`;
+      prompt += `  Service Charge: ${fin.serviceChargePct}% = £${fin.serviceChargeAmount}\n`;
+      prompt += `  Total (Gross): £${fin.totalGross}\n`;
+      prompt += `  VAT (approx): £${fin.vatAmount}\n`;
+      prompt += `  Source: ${fin.source}\n`;
+      if (fin.lineItems && fin.lineItems.length > 0) {
+        prompt += `\n  Line Items:\n`;
+        fin.lineItems.slice(0, 10).forEach((item: any) => {
+          prompt += `    • ${item.description}: £${item.price} × ${item.quantity} = £${(item.price * item.quantity).toFixed(2)}\n`;
+        });
+        if (fin.lineItems.length > 10) {
+          prompt += `    ... and ${fin.lineItems.length - 10} more items\n`;
+        }
+      }
     }
     
     // BEO data
