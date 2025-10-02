@@ -3,25 +3,64 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, X, Minimize2, Maximize2 } from 'lucide-react';
+import { Bot, Send, X, Minimize2, Maximize2, Mic, Square, Trash2, ArrowDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useManagementAI } from '@/contexts/ManagementAIContext';
 import { AIMessageBubble } from './AIMessageBubble';
 import { AIQuickActions } from './AIQuickActions';
+import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
+import { ClearChatDialog } from './ClearChatDialog';
 
 export const ManagementAIChatWidget = () => {
-  const { messages, isLoading, isWidgetOpen, unreadCount, sendMessage, toggleWidget, markAsRead } =
+  const { messages, isLoading, isWidgetOpen, unreadCount, sendMessage, toggleWidget, markAsRead, clearMessages } =
     useManagementAI();
   const [input, setInput] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
 
+  // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollElement = scrollRef.current;
+      const isNearBottom = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100;
+      
+      if (isNearBottom || isLoading) {
+        scrollElement.scrollTo({
+          top: scrollElement.scrollHeight,
+          behavior: 'smooth',
+        });
+      }
     }
-  }, [messages]);
+  }, [messages, isLoading]);
+
+  // Update input with voice transcript
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript]);
+
+  // Handle scroll to detect if user scrolled up
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollButton(!isNearBottom && messages.length > 0);
+    }
+  };
+
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({
+        top: scrollRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   useEffect(() => {
     if (isWidgetOpen && !isMinimized) {
@@ -34,7 +73,21 @@ export const ManagementAIChatWidget = () => {
     if (!input.trim() || isLoading) return;
     const message = input.trim();
     setInput('');
+    resetTranscript();
     await sendMessage(message);
+  };
+
+  const handleVoiceToggle = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
+  const handleClearChat = () => {
+    clearMessages();
+    setClearDialogOpen(false);
   };
 
   const handleQuickAction = async (prompt: string) => {
@@ -85,6 +138,17 @@ export const ManagementAIChatWidget = () => {
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {messages.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setClearDialogOpen(true)}
+              title="Clear chat"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -106,8 +170,9 @@ export const ManagementAIChatWidget = () => {
       {!isMinimized && (
         <>
           {/* Messages */}
-          <ScrollArea className="flex-1" ref={scrollRef}>
-            {messages.length === 0 ? (
+          <div className="relative flex-1">
+            <ScrollArea className="h-full" ref={scrollRef} onScroll={handleScroll}>
+              {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <div className="h-16 w-16 rounded-full bg-accent-pink border-2 border-foreground flex items-center justify-center mb-4">
                   <Bot className="h-8 w-8 text-foreground" />
@@ -142,10 +207,28 @@ export const ManagementAIChatWidget = () => {
                 )}
               </div>
             )}
-          </ScrollArea>
+            </ScrollArea>
+            
+            {/* Scroll to bottom button */}
+            {showScrollButton && (
+              <Button
+                size="icon"
+                className="absolute bottom-4 right-4 h-8 w-8 rounded-full shadow-lg bg-accent-pink border-2 border-foreground hover:bg-accent-pink-dark z-10"
+                onClick={scrollToBottom}
+              >
+                <ArrowDown className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
 
           {/* Input */}
           <div className="border-t p-4">
+            {isRecording && (
+              <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground bg-accent-pink/10 p-2 rounded-md border border-accent-pink">
+                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+                <span>Recording...</span>
+              </div>
+            )}
             <form
               onSubmit={e => {
                 e.preventDefault();
@@ -153,12 +236,31 @@ export const ManagementAIChatWidget = () => {
               }}
               className="flex gap-2"
             >
+              {isSupported && (
+                <Button
+                  type="button"
+                  size="icon"
+                  variant={isRecording ? 'destructive' : 'outline'}
+                  onClick={handleVoiceToggle}
+                  disabled={isLoading}
+                  className={cn(
+                    'border-2 border-foreground',
+                    isRecording && 'bg-red-500 hover:bg-red-600'
+                  )}
+                >
+                  {isRecording ? (
+                    <Square className="h-4 w-4" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
               <Input
                 ref={inputRef}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 placeholder="Ask me anything..."
-                disabled={isLoading}
+                disabled={isLoading || isRecording}
                 className="flex-1"
               />
               <Button 
@@ -173,7 +275,13 @@ export const ManagementAIChatWidget = () => {
           </div>
         </>
       )}
-    </Card>
+      </Card>
+
+      <ClearChatDialog
+        open={clearDialogOpen}
+        onOpenChange={setClearDialogOpen}
+        onConfirm={handleClearChat}
+      />
     </>
   );
 };

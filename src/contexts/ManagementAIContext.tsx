@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+
+const CHAT_STORAGE_KEY = 'cleo-chat-history';
 
 interface Message {
   id: string;
@@ -27,10 +29,35 @@ interface ManagementAIContextType {
 const ManagementAIContext = createContext<ManagementAIContextType | undefined>(undefined);
 
 export const ManagementAIProvider = ({ children }: { children: ReactNode }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    // Load messages from localStorage on mount
+    try {
+      const stored = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Convert timestamp strings back to Date objects
+        return parsed.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp),
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+    return [];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [isWidgetOpen, setIsWidgetOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+    } catch (error) {
+      console.error('Error saving chat history:', error);
+    }
+  }, [messages]);
 
   const sendMessage = useCallback(async (content: string) => {
     const userMessage: Message = {
@@ -156,6 +183,11 @@ export const ManagementAIProvider = ({ children }: { children: ReactNode }) => {
 
   const clearMessages = useCallback(() => {
     setMessages([]);
+    try {
+      localStorage.removeItem(CHAT_STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing chat history:', error);
+    }
   }, []);
 
   const toggleWidget = useCallback(() => {
