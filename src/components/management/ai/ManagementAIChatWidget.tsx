@@ -192,7 +192,7 @@ export const ManagementAIChatWidget = () => {
         <>
           {/* Messages */}
           <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full scroll-smooth" ref={scrollRef} onScrollCapture={handleScroll}>
+            <ScrollArea className="h-full scroll-smooth" viewportRef={scrollRef} viewportProps={{ onScrollCapture: handleScroll }}>
               {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <div className="h-16 w-16 rounded-full bg-accent-pink border-2 border-foreground flex items-center justify-center mb-4">
