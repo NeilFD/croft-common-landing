@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import CroftLogo from './CroftLogo';
+import { useNavigate } from 'react-router-dom';
 
 interface PersonalizedMessageBoxProps {
   firstName?: string | null;
@@ -8,6 +9,7 @@ interface PersonalizedMessageBoxProps {
 
 const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxProps) => {
   const greeting = firstName ? `Hey ${firstName},` : 'Hey';
+  const navigate = useNavigate();
 
   return (
     <div className="absolute inset-x-0 top-44 bottom-20 md:top-44 md:bottom-24 flex items-center justify-center z-30 pointer-events-none px-4">
@@ -17,12 +19,12 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
             <CroftLogo className="w-16 h-16 md:w-28 md:h-28 brightness-0" />
           </div>
           <div className="absolute bottom-2 left-2 md:bottom-4 md:left-4">
-            <a 
-              href="/book"
+            <button 
+              onClick={() => navigate('/book')}
               className="inline-block bg-foreground text-background px-3 py-1.5 md:px-4 md:py-2 rounded-full font-industrial text-xs md:text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200 no-underline"
             >
               Book
-            </a>
+            </button>
           </div>
           <div className="flex-grow flex flex-col justify-center">
             <h1 className="font-brutalist text-2xl md:text-3xl lg:text-4xl text-foreground mb-4 md:mb-6 leading-tight pr-16 md:pr-32">
@@ -36,12 +38,12 @@ const PersonalizedMessageBox = ({ firstName, children }: PersonalizedMessageBoxP
                     We've got a few tables left tonight — want to come see us?
                   </p>
                   <div className="flex items-center gap-4 mt-6">
-                    <a 
-                      href="/book"
+                    <button 
+                      onClick={() => navigate('/book')}
                       className="inline-block bg-foreground text-background px-6 py-3 font-industrial text-sm tracking-wide hover:bg-accent-pink transition-colors duration-200"
                     >
                       BOOK
-                    </a>
+                    </button>
                   </div>
                   <p className="mt-6 md:mt-8 text-right font-industrial text-sm md:text-base">
                     - Croft Common

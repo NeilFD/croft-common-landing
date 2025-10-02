@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CMSText } from './cms/CMSText';
+import { useNavigate } from 'react-router-dom';
 const Footer = ({
   showSubscription = true
 }: {
   showSubscription?: boolean;
 }) => {
+  const navigate = useNavigate();
   const [cgTotal, setCgTotal] = useState<number | null>(null);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const { toast } = useToast();
@@ -54,7 +56,7 @@ const Footer = ({
             We believe hospitality should be felt, not just promised. These are the standards we hold ourselves to, written plainly and lived every shift.
           </p>
           <button
-            onClick={() => window.location.href = '/uncommon-standards'}
+            onClick={() => navigate('/uncommon-standards')}
             className="inline-flex items-center px-8 py-3 border-2 border-background text-background font-industrial text-lg hover:bg-accent hover:text-accent-foreground transition-colors duration-200 rounded-lg"
           >
             Uncommon Standards
@@ -174,12 +176,12 @@ const Footer = ({
               />
             </button>
             
-            <a 
-              href="/management/login"
+            <button 
+              onClick={() => navigate('/management/login')}
               className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
             >
               Management Login
-            </a>
+            </button>
           </div>
         </div>
 
