@@ -6,6 +6,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const FUNCTION_VERSION = 'management-ai-assistant-2025-10-02-01';
+console.log(`🚀 management-ai-assistant booted: ${FUNCTION_VERSION}`);
+
 // ============= DATABASE SCHEMA CONSTANTS =============
 // Define exact column names from database to prevent typos
 const SCHEMA = {
@@ -309,6 +312,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
   
   try {
     console.log('📚 Searching Common Knowledge for:', searchQuery);
+    console.log('🧭 Function version:', FUNCTION_VERSION);
     
     // Synonym expansion for semantic matching
     const synonymMap: Record<string, string[]> = {
@@ -326,7 +330,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     };
     
     // Stopwords to filter out from keyword searches
-    const stopwords = ['the','and','for','are','but','not','you','can','has','what','when','where','who','how','our','out','any','document','documents','folder','file','files','whats','in','is','it','this','that','show','tell','find','get','give'];
+    const stopwords = ['the','and','for','are','but','not','you','can','has','what','when','where','who','how','our','out','any','document','documents','folder','file','files','whats','in','is','it','this','that','show','tell','find','get','give','pull','please','me','could','would','kindly','pls'];
     
     // Extract all words - very permissive
     const allWords = searchQuery.toLowerCase()
@@ -353,7 +357,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     
     // STRATEGY 0: Exact phrase and all-keywords-AND on title (highest precision)
     console.log('🎯 Strategy 0: Exact phrase and all-keywords-AND on title...');
-    const normalizedQuery = searchQuery.toLowerCase().trim();
+    const normalizedQuery = (filteredKeywords.length > 0 ? filteredKeywords.join(' ') : searchQuery.toLowerCase().trim());
     
     // Try exact phrase match on title first
     let { data: exactMatches } = await dbClient
@@ -364,7 +368,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
         ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
       `)
       .eq('status', 'approved')
-      .ilike('title', `%${normalizedQuery}%`)
+      .or(`title.ilike.%${normalizedQuery}%,slug.ilike.%${normalizedQuery}%`)
       .order('updated_at', { ascending: false })
       .limit(10);
     
@@ -409,7 +413,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
         // Strategy 0c: Partial match (at least 75% of filtered keywords)
         if (allKeywordsMatches.length === 0 && filteredKeywords.length >= 2) {
           console.log('🔍 Strategy 0c: Partial match (75% threshold)...');
-          const threshold = Math.ceil(filteredKeywords.length * 0.75);
+          const threshold = Math.ceil(filteredKeywords.length * 0.5);
           console.log(`🔍 Need at least ${threshold} of ${filteredKeywords.length} keywords`);
           
           partialMatches = allKeywordDocs.map((doc: any) => {
@@ -524,7 +528,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       console.log(`🔍 Including ${allFolderIds.length} folders (with subfolders)`);
       
       // Get all documents in these folders and subfolders
-      const { data: folderDocs } = await supabase
+      const { data: folderDocs } = await dbClient
         .from('ck_docs')
         .select(`
           id, title, slug, type, description, tags, zones, collection_id, updated_at,
