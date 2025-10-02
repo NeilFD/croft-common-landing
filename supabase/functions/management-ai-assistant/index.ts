@@ -314,6 +314,13 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     console.log('📚 Searching Common Knowledge for:', searchQuery);
     console.log('🧭 Function version:', FUNCTION_VERSION);
     
+    // Quick visibility check: count approved docs (no joins)
+    const { count: approvedCount, error: approvedCountError } = await dbClient
+      .from('ck_docs')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'approved');
+    console.log(`🧮 Approved docs visible: ${approvedCount ?? 0}${approvedCountError ? ' (count error: ' + approvedCountError.message + ')' : ''}`);
+    
     // Synonym expansion for semantic matching
     const synonymMap: Record<string, string[]> = {
       'document': ['plan', 'strategy', 'guide', 'policy', 'procedure', 'doc', 'file'],
@@ -365,7 +372,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       .select(`
         id, title, slug, type, description, tags, zones, collection_id, updated_at,
         ck_collections(name, slug),
-        ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
+        ck_doc_versions!ck_doc_versions_doc_id_fkey(id, content_md, summary, version_no, created_at)
       `)
       .eq('status', 'approved')
       .or(`title.ilike.%${normalizedQuery}%,slug.ilike.%${normalizedQuery}%`)
@@ -391,7 +398,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
         .select(`
           id, title, slug, type, description, tags, zones, collection_id, updated_at,
           ck_collections(name, slug),
-          ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
+          ck_doc_versions!ck_doc_versions_doc_id_fkey(id, content_md, summary, version_no, created_at)
         `)
         .eq('status', 'approved')
         .order('updated_at', { ascending: false });
@@ -533,7 +540,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
         .select(`
           id, title, slug, type, description, tags, zones, collection_id, updated_at,
           ck_collections(name, slug, parent_id),
-          ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
+          ck_doc_versions!ck_doc_versions_doc_id_fkey(id, content_md, summary, version_no, created_at)
         `)
         .eq('status', 'approved')
         .in('collection_id', allFolderIds)
@@ -606,7 +613,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       .select(`
         id, title, slug, type, description, tags, zones, collection_id, updated_at,
         ck_collections(name, slug),
-        ck_doc_versions!inner(id, content_md, summary, version_no, created_at)
+        ck_doc_versions!ck_doc_versions_doc_id_fkey(id, content_md, summary, version_no, created_at)
       `)
       .eq('status', 'approved')
       .or(`${titleOrFilters},${descOrFilters}`)
