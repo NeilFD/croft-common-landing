@@ -59,13 +59,21 @@ export const ManagementAIChatWidget = () => {
   }
 
   return (
-    <Card
-      className={cn(
-        'fixed bottom-6 right-6 flex flex-col shadow-2xl transition-all z-50 border-2',
-        isMinimized ? 'h-14 w-80' : 'h-[600px] w-[400px]',
-        'bg-background/95 backdrop-blur-md'
-      )}
-    >
+    <>
+      {/* Mobile backdrop overlay */}
+      <div
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+        onClick={toggleWidget}
+      />
+
+      <Card
+        className={cn(
+          'fixed flex flex-col shadow-2xl transition-all z-50 border-2',
+          'inset-4 md:inset-auto md:bottom-6 md:right-6',
+          isMinimized ? 'h-14 w-auto md:w-80' : 'h-full md:h-[600px] w-full md:w-[400px]',
+          'bg-background/95 backdrop-blur-md'
+        )}
+      >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-foreground bg-background p-4">
         <div className="flex items-center gap-2">
@@ -167,5 +175,6 @@ export const ManagementAIChatWidget = () => {
         </>
       )}
     </Card>
+    </>
   );
 };
