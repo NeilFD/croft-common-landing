@@ -4,7 +4,7 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronRight } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import { ProposalBuilder } from '@/components/management/ProposalBuilder';
+import { ProposalBuilderEnhanced } from '@/components/management/ProposalBuilderEnhanced';
 
 const EventProposal = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,7 +86,7 @@ const EventProposal = () => {
           </div>
         </div>
 
-        <ProposalBuilder eventId={id!} headcount={event?.headcount} />
+        <ProposalBuilderEnhanced eventId={id!} headcount={event?.headcount} />
       </div>
     </ManagementLayout>
   );

@@ -2562,6 +2562,7 @@ export type Database = {
           client_phone: string | null
           code: string | null
           created_at: string | null
+          current_proposal_version_id: string | null
           event_type: string | null
           headcount: number | null
           id: string
@@ -2583,6 +2584,7 @@ export type Database = {
           client_phone?: string | null
           code?: string | null
           created_at?: string | null
+          current_proposal_version_id?: string | null
           event_type?: string | null
           headcount?: number | null
           id?: string
@@ -2604,6 +2606,7 @@ export type Database = {
           client_phone?: string | null
           code?: string | null
           created_at?: string | null
+          current_proposal_version_id?: string | null
           event_type?: string | null
           headcount?: number | null
           id?: string
@@ -2619,6 +2622,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "management_events_current_proposal_version_id_fkey"
+            columns: ["current_proposal_version_id"]
+            isOneToOne: false
+            referencedRelation: "proposal_versions"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "management_events_lead_id_fkey"
             columns: ["lead_id"]
@@ -3577,6 +3587,69 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "proposal_pdfs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "management_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposal_versions: {
+        Row: {
+          beo_version_id: string | null
+          client_approved_at: string | null
+          client_viewed_at: string | null
+          content_snapshot: Json
+          created_at: string
+          event_id: string
+          generated_at: string
+          generated_by: string | null
+          id: string
+          notes: string | null
+          pdf_url: string | null
+          status: string
+          version_no: number
+        }
+        Insert: {
+          beo_version_id?: string | null
+          client_approved_at?: string | null
+          client_viewed_at?: string | null
+          content_snapshot?: Json
+          created_at?: string
+          event_id: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          pdf_url?: string | null
+          status?: string
+          version_no: number
+        }
+        Update: {
+          beo_version_id?: string | null
+          client_approved_at?: string | null
+          client_viewed_at?: string | null
+          content_snapshot?: Json
+          created_at?: string
+          event_id?: string
+          generated_at?: string
+          generated_by?: string | null
+          id?: string
+          notes?: string | null
+          pdf_url?: string | null
+          status?: string
+          version_no?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_versions_beo_version_id_fkey"
+            columns: ["beo_version_id"]
+            isOneToOne: false
+            referencedRelation: "event_beo_versions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "proposal_versions_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "management_events"

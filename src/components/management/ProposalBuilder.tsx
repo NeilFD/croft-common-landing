@@ -6,14 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Trash2, Plus, GripVertical, Eye, Share2, Mail, MessageCircle, Loader2 } from 'lucide-react';
+import { Trash2, Plus, GripVertical, Eye, Share2, Mail, MessageCircle, Loader2, Clock, MapPin, Utensils, CheckCircle2 } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { shareViaWhatsApp } from '@/services/whatsappService';
+import { useCurrentProposal, useProposalVersions } from '@/hooks/useProposalData';
+import { format } from 'date-fns';
 
 interface LineItem {
   id?: string;
@@ -49,6 +52,10 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   const [generatingPDF, setGeneratingPDF] = useState(false);
   const [sharingEmail, setSharingEmail] = useState(false);
   const [sharingWhatsApp, setSharingWhatsApp] = useState(false);
+
+  // Fetch current proposal version with BEO data
+  const { data: currentProposal } = useCurrentProposal(eventId);
+  const { data: proposalVersions } = useProposalVersions(eventId);
 
   // Fetch existing line items
   const { data: existingItems } = useQuery({

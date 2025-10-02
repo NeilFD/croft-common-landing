@@ -415,12 +415,32 @@ export const useBEOMutations = (eventId: string) => {
       }
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       console.log('BEO generated successfully:', data);
       queryClient.invalidateQueries({ queryKey: ['beo-versions', eventId] });
+      
+      // Auto-generate/update proposal from BEO
+      try {
+        console.log('Auto-generating proposal from BEO...');
+        const { data: proposalData, error: proposalError } = await supabase.functions.invoke('generate-proposal-from-beo', {
+          body: { eventId, beoVersionId: data?.versionId }
+        });
+        
+        if (proposalError) {
+          console.error('Error auto-generating proposal:', proposalError);
+        } else {
+          console.log('Proposal auto-generated:', proposalData);
+          queryClient.invalidateQueries({ queryKey: ['proposal-versions', eventId] });
+          queryClient.invalidateQueries({ queryKey: ['current-proposal', eventId] });
+          queryClient.invalidateQueries({ queryKey: ['event-line-items', eventId] });
+        }
+      } catch (proposalErr) {
+        console.error('Failed to auto-generate proposal:', proposalErr);
+      }
+      
       toast({ 
         title: "BEO generated successfully",
-        description: "Your BEO PDF has been created and saved."
+        description: "Your BEO PDF has been created and proposal has been updated."
       });
     },
     onError: (error: any) => {
