@@ -20,6 +20,7 @@ export const ManagementAIChatWidget = () => {
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
   const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
 
   // Auto-scroll to bottom when messages change
@@ -44,13 +45,19 @@ export const ManagementAIChatWidget = () => {
     }
   }, [transcript]);
 
-  // Handle scroll to detect if user scrolled up
+  // Handle scroll to detect if user scrolled up (throttled for performance)
   const handleScroll = () => {
-    if (scrollRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-      setShowScrollButton(!isNearBottom && messages.length > 0);
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
     }
+    
+    scrollTimeoutRef.current = setTimeout(() => {
+      if (scrollRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        setShowScrollButton(!isNearBottom && messages.length > 0);
+      }
+    }, 100);
   };
 
   const scrollToBottom = () => {
@@ -171,7 +178,7 @@ export const ManagementAIChatWidget = () => {
         <>
           {/* Messages */}
           <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full" ref={scrollRef} onScrollCapture={handleScroll}>
+            <ScrollArea className="h-full scroll-smooth" ref={scrollRef} onScrollCapture={handleScroll}>
               {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full p-6 text-center">
                 <div className="h-16 w-16 rounded-full bg-accent-pink border-2 border-foreground flex items-center justify-center mb-4">
