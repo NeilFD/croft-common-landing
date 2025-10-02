@@ -1213,7 +1213,7 @@ async function calculateEventRevenue(supabase: any, eventId: string) {
     // Get all line items for the event (these are GROSS prices)
     const { data: lineItems, error: lineError } = await supabase
       .from('management_event_line_items')
-      .select('description, price, quantity')
+      .select('description, unit_price, qty')
       .eq('event_id', eventId);
     
     if (lineError) {
@@ -1237,7 +1237,7 @@ async function calculateEventRevenue(supabase: any, eventId: string) {
     
     // Calculate gross subtotal (sum of all line items)
     const grossSubtotal = lineItems?.reduce((sum, item) => {
-      const itemTotal = (item.price || 0) * (item.quantity || 1);
+      const itemTotal = (item.unit_price || 0) * (item.qty || 1);
       return sum + itemTotal;
     }, 0) || 0;
     
