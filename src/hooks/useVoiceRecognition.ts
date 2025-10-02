@@ -32,7 +32,8 @@ export const useVoiceRecognition = (): UseVoiceRecognitionReturn => {
         let finalTranscript = '';
         let interimTranscript = '';
 
-        for (let i = event.resultIndex; i < event.results.length; i++) {
+        // Process all results from the beginning to avoid duplication
+        for (let i = 0; i < event.results.length; i++) {
           const transcriptPart = event.results[i][0].transcript;
           if (event.results[i].isFinal) {
             finalTranscript += transcriptPart + ' ';
@@ -41,7 +42,8 @@ export const useVoiceRecognition = (): UseVoiceRecognitionReturn => {
           }
         }
 
-        setTranscript(prev => prev + finalTranscript + interimTranscript);
+        // Replace transcript with complete final + interim results
+        setTranscript(finalTranscript + interimTranscript);
       };
 
       recognition.onerror = (event: any) => {
