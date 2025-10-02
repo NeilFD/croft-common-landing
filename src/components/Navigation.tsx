@@ -70,38 +70,21 @@ const Navigation = () => {
   };
 
   const handleNavClick = (path: string, source: string = 'click') => {
-    console.log('🔗 [Mobile Debug] Navigation clicked:', path, 'source:', source);
+    console.log('🔗 [Navigation] Clicked:', path, 'source:', source);
     setIsMobileMenuOpen(false); // Close mobile menu
-
-    const startingPath = location.pathname;
-    let fallbackTimer: number | undefined;
-    const scheduleFallback = () => {
-      try {
-        if (fallbackTimer) window.clearTimeout(fallbackTimer);
-      } catch {}
-      fallbackTimer = window.setTimeout(() => {
-        if (location.pathname === startingPath) {
-          console.warn('[Navigation] Fallback forcing navigation to', path, 'from source', source);
-          window.location.replace(path + '?bypass-cache=' + Date.now());
-        }
-      }, 400);
-    };
     
     if (path === '/') {
       // Only play strobe transition when going home
-      console.log('🔗 [Mobile Debug] Navigating to home with transition');
+      console.log('🔗 [Navigation] Navigating to home with transition');
       triggerTransition('/');
-      scheduleFallback();
     } else {
       // Soft transition for section navigations
-      console.log('🔗 [Mobile Debug] Navigating to section:', path);
+      console.log('🔗 [Navigation] Navigating to section:', path);
       const preview = getRoutePreview(path);
       if (preview) {
         triggerTransition(path, { variant: 'soft', previewSrc: preview });
-        scheduleFallback();
       } else {
         navigate(path);
-        scheduleFallback();
       }
     }
   };

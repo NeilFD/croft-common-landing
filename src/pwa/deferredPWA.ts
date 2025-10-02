@@ -11,12 +11,18 @@ function prefetchCriticalRoutes() {
       console.log('[PWA] Prefetching critical routes');
       import('../pages/Book').catch(e => console.warn('[PWA] Failed to prefetch Book', e));
       import('../pages/management/ManagementLogin').catch(e => console.warn('[PWA] Failed to prefetch ManagementLogin', e));
+      import('../pages/Hall').catch(e => console.warn('[PWA] Failed to prefetch Hall', e));
+      import('../pages/CommonRoom').catch(e => console.warn('[PWA] Failed to prefetch CommonRoom', e));
+      import('../pages/CommonRoomMain').catch(e => console.warn('[PWA] Failed to prefetch CommonRoomMain', e));
     }, { timeout: 2000 });
   } else {
     setTimeout(() => {
       console.log('[PWA] Prefetching critical routes (fallback)');
       import('../pages/Book').catch(e => console.warn('[PWA] Failed to prefetch Book', e));
       import('../pages/management/ManagementLogin').catch(e => console.warn('[PWA] Failed to prefetch ManagementLogin', e));
+      import('../pages/Hall').catch(e => console.warn('[PWA] Failed to prefetch Hall', e));
+      import('../pages/CommonRoom').catch(e => console.warn('[PWA] Failed to prefetch CommonRoom', e));
+      import('../pages/CommonRoomMain').catch(e => console.warn('[PWA] Failed to prefetch CommonRoomMain', e));
     }, 3000);
   }
 }
