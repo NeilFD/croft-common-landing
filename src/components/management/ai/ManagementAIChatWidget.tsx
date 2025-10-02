@@ -224,9 +224,9 @@ export const ManagementAIChatWidget = () => {
           {/* Input */}
           <div className="border-t p-4">
             {isRecording && (
-              <div className="mb-2 flex items-center gap-2 text-xs text-muted-foreground bg-accent-pink/10 p-2 rounded-md border border-accent-pink">
+              <div className="mb-3 flex items-center gap-2 text-xs font-industrial bg-accent-pink/10 p-2.5 rounded-lg border border-accent-pink animate-in fade-in slide-in-from-bottom-2">
                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                <span>Recording...</span>
+                <span className="text-foreground">Listening...</span>
               </div>
             )}
             <form
@@ -234,43 +234,58 @@ export const ManagementAIChatWidget = () => {
                 e.preventDefault();
                 handleSend();
               }}
-              className="flex gap-2"
+              className="relative"
             >
-              {isSupported && (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant={isRecording ? 'destructive' : 'outline'}
-                  onClick={handleVoiceToggle}
-                  disabled={isLoading}
+              <div className="relative flex items-center">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  placeholder="Ask me anything..."
+                  disabled={isLoading || isRecording}
                   className={cn(
-                    'border-2 border-foreground',
-                    isRecording && 'bg-red-500 hover:bg-red-600'
+                    "pr-24 border-2 border-foreground font-industrial placeholder:text-muted-foreground/60",
+                    isSupported && "pl-4"
                   )}
-                >
-                  {isRecording ? (
-                    <Square className="h-4 w-4" />
-                  ) : (
-                    <Mic className="h-4 w-4" />
+                />
+                
+                {/* Voice and Send buttons inside input */}
+                <div className="absolute right-2 flex items-center gap-1">
+                  {isSupported && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={handleVoiceToggle}
+                      disabled={isLoading}
+                      className={cn(
+                        'h-8 w-8 transition-all',
+                        isRecording && 'text-red-500 hover:text-red-600 hover:bg-red-50'
+                      )}
+                      title={isRecording ? 'Stop recording' : 'Voice input'}
+                    >
+                      {isRecording ? (
+                        <Square className="h-4 w-4 fill-current" />
+                      ) : (
+                        <Mic className="h-4 w-4" />
+                      )}
+                    </Button>
                   )}
-                </Button>
-              )}
-              <Input
-                ref={inputRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                placeholder="Ask me anything..."
-                disabled={isLoading || isRecording}
-                className="flex-1"
-              />
-              <Button 
-                type="submit" 
-                size="icon" 
-                disabled={isLoading || !input.trim()}
-                className="bg-accent-pink border-2 border-foreground hover:bg-accent-pink-dark"
-              >
-                <Send className="h-4 w-4 text-foreground" />
-              </Button>
+                  
+                  <Button 
+                    type="submit" 
+                    size="icon"
+                    disabled={isLoading || !input.trim()}
+                    className={cn(
+                      "h-8 w-8 bg-accent-pink border-2 border-foreground hover:bg-accent-pink-dark transition-all",
+                      (!input.trim() || isLoading) && "opacity-50"
+                    )}
+                    title="Send message"
+                  >
+                    <Send className="h-4 w-4 text-foreground" />
+                  </Button>
+                </div>
+              </div>
             </form>
           </div>
         </>
