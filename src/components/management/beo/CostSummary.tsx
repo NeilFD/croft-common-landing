@@ -32,9 +32,9 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
     return sum + (staff.qty * (staff.hourly_rate || 0) * hours);
   }, 0);
 
-  // Calculate menu costs (price per head * headcount)
+  // Calculate menu costs (already includes quantity in the stored price)
   const headcount = eventData?.headcount || 1;
-  const menuCost = menus.reduce((sum, menu) => sum + ((menu.price || 0) * headcount), 0);
+  const menuCost = menus.reduce((sum, menu) => sum + (menu.price || 0), 0);
 
   // Service charge
   const serviceChargeRate = eventData?.service_charge_pct || 0;
@@ -174,7 +174,7 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
         <Card>
           <CardHeader>
             <CardTitle className="font-['Oswald'] text-lg">Menu Costs</CardTitle>
-            <CardDescription>Per person pricing (× {headcount} guests)</CardDescription>
+            <CardDescription>Total costs for menu items</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -187,8 +187,7 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
                       {menu.item_name && <span className="text-muted-foreground ml-2">- {menu.item_name}</span>}
                     </div>
                     <div className="text-right">
-                      <div className="font-mono">£{((menu.price || 0) * headcount).toFixed(2)}</div>
-                      <div className="text-xs text-muted-foreground">£{(menu.price || 0).toFixed(2)} pp</div>
+                      <div className="font-mono">£{(menu.price || 0).toFixed(2)}</div>
                     </div>
                   </div>
                 ))}
