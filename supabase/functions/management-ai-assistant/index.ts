@@ -325,12 +325,18 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       'dietary': ['dietary', 'allergen', 'allergy', 'food']
     };
     
-    // Extract keywords - very permissive
+    // Stopwords to filter out from keyword searches
+    const stopwords = ['the','and','for','are','but','not','you','can','has','what','when','where','who','how','our','out','any','document','documents','folder','file','files','whats','in','is','it','this','that','show','tell','find','get','give'];
+    
+    // Extract all words - very permissive
     const allWords = searchQuery.toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
       .filter(w => w.length > 2)
-      .filter(w => !['the','and','for','are','but','not','you','can','has','what','when','where','who','how','our','out','any'].includes(w));
+      .filter(w => !stopwords.includes(w));
+    
+    // Filtered keywords for precise matching (remove stopwords)
+    const filteredKeywords = allWords.filter(w => !['document','documents','folder','file','files','whats'].includes(w));
     
     // Expand with synonyms
     const expandedKeywords = new Set(allWords);
@@ -342,6 +348,7 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
     const keywords = Array.from(expandedKeywords);
     
     console.log('🔍 Original words:', allWords);
+    console.log('🔍 Filtered keywords (no filler):', filteredKeywords);
     console.log('🔍 Expanded keywords:', keywords);
     
     // STRATEGY 0: Exact phrase and all-keywords-AND on title (highest precision)
@@ -366,12 +373,15 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       console.log('📋 Exact phrase matches:', exactMatches.map((d: any) => d.title));
     }
     
-    // If no exact match, try all-keywords-AND (all words must appear in title)
+    // If no exact match, try all-keywords-AND (all FILTERED words must appear in title)
+    let allKeywordsMatches: any[] = [];
+    let partialMatches: any[] = [];
+    
     if (!exactMatches || exactMatches.length === 0) {
-      console.log('🔍 Strategy 0b: All-keywords-AND on title...');
-      console.log('🔍 Looking for ALL these words in title:', allWords);
+      console.log('🔍 Strategy 0b: All-keywords-AND on title (FILTERED keywords only)...');
+      console.log('🔍 Looking for ALL these filtered words in title:', filteredKeywords);
       
-      // Get ALL approved docs with versions - no arbitrary limit
+      // Get ALL approved docs with versions
       const { data: allKeywordDocs } = await dbClient
         .from('ck_docs')
         .select(`
@@ -385,34 +395,79 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       console.log(`📊 Retrieved ${allKeywordDocs?.length || 0} total approved documents`);
       
       if (allKeywordDocs && allKeywordDocs.length > 0) {
-        // Debug: Show first few titles
-        console.log('📋 Sample titles:', allKeywordDocs.slice(0, 5).map((d: any) => d.title));
-        
-        // Filter to docs where ALL original keywords appear in title
-        exactMatches = allKeywordDocs.filter((doc: any) => {
+        // Filter to docs where ALL FILTERED keywords appear in title
+        allKeywordsMatches = allKeywordDocs.filter((doc: any) => {
           const titleLower = doc.title.toLowerCase();
-          const matches = allWords.every(word => {
-            const hasWord = titleLower.includes(word);
-            if (!hasWord) {
-              console.log(`❌ "${doc.title}" missing keyword: "${word}"`);
-            }
-            return hasWord;
-          });
-          
-          if (matches) {
-            console.log(`✅ "${doc.title}" matches ALL keywords`);
-          }
-          
-          return matches;
-        }).slice(0, 10);
+          return filteredKeywords.every(word => titleLower.includes(word));
+        });
         
-        console.log(`🎯 After ALL-keywords filter: Found ${exactMatches.length} matches`);
+        console.log(`🎯 ALL-keywords-AND: Found ${allKeywordsMatches.length} matches`);
+        if (allKeywordsMatches.length > 0) {
+          console.log('📋 ALL-keywords matches:', allKeywordsMatches.slice(0, 3).map((d: any) => d.title));
+        }
+        
+        // Strategy 0c: Partial match (at least 75% of filtered keywords)
+        if (allKeywordsMatches.length === 0 && filteredKeywords.length >= 2) {
+          console.log('🔍 Strategy 0c: Partial match (75% threshold)...');
+          const threshold = Math.ceil(filteredKeywords.length * 0.75);
+          console.log(`🔍 Need at least ${threshold} of ${filteredKeywords.length} keywords`);
+          
+          partialMatches = allKeywordDocs.map((doc: any) => {
+            const titleLower = doc.title.toLowerCase();
+            const matchCount = filteredKeywords.filter(word => titleLower.includes(word)).length;
+            const matchPercent = (matchCount / filteredKeywords.length) * 100;
+            
+            return {
+              doc,
+              matchCount,
+              matchPercent,
+              meetsThreshold: matchCount >= threshold
+            };
+          })
+          .filter(item => item.meetsThreshold)
+          .sort((a, b) => b.matchCount - a.matchCount)
+          .slice(0, 10);
+          
+          console.log(`🎯 Partial match: Found ${partialMatches.length} documents meeting threshold`);
+          if (partialMatches.length > 0) {
+            console.log('📋 Partial matches:', partialMatches.slice(0, 3).map((item: any) => 
+              `"${item.doc.title}" (${item.matchCount}/${filteredKeywords.length} keywords)`
+            ));
+          }
+        }
       }
     }
     
+    // Score and collect Strategy 0 results
+    let strategy0Results: any[] = [];
+    
     if (exactMatches && exactMatches.length > 0) {
-      console.log(`✅ Strategy 0: Found ${exactMatches.length} exact/AND title matches`);
-      retrieved.documents = exactMatches.map((doc: any) => ({
+      console.log(`✅ Strategy 0a: Found ${exactMatches.length} exact phrase matches`);
+      strategy0Results = exactMatches.map((doc: any) => ({
+        doc,
+        score: 100, // Highest score for exact phrase
+        matchReason: 'exact_phrase_match'
+      }));
+    } else if (allKeywordsMatches.length > 0) {
+      console.log(`✅ Strategy 0b: Found ${allKeywordsMatches.length} ALL-keywords matches`);
+      strategy0Results = allKeywordsMatches.map((doc: any) => ({
+        doc,
+        score: 80, // High score for all keywords
+        matchReason: 'all_keywords_match'
+      }));
+    } else if (partialMatches.length > 0) {
+      console.log(`✅ Strategy 0c: Found ${partialMatches.length} partial matches`);
+      strategy0Results = partialMatches.map((item: any) => ({
+        doc: item.doc,
+        score: 60 + (item.matchPercent * 0.2), // 60-80 based on match percentage
+        matchReason: `partial_match_${item.matchCount}_of_${filteredKeywords.length}`
+      }));
+    }
+    
+    // Only return early if we have high-confidence exact matches
+    if (strategy0Results.length > 0 && strategy0Results[0].score >= 100) {
+      console.log('🎯 High confidence exact match found, returning immediately');
+      retrieved.documents = strategy0Results.map(({ doc, score, matchReason }: any) => ({
         id: doc.id,
         title: doc.title,
         type: doc.type,
@@ -424,10 +479,11 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
         content: doc.ck_doc_versions[0]?.content_md || '',
         summary: doc.ck_doc_versions[0]?.summary,
         slug: doc.slug,
-        matchReason: 'exact_title_match'
+        matchReason,
+        score
       }));
-      retrieved.totalDocs = exactMatches.length;
-      retrieved.searchMethod = 'exact_title_match';
+      retrieved.totalDocs = strategy0Results.length;
+      retrieved.searchMethod = 'exact_phrase_match';
       
       // Get all folders for context
       const { data: collections } = await dbClient
@@ -436,7 +492,14 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
         .order('name');
       retrieved.collections = collections || [];
       
+      console.log('🏆 Top results:', retrieved.documents.slice(0, 3).map((d: any) => `"${d.title}" (score: ${d.score})`));
+      
       return retrieved;
+    }
+    
+    // Otherwise, continue collecting results from other strategies
+    if (strategy0Results.length > 0) {
+      console.log(`📋 Strategy 0 found ${strategy0Results.length} results, continuing to merge with other strategies...`);
     }
     
     // STRATEGY 1: Folder name match with recursive hierarchy
@@ -552,26 +615,48 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
       console.log(`✅ Found ${titleResults.length} documents by title/description`);
       console.log('📋 Sample results:', titleResults.slice(0, 3).map((d: any) => d.title));
       
-      // Score results
+      // Score results with improved algorithm
       const scoredResults = titleResults.map((doc: any) => {
         let score = 0;
         const titleLower = doc.title.toLowerCase();
         const descLower = (doc.description || '').toLowerCase();
         
-        // Count keyword matches
-        allWords.forEach(word => {
-          if (titleLower.includes(word)) score += 15;
-          if (descLower.includes(word)) score += 5;
-        });
+        // Exact phrase match bonus
+        if (titleLower.includes(normalizedQuery)) {
+          score += 50;
+        }
         
-        // Boost if all keywords appear
-        const allInTitle = allWords.every(w => titleLower.includes(w));
-        if (allInTitle) score += 30;
+        // Count filtered keyword matches (high value)
+        const titleMatches = filteredKeywords.filter(word => titleLower.includes(word)).length;
+        const descMatches = filteredKeywords.filter(word => descLower.includes(word)).length;
         
-        return { doc, score };
+        score += titleMatches * 15;
+        score += descMatches * 5;
+        
+        // Keyword density bonus (all filtered keywords in title)
+        if (filteredKeywords.length > 0) {
+          const titleDensity = titleMatches / filteredKeywords.length;
+          if (titleDensity === 1.0) score += 40; // All keywords
+          else if (titleDensity >= 0.75) score += 20; // Most keywords
+        }
+        
+        // Penalize very generic single-word matches
+        if (titleMatches === 1 && filteredKeywords.length > 1) {
+          score -= 10;
+        }
+        
+        // Recency boost
+        const daysSinceUpdate = (Date.now() - new Date(doc.updated_at).getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceUpdate < 30) score += 5;
+        
+        return { doc, score, titleMatches, descMatches };
       });
       
       scoredResults.sort((a, b) => b.score - a.score);
+      
+      console.log('🏆 Top Strategy 2 results:', scoredResults.slice(0, 3).map((item: any) => 
+        `"${item.doc.title}" (score: ${item.score}, title: ${item.titleMatches}/${filteredKeywords.length}, desc: ${item.descMatches}/${filteredKeywords.length})`
+      ));
       
       retrieved.documents = scoredResults.slice(0, 15).map(({ doc, score }: any) => ({
         id: doc.id,
@@ -588,8 +673,47 @@ async function retrieveCommonKnowledgeData(supabase: any, searchQuery: string, s
         matchReason: 'title_description_match',
         score
       }));
-      retrieved.totalDocs = scoredResults.length;
-      retrieved.searchMethod = 'title_description_match';
+      
+      // Merge with Strategy 0 results if we have any
+      if (strategy0Results.length > 0) {
+        console.log('🔀 Merging Strategy 0 and Strategy 2 results...');
+        const allResults = [...strategy0Results, ...scoredResults];
+        
+        // Deduplicate by doc ID
+        const seen = new Set();
+        const uniqueResults = allResults.filter(item => {
+          const id = item.doc.id;
+          if (seen.has(id)) return false;
+          seen.add(id);
+          return true;
+        });
+        
+        // Sort by score
+        uniqueResults.sort((a, b) => b.score - a.score);
+        
+        retrieved.documents = uniqueResults.slice(0, 15).map(({ doc, score, matchReason }: any) => ({
+          id: doc.id,
+          title: doc.title,
+          type: doc.type,
+          description: doc.description,
+          tags: doc.tags,
+          zones: doc.zones,
+          collection: doc.ck_collections?.name,
+          content_full: doc.ck_doc_versions[0]?.content_md || '',
+          content: doc.ck_doc_versions[0]?.content_md || '',
+          summary: doc.ck_doc_versions[0]?.summary,
+          slug: doc.slug,
+          matchReason: matchReason || 'title_description_match',
+          score
+        }));
+        
+        console.log('🏆 Final merged results:', retrieved.documents.slice(0, 3).map((d: any) => 
+          `"${d.title}" (score: ${d.score}, reason: ${d.matchReason})`
+        ));
+      }
+      
+      retrieved.totalDocs = retrieved.documents.length;
+      retrieved.searchMethod = strategy0Results.length > 0 ? 'merged_strategies' : 'title_description_match';
       
       // Get all folders for context
       const { data: collections } = await dbClient
