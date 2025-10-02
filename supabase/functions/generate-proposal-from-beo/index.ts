@@ -143,20 +143,18 @@ serve(async (req) => {
       });
     }
 
-    // Add menu items with pricing (if available)
+    // Add menu items (with or without pricing)
     Object.entries(menusByCourse).forEach(([course, items]) => {
       items.forEach(item => {
-        if (item.price && item.price > 0) {
-          lineItems.push({
-            event_id: eventId,
-            type: 'menu',
-            description: `${course} - ${item.item_name}`,
-            qty: 1,
-            unit_price: item.price,
-            per_person: true,
-            sort_order: sortOrder++
-          });
-        }
+        lineItems.push({
+          event_id: eventId,
+          type: 'menu',
+          description: `${course} - ${item.item_name}`,
+          qty: 1,
+          unit_price: item.price || 0, // Default to 0 if no price set
+          per_person: true,
+          sort_order: sortOrder++
+        });
       });
     });
 

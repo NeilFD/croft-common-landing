@@ -135,11 +135,21 @@ export const MenuItemSelection: React.FC<MenuItemSelectionProps> = ({
     
     for (const item of items) {
       try {
+        // Extract numeric price from strings like "£12.50" or just "12.50"
+        let numericPrice: number | undefined = undefined;
+        if (item.price) {
+          const priceStr = item.price.replace(/[£$€,]/g, '').trim();
+          const parsed = parseFloat(priceStr);
+          if (!isNaN(parsed)) {
+            numericPrice = parsed * item.quantity;
+          }
+        }
+        
         await addMenuItem.mutateAsync({
           course: item.course,
           item_name: `${item.name} (x${item.quantity})`,
           description: item.description,
-          price: item.price ? parseFloat(item.price) * item.quantity : undefined,
+          price: numericPrice,
           notes: `Quantity: ${item.quantity}`
         });
         addedCount++;
