@@ -3,10 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Loader, Plus, FileText, AlertCircle } from 'lucide-react';
-import { useEventMenus, useEventStaffing, useEventSchedule, useEventRoomLayouts, useEventEquipment, useBEOMutations } from '@/hooks/useBEOData';
+import { useEventMenus, useEventStaffing, useEventSchedule, useEventRoomLayouts, useEventEquipment, useEventVenueHire, useBEOMutations } from '@/hooks/useBEOData';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { VenueBuilder } from './VenueBuilder';
 import { MenuBuilder } from './MenuBuilder';
 import { StaffingBuilder } from './StaffingBuilder';
 import { ScheduleBuilder } from './ScheduleBuilder';
@@ -26,7 +27,7 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
   eventData,
   onBEOGenerated
 }) => {
-  const [activeTab, setActiveTab] = useState("menu");
+  const [activeTab, setActiveTab] = useState("venue");
 
   // Validate that the event exists in the management_events table
   const { data: eventExists, isLoading: eventCheckLoading } = useQuery({
@@ -43,6 +44,7 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
     }
   });
 
+  const { data: venueHire, isLoading: venueLoading } = useEventVenueHire(eventId);
   const { data: menus = [], isLoading: menusLoading } = useEventMenus(eventId);
   const { data: staffing = [], isLoading: staffingLoading } = useEventStaffing(eventId);
   const { data: schedule = [], isLoading: scheduleLoading } = useEventSchedule(eventId);
@@ -51,7 +53,7 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
 
   const { generateBEO } = useBEOMutations(eventId);
 
-  const isLoading = eventCheckLoading || menusLoading || staffingLoading || scheduleLoading || layoutsLoading || equipmentLoading;
+  const isLoading = eventCheckLoading || venueLoading || menusLoading || staffingLoading || scheduleLoading || layoutsLoading || equipmentLoading;
 
   const handleGenerateBEO = () => {
     generateBEO.mutate(undefined, {
@@ -115,7 +117,8 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
 
       {/* BEO Builder Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="venue" className="font-['Work_Sans']">Venue</TabsTrigger>
           <TabsTrigger value="menu" className="font-['Work_Sans']">Menu</TabsTrigger>
           <TabsTrigger value="staffing" className="font-['Work_Sans']">Staff</TabsTrigger>
           <TabsTrigger value="schedule" className="font-['Work_Sans']">Time</TabsTrigger>
@@ -124,6 +127,10 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
           <TabsTrigger value="contacts" className="font-['Work_Sans']">People</TabsTrigger>
           <TabsTrigger value="costs" className="font-['Work_Sans']">£</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="venue" className="space-y-4">
+          <VenueBuilder eventId={eventId} venueHire={venueHire} />
+        </TabsContent>
 
         <TabsContent value="menu" className="space-y-4">
           <MenuBuilder 
@@ -174,6 +181,8 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
             eventData={eventData}
             equipment={equipment}
             staffing={staffing}
+            menus={menus}
+            venueHire={venueHire}
           />
         </TabsContent>
       </Tabs>

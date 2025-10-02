@@ -2,20 +2,27 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { PoundSterling, Calculator, TrendingUp } from 'lucide-react';
-import { EventEquipment, EventStaffing } from '@/hooks/useBEOData';
+import { EventEquipment, EventStaffing, EventMenu } from '@/hooks/useBEOData';
 
 interface CostSummaryProps {
   eventId: string;
   eventData: any;
   equipment: EventEquipment[];
   staffing: EventStaffing[];
+  menus: EventMenu[];
+  venueHire: any;
 }
 
 export const CostSummary: React.FC<CostSummaryProps> = ({ 
   eventData, 
   equipment, 
-  staffing 
+  staffing,
+  menus,
+  venueHire
 }) => {
+  // Calculate venue hire cost from dedicated table
+  const venueCost = venueHire?.hire_cost || 0;
+  
   // Calculate equipment costs
   const equipmentCost = equipment.reduce((sum, item) => sum + (item.hire_cost || 0), 0);
 
@@ -25,18 +32,20 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
     return sum + (staff.qty * (staff.hourly_rate || 0) * hours);
   }, 0);
 
-  // Base venue cost (if available)
-  const venueCost = eventData?.price || 0;
+  // Calculate menu costs (price per head * headcount)
+  const headcount = eventData?.headcount || 1;
+  const menuCost = menus.reduce((sum, menu) => sum + ((menu.price || 0) * headcount), 0);
 
   // Service charge
   const serviceChargeRate = eventData?.service_charge_pct || 0;
-  const serviceCharge = (venueCost + equipmentCost + staffingCost) * (serviceChargeRate / 100);
+  const serviceCharge = (venueCost + equipmentCost + staffingCost + menuCost) * (serviceChargeRate / 100);
 
-  const subtotal = venueCost + equipmentCost + staffingCost;
+  const subtotal = venueCost + equipmentCost + staffingCost + menuCost;
   const total = subtotal + serviceCharge;
 
   const costBreakdown = [
     { label: 'Venue Hire', amount: venueCost, category: 'venue' },
+    { label: 'Menu & Catering', amount: menuCost, category: 'menu' },
     { label: 'Equipment Hire', amount: equipmentCost, category: 'equipment' },
     { label: 'Staffing', amount: staffingCost, category: 'staffing' },
     { label: 'Service Charge', amount: serviceCharge, category: 'service', rate: serviceChargeRate }
@@ -103,21 +112,31 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
 
             <div className="text-center p-4 border rounded-lg">
               <div className="font-['Work_Sans'] font-medium text-2xl text-secondary">
-                £{equipmentCost.toFixed(0)}
+                £{menuCost.toFixed(0)}
               </div>
-              <div className="text-sm text-muted-foreground">Equipment</div>
+              <div className="text-sm text-muted-foreground">Menu</div>
               <div className="text-xs text-muted-foreground mt-1">
-                {((equipmentCost / total) * 100).toFixed(1)}% of total
+                {total > 0 ? ((menuCost / total) * 100).toFixed(1) : 0}% of total
               </div>
             </div>
 
             <div className="text-center p-4 border rounded-lg">
               <div className="font-['Work_Sans'] font-medium text-2xl text-accent">
+                £{equipmentCost.toFixed(0)}
+              </div>
+              <div className="text-sm text-muted-foreground">Equipment</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {total > 0 ? ((equipmentCost / total) * 100).toFixed(1) : 0}% of total
+              </div>
+            </div>
+
+            <div className="text-center p-4 border rounded-lg">
+              <div className="font-['Work_Sans'] font-medium text-2xl text-primary">
                 £{staffingCost.toFixed(0)}
               </div>
               <div className="text-sm text-muted-foreground">Staffing</div>
               <div className="text-xs text-muted-foreground mt-1">
-                {((staffingCost / total) * 100).toFixed(1)}% of total
+                {total > 0 ? ((staffingCost / total) * 100).toFixed(1) : 0}% of total
               </div>
             </div>
           </div>
@@ -143,6 +162,34 @@ export const CostSummary: React.FC<CostSummaryProps> = ({
                       </Badge>
                     </div>
                     <span className="font-mono">£{(item.hire_cost || 0).toFixed(2)}</span>
+                  </div>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Detailed Menu Costs */}
+      {menus.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-['Oswald'] text-lg">Menu Costs</CardTitle>
+            <CardDescription>Per person pricing (× {headcount} guests)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {menus
+                .filter(menu => menu.price && menu.price > 0)
+                .map((menu) => (
+                  <div key={menu.id} className="flex items-center justify-between text-sm p-2 border rounded">
+                    <div>
+                      <span className="font-medium">{menu.course}</span>
+                      {menu.item_name && <span className="text-muted-foreground ml-2">- {menu.item_name}</span>}
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono">£{((menu.price || 0) * headcount).toFixed(2)}</div>
+                      <div className="text-xs text-muted-foreground">£{(menu.price || 0).toFixed(2)} pp</div>
+                    </div>
                   </div>
                 ))}
             </div>

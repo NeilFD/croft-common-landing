@@ -72,6 +72,20 @@ export interface EventEquipment {
   updated_at: string;
 }
 
+export interface EventVenueHire {
+  id: string;
+  event_id: string;
+  venue_name: string;
+  hire_cost: number;
+  vat_rate: number;
+  setup_time?: string;
+  breakdown_time?: string;
+  capacity?: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface BEOVersion {
   id: string;
   event_id: string;
@@ -172,6 +186,24 @@ export const useEventEquipment = (eventId: string) => {
       return data as EventEquipment[];
     },
     enabled: !!eventId
+  });
+};
+
+// Hook for fetching venue hire
+export const useEventVenueHire = (eventId: string) => {
+  return useQuery({
+    queryKey: ['event-venue-hire', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('event_venue_hire')
+        .select('*')
+        .eq('event_id', eventId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data as EventVenueHire | null;
+    },
+    enabled: !!eventId,
   });
 };
 
@@ -747,6 +779,66 @@ export const useBEOMutations = (eventId: string) => {
     }
   });
 
+  // Venue hire mutations
+  const addVenueHire = useMutation({
+    mutationFn: async (venueHire: Omit<EventVenueHire, 'id' | 'created_at' | 'updated_at' | 'event_id'>) => {
+      const { data, error } = await supabase
+        .from('event_venue_hire')
+        .insert([{ ...venueHire, event_id: eventId }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-venue-hire', eventId] });
+      toast({ title: "Venue details added successfully" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error adding venue details", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const updateVenueHire = useMutation({
+    mutationFn: async ({ id, ...updates }: Partial<EventVenueHire> & { id: string }) => {
+      const { data, error } = await supabase
+        .from('event_venue_hire')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-venue-hire', eventId] });
+      toast({ title: "Venue details updated successfully" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error updating venue details", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const deleteVenueHire = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from('event_venue_hire')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-venue-hire', eventId] });
+      toast({ title: "Venue details deleted successfully" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error deleting venue details", description: error.message, variant: "destructive" });
+    },
+  });
+
   return {
     addMenuItem,
     addStaffingRequirement,
@@ -764,6 +856,9 @@ export const useBEOMutations = (eventId: string) => {
     updateStaffingRequirement,
     updateScheduleItem,
     updateRoomLayout,
-    updateEquipmentItem
+    updateEquipmentItem,
+    addVenueHire,
+    updateVenueHire,
+    deleteVenueHire
   };
 };

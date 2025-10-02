@@ -1724,6 +1724,48 @@ export type Database = {
           },
         ]
       }
+      event_venue_hire: {
+        Row: {
+          breakdown_time: string | null
+          capacity: number | null
+          created_at: string | null
+          event_id: string
+          hire_cost: number | null
+          id: string
+          notes: string | null
+          setup_time: string | null
+          updated_at: string | null
+          vat_rate: number | null
+          venue_name: string
+        }
+        Insert: {
+          breakdown_time?: string | null
+          capacity?: number | null
+          created_at?: string | null
+          event_id: string
+          hire_cost?: number | null
+          id?: string
+          notes?: string | null
+          setup_time?: string | null
+          updated_at?: string | null
+          vat_rate?: number | null
+          venue_name: string
+        }
+        Update: {
+          breakdown_time?: string | null
+          capacity?: number | null
+          created_at?: string | null
+          event_id?: string
+          hire_cost?: number | null
+          id?: string
+          notes?: string | null
+          setup_time?: string | null
+          updated_at?: string | null
+          vat_rate?: number | null
+          venue_name?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           category: string

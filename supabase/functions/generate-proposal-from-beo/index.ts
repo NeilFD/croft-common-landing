@@ -39,18 +39,22 @@ serve(async (req) => {
 
     console.log('Event found:', event.code);
 
-    // Fetch BEO data
-    const [menusResult, scheduleResult, layoutsResult, equipmentResult] = await Promise.all([
+    // Fetch all BEO-related data including venue hire
+    const [venueHireResult, menusResult, scheduleResult, layoutsResult, equipmentResult] = await Promise.all([
+      supabase.from('event_venue_hire').select('*').eq('event_id', eventId).maybeSingle(),
       supabase.from('event_menus').select('*').eq('event_id', eventId).order('course'),
       supabase.from('event_schedule').select('*').eq('event_id', eventId).order('scheduled_at'),
       supabase.from('event_room_layouts').select('*').eq('event_id', eventId),
       supabase.from('event_equipment').select('*').eq('event_id', eventId).order('category')
     ]);
 
+    if (venueHireResult.error) throw venueHireResult.error;
     if (menusResult.error) throw menusResult.error;
     if (scheduleResult.error) throw scheduleResult.error;
     if (layoutsResult.error) throw layoutsResult.error;
     if (equipmentResult.error) throw equipmentResult.error;
+
+    const venueHire = venueHireResult.data;
 
     const menus = menusResult.data || [];
     const schedule = scheduleResult.data || [];
@@ -77,6 +81,15 @@ serve(async (req) => {
         clientName: event.client_name || '',
         contactEmail: event.client_email || ''
       },
+      venue: venueHire ? {
+        venue_name: venueHire.venue_name,
+        hire_cost: venueHire.hire_cost,
+        vat_rate: venueHire.vat_rate,
+        setup_time: venueHire.setup_time,
+        breakdown_time: venueHire.breakdown_time,
+        capacity: venueHire.capacity,
+        notes: venueHire.notes
+      } : null,
       setup: {
         spaces: layouts.map(layout => ({
           space_name: layout.space_name,
@@ -117,21 +130,32 @@ serve(async (req) => {
     const lineItems = [];
     let sortOrder = 0;
 
-    // Add room hire
-    if (layouts.length > 0) {
+    // Add venue hire if present
+    if (venueHire && venueHire.hire_cost > 0) {
+      lineItems.push({
+        event_id: eventId,
+        type: 'room',
+        description: `Venue Hire - ${venueHire.venue_name}`,
+        qty: 1,
+        unit_price: venueHire.hire_cost,
+        per_person: false,
+        sort_order: sortOrder++
+      });
+    } else if (layouts.length > 0) {
+      // Fallback to layouts if no venue hire
       layouts.forEach(layout => {
         lineItems.push({
           event_id: eventId,
           type: 'room',
           description: `${layout.space_name} - ${layout.layout_type}`,
           qty: 1,
-          unit_price: 600.00, // Default room price (VAT inclusive)
+          unit_price: 600.00,
           per_person: false,
           sort_order: sortOrder++
         });
       });
     } else {
-      // Default room item if no layouts specified
+      // Default room item if nothing specified
       lineItems.push({
         event_id: eventId,
         type: 'room',
