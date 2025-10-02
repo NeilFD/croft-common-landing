@@ -1009,7 +1009,7 @@ async function retrieveTargetedData(supabase: any, intent: Intent, eventId: stri
     if (intent.searchQuery) {
       console.log('🔐 Using service role client for knowledge base query in retrieveTargetedData');
       const dbClient = serviceRoleClient || supabase;
-      const ckData = await retrieveCommonKnowledgeData(dbClient, intent.searchQuery);
+      const ckData = await retrieveCommonKnowledgeData(supabase, intent.searchQuery, dbClient);
       return { ...retrieved, ...ckData };
     }
     return retrieved;
