@@ -35,6 +35,14 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     setVariant(options?.variant ?? 'strobe');
     setPreviewSrc(options?.previewSrc ?? null);
     setIsTransitioning(true);
+
+    // Start hydration watchdog for iOS PWA
+    try {
+      lastRequestedPathRef.current = path;
+      startHydrationWatchdog(path);
+    } catch (e) {
+      console.warn('[TransitionProvider] Watchdog setup failed:', e);
+    }
   };
 
   // Strobe + logo transition implementation
@@ -44,6 +52,11 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const intervalRef = useRef<number | null>(null);
   const logoShownRef = useRef(false);
   const [overlayVisible, setOverlayVisible] = useState(false);
+
+  // Hydration watchdog state
+  const hydrationTimerRef = useRef<number | null>(null);
+  const lastRequestedPathRef = useRef<string | null>(null);
+  const isIOSPWARef = useRef<boolean>(false);
 
   // Transition timing constants
   const STROBE_TOGGLE_MS = 166; // 3Hz max (toggle interval ~166ms; full cycle ~333ms)
@@ -60,6 +73,59 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
   const REVEAL_AFTER_NAV_MS = 200; // wait a beat after navigation before reveal
 
   const TEXTURE_URL = '/lovable-uploads/d1fb9178-8f7e-47fb-a8ac-71350264d76f.png';
+
+  // Detect iOS standalone PWA once
+  useEffect(() => {
+    try {
+      const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (navigator as any).standalone === true;
+      const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      isIOSPWARef.current = Boolean(standalone && isiOS);
+    } catch {}
+  }, []);
+
+  // Start/clear hydration watchdog for route transitions
+  const startHydrationWatchdog = (path: string) => {
+    try {
+      // Clear any existing timeout
+      if (hydrationTimerRef.current) {
+        clearTimeout(hydrationTimerRef.current);
+        hydrationTimerRef.current = null;
+      }
+      if (!isIOSPWARef.current) return;
+      hydrationTimerRef.current = window.setTimeout(() => {
+        if (isTransitioning && lastRequestedPathRef.current === path) {
+          console.error('[TransitionProvider] Hydration watchdog: forcing hard nav to', path);
+          // Ensure overlay is not left stuck
+          setOverlayVisible(false);
+          setIsTransitioning(false);
+          setPhase('idle');
+          setTargetPath('');
+          window.location.replace(path + '?bypass-cache=' + Date.now());
+        }
+      }, 1500);
+    } catch (e) {
+      console.warn('[TransitionProvider] Failed to start hydration watchdog:', e);
+    }
+  };
+
+  // Listen for route hydration beacons to cancel watchdog
+  useEffect(() => {
+    const onHydrated = (e: Event) => {
+      try {
+        const detail = (e as CustomEvent)?.detail as any;
+        const hydratedPath = detail?.pathname;
+        if (hydrationTimerRef.current) {
+          clearTimeout(hydrationTimerRef.current);
+          hydrationTimerRef.current = null;
+          console.log('[TransitionProvider] Hydration confirmed for', hydratedPath);
+        }
+      } catch {}
+    };
+    window.addEventListener('cc:routes-hydrated', onHydrated as EventListener);
+    return () => {
+      window.removeEventListener('cc:routes-hydrated', onHydrated as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     if (!isTransitioning) return;
@@ -202,6 +268,10 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
     intervalRef.current = null;
+    if (hydrationTimerRef.current) {
+      clearTimeout(hydrationTimerRef.current);
+      hydrationTimerRef.current = null;
+    }
   };
 
   // Set up emergency cleanup failsafe whenever overlay becomes visible

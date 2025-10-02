@@ -164,6 +164,15 @@ const LowercasePathGuard = () => {
 // Loading fallback component with escape hatch for PWA issues
 const PageLoader = () => {
   const [showReloadButton, setShowReloadButton] = useState(false);
+  const location = useLocation();
+  
+  // Dispatch a beacon when Suspense fallback mounts for a route
+  useEffect(() => {
+    try {
+      const ev = new CustomEvent('cc:routes-loading', { detail: { pathname: location.pathname, ts: Date.now() } });
+      window.dispatchEvent(ev);
+    } catch {}
+  }, [location.pathname]);
   
   useEffect(() => {
     // Show reload button after 10 seconds of loading
@@ -193,6 +202,18 @@ const PageLoader = () => {
       )}
     </div>
   );
+};
+
+// Emits a hydration beacon once route content has mounted (Suspense resolved)
+const RouteHydrationBeacon = () => {
+  const location = useLocation();
+  useEffect(() => {
+    try {
+      const ev = new CustomEvent('cc:routes-hydrated', { detail: { pathname: location.pathname, ts: Date.now() } });
+      window.dispatchEvent(ev);
+    } catch {}
+  }, [location.pathname]);
+  return null;
 };
 
 const App = () => {
@@ -339,6 +360,7 @@ const App = () => {
                        <Route path="/proposal/:code" element={<ProposalRedirect />} />
                        <Route path="*" element={<NotFound />} />
                       </Routes>
+                      <RouteHydrationBeacon />
                     </Suspense>
                   </MembershipAuthProvider>
                 </TransitionProvider>
