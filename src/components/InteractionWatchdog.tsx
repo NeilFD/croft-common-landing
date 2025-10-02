@@ -12,10 +12,6 @@ export default function InteractionWatchdog() {
 
   const scan = useCallback((reason = 'scheduled') => {
     const isNative = Capacitor.isNativePlatform();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const cx = Math.round(vw / 2);
-    const cy = Math.round(vh / 2);
 
     // 1. Remove stray disabled attributes from non-form elements
     const allowed = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'OPTION', 'FIELDSET']);
@@ -29,84 +25,42 @@ export default function InteractionWatchdog() {
       }
     }
 
-    // 2. Check for large invisible overlays and problematic elements
-    const probePoints = [
-      // Center 3x3 grid
-      [cx - 50, cy - 50], [cx, cy - 50], [cx + 50, cy - 50],
-      [cx - 50, cy], [cx, cy], [cx + 50, cy],
-      [cx - 50, cy + 50], [cx, cy + 50], [cx + 50, cy + 50],
-      // Additional coverage
-      [Math.round(vw * 0.25), cy],
-      [Math.round(vw * 0.75), cy],
-      [cx, Math.round(vh * 0.35)],
-      [cx, Math.round(vh * 0.65)]
-    ];
-
-    const processedElements = new Set<HTMLElement>();
+    // 2. ONLY clean up stuck transition overlays - nothing else
+    // Very conservative opacity threshold to avoid false positives
+    const opacityThreshold = 0.05;
     let overlayFixed = 0;
 
-    // Unified opacity threshold
-    const opacityThreshold = isNative ? 0.15 : 0.1;
+    // Interactive element safelist - NEVER disable these
+    const interactiveTags = new Set([
+      'A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'LABEL',
+      'VIDEO', 'AUDIO', 'DETAILS', 'SUMMARY'
+    ]);
 
-    for (const [x, y] of probePoints) {
-      const stack = document.elementsFromPoint(x, y);
+    // Only check for transition overlays specifically
+    const transitionOverlays = document.querySelectorAll('[data-transition-overlay]');
+    
+    for (const el of transitionOverlays) {
+      const he = el as HTMLElement;
       
-      for (const el of stack) {
-        const he = el as HTMLElement;
-        if (!he || processedElements.has(he)) continue;
-        
-        const cs = getComputedStyle(he);
-        if (cs.pointerEvents === 'none') continue;
+      // Skip if already disabled
+      const cs = getComputedStyle(he);
+      if (cs.pointerEvents === 'none') continue;
 
-        const rect = he.getBoundingClientRect();
-        const area = rect.width * rect.height;
-        const viewportArea = vw * vh;
-        const coverageThreshold = isNative ? 0.15 : 0.25;
-        
-        const isLarge = area > viewportArea * coverageThreshold;
-        const isFixed = cs.position === 'fixed' || cs.position === 'absolute';
-        const nearlyInvisible = parseFloat(cs.opacity || '1') <= opacityThreshold || cs.visibility === 'hidden';
-        const hasMisleadingCursor = cs.cursor === 'pointer' && 
-          !he.onclick && 
-          !he.getAttribute('href') && 
-          !he.getAttribute('role')?.includes('button');
+      // Safety guard: never touch interactive elements or their ancestors
+      if (interactiveTags.has(he.tagName)) continue;
+      if (he.querySelector('button, a, input, select, textarea')) continue;
 
-        // Fix large invisible overlays or misleading cursor elements
-        if ((isLarge && isFixed && nearlyInvisible) || (nearlyInvisible && hasMisleadingCursor)) {
-          processedElements.add(he);
-          he.style.pointerEvents = 'none';
-          
-          // Simplified native fixes - less aggressive
-          if (isNative && nearlyInvisible) {
-            he.style.touchAction = 'none';
-          }
-          
-          he.setAttribute('data-debug-neutralised', hasMisleadingCursor ? 'misleading-cursor' : 'invisible-overlay');
-          overlayFixed++;
-          console.warn('[InteractionWatchdog] Neutralised element:', {
-            tag: he.tagName,
-            reason: hasMisleadingCursor ? 'misleading-cursor' : 'invisible-overlay',
-            opacity: cs.opacity,
-            cursor: cs.cursor
-          });
-          break; // Move to next probe point
+      const opacity = parseFloat(cs.opacity || '1');
+      
+      // Only disable if genuinely invisible
+      if (opacity < opacityThreshold || cs.visibility === 'hidden') {
+        he.style.pointerEvents = 'none';
+        if (isNative) {
+          he.style.touchAction = 'none';
         }
-
-        // Check for stuck transition overlays
-        if (he.hasAttribute('data-transition-overlay')) {
-          const opacity = parseFloat(cs.opacity || '1');
-          if (opacity < opacityThreshold && cs.pointerEvents !== 'none') {
-            processedElements.add(he);
-            he.style.pointerEvents = 'none';
-            if (isNative) {
-              he.style.touchAction = 'none';
-            }
-            he.setAttribute('data-debug-neutralised', 'transition-overlay');
-            overlayFixed++;
-            console.warn('[InteractionWatchdog] Fixed stuck transition overlay');
-            break;
-          }
-        }
+        he.setAttribute('data-debug-neutralised', 'transition-overlay');
+        overlayFixed++;
+        console.warn('[InteractionWatchdog] Fixed stuck transition overlay');
       }
     }
 
