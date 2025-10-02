@@ -2,7 +2,7 @@
 // Handles caching, push notifications, and app communication
 
 // Cache names for versioning
-const CACHE_NAME = 'croft-app-v1.8';
+const CACHE_NAME = 'croft-app-v1.9';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
 // Install event - cache essential assets
@@ -74,13 +74,39 @@ self.addEventListener('fetch', (event) => {
       return;
     }
 
-    // SPA navigation: network-first with cached '/' fallback
+    // SPA navigation: stale-while-revalidate for instant load
     if (event.request.mode === 'navigate') {
       event.respondWith(
-        fetch(event.request, { cache: 'no-cache' }).catch(async () => {
-          const cachedHome = await caches.match('/');
-          return cachedHome || Response.error();
-        })
+        (async () => {
+          const cache = await caches.open(CACHE_NAME);
+          const cachedHome = await cache.match('/');
+          
+          // Respond immediately with cached shell if available
+          if (cachedHome) {
+            // Update cache in background
+            event.waitUntil(
+              fetch('/', { cache: 'no-cache' })
+                .then(freshResponse => {
+                  if (freshResponse && freshResponse.status === 200) {
+                    cache.put('/', freshResponse.clone());
+                  }
+                })
+                .catch(err => console.warn('SW: Background update failed', err))
+            );
+            return cachedHome;
+          }
+          
+          // No cache: fetch from network
+          try {
+            const response = await fetch(event.request, { cache: 'no-cache' });
+            if (response && response.status === 200) {
+              cache.put('/', response.clone());
+            }
+            return response;
+          } catch (err) {
+            return Response.error();
+          }
+        })()
       );
       return;
     }

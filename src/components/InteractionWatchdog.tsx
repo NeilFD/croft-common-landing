@@ -10,14 +10,12 @@ import { Capacitor } from '@capacitor/core';
 export default function InteractionWatchdog() {
   const location = useLocation();
 
-  const scan = useCallback(() => {
+  const scan = useCallback((reason = 'scheduled') => {
     const isNative = Capacitor.isNativePlatform();
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const cx = Math.round(vw / 2);
     const cy = Math.round(vh / 2);
-    
-    console.log(`[InteractionWatchdog] Starting scan (${isNative ? 'NATIVE' : 'DESKTOP'} mode)`);
 
     // 1. Remove stray disabled attributes from non-form elements
     const allowed = new Set(['BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'OPTION', 'FIELDSET']);
@@ -113,24 +111,84 @@ export default function InteractionWatchdog() {
     }
 
     // Log summary
-    if (disabledFixed > 0) {
-      console.warn(`[InteractionWatchdog] Removed ${disabledFixed} stray disabled attribute(s)`);
-    }
-    if (overlayFixed > 0) {
-      console.warn(`[InteractionWatchdog] Fixed ${overlayFixed} blocking element(s)`);
+    if (disabledFixed > 0 || overlayFixed > 0) {
+      console.warn(`[InteractionWatchdog] Scan complete (${reason}):`, {
+        disabledFixed,
+        overlayFixed
+      });
     }
   }, []);
 
   useEffect(() => {
-    // Run scan after a short delay to let the page settle
-    const timeoutId = setTimeout(scan, 300);
+    // Initial scan after page settles
+    const initialScan = setTimeout(() => scan('initial'), 300);
+    
+    // Extra scan to catch PWA banners and late-mounted overlays
+    const lateScan = setTimeout(() => scan('late-mount-check'), 2500);
     
     // Re-scan on resize
-    window.addEventListener('resize', scan);
+    const handleResize = () => scan('resize');
+    window.addEventListener('resize', handleResize);
+    
+    // MutationObserver to catch new fixed/absolute full-viewport elements
+    const observer = new MutationObserver((mutations) => {
+      let shouldRescan = false;
+      
+      for (const mutation of mutations) {
+        // Check added nodes for large fixed elements
+        for (const node of mutation.addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const el = node as HTMLElement;
+            const cs = getComputedStyle(el);
+            
+            // Check if it's a large fixed element
+            if ((cs.position === 'fixed' || cs.position === 'absolute')) {
+              const rect = el.getBoundingClientRect();
+              const vw = window.innerWidth;
+              const vh = window.innerHeight;
+              const area = rect.width * rect.height;
+              const viewportArea = vw * vh;
+              
+              if (area > viewportArea * 0.15) {
+                shouldRescan = true;
+                break;
+              }
+            }
+            
+            // Check for transition overlay attribute
+            if (el.hasAttribute('data-transition-overlay')) {
+              shouldRescan = true;
+              break;
+            }
+          }
+        }
+        
+        // Check attribute changes for transition overlay
+        if (mutation.type === 'attributes' && 
+            mutation.attributeName === 'data-transition-overlay') {
+          shouldRescan = true;
+        }
+        
+        if (shouldRescan) break;
+      }
+      
+      if (shouldRescan) {
+        scan('mutation-detected');
+      }
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-transition-overlay']
+    });
     
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', scan);
+      clearTimeout(initialScan);
+      clearTimeout(lateScan);
+      window.removeEventListener('resize', handleResize);
+      observer.disconnect();
     };
   }, [location.pathname, scan]);
 

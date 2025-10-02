@@ -211,11 +211,11 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
       if (emergencyCleanupRef.current) {
         clearTimeout(emergencyCleanupRef.current);
       }
-      // Set emergency cleanup for 10 seconds (should never take this long)
+      // Set emergency cleanup for 5 seconds (should never take this long)
       emergencyCleanupRef.current = window.setTimeout(() => {
-        console.error('[TransitionProvider] Emergency cleanup activated - overlay stuck for >10s');
+        console.error('[TransitionProvider] Emergency cleanup activated - overlay stuck for >5s');
         forceCleanup();
-      }, 10000);
+      }, 5000);
     } else {
       // Clear emergency cleanup when overlay properly hidden
       if (emergencyCleanupRef.current) {
@@ -257,11 +257,16 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
         style={{ 
           transformOrigin: 'center center', 
           willChange: 'opacity, transform',
-          // Micro-guard: force pointer-events none if opacity is low
           pointerEvents: overlayVisible ? 'auto' : 'none'
         }}
+        onTransitionEnd={(e) => {
+          // Force pointer-events none when opacity transition completes at 0
+          if (e.propertyName === 'opacity' && !overlayVisible) {
+            (e.currentTarget as HTMLElement).style.pointerEvents = 'none';
+          }
+        }}
         ref={(el) => {
-          if (el && overlayVisible) {
+          if (el) {
             // Additional runtime guard for race conditions
             const checkOpacity = () => {
               const computed = getComputedStyle(el);
@@ -270,7 +275,9 @@ export const TransitionProvider = ({ children }: TransitionProviderProps) => {
               }
             };
             // Check after a brief delay to catch transition states
-            setTimeout(checkOpacity, 50);
+            if (overlayVisible) {
+              setTimeout(checkOpacity, 50);
+            }
           }
         }}
       >

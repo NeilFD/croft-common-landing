@@ -5,7 +5,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { BRAND_LOGO } from '@/data/brand';
 
 export const initializePWA = async () => {
+  const startMark = 'pwa-init-start';
+  const endMark = 'pwa-init-end';
+  
   try {
+    performance.mark(startMark);
+    
     const path = window.location.pathname;
     if (path.startsWith('/admin')) {
       console.log('[PWA] Skipping initialization for admin paths');
@@ -107,7 +112,16 @@ export const initializePWA = async () => {
     }
     
     (window as any).__pwaReg = reg;
-    console.log('[PWA] Initialization complete');
+    
+    // Performance measurement
+    performance.mark(endMark);
+    const measure = performance.measure('pwa-initialization', startMark, endMark);
+    
+    console.log('[PWA] Initialization complete:', {
+      totalMs: Math.round(measure.duration),
+      swRegistered: !!reg,
+      timestamp: new Date().toISOString()
+    });
     
   } catch (error) {
     console.error('[PWA] Initialization error:', error);
