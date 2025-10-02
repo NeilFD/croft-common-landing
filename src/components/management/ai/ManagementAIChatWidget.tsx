@@ -23,14 +23,25 @@ export const ManagementAIChatWidget = () => {
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
   const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
 
-  // Auto-scroll to bottom when messages change or widget opens
+  // Always scroll to bottom when widget opens or minimizes
+  useEffect(() => {
+    if (scrollRef.current && isWidgetOpen && !isMinimized) {
+      setTimeout(() => {
+        scrollRef.current?.scrollTo({
+          top: scrollRef.current.scrollHeight,
+          behavior: 'smooth',
+        });
+      }, 150);
+    }
+  }, [isWidgetOpen, isMinimized]);
+
+  // Auto-scroll when messages change (only if near bottom)
   useEffect(() => {
     if (scrollRef.current && isWidgetOpen && !isMinimized) {
       const scrollElement = scrollRef.current;
       const isNearBottom = scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight < 100;
       
       if (isNearBottom || isLoading) {
-        // Use setTimeout to ensure DOM has updated
         setTimeout(() => {
           scrollElement.scrollTo({
             top: scrollElement.scrollHeight,
@@ -39,7 +50,7 @@ export const ManagementAIChatWidget = () => {
         }, 100);
       }
     }
-  }, [messages, isLoading, isWidgetOpen, isMinimized]);
+  }, [messages, isLoading]);
 
   // Update input with voice transcript
   useEffect(() => {
