@@ -231,44 +231,36 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         throw error;
       }
 
-      // Enrich messages with user info and public URLs for attachments
-      const enrichedMessages = await Promise.all(
-        (data || []).map(async (msg) => {
-          try {
-            const userInfo = await loadUserInfo(msg);
-            
-            // Get public URLs for attachments
-            const maybeAttachments = (msg as any).attachments as any[] | undefined;
-            if (maybeAttachments && maybeAttachments.length > 0) {
-              const attachmentsWithUrls = maybeAttachments.map((att: any) => {
-                const { data: urlData } = supabase.storage
-                  .from('chat-images')
-                  .getPublicUrl(att.storage_path);
-                
-                return {
-                  ...att,
-                  url: urlData.publicUrl,
-                };
-              });
-              
-              return {
-                ...userInfo,
-                attachments: attachmentsWithUrls,
-              };
-            }
-            
-            return userInfo;
-          } catch (e) {
-            console.error('Failed to enrich message', (msg as any)?.id, e);
-            // Fallback to raw message so the thread still renders
-            return {
-              ...msg,
-              sender_name: 'Unknown',
-              sender_role: '',
-            } as Message;
-          }
-        })
-      );
+      // Map the RPC response to match our Message interface
+      const enrichedMessages = (data || []).map((msg: any) => {
+        // Get public URLs for attachments
+        const attachments = (msg.attachments || []).map((att: any) => {
+          const { data: urlData } = supabase.storage
+            .from('chat-images')
+            .getPublicUrl(att.storage_path);
+          
+          return {
+            ...att,
+            url: urlData.publicUrl,
+          };
+        });
+        
+        return {
+          id: msg.id,
+          chat_id: msg.chat_id,
+          sender_id: msg.sender_id,
+          body_text: msg.body,
+          reply_to_message_id: null,
+          created_at: msg.created_at,
+          edited_at: msg.edited_at,
+          deleted_at: msg.deleted_at,
+          is_cleo: false,
+          sender_name: msg.sender_name,
+          sender_role: msg.sender_role,
+          attachments,
+          read_by: [],
+        } as Message;
+      });
 
       setMessages(enrichedMessages);
     } catch (error) {
