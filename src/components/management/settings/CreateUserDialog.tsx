@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Copy, Check } from 'lucide-react';
@@ -25,7 +25,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState<'Manager' | 'Admin'>('Manager');
   const [loading, setLoading] = useState(false);
   const [tempPassword, setTempPassword] = useState('');
   const [copied, setCopied] = useState(false);
@@ -60,14 +60,6 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
       return;
     }
 
-    if (!role.trim()) {
-      toast({
-        title: 'Error',
-        description: 'Role is required',
-        variant: 'destructive'
-      });
-      return;
-    }
 
     try {
       setLoading(true);
@@ -116,7 +108,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
     setUserName('');
     setEmail('');
     setJobTitle('');
-    setRole('');
+    setRole('Manager');
     setTempPassword('');
     setCopied(false);
     onOpenChange(false);
@@ -209,17 +201,15 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
 
               <div className="space-y-2">
                 <Label htmlFor="role">Role</Label>
-                <Input
-                  id="role"
-                  type="text"
-                  placeholder="e.g. admin, sales, manager, etc."
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  disabled={loading}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Common roles: admin, sales, ops, finance, readonly
-                </p>
+                <Select value={role} onValueChange={(value) => setRole(value as 'Manager' | 'Admin')} disabled={loading}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Manager">Manager</SelectItem>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
