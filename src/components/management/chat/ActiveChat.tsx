@@ -41,6 +41,8 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   const [chatMembers, setChatMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(0);
 
   useEffect(() => {
     if (!chatId || !managementUser?.user.id) return;
@@ -110,7 +112,24 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   }, [chatId, managementUser?.user.id]);
 
   useEffect(() => {
-    scrollToBottom();
+    // Only auto-scroll if:
+    // 1. A new message was added (length increased)
+    // 2. User is already near bottom (within 100px)
+    const messageCount = messages.length;
+    const isNewMessage = messageCount > prevMessageCountRef.current;
+    prevMessageCountRef.current = messageCount;
+
+    if (isNewMessage && scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+        
+        if (isNearBottom) {
+          scrollToBottom();
+        }
+      }
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -258,19 +277,19 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
-      // Get recent message history for context
-      const recentMessages = messages
+      // Build conversation history for Cleo
+      const conversationHistory = messages
         .slice(-10)
         .map(m => ({
-          role: m.sender_id === managementUser?.user.id ? 'user' : 'assistant',
+          role: m.is_cleo ? 'assistant' : 'user',
           content: m.body_text,
         }));
 
-      // Add current message
-      recentMessages.push({ role: 'user', content: userMessageText });
+      // Create enhanced message with chat context
+      const contextualMessage = `[Chat: ${chat?.name || 'Direct Message'} with ${chatMembers.length} members]\n\n${userMessageText}`;
 
       const response = await fetch(
-        `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/chat-ai-cleo`,
+        `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/management-ai-assistant`,
         {
           method: 'POST',
           headers: {
@@ -278,11 +297,8 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
-            messages: recentMessages,
-            chatContext: {
-              chatName: chat?.name,
-              memberCount: chatMembers.length,
-            },
+            message: contextualMessage,
+            conversationHistory,
           }),
         }
       );
@@ -311,6 +327,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           chat_id: chatId,
           sender_id: managementUser?.user.id,
           body_text: '',
+          is_cleo: true,
         })
         .select()
         .single();
@@ -448,7 +465,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         onChatDeleted={() => onBack?.()}
       />
 
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {messages.map((message) => (
             <MessageBubble
