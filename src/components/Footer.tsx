@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CMSText } from './cms/CMSText';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 const Footer = ({
   showSubscription = true
 }: {
@@ -176,12 +176,12 @@ const Footer = ({
               />
             </button>
             
-            <button 
-              onClick={() => navigate('/management/login')}
+            <Link 
+              to="/management/login"
               className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
             >
               Management Login
-            </button>
+            </Link>
           </div>
         </div>
 
