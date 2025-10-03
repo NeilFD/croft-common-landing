@@ -285,8 +285,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           content: m.body_text,
         }));
 
-      // Create enhanced message with chat context
-      const contextualMessage = `[Chat: ${chat?.name || 'Direct Message'} with ${chatMembers.length} members]\n\n${userMessageText}`;
+      // Add current user message
+      conversationHistory.push({
+        role: 'user',
+        content: userMessageText,
+      });
 
       const response = await fetch(
         `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/management-ai-assistant`,
@@ -297,8 +300,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({
-            message: contextualMessage,
-            conversationHistory,
+            messages: conversationHistory,
+            context: {
+              chatName: chat?.name || 'Direct Message',
+              memberCount: chatMembers.length,
+            },
           }),
         }
       );
