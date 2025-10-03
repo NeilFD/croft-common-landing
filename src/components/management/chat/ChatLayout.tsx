@@ -59,20 +59,43 @@ export const ChatLayout = () => {
     if (!managementUser?.user.id) return;
 
     try {
-      // Get chats the user is a member of
-      const { data: chatMembers, error: membersError } = await supabase
-        .from('chat_members')
-        .select('chat_id, chats(*)')
-        .eq('user_id', managementUser.user.id);
+      const userId = managementUser.user.id;
 
+      // 1) Chats the user is a member of (with last_read_at for unread calc)
+      const { data: memberRows, error: membersError } = await supabase
+        .from('chat_members')
+        .select('chat_id, last_read_at, chats(*)')
+        .eq('user_id', userId);
       if (membersError) throw membersError;
 
-      // Get last message for each chat
+      // 2) System chats visible to management (even without explicit membership)
+      let systemChats: any[] = [];
+      if (managementUser.role) {
+        const { data: sysChats, error: sysErr } = await supabase
+          .from('chats')
+          .select('*')
+          .eq('is_system', true);
+        if (sysErr) {
+          console.warn('System chats fetch failed:', sysErr);
+        } else {
+          systemChats = sysChats || [];
+        }
+      }
+
+      // Merge member chats and system chats (dedupe by id)
+      const byId: Record<string, any> = {};
+      (memberRows || []).forEach((row: any) => {
+        byId[row.chats.id] = { ...row.chats, last_read_at: row.last_read_at };
+      });
+      systemChats.forEach((c: any) => {
+        if (!byId[c.id]) byId[c.id] = c;
+      });
+      const mergedChats: any[] = Object.values(byId);
+
+      // Get last message and unread count for each chat
       const chatsWithMessages = await Promise.all(
-        (chatMembers || []).map(async (member: any) => {
-          const chat = member.chats;
-          
-          // Get last message
+        mergedChats.map(async (chat: any) => {
+          // Last message
           const { data: lastMessage } = await supabase
             .from('messages')
             .select('body_text, created_at, sender_id')
@@ -82,7 +105,7 @@ export const ChatLayout = () => {
             .limit(1)
             .single();
 
-          // Get sender name if message exists
+          // Sender name (if any)
           let senderName = '';
           if (lastMessage) {
             const { data: senderInfo } = await supabase
@@ -91,30 +114,36 @@ export const ChatLayout = () => {
             senderName = senderInfo?.display_name || 'Unknown';
           }
 
-          // Get unread count
-          const { data: unreadData } = await supabase
-            .from('messages')
-            .select('id', { count: 'exact', head: true })
-            .eq('chat_id', chat.id)
-            .neq('sender_id', managementUser.user.id)
-            .is('deleted_at', null)
-            .gt('created_at', member.last_read_at || '1970-01-01');
+          // Unread count only when we have last_read_at (membership present)
+          let unread_count = 0;
+          if ((chat as any).last_read_at) {
+            const { count } = await supabase
+              .from('messages')
+              .select('id', { count: 'exact', head: true })
+              .eq('chat_id', chat.id)
+              .neq('sender_id', userId)
+              .is('deleted_at', null)
+              .gt('created_at', (chat as any).last_read_at);
+            unread_count = count || 0;
+          }
 
           return {
             ...chat,
-            unread_count: unreadData?.length || 0,
-            last_message: lastMessage ? {
-              body_text: lastMessage.body_text,
-              created_at: lastMessage.created_at,
-              sender_name: senderName,
-            } : undefined,
-          };
+            unread_count,
+            last_message: lastMessage
+              ? {
+                  body_text: lastMessage.body_text,
+                  created_at: lastMessage.created_at,
+                  sender_name: senderName,
+                }
+              : undefined,
+          } as Chat;
         })
       );
 
       // Sort by updated_at
-      chatsWithMessages.sort((a, b) => 
-        new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+      chatsWithMessages.sort(
+        (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
       );
 
       setChats(chatsWithMessages);
