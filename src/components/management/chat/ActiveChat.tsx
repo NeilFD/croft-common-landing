@@ -233,28 +233,38 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       // Enrich messages with user info and public URLs for attachments
       const enrichedMessages = await Promise.all(
         (data || []).map(async (msg) => {
-          const userInfo = await loadUserInfo(msg);
-          
-          // Get public URLs for attachments
-          if (msg.attachments && msg.attachments.length > 0) {
-            const attachmentsWithUrls = msg.attachments.map((att: any) => {
-              const { data: urlData } = supabase.storage
-                .from('chat-images')
-                .getPublicUrl(att.storage_path);
+          try {
+            const userInfo = await loadUserInfo(msg);
+            
+            // Get public URLs for attachments
+            if (msg.attachments && msg.attachments.length > 0) {
+              const attachmentsWithUrls = msg.attachments.map((att: any) => {
+                const { data: urlData } = supabase.storage
+                  .from('chat-images')
+                  .getPublicUrl(att.storage_path);
+                
+                return {
+                  ...att,
+                  url: urlData.publicUrl,
+                };
+              });
               
               return {
-                ...att,
-                url: urlData.publicUrl,
+                ...userInfo,
+                attachments: attachmentsWithUrls,
               };
-            });
+            }
             
+            return userInfo;
+          } catch (e) {
+            console.error('Failed to enrich message', (msg as any)?.id, e);
+            // Fallback to raw message so the thread still renders
             return {
-              ...userInfo,
-              attachments: attachmentsWithUrls,
-            };
+              ...msg,
+              sender_name: 'Unknown',
+              sender_role: '',
+            } as Message;
           }
-          
-          return userInfo;
         })
       );
 
