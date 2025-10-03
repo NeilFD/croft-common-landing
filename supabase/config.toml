@@ -289,3 +289,6 @@ verify_jwt = false
 [functions.chat-ai-cleo]
 verify_jwt = true
 
+[functions.create-management-user]
+verify_jwt = true
+

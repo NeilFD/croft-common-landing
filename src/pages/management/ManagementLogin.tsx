@@ -335,6 +335,18 @@ const ManagementLogin = () => {
         return;
       }
 
+      // Check if password change is required
+      const { data: mustChange } = await supabase.rpc('check_password_change_required');
+      
+      if (mustChange) {
+        toast({
+          title: "Password change required",
+          description: "You must change your password before continuing"
+        });
+        navigate('/management/password-change');
+        return;
+      }
+
       toast({
         title: "Signed in successfully",
         description: "Welcome to the management portal"

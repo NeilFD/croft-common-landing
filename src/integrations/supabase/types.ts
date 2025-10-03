@@ -2803,6 +2803,33 @@ export type Database = {
           },
         ]
       }
+      management_user_audit: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          target_user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_user_id?: string | null
+        }
+        Relationships: []
+      }
       member_check_ins: {
         Row: {
           check_in_date: string
@@ -4609,6 +4636,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_password_metadata: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          is_first_login: boolean
+          must_change_password: boolean
+          password_changed_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          is_first_login?: boolean
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          is_first_login?: boolean
+          must_change_password?: boolean
+          password_changed_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -5095,6 +5152,10 @@ export type Database = {
         Args: { _chat_id: string; _user_id: string }
         Returns: boolean
       }
+      check_password_change_required: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_secret_kitchen_access_status: {
         Args: { user_email: string }
         Returns: {
@@ -5189,6 +5250,13 @@ export type Database = {
           | { payload: Json }
         Returns: string
       }
+      create_management_user: {
+        Args: {
+          p_email: string
+          p_role: Database["public"]["Enums"]["management_role"]
+        }
+        Returns: Json
+      }
       create_proposal: {
         Args:
           | { p_event_id: string; p_items: Json }
@@ -5198,6 +5266,10 @@ export type Database = {
               p_service_charge_pct?: number
             }
         Returns: Json
+      }
+      deactivate_management_user: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       detect_booking_conflicts: {
         Args: {
@@ -5218,6 +5290,10 @@ export type Database = {
         Args: { user_id_input: string }
         Returns: string
       }
+      force_password_change: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
       generate_beo_pdf: {
         Args: { p_event_id: string }
         Returns: string
@@ -5227,6 +5303,10 @@ export type Database = {
         Returns: string
       }
       generate_membership_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_temp_password: {
         Args: Record<PropertyKey, never>
         Returns: string
       }
@@ -5582,6 +5662,10 @@ export type Database = {
             }
         Returns: string
       }
+      mark_password_changed: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       normalize_item_name: {
         Args: { item_name: string }
         Returns: string
@@ -5680,6 +5764,13 @@ export type Database = {
         Args: { p_id: string; patch: Json }
         Returns: undefined
       }
+      update_management_user_role: {
+        Args: {
+          p_new_role: Database["public"]["Enums"]["management_role"]
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       update_meeting_status: {
         Args: {
           booking_date?: string
@@ -5742,7 +5833,13 @@ export type Database = {
       delivery_status: "sent" | "failed" | "deactivated" | "logged"
       hold_type: "soft_hold" | "hard_hold" | "option" | "tentative"
       loyalty_card_type: "regular" | "lucky7"
-      management_role: "admin" | "sales" | "ops" | "finance" | "readonly"
+      management_role:
+        | "admin"
+        | "sales"
+        | "ops"
+        | "finance"
+        | "readonly"
+        | "manager"
       notification_scope: "all" | "self"
       notification_status: "draft" | "queued" | "sending" | "sent" | "failed"
       time_block_enum:
@@ -5910,7 +6007,14 @@ export const Constants = {
       delivery_status: ["sent", "failed", "deactivated", "logged"],
       hold_type: ["soft_hold", "hard_hold", "option", "tentative"],
       loyalty_card_type: ["regular", "lucky7"],
-      management_role: ["admin", "sales", "ops", "finance", "readonly"],
+      management_role: [
+        "admin",
+        "sales",
+        "ops",
+        "finance",
+        "readonly",
+        "manager",
+      ],
       notification_scope: ["all", "self"],
       notification_status: ["draft", "queued", "sending", "sent", "failed"],
       time_block_enum: [

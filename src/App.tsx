@@ -78,6 +78,8 @@ import ManagementLogin from "./pages/management/ManagementLogin";
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
 const ManagementAIAssistant = lazy(() => import("./pages/management/ManagementAIAssistant"));
 const FeedbackManagement = lazy(() => import("./pages/management/FeedbackManagement"));
+const Settings = lazy(() => import("./pages/management/Settings"));
+const PasswordChangeRequired = lazy(() => import("./components/management/auth/PasswordChangeRequired"));
 const CommonKnowledgeDashboard = lazy(() => import("./pages/management/CommonKnowledgeDashboard"));
 const CommonKnowledgeNew = lazy(() => import("./pages/management/CommonKnowledgeNew"));
 const CommonKnowledgeUpload = lazy(() => import("./pages/management/CommonKnowledgeUpload"));
@@ -315,9 +317,11 @@ const App = () => {
                        
                         {/* Management Routes */}
                         <Route path="/management/login" element={<ManagementLogin />} />
+                        <Route path="/management/password-change" element={<PasswordChangeRequired />} />
                         <Route path="/management" element={<ManagementDashboard />} />
                         <Route path="/management/ai-assistant" element={<ManagementAIAssistant />} />
                         <Route path="/management/feedback" element={<FeedbackManagement />} />
+                        <Route path="/management/settings" element={<Settings />} />
                         
                         {/* CMS under Management */}
                         <Route path="/management/cms/kitchens" element={<CMSKitchens />} />

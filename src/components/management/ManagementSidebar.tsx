@@ -110,6 +110,10 @@ export const ManagementSidebar = () => {
   const { canAccessAdmin, canAccessCMS, canAccessResearch, canAccessFeedback } = useRoleBasedAccess();
   const currentPath = location.pathname;
 
+  const canAccessSettings = () => {
+    return managementUser?.role === 'admin';
+  };
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     modules: true,
     knowledge: true,
@@ -879,6 +883,25 @@ export const ManagementSidebar = () => {
         </SidebarContent>
 
         <SidebarFooter className="p-3 md:p-4">
+          {/* Settings Link (Admin Only) */}
+          {canAccessSettings() && showText && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/management/settings')}
+                  className={`w-full flex items-center justify-start space-x-2 font-industrial h-8 md:h-9 text-xs md:text-sm mb-2 ${
+                    isActive('/management/settings') ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
+                  }`}
+                >
+                  <Settings className="h-3 w-3 md:h-4 md:w-4" />
+                  <span>Settings</span>
+                </Button>
+              </TooltipTrigger>
+            </Tooltip>
+          )}
+          
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
