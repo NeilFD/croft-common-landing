@@ -126,7 +126,24 @@ Deno.serve(async (req) => {
 
     console.log('Created auth user:', authUser.user.id)
 
-    // Add user to user_roles table
+    // Create management profile FIRST to avoid triggers failing on NOT NULL fields
+    const { error: profileError } = await supabaseAdmin
+      .from('management_profiles')
+      .upsert({
+        user_id: authUser.user.id,
+        user_name: user_name,
+        email: userData.email,
+        job_title: job_title
+      }, { onConflict: 'user_id' })
+
+    if (profileError) {
+      console.error('Profile error:', profileError)
+      // Rollback: delete the auth user
+      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
+      throw profileError
+    }
+
+    // Add user to user_roles table AFTER profile creation
     const { error: roleError } = await supabaseAdmin
       .from('user_roles')
       .insert({
@@ -136,27 +153,10 @@ Deno.serve(async (req) => {
 
     if (roleError) {
       console.error('Role error:', roleError)
-      // Rollback: delete the auth user
+      // Rollback: delete auth user and profile to keep system consistent
       await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
+      await supabaseAdmin.from('management_profiles').delete().eq('user_id', authUser.user.id)
       throw roleError
-    }
-
-    // Create management profile
-    const { error: profileError } = await supabaseAdmin
-      .from('management_profiles')
-      .insert({
-        user_id: authUser.user.id,
-        user_name: user_name,
-        email: userData.email,
-        job_title: job_title
-      })
-
-    if (profileError) {
-      console.error('Profile error:', profileError)
-      // Rollback: delete the auth user and role
-      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
-      await supabaseAdmin.from('user_roles').delete().eq('user_id', authUser.user.id)
-      throw profileError
     }
 
     // Create password metadata entry
