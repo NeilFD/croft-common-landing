@@ -539,25 +539,37 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
         <div className="space-y-4">
-          {messages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              isOwn={message.sender_id === managementUser?.user.id}
-              isCleo={message.is_cleo === true}
-            />
-          ))}
-          {isCleoThinking && (
-            <MessageBubble
-              message={{
-                id: 'thinking',
-                body_text: '',
-                created_at: new Date().toISOString(),
-                sender_name: 'Cleo',
-              }}
-              isOwn={false}
-              isCleo={true}
-            />
+          {messages.length === 0 && !loading ? (
+            <div className="flex items-center justify-center h-full py-12">
+              <div className="text-center">
+                <p className="text-muted-foreground font-industrial text-sm">
+                  No messages yet. Start the conversation!
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((message) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  isOwn={message.sender_id === managementUser?.user.id}
+                  isCleo={message.is_cleo === true}
+                />
+              ))}
+              {isCleoThinking && (
+                <MessageBubble
+                  message={{
+                    id: 'thinking',
+                    body_text: '',
+                    created_at: new Date().toISOString(),
+                    sender_name: 'Cleo',
+                  }}
+                  isOwn={false}
+                  isCleo={true}
+                />
+              )}
+            </>
           )}
           <div ref={scrollRef} />
         </div>

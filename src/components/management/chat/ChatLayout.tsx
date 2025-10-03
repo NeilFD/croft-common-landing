@@ -147,6 +147,11 @@ export const ChatLayout = () => {
       );
 
       setChats(chatsWithMessages);
+      
+      // Auto-select first chat if none selected
+      if (!selectedChatId && chatsWithMessages.length > 0) {
+        setSelectedChatId(chatsWithMessages[0].id);
+      }
     } catch (error) {
       console.error('Error loading chats:', error);
     } finally {
