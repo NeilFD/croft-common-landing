@@ -5091,6 +5091,10 @@ export type Database = {
           total_check_ins: number
         }[]
       }
+      can_view_chat: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
       check_secret_kitchen_access_status: {
         Args: { user_email: string }
         Returns: {
