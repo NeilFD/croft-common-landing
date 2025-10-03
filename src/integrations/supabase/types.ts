@@ -5460,7 +5460,6 @@ export type Database = {
           sender_id: string
           sender_name: string
           sender_role: Database["public"]["Enums"]["management_role"]
-          updated_at: string
         }[]
       }
       get_chat_user_info: {
