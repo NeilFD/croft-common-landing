@@ -5516,6 +5516,14 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      is_chat_admin: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_chat_member: {
+        Args: { _chat_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_email_domain_allowed: {
         Args: { email: string }
         Returns: boolean

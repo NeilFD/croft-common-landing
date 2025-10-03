@@ -222,7 +222,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         </div>
       )}
 
-      <ChatHeader chat={chat} />
+      <ChatHeader 
+        chat={chat} 
+        onChatUpdated={loadChat}
+        onChatDeleted={() => onBack?.()}
+      />
 
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
