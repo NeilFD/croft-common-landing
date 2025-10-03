@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Copy, Check } from 'lucide-react';
@@ -25,7 +25,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
   const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
   const [jobTitle, setJobTitle] = useState('');
-  const [role, setRole] = useState<'admin' | 'sales' | 'ops' | 'finance' | 'readonly'>('sales');
+  const [role, setRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [tempPassword, setTempPassword] = useState('');
   const [copied, setCopied] = useState(false);
@@ -55,6 +55,15 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
       toast({
         title: 'Error',
         description: 'Job title is required',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!role.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Role is required',
         variant: 'destructive'
       });
       return;
@@ -107,7 +116,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
     setUserName('');
     setEmail('');
     setJobTitle('');
-    setRole('sales');
+    setRole('');
     setTempPassword('');
     setCopied(false);
     onOpenChange(false);
@@ -199,39 +208,18 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
               </div>
 
               <div className="space-y-2">
-                <Label>Role</Label>
-                <RadioGroup value={role} onValueChange={(value) => setRole(value as any)}>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="admin" id="admin" />
-                    <Label htmlFor="admin" className="font-normal cursor-pointer">
-                      Admin - Full access including user management
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="sales" id="sales" />
-                    <Label htmlFor="sales" className="font-normal cursor-pointer">
-                      Sales - Manage bookings and events
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="ops" id="ops" />
-                    <Label htmlFor="ops" className="font-normal cursor-pointer">
-                      Operations - View and manage operations
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="finance" id="finance" />
-                    <Label htmlFor="finance" className="font-normal cursor-pointer">
-                      Finance - View financial data and audit logs
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="readonly" id="readonly" />
-                    <Label htmlFor="readonly" className="font-normal cursor-pointer">
-                      Read Only - View access only
-                    </Label>
-                  </div>
-                </RadioGroup>
+                <Label htmlFor="role">Role</Label>
+                <Input
+                  id="role"
+                  type="text"
+                  placeholder="e.g. admin, sales, manager, etc."
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Common roles: admin, sales, ops, finance, readonly
+                </p>
               </div>
             </div>
 
