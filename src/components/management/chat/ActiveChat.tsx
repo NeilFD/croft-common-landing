@@ -228,7 +228,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading messages:', error);
+        toast.error(`Failed to load messages: ${error.message}`);
+        throw error;
+      }
 
       // Enrich messages with user info and public URLs for attachments
       const enrichedMessages = await Promise.all(
