@@ -51,7 +51,7 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
               <SidebarTrigger className="mr-2 md:mr-4 h-8 w-8 md:h-10 md:w-10" />
               <div className="flex items-center justify-between w-full">
                 <div className="flex items-center space-x-2 md:space-x-3">
-                  <CroftLogo size="sm" className="shrink-0 h-4 w-4 md:h-5 md:w-5" />
+                  <CroftLogo size="sm" className="shrink-0 h-8 w-8 md:h-10 md:w-10" />
                   <h1 className="font-brutalist text-sm md:text-xl font-black uppercase tracking-wider text-foreground">
                     CROFT COMMON
                   </h1>
