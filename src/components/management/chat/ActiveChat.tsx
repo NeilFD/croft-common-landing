@@ -223,55 +223,29 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   const loadMessages = async () => {
     setLoading(true);
     try {
-      // Direct SELECT from messages table (no RLS blocking)
-      const { data: msgs, error: selectError } = await supabase
-        .from('messages')
-        .select('id, chat_id, sender_id, body_text, created_at, edited_at, deleted_at, is_cleo')
-        .eq('chat_id', chatId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true });
+      // Use security definer RPC to bypass RLS for read
+      const { data: rows, error } = await supabase
+        .rpc('get_chat_messages_basic', { _chat_id: chatId });
 
-      if (selectError) {
-        console.error('Error loading messages:', selectError);
+      if (error) {
+        console.error('Error loading messages via RPC:', error);
         toast.error('Failed to load messages');
         return;
       }
 
-      console.info('ActiveChat.loadMessages: messages fetched =', (msgs || []).length);
-      const messageIds = (msgs || []).map((m: any) => m.id);
+      console.info('ActiveChat.loadMessages: messages fetched (RPC) =', (rows || []).length);
 
-      // Fetch attachments for these messages
-      let attachmentsByMessage: Record<string, any[]> = {};
-      if (messageIds.length > 0) {
-        const { data: atts } = await supabase
-          .from('attachments')
-          .select('id, message_id, type, mime, width, height, storage_path')
-          .in('message_id', messageIds);
-
-        if (atts) {
-          console.info('ActiveChat.loadMessages: attachments count =', atts.length);
-          attachmentsByMessage = atts.reduce((acc: Record<string, any[]>, att: any) => {
-            const { data: urlData } = supabase.storage
-              .from('chat-images')
-              .getPublicUrl(att.storage_path);
-            const withUrl = { ...att, url: urlData.publicUrl };
-            (acc[att.message_id] ||= []).push(withUrl);
-            return acc;
-          }, {} as Record<string, any[]>);
-        }
-      }
-
-      const basicMessages: Message[] = (msgs || []).map((m: any) => ({
+      const basicMessages: Message[] = (rows || []).map((m: any) => ({
         id: m.id,
         chat_id: m.chat_id,
         sender_id: m.sender_id,
-        body_text: (m.body_text ?? (m as any).body ?? ''),
+        body_text: m.body_text ?? (m as any).body ?? '',
         reply_to_message_id: null,
         created_at: m.created_at,
         edited_at: m.edited_at,
         deleted_at: m.deleted_at,
         is_cleo: m.is_cleo ?? false,
-        attachments: attachmentsByMessage[m.id] || [],
+        attachments: [],
         read_by: [],
       }));
 
