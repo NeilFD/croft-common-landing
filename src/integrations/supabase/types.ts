@@ -5449,15 +5449,18 @@ export type Database = {
       get_chat_messages: {
         Args: { _chat_id: string }
         Returns: {
-          body_text: string
+          attachments: Json
+          body: string
           chat_id: string
           created_at: string
-          deleted_at: string | null
-          edited_at: string | null
+          deleted_at: string
+          edited_at: string
           id: string
-          is_cleo: boolean
-          reply_to_message_id: string | null
+          read_by: string[]
           sender_id: string
+          sender_name: string
+          sender_role: Database["public"]["Enums"]["management_role"]
+          updated_at: string
         }[]
       }
       get_chat_user_info: {
