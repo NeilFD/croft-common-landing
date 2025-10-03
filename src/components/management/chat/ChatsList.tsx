@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { MessageCircle, Plus } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
+import { NewChatDialog } from './NewChatDialog';
 import type { Chat } from './ChatLayout';
 
 interface ChatsListProps {
@@ -10,9 +12,11 @@ interface ChatsListProps {
   selectedChatId: string | null;
   onSelectChat: (chatId: string) => void;
   loading: boolean;
+  onChatsChanged?: () => void;
 }
 
-export const ChatsList = ({ chats, selectedChatId, onSelectChat, loading }: ChatsListProps) => {
+export const ChatsList = ({ chats, selectedChatId, onSelectChat, loading, onChatsChanged }: ChatsListProps) => {
+  const [newChatDialogOpen, setNewChatDialogOpen] = useState(false);
   if (loading) {
     return (
       <div className="h-full border border-border rounded-lg bg-background p-4">
@@ -30,11 +34,22 @@ export const ChatsList = ({ chats, selectedChatId, onSelectChat, loading }: Chat
       <div className="p-4 border-b border-border">
         <div className="flex items-center justify-between mb-2">
           <h2 className="font-brutalist text-lg font-black uppercase tracking-wide">CHATS</h2>
-          <Button size="icon" variant="ghost" className="h-8 w-8">
+          <Button 
+            size="icon" 
+            variant="ghost" 
+            className="h-8 w-8"
+            onClick={() => setNewChatDialogOpen(true)}
+          >
             <Plus className="h-4 w-4" />
           </Button>
         </div>
       </div>
+
+      <NewChatDialog
+        open={newChatDialogOpen}
+        onOpenChange={setNewChatDialogOpen}
+        onChatCreated={() => onChatsChanged?.()}
+      />
 
       <ScrollArea className="flex-1">
         <div className="p-2">

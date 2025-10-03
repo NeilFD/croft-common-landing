@@ -140,6 +140,7 @@ export const ChatLayout = () => {
             selectedChatId={selectedChatId}
             onSelectChat={setSelectedChatId}
             loading={loading}
+            onChatsChanged={loadChats}
           />
         )}
       </div>
@@ -155,6 +156,7 @@ export const ChatLayout = () => {
           selectedChatId={selectedChatId}
           onSelectChat={setSelectedChatId}
           loading={loading}
+          onChatsChanged={loadChats}
         />
       </div>
       <div className="flex-1 min-w-0">
