@@ -1,5 +1,7 @@
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Check, CheckCheck } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface MessageBubbleProps {
   message: {
@@ -16,6 +18,11 @@ interface MessageBubbleProps {
       mime: string;
       width?: number;
       height?: number;
+    }>;
+    read_by?: Array<{
+      user_id: string;
+      user_name: string;
+      read_at: string;
     }>;
   };
   isOwn: boolean;
@@ -67,6 +74,38 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
             <span>{format(new Date(message.created_at), 'HH:mm')}</span>
             {message.edited_at && <span className="italic">(edited)</span>}
+            
+            {isOwn && !isCleo && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-help">
+                      {message.read_by && message.read_by.length > 0 ? (
+                        <CheckCheck className="h-3 w-3 text-blue-500" />
+                      ) : (
+                        <Check className="h-3 w-3" />
+                      )}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-xs">
+                      {message.read_by && message.read_by.length > 0 ? (
+                        <div>
+                          <p className="font-bold mb-1">Read by:</p>
+                          {message.read_by.map((reader) => (
+                            <p key={reader.user_id}>
+                              {reader.user_name} at {format(new Date(reader.read_at), 'HH:mm')}
+                            </p>
+                          ))}
+                        </div>
+                      ) : (
+                        <p>Delivered</p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </div>
       </div>

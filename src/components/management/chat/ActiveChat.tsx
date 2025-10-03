@@ -20,6 +20,11 @@ interface Message {
   sender_name?: string;
   sender_role?: string;
   attachments?: any[];
+  read_by?: Array<{
+    user_id: string;
+    user_name: string;
+    read_at: string;
+  }>;
 }
 
 interface ActiveChatProps {
@@ -31,6 +36,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   const { managementUser } = useManagementAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chat, setChat] = useState<any>(null);
+  const [chatMembers, setChatMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -39,9 +45,10 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
     loadChat();
     loadMessages();
+    loadChatMembers();
 
     // Subscribe to new messages
-    const channel = supabase
+    const messagesChannel = supabase
       .channel(`chat-${chatId}`)
       .on(
         'postgres_changes',
@@ -60,14 +67,39 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       )
       .subscribe();
 
+    // Subscribe to read receipt updates
+    const membersChannel = supabase
+      .channel(`chat-members-${chatId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'chat_members',
+          filter: `chat_id=eq.${chatId}`,
+        },
+        () => {
+          loadChatMembers();
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(membersChannel);
     };
   }, [chatId, managementUser?.user.id]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    // Update read status when chat members change
+    if (chatMembers.length > 0 && messages.length > 0) {
+      updateReadStatus();
+    }
+  }, [chatMembers, messages]);
 
   const loadChat = async () => {
     const { data, error } = await supabase
@@ -82,6 +114,59 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     }
 
     setChat(data);
+  };
+
+  const loadChatMembers = async () => {
+    const { data, error } = await supabase
+      .from('chat_members')
+      .select('user_id, last_read_at')
+      .eq('chat_id', chatId);
+
+    if (error) {
+      console.error('Error loading chat members:', error);
+      return;
+    }
+
+    // Enrich with user names
+    const enrichedMembers = await Promise.all(
+      (data || []).map(async (member) => {
+        const { data: userData } = await supabase
+          .rpc('get_chat_user_info', { _user_id: member.user_id })
+          .single();
+
+        return {
+          ...member,
+          user_name: userData?.display_name || 'Unknown',
+        };
+      })
+    );
+
+    setChatMembers(enrichedMembers);
+  };
+
+  const updateReadStatus = () => {
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) => {
+        // Skip if own message
+        if (msg.sender_id === managementUser?.user.id) {
+          // Calculate who has read this message
+          const readBy = chatMembers
+            .filter((member) => {
+              if (member.user_id === msg.sender_id) return false; // Skip sender
+              if (!member.last_read_at) return false;
+              return new Date(member.last_read_at) >= new Date(msg.created_at);
+            })
+            .map((member) => ({
+              user_id: member.user_id,
+              user_name: member.user_name,
+              read_at: member.last_read_at,
+            }));
+
+          return { ...msg, read_by: readBy };
+        }
+        return msg;
+      })
+    );
   };
 
   const loadMessages = async () => {
