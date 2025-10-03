@@ -29,6 +29,33 @@ interface MessageBubbleProps {
   isCleo?: boolean;
 }
 
+// Normalise and safely parse timestamps to avoid Safari date parsing issues
+function normaliseIsoTimestamp(input: string): string {
+  let s = input.trim();
+  // Replace space between date and time with 'T' for ISO compliance
+  if (s.includes(" ")) s = s.replace(" ", "T");
+  // Trim microseconds to milliseconds (Safari can choke on >3 digits)
+  s = s.replace(/\.(\d{3})\d+/, ".$1");
+  return s;
+}
+
+function safeParseDate(input: string | Date | null | undefined): Date | null {
+  if (!input) return null;
+  if (input instanceof Date) return isNaN(input.getTime()) ? null : input;
+  try {
+    const s = normaliseIsoTimestamp(String(input));
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+}
+
+function formatTimeSafe(input: string | Date | null | undefined): string {
+  const d = safeParseDate(input);
+  return d ? format(d, 'HH:mm') : '';
+}
+
 export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   
@@ -84,7 +111,7 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
           ) : null}
           
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-            <span>{format(new Date(message.created_at), 'HH:mm')}</span>
+            <span>{formatTimeSafe(message.created_at)}</span>
             {message.edited_at && <span className="italic">(edited)</span>}
             
             {isOwn && !isCleo && (
@@ -106,7 +133,7 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
                           <p className="font-bold mb-1">Read by:</p>
                           {message.read_by.map((reader) => (
                             <p key={reader.user_id}>
-                              {reader.user_name} at {format(new Date(reader.read_at), 'HH:mm')}
+                              {reader.user_name} at {formatTimeSafe(reader.read_at)}
                             </p>
                           ))}
                         </div>
