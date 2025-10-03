@@ -5461,6 +5461,19 @@ export type Database = {
           sender_role: Database["public"]["Enums"]["management_role"]
         }[]
       }
+      get_chat_messages_basic: {
+        Args: { _chat_id: string }
+        Returns: {
+          body_text: string
+          chat_id: string
+          created_at: string
+          deleted_at: string
+          edited_at: string
+          id: string
+          is_cleo: boolean
+          sender_id: string
+        }[]
+      }
       get_chat_user_info: {
         Args: { _user_id: string }
         Returns: {
