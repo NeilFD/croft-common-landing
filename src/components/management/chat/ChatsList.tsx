@@ -68,27 +68,33 @@ export const ChatsList = ({ chats, selectedChatId, onSelectChat, loading, onChat
                   selectedChatId === chat.id && "bg-accent border-l-4 border-[hsl(var(--accent-pink))]"
                 )}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-brutalist text-sm font-bold uppercase truncate">
                         {chat.name || 'Direct Message'}
                       </h3>
-                      {chat.unread_count && chat.unread_count > 0 && (
+                      {chat.unread_count > 0 && (
                         <span className="bg-[hsl(var(--accent-pink))] text-white text-xs font-bold rounded-full px-2 py-0.5 flex-shrink-0">
                           {chat.unread_count}
                         </span>
                       )}
                     </div>
                     {chat.last_message && (
-                      <p className="text-xs text-muted-foreground font-industrial truncate">
+                      <p className={cn(
+                        "text-xs font-industrial truncate",
+                        selectedChatId === chat.id ? "text-foreground/80" : "text-muted-foreground"
+                      )}>
                         <span className="font-medium">{chat.last_message.sender_name}:</span>{' '}
                         {chat.last_message.body_text}
                       </p>
                     )}
                   </div>
                   {chat.last_message && (
-                    <span className="text-xs text-muted-foreground font-industrial flex-shrink-0 ml-2">
+                    <span className={cn(
+                      "text-xs font-industrial flex-shrink-0 whitespace-nowrap",
+                      selectedChatId === chat.id ? "text-foreground/70" : "text-muted-foreground"
+                    )}>
                       {formatDistanceToNow(new Date(chat.last_message.created_at), { addSuffix: true })}
                     </span>
                   )}
