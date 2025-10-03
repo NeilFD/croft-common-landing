@@ -30,6 +30,8 @@ interface MessageBubbleProps {
 }
 
 export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) => {
+  const text = message.body_text ?? (message as any).body ?? '';
+  
   return (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
       <div className={cn("max-w-[70%] md:max-w-[60%]", isOwn && "order-2")}>
@@ -68,7 +70,7 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
           )}
           
           {/* Show thinking indicator for Cleo when message is empty */}
-          {!message.body_text && isCleo ? (
+          {!text && isCleo ? (
             <div className="flex items-center gap-2">
               <span className="font-industrial text-sm">Cleo is thinking</span>
               <div className="flex gap-1">
@@ -77,8 +79,8 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
                 <span className="animate-bounce text-sm" style={{ animationDelay: '300ms' }}>.</span>
               </div>
             </div>
-          ) : message.body_text && message.body_text !== '[Image]' ? (
-            <p className="font-industrial text-sm whitespace-pre-wrap">{message.body_text}</p>
+          ) : text && text !== '[Image]' ? (
+            <p className="font-industrial text-sm whitespace-pre-wrap">{text}</p>
           ) : null}
           
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">

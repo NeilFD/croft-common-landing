@@ -14,6 +14,7 @@ interface Message {
   chat_id: string;
   sender_id: string;
   body_text: string;
+  body?: string; // RPC returns 'body' field
   reply_to_message_id: string | null;
   created_at: string;
   edited_at: string | null;
@@ -249,7 +250,8 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           id: msg.id,
           chat_id: msg.chat_id,
           sender_id: msg.sender_id,
-          body_text: msg.body,
+          body_text: msg.body_text ?? msg.body ?? '',
+          body: msg.body,
           reply_to_message_id: null,
           created_at: msg.created_at,
           edited_at: msg.edited_at,
