@@ -65,7 +65,14 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         },
         (payload) => {
           loadUserInfo(payload.new as Message).then((enrichedMessage) => {
-            setMessages((prev) => [...prev, enrichedMessage]);
+            setMessages((prev) => {
+              // Check if message already exists (from optimistic update)
+              const exists = prev.some(msg => msg.id === enrichedMessage.id);
+              if (exists) {
+                return prev; // Don't add duplicate
+              }
+              return [...prev, enrichedMessage];
+            });
             scrollToBottom();
           });
         }
@@ -80,11 +87,15 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         },
         (payload) => {
           // Update existing message (for Cleo streaming)
-          setMessages((prev) =>
-            prev.map((msg) =>
+          setMessages((prev) => {
+            const exists = prev.some(msg => msg.id === payload.new.id);
+            if (!exists) {
+              return prev; // Message doesn't exist, ignore update
+            }
+            return prev.map((msg) =>
               msg.id === payload.new.id ? { ...msg, body_text: (payload.new as any).body_text } : msg
-            )
-          );
+            );
+          });
         }
       )
       .subscribe();
