@@ -18,6 +18,7 @@ interface Message {
   created_at: string;
   edited_at: string | null;
   deleted_at: string | null;
+  is_cleo?: boolean;
   sender_name?: string;
   sender_role?: string;
   attachments?: any[];
@@ -64,6 +65,23 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             setMessages((prev) => [...prev, enrichedMessage]);
             scrollToBottom();
           });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `chat_id=eq.${chatId}`,
+        },
+        (payload) => {
+          // Update existing message (for Cleo streaming)
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === payload.new.id ? { ...msg, body_text: (payload.new as any).body_text } : msg
+            )
+          );
         }
       )
       .subscribe();
@@ -437,7 +455,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
               key={message.id}
               message={message}
               isOwn={message.sender_id === managementUser?.user.id}
-              isCleo={!message.sender_name || message.body_text === ''}
+              isCleo={message.is_cleo === true}
             />
           ))}
           <div ref={scrollRef} />

@@ -3233,6 +3233,7 @@ export type Database = {
           deleted_at: string | null
           edited_at: string | null
           id: string
+          is_cleo: boolean
           reply_to_message_id: string | null
           sender_id: string
         }
@@ -3243,6 +3244,7 @@ export type Database = {
           deleted_at?: string | null
           edited_at?: string | null
           id?: string
+          is_cleo?: boolean
           reply_to_message_id?: string | null
           sender_id: string
         }
@@ -3253,6 +3255,7 @@ export type Database = {
           deleted_at?: string | null
           edited_at?: string | null
           id?: string
+          is_cleo?: boolean
           reply_to_message_id?: string | null
           sender_id?: string
         }
