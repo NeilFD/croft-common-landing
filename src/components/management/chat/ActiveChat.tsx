@@ -47,7 +47,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   const prevMessageCountRef = useRef(0);
 
   useEffect(() => {
-    if (!chatId || !managementUser?.user.id) return;
+    if (!chatId) return;
 
     loadChat();
     loadMessages();
@@ -122,7 +122,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       supabase.removeChannel(messagesChannel);
       supabase.removeChannel(membersChannel);
     };
-  }, [chatId, managementUser?.user.id]);
+  }, [chatId]);
 
   useEffect(() => {
     // Only auto-scroll if:
@@ -237,6 +237,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         return;
       }
 
+      console.info('ActiveChat.loadMessages: messages fetched =', (msgs || []).length);
       const messageIds = (msgs || []).map((m: any) => m.id);
 
       // Fetch attachments for these messages
