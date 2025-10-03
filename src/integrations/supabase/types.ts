@@ -71,6 +71,47 @@ export type Database = {
         }
         Relationships: []
       }
+      attachments: {
+        Row: {
+          created_at: string
+          height: number | null
+          id: string
+          message_id: string
+          mime: string
+          storage_path: string
+          type: string
+          width: number | null
+        }
+        Insert: {
+          created_at?: string
+          height?: number | null
+          id?: string
+          message_id: string
+          mime: string
+          storage_path: string
+          type?: string
+          width?: number | null
+        }
+        Update: {
+          created_at?: string
+          height?: number | null
+          id?: string
+          message_id?: string
+          mime?: string
+          storage_path?: string
+          type?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachments_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -350,6 +391,74 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      chat_members: {
+        Row: {
+          chat_id: string
+          id: string
+          is_admin: boolean
+          joined_at: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          is_admin?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          is_admin?: boolean
+          joined_at?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_members_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          created_by: string
+          id: string
+          is_system: boolean
+          name: string | null
+          type: Database["public"]["Enums"]["chat_type"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          is_system?: boolean
+          name?: string | null
+          type: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_system?: boolean
+          name?: string | null
+          type?: Database["public"]["Enums"]["chat_type"]
+          updated_at?: string
+        }
+        Relationships: []
       }
       cinema_bookings: {
         Row: {
@@ -3084,6 +3193,86 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body_text: string
+          chat_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          reply_to_message_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          body_text: string
+          chat_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          reply_to_message_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          body_text?: string
+          chat_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          reply_to_message_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_message_id_fkey"
+            columns: ["reply_to_message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mobile_debug_logs: {
         Row: {
           created_at: string
@@ -3787,6 +3976,35 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      read_receipts: {
+        Row: {
+          id: string
+          message_id: string
+          seen_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          message_id: string
+          seen_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          message_id?: string
+          seen_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "read_receipts_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       secret_kitchen_access: {
         Row: {
@@ -5107,6 +5325,15 @@ export type Database = {
           sent_count: number
         }[]
       }
+      get_chat_user_info: {
+        Args: { _user_id: string }
+        Returns: {
+          avatar_url: string
+          display_name: string
+          role: string
+          user_id: string
+        }[]
+      }
       get_cinema_status: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -5233,6 +5460,10 @@ export type Database = {
           email: string
           subscriber_id: string
         }[]
+      }
+      get_unread_count: {
+        Args: { _user_id: string }
+        Returns: number
       }
       get_user_email: {
         Args: Record<PropertyKey, never>
@@ -5457,6 +5688,7 @@ export type Database = {
       }
     }
     Enums: {
+      chat_type: "dm" | "group"
       ck_doc_status: "draft" | "in_review" | "approved"
       ck_doc_type:
         | "ethos"
@@ -5623,6 +5855,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      chat_type: ["dm", "group"],
       ck_doc_status: ["draft", "in_review", "approved"],
       ck_doc_type: [
         "ethos",

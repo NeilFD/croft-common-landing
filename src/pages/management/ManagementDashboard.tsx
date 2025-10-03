@@ -2,7 +2,7 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { useRoleBasedAccess } from '@/hooks/useRoleBasedAccess';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare } from 'lucide-react';
+import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
@@ -11,6 +11,14 @@ const ManagementDashboard = () => {
   const { canAccessAdmin, canAccessCMS, canAccessResearch, canAccessFeedback } = useRoleBasedAccess();
 
   const allQuickActions = [
+    {
+      title: 'CHAT',
+      description: 'Team communications',
+      icon: MessageCircle,
+      href: '/management/chat',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: true
+    },
     {
       title: 'COMMON KNOWLEDGE',
       description: 'Operational docs & SOPs',

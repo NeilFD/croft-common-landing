@@ -93,6 +93,7 @@ const LeadDetail = lazy(() => import("./pages/management/LeadDetail"));
 const BookingDetail = lazy(() => import("./pages/management/BookingDetail"));
 const EventsList = lazy(() => import("./pages/management/EventsList"));
 const EventDetail = lazy(() => import("./pages/management/EventDetail"));
+const Chat = lazy(() => import("./pages/management/Chat"));
 const BeoViewer = lazy(() => import("./pages/BeoViewer"));
 
 const queryClient = new QueryClient();
@@ -336,6 +337,9 @@ const App = () => {
                         <Route path="/management/common-knowledge/upload" element={<CommonKnowledgeUpload />} />
                         <Route path="/management/common-knowledge/d/:slug" element={<CommonKnowledgeView />} />
                         <Route path="/management/fix-doc" element={<FixDocument />} />
+                        
+                        {/* Chat Route */}
+                        <Route path="/management/chat" element={<Chat />} />
                         
                         {/* Spaces Event Management System */}
                         <Route path="/management/spaces" element={<SpacesDashboard />} />

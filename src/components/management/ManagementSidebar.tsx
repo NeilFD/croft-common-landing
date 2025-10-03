@@ -46,7 +46,8 @@ import {
   Camera,
   Film,
   Database,
-  ChevronRight
+  ChevronRight,
+  MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -56,6 +57,13 @@ const managementModules = [
     path: '/management',
     icon: Home,
     exactMatch: true
+  },
+  {
+    name: 'Chat',
+    path: '/management/chat',
+    icon: MessageCircle,
+    exactMatch: false,
+    badge: 'NEW'
   },
   {
     name: 'AI Assistant',
