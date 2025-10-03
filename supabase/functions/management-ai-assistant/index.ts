@@ -1590,7 +1590,36 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, context } = await req.json();
+    const requestBody = await req.json();
+    console.log('📥 Request body received:', JSON.stringify(requestBody, null, 2));
+    
+    const { messages, context } = requestBody;
+    
+    // Defensive checks for messages
+    if (!messages) {
+      console.error('❌ No messages provided in request body');
+      return new Response(JSON.stringify({ error: 'Messages array is required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    if (!Array.isArray(messages)) {
+      console.error('❌ Messages is not an array:', typeof messages);
+      return new Response(JSON.stringify({ error: 'Messages must be an array' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    if (messages.length === 0) {
+      console.error('❌ Messages array is empty');
+      return new Response(JSON.stringify({ error: 'Messages array cannot be empty' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!LOVABLE_API_KEY) {

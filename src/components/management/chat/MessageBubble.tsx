@@ -67,9 +67,19 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
             </div>
           )}
           
-          {message.body_text && message.body_text !== '[Image]' && (
+          {/* Show thinking indicator for Cleo when message is empty */}
+          {!message.body_text && isCleo ? (
+            <div className="flex items-center gap-2">
+              <span className="font-industrial text-sm">Cleo is thinking</span>
+              <div className="flex gap-1">
+                <span className="animate-bounce text-sm" style={{ animationDelay: '0ms' }}>.</span>
+                <span className="animate-bounce text-sm" style={{ animationDelay: '150ms' }}>.</span>
+                <span className="animate-bounce text-sm" style={{ animationDelay: '300ms' }}>.</span>
+              </div>
+            </div>
+          ) : message.body_text && message.body_text !== '[Image]' ? (
             <p className="font-industrial text-sm whitespace-pre-wrap">{message.body_text}</p>
-          )}
+          ) : null}
           
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
             <span>{format(new Date(message.created_at), 'HH:mm')}</span>

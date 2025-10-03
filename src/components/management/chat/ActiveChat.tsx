@@ -40,6 +40,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   const [chat, setChat] = useState<any>(null);
   const [chatMembers, setChatMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isCleoThinking, setIsCleoThinking] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
@@ -274,6 +275,9 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
   const handleCleoResponse = async (userMessageText: string, chatId: string) => {
     try {
+      // Show thinking indicator
+      setIsCleoThinking(true);
+      
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) return;
 
@@ -363,6 +367,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
               const parsed = JSON.parse(jsonStr);
               const content = parsed.choices?.[0]?.delta?.content as string | undefined;
               if (content) {
+                // First token received - hide thinking indicator
+                if (isCleoThinking) {
+                  setIsCleoThinking(false);
+                }
+                
                 cleoContent += content;
                 
                 // Update message in real-time
@@ -380,6 +389,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       }
     } catch (error) {
       console.error('Error getting Cleo response:', error);
+      setIsCleoThinking(false);
       toast.error('Failed to get AI response');
     }
   };
@@ -481,6 +491,18 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
               isCleo={message.is_cleo === true}
             />
           ))}
+          {isCleoThinking && (
+            <MessageBubble
+              message={{
+                id: 'thinking',
+                body_text: '',
+                created_at: new Date().toISOString(),
+                sender_name: 'Cleo',
+              }}
+              isOwn={false}
+              isCleo={true}
+            />
+          )}
           <div ref={scrollRef} />
         </div>
       </ScrollArea>
