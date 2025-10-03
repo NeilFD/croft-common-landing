@@ -5456,7 +5456,6 @@ export type Database = {
           deleted_at: string
           edited_at: string
           id: string
-          read_by: string[]
           sender_id: string
           sender_name: string
           sender_role: Database["public"]["Enums"]["management_role"]
