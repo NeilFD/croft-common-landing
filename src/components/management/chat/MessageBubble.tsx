@@ -9,6 +9,14 @@ interface MessageBubbleProps {
     sender_name?: string;
     sender_role?: string;
     edited_at?: string | null;
+    attachments?: Array<{
+      id: string;
+      url: string;
+      type: string;
+      mime: string;
+      width?: number;
+      height?: number;
+    }>;
   };
   isOwn: boolean;
   isCleo?: boolean;
@@ -37,7 +45,25 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
           {isCleo && (
             <div className="text-xs font-bold uppercase tracking-wide mb-1">Cleo</div>
           )}
-          <p className="font-industrial text-sm whitespace-pre-wrap">{message.body_text}</p>
+          
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="mb-2 space-y-2">
+              {message.attachments.map((att) => (
+                <img
+                  key={att.id}
+                  src={att.url}
+                  alt="Attachment"
+                  className="rounded-md max-w-full h-auto max-h-64 object-contain cursor-pointer hover:opacity-90 transition-opacity"
+                  onClick={() => window.open(att.url, '_blank')}
+                />
+              ))}
+            </div>
+          )}
+          
+          {message.body_text && message.body_text !== '[Image]' && (
+            <p className="font-industrial text-sm whitespace-pre-wrap">{message.body_text}</p>
+          )}
+          
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
             <span>{format(new Date(message.created_at), 'HH:mm')}</span>
             {message.edited_at && <span className="italic">(edited)</span>}

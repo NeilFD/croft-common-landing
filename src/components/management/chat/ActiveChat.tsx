@@ -88,16 +88,39 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('*, attachments(*)')
         .eq('chat_id', chatId)
         .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
-      // Enrich messages with user info
+      // Enrich messages with user info and public URLs for attachments
       const enrichedMessages = await Promise.all(
-        (data || []).map((msg) => loadUserInfo(msg))
+        (data || []).map(async (msg) => {
+          const userInfo = await loadUserInfo(msg);
+          
+          // Get public URLs for attachments
+          if (msg.attachments && msg.attachments.length > 0) {
+            const attachmentsWithUrls = msg.attachments.map((att: any) => {
+              const { data: urlData } = supabase.storage
+                .from('chat-images')
+                .getPublicUrl(att.storage_path);
+              
+              return {
+                ...att,
+                url: urlData.publicUrl,
+              };
+            });
+            
+            return {
+              ...userInfo,
+              attachments: attachmentsWithUrls,
+            };
+          }
+          
+          return userInfo;
+        })
       );
 
       setMessages(enrichedMessages);
