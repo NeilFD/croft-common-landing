@@ -23,8 +23,9 @@ Deno.serve(async (req) => {
     })
 
     // Create regular client for user validation
-    const authHeader = req.headers.get('Authorization')!
-    const supabase = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
+    const authHeader = req.headers.get('Authorization') || ''
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || supabaseServiceKey
+    const supabase = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: authHeader } }
     })
 
@@ -47,9 +48,29 @@ Deno.serve(async (req) => {
     console.log('Mapped role:', role, '->', mappedRole)
 
     // Validate caller is admin using RPC
-    const { data: callerRole } = await supabase.rpc('get_user_management_role', {
-      _user_id: (await supabase.auth.getUser()).data.user?.id
+    const accessToken = authHeader.replace('Bearer ', '').trim()
+    console.log('Auth header present:', !!authHeader, 'token length:', accessToken.length)
+    if (!accessToken) {
+      throw new Error('Missing access token')
+    }
+
+    const { data: callerData, error: callerErr } = await supabaseAdmin.auth.getUser(accessToken)
+    if (callerErr || !callerData?.user) {
+      console.error('Auth getUser error:', callerErr)
+      throw new Error('Unable to verify caller')
+    }
+
+    const callerId = callerData.user.id
+    console.log('Caller ID:', callerId)
+    const { data: callerRole, error: roleErr } = await supabase.rpc('get_user_management_role', {
+      _user_id: callerId
     })
+    console.log('Caller role resolved:', callerRole)
+
+    if (roleErr) {
+      console.error('Role check error:', roleErr)
+      throw new Error('Failed to verify permissions')
+    }
 
     if (callerRole !== 'admin') {
       throw new Error('Only admins can create users')
