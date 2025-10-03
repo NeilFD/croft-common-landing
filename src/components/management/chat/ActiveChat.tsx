@@ -221,12 +221,9 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
   const loadMessages = async () => {
     try {
+      // Use RPC to bypass RLS edge cases
       const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('chat_id', chatId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true });
+        .rpc('get_chat_messages', { _chat_id: chatId });
 
       if (error) {
         console.error('Error loading messages:', error);

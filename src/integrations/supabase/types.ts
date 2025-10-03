@@ -5332,6 +5332,20 @@ export type Database = {
           sent_count: number
         }[]
       }
+      get_chat_messages: {
+        Args: { _chat_id: string }
+        Returns: {
+          body_text: string
+          chat_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          is_cleo: boolean
+          reply_to_message_id: string | null
+          sender_id: string
+        }[]
+      }
       get_chat_user_info: {
         Args: { _user_id: string }
         Returns: {
