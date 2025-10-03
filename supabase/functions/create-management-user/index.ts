@@ -37,6 +37,15 @@ Deno.serve(async (req) => {
       throw new Error('Email, role, user name, and job title are required')
     }
 
+    // Map frontend roles to backend roles
+    const roleMapping: Record<string, string> = {
+      'Admin': 'admin',
+      'Manager': 'sales'
+    }
+
+    const mappedRole = roleMapping[role] || role.toLowerCase()
+    console.log('Mapped role:', role, '->', mappedRole)
+
     // Validate caller is admin using RPC
     const { data: callerRole } = await supabase.rpc('get_user_management_role', {
       _user_id: (await supabase.auth.getUser()).data.user?.id
@@ -49,7 +58,7 @@ Deno.serve(async (req) => {
     // Get user creation data from RPC (includes temp password)
     const { data: userData, error: rpcError } = await supabase.rpc('create_management_user', {
       p_email: email,
-      p_role: role
+      p_role: mappedRole
     })
 
     if (rpcError) {
