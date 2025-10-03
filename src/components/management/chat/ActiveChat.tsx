@@ -222,26 +222,20 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
   const loadMessages = async () => {
     setLoading(true);
-    
-    // Diagnostics
-    const { data: { user } } = await supabase.auth.getUser();
-    console.info('ActiveChat.loadMessages: user_id =', user?.id);
-    
-    const { data: roleData } = await supabase.rpc('get_user_management_role', { _user_id: user?.id });
-    console.info('ActiveChat.loadMessages: management_role =', roleData);
-    
     try {
-      // Use server-side RPC to bypass RLS
-      const { data: msgs, error: rpcError } = await supabase.rpc('get_chat_messages_basic', { 
-        _chat_id: chatId 
-      });
-      
-      if (rpcError) {
-        console.error('Error loading messages via RPC:', rpcError);
+      // Direct SELECT from messages table (no RLS blocking)
+      const { data: msgs, error: selectError } = await supabase
+        .from('messages')
+        .select('id, chat_id, sender_id, body_text, created_at, edited_at, deleted_at, is_cleo')
+        .eq('chat_id', chatId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: true });
+
+      if (selectError) {
+        console.error('Error loading messages:', selectError);
         toast.error('Failed to load messages');
         return;
       }
-      console.info('ActiveChat.loadMessages: RPC returned message count =', (msgs || []).length);
 
       const messageIds = (msgs || []).map((m: any) => m.id);
 
