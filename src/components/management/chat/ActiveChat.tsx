@@ -344,6 +344,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
       if (cleoError) throw cleoError;
 
+      // Optimistically add Cleo's message to UI immediately
+      const enrichedCleoMessage = await loadUserInfo(cleoMessage);
+      setMessages((prev) => [...prev, enrichedCleoMessage]);
+      scrollToBottom();
+
       if (reader) {
         while (true) {
           const { done, value } = await reader.read();
@@ -374,11 +379,18 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                 
                 cleoContent += content;
                 
-                // Update message in real-time
+                // Update message in database
                 await supabase
                   .from('messages')
                   .update({ body_text: cleoContent })
                   .eq('id', cleoMessage.id);
+                
+                // Update message in local state immediately for instant feedback
+                setMessages((prev) =>
+                  prev.map((msg) =>
+                    msg.id === cleoMessage.id ? { ...msg, body_text: cleoContent } : msg
+                  )
+                );
               }
             } catch {
               textBuffer = line + '\n' + textBuffer;
@@ -437,6 +449,27 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           mime: image.type,
         });
       }
+
+      // Optimistically add message to UI immediately
+      const enrichedMessage = await loadUserInfo(newMessage);
+      
+      // Get public URL for attachment if present
+      if (storagePath) {
+        const { data: urlData } = supabase.storage
+          .from('chat-images')
+          .getPublicUrl(storagePath);
+        
+        enrichedMessage.attachments = [{
+          message_id: newMessage.id,
+          type: 'image',
+          storage_path: storagePath,
+          mime: image.type,
+          url: urlData.publicUrl,
+        }];
+      }
+      
+      setMessages((prev) => [...prev, enrichedMessage]);
+      scrollToBottom();
 
       // Update last_read_at
       await supabase
