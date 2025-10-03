@@ -223,7 +223,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*, attachments(*)')
+        .select('*')
         .eq('chat_id', chatId)
         .is('deleted_at', null)
         .order('created_at', { ascending: true });
@@ -241,8 +241,9 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             const userInfo = await loadUserInfo(msg);
             
             // Get public URLs for attachments
-            if (msg.attachments && msg.attachments.length > 0) {
-              const attachmentsWithUrls = msg.attachments.map((att: any) => {
+            const maybeAttachments = (msg as any).attachments as any[] | undefined;
+            if (maybeAttachments && maybeAttachments.length > 0) {
+              const attachmentsWithUrls = maybeAttachments.map((att: any) => {
                 const { data: urlData } = supabase.storage
                   .from('chat-images')
                   .getPublicUrl(att.storage_path);
