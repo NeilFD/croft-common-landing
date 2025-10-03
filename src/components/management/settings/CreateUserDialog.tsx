@@ -64,13 +64,14 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
     try {
       setLoading(true);
 
+      const apiRole = role === 'Admin' ? 'admin' : 'manager';
       // Call edge function to create user
       const { data, error } = await supabase.functions.invoke('create-management-user', {
         body: { 
           user_name: userName.trim(),
           email: email.trim(),
           job_title: jobTitle.trim(),
-          role 
+          role: apiRole 
         }
       });
 

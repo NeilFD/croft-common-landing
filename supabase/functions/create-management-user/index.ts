@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
     // Map frontend roles to backend roles
     const roleMapping: Record<string, string> = {
       'Admin': 'admin',
-      'Manager': 'sales'
+      'Manager': 'manager'
     }
 
     const mappedRole = roleMapping[role] || role.toLowerCase()
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
 
     const callerId = callerData.user.id
     console.log('Caller ID:', callerId)
-    const { data: callerRole, error: roleErr } = await supabase.rpc('get_user_management_role', {
+    const { data: callerRole, error: roleErr } = await supabaseAdmin.rpc('get_user_management_role', {
       _user_id: callerId
     })
     console.log('Caller role resolved:', callerRole)
