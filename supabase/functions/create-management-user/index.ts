@@ -28,9 +28,14 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } }
     })
 
-    const { email, role } = await req.json()
+    const { email, role, user_name, job_title } = await req.json()
 
-    console.log('Creating management user:', email, role)
+    console.log('Creating management user:', email, role, user_name, job_title)
+
+    // Validate inputs
+    if (!email || !role || !user_name || !job_title) {
+      throw new Error('Email, role, user name, and job title are required')
+    }
 
     // Validate caller is admin using RPC
     const { data: callerRole } = await supabase.rpc('get_user_management_role', {
@@ -60,7 +65,9 @@ Deno.serve(async (req) => {
       password: userData.temp_password,
       email_confirm: true, // Auto-confirm email for management users
       user_metadata: {
-        is_management_user: true
+        is_management_user: true,
+        user_name: user_name,
+        job_title: job_title
       }
     })
 
@@ -86,6 +93,24 @@ Deno.serve(async (req) => {
       throw roleError
     }
 
+    // Create management profile
+    const { error: profileError } = await supabaseAdmin
+      .from('management_profiles')
+      .insert({
+        user_id: authUser.user.id,
+        user_name: user_name,
+        email: userData.email,
+        job_title: job_title
+      })
+
+    if (profileError) {
+      console.error('Profile error:', profileError)
+      // Rollback: delete the auth user and role
+      await supabaseAdmin.auth.admin.deleteUser(authUser.user.id)
+      await supabaseAdmin.from('user_roles').delete().eq('user_id', authUser.user.id)
+      throw profileError
+    }
+
     // Create password metadata entry
     const { error: pwdError } = await supabaseAdmin
       .from('user_password_metadata')
@@ -108,7 +133,12 @@ Deno.serve(async (req) => {
         action: 'user_created',
         target_user_id: authUser.user.id,
         actor_id: userData.created_by,
-        details: { email: userData.email, role: userData.role }
+        details: { 
+          email: userData.email, 
+          role: userData.role,
+          user_name: user_name,
+          job_title: job_title
+        }
       })
 
     if (auditError) {

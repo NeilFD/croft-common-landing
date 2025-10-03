@@ -32,7 +32,9 @@ import { ChangeRoleDialog } from './ChangeRoleDialog';
 
 interface User {
   user_id: string;
+  user_name: string;
   email: string;
+  job_title: string;
   role: string;
   created_at: string;
 }
@@ -105,7 +107,9 @@ export const UserManagementTable = ({ users, onRefresh }: UserManagementTablePro
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>User Name</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Job Title</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="w-[50px]"></TableHead>
@@ -114,14 +118,16 @@ export const UserManagementTable = ({ users, onRefresh }: UserManagementTablePro
           <TableBody>
             {users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                   No users found
                 </TableCell>
               </TableRow>
             ) : (
               users.map((user) => (
                 <TableRow key={user.user_id}>
-                  <TableCell className="font-medium">{user.email}</TableCell>
+                  <TableCell className="font-medium">{user.user_name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.job_title}</TableCell>
                   <TableCell>
                     <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
                       {user.role}

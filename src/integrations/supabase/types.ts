@@ -2803,6 +2803,36 @@ export type Database = {
           },
         ]
       }
+      management_profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          job_title: string
+          updated_at: string
+          user_id: string
+          user_name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          job_title: string
+          updated_at?: string
+          user_id: string
+          user_name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          job_title?: string
+          updated_at?: string
+          user_id?: string
+          user_name?: string
+        }
+        Relationships: []
+      }
       management_user_audit: {
         Row: {
           action: string
@@ -5467,6 +5497,17 @@ export type Database = {
         Args: { month_start: string }
         Returns: string
       }
+      get_management_users: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          email: string
+          job_title: string
+          role: Database["public"]["Enums"]["management_role"]
+          user_id: string
+          user_name: string
+        }[]
+      }
       get_member_analytics: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -5778,6 +5819,10 @@ export type Database = {
           user_email: string
         }
         Returns: boolean
+      }
+      update_my_management_profile: {
+        Args: { p_job_title: string; p_user_name: string }
+        Returns: undefined
       }
       update_secret_kitchen_first_access: {
         Args: { user_email: string }

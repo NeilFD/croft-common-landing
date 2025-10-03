@@ -22,7 +22,9 @@ interface CreateUserDialogProps {
 }
 
 export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUserDialogProps) => {
+  const [userName, setUserName] = useState('');
   const [email, setEmail] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [role, setRole] = useState<'admin' | 'manager'>('manager');
   const [loading, setLoading] = useState(false);
   const [tempPassword, setTempPassword] = useState('');
@@ -31,10 +33,28 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!userName.trim()) {
+      toast({
+        title: 'Error',
+        description: 'User name is required',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (!email.trim()) {
       toast({
         title: 'Error',
         description: 'Email is required',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    if (!jobTitle.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Job title is required',
         variant: 'destructive'
       });
       return;
@@ -45,7 +65,12 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
 
       // Call edge function to create user
       const { data, error } = await supabase.functions.invoke('create-management-user', {
-        body: { email: email.trim(), role }
+        body: { 
+          user_name: userName.trim(),
+          email: email.trim(),
+          job_title: jobTitle.trim(),
+          role 
+        }
       });
 
       if (error) throw error;
@@ -54,7 +79,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
       
       toast({
         title: 'User created',
-        description: `${email} has been created with ${role} access`
+        description: `${userName} has been created with ${role} access`
       });
     } catch (error) {
       console.error('Error creating user:', error);
@@ -79,7 +104,9 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
   };
 
   const handleClose = () => {
+    setUserName('');
     setEmail('');
+    setJobTitle('');
     setRole('manager');
     setTempPassword('');
     setCopied(false);
@@ -135,6 +162,19 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
+                <Label htmlFor="userName">User Name</Label>
+                <Input
+                  id="userName"
+                  type="text"
+                  placeholder="John Smith"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">Enter as: [first name] [surname]</p>
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -142,6 +182,18 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
                   placeholder="user@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="jobTitle">Job Title</Label>
+                <Input
+                  id="jobTitle"
+                  type="text"
+                  placeholder="e.g. Sales Manager"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
                   disabled={loading}
                 />
               </div>

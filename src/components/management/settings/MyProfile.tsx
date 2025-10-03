@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,10 +11,76 @@ import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
 
 export const MyProfile = () => {
   const { managementUser } = useManagementAuth();
+  const [userName, setUserName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  useEffect(() => {
+    loadProfile();
+  }, [managementUser?.user?.id]);
+
+  const loadProfile = async () => {
+    if (!managementUser?.user?.id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('management_profiles')
+        .select('user_name, job_title')
+        .eq('user_id', managementUser.user.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setUserName(data.user_name);
+        setJobTitle(data.job_title);
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!userName.trim() || !jobTitle.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please fill in all fields',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setProfileLoading(true);
+
+    try {
+      const { error } = await supabase.rpc('update_my_management_profile', {
+        p_user_name: userName.trim(),
+        p_job_title: jobTitle.trim()
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Profile Updated',
+        description: 'Your profile has been updated successfully'
+      });
+    } catch (error: any) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to update profile',
+        variant: 'destructive'
+      });
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   const validatePassword = (password: string) => {
     const requirements = [
@@ -84,22 +150,57 @@ export const MyProfile = () => {
     <div className="space-y-6 max-w-2xl">
       <Card>
         <CardHeader>
-          <CardTitle>Account Information</CardTitle>
-          <CardDescription>Your management portal account details</CardDescription>
+          <CardTitle>Personal Information</CardTitle>
+          <CardDescription>Update your profile details</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label>Email</Label>
-            <div className="mt-1 font-medium">{managementUser?.user.email}</div>
-          </div>
-          <div>
-            <Label>Role</Label>
-            <div className="mt-1">
-              <Badge variant={managementUser?.role === 'admin' ? 'default' : 'secondary'}>
-                {managementUser?.role}
-              </Badge>
+        <CardContent>
+          <form onSubmit={handleUpdateProfile} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="userName">User Name</Label>
+              <Input
+                id="userName"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="John Smith"
+                required
+              />
+              <p className="text-xs text-muted-foreground">Enter as: [first name] [surname]</p>
             </div>
-          </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                value={managementUser?.user?.email || ''}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="jobTitle">Job Title</Label>
+              <Input
+                id="jobTitle"
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                placeholder="e.g. Sales Manager"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <div>
+                <Badge variant={managementUser?.role === 'admin' ? 'default' : 'secondary'}>
+                  {managementUser?.role || 'No role assigned'}
+                </Badge>
+              </div>
+            </div>
+
+            <Button type="submit" disabled={profileLoading}>
+              {profileLoading ? 'Updating...' : 'Update Profile'}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 

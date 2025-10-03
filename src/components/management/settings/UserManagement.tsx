@@ -8,7 +8,9 @@ import { toast } from '@/hooks/use-toast';
 
 interface ManagementUser {
   user_id: string;
+  user_name: string;
   email: string;
+  job_title: string;
   role: string;
   created_at: string;
 }
@@ -22,40 +24,11 @@ export const UserManagement = () => {
     try {
       setLoading(true);
       
-      // Get all users with management roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role')
-        .in('role', ['admin', 'manager'])
-        .order('role', { ascending: true });
+      const { data, error } = await supabase.rpc('get_management_users');
 
-      if (rolesError) throw rolesError;
+      if (error) throw error;
 
-      // Get user emails from auth.users using admin query
-      const userIds = userRoles?.map(ur => ur.user_id) || [];
-      
-      // Fetch user details for each user_id
-      const usersWithEmails = await Promise.all(
-        (userRoles || []).map(async (ur) => {
-          // Try to get email from profiles first (faster)
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('user_id')
-            .eq('user_id', ur.user_id)
-            .single();
-
-          // Get email from auth metadata (we'll need to use RPC or edge function for this in production)
-          // For now, we'll show user_id as placeholder
-          return {
-            user_id: ur.user_id,
-            email: `User ${ur.user_id.substring(0, 8)}...`, // Placeholder
-            role: ur.role,
-            created_at: new Date().toISOString() // Placeholder
-          };
-        })
-      );
-
-      setUsers(usersWithEmails);
+      setUsers(data || []);
     } catch (error) {
       console.error('Error loading users:', error);
       toast({
