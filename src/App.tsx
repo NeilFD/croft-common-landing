@@ -74,7 +74,7 @@ import InteractionWatchdog from '@/components/InteractionWatchdog';
 import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
 
 // Management system components
-const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
+import ManagementLogin from "./pages/management/ManagementLogin";
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
 const ManagementAIAssistant = lazy(() => import("./pages/management/ManagementAIAssistant"));
 const FeedbackManagement = lazy(() => import("./pages/management/FeedbackManagement"));
@@ -211,6 +211,13 @@ const RouteHydrationBeacon = () => {
     try {
       const ev = new CustomEvent('cc:routes-hydrated', { detail: { pathname: location.pathname, ts: Date.now() } });
       window.dispatchEvent(ev);
+      // Also prefetch management chunks when user visits footer-heavy pages
+      if (location.pathname === '/' || location.pathname === '/community') {
+        try {
+          import('./pages/management/ManagementDashboard');
+          import('./pages/management/SpacesDashboard');
+        } catch {}
+      }
     } catch {}
   }, [location.pathname]);
   return null;
@@ -253,6 +260,7 @@ const App = () => {
                 <TransitionProvider>
                   <MembershipAuthProvider>
                     <Suspense fallback={<PageLoader />}>
+                      <Routes>
                       <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/cafe" element={<Cafe />} />

@@ -1,6 +1,6 @@
 import SubscriptionForm from './SubscriptionForm';
 import MembershipLinkModal from './MembershipLinkModal';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { CMSText } from './cms/CMSText';
@@ -39,6 +39,36 @@ const Footer = ({
       clearInterval(id);
     };
   }, []);
+
+  const loginLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const prefetchManagement = () => {
+    try {
+      import('@/pages/management/ManagementDashboard');
+      import('@/pages/management/SpacesDashboard');
+      import('@/pages/management/VenuesList');
+      import('@/pages/management/CalendarView');
+      import('@/pages/management/LeadsList');
+      import('@/pages/management/EventsList');
+    } catch (e) {
+      // ignore prefetch errors
+    }
+  };
+
+  useEffect(() => {
+    const el = loginLinkRef.current;
+    if (!el || !(window as any).IntersectionObserver) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          prefetchManagement();
+          observer.disconnect();
+        }
+      });
+    }, { rootMargin: '256px' });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <footer className="bg-void text-background py-16">
       <div className="container mx-auto px-6">
@@ -178,6 +208,9 @@ const Footer = ({
             
             <Link 
               to="/management/login"
+              ref={loginLinkRef}
+              onMouseEnter={prefetchManagement}
+              onTouchStart={prefetchManagement}
               className="font-industrial text-xs text-background/70 hover:text-background transition-colors duration-200 underline underline-offset-2"
             >
               Management Login
