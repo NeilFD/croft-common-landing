@@ -286,3 +286,6 @@ verify_jwt = true
 [functions.generate-daily-feedback-report]
 verify_jwt = false
 
+[functions.chat-ai-cleo]
+verify_jwt = true
+

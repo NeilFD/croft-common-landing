@@ -7,6 +7,7 @@ import { MessageInput } from './MessageInput';
 import { ChatHeader } from './ChatHeader';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 
 interface Message {
   id: string;
@@ -234,8 +235,118 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     }, 100);
   };
 
+  const handleCleoResponse = async (userMessageText: string, chatId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      // Get recent message history for context
+      const recentMessages = messages
+        .slice(-10)
+        .map(m => ({
+          role: m.sender_id === managementUser?.user.id ? 'user' : 'assistant',
+          content: m.body_text,
+        }));
+
+      // Add current message
+      recentMessages.push({ role: 'user', content: userMessageText });
+
+      const response = await fetch(
+        `https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/chat-ai-cleo`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: recentMessages,
+            chatContext: {
+              chatName: chat?.name,
+              memberCount: chatMembers.length,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          toast.error('Rate limit exceeded. Please try again later.');
+          return;
+        }
+        if (response.status === 402) {
+          toast.error('AI credits required. Please contact support.');
+          return;
+        }
+        throw new Error('Failed to get AI response');
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let cleoContent = '';
+      let textBuffer = '';
+
+      // Create Cleo's message
+      const { data: cleoMessage, error: cleoError } = await supabase
+        .from('messages')
+        .insert({
+          chat_id: chatId,
+          sender_id: managementUser?.user.id,
+          body_text: '',
+        })
+        .select()
+        .single();
+
+      if (cleoError) throw cleoError;
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          textBuffer += decoder.decode(value, { stream: true });
+
+          let newlineIndex: number;
+          while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+            let line = textBuffer.slice(0, newlineIndex);
+            textBuffer = textBuffer.slice(newlineIndex + 1);
+
+            if (line.endsWith('\r')) line = line.slice(0, -1);
+            if (line.startsWith(':') || line.trim() === '') continue;
+            if (!line.startsWith('data: ')) continue;
+
+            const jsonStr = line.slice(6).trim();
+            if (jsonStr === '[DONE]') continue;
+
+            try {
+              const parsed = JSON.parse(jsonStr);
+              const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+              if (content) {
+                cleoContent += content;
+                
+                // Update message in real-time
+                await supabase
+                  .from('messages')
+                  .update({ body_text: cleoContent })
+                  .eq('id', cleoMessage.id);
+              }
+            } catch {
+              textBuffer = line + '\n' + textBuffer;
+              break;
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error getting Cleo response:', error);
+      toast.error('Failed to get AI response');
+    }
+  };
+
   const handleSendMessage = async (text: string, image?: File) => {
     if (!text.trim() && !image) return;
+    
+    const mentionsCleo = /@Cleo\b/i.test(text);
 
     try {
       // Upload image if present
@@ -283,8 +394,14 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         .eq('chat_id', chatId)
         .eq('user_id', managementUser?.user.id);
 
+      // Trigger Cleo response if mentioned
+      if (mentionsCleo) {
+        await handleCleoResponse(text, chatId);
+      }
+
     } catch (error) {
       console.error('Error sending message:', error);
+      toast.error('Failed to send message');
     }
   };
 
@@ -320,7 +437,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
               key={message.id}
               message={message}
               isOwn={message.sender_id === managementUser?.user.id}
-              isCleo={message.sender_name?.toLowerCase().includes('cleo')}
+              isCleo={!message.sender_name || message.body_text === ''}
             />
           ))}
           <div ref={scrollRef} />
