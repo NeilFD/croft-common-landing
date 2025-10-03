@@ -221,6 +221,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   };
 
   const loadMessages = async () => {
+    setLoading(true);
     try {
       // Direct SELECT from messages table
       const { data: msgs, error: selectError } = await supabase
@@ -235,6 +236,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         toast.error('Failed to load messages');
         return;
       }
+      console.info('ActiveChat.loadMessages: messages count =', (msgs || []).length);
 
       const messageIds = (msgs || []).map((m: any) => m.id);
 
@@ -247,6 +249,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           .in('message_id', messageIds);
 
         if (atts) {
+          console.info('ActiveChat.loadMessages: attachments count =', atts.length);
           attachmentsByMessage = atts.reduce((acc: Record<string, any[]>, att: any) => {
             const { data: urlData } = supabase.storage
               .from('chat-images')
@@ -262,7 +265,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         id: m.id,
         chat_id: m.chat_id,
         sender_id: m.sender_id,
-        body_text: m.body_text ?? '',
+        body_text: (m.body_text ?? (m as any).body ?? ''),
         reply_to_message_id: null,
         created_at: m.created_at,
         edited_at: m.edited_at,
@@ -274,6 +277,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
       // Enrich with sender display info
       const enriched = await Promise.all(basicMessages.map(loadUserInfo));
+      console.info('ActiveChat.loadMessages: enriched count =', enriched.length);
       setMessages(enriched);
     } catch (error) {
       console.error('Error loading messages:', error);
