@@ -261,7 +261,6 @@ const App = () => {
                   <MembershipAuthProvider>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
-                      <Routes>
                       <Route path="/" element={<Index />} />
                       <Route path="/cafe" element={<Cafe />} />
                       <Route path="/cocktails" element={<Cocktails />} />
