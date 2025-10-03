@@ -218,7 +218,7 @@ export const CreateUserDialog = ({ open, onOpenChange, onUserCreated }: CreateUs
               <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading || !userName.trim() || !email.trim() || !jobTitle.trim()}>
                 {loading ? 'Creating...' : 'Create User'}
               </Button>
             </DialogFooter>

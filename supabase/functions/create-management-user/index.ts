@@ -29,22 +29,40 @@ Deno.serve(async (req) => {
       global: { headers: { Authorization: authHeader } }
     })
 
-    const { email, role, user_name, job_title } = await req.json()
+    // Parse and sanitise body
+    const raw = await req.json().catch(() => ({} as Record<string, unknown>))
+    const email = typeof raw.email === 'string' ? raw.email.trim() : ''
+    const role = typeof raw.role === 'string' ? raw.role.trim() : ''
+    const user_name = typeof raw.user_name === 'string' ? raw.user_name.trim() : ''
+    const job_title = typeof raw.job_title === 'string' ? raw.job_title.trim() : ''
 
-    console.log('Creating management user:', email, role, user_name, job_title)
+    console.log('Creating management user (sanitised):', { email, role, user_name, job_title_len: job_title.length })
 
-    // Validate inputs
-    if (!email || !role || !user_name || !job_title) {
-      throw new Error('Email, role, user name, and job title are required')
+    // Basic validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email || !emailRegex.test(email)) {
+      throw new Error('Valid email is required')
+    }
+    if (!role) {
+      throw new Error('Role is required')
+    }
+    if (!user_name || user_name.length < 2) {
+      throw new Error('User name is required')
+    }
+    if (!job_title || job_title.length < 2) {
+      throw new Error('Job title is required')
     }
 
-    // Map frontend roles to backend roles
+    // Map and validate role
     const roleMapping: Record<string, string> = {
       'Admin': 'admin',
       'Manager': 'manager'
     }
-
+    const allowedRoles = new Set(['admin', 'manager'])
     const mappedRole = roleMapping[role] || role.toLowerCase()
+    if (!allowedRoles.has(mappedRole)) {
+      throw new Error('Invalid role')
+    }
     console.log('Mapped role:', role, '->', mappedRole)
 
     // Validate caller is admin using RPC
