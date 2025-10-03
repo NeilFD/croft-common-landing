@@ -5144,6 +5144,10 @@ export type Database = {
           tickets_left: number
         }[]
       }
+      create_group_chat: {
+        Args: { p_name: string }
+        Returns: string
+      }
       create_hold: {
         Args: { payload: Json }
         Returns: string

@@ -26,37 +26,13 @@ export const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDial
 
     setCreating(true);
     try {
-      // Get authenticated user ID
-      const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast.error('You must be logged in to create a chat');
-        return;
-      }
-
-      // Create group chat
-      const { data: newChat, error: chatError } = await supabase
-        .from('chats')
-        .insert({
-          type: 'group',
-          name: chatName.trim(),
-          created_by: user.id,
-        })
-        .select()
-        .single();
-
-      if (chatError) throw chatError;
-
-      // Add creator as admin member
-      const { error: memberError } = await supabase
-        .from('chat_members')
-        .insert({
-          chat_id: newChat.id,
-          user_id: user.id,
-          is_admin: true,
+      // Use the secure RPC function to create chat and add creator as admin
+      const { data: newChatId, error } = await supabase
+        .rpc('create_group_chat', {
+          p_name: chatName.trim()
         });
 
-      if (memberError) throw memberError;
+      if (error) throw error;
 
       toast.success('Chat created successfully');
       setChatName('');
