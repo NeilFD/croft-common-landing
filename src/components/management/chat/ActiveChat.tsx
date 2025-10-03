@@ -222,73 +222,31 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
   const loadMessages = async () => {
     try {
-      // First, try RPC (preferred path)
-      const { data, error } = await supabase.rpc('get_chat_messages', { _chat_id: chatId });
-
-      if (!error && Array.isArray(data) && data.length > 0) {
-        // Map the RPC response to match our Message interface
-        const enrichedMessages = (data || []).map((msg: any) => {
-          // Get public URLs for attachments
-          const attachments = (msg.attachments || []).map((att: any) => {
-            const { data: urlData } = supabase.storage
-              .from('chat-images')
-              .getPublicUrl(att.storage_path);
-            return { ...att, url: urlData.publicUrl };
-          });
-
-          return {
-            id: msg.id,
-            chat_id: msg.chat_id,
-            sender_id: msg.sender_id,
-            body_text: msg.body_text ?? msg.body ?? '',
-            body: msg.body,
-            reply_to_message_id: null,
-            created_at: msg.created_at,
-            edited_at: msg.edited_at,
-            deleted_at: msg.deleted_at,
-            is_cleo: false,
-            sender_name: msg.sender_name,
-            sender_role: msg.sender_role,
-            attachments,
-            read_by: [],
-          } as Message;
-        });
-
-        setMessages(enrichedMessages);
-        console.info('ActiveChat.loadMessages: using RPC', enrichedMessages.length);
-        return;
-      }
-
-      // RPC errored or returned 0 rows — fall back to direct select under RLS
-      if (error) {
-        console.warn('ActiveChat.loadMessages: RPC error, falling back to select:', error.message);
-      } else {
-        console.info('ActiveChat.loadMessages: RPC returned 0 rows, falling back to select');
-      }
-
+      // Direct SELECT from messages table
       const { data: msgs, error: selectError } = await supabase
         .from('messages')
         .select('id, chat_id, sender_id, body_text, created_at, edited_at, deleted_at, is_cleo')
         .eq('chat_id', chatId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: true });
 
       if (selectError) {
-        console.error('ActiveChat.loadMessages fallback select error:', selectError);
+        console.error('Error loading messages:', selectError);
         toast.error('Failed to load messages');
         return;
       }
 
       const messageIds = (msgs || []).map((m: any) => m.id);
 
-      // Fetch attachments for these messages (if any)
+      // Fetch attachments for these messages
       let attachmentsByMessage: Record<string, any[]> = {};
       if (messageIds.length > 0) {
-        const { data: atts, error: attErr } = await supabase
+        const { data: atts } = await supabase
           .from('attachments')
           .select('id, message_id, type, mime, width, height, storage_path')
           .in('message_id', messageIds);
 
-        if (!attErr && atts) {
+        if (atts) {
           attachmentsByMessage = atts.reduce((acc: Record<string, any[]>, att: any) => {
             const { data: urlData } = supabase.storage
               .from('chat-images')
@@ -317,7 +275,6 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       // Enrich with sender display info
       const enriched = await Promise.all(basicMessages.map(loadUserInfo));
       setMessages(enriched);
-      console.info('ActiveChat.loadMessages: using fallback select', enriched.length);
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
