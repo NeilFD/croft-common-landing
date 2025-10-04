@@ -57,6 +57,40 @@ function isQueryAppropriate(query: string): { appropriate: boolean; reason?: str
   return { appropriate: true };
 }
 
+async function weatherFallback(query: string) {
+  try {
+    const q = query || '';
+    const m = q.match(/in\s+([A-Za-z\s,]+?)(\?|$)/i);
+    let place = m ? m[1].trim() : '';
+    if (!place || /weather|today|forecast/i.test(place)) place = 'Bristol';
+
+    const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(place)}&count=1&language=en&format=json`);
+    const geo = await geoRes.json();
+    const first = geo?.results?.[0];
+    if (!first) return null;
+
+    const { latitude, longitude, name, country } = first;
+    const wxRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code&timezone=Europe/London`);
+    const wx = await wxRes.json();
+    const cur = wx?.current;
+    if (!cur) return null;
+
+    const codeMap: Record<number, string> = { 0: 'clear', 1: 'mainly clear', 2: 'partly cloudy', 3: 'overcast', 45: 'fog', 48: 'depositing rime fog', 51: 'light drizzle', 53: 'moderate drizzle', 55: 'dense drizzle', 56: 'freezing drizzle', 57: 'freezing drizzle', 61: 'light rain', 63: 'moderate rain', 65: 'heavy rain', 66: 'freezing rain', 67: 'freezing rain', 71: 'light snow', 73: 'moderate snow', 75: 'heavy snow', 77: 'snow grains', 80: 'rain showers', 81: 'rain showers', 82: 'heavy rain showers', 85: 'snow showers', 86: 'snow showers', 95: 'thunderstorm', 96: 'thunderstorm with hail', 99: 'thunderstorm with hail' };
+    const desc = codeMap[cur.weather_code as number] || 'conditions';
+    const answer = `Current weather in ${name}, ${country} at ${new Date(cur.time).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}: ${cur.temperature_2m}°C (feels ${cur.apparent_temperature}°C), ${desc}. Wind ${cur.wind_speed_10m} km/h, humidity ${cur.relative_humidity_2m}%.`;
+
+    return {
+      query,
+      answer,
+      timestamp: new Date().toISOString(),
+      sources: `Open-Meteo real-time data (${name}, ${country})`
+    };
+  } catch (e) {
+    console.error('weatherFallback error:', e);
+    return null;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -119,6 +153,13 @@ serve(async (req) => {
     if (!searchResponse.ok) {
       const errorText = await searchResponse.text();
       console.error('OpenRouter API error:', searchResponse.status, errorText);
+      // Try weather fallback for weather-like queries
+      if (/\b(weather|forecast|temperature|climate)\b/i.test(query)) {
+        const fb = await weatherFallback(query);
+        if (fb) {
+          return new Response(JSON.stringify(fb), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+        }
+      }
       throw new Error(`Search service error: ${searchResponse.status}`);
     }
 
