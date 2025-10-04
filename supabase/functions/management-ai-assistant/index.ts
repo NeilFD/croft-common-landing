@@ -1794,6 +1794,45 @@ serve(async (req) => {
       console.log('🧭 Forcing search_internet tool for query:', lastUserMsg.content.slice(0, 120));
     }
 
+    // Force direct internet search execution when required
+    if (shouldForceInternetSearch && lastUserMsg?.content) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL');
+        if (!supabaseUrl) throw new Error('SUPABASE_URL not configured');
+        const searchResponse = await fetch(`${supabaseUrl}/functions/v1/web-search-proxy`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': incomingAuth || ''
+          },
+          body: JSON.stringify({ query: lastUserMsg.content })
+        });
+        let functionResult: any;
+        if (searchResponse.ok) {
+          const searchData = await searchResponse.json();
+          functionResult = { success: true, ...searchData };
+        } else {
+          const errText = await searchResponse.text();
+          console.error(`❌ web-search-proxy pre-call failed: ${searchResponse.status} ${errText.slice(0,300)}`);
+          functionResult = { success: false, error: 'Search service error', status: searchResponse.status, details: errText.slice(0,300) };
+        }
+        const toolCallId = 'call_' + Date.now();
+        const finalMessages = [
+          ...filteredMessages,
+          { role: 'assistant', content: null, tool_calls: [{ id: toolCallId, type: 'function', function: { name: 'search_internet', arguments: JSON.stringify({ query: lastUserMsg.content }) } }]},
+          { role: 'tool', tool_call_id: toolCallId, content: JSON.stringify(functionResult) }
+        ];
+        const finalResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'google/gemini-2.5-flash', messages: [ { role: 'system', content: systemPrompt }, ...finalMessages ], tools: FUNCTION_TOOLS, stream: true })
+        });
+        return new Response(finalResponse.body, { headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' } });
+      } catch (e) {
+        console.error('❌ Forced internet search flow error:', e);
+      }
+    }
+
     // First AI request with function calling enabled
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
