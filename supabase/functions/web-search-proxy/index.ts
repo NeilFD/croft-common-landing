@@ -5,40 +5,38 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Content filtering - block inappropriate topics
+// Content filtering - block inappropriate topics only
 const BLOCKED_KEYWORDS = [
-  'porn', 'xxx', 'adult content', 'sex', 'nude', 'naked',
-  'violence', 'kill', 'murder', 'weapon', 'drug',
-  'celebrity gossip', 'kardashian', 'reality tv',
-  'gambling', 'casino', 'betting',
-  'piracy', 'torrent', 'crack', 'hack'
-];
-
-const WORK_APPROPRIATE_CATEGORIES = [
-  'weather', 'forecast', 'temperature', 'climate',
-  'news', 'business', 'finance', 'market', 'economy',
-  'regulation', 'law', 'compliance', 'food safety',
-  'exchange rate', 'currency',
-  'public holiday', 'bank holiday',
-  'company', 'industry', 'trade',
-  'definition', 'what is', 'how to', 'guide',
-  'technical', 'documentation', 'tutorial'
+  // Violence & Crime
+  'kill', 'murder', 'weapon', 'gun', 'bomb', 'terrorist', 'violence', 'assault', 'abuse',
+  
+  // Drugs & Illegal Substances
+  'drug', 'cocaine', 'heroin', 'meth', 'cannabis dealer', 'buy drugs', 'illegal substance',
+  
+  // Adult & Sexual Content
+  'porn', 'xxx', 'adult content', 'sex video', 'nude', 'naked', 'explicit',
+  
+  // Discrimination & Hate
+  'racist', 'sexist', 'misogyny', 'misogynistic', 'homophobic', 'transphobic', 'hate speech', 'slur',
+  
+  // Other Inappropriate
+  'gambling', 'casino', 'betting', 'piracy', 'torrent', 'crack software', 'hacked'
 ];
 
 function isQueryAppropriate(query: string): { appropriate: boolean; reason?: string } {
   const lowerQuery = query.toLowerCase();
   
-  // Check for blocked keywords
+  // Check for blocked keywords - allow everything except explicit blocks
   for (const blocked of BLOCKED_KEYWORDS) {
     if (lowerQuery.includes(blocked)) {
       return { 
         appropriate: false, 
-        reason: 'Query contains inappropriate content. I can only help with work-related information.' 
+        reason: 'I can\'t help with that, but I\'m happy to assist with hospitality, business, or factual information.' 
       };
     }
   }
   
-  // Relaxed filtering: allow all queries except those with blocked keywords
+  // Allow all other queries
   return { appropriate: true };
 }
 

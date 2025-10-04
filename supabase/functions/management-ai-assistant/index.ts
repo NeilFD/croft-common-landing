@@ -1789,7 +1789,7 @@ serve(async (req) => {
     const lastUserMsg = Array.isArray(filteredMessages)
       ? [...filteredMessages].reverse().find((m: any) => m?.role === 'user' && typeof m?.content === 'string')
       : null;
-    const shouldForceInternetSearch = !!(lastUserMsg && /\b(latest|today|now|current|live|breaking|weather|forecast|temperature|climate|news|headline|exchange\s*rate|currency|price|stock|score|traffic|train|timetable|opening\s*hours|bank\s*holiday|public\s*holiday|interest\s*rate|bank\s*rate|inflation|cpi|gdp|official|updated|as\s*of)\b/i.test(lastUserMsg.content));
+    const shouldForceInternetSearch = !!(lastUserMsg && /\b(what|how|when|where|why|is|are|define|explain|tell me|show me|find|search|look up|recipe|ingredient|weather|news|latest|current|today|now)\b/i.test(lastUserMsg.content));
     if (shouldForceInternetSearch) {
       console.log('🧭 Forcing search_internet tool for query:', lastUserMsg.content.slice(0, 120));
     }
@@ -2302,14 +2302,16 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
    - Example: "What's the revenue for event X?" → Call get_analytics with type="revenue", event_identifier="X"
    - Example: "What's the budget for 7th October?" → Call get_analytics with type="revenue", event_identifier="7th October"
 
-4. **search_internet** - For current external information NOT in your knowledge base:
-   - ONLY for work-appropriate queries: weather, news, regulations, exchange rates, public holidays, definitions
+4. **search_internet** - For ANY factual, current, or external information NOT in your knowledge base:
+   - Use for: definitions, recipes, ingredients, allergens, dietary requirements, techniques, beverages, news, weather, regulations, exchange rates, company info, industry trends, general knowledge
+   - Example: "What is pancetta?" → Call search_internet("what is pancetta")
+   - Example: "What allergens are in shellfish?" → Call search_internet("shellfish allergens")
+   - Example: "How do you make a Negroni?" → Call search_internet("Negroni recipe")
    - Example: "What's the weather in London?" → Call search_internet("weather in London today")
-   - Example: "What's the GBP to EUR exchange rate?" → Call search_internet("GBP to EUR exchange rate")
-   - Example: "When is the next bank holiday?" → Call search_internet("UK bank holidays 2025")
-   - Example: "What are current food safety regulations?" → Call search_internet("UK food safety regulations 2025")
-   - NEVER search for: entertainment, celebrity gossip, inappropriate content, personal matters
-   - If asked about non-work topics, politely say: "I'm here to help with work-related queries. I can search for weather, business news, regulations, and factual information instead."
+   - Example: "Latest food safety regulations?" → Call search_internet("UK food safety regulations 2025")
+   
+   - DO NOT search for: violence, drugs, illegal activities, pornography, adult content, discrimination, hate speech
+   - If asked inappropriate questions, politely decline: "I can't help with that, but I'm happy to assist with hospitality, business, or factual information."
 
 **WHEN TO CALL FUNCTIONS:**
 - User asks about specific events/bookings → get_management_data
