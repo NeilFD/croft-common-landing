@@ -41,6 +41,7 @@ export const ManagementAIChatWidget = () => {
   const dragStartPosRef = useRef({ x: 0, y: 0 });
   const touchTimerRef = useRef<NodeJS.Timeout>();
   const globalListenersRef = useRef(false);
+  const dragPreventClickRef = useRef(false);
   const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
 
   // Clamp position within viewport bounds
@@ -117,11 +118,16 @@ export const ManagementAIChatWidget = () => {
       window.removeEventListener('pointercancel', globalPointerUp, true);
       console.debug('CLEO-DRAG: Global listeners removed');
     }
+    // Reset click prevention after the click event queue
+    setTimeout(() => {
+      dragPreventClickRef.current = false;
+    }, 0);
   }, [globalPointerMove]);
 
   // Start drag (shared logic)
   const startDrag = useCallback((clientX: number, clientY: number, pointerType: string) => {
     console.debug('CLEO-DRAG: Starting drag', { clientX, clientY, pointerType });
+    dragPreventClickRef.current = true; // prevent click toggle after drag
     isDraggingRef.current = true;
     setIsDragging(true);
     dragStartPosRef.current = { x: clientX, y: clientY };
@@ -217,13 +223,54 @@ export const ManagementAIChatWidget = () => {
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     // Cleanup handled by global listener
     try {
-      e.currentTarget.releasePointerCapture(e.pointerId);
+      (e.currentTarget as any).releasePointerCapture?.(e.pointerId);
     } catch (err) {
       // Pointer already released, ignore
     }
   }, []);
 
-  // Always scroll to bottom when widget opens or minimizes
+  // Minimized button drag handlers
+  const handleMinimizedPointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.debug('CLEO-DRAG: MINI-Down', {
+      pointerType: e.pointerType,
+      button: e.button,
+      buttons: e.buttons,
+      clientX: e.clientX,
+      clientY: e.clientY,
+    });
+
+    // Allow left click or buttons===1 for mouse/touchpad
+    if (e.pointerType === 'mouse' && e.button !== 0 && e.buttons !== 1) {
+      return;
+    }
+
+    if (e.pointerType === 'mouse') {
+      startDrag(e.clientX, e.clientY, e.pointerType);
+      try {
+        (e.currentTarget as any).setPointerCapture?.(e.pointerId);
+      } catch {}
+    } else if (e.pointerType === 'touch') {
+      const pointerId = e.pointerId;
+      touchTimerRef.current = setTimeout(() => {
+        startDrag(e.clientX, e.clientY, e.pointerType);
+        try {
+          (e.currentTarget as any).setPointerCapture?.(pointerId);
+        } catch {}
+      }, 350);
+    }
+  }, [startDrag]);
+
+  const handleMinimizedClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    if (dragPreventClickRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    toggleWidget();
+  }, [toggleWidget]);
+
+  // Always scroll to bottom when widget opens or minimises
   useEffect(() => {
     if (scrollRef.current && isWidgetOpen && !isMinimized) {
       setTimeout(() => {
@@ -318,9 +365,26 @@ export const ManagementAIChatWidget = () => {
   if (!isWidgetOpen) {
     return (
       <Button
-        onClick={toggleWidget}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-50 bg-accent-pink border-2 border-foreground hover:bg-accent-pink-dark"
+        onClick={handleMinimizedClick}
+        className={cn(
+          "fixed h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-50 bg-accent-pink border-2 border-foreground hover:bg-accent-pink-dark",
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        )}
         size="icon"
+        style={{
+          right: `${position.x}px`,
+          bottom: `${position.y}px`,
+          touchAction: 'none',
+          WebkitTouchCallout: 'none',
+        }}
+        onPointerDown={handleMinimizedPointerDown}
+        onPointerUp={(e) => {
+          try { (e.currentTarget as any).releasePointerCapture?.(e.pointerId); } catch {}
+        }}
+        onPointerCancel={(e) => {
+          try { (e.currentTarget as any).releasePointerCapture?.(e.pointerId); } catch {}
+        }}
+        title="Open Cleo"
       >
         <Bot className="h-6 w-6 text-foreground" />
         {unreadCount > 0 && (
