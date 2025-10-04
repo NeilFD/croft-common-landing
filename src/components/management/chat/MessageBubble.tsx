@@ -329,7 +329,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     const unwrapped = unwrapSourcesFences(text);
     const { pre, urls, post } = extractSourcesBlock(unwrapped);
     sourcesUrls = urls;
-    processedText = `${pre}\n\n${post}`.trim();
+    processedText = (pre + (post ? `\n\n${post}` : '')).trim();
   }
   const processedContent = linkifyContent(processedText)
     .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with 2
