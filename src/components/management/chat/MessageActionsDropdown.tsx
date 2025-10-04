@@ -30,9 +30,9 @@ export const MessageActionsDropdown = ({
         <Button
           variant="ghost"
           size="sm"
-          className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity absolute top-2 right-2 z-10"
+          className="h-6 w-6 md:h-8 md:w-8 p-0 opacity-70 md:opacity-0 md:group-hover:opacity-100 hover:opacity-100 transition-opacity absolute top-1 right-1 md:top-2 md:right-2 z-20"
         >
-          <MoreVertical className="h-4 w-4" />
+          <MoreVertical className="h-3 w-3 md:h-4 md:w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-48 bg-white dark:bg-gray-900 border-border z-[200]" align="end">
