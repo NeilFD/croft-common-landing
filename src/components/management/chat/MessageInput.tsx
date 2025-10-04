@@ -13,18 +13,20 @@ interface MessageInputProps {
 
 export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange, chatMembers = [] }: MessageInputProps) => {
   const [message, setMessage] = useState('');
+  const [plainTextMessage, setPlainTextMessage] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [cleoMentioned, setCleoMentioned] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = async () => {
-    if (!message.trim() && !image) return;
+    if (!plainTextMessage.trim() && !image) return;
 
     setSending(true);
     try {
-      await onSend(message, image || undefined);
+      await onSend(plainTextMessage, image || undefined);
       setMessage('');
+      setPlainTextMessage('');
       setImage(null);
       setCleoMentioned(false);
       onCleoMentionChange?.(false);
@@ -41,7 +43,8 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
     newPlainTextValue: string,
     mentions: any[]
   ) => {
-    setMessage(newPlainTextValue);
+    setMessage(newValue);
+    setPlainTextMessage(newPlainTextValue);
 
     // Check for @Cleo mention
     const hasCleo = /@Cleo\b/i.test(newPlainTextValue);
@@ -193,7 +196,7 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
           </div>
           <Button
             onClick={handleSend}
-            disabled={(!message.trim() && !image) || sending}
+            disabled={(!plainTextMessage.trim() && !image) || sending}
             size="icon"
             className="bg-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))]/90"
           >
