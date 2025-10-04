@@ -4,7 +4,7 @@ import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { ChatHeader } from './ChatHeader';
-import { MessageActionsMenu } from './MessageActionsMenu';
+
 import { MessageActionsDropdown } from './MessageActionsDropdown';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -743,21 +743,12 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                   
                   return (
                     <div key={message.id} className="relative group pr-12">
-                      <MessageActionsMenu
-                        canEdit={canEdit}
-                        canDelete={canDelete}
-                        onCopy={() => handleCopyMessage(message)}
-                        onReply={() => handleReplyToMessage(message)}
-                        onEdit={canEdit ? () => handleEditMessage(message) : undefined}
-                        onDelete={() => handleDeleteMessage(message)}
-                      >
-                        <MessageBubble
-                          message={message}
-                          isOwn={isOwn}
-                          isCleo={message.is_cleo === true}
-                          isCleoThinking={message.is_cleo && index === messages.filter(m => !m.deleted_at).length - 1 && isCleoThinking}
-                        />
-                      </MessageActionsMenu>
+                      <MessageBubble
+                        message={message}
+                        isOwn={isOwn}
+                        isCleo={message.is_cleo === true}
+                        isCleoThinking={message.is_cleo && index === messages.filter(m => !m.deleted_at).length - 1 && isCleoThinking}
+                      />
                       <MessageActionsDropdown
                         canEdit={canEdit}
                         canDelete={canDelete}
