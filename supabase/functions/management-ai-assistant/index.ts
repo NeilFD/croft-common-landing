@@ -1427,8 +1427,9 @@ const FUNCTION_TOOLS = [
 ];
 
 // Function execution handler
-async function executeFunction(functionName: string, args: any, supabase: any, userRole: string, serviceRoleClient?: any) {
+async function executeFunction(functionName: string, args: any, supabase: any, userRole: string, incomingAuth: string, serviceRoleClient?: any) {
   console.log(`🔧 Executing function: ${functionName}`, JSON.stringify(args).substring(0, 200));
+  console.log(`🔐 Auth header present: ${incomingAuth ? `yes (${incomingAuth.length} chars)` : 'no'}`);
   
   try {
     switch (functionName) {
@@ -1519,10 +1520,11 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
               return {
                 success: false,
                 blocked: true,
-                message: errorData.error || 'This search query is not appropriate for work context.'
+                query,
+                message: errorData.error || 'This search query contains inappropriate content and cannot be processed.'
               };
             }
-            throw new Error(`Search failed: ${searchResponse.status}`);
+            throw new Error(`Search proxy returned ${searchResponse.status}: ${errorData?.error || errorText?.slice(0, 100) || 'Unknown error'}`);
           }
           
           const searchData = await searchResponse.json();
@@ -1540,11 +1542,12 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
           };
           
         } catch (error) {
-          console.error('Internet search error:', error);
+          console.error('❌ Internet search error:', error);
           return {
             success: false,
+            query,
             error: error instanceof Error ? error.message : 'Search failed',
-            message: 'Unable to complete internet search at this time.'
+            message: `Unable to complete internet search: ${error instanceof Error ? error.message : 'Unknown error'}`
           };
         }
       }
@@ -1955,6 +1958,7 @@ serve(async (req) => {
                   fnArgs,
                   supabase,
                   context?.user?.role,
+                  incomingAuth,
                   serviceRoleClient
                 );
 
@@ -2022,6 +2026,7 @@ serve(async (req) => {
                     { type: 'feedback', time_period: period },
                     supabase,
                     context?.user?.role,
+                    incomingAuth,
                     serviceRoleClient
                   );
                   const toolCallId = 'call_' + Date.now();
