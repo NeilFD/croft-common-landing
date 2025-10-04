@@ -62,7 +62,43 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
   return d ? format(d, 'HH:mm') : '';
 }
 
-// Link helpers to ensure links open reliably even inside context menus
+// Link helpers to ensure links open reliably even inside builders/iframes
+function attemptOpen(href: string) {
+  // Try normal window.open
+  try {
+    const w = window.open(href, '_blank', 'noopener,noreferrer');
+    if (w) return true;
+  } catch {}
+
+  // Try opening from the top window (some builders sandbox popups in the iframe)
+  try {
+    if (window.top && window.top !== window) {
+      const wTop = (window.top as Window).open(href, '_blank', 'noopener,noreferrer');
+      if (wTop) return true;
+    }
+  } catch {}
+
+  // Last resort: synthesize a click on an anchor element
+  try {
+    const a = document.createElement('a');
+    a.href = href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    return true;
+  } catch {}
+
+  // Final fallback: navigate current tab
+  try {
+    window.location.href = href;
+    return true;
+  } catch {}
+
+  return false;
+}
+
 function openExternal(
   e: React.MouseEvent | React.PointerEvent | React.TouchEvent,
   href?: string
@@ -70,11 +106,10 @@ function openExternal(
   if (!href) return;
   e.preventDefault();
   e.stopPropagation();
-  try {
-    window.open(href, '_blank', 'noopener,noreferrer');
-  } catch {
-    // Fallback
-    window.location.href = href;
+  const ok = attemptOpen(href);
+  if (!ok) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to open link, navigation may be blocked by the preview sandbox.', href);
   }
 }
 
@@ -84,10 +119,10 @@ function handleAuxOpen(e: React.MouseEvent, href?: string) {
   if (e.button === 1) {
     e.preventDefault();
     e.stopPropagation();
-    try {
-      window.open(href, '_blank', 'noopener,noreferrer');
-    } catch {
-      window.location.href = href;
+    const ok = attemptOpen(href);
+    if (!ok) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to open link on middle click.', href);
     }
   }
 }
@@ -97,10 +132,10 @@ function keyOpenExternal(e: React.KeyboardEvent, href?: string) {
   if (e.key === 'Enter' || e.key === ' ') {
     e.preventDefault();
     e.stopPropagation();
-    try {
-      window.open(href, '_blank', 'noopener,noreferrer');
-    } catch {
-      window.location.href = href;
+    const ok = attemptOpen(href);
+    if (!ok) {
+      // eslint-disable-next-line no-console
+      console.warn('Failed to open link via keyboard.', href);
     }
   }
 }
@@ -158,7 +193,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold cursor-pointer"
+              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold cursor-pointer pointer-events-auto"
               onClick={(e) => openExternal(e, url)}
               onAuxClick={(e) => handleAuxOpen(e, url)}
               onKeyDown={(e) => keyOpenExternal(e, url)}
@@ -265,7 +300,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         href={href} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full cursor-pointer"
+                        className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
                         onClick={(e) => openExternal(e, href)}
                         onAuxClick={(e) => handleAuxOpen(e, href)}
                         onKeyDown={(e) => keyOpenExternal(e, href)}
