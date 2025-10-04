@@ -152,16 +152,21 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     navigate(`/ext?u=${encodeURIComponent(u)}`);
   };
   
-  // Auto-linkify URLs for Cleo markdown content
+  // Auto-linkify URLs for Cleo markdown content - matches both http(s):// and bare domains
   const linkifyContent = (text: string) => {
     return text.replace(
-      /(https?:\/\/[^\s]+)/g,
-      (url) => {
+      /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s)]*)*/g,
+      (match) => {
+        // Normalize URL: add https:// if missing
+        const url = match.startsWith('http://') || match.startsWith('https://') ? match : `https://${match}`;
+        // eslint-disable-next-line no-console
+        console.info('linkifyContent: detected URL', match, '-> normalized to', url);
+        
         // For BEO viewer routes, show a cleaner display name
         if (url.includes('/beo/view?f=') || (url.includes('beo-documents') && url.includes('.pdf')) || url.includes('proxy-beo-pdf')) {
           return `[📄 View BEO PDF](${url})`;
         }
-        return `[${url}](${url})`;
+        return `[${match}](${url})`;
       }
     );
   };
@@ -175,29 +180,38 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   const renderTextWithMentions = (text: string) => {
     // Match @mentions - single word/username only (no spaces, like @Cleo or @John)
     const mentionRegex = /@([A-Za-z][A-Za-z0-9._-]{0,30})\b/g;
-    // Match URLs - improved to trim trailing punctuation
-    const urlRegex = /(https?:\/\/[^\s]+)/;
+    // Match URLs - both http(s):// and bare domains
+    const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s)]*)*/g;
     
     // Split by both URLs and mentions
-    const parts = text.split(/(@[A-Za-z][A-Za-z0-9._-]{0,30}\b|https?:\/\/[^\s]+)/g);
+    const parts = text.split(/(@[A-Za-z][A-Za-z0-9._-]{0,30}\b|(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s)]*)*)/g);
     
     return parts.map((part, i) => {
-      // Check if it's a URL
-      if (urlRegex.test(part)) {
+      // Check if it's a URL (need to re-test since regex has 'g' flag in split)
+      const isUrl = /^(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s)]*)*$/.test(part);
+      if (isUrl) {
         // Trim trailing punctuation from URLs
-        let url = part;
+        let displayText = part;
         let trailingPunct = '';
-        const punctMatch = url.match(/([.,!?;:)]*)$/);
+        const punctMatch = displayText.match(/([.,!?;:)]*)$/);
         if (punctMatch && punctMatch[1]) {
           trailingPunct = punctMatch[1];
-          url = url.slice(0, -trailingPunct.length);
+          displayText = displayText.slice(0, -trailingPunct.length);
         }
         
+        // Normalize URL: add https:// if missing
+        const normalizedUrl = displayText.startsWith('http://') || displayText.startsWith('https://') 
+          ? displayText 
+          : `https://${displayText}`;
+        
+        // eslint-disable-next-line no-console
+        console.info('renderTextWithMentions: detected URL', displayText, '-> normalized to', normalizedUrl);
+        
         // Check if it's a BEO viewer link
-        const isBeoLink = url.includes('www.croftcommontest.com') && url.includes('/beo/');
+        const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && normalizedUrl.includes('/beo/');
         
         // In preview iframe, use redirector; otherwise use normal target
-        const linkHref = inPreview && !isBeoLink ? `/ext?u=${encodeURIComponent(url)}` : url;
+        const linkHref = inPreview && !isBeoLink ? `/ext?u=${encodeURIComponent(normalizedUrl)}` : normalizedUrl;
         const linkTarget = inPreview && !isBeoLink ? '_self' : (isBeoLink ? '_self' : '_top');
         
         return (
@@ -211,18 +225,18 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                 if (inPreview && !isBeoLink) {
                   e.preventDefault();
                   e.stopPropagation();
-                  goToExt(url);
+                  goToExt(normalizedUrl);
                 }
               }}
               onKeyDown={(e) => {
                 if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   e.stopPropagation();
-                  goToExt(url);
+                  goToExt(normalizedUrl);
                 }
               }}
             >
-              {isBeoLink ? 'View BEO' : url}
+              {isBeoLink ? 'View BEO' : displayText}
             </a>
             {trailingPunct}
           </span>
