@@ -389,8 +389,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         seenUrls.add(key);
         
         // Always render real href; manage preview behaviour via handlers
-        const linkHref = normalizedUrl;
-        const linkTarget = isBeoLink ? (inPreview ? '_blank' : '_self') : '_blank';
+        const linkHref = inPreview ? `/ext?u=${encodeURIComponent(normalizedUrl)}` : normalizedUrl;
+        const linkTarget = inPreview ? '_self' : (isBeoLink ? '_self' : '_blank');
         
         return (
           <span key={i}>
@@ -533,8 +533,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                       const key = normalizedUrl.toLowerCase();
                       seenUrls.add(key);
 
-                      const linkHref = normalizedUrl;
-                      const linkTarget = isBeoLink ? (inPreview ? '_blank' : '_self') : '_blank';
+                      const linkHref = inPreview ? `/ext?u=${encodeURIComponent(normalizedUrl)}` : normalizedUrl;
+                      const linkTarget = inPreview ? '_self' : (isBeoLink ? '_self' : '_blank');
                       
                       return (
                         <a 
@@ -588,8 +588,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         return (
                           <li key={`${u}-${idx}`} className="list-disc">
                             <a
-                              href={u}
-                              target={target}
+                              href={inPreview ? `/ext?u=${encodeURIComponent(u)}` : u}
+                              target={inPreview ? '_self' : target}
                               rel="noopener noreferrer"
                               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
                               onClick={(e) => {
