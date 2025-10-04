@@ -2,7 +2,6 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Check, CheckCheck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import ReactMarkdown from 'react-markdown';
 
 interface MessageBubbleProps {
   message: {
@@ -60,9 +59,36 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
 export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   
-  // Convert @mentions in plain text to markdown links we can style via custom renderer
-  const mentionRegex = /@([A-Za-z][A-Za-z0-9.'-]*(?:\s+[A-Za-z][A-Za-z0-9.'-]*)*)/g;
-  const processedText = !isCleo ? text.replace(mentionRegex, '[@$1](mention://$1)') : text;
+  // Parse mentions and render them as styled components
+  const renderTextWithMentions = (text: string) => {
+    if (isCleo) return text;
+    
+    const mentionRegex = /@([A-Za-z][A-Za-z0-9.'-]*(?:\s+[A-Za-z][A-Za-z0-9.'-]*)*)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = mentionRegex.exec(text)) !== null) {
+      // Add text before mention
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+      // Add mention as styled span
+      parts.push(
+        <span key={match.index} className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-bold mx-0.5">
+          @{match[1]}
+        </span>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+    
+    return parts.length > 0 ? parts : text;
+  };
   return (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
       <div className={cn("max-w-[70%] md:max-w-[60%]", isOwn && "order-2")}>
@@ -111,25 +137,8 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
               </div>
             </div>
           ) : text && text !== '[Image]' ? (
-            <div className="font-industrial text-sm whitespace-pre-wrap prose prose-sm max-w-none">
-              <ReactMarkdown 
-                components={{
-                  a: ({ node, href, children, ...props }) => {
-                    if (href && href.startsWith('mention://')) {
-                      return (
-                        <span className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-semibold">
-                          {children}
-                        </span>
-                      );
-                    }
-                    return (
-                      <a {...props} href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80" />
-                    );
-                  },
-                }}
-              >
-                {processedText}
-              </ReactMarkdown>
+            <div className="font-industrial text-sm whitespace-pre-wrap">
+              {renderTextWithMentions(text)}
             </div>
           ) : null}
           
