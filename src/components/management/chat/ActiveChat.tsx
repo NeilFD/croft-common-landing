@@ -84,15 +84,59 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           filter: `chat_id=eq.${chatId}`,
         },
         (payload) => {
-          loadUserInfo(payload.new as Message).then((enrichedMessage) => {
+          loadUserInfo(payload.new as Message).then(async (enrichedMessage) => {
+            // Try to attach reply preview from local state first
+            let enrichedWithPreview = enrichedMessage;
+            const replyId = (enrichedMessage as any).reply_to_message_id;
+            if (replyId) {
+              const local = messages.find((m) => m.id === replyId);
+              if (local) {
+                enrichedWithPreview = {
+                  ...enrichedMessage,
+                  reply_to_message: {
+                    sender_name: local.sender_name || 'Unknown',
+                    body_text: local.body_text,
+                  },
+                };
+              }
+            }
+
             setMessages((prev) => {
               // Check if message already exists (from optimistic update)
-              const exists = prev.some(msg => msg.id === enrichedMessage.id);
+              const exists = prev.some((msg) => msg.id === enrichedWithPreview.id);
               if (exists) {
                 return prev; // Don't add duplicate
               }
-              return [...prev, enrichedMessage];
+              return [...prev, enrichedWithPreview];
             });
+
+            // If reply context not found locally, fetch minimal info and patch message
+            if (replyId && !messages.find((m) => m.id === replyId)) {
+              try {
+                const { data: replyRow } = await supabase
+                  .from('messages')
+                  .select('id, sender_id, body_text')
+                  .eq('id', replyId)
+                  .maybeSingle();
+                if (replyRow) {
+                  const { data: userData } = await supabase
+                    .rpc('get_chat_user_info', { _user_id: replyRow.sender_id })
+                    .single();
+                  const preview = {
+                    sender_name: userData?.display_name || 'Unknown',
+                    body_text: replyRow.body_text || '',
+                  };
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === enrichedMessage.id ? { ...m, reply_to_message: preview } : m
+                    )
+                  );
+                }
+              } catch (err) {
+                console.warn('ActiveChat: failed to fetch reply preview for realtime insert', err);
+              }
+            }
+
             scrollToBottom();
           });
         }
@@ -600,6 +644,36 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           url: urlData.publicUrl,
         }];
       }
+
+      // Attach reply preview if applicable
+      if (replyToId) {
+        try {
+          const local = messages.find((m) => m.id === replyToId);
+          if (local) {
+            enrichedMessage.reply_to_message = {
+              sender_name: local.sender_name || 'Unknown',
+              body_text: local.body_text,
+            };
+          } else {
+            const { data: replyRow } = await supabase
+              .from('messages')
+              .select('id, sender_id, body_text')
+              .eq('id', replyToId)
+              .maybeSingle();
+            if (replyRow) {
+              const { data: userData } = await supabase
+                .rpc('get_chat_user_info', { _user_id: replyRow.sender_id })
+                .single();
+              enrichedMessage.reply_to_message = {
+                sender_name: userData?.display_name || 'Unknown',
+                body_text: replyRow.body_text || '',
+              };
+            }
+          }
+        } catch (err) {
+          console.warn('ActiveChat: failed to build reply preview', err);
+        }
+      }
       
       setMessages((prev) => [...prev, enrichedMessage]);
       setReplyingTo(null);
@@ -668,7 +742,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                   const canDelete = isOwn || hasRole('admin');
                   
                   return (
-                    <div key={message.id} className="relative group min-h-10 min-w-12">
+                    <div key={message.id} className="relative group">
                       <MessageActionsMenu
                         canEdit={canEdit}
                         canDelete={canDelete}

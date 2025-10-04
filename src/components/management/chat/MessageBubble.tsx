@@ -154,7 +154,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         )}
         <div
           className={cn(
-            "rounded-lg px-4 py-2 break-words",
+            "rounded-lg px-4 py-2 break-words min-h-10 min-w-12 w-fit",
             isOwn && "bg-white text-black border border-border",
             !isOwn && !isCleo && "bg-muted text-black",
             isCleo && "bg-card text-foreground border-l-4 border-[hsl(var(--accent-pink))] shadow-sm"
