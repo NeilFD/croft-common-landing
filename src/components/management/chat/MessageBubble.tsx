@@ -198,6 +198,33 @@ async function openBeoInNewTab(rawUrl: string) {
   }
 }
 
+// Simple BEO URL detector
+function isBeoUrl(url: string): boolean {
+  const u = url || '';
+  const lower = u.toLowerCase();
+  return (
+    u.includes('/beo/view?f=') ||
+    (u.includes('beo-documents') && lower.includes('.pdf')) ||
+    u.includes('proxy-beo-pdf')
+  );
+}
+
+// Unified link opener for all anchors
+function openLink(
+  e: React.MouseEvent | React.PointerEvent | React.TouchEvent,
+  url?: string
+) {
+  if (!url) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const normalized = url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
+  if (isBeoUrl(normalized)) {
+    openBeoInNewTab(normalized);
+  } else {
+    attemptOpen(normalized);
+  }
+}
+
 export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   const inPreview = isInPreviewIframe();
@@ -428,7 +455,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         console.info('renderTextWithMentions: detected URL', displayText, '-> normalized to', normalizedUrl);
         
         // Check if it's a BEO viewer link
-        const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && (normalizedUrl.includes('/beo/') || normalizedUrl.includes('/beo/view?f=') || (normalizedUrl.includes('/beo-documents') && normalizedUrl.toLowerCase().endsWith('.pdf')) || normalizedUrl.includes('proxy-beo-pdf'));
+        const isBeoLink = isBeoUrl(normalizedUrl);
         
         // Deduplicate clickable URLs per message
         const key = normalizedUrl.toLowerCase();
@@ -449,13 +476,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               target="_blank"
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
-              onClick={(e) => {
-                if (isBeoLink) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  openBeoInNewTab(normalizedUrl);
-                }
-              }}
+              onClick={(e) => openLink(e, normalizedUrl)}
             >
               {isBeoLink ? 'View BEO' : displayText}
             </a>
@@ -557,8 +578,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                       const normalizedUrl = href.startsWith('http://') || href.startsWith('https://')
                         ? href
                         : `https://${href}`;
-                      // Treat BEO links for display label
-                      const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && (normalizedUrl.includes('/beo/') || normalizedUrl.includes('/beo/view?f=') || (normalizedUrl.includes('/beo-documents') && normalizedUrl.toLowerCase().endsWith('.pdf')) || normalizedUrl.includes('proxy-beo-pdf'));
 
                       // Track seen URLs but always render them as clickable links in message body
                       const key = normalizedUrl.toLowerCase();
@@ -570,13 +589,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                          onClick={(e) => {
-                            if (isBeoLink) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              openBeoInNewTab(normalizedUrl);
-                            }
-                          }}
+                          onClick={(e) => openLink(e, normalizedUrl)}
                         >
                           {children}
                         </a>
@@ -592,7 +605,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     <div className="text-xs font-bold uppercase tracking-wide mb-2 text-[hsl(var(--accent-pink))]">Sources</div>
                     <ul className="space-y-1.5 ml-4">
                       {sourcesUrls.map((u, idx) => {
-                        const isBeoLink = u.includes('www.croftcommontest.com') && (u.includes('/beo/') || u.includes('/beo/view?f=') || (u.includes('/beo-documents') && u.toLowerCase().endsWith('.pdf')) || u.includes('proxy-beo-pdf'));
+                        const isBeoLink = isBeoUrl(u);
                         return (
                           <li key={`${u}-${idx}`} className="list-disc">
                             <a
@@ -600,13 +613,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                               target="_blank"
                               rel="noopener noreferrer"
                               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                              onClick={(e) => {
-                                if (isBeoLink) {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  openBeoInNewTab(u);
-                                }
-                              }}
+                              onClick={(e) => openLink(e, u)}
                             >
                               {isBeoLink ? 'View BEO' : u}
                             </a>
