@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Check, CheckCheck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import ReactMarkdown from 'react-markdown';
 
 interface MessageBubbleProps {
   message: {
@@ -60,7 +61,26 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
 export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   
-  // Parse mentions and URLs, render them as styled components
+  // Auto-linkify URLs for Cleo markdown content
+  const linkifyContent = (text: string) => {
+    return text.replace(
+      /(https?:\/\/[^\s]+)/g,
+      (url) => {
+        // For BEO viewer routes, show a cleaner display name
+        if (url.includes('/beo/view?f=') || (url.includes('beo-documents') && url.includes('.pdf')) || url.includes('proxy-beo-pdf')) {
+          return `[📄 View BEO PDF](${url})`;
+        }
+        return `[${url}](${url})`;
+      }
+    );
+  };
+
+  // Process content for better markdown rendering
+  const processedContent = linkifyContent(text)
+    .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with 2
+    .replace(/([^\n])\n([^\n])/g, '$1  \n$2'); // Convert single newlines to markdown line breaks
+  
+  // Parse mentions and URLs, render them as styled components (for non-Cleo messages)
   const renderTextWithMentions = (text: string) => {
     // Match @mentions - single word/username only (no spaces, like @Cleo or @John)
     const mentionRegex = /@([A-Za-z][A-Za-z0-9._-]{0,30})\b/g;
@@ -165,9 +185,35 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               </div>
             </div>
           ) : text && text !== '[Image]' ? (
-            <div className="font-industrial text-sm whitespace-pre-wrap">
-              {renderTextWithMentions(text)}
-            </div>
+            isCleo ? (
+              <div className="text-sm font-industrial prose prose-sm max-w-none prose-headings:font-brutalist prose-strong:text-foreground prose-em:text-foreground prose-p:my-3 prose-ul:my-2 prose-li:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed mb-3">{children}</p>,
+                    ul: ({ children }) => <ul className="space-y-1.5 ml-4 my-2">{children}</ul>,
+                    li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                    strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
+                    em: ({ children }) => <em className="italic text-foreground">{children}</em>,
+                    a: ({ href, children }) => (
+                      <a 
+                        href={href} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full"
+                      >
+                        {children}
+                      </a>
+                    ),
+                  }}
+                >
+                  {processedContent}
+                </ReactMarkdown>
+              </div>
+            ) : (
+              <div className="font-industrial text-sm whitespace-pre-wrap">
+                {renderTextWithMentions(text)}
+              </div>
+            )
           ) : null}
           
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
