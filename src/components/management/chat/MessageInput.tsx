@@ -1,23 +1,46 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Send, Image as ImageIcon } from 'lucide-react';
+import { Send, Image as ImageIcon, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { MentionsInput, Mention } from 'react-mentions';
 
 interface MessageInputProps {
-  onSend: (text: string, image?: File) => Promise<void>;
+  onSend: (text: string, image?: File, replyToId?: string) => Promise<void>;
+  onUpdate?: (messageId: string, text: string) => Promise<void>;
   mentionCleo?: boolean;
   onCleoMentionChange?: (mentioned: boolean) => void;
   chatMembers?: Array<{ user_id: string; user_name: string }>;
+  replyTo?: { id: string; sender_name: string; body_text: string } | null;
+  onCancelReply?: () => void;
+  editingMessage?: { id: string; body_text: string } | null;
+  onCancelEdit?: () => void;
 }
 
-export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange, chatMembers = [] }: MessageInputProps) => {
+export const MessageInput = ({ 
+  onSend, 
+  onUpdate,
+  mentionCleo = false, 
+  onCleoMentionChange, 
+  chatMembers = [],
+  replyTo,
+  onCancelReply,
+  editingMessage,
+  onCancelEdit,
+}: MessageInputProps) => {
   const [message, setMessage] = useState('');
   const [plainTextMessage, setPlainTextMessage] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [cleoMentioned, setCleoMentioned] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Populate input when editing
+  useEffect(() => {
+    if (editingMessage) {
+      setMessage(editingMessage.body_text);
+      setPlainTextMessage(editingMessage.body_text);
+    }
+  }, [editingMessage]);
 
   const handleSend = async () => {
     if (!plainTextMessage.trim() && !image) return;
@@ -33,14 +56,23 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
         return `@${firstName}`;
       });
       
-      await onSend(normalizedText, image || undefined);
+      if (editingMessage && onUpdate) {
+        // Update existing message
+        await onUpdate(editingMessage.id, normalizedText);
+        onCancelEdit?.();
+      } else {
+        // Send new message
+        await onSend(normalizedText, image || undefined, replyTo?.id);
+        onCancelReply?.();
+      }
+      
       setMessage('');
       setPlainTextMessage('');
       setImage(null);
       setCleoMentioned(false);
       onCleoMentionChange?.(false);
     } catch (error) {
-      toast.error('Failed to send message');
+      toast.error(editingMessage ? 'Failed to update message' : 'Failed to send message');
     } finally {
       setSending(false);
     }
@@ -99,7 +131,38 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
   return (
     <div className="relative">
       <div className="p-4 border-t border-border">
-        {cleoMentioned && (
+        {replyTo && (
+          <div className="mb-2 flex items-center gap-2 text-sm bg-muted px-3 py-2 rounded-md font-industrial">
+            <div className="flex-1">
+              <div className="font-semibold text-foreground">Replying to {replyTo.sender_name}</div>
+              <div className="text-muted-foreground truncate">{replyTo.body_text.slice(0, 50)}...</div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancelReply}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        {editingMessage && (
+          <div className="mb-2 flex items-center gap-2 text-sm bg-[hsl(var(--accent-pink))]/10 px-3 py-2 rounded-md font-industrial">
+            <div className="flex-1">
+              <div className="font-semibold text-[hsl(var(--accent-pink))]">Editing message</div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onCancelEdit}
+              className="h-6 w-6 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+        {cleoMentioned && !editingMessage && (
           <div className="mb-2 flex items-center gap-2 text-sm bg-[hsl(var(--accent-pink))]/10 px-3 py-2 rounded-md font-industrial">
             <span className="font-bold text-[hsl(var(--accent-pink))]">Cleo</span>
             <span className="text-muted-foreground">will respond to this message</span>
@@ -214,7 +277,7 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
             size="icon"
             className="bg-[hsl(var(--accent-pink))] hover:bg-[hsl(var(--accent-pink))]/90"
           >
-            <Send className="h-4 w-4" />
+            {editingMessage ? <Check className="h-4 w-4" /> : <Send className="h-4 w-4" />}
           </Button>
         </div>
       </div>
