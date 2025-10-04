@@ -410,6 +410,9 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           }
         }
       }
+      
+      // Clear thinking indicator when streaming completes
+      setIsCleoThinking(false);
     } catch (error) {
       console.error('Error getting Cleo response:', error);
       setIsCleoThinking(false);
