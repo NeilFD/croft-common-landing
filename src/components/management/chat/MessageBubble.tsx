@@ -323,7 +323,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         
         // Always render real href; manage preview behaviour via handlers
         const linkHref = normalizedUrl;
-        const linkTarget = isBeoLink ? '_self' : '_top';
+        const linkTarget = isBeoLink ? '_self' : '_blank';
         
         return (
           <span key={i}>
@@ -335,6 +335,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               aria-label={`Open link ${displayText}`}
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
               onClick={(e) => {
+                // eslint-disable-next-line no-console
+                console.info('Link clicked:', normalizedUrl);
                 if (inPreview && !isBeoLink) {
                   e.preventDefault();
                   e.stopPropagation();
@@ -475,7 +477,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                       seenUrls.add(key);
 
                       const linkHref = normalizedUrl;
-                      const linkTarget = isBeoLink ? '_self' : '_top';
+                      const linkTarget = isBeoLink ? '_self' : '_blank';
                       
                       return (
                         <a 
@@ -486,6 +488,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           aria-label={`Open link ${normalizedUrl}`}
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
                           onClick={(e) => {
+                            // eslint-disable-next-line no-console
+                            console.info('Markdown link clicked:', normalizedUrl);
                             if (inPreview && !isBeoLink) {
                               e.preventDefault();
                               e.stopPropagation();
