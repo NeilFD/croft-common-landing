@@ -3,13 +3,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Bot, Send, X, Minimize2, Maximize2, Mic, Square, Trash2, ArrowDown } from 'lucide-react';
+import { Bot, Send, X, Minimize2, Maximize2, Mic, Square, Trash2, ArrowDown, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useManagementAI } from '@/contexts/ManagementAIContext';
 import { AIMessageBubble } from './AIMessageBubble';
 import { AIQuickActions } from './AIQuickActions';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { ClearChatDialog } from './ClearChatDialog';
+import { useLongPress } from '@/hooks/useLongPress';
 
 export const ManagementAIChatWidget = () => {
   const { messages, isLoading, isWidgetOpen, unreadCount, sendMessage, toggleWidget, markAsRead, clearMessages } =
@@ -18,10 +19,66 @@ export const ManagementAIChatWidget = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
+  const [position, setPosition] = useState(() => {
+    const saved = localStorage.getItem('cleo-widget-position');
+    return saved ? JSON.parse(saved) : { x: 24, y: 24 };
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
   const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
+
+  // Save position to localStorage
+  useEffect(() => {
+    localStorage.setItem('cleo-widget-position', JSON.stringify(position));
+  }, [position]);
+
+  // Handle dragging
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMove = (e: MouseEvent | TouchEvent) => {
+      e.preventDefault();
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+
+      const deltaX = dragStart.x - clientX;
+      const deltaY = dragStart.y - clientY;
+
+      setPosition(prev => {
+        const newX = Math.max(0, Math.min(window.innerWidth - 400, prev.x + deltaX));
+        const newY = Math.max(0, Math.min(window.innerHeight - 100, prev.y + deltaY));
+        return { x: newX, y: newY };
+      });
+
+      setDragStart({ x: clientX, y: clientY });
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleEnd);
+    document.addEventListener('touchmove', handleMove);
+    document.addEventListener('touchend', handleEnd);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleEnd);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleEnd);
+    };
+  }, [isDragging, dragStart]);
+
+  const longPressHandlers = useLongPress({
+    onLongPress: () => {
+      setIsDragging(true);
+    },
+    delay: 500
+  });
 
   // Always scroll to bottom when widget opens or minimizes
   useEffect(() => {
@@ -142,20 +199,48 @@ export const ManagementAIChatWidget = () => {
 
       <Card
         className={cn(
-          'fixed bottom-6 right-6 flex flex-col shadow-2xl transition-all z-50 border-2',
+          'fixed flex flex-col shadow-2xl z-50 border-2',
           isMinimized ? 'h-14 w-80' : 'h-[600px] w-[400px]',
-          'bg-background/95 backdrop-blur-md'
+          'bg-background/95 backdrop-blur-md',
+          isDragging ? 'cursor-grabbing transition-none' : 'transition-all'
         )}
+        style={{
+          right: `${position.x}px`,
+          bottom: `${position.y}px`,
+        }}
       >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-foreground bg-background p-4">
+      <div 
+        className={cn(
+          "flex items-center justify-between border-b border-foreground bg-background p-4",
+          isDragging ? "cursor-grabbing" : "cursor-grab"
+        )}
+        onMouseDown={(e) => {
+          setDragStart({ x: e.clientX, y: e.clientY });
+          longPressHandlers.onMouseDown();
+        }}
+        onMouseUp={longPressHandlers.onMouseUp}
+        onMouseLeave={longPressHandlers.onMouseLeave}
+        onTouchStart={(e) => {
+          setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+          longPressHandlers.onTouchStart();
+        }}
+        onTouchEnd={longPressHandlers.onTouchEnd}
+        onTouchCancel={longPressHandlers.onTouchCancel}
+      >
         <div className="flex items-center gap-2">
+          <GripVertical className={cn(
+            "h-5 w-5 text-muted-foreground transition-colors",
+            isDragging && "text-accent-pink"
+          )} />
           <div className="h-8 w-8 rounded-full bg-accent-pink border-2 border-foreground flex items-center justify-center">
             <Bot className="h-4 w-4 text-foreground" />
           </div>
           <div>
             <h3 className="font-semibold text-sm font-brutalist">Cleo</h3>
-            <p className="text-xs text-muted-foreground">Your AI assistant</p>
+            <p className="text-xs text-muted-foreground">
+              {isDragging ? 'Dragging...' : 'Your AI assistant'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-1">
