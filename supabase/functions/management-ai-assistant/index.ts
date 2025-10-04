@@ -1378,6 +1378,23 @@ const FUNCTION_TOOLS = [
   {
     type: "function",
     function: {
+      name: "search_internet",
+      description: "Search the internet for current information like weather, business news, exchange rates, regulations, or general factual queries. ONLY use for work-appropriate content. Never search for inappropriate topics, personal gossip, or entertainment. Politely decline non-work-related requests.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "The search query - must be work-appropriate (e.g., 'weather in London', 'GBP to EUR exchange rate', 'UK food safety regulations')"
+          }
+        },
+        required: ["query"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
       name: "get_analytics",
       description: "Get analytics, insights, and trends for feedback, revenue, capacity, or other operational metrics.",
       parameters: {
@@ -1469,6 +1486,67 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
             timestamp: new Date().toISOString()
           }
         };
+      }
+      
+      case "search_internet": {
+        const { query } = args;
+        
+        console.log(`🌐 Internet search requested: "${query}"`);
+        
+        try {
+          // Get Supabase URL from environment
+          const supabaseUrl = Deno.env.get('SUPABASE_URL');
+          if (!supabaseUrl) {
+            throw new Error('SUPABASE_URL not configured');
+          }
+          
+          // Call web-search-proxy edge function
+          const searchResponse = await fetch(`${supabaseUrl}/functions/v1/web-search-proxy`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+            },
+            body: JSON.stringify({ query })
+          });
+          
+          if (!searchResponse.ok) {
+            const errorData = await searchResponse.json();
+            
+            // Handle blocked content
+            if (errorData.blocked) {
+              return {
+                success: false,
+                blocked: true,
+                message: errorData.error || 'This search query is not appropriate for work context.'
+              };
+            }
+            
+            throw new Error(`Search failed: ${searchResponse.status}`);
+          }
+          
+          const searchData = await searchResponse.json();
+          
+          return {
+            success: true,
+            query: searchData.query,
+            answer: searchData.answer,
+            timestamp: searchData.timestamp,
+            sources: searchData.sources,
+            metadata: {
+              search_type: 'internet',
+              data_freshness: 'current'
+            }
+          };
+          
+        } catch (error) {
+          console.error('Internet search error:', error);
+          return {
+            success: false,
+            error: error instanceof Error ? error.message : 'Search failed',
+            message: 'Unable to complete internet search at this time.'
+          };
+        }
       }
       
       case "get_analytics": {
@@ -2153,6 +2231,15 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
    - Example: "What's the revenue for event X?" → Call get_analytics with type="revenue", event_identifier="X"
    - Example: "What's the budget for 7th October?" → Call get_analytics with type="revenue", event_identifier="7th October"
 
+4. **search_internet** - For current external information NOT in your knowledge base:
+   - ONLY for work-appropriate queries: weather, news, regulations, exchange rates, public holidays, definitions
+   - Example: "What's the weather in London?" → Call search_internet("weather in London today")
+   - Example: "What's the GBP to EUR exchange rate?" → Call search_internet("GBP to EUR exchange rate")
+   - Example: "When is the next bank holiday?" → Call search_internet("UK bank holidays 2025")
+   - Example: "What are current food safety regulations?" → Call search_internet("UK food safety regulations 2025")
+   - NEVER search for: entertainment, celebrity gossip, inappropriate content, personal matters
+   - If asked about non-work topics, politely say: "I'm here to help with work-related queries. I can search for weather, business news, regulations, and factual information instead."
+
 **WHEN TO CALL FUNCTIONS:**
 - User asks about specific events/bookings → get_management_data
 - User asks "what's the..." or "show me..." → get_management_data
@@ -2161,6 +2248,8 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - User asks about trends, stats, analytics → get_analytics
 - User asks about feedback or ratings → get_analytics with type="feedback"
 - User asks about revenue, costs, budget, pricing → get_analytics with type="revenue" and event_identifier
+- User asks about weather, news, exchange rates, holidays → search_internet (work-appropriate only!)
+- If search_internet returns blocked=true, politely decline and offer work-related alternatives
 
 **Your Personality:**
 - Your name is Cleo

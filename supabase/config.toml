@@ -292,3 +292,6 @@ verify_jwt = true
 [functions.create-management-user]
 verify_jwt = true
 
+[functions.web-search-proxy]
+verify_jwt = true
+
