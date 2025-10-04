@@ -162,7 +162,7 @@ export const ChatLayout = () => {
   // Mobile view: show only list or only chat
   if (isMobile) {
     return (
-      <div className="h-[calc(100vh-12rem)] md:h-[calc(100vh-16rem)] flex flex-col">
+      <div className="-m-6 h-[calc(100vh-4rem)] flex flex-col">
         {selectedChatId ? (
           <ActiveChat 
             chatId={selectedChatId} 
@@ -183,8 +183,8 @@ export const ChatLayout = () => {
 
   // Desktop view: side-by-side
   return (
-    <div className="h-[calc(100vh-12rem)] md:h-[calc(100vh-16rem)] flex gap-4">
-      <div className="w-80 flex-shrink-0">
+    <div className="-m-6 md:-m-8 lg:-m-12 h-[calc(100vh-8rem)] flex gap-4">
+      <div className="w-72 flex-shrink-0">
         <ChatsList
           chats={chats}
           selectedChatId={selectedChatId}

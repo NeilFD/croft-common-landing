@@ -451,7 +451,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   };
   const content = (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
-      <div className={cn("max-w-[70%] md:max-w-[60%]", isOwn && "order-2")}>
+      <div className={cn("max-w-[75%] md:max-w-[70%]", isOwn && "order-2")}>
         {!isOwn && (
           <div className="mb-1 text-xs font-industrial text-muted-foreground">
             <span className="font-bold">{message.sender_name}</span>
