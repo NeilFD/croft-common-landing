@@ -64,8 +64,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   const renderTextWithMentions = (text: string) => {
     if (isCleo) return text;
     
-    // Match @mentions that start with capital letter and stop at word boundary
-    const mentionRegex = /@([A-Z][A-Za-z0-9.'-]*(?:\s+[A-Z][A-Za-z0-9.'-]*)*)\b/g;
+    // Match @mentions that start with capital letter and stop at word boundary (max 2 words)
+    const mentionRegex = /@([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\b/g;
     // Match URLs
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     

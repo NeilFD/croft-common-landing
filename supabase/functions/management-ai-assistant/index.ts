@@ -141,10 +141,10 @@ function extractEventIdentifier(message: string, conversationHistory: any[] = []
     }
   }
   
-  // Try to extract date (e.g., "28 Sep", "28th September", "Sept 28")
+  // Try to extract date (e.g., "28 Sep", "the 7th October", "7th of October", "Sept 28")
   const datePatterns = [
-    /\b(\d{1,2})\s*(st|nd|rd|th)?\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/i,
-    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(\d{1,2})\b/i,
+    /\b(?:the\s+)?(\d{1,2})\s*(st|nd|rd|th)?\s*(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/i,
+    /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(?:the\s+)?(\d{1,2})\b/i,
   ];
   
   for (const pattern of datePatterns) {
