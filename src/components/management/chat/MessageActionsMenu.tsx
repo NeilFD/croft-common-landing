@@ -30,7 +30,7 @@ export const MessageActionsMenu = ({
       <ContextMenuTrigger asChild>
         {children}
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-48 bg-card border-border z-[110]">
+      <ContextMenuContent className="w-48 bg-white dark:bg-gray-900 border-border z-[110]">
         <ContextMenuItem onClick={onCopy}>
           <Copy className="mr-2 h-4 w-4" />
           Copy message

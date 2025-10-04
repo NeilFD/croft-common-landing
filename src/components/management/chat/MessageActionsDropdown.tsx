@@ -35,7 +35,7 @@ export const MessageActionsDropdown = ({
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-48 bg-card border-border" align="end">
+      <DropdownMenuContent className="w-48 bg-white dark:bg-gray-900 border-border" align="end">
         <DropdownMenuItem onClick={onCopy}>
           <Copy className="mr-2 h-4 w-4" />
           Copy message
