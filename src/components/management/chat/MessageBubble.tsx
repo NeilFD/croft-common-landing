@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import ReactMarkdown from 'react-markdown';
 import { isInPreviewIframe } from '@/lib/env';
 import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
 
 interface MessageBubbleProps {
   message: {
@@ -151,7 +152,9 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     console.info('MessageBubble: navigating to /ext for', u);
     navigate(`/ext?u=${encodeURIComponent(u)}`);
   };
-  
+  // Track URLs we've already rendered as clickable to avoid duplicates per message
+  const seenUrls = useMemo(() => new Set<string>(), [message.id]);
+
   // Auto-linkify URLs for Cleo markdown content - matches both http(s):// and bare domains
   const linkifyContent = (text: string) => {
     return text.replace(
@@ -210,9 +213,21 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         // Check if it's a BEO viewer link
         const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && normalizedUrl.includes('/beo/');
         
-        // In preview iframe, use redirector; otherwise use normal target
-        const linkHref = inPreview && !isBeoLink ? `/ext?u=${encodeURIComponent(normalizedUrl)}` : normalizedUrl;
-        const linkTarget = inPreview && !isBeoLink ? '_self' : (isBeoLink ? '_self' : '_top');
+        // Deduplicate clickable URLs per message
+        const key = normalizedUrl.toLowerCase();
+        if (seenUrls.has(key)) {
+          return (
+            <span key={i}>
+              {displayText}
+              {trailingPunct}
+            </span>
+          );
+        }
+        seenUrls.add(key);
+        
+        // Always render real href; manage preview behaviour via handlers
+        const linkHref = normalizedUrl;
+        const linkTarget = isBeoLink ? '_self' : '_top';
         
         return (
           <span key={i}>
@@ -220,19 +235,36 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               href={linkHref}
               target={linkTarget}
               rel="noopener noreferrer"
+              role="link"
+              aria-label={`Open link ${displayText}`}
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
               onClick={(e) => {
                 if (inPreview && !isBeoLink) {
                   e.preventDefault();
                   e.stopPropagation();
-                  goToExt(normalizedUrl);
+                  const ok = attemptOpen(normalizedUrl);
+                  // eslint-disable-next-line no-console
+                  console.info('renderTextWithMentions: attemptOpen returned', ok, 'for', normalizedUrl);
+                  if (!ok) {
+                    goToExt(normalizedUrl);
+                  }
+                }
+              }}
+              onAuxClick={(e) => {
+                if (inPreview && !isBeoLink) {
+                  handleAuxOpen(e, normalizedUrl);
                 }
               }}
               onKeyDown={(e) => {
                 if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   e.stopPropagation();
-                  goToExt(normalizedUrl);
+                  const ok = attemptOpen(normalizedUrl);
+                  // eslint-disable-next-line no-console
+                  console.info('renderTextWithMentions: attemptOpen via keyboard returned', ok, 'for', normalizedUrl);
+                  if (!ok) {
+                    goToExt(normalizedUrl);
+                  }
                 }
               }}
             >
@@ -331,30 +363,58 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     em: ({ children }) => <em className="italic text-foreground">{children}</em>,
                     a: ({ href, children }) => {
                       if (!href) return <span>{children}</span>;
-                      const isBeoLink = href.includes('/beo/');
-                      
-                      // In preview iframe, use redirector; otherwise use normal target
-                      const linkHref = inPreview && !isBeoLink ? `/ext?u=${encodeURIComponent(href)}` : href;
-                      const linkTarget = inPreview && !isBeoLink ? '_self' : (isBeoLink ? '_self' : '_top');
+                      // Normalise URL to include scheme if missing
+                      const normalizedUrl = href.startsWith('http://') || href.startsWith('https://')
+                        ? href
+                        : `https://${href}`;
+                      // Treat BEO links as internal
+                      const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && normalizedUrl.includes('/beo/');
+
+                      // Deduplicate clickable URLs per message
+                      const key = normalizedUrl.toLowerCase();
+                      if (seenUrls.has(key)) {
+                        return <span>{children}</span>;
+                      }
+                      seenUrls.add(key);
+
+                      const linkHref = normalizedUrl;
+                      const linkTarget = isBeoLink ? '_self' : '_top';
                       
                       return (
                         <a 
                           href={linkHref} 
                           target={linkTarget} 
                           rel="noopener noreferrer"
+                          role="link"
+                          aria-label={`Open link ${normalizedUrl}`}
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
                           onClick={(e) => {
-                            if (inPreview && !isBeoLink && href) {
+                            if (inPreview && !isBeoLink) {
                               e.preventDefault();
                               e.stopPropagation();
-                              goToExt(href);
+                              const ok = attemptOpen(normalizedUrl);
+                              // eslint-disable-next-line no-console
+                              console.info('markdown <a>: attemptOpen returned', ok, 'for', normalizedUrl);
+                              if (!ok) {
+                                goToExt(normalizedUrl);
+                              }
+                            }
+                          }}
+                          onAuxClick={(e) => {
+                            if (inPreview && !isBeoLink) {
+                              handleAuxOpen(e, normalizedUrl);
                             }
                           }}
                           onKeyDown={(e) => {
-                            if (inPreview && !isBeoLink && href && (e.key === 'Enter' || e.key === ' ')) {
+                            if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
                               e.preventDefault();
                               e.stopPropagation();
-                              goToExt(href);
+                              const ok = attemptOpen(normalizedUrl);
+                              // eslint-disable-next-line no-console
+                              console.info('markdown <a>: attemptOpen via keyboard returned', ok, 'for', normalizedUrl);
+                              if (!ok) {
+                                goToExt(normalizedUrl);
+                              }
                             }
                           }}
                         >
