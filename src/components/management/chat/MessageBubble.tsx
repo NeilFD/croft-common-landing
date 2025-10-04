@@ -142,6 +142,7 @@ function keyOpenExternal(e: React.KeyboardEvent, href?: string) {
 
 export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
+  const linkTarget = typeof window !== 'undefined' && window.top !== window ? '_top' : '_blank';
   
   // Auto-linkify URLs for Cleo markdown content
   const linkifyContent = (text: string) => {
@@ -191,12 +192,9 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
           <span key={i}>
             <a
               href={url}
-              target="_blank"
+              target={linkTarget}
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
-              onClick={(e) => openExternal(e, url)}
-              onAuxClick={(e) => handleAuxOpen(e, url)}
-              onKeyDown={(e) => keyOpenExternal(e, url)}
             >
               {isBeoLink ? 'View BEO' : url}
             </a>
@@ -294,12 +292,9 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     a: ({ href, children }) => (
                       <a 
                         href={href} 
-                        target="_blank" 
+                        target={linkTarget} 
                         rel="noopener noreferrer"
                         className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                        onClick={(e) => openExternal(e, href)}
-                        onAuxClick={(e) => handleAuxOpen(e, href)}
-                        onKeyDown={(e) => keyOpenExternal(e, href)}
                       >
                         {children}
                       </a>
