@@ -62,98 +62,60 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   
   // Parse mentions and URLs, render them as styled components
   const renderTextWithMentions = (text: string) => {
-    if (isCleo) return text;
-    
     // Match @mentions - single word/username only (no spaces, like @Cleo or @John)
     const mentionRegex = /@([A-Za-z][A-Za-z0-9._-]{0,30})\b/g;
-    // Match URLs
+    // Match URLs - improved to trim trailing punctuation
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     
-    const parts = [];
-    let lastIndex = 0;
-    let keyIndex = 0;
+    // Split by both URLs and mentions
+    const parts = text.split(/(@[A-Za-z][A-Za-z0-9._-]{0,30}\b|https?:\/\/[^\s]+)/g);
     
-    // First pass: process mentions
-    const mentionMatches: Array<{ start: number; end: number; text: string; isMention: boolean }> = [];
-    let match;
-    
-    while ((match = mentionRegex.exec(text)) !== null) {
-      mentionMatches.push({
-        start: match.index,
-        end: match.index + match[0].length,
-        text: match[0],
-        isMention: true,
-      });
-    }
-    
-    // Second pass: process URLs (only in non-mention segments)
-    mentionRegex.lastIndex = 0;
-    while ((match = urlRegex.exec(text)) !== null) {
-      // Check if this URL overlaps with any mention
-      const overlaps = mentionMatches.some(m => 
-        (match.index >= m.start && match.index < m.end) ||
-        (match.index + match[0].length > m.start && match.index + match[0].length <= m.end)
-      );
-      
-      if (!overlaps) {
-        mentionMatches.push({
-          start: match.index,
-          end: match.index + match[0].length,
-          text: match[0],
-          isMention: false,
-        });
-      }
-    }
-    
-    // Sort all matches by position
-    mentionMatches.sort((a, b) => a.start - b.start);
-    
-    // Render all parts
-    mentionMatches.forEach((item) => {
-      // Add text before this match
-      if (item.start > lastIndex) {
-        parts.push(
-          <span key={`text-${keyIndex++}`} className="text-current">
-            {text.substring(lastIndex, item.start)}
+    return parts.map((part, i) => {
+      // Check if it's a URL
+      if (urlRegex.test(part)) {
+        // Trim trailing punctuation from URLs
+        let url = part;
+        let trailingPunct = '';
+        const punctMatch = url.match(/([.,!?;:)]*)$/);
+        if (punctMatch && punctMatch[1]) {
+          trailingPunct = punctMatch[1];
+          url = url.slice(0, -trailingPunct.length);
+        }
+        
+        // Check if it's a BEO viewer link
+        const isBeoLink = url.includes('www.croftcommontest.com') && url.includes('/beo/');
+        
+        return (
+          <span key={i}>
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {isBeoLink ? 'View BEO' : url}
+            </a>
+            {trailingPunct}
           </span>
         );
       }
       
-      if (item.isMention) {
-        // Render mention
-        parts.push(
-          <span key={`mention-${keyIndex++}`} className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-bold mx-0.5">
-            {item.text}
-          </span>
-        );
-      } else {
-        // Render URL
-        parts.push(
-          <a
-            key={`url-${keyIndex++}`}
-            href={item.text}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary underline hover:text-primary/80 transition-colors"
+      // Check if it's a mention (but not inside a URL) and not Cleo message
+      if (mentionRegex.test(part) && !isCleo) {
+        return (
+          <span
+            key={i}
+            className="bg-[hsl(var(--accent-pink))] text-white px-1.5 py-0.5 rounded font-semibold"
           >
-            {item.text}
-          </a>
+            {part}
+          </span>
         );
       }
       
-      lastIndex = item.end;
+      // Regular text
+      return <span key={i}>{part}</span>;
     });
-    
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push(
-        <span key={`text-${keyIndex++}`} className="text-current">
-          {text.substring(lastIndex)}
-        </span>
-      );
-    }
-    
-    return parts.length > 0 ? <>{parts}</> : text;
   };
   return (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>

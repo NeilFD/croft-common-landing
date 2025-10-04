@@ -24,7 +24,16 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
 
     setSending(true);
     try {
-      await onSend(plainTextMessage, image || undefined);
+      // Normalize mentions to only show first name
+      let normalizedText = plainTextMessage;
+      
+      // Replace @[Full Name](id) with @FirstName
+      normalizedText = normalizedText.replace(/@\[([^\]]+)\]\([^)]+\)/g, (match, fullName) => {
+        const firstName = fullName.split(' ')[0];
+        return `@${firstName}`;
+      });
+      
+      await onSend(normalizedText, image || undefined);
       setMessage('');
       setPlainTextMessage('');
       setImage(null);
@@ -182,7 +191,11 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
               <Mention
                 trigger="@"
                 data={mentionData}
-                displayTransform={(id, display) => `@${display}`}
+                displayTransform={(id, display) => {
+                  // Only show first name in the input
+                  const firstName = display.split(' ')[0];
+                  return `@${firstName}`;
+                }}
                 markup="@[__display__](__id__)"
                 appendSpaceOnAdd={true}
                 style={{

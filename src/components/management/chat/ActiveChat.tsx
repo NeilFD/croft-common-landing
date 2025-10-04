@@ -546,6 +546,28 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                   isCleoThinking={message.is_cleo && index === messages.length - 1 && isCleoThinking}
                 />
               ))}
+              
+              {/* Fallback thinking indicator if no empty Cleo bubble exists */}
+              {isCleoThinking && !messages.some(m => m.is_cleo && !m.body_text) && (
+                <div className="flex gap-3">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-[hsl(var(--accent-pink))] flex items-center justify-center text-white font-bold text-sm">
+                    C
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-card border-l-4 border-[hsl(var(--accent-pink))] rounded-lg p-3 max-w-[70%] shadow-sm">
+                      <div className="text-xs font-bold uppercase tracking-wide mb-1 text-[hsl(var(--accent-pink))]">Cleo</div>
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <span className="font-industrial text-sm">Cleo is thinking</span>
+                        <div className="flex gap-1">
+                          <span className="animate-bounce text-sm" style={{ animationDelay: '0ms' }}>.</span>
+                          <span className="animate-bounce text-sm" style={{ animationDelay: '150ms' }}>.</span>
+                          <span className="animate-bounce text-sm" style={{ animationDelay: '300ms' }}>.</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
           <div ref={scrollRef} />
