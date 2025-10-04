@@ -31,9 +31,11 @@ export const ManagementAIChatWidget = () => {
     return { x: 24, y: 24 };
   });
   const [isDragging, setIsDragging] = useState(false);
+  const isDraggingRef = useRef(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const pointerTargetRef = useRef<HTMLDivElement | null>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const dragStartPosRef = useRef({ x: 0, y: 0 });
@@ -88,42 +90,59 @@ export const ManagementAIChatWidget = () => {
     
     const startX = e.clientX;
     const startY = e.clientY;
-    const startPos = { ...position };
+    pointerTargetRef.current = e.currentTarget;
     
     if (e.pointerType === 'mouse') {
-      // Instant drag for mouse
+      // Instant drag for mouse/touchpad
+      isDraggingRef.current = true;
       setIsDragging(true);
       dragStartPosRef.current = { x: startX, y: startY };
-      e.currentTarget.setPointerCapture(e.pointerId);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch (err) {
+        console.warn('Failed to capture pointer:', err);
+      }
     } else if (e.pointerType === 'touch') {
       // Long-press for touch (350ms)
+      const pointerId = e.pointerId;
       touchTimerRef.current = setTimeout(() => {
+        isDraggingRef.current = true;
         setIsDragging(true);
         dragStartPosRef.current = { x: startX, y: startY };
+        try {
+          pointerTargetRef.current?.setPointerCapture(pointerId);
+        } catch (err) {
+          console.warn('Failed to capture pointer:', err);
+        }
       }, 350);
     }
-  }, [position]);
+  }, []);
 
   const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (!isDragging) return;
+    if (!isDraggingRef.current) return;
     
-    const deltaX = dragStartPosRef.current.x - e.clientX;
-    const deltaY = dragStartPosRef.current.y - e.clientY;
+    const deltaX = e.clientX - dragStartPosRef.current.x;
+    const deltaY = e.clientY - dragStartPosRef.current.y;
     
     setPosition(prev => clampPosition({
-      x: prev.x + deltaX,
-      y: prev.y + deltaY
+      x: prev.x - deltaX,
+      y: prev.y - deltaY
     }));
     
     dragStartPosRef.current = { x: e.clientX, y: e.clientY };
-  }, [isDragging, clampPosition]);
+  }, [clampPosition]);
 
   const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     if (touchTimerRef.current) {
       clearTimeout(touchTimerRef.current);
     }
+    isDraggingRef.current = false;
     setIsDragging(false);
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch (err) {
+      // Pointer already released, ignore
+    }
   }, []);
 
   // Always scroll to bottom when widget opens or minimizes
