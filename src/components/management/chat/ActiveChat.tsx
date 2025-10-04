@@ -563,7 +563,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         </div>
       </div>
 
-      <MessageInput onSend={handleSendMessage} />
+      <MessageInput onSend={handleSendMessage} chatMembers={chatMembers} />
     </div>
   );
 };

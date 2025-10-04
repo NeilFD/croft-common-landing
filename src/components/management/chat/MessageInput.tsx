@@ -1,21 +1,28 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { MentionAutocomplete } from './MentionAutocomplete';
 
 interface MessageInputProps {
   onSend: (text: string, image?: File) => Promise<void>;
   mentionCleo?: boolean;
   onCleoMentionChange?: (mentioned: boolean) => void;
+  chatMembers?: Array<{ user_id: string; user_name: string }>;
 }
 
-export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange }: MessageInputProps) => {
+export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange, chatMembers = [] }: MessageInputProps) => {
   const [message, setMessage] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [sending, setSending] = useState(false);
   const [cleoMentioned, setCleoMentioned] = useState(false);
+  const [showMentions, setShowMentions] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionStartPos, setMentionStartPos] = useState(0);
+  const [cursorPosition, setCursorPosition] = useState({ top: 0, left: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSend = async () => {
     if (!message.trim() && !image) return;
@@ -36,6 +43,7 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange 
 
   const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
+    const cursorPos = e.target.selectionStart;
     setMessage(newValue);
     
     // Check for @Cleo mention
@@ -44,6 +52,51 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange 
       setCleoMentioned(hasCleo);
       onCleoMentionChange?.(hasCleo);
     }
+
+    // Detect @ mention trigger
+    const textBeforeCursor = newValue.slice(0, cursorPos);
+    const lastAtSymbol = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtSymbol !== -1) {
+      const textAfterAt = textBeforeCursor.slice(lastAtSymbol + 1);
+      // Check if there's no space after @ (still typing the mention)
+      if (!textAfterAt.includes(' ') && !textAfterAt.includes('\n')) {
+        setMentionQuery(textAfterAt);
+        setMentionStartPos(lastAtSymbol);
+        setShowMentions(true);
+        
+        // Calculate cursor position for popup
+        if (textareaRef.current) {
+          const rect = textareaRef.current.getBoundingClientRect();
+          setCursorPosition({
+            top: rect.top - 200, // Show above the textarea
+            left: rect.left,
+          });
+        }
+      } else {
+        setShowMentions(false);
+      }
+    } else {
+      setShowMentions(false);
+    }
+  };
+
+  const handleMentionSelect = (name: string) => {
+    const beforeMention = message.slice(0, mentionStartPos);
+    const afterMention = message.slice(mentionStartPos + mentionQuery.length + 1); // +1 for @
+    const newMessage = `${beforeMention}@${name} ${afterMention}`;
+    setMessage(newMessage);
+    setShowMentions(false);
+    
+    // Check for Cleo mention
+    const hasCleo = /@Cleo\b/i.test(newMessage);
+    if (hasCleo !== cleoMentioned) {
+      setCleoMentioned(hasCleo);
+      onCleoMentionChange?.(hasCleo);
+    }
+    
+    // Focus back on textarea
+    textareaRef.current?.focus();
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -71,52 +124,62 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange 
   };
 
   return (
-    <div className="p-4 border-t border-border">
-      {cleoMentioned && (
-        <div className="mb-2 flex items-center gap-2 text-sm bg-[hsl(var(--accent-pink))]/10 px-3 py-2 rounded-md font-industrial">
-          <span className="font-bold text-[hsl(var(--accent-pink))]">Cleo</span>
-          <span className="text-muted-foreground">will respond to this message</span>
-        </div>
-      )}
-      {image && (
-        <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground font-industrial">
-          <ImageIcon className="h-4 w-4" />
-          <span className="truncate">{image.name}</span>
+    <>
+      <MentionAutocomplete
+        query={mentionQuery}
+        chatMembers={chatMembers}
+        onSelect={handleMentionSelect}
+        open={showMentions}
+        position={cursorPosition}
+        onOpenChange={setShowMentions}
+      />
+      <div className="p-4 border-t border-border">
+        {cleoMentioned && (
+          <div className="mb-2 flex items-center gap-2 text-sm bg-[hsl(var(--accent-pink))]/10 px-3 py-2 rounded-md font-industrial">
+            <span className="font-bold text-[hsl(var(--accent-pink))]">Cleo</span>
+            <span className="text-muted-foreground">will respond to this message</span>
+          </div>
+        )}
+        {image && (
+          <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground font-industrial">
+            <ImageIcon className="h-4 w-4" />
+            <span className="truncate">{image.name}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setImage(null)}
+              className="ml-auto"
+            >
+              Remove
+            </Button>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleImageSelect}
+          />
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setImage(null)}
-            className="ml-auto"
+            variant="outline"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={sending}
           >
-            Remove
+            <ImageIcon className="h-4 w-4" />
           </Button>
-        </div>
-      )}
-      <div className="flex gap-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleImageSelect}
-        />
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={sending}
-        >
-          <ImageIcon className="h-4 w-4" />
-        </Button>
-        <Textarea
-          value={message}
-          onChange={handleMessageChange}
-          onKeyDown={handleKeyDown}
-          placeholder="Type a message... (@Cleo for AI)"
-          className="resize-none font-industrial"
-          rows={1}
-          disabled={sending}
-        />
+          <Textarea
+            ref={textareaRef}
+            value={message}
+            onChange={handleMessageChange}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message... (@Cleo for AI)"
+            className="resize-none font-industrial"
+            rows={1}
+            disabled={sending}
+          />
         <Button
           onClick={handleSend}
           disabled={(!message.trim() && !image) || sending}
@@ -125,7 +188,8 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange 
         >
           <Send className="h-4 w-4" />
         </Button>
+        </div>
       </div>
-    </div>
+    </>
   );
 };
