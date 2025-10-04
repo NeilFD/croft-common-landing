@@ -388,62 +388,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         }
         seenUrls.add(key);
         
-        // Always render real href; manage preview behaviour via handlers
-        const linkHref = normalizedUrl;
-        const linkTarget = isBeoLink ? '_self' : '_blank';
-        
         return (
           <span key={i}>
             <a
-              href={linkHref}
-              target={linkTarget}
+              href={normalizedUrl}
+              target="_blank"
               rel="noopener noreferrer"
-              role="link"
-              aria-label={`Open link ${displayText}`}
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
-              onClick={(e) => {
-                // eslint-disable-next-line no-console
-                console.info('Attempting direct open from click:', normalizedUrl);
-                if (inPreview) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const ok = attemptOpen(normalizedUrl);
-                  if (!ok) {
-                    // eslint-disable-next-line no-console
-                    console.info('Direct open failed, routing to /ext fallback');
-                    goToExt(normalizedUrl);
-                  }
-                  return;
-                }
-              }}
-              onAuxClick={(e) => {
-                if (inPreview) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // eslint-disable-next-line no-console
-                  console.info('Attempting direct open from middle click:', normalizedUrl);
-                  const ok = attemptOpen(normalizedUrl);
-                  if (!ok) {
-                    // eslint-disable-next-line no-console
-                    console.info('Direct open failed, routing to /ext fallback');
-                    goToExt(normalizedUrl);
-                  }
-                }
-              }}
-              onKeyDown={(e) => {
-                if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  // eslint-disable-next-line no-console
-                  console.info('Attempting direct open from keyboard:', normalizedUrl);
-                  const ok = attemptOpen(normalizedUrl);
-                  if (!ok) {
-                    // eslint-disable-next-line no-console
-                    console.info('Direct open failed, routing to /ext fallback');
-                    goToExt(normalizedUrl);
-                  }
-                }
-              }}
             >
               {isBeoLink ? 'View BEO' : displayText}
             </a>
@@ -545,67 +496,19 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                       const normalizedUrl = href.startsWith('http://') || href.startsWith('https://')
                         ? href
                         : `https://${href}`;
-                      // Treat BEO links as internal
+                      // Treat BEO links for display label
                       const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && (normalizedUrl.includes('/beo/') || normalizedUrl.includes('/beo/view?f=') || (normalizedUrl.includes('/beo-documents') && normalizedUrl.toLowerCase().endsWith('.pdf')) || normalizedUrl.includes('proxy-beo-pdf'));
 
                       // Track seen URLs but always render them as clickable links in message body
                       const key = normalizedUrl.toLowerCase();
                       seenUrls.add(key);
-
-                      const linkHref = normalizedUrl;
-                      const linkTarget = isBeoLink ? '_self' : '_blank';
                       
                       return (
                         <a 
-                          href={linkHref} 
-                          target={linkTarget} 
+                          href={normalizedUrl} 
+                          target="_blank" 
                           rel="noopener noreferrer"
-                          role="link"
-                          aria-label={`Open link ${normalizedUrl}`}
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                          onClick={(e) => {
-                            // eslint-disable-next-line no-console
-                            console.info('Attempting direct open from click:', normalizedUrl);
-                            if (inPreview) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              const ok = attemptOpen(normalizedUrl);
-                              if (!ok) {
-                                // eslint-disable-next-line no-console
-                                console.info('Direct open failed, routing to /ext fallback');
-                                goToExt(normalizedUrl);
-                              }
-                              return;
-                            }
-                          }}
-                          onAuxClick={(e) => {
-                            if (inPreview) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              // eslint-disable-next-line no-console
-                              console.info('Attempting direct open from middle click:', normalizedUrl);
-                              const ok = attemptOpen(normalizedUrl);
-                              if (!ok) {
-                                // eslint-disable-next-line no-console
-                                console.info('Direct open failed, routing to /ext fallback');
-                                goToExt(normalizedUrl);
-                              }
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              // eslint-disable-next-line no-console
-                              console.info('Attempting direct open from keyboard:', normalizedUrl);
-                              const ok = attemptOpen(normalizedUrl);
-                              if (!ok) {
-                                // eslint-disable-next-line no-console
-                                console.info('Direct open failed, routing to /ext fallback');
-                                goToExt(normalizedUrl);
-                              }
-                            }
-                          }}
                         >
                           {children}
                         </a>
@@ -622,59 +525,15 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     <ul className="space-y-1.5 ml-4">
                       {sourcesUrls.map((u, idx) => {
                         const isBeoLink = u.includes('www.croftcommontest.com') && (u.includes('/beo/') || u.includes('/beo/view?f=') || (u.includes('/beo-documents') && u.toLowerCase().endsWith('.pdf')) || u.includes('proxy-beo-pdf'));
-                        const target = isBeoLink ? '_self' : '_blank';
                         return (
                           <li key={`${u}-${idx}`} className="list-disc">
                             <a
                               href={u}
-                              target={target}
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                              onClick={(e) => {
-                                // eslint-disable-next-line no-console
-                                console.info('Attempting direct open from click:', u);
-                                if (inPreview) {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  const ok = attemptOpen(u);
-                                  if (!ok) {
-                                    // eslint-disable-next-line no-console
-                                    console.info('Direct open failed, routing to /ext fallback');
-                                    goToExt(u);
-                                  }
-                                  return;
-                                }
-                              }}
-                              onAuxClick={(e) => {
-                                if (inPreview) {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  // eslint-disable-next-line no-console
-                                  console.info('Attempting direct open from middle click:', u);
-                                  const ok = attemptOpen(u);
-                                  if (!ok) {
-                                    // eslint-disable-next-line no-console
-                                    console.info('Direct open failed, routing to /ext fallback');
-                                    goToExt(u);
-                                  }
-                                }
-                              }}
-                              onKeyDown={(e) => {
-                                if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  // eslint-disable-next-line no-console
-                                  console.info('Attempting direct open from keyboard:', u);
-                                  const ok = attemptOpen(u);
-                                  if (!ok) {
-                                    // eslint-disable-next-line no-console
-                                    console.info('Direct open failed, routing to /ext fallback');
-                                    goToExt(u);
-                                  }
-                                }
-                              }}
                             >
-                              {u}
+                              {isBeoLink ? 'View BEO' : u}
                             </a>
                           </li>
                         );
