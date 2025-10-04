@@ -115,8 +115,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold"
+              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold cursor-pointer"
               onClick={(e) => e.stopPropagation()}
+              onPointerDown={(e) => e.stopPropagation()}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onContextMenu={(e) => e.stopPropagation()}
+              onAuxClick={(e) => e.stopPropagation()}
             >
               {isBeoLink ? 'View BEO' : url}
             </a>
@@ -218,6 +223,11 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         rel="noopener noreferrer"
                         className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
+                        onContextMenu={(e) => e.stopPropagation()}
+                        onAuxClick={(e) => e.stopPropagation()}
                       >
                         {children}
                       </a>
