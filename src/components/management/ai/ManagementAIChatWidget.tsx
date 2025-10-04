@@ -40,6 +40,7 @@ export const ManagementAIChatWidget = () => {
   const saveTimeoutRef = useRef<NodeJS.Timeout>();
   const dragStartPosRef = useRef({ x: 0, y: 0 });
   const touchTimerRef = useRef<NodeJS.Timeout>();
+  const globalListenersRef = useRef(false);
   const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
 
   // Clamp position within viewport bounds
@@ -81,52 +82,14 @@ export const ManagementAIChatWidget = () => {
     setPosition(prev => clampPosition(prev));
   }, [isMinimized, clampPosition]);
 
-  // Handle pointer-based dragging
-  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    // Prevent default browser behavior
-    e.preventDefault();
-    
-    // Relax check for touchpads: allow button===0 OR buttons===1 for mouse/touchpad
-    if (e.pointerType === 'mouse' && e.button !== 0 && e.buttons !== 1) return;
-    
-    const target = e.target as HTMLElement;
-    if (target.closest('button')) return; // Don't drag when clicking buttons
-    
-    const startX = e.clientX;
-    const startY = e.clientY;
-    pointerTargetRef.current = e.currentTarget;
-    
-    if (e.pointerType === 'mouse') {
-      // Instant drag for mouse/touchpad
-      isDraggingRef.current = true;
-      setIsDragging(true);
-      dragStartPosRef.current = { x: startX, y: startY };
-      try {
-        e.currentTarget.setPointerCapture(e.pointerId);
-      } catch (err) {
-        console.warn('Failed to capture pointer:', err);
-      }
-    } else if (e.pointerType === 'touch') {
-      // Long-press for touch (350ms)
-      const pointerId = e.pointerId;
-      touchTimerRef.current = setTimeout(() => {
-        isDraggingRef.current = true;
-        setIsDragging(true);
-        dragStartPosRef.current = { x: startX, y: startY };
-        try {
-          pointerTargetRef.current?.setPointerCapture(pointerId);
-        } catch (err) {
-          console.warn('Failed to capture pointer:', err);
-        }
-      }, 350);
-    }
-  }, []);
-
-  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  // Global pointer move handler
+  const globalPointerMove = useCallback((e: PointerEvent) => {
     if (!isDraggingRef.current) return;
     
     const deltaX = e.clientX - dragStartPosRef.current.x;
     const deltaY = e.clientY - dragStartPosRef.current.y;
+    
+    console.debug('CLEO-DRAG: Move', { deltaX, deltaY, x: e.clientX, y: e.clientY });
     
     setPosition(prev => clampPosition({
       x: prev.x - deltaX,
@@ -136,12 +99,123 @@ export const ManagementAIChatWidget = () => {
     dragStartPosRef.current = { x: e.clientX, y: e.clientY };
   }, [clampPosition]);
 
-  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  // Global pointer up handler
+  const globalPointerUp = useCallback((e: PointerEvent) => {
+    console.debug('CLEO-DRAG: Up/Cancel', { type: e.type });
+    
     if (touchTimerRef.current) {
       clearTimeout(touchTimerRef.current);
     }
     isDraggingRef.current = false;
     setIsDragging(false);
+    
+    // Remove global listeners
+    if (globalListenersRef.current) {
+      globalListenersRef.current = false;
+      window.removeEventListener('pointermove', globalPointerMove, true);
+      window.removeEventListener('pointerup', globalPointerUp, true);
+      window.removeEventListener('pointercancel', globalPointerUp, true);
+      console.debug('CLEO-DRAG: Global listeners removed');
+    }
+  }, [globalPointerMove]);
+
+  // Start drag (shared logic)
+  const startDrag = useCallback((clientX: number, clientY: number, pointerType: string) => {
+    console.debug('CLEO-DRAG: Starting drag', { clientX, clientY, pointerType });
+    isDraggingRef.current = true;
+    setIsDragging(true);
+    dragStartPosRef.current = { x: clientX, y: clientY };
+    
+    // Attach global listeners
+    if (!globalListenersRef.current) {
+      globalListenersRef.current = true;
+      window.addEventListener('pointermove', globalPointerMove, true);
+      window.addEventListener('pointerup', globalPointerUp, true);
+      window.addEventListener('pointercancel', globalPointerUp, true);
+      console.debug('CLEO-DRAG: Global listeners attached');
+    }
+  }, [globalPointerMove, globalPointerUp]);
+
+  // Cleanup global listeners on unmount
+  useEffect(() => {
+    return () => {
+      if (globalListenersRef.current) {
+        window.removeEventListener('pointermove', globalPointerMove, true);
+        window.removeEventListener('pointerup', globalPointerUp, true);
+        window.removeEventListener('pointercancel', globalPointerUp, true);
+      }
+    };
+  }, [globalPointerMove, globalPointerUp]);
+
+  // Handle pointer-based dragging
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    
+    console.debug('CLEO-DRAG: Down', { 
+      pointerType: e.pointerType, 
+      button: e.button, 
+      buttons: e.buttons,
+      clientX: e.clientX,
+      clientY: e.clientY
+    });
+    
+    // Relax check for touchpads: allow button===0 OR buttons===1 for mouse/touchpad
+    if (e.pointerType === 'mouse' && e.button !== 0 && e.buttons !== 1) {
+      console.debug('CLEO-DRAG: Ignoring - wrong button');
+      return;
+    }
+    
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) {
+      console.debug('CLEO-DRAG: Ignoring - clicked button');
+      return;
+    }
+    
+    pointerTargetRef.current = e.currentTarget;
+    
+    if (e.pointerType === 'mouse') {
+      // Instant drag for mouse/touchpad
+      startDrag(e.clientX, e.clientY, e.pointerType);
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch (err) {
+        console.warn('Failed to capture pointer:', err);
+      }
+    } else if (e.pointerType === 'touch') {
+      // Long-press for touch (350ms)
+      const pointerId = e.pointerId;
+      touchTimerRef.current = setTimeout(() => {
+        startDrag(e.clientX, e.clientY, e.pointerType);
+        try {
+          pointerTargetRef.current?.setPointerCapture(pointerId);
+        } catch (err) {
+          console.warn('Failed to capture pointer:', err);
+        }
+      }, 350);
+    }
+  }, [startDrag]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    // Start-on-move fallback for trackpads (tap-to-drag)
+    if (!isDraggingRef.current && e.pointerType === 'mouse' && e.buttons === 1) {
+      const target = e.target as HTMLElement;
+      if (!target.closest('button')) {
+        console.debug('CLEO-DRAG: Starting via move fallback');
+        pointerTargetRef.current = e.currentTarget;
+        startDrag(e.clientX, e.clientY, e.pointerType);
+        try {
+          e.currentTarget.setPointerCapture(e.pointerId);
+        } catch (err) {
+          console.warn('Failed to capture pointer:', err);
+        }
+      }
+    }
+    
+    // Movement handled by global listener
+  }, [startDrag]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    // Cleanup handled by global listener
     try {
       e.currentTarget.releasePointerCapture(e.pointerId);
     } catch (err) {
