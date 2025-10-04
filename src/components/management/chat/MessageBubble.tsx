@@ -161,7 +161,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
       const lines = String(inner).split('\n');
       const firstNonEmpty = lines.findIndex((l) => l.trim() !== '');
       if (firstNonEmpty === -1) return full;
-      if (/^Sources?:\s*$/i.test(lines[firstNonEmpty].trim())) {
+      if (/^Sources?(?:\s+URLs?)?:\s*$/i.test(lines[firstNonEmpty].trim())) {
         // Unwrap this fenced block
         return lines.slice(firstNonEmpty).join('\n');
       }
@@ -190,7 +190,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     for (let i = 0; i < lines.length; i++) {
       const raw = lines[i];
       const trimmed = raw.trim();
-      const isHeader = /^\s*Sources?:\s*$/i.test(trimmed);
+      const isHeader = /^\s*Sources?(?:\s+URLs?)?:\s*$/i.test(trimmed);
 
       if (isHeader) {
         sourcesCount++;
@@ -203,20 +203,29 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
 
       if (inSources) {
         const norm = normalizeUrlLine(raw);
-        if (norm) {
-          if (sourcesCount === 1) {
+        const isBlank = trimmed === '';
+        if (sourcesCount === 1) {
+          if (norm) {
             const key = norm.toLowerCase();
             if (!keptUrls.has(key)) {
               keptUrls.add(key);
               out.push(norm);
             }
+            continue;
           }
-          // Skip URL lines for subsequent sources blocks
-          continue;
+          if (isBlank) {
+            out.push('');
+            continue;
+          }
+          // Non-URL, non-blank ends first sources block
+          inSources = false;
+          // fall-through to emit this line
+        } else {
+          // Subsequent sources blocks: skip URLs and blanks entirely
+          if (norm || isBlank) continue;
+          // Non-URL, non-blank ends the skipped block and we proceed to handle the line
+          inSources = false;
         }
-        // Non-URL or blank ends the sources block
-        inSources = false;
-        // For first sources block, fall-through to emit this non-URL line
       }
 
       // Normal line outside sources (or after exiting the first block)
@@ -233,20 +242,26 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   // Auto-linkify URLs for Cleo markdown content - matches both http(s):// and bare domains
   // Avoids double-wrapping URLs already in markdown format
   const linkifyContent = (text: string) => {
-    // Don't linkify URLs that are already in markdown link format [text](url)
-    return text.replace(
-      /(?<!\[)(?<!\]\()(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s)\]]*)*(?!\))/g,
-      (match) => {
-        // Normalize URL: add https:// if missing
-        const url = match.startsWith('http://') || match.startsWith('https://') ? match : `https://${match}`;
-        
-        // For BEO viewer routes, show a cleaner display name
-        if (url.includes('/beo/view?f=') || (url.includes('beo-documents') && url.includes('.pdf')) || url.includes('proxy-beo-pdf')) {
-          return `[📄 View BEO PDF](${url})`;
-        }
-        return `[${match}](${url})`;
+    // Temporarily protect existing markdown links
+    const mdLinks: string[] = [];
+    let protectedText = text.replace(/\[[^\]]+\]\([^\)]+\)/g, (m) => {
+      const idx = mdLinks.push(m) - 1;
+      return `__MDLINK_${idx}__`;
+    });
+
+    // Linkify bare URLs and domains without lookbehind (broader browser support)
+    protectedText = protectedText.replace(/((?:https?:\/\/|www\.)\S+|[A-Za-z0-9][A-Za-z0-9-]*(?:\.[A-Za-z0-9-]+)+\S*)/g, (match) => {
+      // Ignore placeholders
+      if (/^__MDLINK_\d+__$/.test(match)) return match;
+      const url = match.startsWith('http://') || match.startsWith('https://') ? match : `https://${match}`;
+      if (url.includes('/beo/view?f=') || (url.includes('beo-documents') && url.includes('.pdf')) || url.includes('proxy-beo-pdf')) {
+        return `[📄 View BEO PDF](${url})`;
       }
-    );
+      return `[${match}](${url})`;
+    });
+
+    // Restore markdown links
+    return protectedText.replace(/__MDLINK_(\d+)__/g, (_, i) => mdLinks[Number(i)]);
   };
 
   // Process content for better markdown rendering
