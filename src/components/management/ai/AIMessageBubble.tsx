@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { BeoLink } from '../chat/BeoLink';
 
 interface AIMessageBubbleProps {
   role: 'user' | 'assistant';
@@ -35,64 +35,20 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
     }
   };
 
-  // Robust link opening that works in iframes
-  const attemptOpen = (url: string, target = '_blank') => {
-    try {
-      const newWin = window.open(url, target, 'noopener,noreferrer');
-      if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
-        window.location.href = url;
-      }
-    } catch {
-      window.location.href = url;
+  // Extract fileName from BEO URL
+  const extractBeoFileName = (url: string): string | null => {
+    if (url.includes('/beo/view?f=')) {
+      const match = url.match(/[?&]f=([^&]+)/);
+      if (match?.[1]) return decodeURIComponent(match[1]);
+    } else if (url.includes('beo-documents') && url.includes('.pdf')) {
+      const marker = '/beo-documents/';
+      const idx = url.indexOf(marker);
+      if (idx !== -1) return url.substring(idx + marker.length).split('?')[0];
+    } else if (url.includes('proxy-beo-pdf')) {
+      const match = url.match(/[?&]file=([^&]+)/);
+      if (match?.[1]) return decodeURIComponent(match[1]);
     }
-  };
-
-  // Handle BEO PDF links with signed URL fetching
-  const openBeoInNewTab = async (normalizedUrl: string) => {
-    try {
-      let fileName: string | undefined;
-      
-      // Extract filename from various BEO URL formats
-      if (normalizedUrl.includes('/beo/view?f=')) {
-        const match = normalizedUrl.match(/[?&]f=([^&]+)/);
-        if (match?.[1]) {
-          fileName = decodeURIComponent(match[1]);
-        }
-      } else if (normalizedUrl.includes('beo-documents') && normalizedUrl.includes('.pdf')) {
-        const marker = '/beo-documents/';
-        const idx = normalizedUrl.indexOf(marker);
-        if (idx !== -1) {
-          fileName = normalizedUrl.substring(idx + marker.length).split('?')[0];
-        }
-      } else if (normalizedUrl.includes('proxy-beo-pdf')) {
-        const match = normalizedUrl.match(/[?&]file=([^&]+)/);
-        if (match?.[1]) {
-          fileName = decodeURIComponent(match[1]);
-        }
-      }
-
-      if (fileName) {
-        const { data, error } = await supabase.functions.invoke('get-beo-signed-url', {
-          body: { fileName }
-        });
-
-        if (error) throw error;
-        if (data?.signedUrl) {
-          attemptOpen(data.signedUrl, '_blank');
-          return;
-        }
-      }
-
-      // Fallback to original URL
-      attemptOpen(normalizedUrl, '_blank');
-    } catch (error) {
-      console.error('Error opening BEO PDF:', error);
-      toast({
-        title: 'Error opening PDF',
-        description: 'Could not open the BEO PDF. Please try again.',
-        variant: 'destructive',
-      });
-    }
+    return null;
   };
 
   // Auto-linkify URLs in the content with shortened display text
@@ -146,25 +102,27 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
                   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
                   a: ({ href, children }) => {
                     const normalizedUrl = href?.startsWith('http') ? href : `https://${href}`;
-                    const isBeoLink = normalizedUrl.includes('/beo/view?f=') || 
-                                      (normalizedUrl.includes('beo-documents') && normalizedUrl.includes('.pdf')) || 
-                                      normalizedUrl.includes('proxy-beo-pdf');
+                    const fileName = extractBeoFileName(normalizedUrl);
 
+                    // Use BeoLink component ONLY for BEO PDFs
+                    if (fileName) {
+                      return (
+                        <BeoLink 
+                          fileName={fileName}
+                          className="text-accent-pink hover:text-accent-pink-dark underline font-medium break-all inline-block max-w-full"
+                        >
+                          {children}
+                        </BeoLink>
+                      );
+                    }
+
+                    // All other links: plain anchor (Sources, etc.)
                     return (
                       <a 
                         href={href} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-accent-pink hover:text-accent-pink-dark underline font-medium break-all inline-block max-w-full"
-                        onClick={(e) => {
-                          if (isBeoLink) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            openBeoInNewTab(normalizedUrl);
-                          } else {
-                            e.stopPropagation();
-                          }
-                        }}
                       >
                         {children}
                       </a>

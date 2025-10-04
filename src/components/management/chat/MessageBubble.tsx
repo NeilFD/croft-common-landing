@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { isInPreviewIframe } from '@/lib/env';
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { BeoLink } from './BeoLink';
 interface MessageBubbleProps {
   message: {
     id: string;
@@ -144,85 +144,39 @@ function keyOpenExternal(e: React.KeyboardEvent, href?: string) {
   }
 }
 
-async function openBeoInNewTab(rawUrl: string) {
-  try {
-    let fileName: string | undefined;
-
-    // Try to extract from query params (?f= or ?fileName=)
+// Extract fileName from BEO URL patterns
+function extractBeoFileName(url: string): string | null {
+  if (url.includes('/beo/view?f=')) {
     try {
-      const u = new URL(rawUrl);
-      const f = u.searchParams.get('f') || u.searchParams.get('fileName');
-      if (f) fileName = f;
+      const u = new URL(url, window.location.origin);
+      const f = u.searchParams.get('f');
+      if (f) return f;
     } catch {}
-
-    // Try to extract from legacy public path
-    if (!fileName) {
-      const marker = '/beo-documents/';
-      const idx = rawUrl.indexOf(marker);
-      if (idx !== -1) {
-        fileName = rawUrl.substring(idx + marker.length);
-      }
+  } else if (url.includes('beo-documents') && url.toLowerCase().includes('.pdf')) {
+    const marker = '/beo-documents/';
+    const idx = url.indexOf(marker);
+    if (idx !== -1) {
+      const tail = url.substring(idx + marker.length).split('?')[0];
+      if (tail) return tail;
     }
-
-    // Get a signed URL from the Edge Function (accepts fileName or pdfUrl)
-    const { data } = await supabase.functions.invoke('get-beo-signed-url', {
-      body: fileName ? { fileName } : { pdfUrl: rawUrl }
-    });
-
-    const targetUrl: string = data?.signedUrl || rawUrl;
-
-    // Open robustly (top window first to bypass iframe popup blockers)
+  } else if (url.includes('proxy-beo-pdf')) {
     try {
-      if (window.top && window.top !== window) {
-        const wTop = (window.top as Window).open(targetUrl, '_blank', 'noopener,noreferrer');
-        if (wTop) return;
-      }
+      const u = new URL(url, window.location.origin);
+      const f = u.searchParams.get('file') || u.searchParams.get('f');
+      if (f) return f;
     } catch {}
-
-    const w = window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    if (!w) {
-      const a = document.createElement('a');
-      a.href = targetUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.warn('openBeoInNewTab failed, falling back to raw URL:', err);
-    try {
-      window.open(rawUrl, '_blank', 'noopener,noreferrer');
-    } catch {}
+  } else if (url.toLowerCase().endsWith('.pdf')) {
+    // Bare .pdf filename
+    const lastSlash = url.lastIndexOf('/');
+    const fileName = lastSlash !== -1 ? url.substring(lastSlash + 1) : url;
+    if (fileName && fileName.toLowerCase().endsWith('.pdf')) return fileName;
   }
+  return null;
 }
 
 // Simple BEO URL detector
 function isBeoUrl(url: string): boolean {
-  const u = url || '';
-  const lower = u.toLowerCase();
-  return (
-    u.includes('/beo/view?f=') ||
-    (u.includes('beo-documents') && lower.includes('.pdf')) ||
-    u.includes('proxy-beo-pdf')
-  );
-}
-
-// Unified link opener for all anchors
-function openLink(
-  e: React.MouseEvent | React.PointerEvent | React.TouchEvent,
-  url?: string
-) {
-  if (!url) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const normalized = url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
-  if (isBeoUrl(normalized)) {
-    openBeoInNewTab(normalized);
-  } else {
-    attemptOpen(normalized);
-  }
+  return extractBeoFileName(url) !== null;
 }
 
 export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
@@ -469,6 +423,22 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         }
         seenUrls.add(key);
         
+        // Use BeoLink component for BEO links
+        const fileName = extractBeoFileName(normalizedUrl);
+        if (fileName) {
+          return (
+            <span key={i}>
+              <BeoLink
+                fileName={fileName}
+                className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
+              >
+                View BEO
+              </BeoLink>
+              {trailingPunct}
+            </span>
+          );
+        }
+
         return (
           <span key={i}>
             <a
@@ -477,7 +447,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
             >
-              {isBeoLink ? 'View BEO' : displayText}
+              {displayText}
             </a>
             {trailingPunct}
           </span>
@@ -603,17 +573,26 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     <div className="text-xs font-bold uppercase tracking-wide mb-2 text-[hsl(var(--accent-pink))]">Sources</div>
                     <ul className="space-y-1.5 ml-4">
                       {sourcesUrls.map((u, idx) => {
-                        const isBeoLink = isBeoUrl(u);
+                        const fileName = extractBeoFileName(u);
                         return (
                           <li key={`${u}-${idx}`} className="list-disc">
-                            <a
-                              href={u}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                            >
-                              {isBeoLink ? 'View BEO' : u}
-                            </a>
+                            {fileName ? (
+                              <BeoLink
+                                fileName={fileName}
+                                className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                              >
+                                View BEO
+                              </BeoLink>
+                            ) : (
+                              <a
+                                href={u}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                              >
+                                {u}
+                              </a>
+                            )}
                           </li>
                         );
                       })}
