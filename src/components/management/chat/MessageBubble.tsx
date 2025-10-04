@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { Check, CheckCheck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { isInPreviewIframe } from '@/lib/env';
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
@@ -450,6 +451,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
             isCleo ? (
               <div className="text-sm font-industrial prose prose-sm max-w-none prose-headings:font-brutalist prose-strong:text-foreground prose-em:text-foreground prose-p:my-3 prose-ul:my-2 prose-li:my-1 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                 <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
                   components={{
                     p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed mb-3">{children}</p>,
                     ul: ({ children }) => <ul className="space-y-1.5 ml-4 my-2">{children}</ul>,
