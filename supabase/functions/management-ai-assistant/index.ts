@@ -130,6 +130,39 @@ function detectIntent(message: string, conversationHistory: any[] = []): Intent 
   return { type: 'general', eventIdentifier: eventId, confidence: 0.5 };
 }
 
+// Unified date parser helper - parses various date formats into day and month
+function parseDayMonth(str: string): { day: number; month: number } | null {
+  const dateStr = str.toLowerCase();
+  const months: Record<string, number> = {
+    jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
+    jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
+  };
+  
+  // Try "28 Sep", "the 7th October", "7th of October" format
+  const match1 = dateStr.match(/(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\s*(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);
+  if (match1) {
+    const day = parseInt(match1[1]);
+    const monthName = match1[2].toLowerCase().substring(0, 3);
+    const month = months[monthName];
+    if (month !== undefined) {
+      return { day, month };
+    }
+  }
+  
+  // Try "Sep 28", "October the 7th" format
+  const match2 = dateStr.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(?:the\s+)?(\d{1,2})/i);
+  if (match2) {
+    const monthName = match2[1].toLowerCase().substring(0, 3);
+    const month = months[monthName];
+    const day = parseInt(match2[2]);
+    if (month !== undefined) {
+      return { day, month };
+    }
+  }
+  
+  return null;
+}
+
 function extractEventIdentifier(message: string, conversationHistory: any[] = []): string | undefined {
   // Improved event code pattern - more flexible
   const codeMatch = message.match(/\b(event\s*(?:no\.?|number|#)?\s*)?(?:20\d{2}\d{3})\b/i);
@@ -141,9 +174,9 @@ function extractEventIdentifier(message: string, conversationHistory: any[] = []
     }
   }
   
-  // Try to extract date (e.g., "28 Sep", "the 7th October", "7th of October", "Sept 28")
+  // Try to extract date using unified parser
   const datePatterns = [
-    /\b(?:the\s+)?(\d{1,2})\s*(st|nd|rd|th)?\s*(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/i,
+    /\b(?:the\s+)?(\d{1,2})\s*(?:st|nd|rd|th)?\s*(?:of\s+)?(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*/i,
     /\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(?:the\s+)?(\d{1,2})\b/i,
   ];
   
@@ -207,45 +240,23 @@ async function resolveEvent(supabase: any, identifier: string): Promise<string |
     }
   }
   
-  // Try date match
+  // Try date match using unified parser
   if (/\d/.test(identifier)) {
     try {
       const now = new Date();
       const currentYear = now.getFullYear();
       
-      // Parse the date string and try current and next year
-      const dateStr = identifier.toLowerCase();
-      const months: Record<string, number> = {
-        jan: 0, feb: 1, mar: 2, apr: 3, may: 4, jun: 5,
-        jul: 6, aug: 7, sep: 8, oct: 9, nov: 10, dec: 11
-      };
+      // Use unified date parser
+      const parsed = parseDayMonth(identifier);
       
       let targetDate: Date | null = null;
       
-      // Try "28 Sep" format
-      const match1 = dateStr.match(/(\d{1,2})\s*(st|nd|rd|th)?\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)/i);
-      if (match1) {
-        const day = parseInt(match1[1]);
-        const monthName = match1[3].toLowerCase().substring(0, 3);
-        const month = months[monthName];
-        targetDate = new Date(currentYear, month, day);
+      if (parsed) {
+        targetDate = new Date(currentYear, parsed.month, parsed.day);
         
         // If date is in the past, try next year
         if (targetDate < now) {
-          targetDate = new Date(currentYear + 1, month, day);
-        }
-      }
-      
-      // Try "Sep 28" format
-      const match2 = dateStr.match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s*(\d{1,2})/i);
-      if (!targetDate && match2) {
-        const monthName = match2[1].toLowerCase().substring(0, 3);
-        const month = months[monthName];
-        const day = parseInt(match2[2]);
-        targetDate = new Date(currentYear, month, day);
-        
-        if (targetDate < now) {
-          targetDate = new Date(currentYear + 1, month, day);
+          targetDate = new Date(currentYear + 1, parsed.month, parsed.day);
         }
       }
       
