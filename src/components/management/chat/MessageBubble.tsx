@@ -216,7 +216,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         href={href} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full"
+                        className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         {children}
                       </a>
