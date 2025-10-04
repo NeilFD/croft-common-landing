@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
@@ -10,7 +10,6 @@ import { AIMessageBubble } from './AIMessageBubble';
 import { AIQuickActions } from './AIQuickActions';
 import { useVoiceRecognition } from '@/hooks/useVoiceRecognition';
 import { ClearChatDialog } from './ClearChatDialog';
-import { useLongPress } from '@/hooks/useLongPress';
 
 export const ManagementAIChatWidget = () => {
   const { messages, isLoading, isWidgetOpen, unreadCount, sendMessage, toggleWidget, markAsRead, clearMessages } =
@@ -20,65 +19,112 @@ export const ManagementAIChatWidget = () => {
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [clearDialogOpen, setClearDialogOpen] = useState(false);
   const [position, setPosition] = useState(() => {
-    const saved = localStorage.getItem('cleo-widget-position');
-    return saved ? JSON.parse(saved) : { x: 24, y: 24 };
+    const saved = localStorage.getItem('cleo-widget-position-v2');
+    if (saved) {
+      return JSON.parse(saved);
+    }
+    // Migrate from old key or default to bottom-right
+    const oldSaved = localStorage.getItem('cleo-widget-position');
+    if (oldSaved) {
+      localStorage.removeItem('cleo-widget-position');
+    }
+    return { x: 24, y: 24 };
   });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const dragStartPosRef = useRef({ x: 0, y: 0 });
+  const touchTimerRef = useRef<NodeJS.Timeout>();
   const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
 
-  // Save position to localStorage
+  // Clamp position within viewport bounds
+  const clampPosition = useCallback((pos: { x: number; y: number }) => {
+    if (!cardRef.current) return pos;
+    
+    const cardWidth = cardRef.current.offsetWidth;
+    const cardHeight = cardRef.current.offsetHeight;
+    const maxX = window.innerWidth - cardWidth - 24;
+    const maxY = window.innerHeight - cardHeight - 24;
+    
+    return {
+      x: Math.max(24, Math.min(maxX, pos.x)),
+      y: Math.max(24, Math.min(maxY, pos.y))
+    };
+  }, []);
+
+  // Save position to localStorage (debounced)
   useEffect(() => {
-    localStorage.setItem('cleo-widget-position', JSON.stringify(position));
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    saveTimeoutRef.current = setTimeout(() => {
+      localStorage.setItem('cleo-widget-position-v2', JSON.stringify(position));
+    }, 300);
   }, [position]);
 
-  // Handle dragging
+  // Re-clamp position on window resize or minimize state change
   useEffect(() => {
-    if (!isDragging) return;
-
-    const handleMove = (e: MouseEvent | TouchEvent) => {
-      e.preventDefault();
-      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-      const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-
-      const deltaX = dragStart.x - clientX;
-      const deltaY = dragStart.y - clientY;
-
-      setPosition(prev => {
-        const newX = Math.max(0, Math.min(window.innerWidth - 400, prev.x + deltaX));
-        const newY = Math.max(0, Math.min(window.innerHeight - 100, prev.y + deltaY));
-        return { x: newX, y: newY };
-      });
-
-      setDragStart({ x: clientX, y: clientY });
+    const handleResize = () => {
+      setPosition(prev => clampPosition(prev));
     };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [clampPosition]);
 
-    const handleEnd = () => {
-      setIsDragging(false);
-    };
+  useEffect(() => {
+    setPosition(prev => clampPosition(prev));
+  }, [isMinimized, clampPosition]);
 
-    document.addEventListener('mousemove', handleMove);
-    document.addEventListener('mouseup', handleEnd);
-    document.addEventListener('touchmove', handleMove);
-    document.addEventListener('touchend', handleEnd);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMove);
-      document.removeEventListener('mouseup', handleEnd);
-      document.removeEventListener('touchmove', handleMove);
-      document.removeEventListener('touchend', handleEnd);
-    };
-  }, [isDragging, dragStart]);
-
-  const longPressHandlers = useLongPress({
-    onLongPress: () => {
+  // Handle pointer-based dragging
+  const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0) return; // Only left mouse button
+    
+    const target = e.target as HTMLElement;
+    if (target.closest('button')) return; // Don't drag when clicking buttons
+    
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startPos = { ...position };
+    
+    if (e.pointerType === 'mouse') {
+      // Instant drag for mouse
       setIsDragging(true);
-    },
-    delay: 500
-  });
+      dragStartPosRef.current = { x: startX, y: startY };
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } else if (e.pointerType === 'touch') {
+      // Long-press for touch (350ms)
+      touchTimerRef.current = setTimeout(() => {
+        setIsDragging(true);
+        dragStartPosRef.current = { x: startX, y: startY };
+      }, 350);
+    }
+  }, [position]);
+
+  const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDragging) return;
+    
+    const deltaX = dragStartPosRef.current.x - e.clientX;
+    const deltaY = dragStartPosRef.current.y - e.clientY;
+    
+    setPosition(prev => clampPosition({
+      x: prev.x + deltaX,
+      y: prev.y + deltaY
+    }));
+    
+    dragStartPosRef.current = { x: e.clientX, y: e.clientY };
+  }, [isDragging, clampPosition]);
+
+  const handlePointerUp = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+    }
+    setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
+  }, []);
 
   // Always scroll to bottom when widget opens or minimizes
   useEffect(() => {
@@ -198,6 +244,7 @@ export const ManagementAIChatWidget = () => {
       />
 
       <Card
+        ref={cardRef}
         className={cn(
           'fixed flex flex-col shadow-2xl z-50 border-2',
           isMinimized ? 'h-14 w-80' : 'h-[600px] w-[400px]',
@@ -212,21 +259,17 @@ export const ManagementAIChatWidget = () => {
       {/* Header */}
       <div 
         className={cn(
-          "flex items-center justify-between border-b border-foreground bg-background p-4",
+          "flex items-center justify-between border-b border-foreground bg-background p-4 select-none",
           isDragging ? "cursor-grabbing" : "cursor-grab"
         )}
-        onMouseDown={(e) => {
-          setDragStart({ x: e.clientX, y: e.clientY });
-          longPressHandlers.onMouseDown();
+        style={{
+          touchAction: isDragging ? 'none' : 'auto',
+          WebkitTouchCallout: 'none',
         }}
-        onMouseUp={longPressHandlers.onMouseUp}
-        onMouseLeave={longPressHandlers.onMouseLeave}
-        onTouchStart={(e) => {
-          setDragStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
-          longPressHandlers.onTouchStart();
-        }}
-        onTouchEnd={longPressHandlers.onTouchEnd}
-        onTouchCancel={longPressHandlers.onTouchCancel}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
       >
         <div className="flex items-center gap-2">
           <GripVertical className={cn(
