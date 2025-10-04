@@ -1828,11 +1828,7 @@ serve(async (req) => {
         if (functionResult?.success && functionResult?.answer) {
           console.log('✅ Condition passed - processing sources');
           console.log('📎 Search sources received:', JSON.stringify(functionResult.sources));
-          const sourcesText = Array.isArray(functionResult.sources) && functionResult.sources.length
-            ? "\n\nSources:\n" + functionResult.sources.map((u: string, i: number) => `${i + 1}. ${u}`).join("\n")
-            : '';
-          console.log('📋 Formatted sources text length:', sourcesText.length);
-          const fullText = `${functionResult.answer}${sourcesText}`;
+          const fullText = functionResult.answer; // Just use the answer directly, it already has formatted sources
           const encoder = new TextEncoder();
           const stream = new ReadableStream({
             start(controller) {
