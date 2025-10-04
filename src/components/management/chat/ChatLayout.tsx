@@ -183,7 +183,7 @@ export const ChatLayout = () => {
 
   // Desktop view: side-by-side
   return (
-    <div className="-m-6 md:-m-8 lg:-m-12 h-[calc(100vh-8rem)] flex gap-4">
+    <div className="-mx-6 -mb-6 mt-4 md:-mx-8 md:-mb-8 md:mt-6 lg:-mx-12 lg:-mb-12 lg:mt-6 h-[calc(100vh-8rem)] flex gap-4">
       <div className="w-72 flex-shrink-0">
         <ChatsList
           chats={chats}
