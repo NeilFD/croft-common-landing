@@ -1788,17 +1788,48 @@ serve(async (req) => {
     // Build minimal system prompt - no pre-fetching data
     const systemPrompt = buildSystemPrompt(context, baseData, null);
 
-    // Decide if we should force the internet search tool based on the latest user message
+    // Detect intent to determine if this is internal or general query
     const lastUserMsg = Array.isArray(filteredMessages)
       ? [...filteredMessages].reverse().find((m: any) => m?.role === 'user' && typeof m?.content === 'string')
       : null;
-    const shouldForceInternetSearch = !!(lastUserMsg && /\b(what|which|how|when|where|why|is|are|define|explain|tell me|show me|find|search|look up|recipe|ingredient|weather|news|latest|current|today|now)\b/i.test(lastUserMsg.content));
-    if (shouldForceInternetSearch) {
-      console.log('🧭 Forcing search_internet tool for query:', lastUserMsg.content.slice(0, 120));
+    
+    const detectedIntent = lastUserMsg ? detectIntent(lastUserMsg.content, filteredMessages) : null;
+    
+    // Only use internet search if intent is 'general' AND confidence is low
+    // AND the query doesn't match any internal management patterns
+    const isInternalQuery = detectedIntent && (
+      detectedIntent.type === 'feedback' ||
+      detectedIntent.type === 'menu' ||
+      detectedIntent.type === 'beo' ||
+      detectedIntent.type === 'schedule' ||
+      detectedIntent.type === 'staffing' ||
+      detectedIntent.type === 'equipment' ||
+      detectedIntent.type === 'contract' ||
+      detectedIntent.type === 'knowledge' ||
+      detectedIntent.type === 'policy' ||
+      detectedIntent.type === 'document' ||
+      detectedIntent.confidence > 0.7
+    );
+    
+    const shouldUseInternetSearch = !isInternalQuery && 
+      detectedIntent?.type === 'general' && 
+      detectedIntent.confidence < 0.6;
+    
+    console.log('🎯 Intent detected:', {
+      type: detectedIntent?.type,
+      confidence: detectedIntent?.confidence,
+      isInternal: isInternalQuery,
+      willUseInternet: shouldUseInternetSearch
+    });
+    
+    if (shouldUseInternetSearch) {
+      console.log('🌐 General query detected, using internet search:', lastUserMsg?.content.slice(0, 120));
+    } else {
+      console.log('🏢 Internal management query detected, using internal data');
     }
 
     // Force direct internet search execution when required
-    if (shouldForceInternetSearch && lastUserMsg?.content) {
+    if (shouldUseInternetSearch && lastUserMsg?.content) {
       try {
         const supabaseUrl = Deno.env.get('SUPABASE_URL');
         if (!supabaseUrl) throw new Error('SUPABASE_URL not configured');
@@ -1872,7 +1903,7 @@ serve(async (req) => {
           ...filteredMessages,
         ],
           tools: FUNCTION_TOOLS,
-          tool_choice: shouldForceInternetSearch ? { type: 'function', function: { name: 'search_internet' } } : undefined,
+          tool_choice: shouldUseInternetSearch ? { type: 'function', function: { name: 'search_internet' } } : undefined,
           stream: true,
       }),
     });
