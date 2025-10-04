@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Send, Image as ImageIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -79,13 +79,13 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
   };
 
   // Prepare mention data for react-mentions
-  const mentionData = [
+  const mentionData = useMemo(() => [
     { id: 'cleo', display: 'Cleo' },
     ...chatMembers.map(member => ({
       id: member.user_id,
       display: member.user_name
     }))
-  ];
+  ], [chatMembers]);
 
   return (
     <div className="relative">
@@ -183,7 +183,8 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
                 trigger="@"
                 data={mentionData}
                 displayTransform={(id, display) => `@${display}`}
-                markup="@__display__"
+                markup="@[__display__](__id__)"
+                appendSpaceOnAdd={true}
                 style={{
                   backgroundColor: 'hsl(var(--accent-pink))',
                   color: 'white',
