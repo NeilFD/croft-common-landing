@@ -29,6 +29,7 @@ interface MessageBubbleProps {
   isOwn: boolean;
   isCleo?: boolean;
   isCleoThinking?: boolean;
+  contextMenuTrigger?: React.ReactNode;
 }
 
 // Normalise and safely parse timestamps to avoid Safari date parsing issues
@@ -58,7 +59,7 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
   return d ? format(d, 'HH:mm') : '';
 }
 
-export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
+export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking, contextMenuTrigger }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   
   // Auto-linkify URLs for Cleo markdown content
@@ -137,7 +138,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
       return <span key={i}>{part}</span>;
     });
   };
-  return (
+  const content = (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
       <div className={cn("max-w-[70%] md:max-w-[60%]", isOwn && "order-2")}>
         {!isOwn && (
@@ -256,4 +257,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
       </div>
     </div>
   );
+  
+  return contextMenuTrigger ? contextMenuTrigger : content;
 };

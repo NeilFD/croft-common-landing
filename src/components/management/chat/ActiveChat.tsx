@@ -4,8 +4,19 @@ import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { ChatHeader } from './ChatHeader';
+import { MessageActionsMenu } from './MessageActionsMenu';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 
 interface Message {
@@ -35,12 +46,16 @@ interface ActiveChatProps {
 }
 
 export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
-  const { managementUser } = useManagementAuth();
+  const { managementUser, hasRole } = useManagementAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [chat, setChat] = useState<any>(null);
   const [chatMembers, setChatMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCleoThinking, setIsCleoThinking] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
@@ -420,7 +435,85 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     }
   };
 
-  const handleSendMessage = async (text: string, image?: File) => {
+  const handleCopyMessage = async (message: Message) => {
+    try {
+      await navigator.clipboard.writeText(message.body_text);
+      toast.success('Message copied to clipboard');
+    } catch (error) {
+      toast.error('Failed to copy message');
+    }
+  };
+
+  const handleReplyToMessage = (message: Message) => {
+    setReplyingTo(message);
+    setEditingMessage(null);
+  };
+
+  const handleEditMessage = (message: Message) => {
+    setEditingMessage(message);
+    setReplyingTo(null);
+  };
+
+  const handleDeleteMessage = (message: Message) => {
+    setMessageToDelete(message);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteMessage = async () => {
+    if (!messageToDelete) return;
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', messageToDelete.id);
+
+      if (error) throw error;
+
+      // Remove from local state
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageToDelete.id));
+      toast.success('Message deleted');
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast.error('Failed to delete message');
+    } finally {
+      setDeleteDialogOpen(false);
+      setMessageToDelete(null);
+    }
+  };
+
+  const handleUpdateMessage = async (messageId: string, newText: string) => {
+    if (!newText.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ 
+          body_text: newText,
+          edited_at: new Date().toISOString()
+        })
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      // Update local state
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, body_text: newText, edited_at: new Date().toISOString() }
+            : msg
+        )
+      );
+      
+      setEditingMessage(null);
+      toast.success('Message updated');
+    } catch (error) {
+      console.error('Error updating message:', error);
+      toast.error('Failed to update message');
+    }
+  };
+
+  const handleSendMessage = async (text: string, image?: File, replyToId?: string) => {
     if (!text.trim() && !image) return;
     
     const mentionsCleo = /@Cleo\b/i.test(text);
@@ -448,6 +541,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           chat_id: chatId,
           sender_id: managementUser?.user.id,
           body_text: text.trim() || '[Image]',
+          reply_to_message_id: replyToId || null,
         })
         .select()
         .single();
@@ -483,6 +577,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       }
       
       setMessages((prev) => [...prev, enrichedMessage]);
+      setReplyingTo(null);
       scrollToBottom();
 
       // Update last_read_at
@@ -540,15 +635,42 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             </div>
           ) : (
             <>
-              {messages.map((message, index) => (
-                <MessageBubble
-                  key={message.id}
-                  message={message}
-                  isOwn={message.sender_id === managementUser?.user.id}
-                  isCleo={message.is_cleo === true}
-                  isCleoThinking={message.is_cleo && index === messages.length - 1 && isCleoThinking}
-                />
-              ))}
+              {messages
+                .filter((msg) => !msg.deleted_at)
+                .map((message, index) => {
+                  const isOwn = message.sender_id === managementUser?.user.id;
+                  const canEdit = isOwn && !message.is_cleo;
+                  const canDelete = isOwn || hasRole('admin');
+                  
+                  return (
+                    <MessageBubble
+                      key={message.id}
+                      message={message}
+                      isOwn={isOwn}
+                      isCleo={message.is_cleo === true}
+                      isCleoThinking={message.is_cleo && index === messages.filter(m => !m.deleted_at).length - 1 && isCleoThinking}
+                      contextMenuTrigger={
+                        <MessageActionsMenu
+                          canEdit={canEdit}
+                          canDelete={canDelete}
+                          onCopy={() => handleCopyMessage(message)}
+                          onReply={() => handleReplyToMessage(message)}
+                          onEdit={canEdit ? () => handleEditMessage(message) : undefined}
+                          onDelete={() => handleDeleteMessage(message)}
+                        >
+                          <div>
+                            <MessageBubble
+                              message={message}
+                              isOwn={isOwn}
+                              isCleo={message.is_cleo === true}
+                              isCleoThinking={message.is_cleo && index === messages.filter(m => !m.deleted_at).length - 1 && isCleoThinking}
+                            />
+                          </div>
+                        </MessageActionsMenu>
+                      }
+                    />
+                  );
+                })}
               
               {/* Fallback thinking indicator if no empty Cleo bubble exists */}
               {isCleoThinking && !messages.some(m => m.is_cleo && !m.body_text) && (
@@ -577,7 +699,32 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         </div>
       </div>
 
-      <MessageInput onSend={handleSendMessage} chatMembers={chatMembers} />
+      <MessageInput 
+        onSend={handleSendMessage}
+        onUpdateMessage={handleUpdateMessage}
+        chatMembers={chatMembers}
+        replyToMessage={replyingTo}
+        onCancelReply={() => setReplyingTo(null)}
+        editingMessage={editingMessage}
+        onCancelEdit={() => setEditingMessage(null)}
+      />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent className="bg-background">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete message</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this message? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteMessage} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
