@@ -104,7 +104,7 @@ serve(async (req) => {
         'X-Title': 'Croft Common Management Assistant'
       },
       body: JSON.stringify({
-        model: 'perplexity/llama-3.1-sonar-large-128k-online',
+        model: 'perplexity/sonar',
         messages: [
           {
             role: 'user',
