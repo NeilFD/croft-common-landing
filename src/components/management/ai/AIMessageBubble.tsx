@@ -89,6 +89,10 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="text-accent-pink hover:text-accent-pink-dark underline font-medium break-all inline-block max-w-full"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Let the default link behavior happen
+                      }}
                     >
                       {children}
                     </a>
