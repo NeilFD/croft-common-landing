@@ -1792,7 +1792,7 @@ serve(async (req) => {
     const lastUserMsg = Array.isArray(filteredMessages)
       ? [...filteredMessages].reverse().find((m: any) => m?.role === 'user' && typeof m?.content === 'string')
       : null;
-    const shouldForceInternetSearch = !!(lastUserMsg && /\b(what|how|when|where|why|is|are|define|explain|tell me|show me|find|search|look up|recipe|ingredient|weather|news|latest|current|today|now)\b/i.test(lastUserMsg.content));
+    const shouldForceInternetSearch = !!(lastUserMsg && /\b(what|which|how|when|where|why|is|are|define|explain|tell me|show me|find|search|look up|recipe|ingredient|weather|news|latest|current|today|now)\b/i.test(lastUserMsg.content));
     if (shouldForceInternetSearch) {
       console.log('🧭 Forcing search_internet tool for query:', lastUserMsg.content.slice(0, 120));
     }
