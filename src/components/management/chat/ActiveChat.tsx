@@ -537,26 +537,15 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             </div>
           ) : (
             <>
-              {messages.map((message) => (
+              {messages.map((message, index) => (
                 <MessageBubble
                   key={message.id}
                   message={message}
                   isOwn={message.sender_id === managementUser?.user.id}
                   isCleo={message.is_cleo === true}
+                  isCleoThinking={message.is_cleo && index === messages.length - 1 && isCleoThinking}
                 />
               ))}
-              {isCleoThinking && (
-                <MessageBubble
-                  message={{
-                    id: 'thinking',
-                    body_text: '',
-                    created_at: new Date().toISOString(),
-                    sender_name: 'Cleo',
-                  }}
-                  isOwn={false}
-                  isCleo={true}
-                />
-              )}
             </>
           )}
           <div ref={scrollRef} />

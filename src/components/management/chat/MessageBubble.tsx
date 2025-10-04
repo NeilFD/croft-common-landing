@@ -27,6 +27,7 @@ interface MessageBubbleProps {
   };
   isOwn: boolean;
   isCleo?: boolean;
+  isCleoThinking?: boolean;
 }
 
 // Normalise and safely parse timestamps to avoid Safari date parsing issues
@@ -56,36 +57,92 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
   return d ? format(d, 'HH:mm') : '';
 }
 
-export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) => {
+export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   
-  // Parse mentions and render them as styled components
+  // Parse mentions and URLs, render them as styled components
   const renderTextWithMentions = (text: string) => {
     if (isCleo) return text;
     
-    const mentionRegex = /@([A-Z][A-Za-z0-9.'-]*(?:\s+[A-Z][A-Za-z0-9.'-]*)*)/g;
+    // Match @mentions that start with capital letter and stop at word boundary
+    const mentionRegex = /@([A-Z][A-Za-z0-9.'-]*(?:\s+[A-Z][A-Za-z0-9.'-]*)*)\b/g;
+    // Match URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
     const parts = [];
     let lastIndex = 0;
-    let match;
     let keyIndex = 0;
     
+    // First pass: process mentions
+    const mentionMatches: Array<{ start: number; end: number; text: string; isMention: boolean }> = [];
+    let match;
+    
     while ((match = mentionRegex.exec(text)) !== null) {
-      // Add text before mention
-      if (match.index > lastIndex) {
+      mentionMatches.push({
+        start: match.index,
+        end: match.index + match[0].length,
+        text: match[0],
+        isMention: true,
+      });
+    }
+    
+    // Second pass: process URLs (only in non-mention segments)
+    mentionRegex.lastIndex = 0;
+    while ((match = urlRegex.exec(text)) !== null) {
+      // Check if this URL overlaps with any mention
+      const overlaps = mentionMatches.some(m => 
+        (match.index >= m.start && match.index < m.end) ||
+        (match.index + match[0].length > m.start && match.index + match[0].length <= m.end)
+      );
+      
+      if (!overlaps) {
+        mentionMatches.push({
+          start: match.index,
+          end: match.index + match[0].length,
+          text: match[0],
+          isMention: false,
+        });
+      }
+    }
+    
+    // Sort all matches by position
+    mentionMatches.sort((a, b) => a.start - b.start);
+    
+    // Render all parts
+    mentionMatches.forEach((item) => {
+      // Add text before this match
+      if (item.start > lastIndex) {
         parts.push(
           <span key={`text-${keyIndex++}`} className="text-current">
-            {text.substring(lastIndex, match.index)}
+            {text.substring(lastIndex, item.start)}
           </span>
         );
       }
-      // Add mention as styled span
-      parts.push(
-        <span key={`mention-${keyIndex++}`} className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-bold mx-0.5">
-          @{match[1]}
-        </span>
-      );
-      lastIndex = match.index + match[0].length;
-    }
+      
+      if (item.isMention) {
+        // Render mention
+        parts.push(
+          <span key={`mention-${keyIndex++}`} className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-bold mx-0.5">
+            {item.text}
+          </span>
+        );
+      } else {
+        // Render URL
+        parts.push(
+          <a
+            key={`url-${keyIndex++}`}
+            href={item.text}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline hover:text-primary/80 transition-colors"
+          >
+            {item.text}
+          </a>
+        );
+      }
+      
+      lastIndex = item.end;
+    });
     
     // Add remaining text
     if (lastIndex < text.length) {
@@ -114,11 +171,11 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
             "rounded-lg px-4 py-2 break-words",
             isOwn && "bg-white text-black border border-border",
             !isOwn && !isCleo && "bg-muted text-black",
-            isCleo && "bg-[hsl(var(--accent-pink))] text-black relative"
+            isCleo && "bg-card text-foreground border-l-4 border-[hsl(var(--accent-pink))] shadow-sm"
           )}
         >
           {isCleo && (
-            <div className="text-xs font-bold uppercase tracking-wide mb-1">Cleo</div>
+            <div className="text-xs font-bold uppercase tracking-wide mb-1 text-[hsl(var(--accent-pink))]">Cleo</div>
           )}
           
           {message.attachments && message.attachments.length > 0 && (
@@ -135,8 +192,8 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
             </div>
           )}
           
-          {/* Show thinking indicator for Cleo when message is empty */}
-          {!text && isCleo ? (
+          {/* Show thinking indicator for Cleo when message is empty AND actively thinking */}
+          {!text && isCleo && isCleoThinking ? (
             <div className="flex items-center gap-2">
               <span className="font-industrial text-sm">Cleo is thinking</span>
               <div className="flex gap-1">
