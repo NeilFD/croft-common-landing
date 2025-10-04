@@ -126,7 +126,7 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
   const highlightedMessage = useMemo(() => {
     if (!message) return null;
     
-    const mentionRegex = /@(\w+)/g;
+    const mentionRegex = /@[\w\s-]+/g;
     const parts = [];
     let lastIndex = 0;
     let match;
@@ -216,10 +216,12 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
           <div className="relative flex-1">
             {/* Highlight layer behind textarea */}
             <div 
-              className="absolute inset-0 px-3 py-2 text-sm font-industrial whitespace-pre-wrap break-words pointer-events-none rounded-md overflow-hidden"
+              className="absolute inset-0 text-sm font-industrial whitespace-pre-wrap break-words pointer-events-none"
               style={{ 
                 color: 'transparent',
-                lineHeight: '1.5'
+                padding: '0.5rem 0.75rem',
+                lineHeight: '1.5rem',
+                border: '1px solid transparent'
               }}
             >
               {highlightedMessage}
@@ -232,6 +234,10 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
               onKeyDown={handleKeyDown}
               placeholder="Type a message... (@Cleo for AI)"
               className="resize-none font-industrial relative bg-transparent"
+              style={{
+                padding: '0.5rem 0.75rem',
+                lineHeight: '1.5rem'
+              }}
               rows={1}
               disabled={sending}
             />
