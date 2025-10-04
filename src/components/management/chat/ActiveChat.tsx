@@ -7,16 +7,6 @@ import { ChatHeader } from './ChatHeader';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 
 interface Message {
   id: string;
@@ -51,10 +41,6 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   const [chatMembers, setChatMembers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCleoThinking, setIsCleoThinking] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<{ id: string; sender_name: string; body_text: string } | null>(null);
-  const [editingMessage, setEditingMessage] = useState<{ id: string; body_text: string } | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const prevMessageCountRef = useRef(0);
@@ -434,83 +420,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     }
   };
 
-  const handleCopyMessage = (message: Message) => {
-    navigator.clipboard.writeText(message.body_text || '');
-    toast.success('Message copied to clipboard');
-  };
-
-  const handleReplyToMessage = (message: Message) => {
-    setReplyingTo({
-      id: message.id,
-      sender_name: message.sender_name || 'Unknown',
-      body_text: message.body_text || '',
-    });
-    setEditingMessage(null);
-  };
-
-  const handleEditMessage = (message: Message) => {
-    setEditingMessage({
-      id: message.id,
-      body_text: message.body_text || '',
-    });
-    setReplyingTo(null);
-  };
-
-  const handleDeleteMessage = (message: Message) => {
-    setMessageToDelete(message);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!messageToDelete) return;
-
-    try {
-      const { data, error } = await supabase.rpc('soft_delete_message', {
-        _message_id: messageToDelete.id,
-      });
-
-      if (error) throw error;
-      if (!data) {
-        toast.error('You do not have permission to delete this message');
-        return;
-      }
-
-      toast.success('Message deleted');
-      setDeleteDialogOpen(false);
-      setMessageToDelete(null);
-      
-      // Reload messages to show deleted state
-      await loadMessages();
-    } catch (error) {
-      console.error('Error deleting message:', error);
-      toast.error('Failed to delete message');
-    }
-  };
-
-  const handleUpdateMessage = async (messageId: string, newText: string) => {
-    try {
-      const { data, error } = await supabase.rpc('update_message_text', {
-        _message_id: messageId,
-        _new_text: newText,
-      });
-
-      if (error) throw error;
-      if (!data) {
-        toast.error('You do not have permission to edit this message');
-        return;
-      }
-
-      toast.success('Message updated');
-      
-      // Reload messages to show edited state
-      await loadMessages();
-    } catch (error) {
-      console.error('Error updating message:', error);
-      toast.error('Failed to update message');
-    }
-  };
-
-  const handleSendMessage = async (text: string, image?: File, replyToId?: string) => {
+  const handleSendMessage = async (text: string, image?: File) => {
     if (!text.trim() && !image) return;
     
     const mentionsCleo = /@Cleo\b/i.test(text);
@@ -538,7 +448,6 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           chat_id: chatId,
           sender_id: managementUser?.user.id,
           body_text: text.trim() || '[Image]',
-          reply_to_message_id: replyToId || null,
         })
         .select()
         .single();
@@ -631,32 +540,15 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             </div>
           ) : (
             <>
-              {messages.map((message, index) => {
-                // Find reply-to message if exists
-                const replyToMessage = message.reply_to_message_id
-                  ? messages.find(m => m.id === message.reply_to_message_id)
-                  : null;
-
-                return (
-                  <MessageBubble
-                    key={message.id}
-                    message={message}
-                    replyToMessage={replyToMessage ? {
-                      sender_name: replyToMessage.sender_name || 'Unknown',
-                      body_text: replyToMessage.body_text || '',
-                    } : null}
-                    isOwn={message.sender_id === managementUser?.user.id}
-                    isCleo={message.is_cleo === true}
-                    isCleoThinking={message.is_cleo && index === messages.length - 1 && isCleoThinking}
-                    currentUserId={managementUser?.user.id}
-                    currentUserRole={managementUser?.role}
-                    onCopy={() => handleCopyMessage(message)}
-                    onReply={() => handleReplyToMessage(message)}
-                    onEdit={() => handleEditMessage(message)}
-                    onDelete={() => handleDeleteMessage(message)}
-                  />
-                );
-              })}
+              {messages.map((message, index) => (
+                <MessageBubble
+                  key={message.id}
+                  message={message}
+                  isOwn={message.sender_id === managementUser?.user.id}
+                  isCleo={message.is_cleo === true}
+                  isCleoThinking={message.is_cleo && index === messages.length - 1 && isCleoThinking}
+                />
+              ))}
               
               {/* Fallback thinking indicator if no empty Cleo bubble exists */}
               {isCleoThinking && !messages.some(m => m.is_cleo && !m.body_text) && (
@@ -685,40 +577,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         </div>
       </div>
 
-      <MessageInput 
-        onSend={handleSendMessage}
-        onUpdate={handleUpdateMessage}
-        chatMembers={chatMembers}
-        replyTo={replyingTo}
-        onCancelReply={() => setReplyingTo(null)}
-        editingMessage={editingMessage}
-        onCancelEdit={() => setEditingMessage(null)}
-      />
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="bg-popover">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Message?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {messageToDelete?.sender_id !== managementUser?.user.id && managementUser?.role === 'admin' ? (
-                <>
-                  <strong className="text-destructive">You are deleting another user's message.</strong>
-                  <br />
-                  This action cannot be undone. The message will be permanently deleted.
-                </>
-              ) : (
-                "This will permanently delete this message. This action cannot be undone."
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <MessageInput onSend={handleSendMessage} chatMembers={chatMembers} />
     </div>
   );
 };

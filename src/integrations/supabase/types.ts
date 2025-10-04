@@ -5811,10 +5811,6 @@ export type Database = {
         Args: { src: string }
         Returns: string
       }
-      soft_delete_message: {
-        Args: { _message_id: string }
-        Returns: boolean
-      }
       update_lead: {
         Args: { lead_id_param: string; patch: Json }
         Returns: undefined
@@ -5836,10 +5832,6 @@ export type Database = {
           booking_status: boolean
           user_email: string
         }
-        Returns: boolean
-      }
-      update_message_text: {
-        Args: { _message_id: string; _new_text: string }
         Returns: boolean
       }
       update_my_management_profile: {
