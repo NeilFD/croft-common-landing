@@ -742,7 +742,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                   const canDelete = isOwn || hasRole('admin');
                   
                   return (
-                    <div key={message.id} className="relative group">
+                    <div key={message.id} className="relative group pr-12">
                       <MessageActionsMenu
                         canEdit={canEdit}
                         canDelete={canDelete}
