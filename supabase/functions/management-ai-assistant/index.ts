@@ -1820,9 +1820,11 @@ serve(async (req) => {
           functionResult = { success: false, error: 'Search service error', status: searchResponse.status, details: errText.slice(0,300) };
         }
         if (functionResult?.success && functionResult?.answer) {
+          console.log('📎 Search sources received:', JSON.stringify(functionResult.sources));
           const sourcesText = Array.isArray(functionResult.sources) && functionResult.sources.length
             ? "\n\nSources:\n" + functionResult.sources.map((u: string, i: number) => `${i + 1}. ${u}`).join("\n")
             : '';
+          console.log('📋 Formatted sources text length:', sourcesText.length);
           const fullText = `${functionResult.answer}${sourcesText}`;
           const encoder = new TextEncoder();
           const stream = new ReadableStream({

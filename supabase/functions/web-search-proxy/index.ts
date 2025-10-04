@@ -153,12 +153,25 @@ serve(async (req) => {
     const searchData = await searchResponse.json();
     const answer = searchData.choices?.[0]?.message?.content || 'No results found';
 
-    // Extract source URLs from the answer (best-effort)
-    const urlRegex = /\bhttps?:\/\/[^\s)\]]+/g;
-    const sourcesArr: string[] = Array.from(new Set((answer.match(urlRegex) || []).map((u: string) => u.replace(/[.,)\]]+$/, '')))).slice(0, 5);
+    // Extract sources - Perplexity Sonar provides citations
+    let sourcesArr: string[] = [];
     
-    // Log successful search
-    console.log(`✅ Web search completed for: "${query}"`);
+    // First try to get citations from Perplexity's citations field
+    if (searchData.citations && Array.isArray(searchData.citations)) {
+      sourcesArr = searchData.citations.slice(0, 5);
+    }
+    
+    // Fallback: extract URLs from answer text if no citations provided
+    if (sourcesArr.length === 0) {
+      const urlRegex = /\bhttps?:\/\/[^\s)\]]+/g;
+      sourcesArr = Array.from(new Set((answer.match(urlRegex) || []).map((u: string) => u.replace(/[.,)\]]+$/, '')))).slice(0, 5);
+    }
+    
+    // Log successful search with sources count
+    console.log(`✅ Web search completed for: "${query}" - Found ${sourcesArr.length} sources`);
+    if (sourcesArr.length > 0) {
+      console.log(`📎 Sources: ${JSON.stringify(sourcesArr)}`)
+    }
     
     return new Response(
       JSON.stringify({
