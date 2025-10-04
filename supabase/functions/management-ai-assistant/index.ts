@@ -1819,7 +1819,14 @@ serve(async (req) => {
           console.error(`❌ web-search-proxy pre-call failed: ${searchResponse.status} ${errText.slice(0,300)}`);
           functionResult = { success: false, error: 'Search service error', status: searchResponse.status, details: errText.slice(0,300) };
         }
+        console.log('🔍 Function result keys:', Object.keys(functionResult || {}));
+        console.log('🔍 Function result:', JSON.stringify(functionResult).slice(0, 500));
+        console.log('🔍 Has success?:', !!functionResult?.success);
+        console.log('🔍 Has answer?:', !!functionResult?.answer);
+        console.log('🔍 Answer length:', functionResult?.answer?.length || 0);
+        
         if (functionResult?.success && functionResult?.answer) {
+          console.log('✅ Condition passed - processing sources');
           console.log('📎 Search sources received:', JSON.stringify(functionResult.sources));
           const sourcesText = Array.isArray(functionResult.sources) && functionResult.sources.length
             ? "\n\nSources:\n" + functionResult.sources.map((u: string, i: number) => `${i + 1}. ${u}`).join("\n")
