@@ -14,7 +14,6 @@ interface MessageActionsDropdownProps {
   onReply: () => void;
   onEdit?: () => void;
   onDelete: () => void;
-  messageLength: number;
 }
 
 export const MessageActionsDropdown = ({
@@ -24,13 +23,7 @@ export const MessageActionsDropdown = ({
   onReply,
   onEdit,
   onDelete,
-  messageLength,
 }: MessageActionsDropdownProps) => {
-  // Only show three-dot button for messages longer than 20 characters
-  if (messageLength < 20) {
-    return null;
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -42,7 +35,7 @@ export const MessageActionsDropdown = ({
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-48 bg-white dark:bg-gray-900 border-border" align="end">
+      <DropdownMenuContent className="w-48 bg-white dark:bg-gray-900 border-border z-[200]" align="end">
         <DropdownMenuItem onClick={onCopy}>
           <Copy className="mr-2 h-4 w-4" />
           Copy message

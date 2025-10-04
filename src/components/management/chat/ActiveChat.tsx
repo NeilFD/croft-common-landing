@@ -668,7 +668,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                   const canDelete = isOwn || hasRole('admin');
                   
                   return (
-                    <div key={message.id} className="relative group">
+                    <div key={message.id} className="relative group min-h-10 min-w-12">
                       <MessageActionsMenu
                         canEdit={canEdit}
                         canDelete={canDelete}
@@ -691,7 +691,6 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                         onReply={() => handleReplyToMessage(message)}
                         onEdit={canEdit ? () => handleEditMessage(message) : undefined}
                         onDelete={() => handleDeleteMessage(message)}
-                        messageLength={message.body_text?.length || 0}
                       />
                     </div>
                   );
