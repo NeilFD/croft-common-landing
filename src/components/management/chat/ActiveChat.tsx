@@ -5,6 +5,7 @@ import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { ChatHeader } from './ChatHeader';
 import { MessageActionsMenu } from './MessageActionsMenu';
+import { MessageActionsDropdown } from './MessageActionsDropdown';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -643,32 +644,31 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                   const canDelete = isOwn || hasRole('admin');
                   
                   return (
-                    <MessageBubble
-                      key={message.id}
-                      message={message}
-                      isOwn={isOwn}
-                      isCleo={message.is_cleo === true}
-                      isCleoThinking={message.is_cleo && index === messages.filter(m => !m.deleted_at).length - 1 && isCleoThinking}
-                      contextMenuTrigger={
-                        <MessageActionsMenu
-                          canEdit={canEdit}
-                          canDelete={canDelete}
-                          onCopy={() => handleCopyMessage(message)}
-                          onReply={() => handleReplyToMessage(message)}
-                          onEdit={canEdit ? () => handleEditMessage(message) : undefined}
-                          onDelete={() => handleDeleteMessage(message)}
-                        >
-                          <div>
-                            <MessageBubble
-                              message={message}
-                              isOwn={isOwn}
-                              isCleo={message.is_cleo === true}
-                              isCleoThinking={message.is_cleo && index === messages.filter(m => !m.deleted_at).length - 1 && isCleoThinking}
-                            />
-                          </div>
-                        </MessageActionsMenu>
-                      }
-                    />
+                    <div key={message.id} className="relative group">
+                      <MessageActionsMenu
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onCopy={() => handleCopyMessage(message)}
+                        onReply={() => handleReplyToMessage(message)}
+                        onEdit={canEdit ? () => handleEditMessage(message) : undefined}
+                        onDelete={() => handleDeleteMessage(message)}
+                      >
+                        <MessageBubble
+                          message={message}
+                          isOwn={isOwn}
+                          isCleo={message.is_cleo === true}
+                          isCleoThinking={message.is_cleo && index === messages.filter(m => !m.deleted_at).length - 1 && isCleoThinking}
+                        />
+                      </MessageActionsMenu>
+                      <MessageActionsDropdown
+                        canEdit={canEdit}
+                        canDelete={canDelete}
+                        onCopy={() => handleCopyMessage(message)}
+                        onReply={() => handleReplyToMessage(message)}
+                        onEdit={canEdit ? () => handleEditMessage(message) : undefined}
+                        onDelete={() => handleDeleteMessage(message)}
+                      />
+                    </div>
                   );
                 })}
               
