@@ -529,11 +529,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                       // Treat BEO links as internal
                       const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && normalizedUrl.includes('/beo/');
 
-                      // Deduplicate clickable URLs per message
+                      // Track seen URLs but always render them as clickable links in message body
                       const key = normalizedUrl.toLowerCase();
-                      if (seenUrls.has(key)) {
-                        return <span>{children}</span>;
-                      }
                       seenUrls.add(key);
 
                       const linkHref = normalizedUrl;
