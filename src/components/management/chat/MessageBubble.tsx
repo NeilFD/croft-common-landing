@@ -155,54 +155,79 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   // Track URLs we've already rendered as clickable to avoid duplicates per message
   const seenUrls = useMemo(() => new Set<string>(), [message.id]);
 
-  // Remove duplicate "Sources:" sections - keep only the first one
+  // Unwrap fenced code blocks that start with a "Sources:" header so links are clickable
+  const unwrapSourcesFences = (text: string) => {
+    return text.replace(/```([\s\S]*?)```/g, (full, inner) => {
+      const lines = String(inner).split('\n');
+      const firstNonEmpty = lines.findIndex((l) => l.trim() !== '');
+      if (firstNonEmpty === -1) return full;
+      if (/^Sources?:\s*$/i.test(lines[firstNonEmpty].trim())) {
+        // Unwrap this fenced block
+        return lines.slice(firstNonEmpty).join('\n');
+      }
+      return full;
+    });
+  };
+
+  // Remove duplicate "Sources:" sections - keep only the first one (bullet/indent aware) and de-duplicate URLs
   const keepFirstSourcesBlock = (text: string) => {
     const lines = text.split('\n');
-    let firstSourcesIndex = -1;
-    const result: string[] = [];
-    let inSourcesBlock = false;
-    let sourcesSectionCount = 0;
+    const out: string[] = [];
+    let sourcesCount = 0;
+    let inSources = false;
+    const keptUrls = new Set<string>();
+
+    const normalizeUrlLine = (line: string) => {
+      // Strip bullets, numbering and extra indentation
+      let s = line.replace(/^\s*(?:[-*•]\s*)?(?:\d+\.\s*)?/, '').trim();
+      // Remove trailing punctuation that often sticks to URLs
+      s = s.replace(/[,.;:)\]]+$/, '');
+      // Ensure it's URL-ish
+      const urlish = /^(?:https?:\/\/|www\.)\S+|^[A-Za-z0-9][A-Za-z0-9-]*(?:\.[A-Za-z0-9-]+)+\S*$/.test(s);
+      return urlish ? s : null;
+    };
 
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const isSourcesLine = /^Sources?:/i.test(line.trim());
+      const raw = lines[i];
+      const trimmed = raw.trim();
+      const isHeader = /^\s*Sources?:\s*$/i.test(trimmed);
 
-      if (isSourcesLine) {
-        sourcesSectionCount++;
-        if (sourcesSectionCount === 1) {
-          // Keep the first Sources section
-          firstSourcesIndex = i;
-          result.push(line);
-          inSourcesBlock = true;
-        } else {
-          // Skip subsequent Sources sections
-          inSourcesBlock = true;
+      if (isHeader) {
+        sourcesCount++;
+        if (sourcesCount === 1) {
+          out.push('Sources:');
         }
-      } else if (inSourcesBlock) {
-        // Check if this line is a URL (part of sources)
-        const isUrlLine = /^(?:https?:\/\/|www\.)/i.test(line.trim());
-        if (isUrlLine && sourcesSectionCount === 1) {
-          result.push(line);
-        } else if (!isUrlLine || line.trim() === '') {
-          // End of sources block
-          inSourcesBlock = false;
-          if (sourcesSectionCount > 1) {
-            // Skip empty lines after duplicate sources
-            continue;
-          }
-          result.push(line);
-        }
-      } else {
-        result.push(line);
+        inSources = true; // enter sources block for both first and subsequent so we can skip their URL lines
+        continue;
       }
+
+      if (inSources) {
+        const norm = normalizeUrlLine(raw);
+        if (norm) {
+          if (sourcesCount === 1) {
+            const key = norm.toLowerCase();
+            if (!keptUrls.has(key)) {
+              keptUrls.add(key);
+              out.push(norm);
+            }
+          }
+          // Skip URL lines for subsequent sources blocks
+          continue;
+        }
+        // Non-URL or blank ends the sources block
+        inSources = false;
+        // For first sources block, fall-through to emit this non-URL line
+      }
+
+      // Normal line outside sources (or after exiting the first block)
+      out.push(raw);
     }
 
-    const cleaned = result.join('\n');
-    if (sourcesSectionCount > 1) {
+    if (sourcesCount > 1) {
       // eslint-disable-next-line no-console
-      console.info('keepFirstSourcesBlock: removed', sourcesSectionCount - 1, 'duplicate Sources sections');
+      console.info('keepFirstSourcesBlock: removed', sourcesCount - 1, 'duplicate Sources sections');
     }
-    return cleaned;
+    return out.join('\n');
   };
 
   // Auto-linkify URLs for Cleo markdown content - matches both http(s):// and bare domains
@@ -225,7 +250,11 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   };
 
   // Process content for better markdown rendering
-  let processedText = isCleo ? keepFirstSourcesBlock(text) : text;
+  let processedText = text;
+  if (isCleo) {
+    // Unwrap fenced "Sources:" blocks, keep only first Sources, then linkify
+    processedText = keepFirstSourcesBlock(unwrapSourcesFences(text));
+  }
   const processedContent = linkifyContent(processedText)
     .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with 2
     .replace(/([^\n])\n([^\n])/g, '$1  \n$2'); // Convert single newlines to markdown line breaks
