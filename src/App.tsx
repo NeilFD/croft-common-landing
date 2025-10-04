@@ -39,6 +39,7 @@ const Branding = lazy(() => import("./pages/Branding"));
 const CommonGood = lazy(() => import("./pages/CommonGood"));
 const CommonGoodMessage = lazy(() => import("./pages/CommonGoodMessage"));
 const ClickRedirect = lazy(() => import("./pages/ClickRedirect"));
+const ExtRedirect = lazy(() => import("./pages/ExtRedirect"));
 const CroftCommonDateTime = lazy(() => import("./pages/CroftCommonDateTime"));
 const Book = lazy(() => import("./pages/Book"));
 const ProposalRedirect = lazy(() => import("./pages/ProposalRedirect"));
@@ -314,6 +315,7 @@ const App = () => {
                       <Route path="/profile" element={<MemberProfile />} />
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/uncommon-standards" element={<UncommonStandards />} />
+                      <Route path="/ext" element={<ExtRedirect />} />
                        
                         {/* Management Routes */}
                         <Route path="/management/login" element={<ManagementLogin />} />

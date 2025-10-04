@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { Check, CheckCheck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ReactMarkdown from 'react-markdown';
+import { isInPreviewIframe } from '@/lib/env';
 
 interface MessageBubbleProps {
   message: {
@@ -142,7 +143,7 @@ function keyOpenExternal(e: React.KeyboardEvent, href?: string) {
 
 export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
-  const linkTarget = typeof window !== 'undefined' && window.top !== window ? '_top' : '_blank';
+  const inPreview = isInPreviewIframe();
   
   // Auto-linkify URLs for Cleo markdown content
   const linkifyContent = (text: string) => {
@@ -188,16 +189,17 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         // Check if it's a BEO viewer link
         const isBeoLink = url.includes('www.croftcommontest.com') && url.includes('/beo/');
         
+        // In preview iframe, use redirector; otherwise use normal target
+        const linkHref = inPreview && !isBeoLink ? `/ext?u=${encodeURIComponent(url)}` : url;
+        const linkTarget = inPreview && !isBeoLink ? '_self' : (isBeoLink ? '_self' : '_top');
+        
         return (
           <span key={i}>
             <a
-              href={url}
+              href={linkHref}
               target={linkTarget}
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
-              onClick={(e) => openExternal(e, url)}
-              onAuxClick={(e) => handleAuxOpen(e, url)}
-              onKeyDown={(e) => keyOpenExternal(e, url)}
             >
               {isBeoLink ? 'View BEO' : url}
             </a>
@@ -292,19 +294,25 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     li: ({ children }) => <li className="leading-relaxed">{children}</li>,
                     strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
                     em: ({ children }) => <em className="italic text-foreground">{children}</em>,
-                    a: ({ href, children }) => (
-                      <a 
-                        href={href} 
-                        target={linkTarget} 
-                        rel="noopener noreferrer"
-                        className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                        onClick={(e) => openExternal(e, href)}
-                        onAuxClick={(e) => handleAuxOpen(e, href)}
-                        onKeyDown={(e) => keyOpenExternal(e, href)}
-                      >
-                        {children}
-                      </a>
-                    ),
+                    a: ({ href, children }) => {
+                      if (!href) return <span>{children}</span>;
+                      const isBeoLink = href.includes('/beo/');
+                      
+                      // In preview iframe, use redirector; otherwise use normal target
+                      const linkHref = inPreview && !isBeoLink ? `/ext?u=${encodeURIComponent(href)}` : href;
+                      const linkTarget = inPreview && !isBeoLink ? '_self' : (isBeoLink ? '_self' : '_top');
+                      
+                      return (
+                        <a 
+                          href={linkHref} 
+                          target={linkTarget} 
+                          rel="noopener noreferrer"
+                          className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                        >
+                          {children}
+                        </a>
+                      );
+                    },
                   }}
                 >
                   {processedContent}
