@@ -1789,7 +1789,7 @@ serve(async (req) => {
     const lastUserMsg = Array.isArray(filteredMessages)
       ? [...filteredMessages].reverse().find((m: any) => m?.role === 'user' && typeof m?.content === 'string')
       : null;
-    const shouldForceInternetSearch = !!(lastUserMsg && /\b(weather|forecast|temperature|climate|news|exchange rate|currency|bank holiday|public holiday|regulation|law|compliance)\b/i.test(lastUserMsg.content));
+    const shouldForceInternetSearch = !!(lastUserMsg && /\b(latest|today|now|current|live|breaking|weather|forecast|temperature|climate|news|headline|exchange\s*rate|currency|price|stock|score|traffic|train|timetable|opening\s*hours|bank\s*holiday|public\s*holiday|interest\s*rate|bank\s*rate|inflation|cpi|gdp|official|updated|as\s*of)\b/i.test(lastUserMsg.content));
     if (shouldForceInternetSearch) {
       console.log('🧭 Forcing search_internet tool for query:', lastUserMsg.content.slice(0, 120));
     }
@@ -1816,6 +1816,23 @@ serve(async (req) => {
           console.error(`❌ web-search-proxy pre-call failed: ${searchResponse.status} ${errText.slice(0,300)}`);
           functionResult = { success: false, error: 'Search service error', status: searchResponse.status, details: errText.slice(0,300) };
         }
+        if (functionResult?.success && functionResult?.answer) {
+          const sourcesText = Array.isArray(functionResult.sources) && functionResult.sources.length
+            ? "\n\nSources:\n" + functionResult.sources.map((u: string, i: number) => `${i + 1}. ${u}`).join("\n")
+            : '';
+          const fullText = `${functionResult.answer}${sourcesText}`;
+          const encoder = new TextEncoder();
+          const stream = new ReadableStream({
+            start(controller) {
+              const payload = { choices: [{ index: 0, delta: { content: fullText } }] };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(payload)}\n`));
+              controller.enqueue(encoder.encode(`data: [DONE]\n`));
+              controller.close();
+            }
+          });
+          return new Response(stream, { headers: { ...corsHeaders, 'Content-Type': 'text/event-stream' } });
+        }
+        // Fallback to AI rewrite only if we didn't get a usable answer
         const toolCallId = 'call_' + Date.now();
         const finalMessages = [
           ...filteredMessages,

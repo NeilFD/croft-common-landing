@@ -38,22 +38,7 @@ function isQueryAppropriate(query: string): { appropriate: boolean; reason?: str
     }
   }
   
-  // Check if query matches work-appropriate categories
-  const hasWorkCategory = WORK_APPROPRIATE_CATEGORIES.some(category => 
-    lowerQuery.includes(category)
-  );
-  
-  // If no work category detected but query seems like entertainment/gossip
-  const entertainmentTerms = ['funny', 'video', 'meme', 'game', 'movie', 'tv show', 'celebrity'];
-  const seemsEntertainment = entertainmentTerms.some(term => lowerQuery.includes(term));
-  
-  if (seemsEntertainment && !hasWorkCategory) {
-    return { 
-      appropriate: false, 
-      reason: 'I focus on work-related queries. I can help with weather, business news, regulations, and factual information.' 
-    };
-  }
-  
+  // Relaxed filtering: allow all queries except those with blocked keywords
   return { appropriate: true };
 }
 
@@ -138,15 +123,19 @@ serve(async (req) => {
         'X-Title': 'Croft Common Management Assistant'
       },
       body: JSON.stringify({
-        model: 'perplexity/sonar',
+        model: 'perplexity/sonar-pro',
         messages: [
           {
+            role: 'system',
+            content: 'You are a live web research assistant. Use current information from the internet. Respond in British English with UK formats (°C, £, dd/mm/yyyy). Structure the answer as: 3–6 clear bullet points followed by a 1–2 sentence summary. Include an "As at" timestamp when relevant. Always include 3–5 source URLs at the end. Be precise and concise.'
+          },
+          {
             role: 'user',
-            content: `Provide a concise, factual answer to: ${query}. Focus on current, accurate information. Include the date of information if relevant.`
+            content: query
           }
         ],
-        max_tokens: 500,
-        temperature: 0.3
+        max_tokens: 1000,
+        temperature: 0.2
       })
     });
 
@@ -166,15 +155,19 @@ serve(async (req) => {
     const searchData = await searchResponse.json();
     const answer = searchData.choices?.[0]?.message?.content || 'No results found';
 
+    // Extract source URLs from the answer (best-effort)
+    const urlRegex = /\bhttps?:\/\/[^\s)\]]+/g;
+    const sourcesArr: string[] = Array.from(new Set((answer.match(urlRegex) || []).map((u: string) => u.replace(/[.,)\]]+$/, '')))).slice(0, 5);
+    
     // Log successful search
     console.log(`✅ Web search completed for: "${query}"`);
-
+    
     return new Response(
       JSON.stringify({
         query,
         answer,
         timestamp: new Date().toISOString(),
-        sources: 'Internet search via Perplexity'
+        sources: sourcesArr
       }),
       { 
         status: 200,
