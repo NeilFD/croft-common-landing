@@ -155,15 +155,65 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   // Track URLs we've already rendered as clickable to avoid duplicates per message
   const seenUrls = useMemo(() => new Set<string>(), [message.id]);
 
+  // Remove duplicate "Sources:" sections - keep only the first one
+  const keepFirstSourcesBlock = (text: string) => {
+    const lines = text.split('\n');
+    let firstSourcesIndex = -1;
+    const result: string[] = [];
+    let inSourcesBlock = false;
+    let sourcesSectionCount = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const isSourcesLine = /^Sources?:/i.test(line.trim());
+
+      if (isSourcesLine) {
+        sourcesSectionCount++;
+        if (sourcesSectionCount === 1) {
+          // Keep the first Sources section
+          firstSourcesIndex = i;
+          result.push(line);
+          inSourcesBlock = true;
+        } else {
+          // Skip subsequent Sources sections
+          inSourcesBlock = true;
+        }
+      } else if (inSourcesBlock) {
+        // Check if this line is a URL (part of sources)
+        const isUrlLine = /^(?:https?:\/\/|www\.)/i.test(line.trim());
+        if (isUrlLine && sourcesSectionCount === 1) {
+          result.push(line);
+        } else if (!isUrlLine || line.trim() === '') {
+          // End of sources block
+          inSourcesBlock = false;
+          if (sourcesSectionCount > 1) {
+            // Skip empty lines after duplicate sources
+            continue;
+          }
+          result.push(line);
+        }
+      } else {
+        result.push(line);
+      }
+    }
+
+    const cleaned = result.join('\n');
+    if (sourcesSectionCount > 1) {
+      // eslint-disable-next-line no-console
+      console.info('keepFirstSourcesBlock: removed', sourcesSectionCount - 1, 'duplicate Sources sections');
+    }
+    return cleaned;
+  };
+
   // Auto-linkify URLs for Cleo markdown content - matches both http(s):// and bare domains
+  // Avoids double-wrapping URLs already in markdown format
   const linkifyContent = (text: string) => {
+    // Don't linkify URLs that are already in markdown link format [text](url)
     return text.replace(
-      /(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s)]*)*/g,
+      /(?<!\[)(?<!\]\()(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9][a-zA-Z0-9-]*(?:\.[a-zA-Z]{2,})+(?:\/[^\s)\]]*)*(?!\))/g,
       (match) => {
         // Normalize URL: add https:// if missing
         const url = match.startsWith('http://') || match.startsWith('https://') ? match : `https://${match}`;
-        // eslint-disable-next-line no-console
-        console.info('linkifyContent: detected URL', match, '-> normalized to', url);
         
         // For BEO viewer routes, show a cleaner display name
         if (url.includes('/beo/view?f=') || (url.includes('beo-documents') && url.includes('.pdf')) || url.includes('proxy-beo-pdf')) {
@@ -175,7 +225,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
   };
 
   // Process content for better markdown rendering
-  const processedContent = linkifyContent(text)
+  let processedText = isCleo ? keepFirstSourcesBlock(text) : text;
+  const processedContent = linkifyContent(processedText)
     .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with 2
     .replace(/([^\n])\n([^\n])/g, '$1  \n$2'); // Convert single newlines to markdown line breaks
   
