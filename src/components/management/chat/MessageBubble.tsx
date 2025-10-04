@@ -63,7 +63,7 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
   const renderTextWithMentions = (text: string) => {
     if (isCleo) return text;
     
-    const mentionRegex = /@([A-Za-z][A-Za-z0-9.'-]*(?:\s+[A-Za-z][A-Za-z0-9.'-]*)*)/g;
+    const mentionRegex = /@([A-Z][A-Za-z0-9.'-]*(?:\s+[A-Z][A-Za-z0-9.'-]*)*)/g;
     const parts = [];
     let lastIndex = 0;
     let match;
