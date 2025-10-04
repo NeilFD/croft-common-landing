@@ -7,7 +7,7 @@ import remarkGfm from 'remark-gfm';
 import { isInPreviewIframe } from '@/lib/env';
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
-
+import { supabase } from '@/integrations/supabase/client';
 interface MessageBubbleProps {
   message: {
     id: string;
@@ -141,6 +141,60 @@ function keyOpenExternal(e: React.KeyboardEvent, href?: string) {
       // eslint-disable-next-line no-console
       console.warn('Failed to open link via keyboard.', href);
     }
+  }
+}
+
+async function openBeoInNewTab(rawUrl: string) {
+  try {
+    let fileName: string | undefined;
+
+    // Try to extract from query params (?f= or ?fileName=)
+    try {
+      const u = new URL(rawUrl);
+      const f = u.searchParams.get('f') || u.searchParams.get('fileName');
+      if (f) fileName = f;
+    } catch {}
+
+    // Try to extract from legacy public path
+    if (!fileName) {
+      const marker = '/beo-documents/';
+      const idx = rawUrl.indexOf(marker);
+      if (idx !== -1) {
+        fileName = rawUrl.substring(idx + marker.length);
+      }
+    }
+
+    // Get a signed URL from the Edge Function (accepts fileName or pdfUrl)
+    const { data } = await supabase.functions.invoke('get-beo-signed-url', {
+      body: fileName ? { fileName } : { pdfUrl: rawUrl }
+    });
+
+    const targetUrl: string = data?.signedUrl || rawUrl;
+
+    // Open robustly (top window first to bypass iframe popup blockers)
+    try {
+      if (window.top && window.top !== window) {
+        const wTop = (window.top as Window).open(targetUrl, '_blank', 'noopener,noreferrer');
+        if (wTop) return;
+      }
+    } catch {}
+
+    const w = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    if (!w) {
+      const a = document.createElement('a');
+      a.href = targetUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('openBeoInNewTab failed, falling back to raw URL:', err);
+    try {
+      window.open(rawUrl, '_blank', 'noopener,noreferrer');
+    } catch {}
   }
 }
 
@@ -395,6 +449,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               target="_blank"
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
+              onClick={(e) => {
+                if (isBeoLink) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  openBeoInNewTab(normalizedUrl);
+                }
+              }}
             >
               {isBeoLink ? 'View BEO' : displayText}
             </a>
@@ -509,6 +570,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                          onClick={(e) => {
+                            if (isBeoLink) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              openBeoInNewTab(normalizedUrl);
+                            }
+                          }}
                         >
                           {children}
                         </a>
@@ -532,6 +600,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                               target="_blank"
                               rel="noopener noreferrer"
                               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                              onClick={(e) => {
+                                if (isBeoLink) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  openBeoInNewTab(u);
+                                }
+                              }}
                             >
                               {isBeoLink ? 'View BEO' : u}
                             </a>
