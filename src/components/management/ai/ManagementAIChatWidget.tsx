@@ -42,6 +42,8 @@ export const ManagementAIChatWidget = () => {
   const touchTimerRef = useRef<NodeJS.Timeout>();
   const globalListenersRef = useRef(false);
   const dragPreventClickRef = useRef(false);
+  const miniPointerStartRef = useRef<{ x: number; y: number } | null>(null);
+  const miniDragThresholdMet = useRef(false);
   const { isRecording, transcript, isSupported, startRecording, stopRecording, resetTranscript } = useVoiceRecognition();
 
   // Clamp position within viewport bounds
@@ -231,7 +233,6 @@ export const ManagementAIChatWidget = () => {
 
   // Minimized button drag handlers
   const handleMinimizedPointerDown = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
-    e.preventDefault();
     console.debug('CLEO-DRAG: MINI-Down', {
       pointerType: e.pointerType,
       button: e.button,
@@ -246,14 +247,20 @@ export const ManagementAIChatWidget = () => {
     }
 
     if (e.pointerType === 'mouse') {
-      startDrag(e.clientX, e.clientY, e.pointerType);
+      // Don't start drag immediately - wait for movement
+      miniPointerStartRef.current = { x: e.clientX, y: e.clientY };
+      miniDragThresholdMet.current = false;
+      dragPreventClickRef.current = false;
       try {
         (e.currentTarget as any).setPointerCapture?.(e.pointerId);
       } catch {}
     } else if (e.pointerType === 'touch') {
       const pointerId = e.pointerId;
+      miniPointerStartRef.current = { x: e.clientX, y: e.clientY };
+      miniDragThresholdMet.current = false;
       touchTimerRef.current = setTimeout(() => {
         startDrag(e.clientX, e.clientY, e.pointerType);
+        miniDragThresholdMet.current = true;
         try {
           (e.currentTarget as any).setPointerCapture?.(pointerId);
         } catch {}
@@ -261,7 +268,48 @@ export const ManagementAIChatWidget = () => {
     }
   }, [startDrag]);
 
+  const handleMinimizedPointerMove = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    if (!miniPointerStartRef.current) return;
+
+    const dx = e.clientX - miniPointerStartRef.current.x;
+    const dy = e.clientY - miniPointerStartRef.current.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+
+    // Start drag if moved more than 5px
+    if (distance > 5 && !miniDragThresholdMet.current) {
+      e.preventDefault();
+      console.debug('CLEO-DRAG: MINI-Threshold met, starting drag');
+      miniDragThresholdMet.current = true;
+      dragPreventClickRef.current = true;
+      startDrag(miniPointerStartRef.current.x, miniPointerStartRef.current.y, e.pointerType);
+    }
+
+    // If dragging, handle movement
+    if (miniDragThresholdMet.current && isDraggingRef.current) {
+      e.preventDefault();
+      globalPointerMove(e as any);
+    }
+  }, [startDrag, globalPointerMove]);
+
+  const handleMinimizedPointerUp = useCallback((e: React.PointerEvent<HTMLButtonElement>) => {
+    console.debug('CLEO-DRAG: MINI-Up', { dragPreventClick: dragPreventClickRef.current });
+    
+    // Clear touch timer if exists
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = undefined;
+    }
+
+    miniPointerStartRef.current = null;
+    miniDragThresholdMet.current = false;
+
+    try {
+      (e.currentTarget as any).releasePointerCapture?.(e.pointerId);
+    } catch {}
+  }, []);
+
   const handleMinimizedClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    console.debug('CLEO-DRAG: MINI-Click', { dragPreventClick: dragPreventClickRef.current });
     if (dragPreventClickRef.current) {
       e.preventDefault();
       e.stopPropagation();
@@ -368,7 +416,7 @@ export const ManagementAIChatWidget = () => {
         onClick={handleMinimizedClick}
         className={cn(
           "fixed h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all z-50 bg-accent-pink border-2 border-foreground hover:bg-accent-pink-dark",
-          isDragging ? "cursor-grabbing" : "cursor-grab"
+          isDragging ? "cursor-grabbing" : "cursor-pointer"
         )}
         size="icon"
         style={{
@@ -378,12 +426,9 @@ export const ManagementAIChatWidget = () => {
           WebkitTouchCallout: 'none',
         }}
         onPointerDown={handleMinimizedPointerDown}
-        onPointerUp={(e) => {
-          try { (e.currentTarget as any).releasePointerCapture?.(e.pointerId); } catch {}
-        }}
-        onPointerCancel={(e) => {
-          try { (e.currentTarget as any).releasePointerCapture?.(e.pointerId); } catch {}
-        }}
+        onPointerMove={handleMinimizedPointerMove}
+        onPointerUp={handleMinimizedPointerUp}
+        onPointerCancel={handleMinimizedPointerUp}
         title="Open Cleo"
       >
         <Bot className="h-6 w-6 text-foreground" />
