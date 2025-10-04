@@ -83,7 +83,11 @@ export const ManagementAIChatWidget = () => {
 
   // Handle pointer-based dragging
   const handlePointerDown = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    if (e.button !== 0) return; // Only left mouse button
+    // Prevent default browser behavior
+    e.preventDefault();
+    
+    // Relax check for touchpads: allow button===0 OR buttons===1 for mouse/touchpad
+    if (e.pointerType === 'mouse' && e.button !== 0 && e.buttons !== 1) return;
     
     const target = e.target as HTMLElement;
     if (target.closest('button')) return; // Don't drag when clicking buttons
@@ -282,7 +286,7 @@ export const ManagementAIChatWidget = () => {
           isDragging ? "cursor-grabbing" : "cursor-grab"
         )}
         style={{
-          touchAction: isDragging ? 'none' : 'auto',
+          touchAction: 'none',
           WebkitTouchCallout: 'none',
         }}
         onPointerDown={handlePointerDown}
