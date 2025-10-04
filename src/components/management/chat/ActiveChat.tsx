@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageBubble } from './MessageBubble';
 import { MessageInput } from './MessageInput';
 import { ChatHeader } from './ChatHeader';
@@ -133,14 +132,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     prevMessageCountRef.current = messageCount;
 
     if (isNewMessage && scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-        const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
-        
-        if (isNearBottom) {
-          scrollToBottom();
-        }
+      const el = scrollAreaRef.current;
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      if (isNearBottom) {
+        scrollToBottom();
       }
     }
   }, [messages]);
@@ -249,8 +245,13 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         read_by: [],
       }));
 
+      // Sort by created_at ascending
+      const sorted = [...basicMessages].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+
       // Enrich with sender display info
-      const enriched = await Promise.all(basicMessages.map(loadUserInfo));
+      const enriched = await Promise.all(sorted.map(loadUserInfo));
       console.info('ActiveChat.loadMessages: enriched count =', enriched.length);
       setMessages(enriched);
     } catch (error) {
@@ -273,9 +274,11 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   };
 
   const scrollToBottom = () => {
-    setTimeout(() => {
-      scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    const el = scrollAreaRef.current;
+    if (!el) return;
+    requestAnimationFrame(() => {
+      el.scrollTop = el.scrollHeight;
+    });
   };
 
   const handleCleoResponse = async (userMessageText: string, chatId: string) => {
@@ -519,7 +522,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         onChatDeleted={() => onBack?.()}
       />
 
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <div ref={scrollAreaRef} className="flex-1 p-4 overflow-y-auto">
         <div className="space-y-4">
           {messages.length === 0 && !loading ? (
             <div className="flex items-center justify-center h-full py-12">
@@ -555,7 +558,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           )}
           <div ref={scrollRef} />
         </div>
-      </ScrollArea>
+      </div>
 
       <MessageInput onSend={handleSendMessage} />
     </div>

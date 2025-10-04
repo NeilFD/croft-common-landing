@@ -84,11 +84,11 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
           
           {message.attachments && message.attachments.length > 0 && (
             <div className="mb-2 space-y-2">
-              {message.attachments.map((att) => (
+              {message.attachments.map((att, idx) => (
                 <img
-                  key={att.id}
+                  key={att.id ?? `${att.url}-${idx}`}
                   src={att.url}
-                  alt="Attachment"
+                  alt="Chat attachment image"
                   className="rounded-md max-w-full h-auto max-h-64 object-contain cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => window.open(att.url, '_blank')}
                 />
