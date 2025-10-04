@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useIOSDetection } from '@/hooks/useIOSDetection';
 
 interface BeoLinkProps {
   fileName: string;
@@ -9,8 +10,9 @@ interface BeoLinkProps {
 
 export const BeoLink = ({ fileName, children, className }: BeoLinkProps) => {
   const handledRef = useRef(false);
+  const { isIOSSafari } = useIOSDetection();
 
-  const handleOpen = async (e: React.PointerEvent<HTMLAnchorElement> | React.MouseEvent<HTMLAnchorElement>) => {
+  const handleOpen = async (e: React.TouchEvent<HTMLAnchorElement> | React.PointerEvent<HTMLAnchorElement> | React.MouseEvent<HTMLAnchorElement>) => {
     // Prevent handling the same click twice
     if (handledRef.current) {
       handledRef.current = false;
@@ -30,7 +32,7 @@ export const BeoLink = ({ fileName, children, className }: BeoLinkProps) => {
     // Reset flag after a short delay
     setTimeout(() => { handledRef.current = false; }, 100);
 
-    console.log('[BeoLink] Opening BEO with fileName:', fileName);
+    console.log('[BeoLink] Opening BEO with fileName:', fileName, 'Event type:', e.type, 'iOS Safari:', isIOSSafari);
 
     // Synchronously pre-open blank tab to bypass popup blockers
     const newTab = window.open('about:blank', '_blank', 'noopener,noreferrer');
@@ -72,8 +74,10 @@ export const BeoLink = ({ fileName, children, className }: BeoLinkProps) => {
       rel="noopener noreferrer"
       data-beo
       className={className}
-      onPointerDown={handleOpen}
+      onTouchEnd={isIOSSafari ? handleOpen : undefined}
+      onPointerDown={isIOSSafari ? undefined : handleOpen}
       onClick={handleOpen}
+      style={{ touchAction: 'manipulation' }}
       role="link"
       aria-label="Open BEO PDF in new tab"
     >
