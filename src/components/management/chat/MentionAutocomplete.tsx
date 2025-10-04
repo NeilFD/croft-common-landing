@@ -56,12 +56,7 @@ export const MentionAutocomplete = ({
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        top: `${position.top}px`,
-        left: `${position.left}px`,
-        zIndex: 50,
-      }}
+      className="absolute bottom-full mb-2 left-0 z-50"
     >
       <div className="w-64 rounded-md border bg-popover shadow-md">
         <Command className="bg-transparent">

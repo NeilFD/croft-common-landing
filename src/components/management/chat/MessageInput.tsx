@@ -65,12 +65,11 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
         setMentionStartPos(lastAtSymbol);
         setShowMentions(true);
         
-        // Calculate cursor position for popup
+        // Calculate cursor position for popup (relative to container)
         if (textareaRef.current) {
-          const rect = textareaRef.current.getBoundingClientRect();
           setCursorPosition({
-            top: rect.top - 200, // Show above the textarea
-            left: rect.left,
+            top: -8, // Position above the input
+            left: 0,
           });
         }
       } else {
@@ -124,7 +123,7 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
   };
 
   return (
-    <>
+    <div className="relative">
       <MentionAutocomplete
         query={mentionQuery}
         chatMembers={chatMembers}
@@ -190,6 +189,6 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
         </Button>
         </div>
       </div>
-    </>
+    </div>
   );
 };
