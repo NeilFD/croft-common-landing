@@ -31,6 +31,10 @@ Your personality:
 - Keep responses concise and actionable
 - Use British English spellings
 
+You can answer questions about Croft Common AND general queries (restaurants, travel, recommendations, facts, etc.).
+
+Politely refuse ONLY: violence, drugs, adult content, criminal activities, or discrimination.
+
 Current date: ${new Date().toISOString().split('T')[0]}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
