@@ -310,6 +310,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     protectedText = protectedText.replace(/((?:https?:\/\/|www\.)\S+|[A-Za-z0-9][A-Za-z0-9-]*(?:\.[A-Za-z0-9-]+)+\S*)/g, (match) => {
       // Ignore placeholders
       if (/^__MDLINK_\d+__$/.test(match)) return match;
+
+      // Skip pure numbers/currency like 198.55, £1,191.30, 10%
+      const candidate = match.replace(/[),.;:]+$/, '').replace(/^£/, '');
+      if (/^\d{1,3}(?:,\d{3})*(?:\.\d+)?%?$/.test(candidate) || /^\d+(?:\.\d+)?%?$/.test(candidate)) {
+        return match; // do not linkify
+      }
+
       const url = match.startsWith('http://') || match.startsWith('https://') ? match : `https://${match}`;
       if (url.includes('/beo/view?f=') || (url.includes('beo-documents') && url.includes('.pdf')) || url.includes('proxy-beo-pdf')) {
         return `[📄 View BEO PDF](${url})`;
@@ -397,7 +404,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               onClick={(e) => {
                 // eslint-disable-next-line no-console
                 console.info('Link clicked:', normalizedUrl);
-                if (inPreview && !isBeoLink) {
+                if (inPreview) {
                   e.preventDefault();
                   e.stopPropagation();
                   const ok = attemptOpen(normalizedUrl);
@@ -409,12 +416,12 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                 }
               }}
               onAuxClick={(e) => {
-                if (inPreview && !isBeoLink) {
+                if (inPreview) {
                   handleAuxOpen(e, normalizedUrl);
                 }
               }}
               onKeyDown={(e) => {
-                if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   e.stopPropagation();
                   const ok = attemptOpen(normalizedUrl);
@@ -547,7 +554,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           onClick={(e) => {
                             // eslint-disable-next-line no-console
                             console.info('Markdown link clicked:', normalizedUrl);
-                            if (inPreview && !isBeoLink) {
+                            if (inPreview) {
                               e.preventDefault();
                               e.stopPropagation();
                               const ok = attemptOpen(normalizedUrl);
@@ -559,12 +566,12 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                             }
                           }}
                           onAuxClick={(e) => {
-                            if (inPreview && !isBeoLink) {
+                            if (inPreview) {
                               handleAuxOpen(e, normalizedUrl);
                             }
                           }}
                           onKeyDown={(e) => {
-                            if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                            if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                               e.preventDefault();
                               e.stopPropagation();
                               const ok = attemptOpen(normalizedUrl);
@@ -602,7 +609,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                               onClick={(e) => {
                                 // eslint-disable-next-line no-console
                                 console.info('Sources link clicked:', u);
-                                if (inPreview && !isBeoLink) {
+                                 if (inPreview) {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   const ok = attemptOpen(u);
@@ -614,12 +621,12 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                                 }
                               }}
                               onAuxClick={(e) => {
-                                if (inPreview && !isBeoLink) {
+                                if (inPreview) {
                                   handleAuxOpen(e as any, u);
                                 }
                               }}
                               onKeyDown={(e) => {
-                                if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                                if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   const ok = attemptOpen(u);
