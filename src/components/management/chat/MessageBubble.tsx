@@ -67,15 +67,20 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
     const parts = [];
     let lastIndex = 0;
     let match;
+    let keyIndex = 0;
     
     while ((match = mentionRegex.exec(text)) !== null) {
       // Add text before mention
       if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
+        parts.push(
+          <span key={`text-${keyIndex++}`}>
+            {text.substring(lastIndex, match.index)}
+          </span>
+        );
       }
       // Add mention as styled span
       parts.push(
-        <span key={match.index} className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-bold mx-0.5">
+        <span key={`mention-${keyIndex++}`} className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-bold mx-0.5">
           @{match[1]}
         </span>
       );
@@ -84,10 +89,14 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
     
     // Add remaining text
     if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
+      parts.push(
+        <span key={`text-${keyIndex++}`}>
+          {text.substring(lastIndex)}
+        </span>
+      );
     }
     
-    return parts.length > 0 ? parts : text;
+    return parts.length > 0 ? <>{parts}</> : text;
   };
   return (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
