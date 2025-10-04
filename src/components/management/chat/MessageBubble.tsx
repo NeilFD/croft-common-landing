@@ -476,7 +476,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               target="_blank"
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
-              onClick={(e) => openLink(e, normalizedUrl)}
             >
               {isBeoLink ? 'View BEO' : displayText}
             </a>
@@ -589,7 +588,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                          onClick={(e) => openLink(e, normalizedUrl)}
                         >
                           {children}
                         </a>
@@ -613,7 +611,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                               target="_blank"
                               rel="noopener noreferrer"
                               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                              onClick={(e) => openLink(e, u)}
                             >
                               {isBeoLink ? 'View BEO' : u}
                             </a>
