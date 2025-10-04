@@ -404,7 +404,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               onClick={(e) => {
                 // eslint-disable-next-line no-console
                 console.info('Link clicked:', normalizedUrl);
-                if (inPreview && !isBeoLink) {
+                if (inPreview) {
                   e.preventDefault();
                   e.stopPropagation();
                   const ok = attemptOpen(normalizedUrl);
@@ -416,12 +416,12 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                 }
               }}
               onAuxClick={(e) => {
-                if (inPreview && !isBeoLink) {
+                if (inPreview) {
                   handleAuxOpen(e, normalizedUrl);
                 }
               }}
               onKeyDown={(e) => {
-                if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   e.stopPropagation();
                   const ok = attemptOpen(normalizedUrl);
@@ -554,7 +554,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           onClick={(e) => {
                             // eslint-disable-next-line no-console
                             console.info('Markdown link clicked:', normalizedUrl);
-                            if (inPreview && !isBeoLink) {
+                             if (inPreview) {
                               e.preventDefault();
                               e.stopPropagation();
                               const ok = attemptOpen(normalizedUrl);
@@ -566,12 +566,12 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                             }
                           }}
                           onAuxClick={(e) => {
-                            if (inPreview && !isBeoLink) {
+                             if (inPreview) {
                               handleAuxOpen(e, normalizedUrl);
                             }
                           }}
                           onKeyDown={(e) => {
-                            if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                             if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                               e.preventDefault();
                               e.stopPropagation();
                               const ok = attemptOpen(normalizedUrl);
@@ -609,7 +609,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                               onClick={(e) => {
                                 // eslint-disable-next-line no-console
                                 console.info('Sources link clicked:', u);
-                                 if (inPreview && !isBeoLink) {
+                                 if (inPreview) {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   const ok = attemptOpen(u);
@@ -621,12 +621,12 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                                 }
                               }}
                               onAuxClick={(e) => {
-                                if (inPreview && !isBeoLink) {
+                                if (inPreview) {
                                   handleAuxOpen(e as any, u);
                                 }
                               }}
                               onKeyDown={(e) => {
-                                if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                                if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                                   e.preventDefault();
                                   e.stopPropagation();
                                   const ok = attemptOpen(u);
