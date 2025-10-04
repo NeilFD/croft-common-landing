@@ -374,7 +374,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         console.info('renderTextWithMentions: detected URL', displayText, '-> normalized to', normalizedUrl);
         
         // Check if it's a BEO viewer link
-        const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && normalizedUrl.includes('/beo/');
+        const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && (normalizedUrl.includes('/beo/') || normalizedUrl.includes('/beo/view?f=') || (normalizedUrl.includes('/beo-documents') && normalizedUrl.toLowerCase().endsWith('.pdf')) || normalizedUrl.includes('proxy-beo-pdf'));
         
         // Deduplicate clickable URLs per message
         const key = normalizedUrl.toLowerCase();
@@ -389,8 +389,8 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         seenUrls.add(key);
         
         // Always render real href; manage preview behaviour via handlers
-        const linkHref = inPreview ? `/ext?u=${encodeURIComponent(normalizedUrl)}` : normalizedUrl;
-        const linkTarget = inPreview ? '_self' : (isBeoLink ? '_self' : '_blank');
+        const linkHref = normalizedUrl;
+        const linkTarget = isBeoLink ? '_self' : '_blank';
         
         return (
           <span key={i}>
@@ -403,11 +403,16 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
               onClick={(e) => {
                 // eslint-disable-next-line no-console
-                console.info('Link clicked:', normalizedUrl);
+                console.info('Attempting direct open from click:', normalizedUrl);
                 if (inPreview) {
                   e.preventDefault();
                   e.stopPropagation();
-                  goToExt(normalizedUrl);
+                  const ok = attemptOpen(normalizedUrl);
+                  if (!ok) {
+                    // eslint-disable-next-line no-console
+                    console.info('Direct open failed, routing to /ext fallback');
+                    goToExt(normalizedUrl);
+                  }
                   return;
                 }
               }}
@@ -415,14 +420,28 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                 if (inPreview) {
                   e.preventDefault();
                   e.stopPropagation();
-                  goToExt(normalizedUrl);
+                  // eslint-disable-next-line no-console
+                  console.info('Attempting direct open from middle click:', normalizedUrl);
+                  const ok = attemptOpen(normalizedUrl);
+                  if (!ok) {
+                    // eslint-disable-next-line no-console
+                    console.info('Direct open failed, routing to /ext fallback');
+                    goToExt(normalizedUrl);
+                  }
                 }
               }}
               onKeyDown={(e) => {
                 if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   e.stopPropagation();
-                  goToExt(normalizedUrl);
+                  // eslint-disable-next-line no-console
+                  console.info('Attempting direct open from keyboard:', normalizedUrl);
+                  const ok = attemptOpen(normalizedUrl);
+                  if (!ok) {
+                    // eslint-disable-next-line no-console
+                    console.info('Direct open failed, routing to /ext fallback');
+                    goToExt(normalizedUrl);
+                  }
                 }
               }}
             >
@@ -527,14 +546,14 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         ? href
                         : `https://${href}`;
                       // Treat BEO links as internal
-                      const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && normalizedUrl.includes('/beo/');
+                      const isBeoLink = normalizedUrl.includes('www.croftcommontest.com') && (normalizedUrl.includes('/beo/') || normalizedUrl.includes('/beo/view?f=') || (normalizedUrl.includes('/beo-documents') && normalizedUrl.toLowerCase().endsWith('.pdf')) || normalizedUrl.includes('proxy-beo-pdf'));
 
                       // Track seen URLs but always render them as clickable links in message body
                       const key = normalizedUrl.toLowerCase();
                       seenUrls.add(key);
 
-                      const linkHref = inPreview ? `/ext?u=${encodeURIComponent(normalizedUrl)}` : normalizedUrl;
-                      const linkTarget = inPreview ? '_self' : (isBeoLink ? '_self' : '_blank');
+                      const linkHref = normalizedUrl;
+                      const linkTarget = isBeoLink ? '_self' : '_blank';
                       
                       return (
                         <a 
@@ -546,11 +565,16 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
                           onClick={(e) => {
                             // eslint-disable-next-line no-console
-                            console.info('Markdown link clicked:', normalizedUrl);
+                            console.info('Attempting direct open from click:', normalizedUrl);
                             if (inPreview) {
                               e.preventDefault();
                               e.stopPropagation();
-                              goToExt(normalizedUrl);
+                              const ok = attemptOpen(normalizedUrl);
+                              if (!ok) {
+                                // eslint-disable-next-line no-console
+                                console.info('Direct open failed, routing to /ext fallback');
+                                goToExt(normalizedUrl);
+                              }
                               return;
                             }
                           }}
@@ -558,14 +582,28 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                             if (inPreview) {
                               e.preventDefault();
                               e.stopPropagation();
-                              goToExt(normalizedUrl);
+                              // eslint-disable-next-line no-console
+                              console.info('Attempting direct open from middle click:', normalizedUrl);
+                              const ok = attemptOpen(normalizedUrl);
+                              if (!ok) {
+                                // eslint-disable-next-line no-console
+                                console.info('Direct open failed, routing to /ext fallback');
+                                goToExt(normalizedUrl);
+                              }
                             }
                           }}
                           onKeyDown={(e) => {
                             if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                               e.preventDefault();
                               e.stopPropagation();
-                              goToExt(normalizedUrl);
+                              // eslint-disable-next-line no-console
+                              console.info('Attempting direct open from keyboard:', normalizedUrl);
+                              const ok = attemptOpen(normalizedUrl);
+                              if (!ok) {
+                                // eslint-disable-next-line no-console
+                                console.info('Direct open failed, routing to /ext fallback');
+                                goToExt(normalizedUrl);
+                              }
                             }
                           }}
                         >
@@ -583,22 +621,27 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     <div className="text-xs font-bold uppercase tracking-wide mb-2 text-[hsl(var(--accent-pink))]">Sources</div>
                     <ul className="space-y-1.5 ml-4">
                       {sourcesUrls.map((u, idx) => {
-                        const isBeoLink = u.includes('www.croftcommontest.com') && u.includes('/beo/');
+                        const isBeoLink = u.includes('www.croftcommontest.com') && (u.includes('/beo/') || u.includes('/beo/view?f=') || (u.includes('/beo-documents') && u.toLowerCase().endsWith('.pdf')) || u.includes('proxy-beo-pdf'));
                         const target = isBeoLink ? '_self' : '_blank';
                         return (
                           <li key={`${u}-${idx}`} className="list-disc">
                             <a
-                              href={inPreview ? `/ext?u=${encodeURIComponent(u)}` : u}
-                              target={inPreview ? '_self' : target}
+                              href={u}
+                              target={target}
                               rel="noopener noreferrer"
                               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
                               onClick={(e) => {
                                 // eslint-disable-next-line no-console
-                                console.info('Sources link clicked:', u);
+                                console.info('Attempting direct open from click:', u);
                                 if (inPreview) {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  goToExt(u);
+                                  const ok = attemptOpen(u);
+                                  if (!ok) {
+                                    // eslint-disable-next-line no-console
+                                    console.info('Direct open failed, routing to /ext fallback');
+                                    goToExt(u);
+                                  }
                                   return;
                                 }
                               }}
@@ -606,14 +649,28 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                                 if (inPreview) {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  goToExt(u);
+                                  // eslint-disable-next-line no-console
+                                  console.info('Attempting direct open from middle click:', u);
+                                  const ok = attemptOpen(u);
+                                  if (!ok) {
+                                    // eslint-disable-next-line no-console
+                                    console.info('Direct open failed, routing to /ext fallback');
+                                    goToExt(u);
+                                  }
                                 }
                               }}
                               onKeyDown={(e) => {
                                 if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  goToExt(u);
+                                  // eslint-disable-next-line no-console
+                                  console.info('Attempting direct open from keyboard:', u);
+                                  const ok = attemptOpen(u);
+                                  if (!ok) {
+                                    // eslint-disable-next-line no-console
+                                    console.info('Direct open failed, routing to /ext fallback');
+                                    goToExt(u);
+                                  }
                                 }
                               }}
                             >
