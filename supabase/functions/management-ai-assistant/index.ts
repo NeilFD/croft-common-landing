@@ -1505,23 +1505,23 @@ async function executeFunction(functionName: string, args: any, supabase: any, u
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+              'Authorization': incomingAuth || ''
             },
             body: JSON.stringify({ query })
           });
           
           if (!searchResponse.ok) {
-            const errorData = await searchResponse.json();
-            
-            // Handle blocked content
-            if (errorData.blocked) {
+            const errorText = await searchResponse.text();
+            console.error(`❌ web-search-proxy call failed: ${searchResponse.status} ${errorText?.slice(0, 300)}`);
+            let errorData: any = null;
+            try { errorData = JSON.parse(errorText); } catch (_) {}
+            if (errorData?.blocked) {
               return {
                 success: false,
                 blocked: true,
                 message: errorData.error || 'This search query is not appropriate for work context.'
               };
             }
-            
             throw new Error(`Search failed: ${searchResponse.status}`);
           }
           
@@ -1682,7 +1682,11 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('📥 Request body received:', JSON.stringify(requestBody, null, 2));
     
-    const { messages, context } = requestBody;
+      const { messages, context } = requestBody;
+      const incomingAuth = req.headers.get('Authorization') || '';
+      const filteredMessages = Array.isArray(messages)
+        ? messages.filter((m: any) => !(m?.role === 'assistant' && typeof m?.content === 'string' && /internet search.*not working/i.test(m.content)))
+        : messages;
     
     // Defensive checks for messages
     if (!messages) {
@@ -1792,7 +1796,7 @@ serve(async (req) => {
         model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
-          ...messages,
+          ...filteredMessages,
         ],
         tools: FUNCTION_TOOLS,
         stream: true,
@@ -1892,8 +1896,8 @@ serve(async (req) => {
 
                 // Make second AI request with function result
                 const toolCallId = 'call_' + Date.now();
-                const finalMessages = [
-                  ...messages,
+                  const finalMessages = [
+                  ...filteredMessages,
                   {
                     role: 'assistant',
                     content: null,
@@ -1956,7 +1960,7 @@ serve(async (req) => {
                   );
                   const toolCallId = 'call_' + Date.now();
                   const finalMessages = [
-                    ...messages,
+                    ...filteredMessages,
                     {
                       role: 'assistant',
                       content: null,
@@ -2174,6 +2178,7 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - ONLY use data from function results or the DATABASE OVERVIEW as fallback
 - NEVER make up, invent, or hallucinate information
 - If you need data, call the appropriate function first
+- For weather, news, exchange rates, bank holidays, and regulations: ALWAYS call search_internet immediately, even if earlier messages suggested search wasn't working.
 - Use British English (organised, colour, etc.) and always use £ (never $)
 - For feedback/reviews questions do NOT ask for an event ID unless the user explicitly mentions an event; default to organisation-wide stats for a sensible time period
 - For feedback/reviews, call get_analytics with type="feedback" and infer time_period from the user’s wording (e.g. “today”, “this week”)
