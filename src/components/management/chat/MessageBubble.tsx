@@ -407,29 +407,22 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                 if (inPreview) {
                   e.preventDefault();
                   e.stopPropagation();
-                  const ok = attemptOpen(normalizedUrl);
-                  // eslint-disable-next-line no-console
-                  console.info('renderTextWithMentions: attemptOpen returned', ok, 'for', normalizedUrl);
-                  if (!ok) {
-                    goToExt(normalizedUrl);
-                  }
+                  goToExt(normalizedUrl);
+                  return;
                 }
               }}
               onAuxClick={(e) => {
                 if (inPreview) {
-                  handleAuxOpen(e, normalizedUrl);
+                  e.preventDefault();
+                  e.stopPropagation();
+                  goToExt(normalizedUrl);
                 }
               }}
               onKeyDown={(e) => {
                 if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                   e.preventDefault();
                   e.stopPropagation();
-                  const ok = attemptOpen(normalizedUrl);
-                  // eslint-disable-next-line no-console
-                  console.info('renderTextWithMentions: attemptOpen via keyboard returned', ok, 'for', normalizedUrl);
-                  if (!ok) {
-                    goToExt(normalizedUrl);
-                  }
+                  goToExt(normalizedUrl);
                 }
               }}
             >
@@ -554,32 +547,25 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           onClick={(e) => {
                             // eslint-disable-next-line no-console
                             console.info('Markdown link clicked:', normalizedUrl);
-                             if (inPreview) {
+                            if (inPreview) {
                               e.preventDefault();
                               e.stopPropagation();
-                              const ok = attemptOpen(normalizedUrl);
-                              // eslint-disable-next-line no-console
-                              console.info('markdown <a>: attemptOpen returned', ok, 'for', normalizedUrl);
-                              if (!ok) {
-                                goToExt(normalizedUrl);
-                              }
+                              goToExt(normalizedUrl);
+                              return;
                             }
                           }}
                           onAuxClick={(e) => {
-                             if (inPreview) {
-                              handleAuxOpen(e, normalizedUrl);
+                            if (inPreview) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              goToExt(normalizedUrl);
                             }
                           }}
                           onKeyDown={(e) => {
-                             if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
+                            if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                               e.preventDefault();
                               e.stopPropagation();
-                              const ok = attemptOpen(normalizedUrl);
-                              // eslint-disable-next-line no-console
-                              console.info('markdown <a>: attemptOpen via keyboard returned', ok, 'for', normalizedUrl);
-                              if (!ok) {
-                                goToExt(normalizedUrl);
-                              }
+                              goToExt(normalizedUrl);
                             }
                           }}
                         >
@@ -609,32 +595,25 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                               onClick={(e) => {
                                 // eslint-disable-next-line no-console
                                 console.info('Sources link clicked:', u);
-                                 if (inPreview) {
+                                if (inPreview) {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  const ok = attemptOpen(u);
-                                  // eslint-disable-next-line no-console
-                                  console.info('sources <a>: attemptOpen returned', ok, 'for', u);
-                                  if (!ok) {
-                                    goToExt(u);
-                                  }
+                                  goToExt(u);
+                                  return;
                                 }
                               }}
                               onAuxClick={(e) => {
                                 if (inPreview) {
-                                  handleAuxOpen(e as any, u);
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  goToExt(u);
                                 }
                               }}
                               onKeyDown={(e) => {
                                 if (inPreview && (e.key === 'Enter' || e.key === ' ')) {
                                   e.preventDefault();
                                   e.stopPropagation();
-                                  const ok = attemptOpen(u);
-                                  // eslint-disable-next-line no-console
-                                  console.info('sources <a>: attemptOpen via keyboard returned', ok, 'for', u);
-                                  if (!ok) {
-                                    goToExt(u);
-                                  }
+                                  goToExt(u);
                                 }
                               }}
                             >
