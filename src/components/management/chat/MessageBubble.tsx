@@ -62,6 +62,49 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
   return d ? format(d, 'HH:mm') : '';
 }
 
+// Link helpers to ensure links open reliably even inside context menus
+function openExternal(
+  e: React.MouseEvent | React.PointerEvent | React.TouchEvent,
+  href?: string
+) {
+  if (!href) return;
+  e.preventDefault();
+  e.stopPropagation();
+  try {
+    window.open(href, '_blank', 'noopener,noreferrer');
+  } catch {
+    // Fallback
+    window.location.href = href;
+  }
+}
+
+function handleAuxOpen(e: React.MouseEvent, href?: string) {
+  if (!href) return;
+  // Middle click
+  if (e.button === 1) {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    } catch {
+      window.location.href = href;
+    }
+  }
+}
+
+function keyOpenExternal(e: React.KeyboardEvent, href?: string) {
+  if (!href) return;
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      window.open(href, '_blank', 'noopener,noreferrer');
+    } catch {
+      window.location.href = href;
+    }
+  }
+}
+
 export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   
@@ -116,12 +159,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               target="_blank"
               rel="noopener noreferrer"
               className="text-[hsl(var(--accent-pink))] hover:underline font-semibold cursor-pointer"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => openExternal(e, url)}
+              onAuxClick={(e) => handleAuxOpen(e, url)}
+              onKeyDown={(e) => keyOpenExternal(e, url)}
               onPointerDown={(e) => e.stopPropagation()}
               onMouseDown={(e) => e.stopPropagation()}
               onTouchStart={(e) => e.stopPropagation()}
               onContextMenu={(e) => e.stopPropagation()}
-              onAuxClick={(e) => e.stopPropagation()}
             >
               {isBeoLink ? 'View BEO' : url}
             </a>
@@ -222,12 +266,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full cursor-pointer"
-                        onClick={(e) => e.stopPropagation()}
+                        onClick={(e) => openExternal(e, href)}
+                        onAuxClick={(e) => handleAuxOpen(e, href)}
+                        onKeyDown={(e) => keyOpenExternal(e, href)}
                         onPointerDown={(e) => e.stopPropagation()}
                         onMouseDown={(e) => e.stopPropagation()}
                         onTouchStart={(e) => e.stopPropagation()}
                         onContextMenu={(e) => e.stopPropagation()}
-                        onAuxClick={(e) => e.stopPropagation()}
                       >
                         {children}
                       </a>
