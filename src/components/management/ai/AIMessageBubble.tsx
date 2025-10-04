@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIMessageBubbleProps {
   role: 'user' | 'assistant';
@@ -29,6 +30,66 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
       toast({
         title: 'Failed to copy',
         description: 'Could not copy message to clipboard',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Robust link opening that works in iframes
+  const attemptOpen = (url: string, target = '_blank') => {
+    try {
+      const newWin = window.open(url, target, 'noopener,noreferrer');
+      if (!newWin || newWin.closed || typeof newWin.closed === 'undefined') {
+        window.location.href = url;
+      }
+    } catch {
+      window.location.href = url;
+    }
+  };
+
+  // Handle BEO PDF links with signed URL fetching
+  const openBeoInNewTab = async (normalizedUrl: string) => {
+    try {
+      let fileName: string | undefined;
+      
+      // Extract filename from various BEO URL formats
+      if (normalizedUrl.includes('/beo/view?f=')) {
+        const match = normalizedUrl.match(/[?&]f=([^&]+)/);
+        if (match?.[1]) {
+          fileName = decodeURIComponent(match[1]);
+        }
+      } else if (normalizedUrl.includes('beo-documents') && normalizedUrl.includes('.pdf')) {
+        const marker = '/beo-documents/';
+        const idx = normalizedUrl.indexOf(marker);
+        if (idx !== -1) {
+          fileName = normalizedUrl.substring(idx + marker.length).split('?')[0];
+        }
+      } else if (normalizedUrl.includes('proxy-beo-pdf')) {
+        const match = normalizedUrl.match(/[?&]file=([^&]+)/);
+        if (match?.[1]) {
+          fileName = decodeURIComponent(match[1]);
+        }
+      }
+
+      if (fileName) {
+        const { data, error } = await supabase.functions.invoke('get-beo-signed-url', {
+          body: { fileName }
+        });
+
+        if (error) throw error;
+        if (data?.signedUrl) {
+          attemptOpen(data.signedUrl, '_blank');
+          return;
+        }
+      }
+
+      // Fallback to original URL
+      attemptOpen(normalizedUrl, '_blank');
+    } catch (error) {
+      console.error('Error opening BEO PDF:', error);
+      toast({
+        title: 'Error opening PDF',
+        description: 'Could not open the BEO PDF. Please try again.',
         variant: 'destructive',
       });
     }
@@ -83,20 +144,32 @@ export const AIMessageBubble = ({ role, content, timestamp }: AIMessageBubblePro
                   p: ({ children }) => <p className="whitespace-pre-wrap leading-relaxed">{children}</p>,
                   ul: ({ children }) => <ul className="space-y-1 ml-4">{children}</ul>,
                   li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                  a: ({ href, children }) => (
-                    <a 
-                      href={href} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-accent-pink hover:text-accent-pink-dark underline font-medium break-all inline-block max-w-full"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Let the default link behavior happen
-                      }}
-                    >
-                      {children}
-                    </a>
-                  ),
+                  a: ({ href, children }) => {
+                    const normalizedUrl = href?.startsWith('http') ? href : `https://${href}`;
+                    const isBeoLink = normalizedUrl.includes('/beo/view?f=') || 
+                                      (normalizedUrl.includes('beo-documents') && normalizedUrl.includes('.pdf')) || 
+                                      normalizedUrl.includes('proxy-beo-pdf');
+
+                    return (
+                      <a 
+                        href={href} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-accent-pink hover:text-accent-pink-dark underline font-medium break-all inline-block max-w-full"
+                        onClick={(e) => {
+                          if (isBeoLink) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            openBeoInNewTab(normalizedUrl);
+                          } else {
+                            e.stopPropagation();
+                          }
+                        }}
+                      >
+                        {children}
+                      </a>
+                    );
+                  },
                 }}
               >
                 {processedContent}
