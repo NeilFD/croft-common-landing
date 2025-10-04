@@ -195,6 +195,9 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               target={linkTarget}
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
+              onClick={(e) => openExternal(e, url)}
+              onAuxClick={(e) => handleAuxOpen(e, url)}
+              onKeyDown={(e) => keyOpenExternal(e, url)}
             >
               {isBeoLink ? 'View BEO' : url}
             </a>
@@ -295,6 +298,9 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         target={linkTarget} 
                         rel="noopener noreferrer"
                         className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                        onClick={(e) => openExternal(e, href)}
+                        onAuxClick={(e) => handleAuxOpen(e, href)}
+                        onKeyDown={(e) => keyOpenExternal(e, href)}
                       >
                         {children}
                       </a>
