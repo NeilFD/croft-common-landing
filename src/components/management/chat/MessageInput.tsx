@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send, Image as ImageIcon } from 'lucide-react';
@@ -122,6 +122,50 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
     setImage(file);
   };
 
+  // Render message with highlighted mentions
+  const highlightedMessage = useMemo(() => {
+    if (!message) return null;
+    
+    const mentionRegex = /@(\w+)/g;
+    const parts = [];
+    let lastIndex = 0;
+    let match;
+    
+    while ((match = mentionRegex.exec(message)) !== null) {
+      // Add text before mention
+      if (match.index > lastIndex) {
+        parts.push(
+          <span key={`text-${lastIndex}`}>
+            {message.slice(lastIndex, match.index)}
+          </span>
+        );
+      }
+      
+      // Add highlighted mention
+      parts.push(
+        <span
+          key={`mention-${match.index}`}
+          className="text-[hsl(var(--accent-pink))] font-bold"
+        >
+          {match[0]}
+        </span>
+      );
+      
+      lastIndex = match.index + match[0].length;
+    }
+    
+    // Add remaining text
+    if (lastIndex < message.length) {
+      parts.push(
+        <span key={`text-${lastIndex}`}>
+          {message.slice(lastIndex)}
+        </span>
+      );
+    }
+    
+    return parts;
+  }, [message]);
+
   return (
     <div className="relative">
       <MentionAutocomplete
@@ -169,16 +213,29 @@ export const MessageInput = ({ onSend, mentionCleo = false, onCleoMentionChange,
           >
             <ImageIcon className="h-4 w-4" />
           </Button>
-          <Textarea
-            ref={textareaRef}
-            value={message}
-            onChange={handleMessageChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message... (@Cleo for AI)"
-            className="resize-none font-industrial"
-            rows={1}
-            disabled={sending}
-          />
+          <div className="relative flex-1">
+            {/* Highlight layer behind textarea */}
+            <div 
+              className="absolute inset-0 px-3 py-2 text-sm font-industrial whitespace-pre-wrap break-words pointer-events-none rounded-md overflow-hidden"
+              style={{ 
+                color: 'transparent',
+                lineHeight: '1.5'
+              }}
+            >
+              {highlightedMessage}
+            </div>
+            {/* Actual textarea */}
+            <Textarea
+              ref={textareaRef}
+              value={message}
+              onChange={handleMessageChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message... (@Cleo for AI)"
+              className="resize-none font-industrial relative bg-transparent"
+              rows={1}
+              disabled={sending}
+            />
+          </div>
         <Button
           onClick={handleSend}
           disabled={(!message.trim() && !image) || sending}
