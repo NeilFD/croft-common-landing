@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface BeoLinkProps {
@@ -7,14 +8,27 @@ interface BeoLinkProps {
 }
 
 export const BeoLink = ({ fileName, children, className }: BeoLinkProps) => {
-  const handleClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
-    // Only intercept plain left-click (no modifiers)
-    if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) {
+  const handledRef = useRef(false);
+
+  const handleOpen = async (e: React.PointerEvent<HTMLAnchorElement> | React.MouseEvent<HTMLAnchorElement>) => {
+    // Prevent handling the same click twice
+    if (handledRef.current) {
+      handledRef.current = false;
+      return;
+    }
+
+    // Only intercept plain left-click/tap (no modifiers)
+    if ('button' in e && (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)) {
       return; // Let browser handle modified clicks
     }
 
+    handledRef.current = true;
+
     e.preventDefault();
     e.stopPropagation();
+
+    // Reset flag after a short delay
+    setTimeout(() => { handledRef.current = false; }, 100);
 
     console.log('[BeoLink] Opening BEO with fileName:', fileName);
 
@@ -58,7 +72,8 @@ export const BeoLink = ({ fileName, children, className }: BeoLinkProps) => {
       rel="noopener noreferrer"
       data-beo
       className={className}
-      onClick={handleClick}
+      onPointerDown={handleOpen}
+      onClick={handleOpen}
       role="link"
       aria-label="Open BEO PDF in new tab"
     >
