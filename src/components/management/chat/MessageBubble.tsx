@@ -73,7 +73,7 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
       // Add text before mention
       if (match.index > lastIndex) {
         parts.push(
-          <span key={`text-${keyIndex++}`}>
+          <span key={`text-${keyIndex++}`} className="text-current">
             {text.substring(lastIndex, match.index)}
           </span>
         );
@@ -90,7 +90,7 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
     // Add remaining text
     if (lastIndex < text.length) {
       parts.push(
-        <span key={`text-${keyIndex++}`}>
+        <span key={`text-${keyIndex++}`} className="text-current">
           {text.substring(lastIndex)}
         </span>
       );
