@@ -240,6 +240,62 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     return out.join('\n');
   };
 
+  // Extract first Sources block into structured data
+  const extractSourcesBlock = (
+    text: string
+  ): { pre: string; urls: string[]; post: string } => {
+    const lines = text.split('\n');
+    const isHeader = (s: string) => /^\s*Sources?(?:\s+URLs?)?:\s*$/i.test(s.trim());
+
+    // Find first Sources header
+    let headerIdx = -1;
+    for (let i = 0; i < lines.length; i++) {
+      if (isHeader(lines[i])) {
+        headerIdx = i;
+        break;
+      }
+    }
+    if (headerIdx === -1) return { pre: text, urls: [], post: '' };
+
+    // Collect URL-ish lines after the header until a non-blank, non-URL line
+    const urls: string[] = [];
+    const seen = new Set<string>();
+
+    const normalizeUrlLine = (line: string) => {
+      let s = line.replace(/^\s*(?:[-*•]\s*)?(?:\d+\.\s*)?/, '').trim();
+      s = s.replace(/[,.;:)\]]+$/, '');
+      const urlish = /^(?:https?:\/\/|www\.)\S+|^[A-Za-z0-9][A-Za-z0-9-]*(?:\.[A-Za-z0-9-]+)+\S*$/.test(s);
+      return urlish ? s : null;
+    };
+
+    let i = headerIdx + 1;
+    for (; i < lines.length; i++) {
+      const raw = lines[i];
+      const trimmed = raw.trim();
+      if (trimmed === '') {
+        // keep blank spacing inside block but do not add as URL
+        continue;
+      }
+      const norm = normalizeUrlLine(raw);
+      if (norm) {
+        const normalised = norm.startsWith('http://') || norm.startsWith('https://') ? norm : `https://${norm}`;
+        const key = normalised.toLowerCase();
+        if (!seen.has(key)) {
+          seen.add(key);
+          urls.push(normalised);
+        }
+      } else {
+        // End of URLs block
+        break;
+      }
+    }
+
+    const pre = lines.slice(0, headerIdx).join('\n').trimEnd();
+    const post = lines.slice(i).join('\n').trimStart();
+
+    return { pre, urls, post };
+  };
+  
   // Auto-linkify URLs for Cleo markdown content - matches both http(s):// and bare domains
   // Avoids double-wrapping URLs already in markdown format
   const linkifyContent = (text: string) => {
@@ -267,9 +323,13 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
 
   // Process content for better markdown rendering
   let processedText = text;
+  let sourcesUrls: string[] = [];
   if (isCleo) {
-    // Unwrap fenced "Sources:" blocks, keep only first Sources, then linkify
-    processedText = keepFirstSourcesBlock(unwrapSourcesFences(text));
+    // Unwrap fenced "Sources:" blocks, then extract first Sources block for deterministic rendering
+    const unwrapped = unwrapSourcesFences(text);
+    const { pre, urls, post } = extractSourcesBlock(unwrapped);
+    sourcesUrls = urls;
+    processedText = `${pre}\n\n${post}`.trim();
   }
   const processedContent = linkifyContent(processedText)
     .replace(/\n{3,}/g, '\n\n') // Replace 3+ newlines with 2
@@ -527,6 +587,61 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                 >
                   {processedContent}
                 </ReactMarkdown>
+
+                {sourcesUrls.length > 0 && (
+                  <div className="mt-4">
+                    <div className="text-xs font-bold uppercase tracking-wide mb-2 text-[hsl(var(--accent-pink))]">Sources</div>
+                    <ul className="space-y-1.5 ml-4">
+                      {sourcesUrls.map((u, idx) => {
+                        const isBeoLink = u.includes('www.croftcommontest.com') && u.includes('/beo/');
+                        const target = isBeoLink ? '_self' : '_blank';
+                        return (
+                          <li key={`${u}-${idx}`} className="list-disc">
+                            <a
+                              href={u}
+                              target={target}
+                              rel="noopener noreferrer"
+                              className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                              onClick={(e) => {
+                                // eslint-disable-next-line no-console
+                                console.info('Sources link clicked:', u);
+                                if (inPreview && !isBeoLink) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const ok = attemptOpen(u);
+                                  // eslint-disable-next-line no-console
+                                  console.info('sources <a>: attemptOpen returned', ok, 'for', u);
+                                  if (!ok) {
+                                    goToExt(u);
+                                  }
+                                }
+                              }}
+                              onAuxClick={(e) => {
+                                if (inPreview && !isBeoLink) {
+                                  handleAuxOpen(e as any, u);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  const ok = attemptOpen(u);
+                                  // eslint-disable-next-line no-console
+                                  console.info('sources <a>: attemptOpen via keyboard returned', ok, 'for', u);
+                                  if (!ok) {
+                                    goToExt(u);
+                                  }
+                                }
+                              }}
+                            >
+                              {u}
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="font-industrial text-sm whitespace-pre-wrap">
