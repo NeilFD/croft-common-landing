@@ -1785,6 +1785,15 @@ serve(async (req) => {
     // Build minimal system prompt - no pre-fetching data
     const systemPrompt = buildSystemPrompt(context, baseData, null);
 
+    // Decide if we should force the internet search tool based on the latest user message
+    const lastUserMsg = Array.isArray(filteredMessages)
+      ? [...filteredMessages].reverse().find((m: any) => m?.role === 'user' && typeof m?.content === 'string')
+      : null;
+    const shouldForceInternetSearch = !!(lastUserMsg && /\b(weather|forecast|temperature|climate|news|exchange rate|currency|bank holiday|public holiday|regulation|law|compliance)\b/i.test(lastUserMsg.content));
+    if (shouldForceInternetSearch) {
+      console.log('🧭 Forcing search_internet tool for query:', lastUserMsg.content.slice(0, 120));
+    }
+
     // First AI request with function calling enabled
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -1798,8 +1807,9 @@ serve(async (req) => {
           { role: "system", content: systemPrompt },
           ...filteredMessages,
         ],
-        tools: FUNCTION_TOOLS,
-        stream: true,
+          tools: FUNCTION_TOOLS,
+          tool_choice: shouldForceInternetSearch ? { type: 'function', function: { name: 'search_internet' } } : undefined,
+          stream: true,
       }),
     });
 
