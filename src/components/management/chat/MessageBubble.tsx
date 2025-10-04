@@ -60,6 +60,9 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
 export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   
+  // Convert @mentions in plain text to markdown links we can style via custom renderer
+  const mentionRegex = /@([A-Za-z][A-Za-z0-9.'-]*(?:\s+[A-Za-z][A-Za-z0-9.'-]*)*)/g;
+  const processedText = !isCleo ? text.replace(mentionRegex, '[@$1](mention://$1)') : text;
   return (
     <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
       <div className={cn("max-w-[70%] md:max-w-[60%]", isOwn && "order-2")}>
@@ -111,12 +114,21 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
             <div className="font-industrial text-sm whitespace-pre-wrap prose prose-sm max-w-none">
               <ReactMarkdown 
                 components={{
-                  a: ({ node, ...props }) => (
-                    <a {...props} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80" />
-                  ),
+                  a: ({ node, href, children, ...props }) => {
+                    if (href && href.startsWith('mention://')) {
+                      return (
+                        <span className="inline-flex items-center rounded px-1.5 py-0.5 bg-[hsl(var(--accent-pink))] text-white font-semibold">
+                          {children}
+                        </span>
+                      );
+                    }
+                    return (
+                      <a {...props} href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80" />
+                    );
+                  },
                 }}
               >
-                {text}
+                {processedText}
               </ReactMarkdown>
             </div>
           ) : null}
