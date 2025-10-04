@@ -193,7 +193,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block cursor-pointer pointer-events-auto"
+              className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
               onClick={(e) => openExternal(e, url)}
               onAuxClick={(e) => handleAuxOpen(e, url)}
               onKeyDown={(e) => keyOpenExternal(e, url)}
@@ -296,7 +296,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         href={href} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                        className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
                         onClick={(e) => openExternal(e, href)}
                         onAuxClick={(e) => handleAuxOpen(e, href)}
                         onKeyDown={(e) => keyOpenExternal(e, href)}
