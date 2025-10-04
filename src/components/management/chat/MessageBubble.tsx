@@ -4,6 +4,7 @@ import { Check, CheckCheck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import ReactMarkdown from 'react-markdown';
 import { isInPreviewIframe } from '@/lib/env';
+import { useNavigate } from 'react-router-dom';
 
 interface MessageBubbleProps {
   message: {
@@ -144,6 +145,12 @@ function keyOpenExternal(e: React.KeyboardEvent, href?: string) {
 export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: MessageBubbleProps) => {
   const text = message.body_text ?? (message as any).body ?? '';
   const inPreview = isInPreviewIframe();
+  const navigate = useNavigate();
+  const goToExt = (u: string) => {
+    // eslint-disable-next-line no-console
+    console.info('MessageBubble: navigating to /ext for', u);
+    navigate(`/ext?u=${encodeURIComponent(u)}`);
+  };
   
   // Auto-linkify URLs for Cleo markdown content
   const linkifyContent = (text: string) => {
@@ -169,7 +176,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
     // Match @mentions - single word/username only (no spaces, like @Cleo or @John)
     const mentionRegex = /@([A-Za-z][A-Za-z0-9._-]{0,30})\b/g;
     // Match URLs - improved to trim trailing punctuation
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const urlRegex = /(https?:\/\/[^\s]+)/;
     
     // Split by both URLs and mentions
     const parts = text.split(/(@[A-Za-z][A-Za-z0-9._-]{0,30}\b|https?:\/\/[^\s]+)/g);
@@ -200,6 +207,20 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               target={linkTarget}
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
+              onClick={(e) => {
+                if (inPreview && !isBeoLink) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  goToExt(url);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (inPreview && !isBeoLink && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  goToExt(url);
+                }
+              }}
             >
               {isBeoLink ? 'View BEO' : url}
             </a>
@@ -308,6 +329,20 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           target={linkTarget} 
                           rel="noopener noreferrer"
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
+                          onClick={(e) => {
+                            if (inPreview && !isBeoLink && href) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              goToExt(href);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (inPreview && !isBeoLink && href && (e.key === 'Enter' || e.key === ' ')) {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              goToExt(href);
+                            }
+                          }}
                         >
                           {children}
                         </a>
