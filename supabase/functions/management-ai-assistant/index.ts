@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const FUNCTION_VERSION = 'management-ai-assistant-2025-10-02-01';
+const FUNCTION_VERSION = 'management-ai-assistant-2025-10-04-general-queries';
 console.log(`🚀 management-ai-assistant booted: ${FUNCTION_VERSION}`);
 
 // ============= DATABASE SCHEMA CONSTANTS =============
@@ -1379,7 +1379,7 @@ const FUNCTION_TOOLS = [
     type: "function",
     function: {
       name: "search_internet",
-      description: "Search the internet for current information like weather, business news, exchange rates, regulations, or general factual queries. ONLY use for work-appropriate content. Never search for inappropriate topics, personal gossip, or entertainment. Politely decline non-work-related requests.",
+      description: "Search the internet for current information like weather, business news, exchange rates, regulations, or general factual queries. General queries like restaurants, travel, local recommendations, and factual lookups ARE allowed and work-appropriate. Refuse only violence, drugs, adult content, criminal activities, or discrimination.",
       parameters: {
         type: "object",
         properties: {
@@ -2252,10 +2252,12 @@ function buildSystemPrompt(context: any, baseData: any, retrievedData: any): str
 - For weather, news, exchange rates, bank holidays, and regulations: ALWAYS call search_internet immediately, even if earlier messages suggested search wasn't working.
 - Use British English (organised, colour, etc.) and always use £ (never $)
 - For feedback/reviews questions do NOT ask for an event ID unless the user explicitly mentions an event; default to organisation-wide stats for a sensible time period
-- For feedback/reviews, call get_analytics with type="feedback" and infer time_period from the user’s wording (e.g. “today”, “this week”)
+- For feedback/reviews, call get_analytics with type="feedback" and infer time_period from the user's wording (e.g. "today", "this week")
 - Never mention or refer to membership tiers
 - All links must use https://www.croftcommontest.com
 - Use proper line breaks for readability - add blank lines between sections
+- You CAN answer questions about Croft Common AND general queries (restaurants, travel, recommendations, facts, etc.). These are work-appropriate.
+- Politely refuse ONLY: violence, drugs, adult content, criminal activities, or discrimination.
 
 **FINANCIAL DATA (Revenue, Budget, Pricing):**
 - All prices in the system are GROSS (VAT-inclusive)
