@@ -14,6 +14,7 @@ interface MessageActionsDropdownProps {
   onReply: () => void;
   onEdit?: () => void;
   onDelete: () => void;
+  messageLength: number;
 }
 
 export const MessageActionsDropdown = ({
@@ -23,7 +24,13 @@ export const MessageActionsDropdown = ({
   onReply,
   onEdit,
   onDelete,
+  messageLength,
 }: MessageActionsDropdownProps) => {
+  // Only show three-dot button for messages longer than 20 characters
+  if (messageLength < 20) {
+    return null;
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

@@ -27,6 +27,10 @@ interface Message {
   body_text: string;
   body?: string; // RPC returns 'body' field
   reply_to_message_id: string | null;
+  reply_to_message?: {
+    sender_name: string;
+    body_text: string;
+  } | null;
   created_at: string;
   edited_at: string | null;
   deleted_at: string | null;
@@ -252,7 +256,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         chat_id: m.chat_id,
         sender_id: m.sender_id,
         body_text: m.body_text ?? (m as any).body ?? '',
-        reply_to_message_id: null,
+        reply_to_message_id: m.reply_to_message_id ?? null,
         created_at: m.created_at,
         edited_at: m.edited_at,
         deleted_at: m.deleted_at,
@@ -268,8 +272,28 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
       // Enrich with sender display info
       const enriched = await Promise.all(sorted.map(loadUserInfo));
-      console.info('ActiveChat.loadMessages: enriched count =', enriched.length);
-      setMessages(enriched);
+      
+      // Enrich with reply message details
+      const enrichedWithReplies = await Promise.all(
+        enriched.map(async (msg) => {
+          if (msg.reply_to_message_id) {
+            const replyToMsg = enriched.find(m => m.id === msg.reply_to_message_id);
+            if (replyToMsg) {
+              return {
+                ...msg,
+                reply_to_message: {
+                  sender_name: replyToMsg.sender_name || 'Unknown',
+                  body_text: replyToMsg.body_text,
+                },
+              };
+            }
+          }
+          return msg;
+        })
+      );
+      
+      console.info('ActiveChat.loadMessages: enriched count =', enrichedWithReplies.length);
+      setMessages(enrichedWithReplies);
       
       // Scroll to bottom after messages load
       setTimeout(() => scrollToBottom(), 100);
@@ -667,6 +691,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                         onReply={() => handleReplyToMessage(message)}
                         onEdit={canEdit ? () => handleEditMessage(message) : undefined}
                         onDelete={() => handleDeleteMessage(message)}
+                        messageLength={message.body_text?.length || 0}
                       />
                     </div>
                   );

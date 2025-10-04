@@ -12,6 +12,10 @@ interface MessageBubbleProps {
     sender_name?: string;
     sender_role?: string;
     edited_at?: string | null;
+    reply_to_message?: {
+      sender_name: string;
+      body_text: string;
+    } | null;
     attachments?: Array<{
       id: string;
       url: string;
@@ -158,6 +162,19 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
         >
           {isCleo && (
             <div className="text-xs font-bold uppercase tracking-wide mb-1 text-[hsl(var(--accent-pink))]">Cleo</div>
+          )}
+          
+          {/* Reply context bar */}
+          {message.reply_to_message && (
+            <div className="mb-2 pb-2 border-l-2 border-[hsl(var(--accent-pink))] pl-2 bg-muted/50 rounded-sm p-1.5 text-xs">
+              <div className="font-semibold text-[hsl(var(--accent-pink))]">
+                Replying to {message.reply_to_message.sender_name}:
+              </div>
+              <div className="text-muted-foreground mt-0.5 line-clamp-2">
+                {message.reply_to_message.body_text.slice(0, 100)}
+                {message.reply_to_message.body_text.length > 100 ? '...' : ''}
+              </div>
+            </div>
           )}
           
           {message.attachments && message.attachments.length > 0 && (
