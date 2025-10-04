@@ -193,14 +193,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               href={url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold cursor-pointer pointer-events-auto"
-              onClick={(e) => openExternal(e, url)}
-              onAuxClick={(e) => handleAuxOpen(e, url)}
-              onKeyDown={(e) => keyOpenExternal(e, url)}
-              onPointerDown={(e) => e.stopPropagation()}
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              onContextMenu={(e) => e.stopPropagation()}
+              className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block cursor-pointer pointer-events-auto"
             >
               {isBeoLink ? 'View BEO' : url}
             </a>
@@ -301,13 +294,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-[hsl(var(--accent-pink))] hover:underline font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                        onClick={(e) => openExternal(e, href)}
-                        onAuxClick={(e) => handleAuxOpen(e, href)}
-                        onKeyDown={(e) => keyOpenExternal(e, href)}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onTouchStart={(e) => e.stopPropagation()}
-                        onContextMenu={(e) => e.stopPropagation()}
                       >
                         {children}
                       </a>
