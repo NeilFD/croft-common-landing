@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Check, CheckCheck } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import ReactMarkdown from 'react-markdown';
 
 interface MessageBubbleProps {
   message: {
@@ -107,7 +108,17 @@ export const MessageBubble = ({ message, isOwn, isCleo }: MessageBubbleProps) =>
               </div>
             </div>
           ) : text && text !== '[Image]' ? (
-            <p className="font-industrial text-sm whitespace-pre-wrap">{text}</p>
+            <div className="font-industrial text-sm whitespace-pre-wrap prose prose-sm max-w-none">
+              <ReactMarkdown 
+                components={{
+                  a: ({ node, ...props }) => (
+                    <a {...props} target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80" />
+                  ),
+                }}
+              >
+                {text}
+              </ReactMarkdown>
+            </div>
           ) : null}
           
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">

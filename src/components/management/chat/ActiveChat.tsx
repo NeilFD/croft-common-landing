@@ -254,6 +254,9 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       const enriched = await Promise.all(sorted.map(loadUserInfo));
       console.info('ActiveChat.loadMessages: enriched count =', enriched.length);
       setMessages(enriched);
+      
+      // Scroll to bottom after messages load
+      setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
