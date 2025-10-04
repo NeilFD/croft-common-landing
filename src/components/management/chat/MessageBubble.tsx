@@ -446,15 +446,10 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
           displayText = displayText.slice(0, -trailingPunct.length);
         }
         
-        // Normalise URL: keep relative/mail/phone/anchor intact, add https:// only for bare domains
-        const normalizedUrl = (
-          displayText.startsWith('/') ||
-          displayText.startsWith('mailto:') ||
-          displayText.startsWith('tel:') ||
-          displayText.startsWith('#')
-        ) ? displayText : (
-          displayText.startsWith('http://') || displayText.startsWith('https://') ? displayText : `https://${displayText}`
-        );
+        // Normalize URL: add https:// if missing
+        const normalizedUrl = displayText.startsWith('http://') || displayText.startsWith('https://') 
+          ? displayText 
+          : `https://${displayText}`;
         
         // eslint-disable-next-line no-console
         console.info('renderTextWithMentions: detected URL', displayText, '-> normalized to', normalizedUrl);
@@ -481,7 +476,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
               target="_blank"
               rel="noopener noreferrer"
               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block cursor-pointer pointer-events-auto"
-              onClick={isBeoLink ? (e) => { e.preventDefault(); e.stopPropagation(); openBeoInNewTab(normalizedUrl); } : undefined}
             >
               {isBeoLink ? 'View BEO' : displayText}
             </a>
@@ -579,14 +573,10 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     em: ({ children }) => <em className="italic text-foreground">{children}</em>,
                     a: ({ href, children }) => {
                       if (!href) return <span>{children}</span>;
-                      // Normalise URL: keep relative/mail/phone/anchor intact, add https:// only for bare domains
-                      const normalizedUrl = (
-                        href.startsWith('/') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#')
-                      ) ? href : (
-                        href.startsWith('http://') || href.startsWith('https://') ? href : `https://${href}`
-                      );
-
-                      const isBeoLink = isBeoUrl(normalizedUrl);
+                      // Normalise URL to include scheme if missing
+                      const normalizedUrl = href.startsWith('http://') || href.startsWith('https://')
+                        ? href
+                        : `https://${href}`;
 
                       // Track seen URLs but always render them as clickable links in message body
                       const key = normalizedUrl.toLowerCase();
@@ -598,7 +588,6 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                          onClick={isBeoLink ? (e) => { e.preventDefault(); e.stopPropagation(); openBeoInNewTab(normalizedUrl); } : undefined}
                         >
                           {children}
                         </a>
@@ -614,20 +603,14 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                     <div className="text-xs font-bold uppercase tracking-wide mb-2 text-[hsl(var(--accent-pink))]">Sources</div>
                     <ul className="space-y-1.5 ml-4">
                       {sourcesUrls.map((u, idx) => {
-                        const normalizedUrl = (
-                          u.startsWith('/') || u.startsWith('mailto:') || u.startsWith('tel:') || u.startsWith('#')
-                        ) ? u : (
-                          u.startsWith('http://') || u.startsWith('https://') ? u : `https://${u}`
-                        );
-                        const isBeoLink = isBeoUrl(normalizedUrl);
+                        const isBeoLink = isBeoUrl(u);
                         return (
                           <li key={`${u}-${idx}`} className="list-disc">
                             <a
-                              href={normalizedUrl}
+                              href={u}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="relative z-40 text-[hsl(var(--accent-pink))] hover:underline underline-offset-2 font-semibold break-all inline-block max-w-full cursor-pointer pointer-events-auto"
-                              onClick={isBeoLink ? (e) => { e.preventDefault(); e.stopPropagation(); openBeoInNewTab(normalizedUrl); } : undefined}
                             >
                               {isBeoLink ? 'View BEO' : u}
                             </a>
