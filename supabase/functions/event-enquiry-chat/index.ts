@@ -79,6 +79,42 @@ Otherwise, respond with JSON: {"done": false, "message": "your next question"}`;
     // Try to parse as JSON to see if conversation is done
     try {
       const parsed = JSON.parse(aiMessage);
+      
+      // If conversation is done, generate space proposal
+      if (parsed.done && parsed.extractedData) {
+        console.log('Conversation complete, generating space proposal...');
+        
+        const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+        const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
+        
+        // Call generate-event-proposal function
+        const proposalResponse = await fetch(`${SUPABASE_URL}/functions/v1/generate-event-proposal`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            enquiryData: parsed.extractedData
+          })
+        });
+
+        if (proposalResponse.ok) {
+          const proposalData = await proposalResponse.json();
+          console.log('Proposal generated:', proposalData);
+          
+          // Add proposal details to extracted data
+          parsed.extractedData.recommendedSpaceId = proposalData.proposal?.recommendedSpaceId;
+          parsed.extractedData.recommendedSpace = proposalData.recommendedSpace;
+          parsed.extractedData.aiReasoning = proposalData.proposal?.reasoning;
+          parsed.extractedData.matchScore = proposalData.proposal?.matchScore;
+          parsed.extractedData.keyFeatures = proposalData.proposal?.keyFeatures;
+          parsed.extractedData.alternatives = proposalData.proposal?.alternatives;
+        } else {
+          console.error('Failed to generate proposal:', await proposalResponse.text());
+        }
+      }
+      
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

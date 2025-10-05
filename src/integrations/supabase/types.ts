@@ -4369,6 +4369,48 @@ export type Database = {
           },
         ]
       }
+      space_combinations: {
+        Row: {
+          combined_capacity_seated: number
+          combined_capacity_standing: number
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          pricing_tier: string | null
+          slug: string
+          space_ids: string[]
+          updated_at: string | null
+        }
+        Insert: {
+          combined_capacity_seated: number
+          combined_capacity_standing: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          pricing_tier?: string | null
+          slug: string
+          space_ids: string[]
+          updated_at?: string | null
+        }
+        Update: {
+          combined_capacity_seated?: number
+          combined_capacity_standing?: number
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          pricing_tier?: string | null
+          slug?: string
+          space_ids?: string[]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       space_hours: {
         Row: {
           buffer_after_min: number | null
@@ -4424,6 +4466,7 @@ export type Database = {
           capacity_seated: number | null
           capacity_standing: number | null
           catering_style: string[] | null
+          combinable_with: string[] | null
           created_at: string
           description: string | null
           display_order: number | null
@@ -4448,6 +4491,7 @@ export type Database = {
           capacity_seated?: number | null
           capacity_standing?: number | null
           catering_style?: string[] | null
+          combinable_with?: string[] | null
           created_at?: string
           description?: string | null
           display_order?: number | null
@@ -4472,6 +4516,7 @@ export type Database = {
           capacity_seated?: number | null
           capacity_standing?: number | null
           catering_style?: string[] | null
+          combinable_with?: string[] | null
           created_at?: string
           description?: string | null
           display_order?: number | null

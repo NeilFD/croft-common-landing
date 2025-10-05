@@ -11,6 +11,7 @@ export interface Space {
   capacity_standing: number;
   is_active: boolean;
   display_order: number;
+  combinable_with?: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -36,6 +37,7 @@ export interface CreateSpaceData {
   capacity_standing: number;
   is_active?: boolean;
   display_order?: number;
+  combinable_with?: string[];
 }
 
 export interface UpdateSpaceData extends Partial<CreateSpaceData> {

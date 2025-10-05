@@ -56,14 +56,72 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
 
   return (
     <div className="w-full max-w-4xl bg-card border-2 border-foreground shadow-lg rounded-lg p-6 md:p-8 space-y-6">
-      <div className="space-y-2">
-        <h2 className="font-brutalist text-2xl md:text-3xl text-foreground">
-          Your Event Enquiry Summary
-        </h2>
-        <p className="font-industrial text-muted-foreground">
-          Review the details below and add any final comments
+      {/* Friendly Disclaimer */}
+      <div className="bg-accent/10 border-l-4 border-accent rounded-r-lg p-4">
+        <p className="font-industrial text-sm text-foreground leading-relaxed">
+          <span className="font-bold">Just so you know:</span> This is our initial suggestion based on what you've told us. We'll be in touch within 24 hours to chat through the details personally and make sure everything's spot on! This is just a starting point. ✨
         </p>
       </div>
+
+      <div className="space-y-2">
+        <h2 className="font-brutalist text-2xl md:text-3xl text-foreground">
+          Your Event Enquiry - Initial Suggestions
+        </h2>
+        <p className="font-industrial text-muted-foreground">
+          Review the details and let us know your thoughts
+        </p>
+      </div>
+
+      {/* Recommended Space Card */}
+      {enquiryData.recommendedSpace && (
+        <div className="bg-primary/5 border-2 border-primary rounded-lg p-6 space-y-4">
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="font-brutalist text-xl text-foreground uppercase tracking-wide">
+                Our Suggestion: {enquiryData.recommendedSpace.name}
+              </h3>
+              {enquiryData.matchScore && (
+                <p className="text-sm font-industrial text-muted-foreground">
+                  {enquiryData.matchScore}% match based on your requirements
+                </p>
+              )}
+            </div>
+          </div>
+
+          {enquiryData.aiReasoning && (
+            <div className="space-y-2">
+              <p className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                Why we think this could work
+              </p>
+              <p className="font-industrial text-foreground leading-relaxed">
+                {enquiryData.aiReasoning}
+              </p>
+            </div>
+          )}
+
+          {enquiryData.keyFeatures && enquiryData.keyFeatures.length > 0 && (
+            <div className="space-y-2">
+              <p className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                Key features that match
+              </p>
+              <ul className="space-y-1">
+                {enquiryData.keyFeatures.map((feature: string, idx: number) => (
+                  <li key={idx} className="font-industrial text-sm text-foreground flex items-start">
+                    <span className="text-accent mr-2">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="pt-3 border-t border-border/50">
+            <p className="font-industrial text-xs text-muted-foreground italic">
+              Capacity: {enquiryData.recommendedSpace.capacity_seated} seated / {enquiryData.recommendedSpace.capacity_standing} standing
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Summary Card */}
       <div className="bg-muted/50 border border-border rounded-lg p-6 space-y-4">
@@ -125,12 +183,6 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
           )}
         </div>
 
-        {enquiryData.aiReasoning && (
-          <div className="pt-4 border-t border-border">
-            <p className="font-industrial text-xs text-muted-foreground uppercase mb-2">Why We Recommend This Space</p>
-            <p className="font-industrial text-sm text-foreground">{enquiryData.aiReasoning}</p>
-          </div>
-        )}
       </div>
 
       {/* Additional Comments */}
@@ -164,15 +216,22 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
           {isSubmitting ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Submitting...
+              Sending...
             </>
           ) : (
             <>
               <Send className="h-4 w-4 mr-2" />
-              Submit Enquiry
+              Send My Enquiry
             </>
           )}
         </Button>
+      </div>
+
+      {/* Contact Timeline */}
+      <div className="text-center pt-4 border-t border-border/50">
+        <p className="font-industrial text-xs text-muted-foreground">
+          We'll get back to you within 24 hours to discuss your event properly ⏱️
+        </p>
       </div>
     </div>
   );

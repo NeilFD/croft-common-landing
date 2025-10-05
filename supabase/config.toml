@@ -301,3 +301,6 @@ verify_jwt = false
 [functions.convert-enquiry-to-lead]
 verify_jwt = false
 
+[functions.generate-event-proposal]
+verify_jwt = false
+

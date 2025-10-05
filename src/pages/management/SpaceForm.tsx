@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { z } from 'zod';
-import { useSpace, useCreateSpace, useUpdateSpace, CreateSpaceData } from '@/hooks/useSpaces';
+import { useSpace, useCreateSpace, useUpdateSpace, CreateSpaceData, useActiveSpaces } from '@/hooks/useSpaces';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, Save } from 'lucide-react';
+import { MultiSelect } from '@/components/ui/multi-select';
 
 const spaceSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
@@ -24,7 +25,8 @@ const spaceSchema = z.object({
   capacity_seated: z.number().min(0, 'Seated capacity must be 0 or greater').int(),
   capacity_standing: z.number().min(0, 'Standing capacity must be 0 or greater').int(),
   is_active: z.boolean(),
-  display_order: z.number().min(0, 'Display order must be 0 or greater').int()
+  display_order: z.number().min(0, 'Display order must be 0 or greater').int(),
+  combinable_with: z.array(z.string()).optional()
 });
 
 type SpaceFormData = z.infer<typeof spaceSchema>;
@@ -36,6 +38,7 @@ const SpaceForm = () => {
   const isEdit = !!id && id !== 'new';
   
   const { data: space, isLoading: spaceLoading } = useSpace(id || '');
+  const { data: allSpaces } = useActiveSpaces();
   const createSpace = useCreateSpace();
   const updateSpace = useUpdateSpace();
 
@@ -54,7 +57,8 @@ const SpaceForm = () => {
       capacity_seated: 0,
       capacity_standing: 0,
       is_active: true,
-      display_order: 0
+      display_order: 0,
+      combinable_with: []
     }
   });
 
@@ -84,6 +88,7 @@ const SpaceForm = () => {
       setValue('capacity_standing', space.capacity_standing);
       setValue('is_active', space.is_active);
       setValue('display_order', space.display_order);
+      setValue('combinable_with', space.combinable_with || []);
     }
   }, [space, isEdit, setValue]);
 
@@ -246,6 +251,23 @@ const SpaceForm = () => {
                     <p className="text-sm text-destructive font-industrial">{errors.display_order.message}</p>
                   )}
                 </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="combinable_with" className="font-industrial font-medium">Can be combined with</Label>
+                <MultiSelect
+                  options={allSpaces?.filter(s => s.id !== id).map(s => ({
+                    label: s.name,
+                    value: s.id
+                  })) || []}
+                  selected={watch('combinable_with') || []}
+                  onChange={(values) => setValue('combinable_with', values)}
+                  placeholder="Select spaces that can be combined..."
+                  className="font-industrial"
+                />
+                <p className="text-xs text-muted-foreground font-industrial">
+                  Select other spaces that can be joined together for larger events
+                </p>
               </div>
 
               <div className="flex items-center space-x-3">

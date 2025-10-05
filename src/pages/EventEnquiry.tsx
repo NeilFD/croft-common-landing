@@ -24,7 +24,21 @@ export type EnquiryData = {
   budget?: string;
   specialRequests?: string;
   recommendedSpaceId?: string;
+  recommendedSpace?: {
+    id: string;
+    name: string;
+    capacity_seated: number;
+    capacity_standing: number;
+    description?: string;
+  };
   aiReasoning?: string;
+  matchScore?: number;
+  keyFeatures?: string[];
+  alternatives?: Array<{
+    spaceId: string;
+    spaceName: string;
+    reasoning: string;
+  }>;
 };
 
 const EventEnquiry = () => {
