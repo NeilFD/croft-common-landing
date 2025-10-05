@@ -55,9 +55,9 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
   };
 
   return (
-    <div className="w-full max-w-4xl bg-card border-2 border-foreground shadow-lg rounded-lg p-6 md:p-8 space-y-6">
+    <div className="w-full max-w-4xl bg-background border-2 border-foreground shadow-lg rounded-lg p-6 md:p-8 space-y-6">
       {/* Friendly Disclaimer */}
-      <div className="bg-accent/10 border-l-4 border-accent rounded-r-lg p-4">
+      <div className="bg-background border-l-4 border-accent rounded-r-lg p-4">
         <p className="font-industrial text-sm text-foreground leading-relaxed">
           <span className="font-bold">Just so you know:</span> This is our initial suggestion based on what you've told us. We'll be in touch within 24 hours to chat through the details personally and make sure everything's spot on! This is just a starting point. ✨
         </p>
@@ -74,7 +74,7 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
 
       {/* Recommended Space Card */}
       {enquiryData.recommendedSpace && (
-        <div className="bg-primary/5 border-2 border-primary rounded-lg p-6 space-y-4">
+        <div className="bg-background border-2 border-primary rounded-lg p-6 space-y-4">
           <div className="flex items-start justify-between">
             <div>
               <h3 className="font-brutalist text-xl text-foreground uppercase tracking-wide">
@@ -124,7 +124,7 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
       )}
 
       {/* Summary Card */}
-      <div className="bg-muted/50 border border-border rounded-lg p-6 space-y-4">
+      <div className="bg-background border-2 border-border rounded-lg p-6 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {enquiryData.contactName && (
             <div>

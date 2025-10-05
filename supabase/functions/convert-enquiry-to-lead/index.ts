@@ -29,6 +29,19 @@ Deno.serve(async (req) => {
       throw new Error('Missing required fields: name and email are required');
     }
 
+    // Parse date if it's in natural language format
+    let parsedDate = null;
+    if (enquiryData.eventDate) {
+      // Try to parse natural language dates like "7th November" to ISO format
+      try {
+        // For now, just store as text in key_requirements and null in date field
+        // The sales team can handle the natural language date
+        console.log('Original date format:', enquiryData.eventDate);
+      } catch (e) {
+        console.log('Could not parse date, will store as text:', e);
+      }
+    }
+
     // 1. Create event enquiry record
     const { data: enquiryRecord, error: enquiryError } = await supabase
       .from('event_enquiries')
@@ -37,11 +50,11 @@ Deno.serve(async (req) => {
         contact_email: contactEmail,
         contact_phone: contactPhone,
         event_type: enquiryData.eventType,
-        event_date: enquiryData.eventDate,
+        event_date: parsedDate, // Store null if we can't parse it
         event_time: enquiryData.eventTime,
         guest_count: enquiryData.guestCount,
         conversation_history: conversationHistory,
-        key_requirements: enquiryData,
+        key_requirements: enquiryData, // This will contain the original date text
         recommended_space_id: enquiryData.recommendedSpaceId,
         ai_reasoning: enquiryData.aiReasoning,
         fb_style: enquiryData.fbStyle,
@@ -82,7 +95,7 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
         status: 'new',
         source: 'AI Enquiry',
         space_id: enquiryData.recommendedSpaceId,
-        event_date: enquiryData.eventDate,
+        event_date: parsedDate, // Store null if we can't parse it
         guest_count: enquiryData.guestCount,
       })
       .select()

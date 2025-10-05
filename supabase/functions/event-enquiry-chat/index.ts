@@ -88,6 +88,20 @@ CRITICAL RESPONSE FORMAT - READ CAREFULLY:
     let parsed;
     try {
       parsed = JSON.parse(aiMessage);
+      
+      // Check if the AI accidentally nested the JSON in the message field
+      if (parsed.message && typeof parsed.message === 'string') {
+        try {
+          const innerParsed = JSON.parse(parsed.message);
+          // If message field contains JSON, use that instead
+          if (innerParsed && typeof innerParsed === 'object') {
+            console.log('Detected nested JSON in message field, using inner JSON');
+            parsed = innerParsed;
+          }
+        } catch {
+          // Message is just a string, which is correct
+        }
+      }
     } catch {
       // If parsing fails, try to extract JSON from mixed text
       const jsonMatch = aiMessage.match(/\{[\s\S]*\}/);
