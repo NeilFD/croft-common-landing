@@ -1,4 +1,3 @@
-import React, { lazy } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AdminDashboard } from './pages/AdminDashboard';
@@ -11,10 +10,9 @@ import { SubscribersPage } from './pages/SubscribersPage';
 import { MomentsPage } from './pages/MomentsPage';
 import { CinemaPage } from './pages/CinemaPage';
 import LeadsList from '../pages/management/LeadsList';
-
-const LeadDetail = lazy(() => import('../pages/management/LeadDetail'));
-const AdminMemberAnalytics = lazy(() => import('../pages/AdminMemberAnalytics'));
-const EnhancedAdminMemberAnalytics = lazy(() => import('../pages/EnhancedAdminMemberAnalytics'));
+import LeadDetail from '../pages/management/LeadDetail';
+import AdminMemberAnalytics from '../pages/AdminMemberAnalytics';
+import EnhancedAdminMemberAnalytics from '../pages/EnhancedAdminMemberAnalytics';
 
 export const AdminApp = () => {
   return (
