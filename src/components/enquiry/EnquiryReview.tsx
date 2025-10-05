@@ -31,7 +31,12 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        const serverMessage = (data as any)?.error || (error as any)?.message || 'Submission failed';
+        const details = (data as any)?.details;
+        const finalMessage = details ? `${serverMessage} (${details})` : serverMessage;
+        throw new Error(finalMessage);
+      }
 
       toast({
         title: "Enquiry Submitted! 🎉",
@@ -46,7 +51,7 @@ export const EnquiryReview = ({ enquiryData, messages, onEdit }: EnquiryReviewPr
       console.error('Submit error:', error);
       toast({
         title: "Submission Failed",
-        description: "Please try again or contact us directly.",
+        description: (error as Error)?.message || "Please try again or contact us directly.",
         variant: "destructive"
       });
     } finally {

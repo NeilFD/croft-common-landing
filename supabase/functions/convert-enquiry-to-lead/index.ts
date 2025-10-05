@@ -76,7 +76,10 @@ Deno.serve(async (req) => {
       .select()
       .single();
 
-    if (enquiryError) throw enquiryError;
+    if (enquiryError) {
+      console.error('event_enquiries insert error:', enquiryError);
+      throw new Error(enquiryError.message || 'Failed to create event enquiry');
+    }
 
     // 2. Create lead in CRM
     const leadDescription = `
@@ -93,23 +96,55 @@ AI Recommendation: ${enquiryData.aiReasoning || 'To be determined'}
 ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
     `.trim();
 
-    // Build leads insert data conditionally
+    // Prepare name and budget for leads table schema
+    const [firstName, ...lastParts] = contactName.split(' ');
+    const lastName = lastParts.join(' ') || null;
+
+    // Parse budget strings like "£3k-£4k", "3000/4000", "£2500"
+    const parseBudgetRange = (input?: string): { low: number | null; high: number | null } => {
+      if (!input) return { low: null, high: null };
+      const normalised = String(input)
+        .toLowerCase()
+        .replace(/[,\s]/g, '') // remove commas and spaces
+        .replace(/£/g, '')
+        .replace(/gbp/g, '')
+        .replace(/k/g, '000');
+
+      // Split on common separators
+      const parts = normalised.split(/-|–|—|to|\/|~/).map(p => p.trim()).filter(Boolean);
+      const toNumber = (s: string) => {
+        const m = s.match(/\d+/);
+        return m ? parseInt(m[0], 10) : null;
+      };
+
+      if (parts.length >= 2) {
+        const low = toNumber(parts[0]);
+        const high = toNumber(parts[1]);
+        return { low, high };
+      }
+
+      const single = toNumber(normalised);
+      return { low: single, high: single };
+    };
+
+    const { low: budgetLow, high: budgetHigh } = parseBudgetRange(enquiryData.budget);
+
+    // Build leads insert data using actual schema
     const leadsInsertData: any = {
-      title: `${enquiryData.eventType || 'Event'} - ${contactName}`,
-      description: leadDescription,
-      contact_name: contactName,
+      first_name: firstName,
+      last_name: lastName,
       email: contactEmail,
       phone: contactPhone,
       status: 'new',
       source: 'AI Enquiry',
-      space_id: enquiryData.recommendedSpaceId,
-      guest_count: enquiryData.guestCount,
+      event_type: enquiryData.eventType || null,
+      preferred_space: enquiryData.recommendedSpaceId || null,
+      preferred_date: enquiryInsertData.event_date || null,
+      headcount: enquiryData.guestCount || null,
+      budget_low: budgetLow,
+      budget_high: budgetHigh,
+      message: leadDescription,
     };
-    
-    // Only add event_date if it was successfully parsed
-    if (enquiryInsertData.event_date) {
-      leadsInsertData.event_date = enquiryInsertData.event_date;
-    }
     
     const { data: lead, error: leadError } = await supabase
       .from('leads')
@@ -117,7 +152,10 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
       .select()
       .single();
 
-    if (leadError) throw leadError;
+    if (leadError) {
+      console.error('leads insert error:', leadError, { leadsInsertData });
+      throw new Error(leadError.message || 'Failed to create lead');
+    }
 
     // 3. Link enquiry to lead
     await supabase
@@ -142,9 +180,12 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
 
   } catch (error) {
     console.error('Convert enquiry to lead error:', error);
-    return new Response(JSON.stringify({ 
-      error: error.message 
-    }), {
+    const err: any = error;
+    const payload = {
+      error: err?.message || 'Failed to submit enquiry',
+      details: err?.details || err?.hint || err?.code || null,
+    };
+    return new Response(JSON.stringify(payload), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
