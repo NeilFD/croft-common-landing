@@ -7,10 +7,14 @@ import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import BookFloatingButton from '@/components/BookFloatingButton';
 import MenuButton from '@/components/MenuButton';
+import { EnquiryFloatingButton } from '@/components/EnquiryFloatingButton';
 import { CMSText } from '@/components/cms/CMSText';
 import CroftLogo from './CroftLogo';
 import { hallMenuData } from '@/data/menuData';
+import { useCMSMode } from '@/contexts/CMSModeContext';
+
 const HallHeroCarousel = () => {
+  const { isCMSMode } = useCMSMode();
   // Fetch CMS images with fallback to static images
   const { images: heroImages, loading: imagesLoading } = useCMSImages(
     'hall', 
@@ -151,10 +155,11 @@ const HallHeroCarousel = () => {
       </div>
 
       {/* Book button */}
-      <BookFloatingButton />
+      {!isCMSMode && <EnquiryFloatingButton />}
+      {!isCMSMode && <BookFloatingButton className="bottom-36" />}
       
       {/* Menu button */}
-      <MenuButton pageType="hall" menuData={hallMenuData} />
+      {!isCMSMode && <MenuButton pageType="hall" menuData={hallMenuData} />}
     </div>
   );
 };

@@ -1536,6 +1536,116 @@ export type Database = {
           },
         ]
       }
+      event_enquiries: {
+        Row: {
+          additional_comments: string | null
+          ai_reasoning: string | null
+          budget_flexibility: string | null
+          budget_range: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          conversation_history: Json | null
+          converted_to_lead_id: string | null
+          created_at: string | null
+          event_date: string | null
+          event_time: string | null
+          event_type: string | null
+          fb_dos_donts: string | null
+          fb_preferences: string | null
+          fb_style: string | null
+          guest_count: number | null
+          id: string
+          key_requirements: Json | null
+          recommended_space_id: string | null
+          special_requirements: string | null
+          status: string | null
+          submitted_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          additional_comments?: string | null
+          ai_reasoning?: string | null
+          budget_flexibility?: string | null
+          budget_range?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          conversation_history?: Json | null
+          converted_to_lead_id?: string | null
+          created_at?: string | null
+          event_date?: string | null
+          event_time?: string | null
+          event_type?: string | null
+          fb_dos_donts?: string | null
+          fb_preferences?: string | null
+          fb_style?: string | null
+          guest_count?: number | null
+          id?: string
+          key_requirements?: Json | null
+          recommended_space_id?: string | null
+          special_requirements?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          additional_comments?: string | null
+          ai_reasoning?: string | null
+          budget_flexibility?: string | null
+          budget_range?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          conversation_history?: Json | null
+          converted_to_lead_id?: string | null
+          created_at?: string | null
+          event_date?: string | null
+          event_time?: string | null
+          event_type?: string | null
+          fb_dos_donts?: string | null
+          fb_preferences?: string | null
+          fb_style?: string | null
+          guest_count?: number | null
+          id?: string
+          key_requirements?: Json | null
+          recommended_space_id?: string | null
+          special_requirements?: string | null
+          status?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_enquiries_converted_to_lead_id_fkey"
+            columns: ["converted_to_lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_enquiries_converted_to_lead_id_fkey"
+            columns: ["converted_to_lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["lead_id"]
+          },
+          {
+            foreignKeyName: "event_enquiries_converted_to_lead_id_fkey"
+            columns: ["converted_to_lead_id"]
+            isOneToOne: false
+            referencedRelation: "v_lead_possible_duplicates"
+            referencedColumns: ["possible_duplicate_id"]
+          },
+          {
+            foreignKeyName: "event_enquiries_recommended_space_id_fkey"
+            columns: ["recommended_space_id"]
+            isOneToOne: false
+            referencedRelation: "spaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_equipment: {
         Row: {
           category: string
@@ -4308,39 +4418,75 @@ export type Database = {
       }
       spaces: {
         Row: {
+          accessibility_features: string[] | null
+          ambience: string | null
+          av_capabilities: Json | null
           capacity_seated: number | null
           capacity_standing: number | null
+          catering_style: string[] | null
           created_at: string
           description: string | null
           display_order: number | null
           id: string
+          ideal_event_types: string[] | null
           is_active: boolean
+          layout_flexibility: string | null
+          max_guests: number | null
+          min_guests: number | null
           name: string
+          natural_light: string | null
+          outdoor_access: boolean | null
+          pricing_tier: string | null
           slug: string
+          unique_features: string[] | null
           updated_at: string
         }
         Insert: {
+          accessibility_features?: string[] | null
+          ambience?: string | null
+          av_capabilities?: Json | null
           capacity_seated?: number | null
           capacity_standing?: number | null
+          catering_style?: string[] | null
           created_at?: string
           description?: string | null
           display_order?: number | null
           id?: string
+          ideal_event_types?: string[] | null
           is_active?: boolean
+          layout_flexibility?: string | null
+          max_guests?: number | null
+          min_guests?: number | null
           name: string
+          natural_light?: string | null
+          outdoor_access?: boolean | null
+          pricing_tier?: string | null
           slug: string
+          unique_features?: string[] | null
           updated_at?: string
         }
         Update: {
+          accessibility_features?: string[] | null
+          ambience?: string | null
+          av_capabilities?: Json | null
           capacity_seated?: number | null
           capacity_standing?: number | null
+          catering_style?: string[] | null
           created_at?: string
           description?: string | null
           display_order?: number | null
           id?: string
+          ideal_event_types?: string[] | null
           is_active?: boolean
+          layout_flexibility?: string | null
+          max_guests?: number | null
+          min_guests?: number | null
           name?: string
+          natural_light?: string | null
+          outdoor_access?: boolean | null
+          pricing_tier?: string | null
           slug?: string
+          unique_features?: string[] | null
           updated_at?: string
         }
         Relationships: []

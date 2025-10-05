@@ -20,6 +20,7 @@ import Cocktails from "./pages/Cocktails";
 import Beer from "./pages/Beer";
 import Kitchens from "./pages/Kitchens";
 const Hall = lazy(() => import("./pages/Hall"));
+const EventEnquiry = lazy(() => import("./pages/EventEnquiry"));
 const Community = lazy(() => import("./pages/Community"));
 import CommonRoom from "./pages/CommonRoom";
 const CommonRoomMain = lazy(() => import("./pages/CommonRoomMain"));
@@ -273,7 +274,8 @@ const App = () => {
                       <Route path="/onekitchen-menu" element={<OneKitchenMenu />} />
                       <Route path="/secretkitchens" element={<DomainGuard><SecretKitchens /></DomainGuard>} />
                       <Route path="/secretkitchenadmin" element={<SecretKitchenAdmin />} />
-                      <Route path="/hall" element={<Hall />} />
+          <Route path="/hall" element={<Hall />} />
+          <Route path="/event-enquiry" element={<EventEnquiry />} />
                       <Route path="/community" element={<Community />} />
                       <Route path="/common-room" element={<CommonRoom />} />
                       <Route path="/common-room/main" element={<CommonRoomMain />} />
