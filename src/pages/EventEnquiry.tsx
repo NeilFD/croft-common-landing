@@ -81,7 +81,7 @@ const EventEnquiry = () => {
       {/* Content wrapper */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border pt-[env(safe-area-inset-top)]">
           <div className="container mx-auto px-4 py-4 flex items-center justify-between">
             <button
               onClick={handleBack}
