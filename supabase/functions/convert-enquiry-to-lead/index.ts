@@ -181,12 +181,28 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
       .update({ converted_to_lead_id: lead.id })
       .eq('id', enquiryRecord.id);
 
-    // 4. Send notification email (optional - you can add edge function call here)
+    // 4. Send confirmation emails
     console.log('New AI enquiry created:', {
       enquiryId: enquiryRecord.id,
       leadId: lead.id,
       contactName: contactName,
     });
+
+    // Send confirmation emails asynchronously
+    try {
+      const emailResponse = await supabase.functions.invoke('send-enquiry-confirmation', {
+        body: { enquiryData }
+      });
+      
+      if (emailResponse.error) {
+        console.error('Failed to send confirmation emails:', emailResponse.error);
+      } else {
+        console.log('Confirmation emails sent successfully:', emailResponse.data);
+      }
+    } catch (emailError) {
+      console.error('Error invoking email function:', emailError);
+      // Don't fail the whole request if email fails
+    }
 
     return new Response(JSON.stringify({ 
       success: true,
