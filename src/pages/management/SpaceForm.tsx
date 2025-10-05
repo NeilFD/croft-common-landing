@@ -521,46 +521,46 @@ const SpaceForm = () => {
                       Lower numbers appear first
                     </p>
                   </div>
+
+                  <div className="space-y-3">
+                    <Label htmlFor="combinable_with" className="font-industrial font-medium">Can be combined with</Label>
+                    <MultiSelect
+                      options={allSpaces?.filter(s => s.id !== id).map(s => ({
+                        label: s.name,
+                        value: s.id
+                      })) || []}
+                      selected={Array.isArray(watch('combinable_with')) ? watch('combinable_with') : []}
+                      onChange={(values) => setValue('combinable_with', values)}
+                      placeholder="Select spaces that can be combined..."
+                      className="font-industrial"
+                    />
+                    <p className="text-xs text-muted-foreground font-industrial">
+                      Select other spaces that can be joined together for larger events
+                    </p>
+                  </div>
+
+                  <div className="flex items-center space-x-3">
+                    <Switch
+                      id="is_active"
+                      {...register('is_active')}
+                      onCheckedChange={(checked) => setValue('is_active', checked)}
+                    />
+                    <Label htmlFor="is_active" className="font-industrial font-medium">Active (available for bookings)</Label>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="combinable_with" className="font-industrial font-medium">Can be combined with</Label>
-                <MultiSelect
-                  options={allSpaces?.filter(s => s.id !== id).map(s => ({
-                    label: s.name,
-                    value: s.id
-                  })) || []}
-                  selected={Array.isArray(watch('combinable_with')) ? watch('combinable_with') : []}
-                  onChange={(values) => setValue('combinable_with', values)}
-                  placeholder="Select spaces that can be combined..."
-                  className="font-industrial"
-                />
-                <p className="text-xs text-muted-foreground font-industrial">
-                  Select other spaces that can be joined together for larger events
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Switch
-                  id="is_active"
-                  {...register('is_active')}
-                  onCheckedChange={(checked) => setValue('is_active', checked)}
-                />
-                <Label htmlFor="is_active" className="font-industrial font-medium">Active (available for bookings)</Label>
-              </div>
-
-              <div className="flex items-center space-x-4 pt-6 border-t border-industrial">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mt-6 md:mt-8 p-4 md:p-6 bg-muted/30 rounded-lg">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="btn-primary font-brutalist uppercase tracking-wide flex items-center space-x-2"
+                  className="btn-primary font-brutalist uppercase tracking-wide flex items-center justify-center space-x-2 w-full sm:w-auto"
                 >
                   <Save className="h-4 w-4" />
                   <span>{isSubmitting ? 'SAVING...' : isEdit ? 'UPDATE' : 'CREATE'}</span>
                 </Button>
                 
-                <Button variant="outline" asChild className="font-brutalist uppercase tracking-wide">
+                <Button variant="outline" asChild className="font-brutalist uppercase tracking-wide w-full sm:w-auto">
                   <Link to="/management/spaces/venues">CANCEL</Link>
                 </Button>
               </div>
