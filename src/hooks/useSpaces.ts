@@ -9,9 +9,21 @@ export interface Space {
   description: string | null;
   capacity_seated: number;
   capacity_standing: number;
+  min_guests?: number | null;
+  max_guests?: number | null;
   is_active: boolean;
   display_order: number;
   combinable_with?: string[] | null;
+  ambience?: string | null;
+  natural_light?: string | null;
+  outdoor_access?: boolean;
+  av_capabilities?: string[] | null;
+  layout_flexibility?: string | null;
+  catering_style?: string[] | null;
+  ideal_event_types?: string[] | null;
+  unique_features?: string[] | null;
+  accessibility_features?: string[] | null;
+  pricing_tier?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -35,9 +47,21 @@ export interface CreateSpaceData {
   description?: string;
   capacity_seated: number;
   capacity_standing: number;
+  min_guests?: number;
+  max_guests?: number;
   is_active?: boolean;
   display_order?: number;
   combinable_with?: string[];
+  ambience?: string;
+  natural_light?: string;
+  outdoor_access?: boolean;
+  av_capabilities?: string[];
+  layout_flexibility?: string;
+  catering_style?: string[];
+  ideal_event_types?: string[];
+  unique_features?: string[];
+  accessibility_features?: string[];
+  pricing_tier?: string;
 }
 
 export interface UpdateSpaceData extends Partial<CreateSpaceData> {
@@ -73,7 +97,7 @@ export const useActiveSpaces = () => {
         throw error;
       }
 
-      return data;
+      return data as Space[];
     },
   });
 };

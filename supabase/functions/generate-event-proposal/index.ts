@@ -25,10 +25,18 @@ Deno.serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch all active spaces with their characteristics
+    // Fetch all active spaces with detailed characteristics
     const { data: spaces, error: spacesError } = await supabase
       .from('spaces')
-      .select('*')
+      .select(`
+        id, name, slug, description,
+        capacity_seated, capacity_standing, min_guests, max_guests,
+        ambience, natural_light, outdoor_access,
+        av_capabilities, layout_flexibility,
+        catering_style, ideal_event_types,
+        unique_features, accessibility_features,
+        pricing_tier, combinable_with
+      `)
       .eq('is_active', true)
       .order('display_order');
 
@@ -47,7 +55,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Build AI prompt to match space with requirements
+    // Build comprehensive AI prompt with all characteristics
     const matchingPrompt = `You are an expert event planner at Croft Common. Based on the following event requirements, recommend the BEST MATCHING space from our available options.
 
 EVENT REQUIREMENTS:
@@ -58,28 +66,53 @@ EVENT REQUIREMENTS:
 - Budget: ${enquiryData.budget || 'Not specified'}
 - Special Requests: ${enquiryData.specialRequests || 'None'}
 
-AVAILABLE SPACES:
+AVAILABLE SPACES WITH DETAILED CHARACTERISTICS:
 ${spaces.map((space, idx) => `
 ${idx + 1}. ${space.name} (ID: ${space.id})
-   - Seated capacity: ${space.capacity_seated}
-   - Standing capacity: ${space.capacity_standing}
+   CAPACITY:
+   - Seated: ${space.capacity_seated}, Standing: ${space.capacity_standing}
+   - Guest Range: ${space.min_guests || 'No min'} - ${space.max_guests || 'No max'}
+   
+   ATMOSPHERE:
+   - Ambience: ${space.ambience || 'Not specified'}
+   - Natural Light: ${space.natural_light || 'Not specified'}
+   - Outdoor Access: ${space.outdoor_access ? 'Yes' : 'No'}
+   
+   TECHNICAL:
+   - AV: ${space.av_capabilities?.join(', ') || 'None specified'}
+   - Layout: ${space.layout_flexibility || 'Not specified'}
+   
+   CATERING & EVENTS:
+   - Catering: ${space.catering_style?.join(', ') || 'Not specified'}
+   - Ideal For: ${space.ideal_event_types?.join(', ') || 'Various'}
+   
+   FEATURES:
+   - Unique: ${space.unique_features?.join(', ') || 'None listed'}
+   - Accessibility: ${space.accessibility_features?.join(', ') || 'Standard'}
+   
+   PRICING & OPTIONS:
+   - Tier: ${space.pricing_tier || 'Not specified'}
+   - Combinable: ${space.combinable_with?.length ? space.combinable_with.join(', ') : 'None'}
    - Description: ${space.description || 'No description'}
-   ${space.combinable_with && space.combinable_with.length > 0 ? `- Can be combined with: ${space.combinable_with.join(', ')}` : ''}
 `).join('\n')}
 
-GUIDELINES FOR MATCHING:
-1. Guest count MUST fit within capacity (seated or standing based on event type)
-2. Consider the vibe/atmosphere alignment
-3. Match F&B style capabilities
-4. Budget tier should align if specified
-5. If no single space fits guest count, suggest a combination if available
+MATCHING GUIDELINES:
+1. Guest count MUST fit capacity (consider min/max ranges)
+2. Match ambience and atmosphere to vibe requirements
+3. Align technical capabilities (AV, layout) with event needs
+4. Match catering style to F&B preferences
+5. Consider ideal event types alignment
+6. Match pricing tier to budget if specified
+7. Leverage unique features that enhance the event
+8. Consider accessibility requirements
+9. If combining spaces works better, suggest it
 
 Your response MUST be valid JSON in this EXACT format:
 {
   "recommendedSpaceId": "space-uuid-here",
   "matchScore": 85,
-  "reasoning": "We think [Space Name] could work really well for what you're looking for! Here's our initial thinking: [2-3 friendly, conversational sentences explaining why this is a good starting point. Use language like 'could be perfect', 'seems like a great fit', 'our suggestion would be'. Keep it warm and collaborative, not definitive.]",
-  "keyFeatures": ["Feature 1 that matches", "Feature 2 that matches", "Feature 3 that matches"],
+  "reasoning": "We think [Space Name] could work really well for what you're looking for! Here's our initial thinking: [2-3 friendly sentences referencing specific characteristics like ambience, AV capabilities, or unique features. Use language like 'could be perfect', 'seems like a great fit'. Keep it warm and collaborative.]",
+  "keyFeatures": ["Specific feature 1 that matches", "Specific feature 2 that matches", "Specific feature 3 that matches"],
   "alternatives": [
     {
       "spaceId": "alternative-uuid-1",
@@ -89,7 +122,7 @@ Your response MUST be valid JSON in this EXACT format:
   ]
 }
 
-Remember: Use warm, suggestive language like "we think", "could work well", "our initial suggestion". This is a starting point for discussion, not a final decision!`;
+Remember: Reference specific characteristics in your reasoning (e.g., "The excellent natural light", "The AV capabilities include...", "The ambience is..."). This is a starting point for discussion!`;
 
     console.log('Calling Lovable AI for space matching...');
 
