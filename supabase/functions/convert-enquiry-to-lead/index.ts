@@ -29,41 +29,50 @@ Deno.serve(async (req) => {
       throw new Error('Missing required fields: name and email are required');
     }
 
-    // Parse date if it's in natural language format
-    let parsedDate = null;
+    // Build the insert object conditionally - only include event_date if it's valid ISO format
+    console.log('Processing event date:', enquiryData.eventDate);
+    
+    const enquiryInsertData: any = {
+      contact_name: contactName,
+      contact_email: contactEmail,
+      contact_phone: contactPhone,
+      event_type: enquiryData.eventType,
+      event_time: enquiryData.eventTime,
+      guest_count: enquiryData.guestCount,
+      conversation_history: conversationHistory,
+      key_requirements: enquiryData, // This will contain the original date text
+      recommended_space_id: enquiryData.recommendedSpaceId,
+      ai_reasoning: enquiryData.aiReasoning,
+      fb_style: enquiryData.fbStyle,
+      fb_preferences: enquiryData.fbPreferences,
+      budget_range: enquiryData.budget,
+      additional_comments: additionalComments,
+      status: 'new',
+      submitted_at: new Date().toISOString(),
+    };
+    
+    // Only include event_date if we can parse it to a valid ISO date
+    // Otherwise, the date text will be available in key_requirements for the sales team
     if (enquiryData.eventDate) {
-      // Try to parse natural language dates like "7th November" to ISO format
       try {
-        // For now, just store as text in key_requirements and null in date field
-        // The sales team can handle the natural language date
-        console.log('Original date format:', enquiryData.eventDate);
+        // Try to create a valid Date object
+        const testDate = new Date(enquiryData.eventDate);
+        if (!isNaN(testDate.getTime())) {
+          // Valid date - include it
+          enquiryInsertData.event_date = testDate.toISOString().split('T')[0];
+          console.log('Parsed date successfully:', enquiryInsertData.event_date);
+        } else {
+          console.log('Date is not parseable, omitting from insert');
+        }
       } catch (e) {
-        console.log('Could not parse date, will store as text:', e);
+        console.log('Date parsing failed, omitting from insert:', e);
       }
     }
 
     // 1. Create event enquiry record
     const { data: enquiryRecord, error: enquiryError } = await supabase
       .from('event_enquiries')
-      .insert({
-        contact_name: contactName,
-        contact_email: contactEmail,
-        contact_phone: contactPhone,
-        event_type: enquiryData.eventType,
-        event_date: parsedDate, // Store null if we can't parse it
-        event_time: enquiryData.eventTime,
-        guest_count: enquiryData.guestCount,
-        conversation_history: conversationHistory,
-        key_requirements: enquiryData, // This will contain the original date text
-        recommended_space_id: enquiryData.recommendedSpaceId,
-        ai_reasoning: enquiryData.aiReasoning,
-        fb_style: enquiryData.fbStyle,
-        fb_preferences: enquiryData.fbPreferences,
-        budget_range: enquiryData.budget,
-        additional_comments: additionalComments,
-        status: 'new',
-        submitted_at: new Date().toISOString(),
-      })
+      .insert(enquiryInsertData)
       .select()
       .single();
 
@@ -84,20 +93,27 @@ AI Recommendation: ${enquiryData.aiReasoning || 'To be determined'}
 ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
     `.trim();
 
+    // Build leads insert data conditionally
+    const leadsInsertData: any = {
+      title: `${enquiryData.eventType || 'Event'} - ${contactName}`,
+      description: leadDescription,
+      contact_name: contactName,
+      email: contactEmail,
+      phone: contactPhone,
+      status: 'new',
+      source: 'AI Enquiry',
+      space_id: enquiryData.recommendedSpaceId,
+      guest_count: enquiryData.guestCount,
+    };
+    
+    // Only add event_date if it was successfully parsed
+    if (enquiryInsertData.event_date) {
+      leadsInsertData.event_date = enquiryInsertData.event_date;
+    }
+    
     const { data: lead, error: leadError } = await supabase
       .from('leads')
-      .insert({
-        title: `${enquiryData.eventType || 'Event'} - ${contactName}`,
-        description: leadDescription,
-        contact_name: contactName,
-        email: contactEmail,
-        phone: contactPhone,
-        status: 'new',
-        source: 'AI Enquiry',
-        space_id: enquiryData.recommendedSpaceId,
-        event_date: parsedDate, // Store null if we can't parse it
-        guest_count: enquiryData.guestCount,
-      })
+      .insert(leadsInsertData)
       .select()
       .single();
 
