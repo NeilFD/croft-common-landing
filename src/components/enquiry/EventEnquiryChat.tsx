@@ -97,7 +97,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
   return (
     <div className="w-full max-w-3xl h-[600px] bg-card border-2 border-foreground shadow-lg rounded-lg flex flex-col">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-background">
         {messages.map((message, index) => (
           <div
             key={index}
