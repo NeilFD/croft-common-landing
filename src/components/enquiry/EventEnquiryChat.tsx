@@ -127,16 +127,17 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
                 font-industrial text-sm md:text-base transition-all duration-200
               `}
             >
-              {/* Chat bubble tail */}
+              {/* Chat bubble tail - two-layer diamond for seamless border */}
               <div
                 className={`
-                  absolute bottom-[6px] w-3 h-3 rotate-45 border-2
-                  ${message.role === 'user'
-                    ? '-right-[7px] bg-accent border-foreground border-t-transparent border-l-transparent'
-                    : '-left-[7px] bg-white border-accent border-t-transparent border-r-transparent'
-                  }
+                  absolute bottom-[7px] pointer-events-none
+                  ${message.role === 'user' ? '-right-[9px]' : '-left-[9px]'}
                 `}
-              />
+              >
+                <div className={`relative w-4 h-4 rotate-45 ${message.role === 'user' ? 'bg-foreground' : 'bg-accent'}`}>
+                  <div className={`absolute inset-[2px] rounded-[1px] ${message.role === 'user' ? 'bg-accent' : 'bg-white'}`} />
+                </div>
+              </div>
               {message.content}
             </div>
           </div>
@@ -145,8 +146,12 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
             <div className="relative bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2">
-              {/* Chat bubble tail */}
-              <div className="absolute bottom-[6px] -left-[7px] w-3 h-3 rotate-45 bg-white border-2 border-accent border-t-transparent border-r-transparent" />
+              {/* Chat bubble tail - two-layer diamond for seamless border */}
+              <div className="absolute bottom-[7px] -left-[9px] pointer-events-none">
+                <div className="relative w-4 h-4 rotate-45 bg-accent">
+                  <div className="absolute inset-[2px] bg-white rounded-[1px]" />
+                </div>
+              </div>
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0s_infinite]" />
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0.2s_infinite]" />
