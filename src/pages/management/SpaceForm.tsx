@@ -202,9 +202,9 @@ const SpaceForm = () => {
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="p-4 md:p-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 md:space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-3">
                   <Label htmlFor="name" className="font-industrial font-medium">Name *</Label>
                   <Input
@@ -247,10 +247,10 @@ const SpaceForm = () => {
               </div>
 
               {/* Capacity & Guests Section */}
-              <div className="space-y-6 pt-6 border-t border-industrial">
-                <h3 className="font-brutalist text-xl font-bold uppercase tracking-wide">CAPACITY & GUESTS</h3>
+              <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
+                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">CAPACITY & GUESTS</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
                     <Label htmlFor="min_guests" className="font-industrial font-medium">Minimum Guests</Label>
                     <Input
@@ -311,10 +311,10 @@ const SpaceForm = () => {
               </div>
 
               {/* Atmosphere & Character Section */}
-              <div className="space-y-6 pt-6 border-t border-industrial">
-                <h3 className="font-brutalist text-xl font-bold uppercase tracking-wide">ATMOSPHERE & CHARACTER</h3>
+              <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
+                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">ATMOSPHERE & CHARACTER</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-3">
                     <Label htmlFor="ambience" className="font-industrial font-medium">Ambience</Label>
                     <Input
@@ -356,10 +356,10 @@ const SpaceForm = () => {
               </div>
 
               {/* Technical Capabilities Section */}
-              <div className="space-y-6 pt-6 border-t border-industrial">
-                <h3 className="font-brutalist text-xl font-bold uppercase tracking-wide">TECHNICAL CAPABILITIES</h3>
+              <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
+                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">TECHNICAL CAPABILITIES</h3>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label htmlFor="av_capabilities" className="font-industrial font-medium">AV Capabilities</Label>
                     <MultiSelect
@@ -395,10 +395,10 @@ const SpaceForm = () => {
               </div>
 
               {/* Catering & Events Section */}
-              <div className="space-y-6 pt-6 border-t border-industrial">
-                <h3 className="font-brutalist text-xl font-bold uppercase tracking-wide">CATERING & EVENTS</h3>
+              <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
+                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">CATERING & EVENTS</h3>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label htmlFor="catering_style" className="font-industrial font-medium">Catering Style</Label>
                     <MultiSelect
@@ -440,10 +440,10 @@ const SpaceForm = () => {
               </div>
 
               {/* Features & Accessibility Section */}
-              <div className="space-y-6 pt-6 border-t border-industrial">
-                <h3 className="font-brutalist text-xl font-bold uppercase tracking-wide">FEATURES & ACCESSIBILITY</h3>
+              <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
+                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">FEATURES & ACCESSIBILITY</h3>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label htmlFor="unique_features" className="font-industrial font-medium">Unique Features</Label>
                     <MultiSelect
@@ -485,10 +485,10 @@ const SpaceForm = () => {
               </div>
 
               {/* Pricing & Settings Section */}
-              <div className="space-y-6 pt-6 border-t border-industrial">
-                <h3 className="font-brutalist text-xl font-bold uppercase tracking-wide">PRICING & SETTINGS</h3>
+              <div className="space-y-4 md:space-y-6 p-4 md:p-6 border-2 border-industrial rounded-lg bg-background/50">
+                <h3 className="font-brutalist text-lg md:text-xl font-bold uppercase tracking-wide">PRICING & SETTINGS</h3>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label htmlFor="pricing_tier" className="font-industrial font-medium">Pricing Tier</Label>
                     <select
