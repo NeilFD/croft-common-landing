@@ -4479,7 +4479,7 @@ export type Database = {
           name: string
           natural_light: string | null
           outdoor_access: boolean | null
-          pricing_tier: string | null
+          pricing_tier: string[] | null
           slug: string
           unique_features: string[] | null
           updated_at: string
@@ -4504,7 +4504,7 @@ export type Database = {
           name: string
           natural_light?: string | null
           outdoor_access?: boolean | null
-          pricing_tier?: string | null
+          pricing_tier?: string[] | null
           slug: string
           unique_features?: string[] | null
           updated_at?: string
@@ -4529,7 +4529,7 @@ export type Database = {
           name?: string
           natural_light?: string | null
           outdoor_access?: boolean | null
-          pricing_tier?: string | null
+          pricing_tier?: string[] | null
           slug?: string
           unique_features?: string[] | null
           updated_at?: string
