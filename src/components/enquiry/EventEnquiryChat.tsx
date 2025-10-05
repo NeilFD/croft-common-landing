@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Loader2 } from 'lucide-react';
+import { Send, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Message, EnquiryData } from '@/pages/EventEnquiry';
@@ -105,7 +106,27 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
   };
 
   return (
-    <div className="w-full max-w-3xl h-[600px] bg-card border-2 border-foreground shadow-lg rounded-lg flex flex-col">
+    <div className="w-full max-w-3xl space-y-4 px-4">
+      {/* Info Card */}
+      <Card className="bg-accent/10 border-2 border-foreground shadow-lg">
+        <CardContent className="p-4 md:p-6">
+          <div className="flex items-start gap-3">
+            <Mail className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+            <p className="font-industrial text-sm md:text-base text-foreground leading-relaxed">
+              Follow the questions to tell us a little more about your event, and we will contact you within 24 hours. If you'd prefer, email us with your events details at{' '}
+              <a 
+                href="mailto:enquiries@croftcommon.co.uk?subject=Event%20Enquiry"
+                className="text-accent font-bold underline hover:text-accent/80 transition-colors"
+              >
+                enquiries@croftcommon.co.uk
+              </a>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Chat Container */}
+      <div className="w-full h-[600px] bg-card border-2 border-foreground shadow-lg rounded-lg flex flex-col">
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-background rounded-t-lg scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent"
            style={{
@@ -157,7 +178,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
             onKeyPress={handleKeyPress}
             placeholder="Type your answer..."
             disabled={isLoading}
-            className="flex-1 font-industrial border-2 border-foreground focus-visible:border-accent focus-visible:ring-0 transition-colors duration-300"
+            className="flex-1 font-industrial bg-accent/5 border-2 border-foreground focus-visible:border-accent focus-visible:ring-0 transition-colors duration-300"
             autoFocus
           />
           <Button
@@ -170,6 +191,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
             <Send className="h-4 w-4" />
           </Button>
         </div>
+      </div>
       </div>
     </div>
   );
