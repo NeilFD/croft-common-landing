@@ -125,13 +125,18 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
                   : 'bg-white text-foreground border-2 border-accent'
                 }
                 font-industrial text-sm md:text-base transition-all duration-200
-                before:content-[''] before:absolute before:bottom-0 before:w-0 before:h-0 before:border-[8px] before:border-solid
-                ${message.role === 'user'
-                  ? 'before:-right-[6px] before:border-transparent before:border-t-accent before:border-l-accent before:border-b-transparent before:border-r-transparent after:content-[""] after:absolute after:bottom-[2px] after:-right-[8px] after:w-0 after:h-0 after:border-[8px] after:border-solid after:border-transparent after:border-t-foreground after:border-l-foreground after:border-b-transparent after:border-r-transparent'
-                  : 'before:-left-[6px] before:border-transparent before:border-t-accent before:border-r-accent before:border-b-transparent before:border-l-transparent after:content-[""] after:absolute after:bottom-[2px] after:-left-[8px] after:w-0 after:h-0 after:border-[8px] after:border-solid after:border-transparent after:border-t-white after:border-r-white after:border-b-transparent after:border-l-transparent'
-                }
               `}
             >
+              {/* Chat bubble tail */}
+              <div
+                className={`
+                  absolute bottom-[6px] w-3 h-3 rotate-45 border-2
+                  ${message.role === 'user'
+                    ? '-right-[7px] bg-accent border-foreground border-t-transparent border-l-transparent'
+                    : '-left-[7px] bg-white border-accent border-t-transparent border-r-transparent'
+                  }
+                `}
+              />
               {message.content}
             </div>
           </div>
@@ -139,7 +144,9 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="relative bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2 before:content-[''] before:absolute before:bottom-0 before:-left-[6px] before:w-0 before:h-0 before:border-[8px] before:border-solid before:border-transparent before:border-t-accent before:border-r-accent before:border-b-transparent before:border-l-transparent after:content-[''] after:absolute after:bottom-[2px] after:-left-[8px] after:w-0 after:h-0 after:border-[8px] after:border-solid after:border-transparent after:border-t-white after:border-r-white after:border-b-transparent after:border-l-transparent">
+            <div className="relative bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2">
+              {/* Chat bubble tail */}
+              <div className="absolute bottom-[6px] -left-[7px] w-3 h-3 rotate-45 bg-white border-2 border-accent border-t-transparent border-r-transparent" />
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0s_infinite]" />
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0.2s_infinite]" />
