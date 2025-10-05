@@ -531,7 +531,7 @@ const SpaceForm = () => {
                       })) || []}
                       selected={Array.isArray(watch('combinable_with')) ? watch('combinable_with') : []}
                       onChange={(values) => setValue('combinable_with', values)}
-                      placeholder="Select spaces that can be combined..."
+                      placeholder="Space Joins"
                       className="font-industrial"
                     />
                     <p className="text-xs text-muted-foreground font-industrial">
