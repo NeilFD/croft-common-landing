@@ -20,6 +20,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [knownInfo, setKnownInfo] = useState<Partial<EnquiryData>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -47,13 +48,16 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
     try {
       const { data, error } = await supabase.functions.invoke('event-enquiry-chat', {
         body: {
-          messages: [...messages, userMessage]
+          messages: [...messages, userMessage],
+          knownInfo
         }
       });
 
       if (error) throw error;
 
       if (data.done) {
+        // Update known info with final extracted data
+        setKnownInfo(data.extractedData);
         // Add a friendly completion message before moving to review
         const completionMessage: Message = {
           role: 'assistant',
@@ -74,6 +78,11 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
           timestamp: Date.now()
         };
         setMessages(prev => [...prev, aiMessage]);
+        
+        // Update known info with any extracted data
+        if (data.extractedData) {
+          setKnownInfo(prev => ({ ...prev, ...data.extractedData }));
+        }
       }
     } catch (error) {
       console.error('Chat error:', error);
