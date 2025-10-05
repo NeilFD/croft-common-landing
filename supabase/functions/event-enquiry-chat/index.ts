@@ -63,21 +63,22 @@ REQUIRED info to gather (don't end conversation without these):
 5. vibe - the atmosphere/vibe they want (required)
 6. eventDate - date or flexibility (required)
 7. budget - budget or "not sure yet" is acceptable (REQUIRED - must ask)
+8. fbStyle - food & drink style (REQUIRED - must ask naturally, e.g., sit-down meal, standing cocktails, canapés, etc.)
+9. fbPreferences - any dietary needs or F&B preferences (REQUIRED - must ask, can be "no specific requirements")
 
-OPTIONAL info to gather naturally:
-8. fbStyle - food & drink style (sit-down, standing, cocktails, etc.)
-9. fbPreferences - major F&B preferences or absolute no-gos
+OPTIONAL info to gather naturally if relevant:
 10. specialRequests - outdoor space, AV needs, accessibility, etc.
 
 CRITICAL RESPONSE FORMAT - READ CAREFULLY:
-- While gathering info: Return {"done": false, "message": "your question here"}
-- When you have ALL REQUIRED fields: Return {"done": true, "extractedData": {name: "...", email: "...", eventType: "...", guestCount: X, vibe: "...", eventDate: "...", budget: "...", ...any optional fields...}}
-- The "message" field should contain ONLY your question text - NO JSON structure
-- Example correct response: {"done": false, "message": "What's your name?"}
-- Example WRONG response: {"done": false, "message": "{\"done\": false, \"message\": \"What's your name?\"}"}
-- NEVER include JSON syntax in the message text itself
+- While gathering info: Return ONLY a JSON object: {"done": false, "message": "your conversational question"}
+- The message field contains ONLY natural conversational text - NEVER include JSON syntax or structure words like "done", "false", curly braces, or quotes
+- When you have ALL REQUIRED fields: Return {"done": true, "extractedData": {name: "...", email: "...", eventType: "...", guestCount: X, vibe: "...", eventDate: "...", budget: "...", fbStyle: "...", fbPreferences: "...", ...optional fields...}}
+- Example CORRECT: {"done": false, "message": "Lovely to meet you! What sort of event are you planning?"}
+- Example WRONG: {"done": false, "message": "{\"done\": false, \"message\": \"What's your name?\"}"}
+- Example WRONG: {"done": false, "message": "\"done\": false, \"message\": \"How many guests?\""}
+- The message text must read naturally as if you're speaking to them - no technical formatting
 - Your entire response must be valid JSON
-- NEVER add conversational text outside the JSON structure`;
+- NEVER add any text outside the JSON structure`;
 
     // If we have known info, add it to the system prompt
     if (knownInfo && Object.keys(knownInfo).length > 0) {

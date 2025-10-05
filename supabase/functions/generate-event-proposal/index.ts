@@ -68,7 +68,8 @@ EVENT REQUIREMENTS:
 
 AVAILABLE SPACES WITH DETAILED CHARACTERISTICS:
 ${spaces.map((space, idx) => `
-${idx + 1}. ${space.name} (ID: ${space.id})
+${idx + 1}. ${space.name}
+   Space ID (for reference only - DO NOT include in reasoning): ${space.id}
    CAPACITY:
    - Seated: ${space.capacity_seated}, Standing: ${space.capacity_standing}
    - Guest Range: ${space.min_guests || 'No min'} - ${space.max_guests || 'No max'}
@@ -121,6 +122,8 @@ Your response MUST be valid JSON in this EXACT format:
     }
   ]
 }
+
+CRITICAL: In your reasoning text, ONLY mention the space name (e.g., "The Hall", "Common Room"). NEVER include any ID codes, UUIDs, or technical identifiers. These are for system use only and must not appear in customer-facing text.
 
 Remember: Reference specific characteristics in your reasoning (e.g., "The excellent natural light", "The AV capabilities include...", "The ambience is..."). This is a starting point for discussion!`;
 
