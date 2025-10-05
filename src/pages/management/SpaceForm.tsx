@@ -38,7 +38,7 @@ const spaceSchema = z.object({
   ideal_event_types: z.array(z.string()).optional(),
   unique_features: z.array(z.string()).optional(),
   accessibility_features: z.array(z.string()).optional(),
-  pricing_tier: z.string().optional(),
+  pricing_tier: z.array(z.string()).optional(),
 }).refine((data) => {
   if (data.min_guests && data.max_guests) {
     return data.min_guests <= data.max_guests;
@@ -128,7 +128,7 @@ const SpaceForm = () => {
       setValue('ideal_event_types', (space as any).ideal_event_types || []);
       setValue('unique_features', (space as any).unique_features || []);
       setValue('accessibility_features', (space as any).accessibility_features || []);
-      setValue('pricing_tier', (space as any).pricing_tier || '');
+      setValue('pricing_tier', (space as any).pricing_tier || []);
     }
   }, [space, isEdit, setValue]);
 
@@ -491,17 +491,18 @@ const SpaceForm = () => {
                 <div className="space-y-4 md:space-y-6">
                   <div className="space-y-3">
                     <Label htmlFor="pricing_tier" className="font-industrial font-medium">Pricing Tier</Label>
-                    <select
-                      id="pricing_tier"
-                      {...register('pricing_tier')}
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-industrial"
-                    >
-                      <option value="">Select...</option>
-                      <option value="budget">Budget</option>
-                      <option value="mid_range">Mid Range</option>
-                      <option value="premium">Premium</option>
-                      <option value="luxury">Luxury</option>
-                    </select>
+                    <MultiSelect
+                      options={[
+                        { label: 'Budget', value: 'budget' },
+                        { label: 'Mid Range', value: 'mid_range' },
+                        { label: 'Premium', value: 'premium' },
+                        { label: 'Luxury', value: 'luxury' },
+                      ]}
+                      selected={Array.isArray(watch('pricing_tier')) ? watch('pricing_tier') : []}
+                      onChange={(values) => setValue('pricing_tier', values)}
+                      placeholder="Select pricing tiers..."
+                      className="font-industrial"
+                    />
                   </div>
 
                   <div className="space-y-3">

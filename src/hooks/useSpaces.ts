@@ -23,7 +23,7 @@ export interface Space {
   ideal_event_types?: string[] | null;
   unique_features?: string[] | null;
   accessibility_features?: string[] | null;
-  pricing_tier?: string | null;
+  pricing_tier?: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -61,7 +61,7 @@ export interface CreateSpaceData {
   ideal_event_types?: string[];
   unique_features?: string[];
   accessibility_features?: string[];
-  pricing_tier?: string;
+  pricing_tier?: string[];
 }
 
 export interface UpdateSpaceData extends Partial<CreateSpaceData> {
