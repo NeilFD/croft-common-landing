@@ -371,7 +371,7 @@ const SpaceForm = () => {
                         { label: 'Stage Lighting', value: 'stage_lighting' },
                         { label: 'Recording Equipment', value: 'recording' },
                       ]}
-                      selected={watch('av_capabilities') || []}
+                      selected={Array.isArray(watch('av_capabilities')) ? watch('av_capabilities') : []}
                       onChange={(values) => setValue('av_capabilities', values)}
                       placeholder="Select AV equipment..."
                       className="font-industrial"
@@ -410,7 +410,7 @@ const SpaceForm = () => {
                         { label: 'Street Food', value: 'street_food' },
                         { label: 'BBQ', value: 'bbq' },
                       ]}
-                      selected={watch('catering_style') || []}
+                      selected={Array.isArray(watch('catering_style')) ? watch('catering_style') : []}
                       onChange={(values) => setValue('catering_style', values)}
                       placeholder="Select catering styles..."
                       className="font-industrial"
@@ -430,7 +430,7 @@ const SpaceForm = () => {
                         { label: 'Networking', value: 'networking' },
                         { label: 'Performance', value: 'performance' },
                       ]}
-                      selected={watch('ideal_event_types') || []}
+                      selected={Array.isArray(watch('ideal_event_types')) ? watch('ideal_event_types') : []}
                       onChange={(values) => setValue('ideal_event_types', values)}
                       placeholder="Select event types..."
                       className="font-industrial"
@@ -457,7 +457,7 @@ const SpaceForm = () => {
                         { label: 'Dance Floor', value: 'dance_floor' },
                         { label: 'Garden Area', value: 'garden' },
                       ]}
-                      selected={watch('unique_features') || []}
+                      selected={Array.isArray(watch('unique_features')) ? watch('unique_features') : []}
                       onChange={(values) => setValue('unique_features', values)}
                       placeholder="Select unique features..."
                       className="font-industrial"
@@ -475,7 +475,7 @@ const SpaceForm = () => {
                         { label: 'Braille Signage', value: 'braille' },
                         { label: 'Assistance Dogs Welcome', value: 'assistance_dogs' },
                       ]}
-                      selected={watch('accessibility_features') || []}
+                      selected={Array.isArray(watch('accessibility_features')) ? watch('accessibility_features') : []}
                       onChange={(values) => setValue('accessibility_features', values)}
                       placeholder="Select accessibility features..."
                       className="font-industrial"
@@ -531,7 +531,7 @@ const SpaceForm = () => {
                     label: s.name,
                     value: s.id
                   })) || []}
-                  selected={watch('combinable_with') || []}
+                  selected={Array.isArray(watch('combinable_with')) ? watch('combinable_with') : []}
                   onChange={(values) => setValue('combinable_with', values)}
                   placeholder="Select spaces that can be combined..."
                   className="font-industrial"
