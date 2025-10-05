@@ -13,7 +13,8 @@ import {
   MapPin,
   MessageSquare,
   Plus,
-  Activity
+  Activity,
+  Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -476,6 +477,90 @@ export default function LeadDetail() {
               )}
             </CardContent>
           </Card>
+
+          {/* Event Enquiry Details - Only show if this lead came from an enquiry */}
+          {!isNewLead && lead && lead.details && Object.keys(lead.details).length > 0 && (
+            <Card className="border-2 border-foreground shadow-none bg-white">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Event Enquiry Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {lead.details.vibe && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Desired Vibe</Label>
+                      <p className="mt-1">{lead.details.vibe}</p>
+                    </div>
+                  )}
+                  {lead.details.fb_style && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">F&B Style</Label>
+                      <p className="mt-1">{lead.details.fb_style}</p>
+                    </div>
+                  )}
+                  {lead.details.fb_preferences && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">F&B Preferences</Label>
+                      <p className="mt-1">{lead.details.fb_preferences}</p>
+                    </div>
+                  )}
+                  {lead.details.original_event_date_text && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Original Date Text</Label>
+                      <p className="mt-1">{lead.details.original_event_date_text}</p>
+                    </div>
+                  )}
+                  {lead.details.budget_original && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">Original Budget</Label>
+                      <p className="mt-1">{lead.details.budget_original}</p>
+                    </div>
+                  )}
+                  {lead.details.match_score && (
+                    <div>
+                      <Label className="text-sm font-medium text-muted-foreground">AI Match Score</Label>
+                      <p className="mt-1 font-semibold text-primary">{lead.details.match_score}%</p>
+                    </div>
+                  )}
+                </div>
+
+                {lead.details.ai_reasoning && (
+                  <div className="mt-4 p-4 bg-muted/50 rounded-lg border border-border">
+                    <Label className="text-sm font-medium text-muted-foreground">AI Recommendation Reasoning</Label>
+                    <p className="mt-2 text-sm">{lead.details.ai_reasoning}</p>
+                  </div>
+                )}
+
+                {lead.details.key_features && lead.details.key_features.length > 0 && (
+                  <div className="mt-4">
+                    <Label className="text-sm font-medium text-muted-foreground">Key Features Matched</Label>
+                    <ul className="mt-2 list-disc list-inside space-y-1">
+                      {lead.details.key_features.map((feature: string, idx: number) => (
+                        <li key={idx} className="text-sm">{feature}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {lead.details.alternatives && lead.details.alternatives.length > 0 && (
+                  <div className="mt-4">
+                    <Label className="text-sm font-medium text-muted-foreground">Alternative Spaces Considered</Label>
+                    <div className="mt-2 space-y-2">
+                      {lead.details.alternatives.map((alt: any, idx: number) => (
+                        <div key={idx} className="p-3 bg-muted/30 rounded border border-border">
+                          <p className="font-medium text-sm">{alt.spaceName}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{alt.reasoning}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Sidebar */}

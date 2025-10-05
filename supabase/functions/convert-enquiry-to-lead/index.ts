@@ -129,6 +129,22 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
 
     const { low: budgetLow, high: budgetHigh } = parseBudgetRange(enquiryData.budget);
 
+    // Build additional details JSONB for non-standard lead fields
+    const enquiryDetails = {
+      original_event_date_text: enquiryData.eventDate || null,
+      vibe: enquiryData.vibe || null,
+      fb_style: enquiryData.fbStyle || null,
+      fb_preferences: enquiryData.fbPreferences || null,
+      budget_original: enquiryData.budget || null,
+      ai_reasoning: enquiryData.aiReasoning || null,
+      match_score: enquiryData.matchScore || null,
+      key_features: enquiryData.keyFeatures || [],
+      alternatives: enquiryData.alternatives || [],
+      recommended_space_name: enquiryData.recommendedSpace?.name || null,
+      // Store a trimmed conversation history (last 5 messages to avoid bloat)
+      conversation_summary: conversationHistory?.slice(-5) || [],
+    };
+
     // Build leads insert data using actual schema
     const leadsInsertData: any = {
       first_name: firstName,
@@ -144,6 +160,8 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
       budget_low: budgetLow,
       budget_high: budgetHigh,
       message: leadDescription,
+      event_enquiry_id: enquiryRecord.id,
+      details: enquiryDetails,
     };
     
     const { data: lead, error: leadError } = await supabase

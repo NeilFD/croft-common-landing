@@ -20,6 +20,24 @@ export interface Lead {
   message: string | null;
   source: string | null;
   utm: any;
+  event_enquiry_id: string | null;
+  details: {
+    original_event_date_text?: string;
+    vibe?: string;
+    fb_style?: string;
+    fb_preferences?: string;
+    budget_original?: string;
+    ai_reasoning?: string;
+    match_score?: number;
+    key_features?: string[];
+    alternatives?: Array<{
+      spaceId: string;
+      spaceName: string;
+      reasoning: string;
+    }>;
+    recommended_space_name?: string;
+    conversation_summary?: any[];
+  } | null;
   created_at: string;
   updated_at: string;
 }
@@ -112,7 +130,7 @@ export const useLeads = (filters?: {
       const { data, error } = await query;
 
       if (error) throw error;
-      return data || [];
+      return (data || []) as LeadWithSpace[];
     },
   });
 };
@@ -135,7 +153,7 @@ export const useLead = (leadId: string) => {
         throw error;
       }
 
-      return data;
+      return data as LeadWithSpace | null;
     },
     enabled: !!leadId,
   });

@@ -2356,12 +2356,14 @@ export type Database = {
           consent_marketing: boolean | null
           created_at: string | null
           date_flexible: boolean | null
+          details: Json | null
           email: string
+          event_enquiry_id: string | null
           event_type: string | null
           first_name: string
           headcount: number | null
           id: string
-          last_name: string
+          last_name: string | null
           message: string | null
           owner_id: string | null
           phone: string | null
@@ -2380,12 +2382,14 @@ export type Database = {
           consent_marketing?: boolean | null
           created_at?: string | null
           date_flexible?: boolean | null
+          details?: Json | null
           email: string
+          event_enquiry_id?: string | null
           event_type?: string | null
           first_name: string
           headcount?: number | null
           id?: string
-          last_name: string
+          last_name?: string | null
           message?: string | null
           owner_id?: string | null
           phone?: string | null
@@ -2404,12 +2408,14 @@ export type Database = {
           consent_marketing?: boolean | null
           created_at?: string | null
           date_flexible?: boolean | null
+          details?: Json | null
           email?: string
+          event_enquiry_id?: string | null
           event_type?: string | null
           first_name?: string
           headcount?: number | null
           id?: string
-          last_name?: string
+          last_name?: string | null
           message?: string | null
           owner_id?: string | null
           phone?: string | null
@@ -2423,6 +2429,13 @@ export type Database = {
           utm?: Json | null
         }
         Relationships: [
+          {
+            foreignKeyName: "leads_event_enquiry_id_fkey"
+            columns: ["event_enquiry_id"]
+            isOneToOne: false
+            referencedRelation: "event_enquiries"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "leads_owner_id_fkey"
             columns: ["owner_id"]
