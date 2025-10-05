@@ -14,17 +14,28 @@ Deno.serve(async (req) => {
   try {
     const { enquiryData, conversationHistory, additionalComments } = await req.json();
     
+    console.log('Received enquiryData:', JSON.stringify(enquiryData, null, 2));
+    
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Map field names from AI output to database schema
+    const contactName = enquiryData.contactName || enquiryData.name;
+    const contactEmail = enquiryData.contactEmail || enquiryData.email;
+    const contactPhone = enquiryData.contactPhone || enquiryData.phone || null;
+    
+    if (!contactName || !contactEmail) {
+      throw new Error('Missing required fields: name and email are required');
+    }
 
     // 1. Create event enquiry record
     const { data: enquiryRecord, error: enquiryError } = await supabase
       .from('event_enquiries')
       .insert({
-        contact_name: enquiryData.contactName,
-        contact_email: enquiryData.contactEmail,
-        contact_phone: enquiryData.contactPhone,
+        contact_name: contactName,
+        contact_email: contactEmail,
+        contact_phone: contactPhone,
         event_type: enquiryData.eventType,
         event_date: enquiryData.eventDate,
         event_time: enquiryData.eventTime,
@@ -63,11 +74,11 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
     const { data: lead, error: leadError } = await supabase
       .from('leads')
       .insert({
-        title: `${enquiryData.eventType || 'Event'} - ${enquiryData.contactName}`,
+        title: `${enquiryData.eventType || 'Event'} - ${contactName}`,
         description: leadDescription,
-        contact_name: enquiryData.contactName,
-        email: enquiryData.contactEmail,
-        phone: enquiryData.contactPhone,
+        contact_name: contactName,
+        email: contactEmail,
+        phone: contactPhone,
         status: 'new',
         source: 'AI Enquiry',
         space_id: enquiryData.recommendedSpaceId,
@@ -89,7 +100,7 @@ ${additionalComments ? `Additional Comments:\n${additionalComments}` : ''}
     console.log('New AI enquiry created:', {
       enquiryId: enquiryRecord.id,
       leadId: lead.id,
-      contactName: enquiryData.contactName,
+      contactName: contactName,
     });
 
     return new Response(JSON.stringify({ 
