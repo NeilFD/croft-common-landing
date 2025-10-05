@@ -80,7 +80,7 @@ export function MultiSelect({
           </div>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0 bg-popover border-2 border-foreground" align="start">
+      <PopoverContent className="w-full p-0 border-2 border-foreground z-[100000]" align="start">
         <Command className="bg-popover">
           <CommandInput placeholder="Search..." className="h-9" />
           <CommandEmpty>No item found.</CommandEmpty>
