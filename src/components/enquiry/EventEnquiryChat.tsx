@@ -106,7 +106,12 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
   return (
     <div className="w-full max-w-3xl h-[600px] bg-card border-2 border-foreground shadow-lg rounded-lg flex flex-col">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-background">
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-background scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent"
+           style={{
+             scrollbarWidth: 'thin',
+             scrollbarColor: 'hsl(var(--accent)) transparent'
+           }}
+      >
         {messages.map((message, index) => (
           <div
             key={index}
@@ -117,9 +122,9 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
                 max-w-[80%] px-4 py-3 rounded-lg
                 ${message.role === 'user'
                   ? 'bg-accent text-accent-foreground border-2 border-foreground'
-                  : 'bg-white text-foreground border-2 border-foreground'
+                  : 'bg-white text-foreground border-l-4 border-accent'
                 }
-                font-industrial text-sm md:text-base
+                font-industrial text-sm md:text-base transition-all duration-200
               `}
             >
               {message.content}
@@ -129,9 +134,12 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="bg-white text-foreground px-4 py-3 rounded-lg border-2 border-foreground flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="font-industrial text-sm">Thinking...</span>
+            <div className="bg-white text-foreground px-4 py-3 rounded-lg border-l-4 border-accent flex items-center gap-2">
+              <div className="flex gap-1">
+                <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0s_infinite]" />
+                <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0.2s_infinite]" />
+                <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0.4s_infinite]" />
+              </div>
             </div>
           </div>
         )}
@@ -148,13 +156,15 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
             onKeyPress={handleKeyPress}
             placeholder="Type your answer..."
             disabled={isLoading}
-            className="flex-1 font-industrial border-2 border-foreground focus-visible:ring-accent"
+            className="flex-1 font-industrial border-2 border-foreground focus-visible:border-accent focus-visible:ring-0 transition-colors duration-300"
             autoFocus
           />
           <Button
             onClick={handleSend}
             disabled={isLoading || !input.trim()}
-            className="bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-industrial font-bold"
+            className={`bg-accent text-accent-foreground hover:bg-accent/80 border-2 border-foreground font-industrial font-bold transition-all ${
+              input.trim() && !isLoading ? 'animate-[pulse_2s_ease-in-out_infinite]' : ''
+            }`}
           >
             <Send className="h-4 w-4" />
           </Button>
