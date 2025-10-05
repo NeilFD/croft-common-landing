@@ -119,12 +119,17 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
           >
             <div
               className={`
-                max-w-[80%] px-4 py-3 rounded-lg
+                relative max-w-[80%] px-4 py-3 rounded-lg
                 ${message.role === 'user'
                   ? 'bg-accent text-accent-foreground border-2 border-foreground'
                   : 'bg-white text-foreground border-2 border-accent'
                 }
                 font-industrial text-sm md:text-base transition-all duration-200
+                before:content-[''] before:absolute before:bottom-0 before:w-0 before:h-0 before:border-[8px] before:border-solid
+                ${message.role === 'user'
+                  ? 'before:-right-[6px] before:border-transparent before:border-t-accent before:border-l-accent before:border-b-transparent before:border-r-transparent after:content-[""] after:absolute after:bottom-[2px] after:-right-[8px] after:w-0 after:h-0 after:border-[8px] after:border-solid after:border-transparent after:border-t-foreground after:border-l-foreground after:border-b-transparent after:border-r-transparent'
+                  : 'before:-left-[6px] before:border-transparent before:border-t-accent before:border-r-accent before:border-b-transparent before:border-l-transparent after:content-[""] after:absolute after:bottom-[2px] after:-left-[8px] after:w-0 after:h-0 after:border-[8px] after:border-solid after:border-transparent after:border-t-white after:border-r-white after:border-b-transparent after:border-l-transparent'
+                }
               `}
             >
               {message.content}
@@ -134,7 +139,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2">
+            <div className="relative bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2 before:content-[''] before:absolute before:bottom-0 before:-left-[6px] before:w-0 before:h-0 before:border-[8px] before:border-solid before:border-transparent before:border-t-accent before:border-r-accent before:border-b-transparent before:border-l-transparent after:content-[''] after:absolute after:bottom-[2px] after:-left-[8px] after:w-0 after:h-0 after:border-[8px] after:border-solid after:border-transparent after:border-t-white after:border-r-white after:border-b-transparent after:border-l-transparent">
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0s_infinite]" />
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0.2s_infinite]" />
