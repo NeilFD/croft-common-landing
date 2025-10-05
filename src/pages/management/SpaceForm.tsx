@@ -523,7 +523,7 @@ const SpaceForm = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <Label htmlFor="combinable_with" className="font-industrial font-medium">Can be combined with</Label>
+                    <Label htmlFor="combinable_with" className="font-industrial font-medium">Space Joins</Label>
                     <MultiSelect
                       options={allSpaces?.filter(s => s.id !== id).map(s => ({
                         label: s.name,
