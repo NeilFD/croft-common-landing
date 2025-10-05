@@ -108,7 +108,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
                 max-w-[80%] px-4 py-3 rounded-lg
                 ${message.role === 'user'
                   ? 'bg-accent text-accent-foreground border-2 border-foreground'
-                  : 'bg-muted text-muted-foreground border border-border'
+                  : 'bg-white text-foreground border-2 border-foreground'
                 }
                 font-industrial text-sm md:text-base
               `}
@@ -120,7 +120,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="bg-muted text-muted-foreground px-4 py-3 rounded-lg border border-border flex items-center gap-2">
+            <div className="bg-white text-foreground px-4 py-3 rounded-lg border-2 border-foreground flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="font-industrial text-sm">Thinking...</span>
             </div>
