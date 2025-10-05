@@ -15,6 +15,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft, Save } from 'lucide-react';
 import { MultiSelect } from '@/components/ui/multi-select';
 
+// Helper to normalize arrays from DB (handles null, single string, or array)
+const toStringArray = z.preprocess((val) => {
+  if (val === null || val === undefined) return [];
+  if (typeof val === 'string') return [val];
+  if (Array.isArray(val)) return val;
+  return [];
+}, z.array(z.string()));
+
+// Helper for required integer fields (coerce empty/NaN to 0)
+const reqInt0 = z.preprocess((val) => {
+  if (val === null || val === undefined || val === '' || (typeof val === 'number' && isNaN(val))) return 0;
+  return val;
+}, z.number().int().min(0));
+
+// Helper for optional integer fields (coerce empty/NaN to undefined)
+const optInt = z.preprocess((val) => {
+  if (val === null || val === undefined || val === '' || (typeof val === 'number' && isNaN(val))) return undefined;
+  return val;
+}, z.number().int().min(0).optional());
+
 const spaceSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
   slug: z.string()
@@ -22,23 +42,23 @@ const spaceSchema = z.object({
     .max(50, 'Slug must be less than 50 characters')
     .regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
   description: z.string().max(500, 'Description must be less than 500 characters').optional(),
-  capacity_seated: z.number().min(0, 'Seated capacity must be 0 or greater').int(),
-  capacity_standing: z.number().min(0, 'Standing capacity must be 0 or greater').int(),
-  min_guests: z.number().min(0).int().optional(),
-  max_guests: z.number().min(0).int().optional(),
+  capacity_seated: reqInt0,
+  capacity_standing: reqInt0,
+  min_guests: optInt,
+  max_guests: optInt,
   is_active: z.boolean(),
-  display_order: z.number().min(0, 'Display order must be 0 or greater').int(),
-  combinable_with: z.array(z.string()).optional(),
+  display_order: reqInt0,
+  combinable_with: toStringArray,
   ambience: z.string().optional(),
   natural_light: z.string().optional(),
   outdoor_access: z.boolean().optional(),
-  av_capabilities: z.array(z.string()).optional(),
+  av_capabilities: toStringArray,
   layout_flexibility: z.string().optional(),
-  catering_style: z.array(z.string()).optional(),
-  ideal_event_types: z.array(z.string()).optional(),
-  unique_features: z.array(z.string()).optional(),
-  accessibility_features: z.array(z.string()).optional(),
-  pricing_tier: z.array(z.string()).optional(),
+  catering_style: toStringArray,
+  ideal_event_types: toStringArray,
+  unique_features: toStringArray,
+  accessibility_features: toStringArray,
+  pricing_tier: toStringArray,
 }).refine((data) => {
   if (data.min_guests && data.max_guests) {
     return data.min_guests <= data.max_guests;
@@ -106,29 +126,37 @@ const SpaceForm = () => {
     }
   }, [watchName, isEdit, setValue]);
 
+  // Helper to normalize array values from DB
+  const normalizeArray = (val: any): string[] => {
+    if (val === null || val === undefined) return [];
+    if (typeof val === 'string') return [val];
+    if (Array.isArray(val)) return val;
+    return [];
+  };
+
   // Load existing space data
   useEffect(() => {
     if (space && isEdit) {
       setValue('name', space.name);
       setValue('slug', space.slug);
       setValue('description', space.description || '');
-      setValue('capacity_seated', space.capacity_seated);
-      setValue('capacity_standing', space.capacity_standing);
-      setValue('min_guests', (space as any).min_guests || undefined);
-      setValue('max_guests', (space as any).max_guests || undefined);
+      setValue('capacity_seated', space.capacity_seated ?? 0);
+      setValue('capacity_standing', space.capacity_standing ?? 0);
+      setValue('min_guests', (space as any).min_guests ?? undefined);
+      setValue('max_guests', (space as any).max_guests ?? undefined);
       setValue('is_active', space.is_active);
-      setValue('display_order', space.display_order);
-      setValue('combinable_with', space.combinable_with || []);
+      setValue('display_order', space.display_order ?? 0);
+      setValue('combinable_with', normalizeArray(space.combinable_with));
       setValue('ambience', (space as any).ambience || '');
       setValue('natural_light', (space as any).natural_light || '');
       setValue('outdoor_access', (space as any).outdoor_access || false);
-      setValue('av_capabilities', (space as any).av_capabilities || []);
+      setValue('av_capabilities', normalizeArray((space as any).av_capabilities));
       setValue('layout_flexibility', (space as any).layout_flexibility || '');
-      setValue('catering_style', (space as any).catering_style || []);
-      setValue('ideal_event_types', (space as any).ideal_event_types || []);
-      setValue('unique_features', (space as any).unique_features || []);
-      setValue('accessibility_features', (space as any).accessibility_features || []);
-      setValue('pricing_tier', (space as any).pricing_tier || []);
+      setValue('catering_style', normalizeArray((space as any).catering_style));
+      setValue('ideal_event_types', normalizeArray((space as any).ideal_event_types));
+      setValue('unique_features', normalizeArray((space as any).unique_features));
+      setValue('accessibility_features', normalizeArray((space as any).accessibility_features));
+      setValue('pricing_tier', normalizeArray((space as any).pricing_tier));
     }
   }, [space, isEdit, setValue]);
 
@@ -263,7 +291,9 @@ const SpaceForm = () => {
                       id="min_guests"
                       type="number"
                       min="0"
-                      {...register('min_guests', { valueAsNumber: true })}
+                      {...register('min_guests', { 
+                        setValueAs: (v) => (v === "" || isNaN(v) ? undefined : Number(v))
+                      })}
                       placeholder="e.g. 10"
                       className="font-industrial"
                     />
@@ -275,7 +305,9 @@ const SpaceForm = () => {
                       id="max_guests"
                       type="number"
                       min="0"
-                      {...register('max_guests', { valueAsNumber: true })}
+                      {...register('max_guests', { 
+                        setValueAs: (v) => (v === "" || isNaN(v) ? undefined : Number(v))
+                      })}
                       placeholder="e.g. 200"
                       className="font-industrial"
                     />
@@ -290,7 +322,9 @@ const SpaceForm = () => {
                       id="capacity_seated"
                       type="number"
                       min="0"
-                      {...register('capacity_seated', { valueAsNumber: true })}
+                      {...register('capacity_seated', { 
+                        setValueAs: (v) => (v === "" || isNaN(v) ? 0 : Number(v))
+                      })}
                       placeholder="0"
                       className="font-industrial"
                     />
@@ -305,7 +339,9 @@ const SpaceForm = () => {
                       id="capacity_standing"
                       type="number"
                       min="0"
-                      {...register('capacity_standing', { valueAsNumber: true })}
+                      {...register('capacity_standing', { 
+                        setValueAs: (v) => (v === "" || isNaN(v) ? 0 : Number(v))
+                      })}
                       placeholder="0"
                       className="font-industrial"
                     />
@@ -378,7 +414,7 @@ const SpaceForm = () => {
                         { label: 'Recording Equipment', value: 'recording' },
                       ]}
                       selected={Array.isArray(watch('av_capabilities')) ? watch('av_capabilities') : []}
-                      onChange={(values) => setValue('av_capabilities', values)}
+                      onChange={(values) => setValue('av_capabilities', values, { shouldValidate: true })}
                       placeholder="Select AV equipment..."
                       className="font-industrial"
                     />
@@ -417,7 +453,7 @@ const SpaceForm = () => {
                         { label: 'BBQ', value: 'bbq' },
                       ]}
                       selected={Array.isArray(watch('catering_style')) ? watch('catering_style') : []}
-                      onChange={(values) => setValue('catering_style', values)}
+                      onChange={(values) => setValue('catering_style', values, { shouldValidate: true })}
                       placeholder="Select catering styles..."
                       className="font-industrial"
                     />
@@ -437,7 +473,7 @@ const SpaceForm = () => {
                         { label: 'Performance', value: 'performance' },
                       ]}
                       selected={Array.isArray(watch('ideal_event_types')) ? watch('ideal_event_types') : []}
-                      onChange={(values) => setValue('ideal_event_types', values)}
+                      onChange={(values) => setValue('ideal_event_types', values, { shouldValidate: true })}
                       placeholder="Select event types..."
                       className="font-industrial"
                     />
@@ -464,7 +500,7 @@ const SpaceForm = () => {
                         { label: 'Garden Area', value: 'garden' },
                       ]}
                       selected={Array.isArray(watch('unique_features')) ? watch('unique_features') : []}
-                      onChange={(values) => setValue('unique_features', values)}
+                      onChange={(values) => setValue('unique_features', values, { shouldValidate: true })}
                       placeholder="Select unique features..."
                       className="font-industrial"
                     />
@@ -482,7 +518,7 @@ const SpaceForm = () => {
                         { label: 'Assistance Dogs Welcome', value: 'assistance_dogs' },
                       ]}
                       selected={Array.isArray(watch('accessibility_features')) ? watch('accessibility_features') : []}
-                      onChange={(values) => setValue('accessibility_features', values)}
+                      onChange={(values) => setValue('accessibility_features', values, { shouldValidate: true })}
                       placeholder="Select accessibility features..."
                       className="font-industrial"
                     />
@@ -505,10 +541,13 @@ const SpaceForm = () => {
                         { label: 'Luxury', value: 'luxury' },
                       ]}
                       selected={Array.isArray(watch('pricing_tier')) ? watch('pricing_tier') : []}
-                      onChange={(values) => setValue('pricing_tier', values)}
+                      onChange={(values) => setValue('pricing_tier', values, { shouldValidate: true, shouldDirty: true })}
                       placeholder="Select pricing tiers..."
                       className="font-industrial"
                     />
+                    {errors.pricing_tier && (
+                      <p className="text-sm text-destructive font-industrial">{errors.pricing_tier.message}</p>
+                    )}
                   </div>
 
                   <div className="space-y-3">
@@ -517,7 +556,9 @@ const SpaceForm = () => {
                       id="display_order"
                       type="number"
                       min="0"
-                      {...register('display_order', { valueAsNumber: true })}
+                      {...register('display_order', { 
+                        setValueAs: (v) => (v === "" || isNaN(v) ? 0 : Number(v))
+                      })}
                       placeholder="0"
                       className="font-industrial"
                     />
