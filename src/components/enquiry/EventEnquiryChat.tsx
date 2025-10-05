@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { Message, EnquiryData } from '@/pages/EventEnquiry';
+import './EventEnquiryChat.css';
 
 interface EventEnquiryChatProps {
   onComplete: (data: EnquiryData, messages: Message[]) => void;
@@ -121,23 +122,12 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
               className={`
                 relative max-w-[80%] px-4 py-3 rounded-lg
                 ${message.role === 'user'
-                  ? 'bg-accent text-accent-foreground border-2 border-foreground'
-                  : 'bg-white text-foreground border-2 border-accent'
+                  ? 'bg-accent text-accent-foreground border-2 border-foreground tail-bubble tail-user'
+                  : 'bg-white text-foreground border-2 border-accent tail-bubble tail-ai'
                 }
                 font-industrial text-sm md:text-base transition-all duration-200
               `}
             >
-              {/* Chat bubble tail - two-layer diamond for seamless border */}
-              <div
-                className={`
-                  absolute bottom-[7px] pointer-events-none
-                  ${message.role === 'user' ? '-right-[9px]' : '-left-[9px]'}
-                `}
-              >
-                <div className={`relative w-4 h-4 rotate-45 ${message.role === 'user' ? 'bg-foreground' : 'bg-accent'}`}>
-                  <div className={`absolute inset-[2px] rounded-[1px] ${message.role === 'user' ? 'bg-accent' : 'bg-white'}`} />
-                </div>
-              </div>
               {message.content}
             </div>
           </div>
@@ -145,13 +135,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="relative bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2">
-              {/* Chat bubble tail - two-layer diamond for seamless border */}
-              <div className="absolute bottom-[7px] -left-[9px] pointer-events-none">
-                <div className="relative w-4 h-4 rotate-45 bg-accent">
-                  <div className="absolute inset-[2px] bg-white rounded-[1px]" />
-                </div>
-              </div>
+            <div className="relative bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2 tail-bubble tail-ai">
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0s_infinite]" />
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0.2s_infinite]" />

@@ -1,0 +1,47 @@
+/* Chat bubble tails using CSS border triangles for seamless outlines */
+
+.tail-bubble {
+  position: relative;
+  overflow: visible;
+}
+
+/* Base pseudo-element reset */
+.tail-ai::before,
+.tail-ai::after,
+.tail-user::before,
+.tail-user::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  pointer-events: none;
+}
+
+/* Assistant (left) - outline then fill */
+.tail-ai::before {
+  bottom: 10px;        /* aligns with rounded corner */
+  left: -12px;         /* sits outside the bubble border */
+  border-width: 12px 12px 0 0; /* top-left triangle */
+  border-color: transparent hsl(var(--accent)) transparent transparent; /* outline colour */
+}
+.tail-ai::after {
+  bottom: 11px;        /* nudged for crisp joint with border */
+  left: -10px;
+  border-width: 10px 10px 0 0; /* inner fill */
+  border-color: transparent white transparent transparent; /* matches bg-white bubble */
+}
+
+/* User (right) - outline then fill */
+.tail-user::before {
+  bottom: 10px;
+  right: -12px;
+  border-width: 12px 0 0 12px; /* top-right triangle */
+  border-color: transparent transparent transparent hsl(var(--foreground)); /* outline colour */
+}
+.tail-user::after {
+  bottom: 11px;
+  right: -10px;
+  border-width: 10px 0 0 10px; /* inner fill */
+  border-color: transparent transparent transparent hsl(var(--accent)); /* matches bg-accent bubble */
+}
