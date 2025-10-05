@@ -50,13 +50,15 @@ export function MultiSelect({
           role="combobox"
           aria-expanded={open}
           className={cn(
-            "w-full justify-between min-h-[40px] h-auto",
+            "w-full justify-between min-h-[40px] h-auto group",
             className
           )}
         >
           <div className="flex gap-1 flex-wrap">
             {selected.length === 0 && (
-              <span className="text-muted-foreground">{placeholder}</span>
+              <span className="text-muted-foreground group-hover:text-accent-foreground transition-colors">
+                {placeholder}
+              </span>
             )}
             {selected.map((value) => {
               const option = options.find((opt) => opt.value === value);
