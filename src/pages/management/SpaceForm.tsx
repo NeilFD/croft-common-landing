@@ -15,6 +15,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft, Save } from 'lucide-react';
 import { MultiSelect } from '@/components/ui/multi-select';
 
+// Valid pricing tier values
+const PRICING_TIER_VALUES = ['budget', 'mid_range', 'premium', 'luxury'] as const;
+const isAllowedPricingTier = (value: string): boolean => PRICING_TIER_VALUES.includes(value as any);
+const PRICING_TIER_OPTIONS = PRICING_TIER_VALUES.map(value => ({
+  label: value.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+  value
+}));
+
 // Helper to normalize arrays from DB (handles null, single string, or array)
 const toStringArray = z.preprocess((val) => {
   if (val === null || val === undefined) return [];
@@ -107,6 +115,7 @@ const SpaceForm = () => {
       ideal_event_types: [],
       unique_features: [],
       accessibility_features: [],
+      pricing_tier: [],
     }
   });
 
@@ -156,7 +165,8 @@ const SpaceForm = () => {
       setValue('ideal_event_types', normalizeArray((space as any).ideal_event_types));
       setValue('unique_features', normalizeArray((space as any).unique_features));
       setValue('accessibility_features', normalizeArray((space as any).accessibility_features));
-      setValue('pricing_tier', normalizeArray((space as any).pricing_tier));
+      // Filter out invalid pricing tier values from DB
+      setValue('pricing_tier', normalizeArray((space as any).pricing_tier).filter(isAllowedPricingTier));
     }
   }, [space, isEdit, setValue]);
 
@@ -185,15 +195,22 @@ const SpaceForm = () => {
 
   const onSubmit = async (data: SpaceFormData) => {
     console.log('Form submit triggered with data:', data);
+    
+    // Filter out any invalid pricing_tier values before submitting
+    const cleanedData = {
+      ...data,
+      pricing_tier: data.pricing_tier.filter(isAllowedPricingTier)
+    };
+    
     try {
       if (isEdit && id) {
         console.log('Updating space:', id);
         // Update existing space - server normalizes slug
-        await updateSpace.mutateAsync({ id, ...data });
+        await updateSpace.mutateAsync({ id, ...cleanedData });
       } else {
         console.log('Creating new space');
         // Create new space - server normalizes slug
-        await createSpace.mutateAsync(data as CreateSpaceData);
+        await createSpace.mutateAsync(cleanedData as CreateSpaceData);
       }
       // Navigate back to list - trust server-normalized data
       navigate('/management/spaces');
@@ -534,14 +551,9 @@ const SpaceForm = () => {
                   <div className="space-y-3">
                     <Label htmlFor="pricing_tier" className="font-industrial font-medium">Pricing Tier</Label>
                     <MultiSelect
-                      options={[
-                        { label: 'Budget', value: 'budget' },
-                        { label: 'Mid Range', value: 'mid_range' },
-                        { label: 'Premium', value: 'premium' },
-                        { label: 'Luxury', value: 'luxury' },
-                      ]}
-                      selected={Array.isArray(watch('pricing_tier')) ? watch('pricing_tier') : []}
-                      onChange={(values) => setValue('pricing_tier', values, { shouldValidate: true, shouldDirty: true })}
+                      options={PRICING_TIER_OPTIONS}
+                      selected={(Array.isArray(watch('pricing_tier')) ? watch('pricing_tier') : []).filter(isAllowedPricingTier)}
+                      onChange={(values) => setValue('pricing_tier', values.filter(isAllowedPricingTier), { shouldValidate: true, shouldDirty: true })}
                       placeholder="Select pricing tiers..."
                       className="font-industrial"
                     />
