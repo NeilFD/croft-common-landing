@@ -54,8 +54,18 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
       if (error) throw error;
 
       if (data.done) {
-        // Conversation is complete, move to review
-        onComplete(data.extractedData, [...messages, userMessage]);
+        // Add a friendly completion message before moving to review
+        const completionMessage: Message = {
+          role: 'assistant',
+          content: "That's brilliant! Let me find the perfect space for you... ✨",
+          timestamp: Date.now()
+        };
+        setMessages(prev => [...prev, completionMessage]);
+        
+        // Small delay to show the message before transitioning
+        setTimeout(() => {
+          onComplete(data.extractedData, [...messages, userMessage, completionMessage]);
+        }, 800);
       } else {
         // Add AI response
         const aiMessage: Message = {

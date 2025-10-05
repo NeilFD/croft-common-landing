@@ -48,9 +48,12 @@ Key info to gather naturally (not as a checklist):
 9. Budget (be soft - "Not sure yet" is totally fine)
 10. Special requests (outdoor space, AV needs, accessibility, etc.)
 
-When you have enough info (at least name, email, event type, guest count, and vibe), end with: "That's brilliant! Let me find the perfect space for you..." and respond with JSON: {"done": true, "extractedData": {...}}
-
-Otherwise, respond with JSON: {"done": false, "message": "your next question"}`;
+CRITICAL JSON RESPONSE FORMAT:
+- While gathering info: Return ONLY this JSON (no other text): {"done": false, "message": "your next question"}
+- When you have enough info (at least name, email, event type, guest count, and vibe): Return ONLY this JSON (no other text): {"done": true, "extractedData": {...all collected info...}}
+- NEVER mix conversational text with JSON
+- NEVER add text before or after the JSON
+- Your response must be PURE JSON ONLY`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -77,9 +80,36 @@ Otherwise, respond with JSON: {"done": false, "message": "your next question"}`;
     const aiMessage = data.choices[0].message.content;
 
     // Try to parse as JSON to see if conversation is done
+    let parsed;
     try {
-      const parsed = JSON.parse(aiMessage);
-      
+      parsed = JSON.parse(aiMessage);
+    } catch {
+      // If parsing fails, try to extract JSON from mixed text
+      const jsonMatch = aiMessage.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          parsed = JSON.parse(jsonMatch[0]);
+        } catch {
+          // Fallback to treating as regular message
+          return new Response(JSON.stringify({ 
+            done: false, 
+            message: aiMessage 
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } else {
+        // No JSON found, treat as regular message
+        return new Response(JSON.stringify({ 
+          done: false, 
+          message: aiMessage 
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    try {
       // If conversation is done, generate space proposal
       if (parsed.done && parsed.extractedData) {
         console.log('Conversation complete, generating space proposal...');
@@ -118,8 +148,9 @@ Otherwise, respond with JSON: {"done": false, "message": "your next question"}`;
       return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    } catch {
-      // Not JSON, just a regular message
+    } catch (innerError) {
+      console.error('Error processing parsed JSON:', innerError);
+      // Fallback to treating as regular message
       return new Response(JSON.stringify({ 
         done: false, 
         message: aiMessage 
