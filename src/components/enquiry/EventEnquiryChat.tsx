@@ -106,7 +106,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
   return (
     <div className="w-full max-w-3xl h-[600px] bg-card border-2 border-foreground shadow-lg rounded-lg flex flex-col">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-background scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent"
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-background rounded-t-lg scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent"
            style={{
              scrollbarWidth: 'thin',
              scrollbarColor: 'hsl(var(--accent)) transparent'
@@ -122,7 +122,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
                 max-w-[80%] px-4 py-3 rounded-lg
                 ${message.role === 'user'
                   ? 'bg-accent text-accent-foreground border-2 border-foreground'
-                  : 'bg-white text-foreground border-l-4 border-accent'
+                  : 'bg-white text-foreground border-2 border-accent'
                 }
                 font-industrial text-sm md:text-base transition-all duration-200
               `}
@@ -134,7 +134,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         
         {isLoading && (
           <div className="flex justify-start animate-fade-in">
-            <div className="bg-white text-foreground px-4 py-3 rounded-lg border-l-4 border-accent flex items-center gap-2">
+            <div className="bg-white text-foreground px-4 py-3 rounded-lg border-2 border-accent flex items-center gap-2">
               <div className="flex gap-1">
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0s_infinite]" />
                 <span className="w-2 h-2 bg-accent rounded-full animate-[pulse_1.4s_ease-in-out_0.2s_infinite]" />
@@ -148,7 +148,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t-2 border-foreground bg-background">
+      <div className="p-4 border-t-2 border-foreground bg-background rounded-b-lg">
         <div className="flex gap-2">
           <Input
             value={input}
