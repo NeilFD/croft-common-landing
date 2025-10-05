@@ -156,17 +156,21 @@ const SpaceForm = () => {
   }
 
   const onSubmit = async (data: SpaceFormData) => {
+    console.log('Form submit triggered with data:', data);
     try {
       if (isEdit && id) {
+        console.log('Updating space:', id);
         // Update existing space - server normalizes slug
         await updateSpace.mutateAsync({ id, ...data });
       } else {
+        console.log('Creating new space');
         // Create new space - server normalizes slug
         await createSpace.mutateAsync(data as CreateSpaceData);
       }
       // Navigate back to list - trust server-normalized data
       navigate('/management/spaces');
     } catch (error) {
+      console.error('Error submitting form:', error);
       // Error handling is done in the mutation hooks
     }
   };
@@ -203,7 +207,9 @@ const SpaceForm = () => {
           </CardHeader>
           
           <CardContent className="p-4 md:p-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 md:space-y-8">
+            <form onSubmit={handleSubmit(onSubmit, (errors) => {
+              console.error('Form validation errors:', errors);
+            })} className="space-y-6 md:space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-3">
                   <Label htmlFor="name" className="font-industrial font-medium">Name *</Label>
@@ -543,7 +549,7 @@ const SpaceForm = () => {
                   <div className="flex items-center space-x-3">
                     <Switch
                       id="is_active"
-                      {...register('is_active')}
+                      checked={watch('is_active')}
                       onCheckedChange={(checked) => setValue('is_active', checked)}
                     />
                     <Label htmlFor="is_active" className="font-industrial font-medium">Active (available for bookings)</Label>
