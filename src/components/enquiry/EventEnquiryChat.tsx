@@ -108,7 +108,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
   return (
     <div className="w-full max-w-3xl space-y-4 px-4">
       {/* Info Card */}
-      <Card className="bg-accent/10 border-2 border-foreground shadow-lg">
+      <Card className="bg-white border-2 border-foreground shadow-lg">
         <CardContent className="p-4 md:p-6">
           <div className="flex items-start gap-3">
             <Mail className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
