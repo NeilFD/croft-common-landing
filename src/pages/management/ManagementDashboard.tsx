@@ -87,10 +87,10 @@ const ManagementDashboard = () => {
               key={action.title}
               asChild
               variant="outline"
-              className="h-auto flex-col gap-3 p-6 border-2 transition-all duration-300 hover:scale-[1.05] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-[hsl(var(--accent-pink))] hover:text-black hover:border-[hsl(var(--accent-pink))]"
+              className="h-auto flex-col gap-3 p-6 border-2 border-black transition-all duration-300 hover:scale-[1.05] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-[hsl(var(--accent-pink))] hover:text-black hover:border-[hsl(var(--accent-pink))] group"
             >
               <Link to={action.href} className="flex flex-col items-center justify-center">
-                <action.icon className={`h-8 w-8 ${action.color}`} />
+                <action.icon className={`h-8 w-8 ${action.color} group-hover:text-black transition-colors`} />
                 <span className="font-brutalist text-xs uppercase tracking-wide text-center leading-tight mt-1">
                   {action.title}
                 </span>
@@ -99,22 +99,20 @@ const ManagementDashboard = () => {
           ))}
         </div>
 
-        <Card className="border-industrial transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-card/80 backdrop-blur-sm">
-          <CardHeader className="p-4 md:p-6">
-            <CardTitle className="flex items-center space-x-2 font-brutalist uppercase tracking-wide text-base md:text-lg">
-              <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
-              <span>ACCESS</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6 pt-0">
-            <div className="font-industrial text-sm text-muted-foreground space-y-2">
-              <div className="flex justify-between items-center">
+        <Card className="border-industrial w-fit">
+          <CardContent className="p-3 flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-[hsl(var(--accent-pink))]" />
+              <span className="font-brutalist uppercase tracking-wide text-sm">ACCESS</span>
+            </div>
+            <div className="font-industrial text-xs text-muted-foreground flex items-center gap-3">
+              <div className="flex items-center gap-1.5">
                 <span>Role:</span>
                 <span className="capitalize font-medium text-foreground">{managementUser?.role}</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex items-center gap-1.5">
                 <span>Level:</span>
-                <span className="font-medium text-foreground text-right">
+                <span className="font-medium text-foreground">
                   {managementUser?.role === 'admin' ? 'Full' : 
                    managementUser?.role === 'sales' ? 'Sales & Ops' :
                    'Read Only'}
