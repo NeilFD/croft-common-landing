@@ -88,23 +88,36 @@ serve(async (req) => {
     // 7-day expiry
     const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Upsert client access
-    const { error: accessError } = await supabase
+    // Revoke any existing active tokens for this event, then insert a new one
+    console.log('issue-client-magic-link: revoking existing tokens (if any)');
+    const { data: revokedRows, error: revokeError } = await supabase
       .from('client_access')
-      .upsert({
+      .update({ revoked: true })
+      .eq('event_id', event_id)
+      .eq('revoked', false)
+      .select('id');
+
+    if (revokeError) {
+      console.error('issue-client-magic-link: error revoking existing tokens', revokeError);
+      // Do not fail the whole request if revoke fails for zero rows; continue to try insert
+    } else {
+      console.log('issue-client-magic-link: revoked count', revokedRows?.length ?? 0);
+    }
+
+    console.log('issue-client-magic-link: inserting new client access record');
+    const { error: insertError } = await supabase
+      .from('client_access')
+      .insert({
         event_id,
         event_code: eventCode,
         magic_token_hash: magicTokenHash,
         token_expires_at: tokenExpiresAt,
         created_by: user.id,
         revoked: false
-      }, {
-        onConflict: 'event_id',
-        ignoreDuplicates: false
       });
 
-    if (accessError) {
-      console.error('Error creating client access:', accessError);
+    if (insertError) {
+      console.error('issue-client-magic-link: error creating client access', insertError);
       return new Response(
         JSON.stringify({ error: 'Failed to create access' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
