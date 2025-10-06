@@ -1055,7 +1055,7 @@ export type Database = {
             foreignKeyName: "client_messages_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]
@@ -1105,7 +1105,7 @@ export type Database = {
             foreignKeyName: "client_session_context_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]

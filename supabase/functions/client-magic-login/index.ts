@@ -58,7 +58,7 @@ serve(async (req) => {
 
     // Get event details
     const { data: event, error: eventError } = await supabase
-      .from('events')
+      .from('management_events')
       .select('id, client_email, client_name')
       .eq('id', accessData.event_id)
       .single();
