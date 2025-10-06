@@ -58,7 +58,7 @@ serve(async (req) => {
     // Get event details
     const { data: event, error: eventError } = await supabase
       .from('management_events')
-      .select('id, title, client_name, client_email, primary_date')
+      .select('id, event_type, client_name, client_email, primary_date')
       .eq('id', event_id)
       .single();
 
@@ -120,7 +120,7 @@ serve(async (req) => {
 
     // TODO: Send email via Resend with branded template
     console.log('Portal link generated:', portalUrl);
-    console.log('For event:', event.title);
+    console.log('For event type:', event.event_type);
     console.log('Client:', event.client_name, event.client_email);
 
     return new Response(

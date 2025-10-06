@@ -38,7 +38,7 @@ const ClientPortalControls = ({ eventId, eventCode }: ClientPortalControlsProps)
         throw new Error(data.error || 'Failed to generate link');
       }
 
-      setMagicLink(data.portalUrl);
+      setMagicLink(data.portal_url);
       setShowLinkDialog(true);
       toast.success('Magic link generated');
     } catch (err: any) {
