@@ -940,6 +940,176 @@ export type Database = {
           },
         ]
       }
+      client_access: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          event_code: string
+          event_id: string
+          id: string
+          magic_token_hash: string
+          revoked: boolean
+          token_expires_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          event_code: string
+          event_id: string
+          id?: string
+          magic_token_hash: string
+          revoked?: boolean
+          token_expires_at: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          event_code?: string
+          event_id?: string
+          id?: string
+          magic_token_hash?: string
+          revoked?: boolean
+          token_expires_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_access_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_files: {
+        Row: {
+          created_at: string
+          event_id: string
+          filename: string
+          id: string
+          mime_type: string
+          size_bytes: number
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          filename: string
+          id?: string
+          mime_type: string
+          size_bytes: number
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          filename?: string
+          id?: string
+          mime_type?: string
+          size_bytes?: number
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_files_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_messages: {
+        Row: {
+          author: string
+          body: string
+          created_at: string
+          created_by: string | null
+          event_id: string
+          id: string
+          read_at: string | null
+        }
+        Insert: {
+          author: string
+          body: string
+          created_at?: string
+          created_by?: string | null
+          event_id: string
+          id?: string
+          read_at?: string | null
+        }
+        Update: {
+          author?: string
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          event_id?: string
+          id?: string
+          read_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_messages_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_session_context: {
+        Row: {
+          contact_email: string
+          csrf_token: string
+          event_id: string
+          expires_at: string
+          id: string
+          ip_hash: string | null
+          issued_at: string
+          last_activity_at: string
+          revoked: boolean
+          session_fingerprint: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          contact_email: string
+          csrf_token: string
+          event_id: string
+          expires_at: string
+          id?: string
+          ip_hash?: string | null
+          issued_at?: string
+          last_activity_at?: string
+          revoked?: boolean
+          session_fingerprint?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          contact_email?: string
+          csrf_token?: string
+          event_id?: string
+          expires_at?: string
+          id?: string
+          ip_hash?: string | null
+          issued_at?: string
+          last_activity_at?: string
+          revoked?: boolean
+          session_fingerprint?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_session_context_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cms_brand_assets: {
         Row: {
           asset_key: string
@@ -5703,6 +5873,10 @@ export type Database = {
           tickets_sold: number
           title: string
         }[]
+      }
+      get_client_event_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_current_week_boundaries: {
         Args: Record<PropertyKey, never>
