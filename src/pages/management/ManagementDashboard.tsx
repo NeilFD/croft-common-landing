@@ -36,6 +36,14 @@ const ManagementDashboard = () => {
       show: true
     },
     {
+      title: 'FEEDBACK',
+      description: 'Guest feedback',
+      icon: MessageSquare,
+      href: '/management/feedback',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessFeedback()
+    },
+    {
       title: 'ADMIN',
       description: 'System administration',
       icon: Shield,
@@ -58,14 +66,6 @@ const ManagementDashboard = () => {
       href: '/management/research',
       color: 'text-[hsl(var(--accent-pink))]',
       show: canAccessResearch()
-    },
-    {
-      title: 'FEEDBACK',
-      description: 'Guest feedback',
-      icon: MessageSquare,
-      href: '/management/feedback',
-      color: 'text-[hsl(var(--accent-pink))]',
-      show: canAccessFeedback()
     }
   ];
 
