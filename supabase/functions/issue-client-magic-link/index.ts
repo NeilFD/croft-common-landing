@@ -55,14 +55,19 @@ serve(async (req) => {
       );
     }
 
-    // Get event details
+    // Get event details (use maybeSingle to avoid throwing)
+    console.log('issue-client-magic-link: fetching event', { event_id });
     const { data: event, error: eventError } = await supabase
       .from('management_events')
       .select('id, event_type, client_name, client_email, primary_date')
       .eq('id', event_id)
-      .single();
+      .maybeSingle();
 
-    if (eventError || !event) {
+    if (eventError) {
+      console.error('issue-client-magic-link: event fetch error', eventError);
+    }
+
+    if (!event) {
       return new Response(
         JSON.stringify({ error: 'Event not found' }),
         { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
