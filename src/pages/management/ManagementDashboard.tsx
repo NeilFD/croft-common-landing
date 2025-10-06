@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import industrialBg from '@/assets/industrial-bg.png';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
@@ -73,7 +74,15 @@ const ManagementDashboard = () => {
 
   return (
     <ManagementLayout>
-      <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+      {/* Fixed background image with overlay */}
+      <div 
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat" 
+        style={{ backgroundImage: `url(${industrialBg})` }}
+      />
+      <div className="fixed inset-0 z-0 bg-background/85 backdrop-blur-sm" />
+      
+      {/* Content with relative positioning */}
+      <div className="relative z-10 space-y-4 md:space-y-6 p-3 md:p-6">
         <div>
           <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
           <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
