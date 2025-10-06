@@ -83,12 +83,14 @@ const ManagementDashboard = () => {
       
       {/* Content with relative positioning */}
       <div className="relative z-10 space-y-4 md:space-y-6 p-3 md:p-6">
-        <div>
-          <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
-          <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-            {managementUser?.user.email}
-          </p>
-        </div>
+        <Card className="bg-white border-black border-2">
+          <CardContent className="p-4 md:p-6">
+            <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
+            <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+              {managementUser?.user.email}
+            </p>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {quickActions.map((action) => (
@@ -108,7 +110,7 @@ const ManagementDashboard = () => {
           ))}
         </div>
 
-        <Card className="border-industrial w-fit">
+        <Card className="border-industrial w-fit bg-white">
           <CardContent className="p-3 flex items-center gap-4">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-[hsl(var(--accent-pink))]" />
