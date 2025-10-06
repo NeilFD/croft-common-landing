@@ -49,19 +49,6 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
-  // Domain canonicalization: always redirect apex to www for /management/login
-  useEffect(() => {
-    const host = window.location.hostname;
-    
-    // Always redirect apex domain to www for this route
-    if (host === 'croftcommontest.com') {
-      const newUrl = 'https://www.croftcommontest.com' + 
-                     window.location.pathname + 
-                     window.location.search + 
-                     window.location.hash;
-      window.location.replace(newUrl);
-    }
-  }, []);
 
   // Utility: remove auth artefacts (# fragments and sensitive query params)
   const stripAuthArtifacts = () => {
