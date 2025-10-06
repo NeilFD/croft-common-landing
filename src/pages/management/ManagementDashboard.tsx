@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import banksyBg from '@/assets/banksy-bg.jpeg';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
@@ -37,14 +36,6 @@ const ManagementDashboard = () => {
       show: true
     },
     {
-      title: 'FEEDBACK',
-      description: 'Guest feedback',
-      icon: MessageSquare,
-      href: '/management/feedback',
-      color: 'text-[hsl(var(--accent-pink))]',
-      show: canAccessFeedback()
-    },
-    {
       title: 'ADMIN',
       description: 'System administration',
       icon: Shield,
@@ -67,6 +58,14 @@ const ManagementDashboard = () => {
       href: '/management/research',
       color: 'text-[hsl(var(--accent-pink))]',
       show: canAccessResearch()
+    },
+    {
+      title: 'FEEDBACK',
+      description: 'Guest feedback',
+      icon: MessageSquare,
+      href: '/management/feedback',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessFeedback()
     }
   ];
 
@@ -74,59 +73,52 @@ const ManagementDashboard = () => {
 
   return (
     <ManagementLayout>
-      {/* Fixed background image with overlay */}
-      <div 
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat" 
-        style={{ backgroundImage: `url(${banksyBg})` }}
-      />
-      <div className="fixed inset-0 z-0 bg-background/30" />
-      
-      {/* Content with relative positioning */}
-      <div className="relative z-10 space-y-4 md:space-y-6 p-3 md:p-6">
-        <Card className="bg-white border-black border-2">
-          <CardContent className="p-4 md:p-6 flex items-center gap-4">
-            <Building2 className="h-16 w-16 md:h-20 md:w-20 text-[hsl(var(--accent-pink))]" />
-            <div>
-              <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
-              <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-                {managementUser?.user.email}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="space-y-4 md:space-y-6 p-3 md:p-6">
+        <div>
+          <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
+          <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+            {managementUser?.user.email}
+          </p>
+        </div>
 
-        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => (
-            <Button
-              key={action.title}
-              asChild
-              variant="outline"
-              className="h-auto flex-col gap-3 p-6 border-2 border-black transition-all duration-300 hover:scale-[1.05] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-[hsl(var(--accent-pink))] hover:text-black hover:border-[hsl(var(--accent-pink))] group"
-            >
-              <Link to={action.href} className="flex flex-col items-center justify-center">
-                <action.icon className={`h-8 w-8 ${action.color} group-hover:text-black transition-colors`} />
-                <span className="font-brutalist text-xs uppercase tracking-wide text-center leading-tight mt-1">
-                  {action.title}
-                </span>
-              </Link>
-            </Button>
+            <Card key={action.title} className="border-industrial transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-card/80 backdrop-blur-sm">
+              <CardHeader className="pb-3 p-4 md:p-6">
+                <div className="flex items-center space-x-2">
+                  <action.icon className={`h-5 w-5 md:h-6 md:w-6 ${action.color}`} />
+                  <CardTitle className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wide">{action.title}</CardTitle>
+                </div>
+                <CardDescription className="font-industrial text-sm md:text-base">{action.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 md:p-6 pt-0">
+                <Button asChild className="w-full btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11 hover:bg-[hsl(var(--accent-pink))] hover:text-black transition-colors">
+                  <Link to={action.href} className="flex items-center justify-center space-x-2">
+                    <action.icon className="h-4 w-4" />
+                    <span>OPEN</span>
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
-        <Card className="border-industrial w-fit bg-white">
-          <CardContent className="p-3 flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4 text-[hsl(var(--accent-pink))]" />
-              <span className="font-brutalist uppercase tracking-wide text-sm">ACCESS</span>
-            </div>
-            <div className="font-industrial text-xs text-muted-foreground flex items-center gap-3">
-              <div className="flex items-center gap-1.5">
+        <Card className="border-industrial transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-card/80 backdrop-blur-sm">
+          <CardHeader className="p-4 md:p-6">
+            <CardTitle className="flex items-center space-x-2 font-brutalist uppercase tracking-wide text-base md:text-lg">
+              <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
+              <span>ACCESS</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 md:p-6 pt-0">
+            <div className="font-industrial text-sm text-muted-foreground space-y-2">
+              <div className="flex justify-between items-center">
                 <span>Role:</span>
                 <span className="capitalize font-medium text-foreground">{managementUser?.role}</span>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="flex justify-between items-center">
                 <span>Level:</span>
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-foreground text-right">
                   {managementUser?.role === 'admin' ? 'Full' : 
                    managementUser?.role === 'sales' ? 'Sales & Ops' :
                    'Read Only'}
