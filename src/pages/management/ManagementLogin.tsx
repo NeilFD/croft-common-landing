@@ -46,6 +46,8 @@ const ManagementLogin = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [recoveryInProgress, setRecoveryInProgress] = useState(initialRecovery);
+  const [sessionValid, setSessionValid] = useState(false);
+  const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
   // Utility: remove auth artefacts (# fragments and sensitive query params)
   const stripAuthArtifacts = () => {
@@ -68,13 +70,27 @@ const ManagementLogin = () => {
     setTimeout(stripAuthArtifacts, 500);
   };
 
-  useEffect(() => {
-    cleanUrlNowAndLater();
-  }, []);
+  // Validate session before showing password update form
+  const validateSession = async () => {
+    try {
+      const { data: sessionData, error } = await supabase.auth.getSession();
+      if (error || !sessionData?.session) {
+        setSessionValid(false);
+        setSessionCheckComplete(true);
+        return false;
+      }
+      setSessionValid(true);
+      setSessionCheckComplete(true);
+      return true;
+    } catch (err) {
+      console.error('Session validation error:', err);
+      setSessionValid(false);
+      setSessionCheckComplete(true);
+      return false;
+    }
+  };
 
   useEffect(() => {
-    // Initial recovery is derived synchronously to block premature redirects
-
     // Handle password reset/auth tokens from URL (robust for multiple Supabase flows)
     const processAuthTokens = async () => {
       const params = new URLSearchParams(window.location.search);
@@ -95,22 +111,9 @@ const ManagementLogin = () => {
         sessionStorage.setItem('recovery', '1');
       }
 
-      // Clean up trailing hash or params
-      if (window.location.hash) {
-        stripAuthArtifacts();
-      }
-
       try {
-        // If only access_token is present (no refresh token), Supabase may have already
-        // established a temporary session from the hash. Clean URL once session exists.
-        if (accessToken && !refreshToken && !code && !tokenHash && !token) {
-          const { data: s } = await supabase.auth.getSession();
-          if (s?.session) {
-            window.history.replaceState({}, document.title, '/management/login');
-            return;
-          }
-          // Otherwise, continue and rely on the auth listener below to finalise state.
-        }
+        let sessionEstablished = false;
+
         // Handle direct session tokens
         if (accessToken && refreshToken) {
           const { error } = await supabase.auth.setSession({
@@ -118,65 +121,79 @@ const ManagementLogin = () => {
             refresh_token: refreshToken,
           });
           if (error) throw error;
-
-          // Clean up URL
-          stripAuthArtifacts();
-          return;
+          sessionEstablished = true;
         }
 
         // Handle PKCE/code exchange
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
           if (error) throw error;
-
-          stripAuthArtifacts();
-          return;
+          sessionEstablished = true;
         }
 
         // Handle recovery via token_hash or token
         if (type === 'recovery' && (tokenHash || token)) {
           const { error } = await supabase.auth.verifyOtp({
             type: 'recovery',
-            // token_hash variant (most common for recovery links)
             token_hash: tokenHash || undefined,
-            // token variant (fallback if template provided Token)
             token: tokenHash ? undefined : (token as string),
             email: tokenHash ? undefined : (email || undefined),
           } as any);
           if (error) throw error;
+          sessionEstablished = true;
+        }
 
-          stripAuthArtifacts();
-          return;
+        // Wait for session to be confirmed before cleaning URL
+        if (sessionEstablished) {
+          // Give Supabase time to fully establish the session
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+          // Validate session exists
+          const valid = await validateSession();
+          
+          if (valid) {
+            // Only clean URL after session is confirmed
+            cleanUrlNowAndLater();
+          } else {
+            toast({
+              title: 'Session not established',
+              description: 'Please try clicking the reset link again',
+              variant: 'destructive',
+            });
+          }
         }
       } catch (err: any) {
+        console.error('Auth token processing error:', err);
         toast({
           title: 'Invalid reset link',
-          description: err?.message || 'The password reset link is invalid or expired',
+          description: err?.message || 'The password reset link is invalid or expired. Please request a new one.',
           variant: 'destructive',
         });
+        setSessionValid(false);
+        setSessionCheckComplete(true);
       }
     };
 
     processAuthTokens();
   }, []);
 
-  // Also react to Supabase auth events in case the redirect established a recovery session
+  // React to Supabase auth events
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      // Always clean recovery hashes on any auth event
-      cleanUrlNowAndLater();
-
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setRecoveryInProgress(true);
         setIsPasswordUpdateMode(true);
         sessionStorage.setItem('recovery', '1');
+        // Validate session immediately
+        await validateSession();
       } else if (event === 'SIGNED_IN') {
-        // If sign-in came from a recovery redirect, keep reset UI visible
         const h = window.location.hash;
         if (h && (h.includes('type=recovery') || h.includes('access_token'))) {
           setRecoveryInProgress(true);
           setIsPasswordUpdateMode(true);
           sessionStorage.setItem('recovery', '1');
+          // Validate session before showing form
+          await validateSession();
         }
       }
     });
@@ -210,95 +227,62 @@ const ManagementLogin = () => {
 
     setIsLoading(true);
 
-    // UI fail-safe: never leave the button spinning indefinitely
-    const loadingFailSafe = setTimeout(() => {
-      console.warn('⏱️ Password update taking too long, auto-resetting UI state');
-      setIsLoading(false);
-    }, 25000);
-
     try {
-      console.log('🔐 Attempting password update...');
-
-      // Ensure we have an active recovery session before attempting update
+      // Validate session one more time before update
       const { data: sessionData, error: sessionErr } = await supabase.auth.getSession();
-      if (sessionErr) {
-        console.error('🚨 Could not read session:', sessionErr);
-      }
-      if (!sessionData?.session) {
+      
+      if (sessionErr || !sessionData?.session) {
         toast({
           title: 'Recovery session expired',
-          description: 'Please click the reset link in your email again to continue.',
+          description: 'Your password reset link has expired. Please request a new one.',
           variant: 'destructive',
         });
+        setSessionValid(false);
+        setIsPasswordUpdateMode(false);
+        setRecoveryInProgress(false);
+        sessionStorage.removeItem('recovery');
         return;
       }
 
-      // Best-effort token refresh (non-blocking for UI)
-      try {
-        await supabase.auth.refreshSession();
-      } catch (e) {
-        console.warn('⚠️ refreshSession failed (non-blocking):', e);
+      // Update password using Supabase SDK
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (updateError) {
+        throw updateError;
       }
 
-      // Update password via direct GoTrue REST call with abort timeout
-      const GOTRUE_URL = 'https://xccidvoxhpgcnwinnyin.supabase.co/auth/v1/user';
-      const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjY2lkdm94aHBnY253aW5ueWluIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0NzQwMDgsImV4cCI6MjA3MDA1MDAwOH0.JYTjbecdXJmOkFj5b24nZ15nfon2Sg_mGDrOI6tR7sU';
-      const accessToken = sessionData.session.access_token as string;
+      toast({ 
+        title: 'Password updated successfully', 
+        description: 'Please sign in with your new password' 
+      });
 
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 12000);
-
-      let ok = false;
-      try {
-        const res = await fetch(GOTRUE_URL, {
-          method: 'PUT',
-          headers: {
-            'content-type': 'application/json',
-            'apikey': ANON,
-            'authorization': `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ password: newPassword }),
-          signal: controller.signal,
-        });
-        ok = res.ok;
-        if (!ok) {
-          const msg = await res.text().catch(() => '');
-          throw new Error(msg || `HTTP ${res.status}`);
-        }
-      } catch (err: any) {
-        if (err?.name === 'AbortError') {
-          console.warn('⏱️ Password update timed out');
-          toast({ title: 'Update timed out', description: 'Please try again, or request a new reset link.', variant: 'destructive' });
-        } else {
-          console.error('🚨 Password update failed (REST):', err);
-          toast({ title: 'Password update failed', description: err?.message || 'Please try again.', variant: 'destructive' });
-        }
-      } finally {
-        clearTimeout(timeout);
-      }
-
-      if (ok) {
-        console.log('✅ Password updated successfully (REST)');
-        toast({ title: 'Password updated successfully', description: 'Please sign in with your new password' });
-
-        // Clean recovery state and enforce a fresh load on the production URL
-        try { await supabase.auth.signOut(); } catch (e) { console.warn('⚠️ Sign out after reset failed:', e); }
-        setIsPasswordUpdateMode(false);
-        setRecoveryInProgress(false);
-        setNewPassword('');
-        setConfirmPassword('');
-        sessionStorage.removeItem('recovery');
+      // Clean recovery state
+      await supabase.auth.signOut();
+      setIsPasswordUpdateMode(false);
+      setRecoveryInProgress(false);
+      setNewPassword('');
+      setConfirmPassword('');
+      setSessionValid(false);
+      sessionStorage.removeItem('recovery');
+      
+      // Clean URL before redirect
+      cleanUrlNowAndLater();
+      
+      // Redirect to login
+      setTimeout(() => {
         window.location.assign('https://www.croftcommontest.com/management/login');
-      }
-    } catch (error) {
-      console.error('🚨 Password update exception:', error);
+      }, 500);
+      
+    } catch (error: any) {
+      console.error('Password update error:', error);
       toast({
         title: "Password update failed",
-        description: "An unexpected error occurred",
+        description: error?.message || "An unexpected error occurred. Please try requesting a new reset link.",
         variant: "destructive"
       });
     } finally {
-      clearTimeout(loadingFailSafe);
       setIsLoading(false);
     }
   };
@@ -439,58 +423,87 @@ const ManagementLogin = () => {
             
             <CardContent>
               {isPasswordUpdateMode ? (
-                <form onSubmit={handlePasswordUpdate} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <div className="relative">
-                      <Input
-                        id="newPassword"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your new password"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="pr-10"
-                        required
-                      />
+                <>
+                  {!sessionCheckComplete ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                    </div>
+                  ) : !sessionValid ? (
+                    <div className="space-y-4">
+                      <div className="text-center py-4">
+                        <p className="text-destructive mb-2">Your password reset link has expired</p>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Please request a new password reset link to continue
+                        </p>
+                      </div>
                       <Button
                         type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
+                        className="w-full"
+                        onClick={() => {
+                          setIsPasswordUpdateMode(false);
+                          setRecoveryInProgress(false);
+                          setIsResetMode(true);
+                          sessionStorage.removeItem('recovery');
+                        }}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        Request New Reset Link
                       </Button>
                     </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                      id="confirmPassword"
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Confirm your new password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                        <span>Updating...</span>
+                  ) : (
+                    <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="newPassword">New Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="newPassword"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your new password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            className="pr-10"
+                            required
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </Button>
+                        </div>
                       </div>
-                    ) : (
-                      'Update Password'
-                    )}
-                  </Button>
-                </form>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                        <Input
+                          id="confirmPassword"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Confirm your new password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Updating...</span>
+                          </div>
+                        ) : (
+                          'Update Password'
+                        )}
+                      </Button>
+                    </form>
+                  )}
+                </>
               ) : (
                 <form onSubmit={isResetMode ? handlePasswordReset : handleSignIn} className="space-y-4">
                   <div className="space-y-2">
