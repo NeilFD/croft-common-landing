@@ -305,7 +305,7 @@ const ManagementLogin = () => {
 
   if (loading && !(isPasswordUpdateMode || recoveryInProgress)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-transparent">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
@@ -409,7 +409,7 @@ const ManagementLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background px-4">
+    <div className="min-h-screen bg-transparent px-4">
       <div className="absolute top-6 left-6">
         <CroftLogo size="lg" />
       </div>
