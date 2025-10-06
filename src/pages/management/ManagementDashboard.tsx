@@ -84,11 +84,14 @@ const ManagementDashboard = () => {
       {/* Content with relative positioning */}
       <div className="relative z-10 space-y-4 md:space-y-6 p-3 md:p-6">
         <Card className="bg-white border-black border-2">
-          <CardContent className="p-4 md:p-6">
-            <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
-            <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
-              {managementUser?.user.email}
-            </p>
+          <CardContent className="p-4 md:p-6 flex items-center gap-4">
+            <Building2 className="h-16 w-16 md:h-20 md:w-20 text-[hsl(var(--accent-pink))]" />
+            <div>
+              <h1 className="text-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">MANAGEMENT</h1>
+              <p className="font-industrial text-muted-foreground mt-1 md:mt-2 text-sm md:text-base">
+                {managementUser?.user.email}
+              </p>
+            </div>
           </CardContent>
         </Card>
 
