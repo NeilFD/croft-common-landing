@@ -92,7 +92,7 @@ const ManagementDashboard = () => {
                 <CardDescription className="font-industrial text-sm md:text-base">{action.description}</CardDescription>
               </CardHeader>
               <CardContent className="p-4 md:p-6 pt-0">
-                <Button asChild className="w-full btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11">
+                <Button asChild className="w-full btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11 hover:bg-[hsl(var(--accent-pink))] hover:text-black transition-colors">
                   <Link to={action.href} className="flex items-center justify-center space-x-2">
                     <action.icon className="h-4 w-4" />
                     <span>OPEN</span>
