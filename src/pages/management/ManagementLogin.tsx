@@ -49,21 +49,12 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
-  // Domain canonicalization: redirect apex to www if auth tokens present
+  // Domain canonicalization: always redirect apex to www for /management/login
   useEffect(() => {
     const host = window.location.hostname;
-    const hash = window.location.hash;
-    const search = window.location.search;
     
-    // Check if we're on apex domain and have auth tokens
-    if (host === 'croftcommontest.com' && 
-        (hash.includes('access_token') || 
-         hash.includes('refresh_token') || 
-         hash.includes('code') || 
-         hash.includes('type=recovery') ||
-         search.includes('access_token') ||
-         search.includes('code'))) {
-      // Preserve all tokens and redirect to www
+    // Always redirect apex domain to www for this route
+    if (host === 'croftcommontest.com') {
       const newUrl = 'https://www.croftcommontest.com' + 
                      window.location.pathname + 
                      window.location.search + 
@@ -127,11 +118,18 @@ const ManagementLogin = () => {
       const email = params.get('email') || hashParams.get('email');
       const type = params.get('type') || hashParams.get('type');
 
+      const hasTokens = !!(type === 'recovery' || code || tokenHash || token || accessToken || refreshToken);
+
       // Detect recovery flow early
-      if (type === 'recovery' || code || tokenHash || token || accessToken || refreshToken) {
+      if (hasTokens) {
+        console.log('[ManagementLogin] Entering password-update mode with tokens');
         setRecoveryInProgress(true);
         setIsPasswordUpdateMode(true);
         sessionStorage.setItem('recovery', '1');
+      } else if (sessionStorage.getItem('recovery') === '1') {
+        console.log('[ManagementLogin] Entering password-update mode WITHOUT tokens (recovery flag present)');
+        setRecoveryInProgress(true);
+        setIsPasswordUpdateMode(true);
       }
 
       try {
@@ -224,6 +222,19 @@ const ManagementLogin = () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Fallback session check: if in password-update mode but session check not complete
+  useEffect(() => {
+    if ((isPasswordUpdateMode || recoveryInProgress) && !sessionCheckComplete) {
+      // Small delay to avoid racing with auth events
+      const timer = setTimeout(async () => {
+        console.log('[ManagementLogin] Fallback session check triggered');
+        const valid = await validateSession();
+        console.log('[ManagementLogin] Fallback session check result:', valid);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isPasswordUpdateMode, recoveryInProgress, sessionCheckComplete]);
 
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
