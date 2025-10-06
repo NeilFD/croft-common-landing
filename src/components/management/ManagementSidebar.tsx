@@ -115,15 +115,15 @@ export const ManagementSidebar = () => {
   };
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    modules: true,
-    knowledge: true,
-    spaces: true,
-    admin: true,
+    modules: false,
+    knowledge: false,
+    spaces: false,
+    admin: false,
     adminNotifications: false,
     adminAnalytics: false,
     adminManagement: false,
-    cms: true,
-    research: true,
+    cms: false,
+    research: false,
   });
 
   const toggleSection = (section: string) => {
@@ -172,8 +172,8 @@ export const ManagementSidebar = () => {
   const getNavClass = (isActiveItem: boolean) =>
     isActiveItem ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50";
 
-  // Show text when not collapsed OR when on mobile
-  const showText = state !== "collapsed" || isMobile;
+  // Show text when not collapsed on desktop, or always on mobile
+  const showText = isMobile || state !== "collapsed";
 
   const handleNavigateToSite = async () => {
     await signOut();
@@ -186,7 +186,7 @@ export const ManagementSidebar = () => {
         className="border-r bg-background"
         collapsible="icon"
       >
-        <SidebarHeader className="p-3 md:p-4">
+        <SidebarHeader className="p-4 md:p-4 bg-background">
           {showText && (
             <div className="font-industrial text-xs md:text-sm text-muted-foreground">
               <div className="font-brutalist font-black uppercase tracking-wide text-foreground text-sm md:text-base">MANAGEMENT</div>
@@ -196,8 +196,8 @@ export const ManagementSidebar = () => {
         </SidebarHeader>
 
         <SidebarContent className="bg-background">
-          {/* Mini rail icons for collapsed state */}
-          {state === "collapsed" && (
+          {/* Mini rail icons for collapsed state - only on desktop */}
+          {state === "collapsed" && !isMobile && (
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
@@ -882,7 +882,7 @@ export const ManagementSidebar = () => {
           )}
         </SidebarContent>
 
-        <SidebarFooter className="p-3 md:p-4">
+        <SidebarFooter className="p-4 md:p-4 bg-background border-t">
           {/* Settings Link (Admin Only) */}
           {canAccessSettings() && showText && (
             <Tooltip>
