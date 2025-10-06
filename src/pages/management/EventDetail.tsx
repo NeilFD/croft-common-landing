@@ -23,6 +23,7 @@ import { InvoiceManager } from '@/components/management/InvoiceManager';
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { BEOBuilder } from '@/components/management/beo/BEOBuilder';
 import { BEOVersions } from '@/components/management/beo/BEOVersions';
+import ClientPortalControls from '@/components/management/ClientPortalControls';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -351,6 +352,11 @@ const EventDetail = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Client Portal Controls */}
+        {event.status === 'active' && event.code && (
+          <ClientPortalControls eventId={event.id} eventCode={event.code} />
+        )}
 
         {/* Event Details Tabs */}
         <Tabs defaultValue="bookings" className="space-y-4">

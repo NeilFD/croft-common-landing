@@ -99,6 +99,8 @@ const EventsList = lazy(() => import("./pages/management/EventsList"));
 const EventDetail = lazy(() => import("./pages/management/EventDetail"));
 const Chat = lazy(() => import("./pages/management/Chat"));
 const BeoViewer = lazy(() => import("./pages/BeoViewer"));
+const ClientMagicLogin = lazy(() => import("./pages/ClientMagicLogin"));
+const ClientPortal = lazy(() => import("./pages/ClientPortal"));
 
 const queryClient = new QueryClient();
 
@@ -373,6 +375,10 @@ const App = () => {
                         
                         {/* BEO PDF Viewer */}
                         <Route path="/beo/view" element={<BeoViewer />} />
+                        
+                        {/* Client Portal Routes */}
+                        <Route path="/client-login" element={<ClientMagicLogin />} />
+                        <Route path="/p/:eventCode" element={<ClientPortal />} />
                        
                        <Route path="/c/:token" element={<ClickRedirect />} />
                        <Route path="/from-notification" element={<Index />} />
