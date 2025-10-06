@@ -36,6 +36,14 @@ const ManagementDashboard = () => {
       show: true
     },
     {
+      title: 'FEEDBACK',
+      description: 'Guest feedback',
+      icon: MessageSquare,
+      href: '/management/feedback',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: canAccessFeedback()
+    },
+    {
       title: 'ADMIN',
       description: 'System administration',
       icon: Shield,
@@ -58,14 +66,6 @@ const ManagementDashboard = () => {
       href: '/management/research',
       color: 'text-[hsl(var(--accent-pink))]',
       show: canAccessResearch()
-    },
-    {
-      title: 'FEEDBACK',
-      description: 'Guest feedback',
-      icon: MessageSquare,
-      href: '/management/feedback',
-      color: 'text-[hsl(var(--accent-pink))]',
-      show: canAccessFeedback()
     }
   ];
 
@@ -81,25 +81,21 @@ const ManagementDashboard = () => {
           </p>
         </div>
 
-        <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
           {quickActions.map((action) => (
-            <Card key={action.title} className="border-industrial transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-card/80 backdrop-blur-sm">
-              <CardHeader className="pb-3 p-4 md:p-6">
-                <div className="flex items-center space-x-2">
-                  <action.icon className={`h-5 w-5 md:h-6 md:w-6 ${action.color}`} />
-                  <CardTitle className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wide">{action.title}</CardTitle>
-                </div>
-                <CardDescription className="font-industrial text-sm md:text-base">{action.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 md:p-6 pt-0">
-                <Button asChild className="w-full btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11 hover:bg-[hsl(var(--accent-pink))] hover:text-black transition-colors">
-                  <Link to={action.href} className="flex items-center justify-center space-x-2">
-                    <action.icon className="h-4 w-4" />
-                    <span>OPEN</span>
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <Button
+              key={action.title}
+              asChild
+              variant="outline"
+              className="h-auto flex-col gap-3 p-6 border-2 transition-all duration-300 hover:scale-[1.05] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-[hsl(var(--accent-pink))] hover:text-black hover:border-[hsl(var(--accent-pink))]"
+            >
+              <Link to={action.href} className="flex flex-col items-center justify-center">
+                <action.icon className={`h-8 w-8 ${action.color}`} />
+                <span className="font-brutalist text-xs uppercase tracking-wide text-center leading-tight mt-1">
+                  {action.title}
+                </span>
+              </Link>
+            </Button>
           ))}
         </div>
 
