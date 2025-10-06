@@ -186,11 +186,11 @@ export const ManagementSidebar = () => {
         className="border-r bg-background"
         collapsible="icon"
       >
-        <SidebarHeader className="p-4 md:p-4 bg-background">
+        <SidebarHeader className="pt-8 pb-4 px-4 md:p-4 bg-background">
           {showText && (
-            <div className="font-industrial text-xs md:text-sm text-muted-foreground">
-              <div className="font-brutalist font-black uppercase tracking-wide text-foreground text-sm md:text-base">MANAGEMENT</div>
-              <div className="capitalize text-[hsl(var(--accent-pink))] text-xs md:text-sm">{managementUser?.role}</div>
+            <div className="font-industrial text-sm md:text-sm text-muted-foreground">
+              <div className="font-brutalist font-black uppercase tracking-wide text-foreground text-base md:text-base">MANAGEMENT</div>
+              <div className="capitalize text-[hsl(var(--accent-pink))] text-sm md:text-sm">{managementUser?.role}</div>
             </div>
           )}
         </SidebarHeader>
@@ -334,12 +334,12 @@ export const ManagementSidebar = () => {
                 onOpenChange={() => toggleSection('modules')}
               >
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
                     <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <Settings className="mr-2 h-4 w-4" />
+                      <Settings className="mr-2 h-5 w-5" />
                       MGMT
                     </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.modules ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.modules ? 'rotate-180' : ''}`} />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -387,12 +387,12 @@ export const ManagementSidebar = () => {
                 onOpenChange={() => toggleSection('knowledge')}
               >
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
                     <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <BookOpen className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      <BookOpen className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       COMMON KNOWLEDGE
                     </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.knowledge ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.knowledge ? 'rotate-180' : ''}`} />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -431,12 +431,12 @@ export const ManagementSidebar = () => {
                 onOpenChange={() => toggleSection('spaces')}
               >
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
                     <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <Building2 className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      <Building2 className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       SPACES
                     </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.spaces ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.spaces ? 'rotate-180' : ''}`} />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -498,12 +498,12 @@ export const ManagementSidebar = () => {
                 onOpenChange={() => toggleSection('cms')}
               >
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
                     <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <Layout className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      <Layout className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       CMS
                     </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.cms ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.cms ? 'rotate-180' : ''}`} />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -542,12 +542,12 @@ export const ManagementSidebar = () => {
                 onOpenChange={() => toggleSection('admin')}
               >
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
                     <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <Shield className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      <Shield className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       ADMIN
                     </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.admin ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.admin ? 'rotate-180' : ''}`} />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -845,12 +845,12 @@ export const ManagementSidebar = () => {
                 onOpenChange={() => toggleSection('research')}
               >
                 <CollapsibleTrigger asChild>
-                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2">
+                  <SidebarGroupLabel className="flex items-center justify-between cursor-pointer hover:bg-accent/50 rounded-md p-2 text-base">
                     <span className="flex items-center font-brutalist uppercase tracking-wide">
-                      <FlaskConical className="mr-2 h-4 w-4 text-[hsl(var(--accent-pink))]" />
+                      <FlaskConical className="mr-2 h-5 w-5 text-[hsl(var(--accent-pink))]" />
                       RESEARCH
                     </span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedSections.research ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-5 w-5 transition-transform ${expandedSections.research ? 'rotate-180' : ''}`} />
                   </SidebarGroupLabel>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -882,7 +882,7 @@ export const ManagementSidebar = () => {
           )}
         </SidebarContent>
 
-        <SidebarFooter className="p-4 md:p-4 bg-background border-t">
+        <SidebarFooter className="p-4 pb-6 md:p-4 bg-background border-t">
           {/* Settings Link (Admin Only) */}
           {canAccessSettings() && showText && (
             <Tooltip>
@@ -891,11 +891,11 @@ export const ManagementSidebar = () => {
                   variant="ghost"
                   size="sm"
                   onClick={() => navigate('/management/settings')}
-                  className={`w-full flex items-center justify-start space-x-2 font-industrial h-8 md:h-9 text-xs md:text-sm mb-2 ${
+                  className={`w-full flex items-center justify-start space-x-2 font-industrial h-10 md:h-9 text-sm md:text-sm mb-2 ${
                     isActive('/management/settings') ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/50'
                   }`}
                 >
-                  <Settings className="h-3 w-3 md:h-4 md:w-4" />
+                  <Settings className="h-4 w-4 md:h-4 md:w-4" />
                   <span>Settings</span>
                 </Button>
               </TooltipTrigger>
@@ -908,9 +908,9 @@ export const ManagementSidebar = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleNavigateToSite}
-                className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide h-8 md:h-9 text-xs md:text-sm"
+                className="w-full flex items-center justify-center space-x-2 font-brutalist uppercase tracking-wide h-10 md:h-9 text-sm md:text-sm"
               >
-                <LogOut className="h-3 w-3 md:h-4 md:w-4" />
+                <LogOut className="h-4 w-4 md:h-4 md:w-4" />
                 {showText && <span>SITE</span>}
               </Button>
             </TooltipTrigger>
