@@ -49,6 +49,29 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
+  // Domain canonicalization: redirect apex to www if auth tokens present
+  useEffect(() => {
+    const host = window.location.hostname;
+    const hash = window.location.hash;
+    const search = window.location.search;
+    
+    // Check if we're on apex domain and have auth tokens
+    if (host === 'croftcommontest.com' && 
+        (hash.includes('access_token') || 
+         hash.includes('refresh_token') || 
+         hash.includes('code') || 
+         hash.includes('type=recovery') ||
+         search.includes('access_token') ||
+         search.includes('code'))) {
+      // Preserve all tokens and redirect to www
+      const newUrl = 'https://www.croftcommontest.com' + 
+                     window.location.pathname + 
+                     window.location.search + 
+                     window.location.hash;
+      window.location.replace(newUrl);
+    }
+  }, []);
+
   // Utility: remove auth artefacts (# fragments and sensitive query params)
   const stripAuthArtifacts = () => {
     try {

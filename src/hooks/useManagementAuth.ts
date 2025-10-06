@@ -67,32 +67,43 @@ export const useManagementAuth = () => {
 
     getSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Synchronously update state first, defer async calls
       if (session?.user) {
-        try {
-          const rolePromise = supabase.rpc('get_user_management_role', { _user_id: session.user.id });
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Role fetch timeout')), 5000)
-          );
-          
-          const { data: roleData } = await Promise.race([
-            rolePromise,
-            timeoutPromise
-          ]) as any;
-          
-          setManagementUser({
-            user: session.user,
-            role: roleData as ManagementRole,
-            hasAccess: !!roleData
-          });
-        } catch (err) {
-          console.error('🔑 useManagementAuth: Role fetch failed in auth change:', err);
-          setManagementUser({
-            user: session.user,
-            role: null,
-            hasAccess: false
-          });
-        }
+        // Set user immediately
+        setManagementUser({
+          user: session.user,
+          role: null,
+          hasAccess: false
+        });
+        
+        // Defer role fetch to avoid blocking auth state change callback
+        setTimeout(async () => {
+          try {
+            const rolePromise = supabase.rpc('get_user_management_role', { _user_id: session.user.id });
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Role fetch timeout')), 5000)
+            );
+            
+            const { data: roleData } = await Promise.race([
+              rolePromise,
+              timeoutPromise
+            ]) as any;
+            
+            setManagementUser({
+              user: session.user,
+              role: roleData as ManagementRole,
+              hasAccess: !!roleData
+            });
+          } catch (err) {
+            console.error('🔑 useManagementAuth: Role fetch failed in auth change:', err);
+            setManagementUser({
+              user: session.user,
+              role: null,
+              hasAccess: false
+            });
+          }
+        }, 0);
       } else {
         setManagementUser(null);
       }
