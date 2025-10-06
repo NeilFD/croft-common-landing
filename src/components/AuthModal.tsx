@@ -285,8 +285,22 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent 
           className="sm:max-w-[425px] z-[10002]"
-          onEscapeKeyDown={(e) => { e.preventDefault(); }}
-          onInteractOutside={(e) => { e.preventDefault(); }}
+          onEscapeKeyDown={(e) => {
+            // Allow escape if not in OTP verification stage
+            if (!otpSent) {
+              handleClose();
+            } else {
+              e.preventDefault();
+            }
+          }}
+          onInteractOutside={(e) => {
+            // Allow closing by clicking outside if not in OTP verification stage
+            if (!otpSent) {
+              handleClose();
+            } else {
+              e.preventDefault();
+            }
+          }}
         >
           <DialogHeader>
             <DialogTitle className="text-black font-bold">
@@ -359,8 +373,22 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent 
         className="sm:max-w-[425px] z-[10002]"
-        onEscapeKeyDown={(e) => { e.preventDefault(); }}
-        onInteractOutside={(e) => { e.preventDefault(); }}
+        onEscapeKeyDown={(e) => {
+          // Allow escape if not loading
+          if (!loading) {
+            handleClose();
+          } else {
+            e.preventDefault();
+          }
+        }}
+        onInteractOutside={(e) => {
+          // Allow closing by clicking outside if not loading
+          if (!loading) {
+            handleClose();
+          } else {
+            e.preventDefault();
+          }
+        }}
       >
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>

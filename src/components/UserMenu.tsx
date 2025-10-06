@@ -2,13 +2,14 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { LogOut, Camera, User, ChartBar, Home, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { useMembershipAuth } from '@/contexts/MembershipAuthContext';
 import { useFullProfile } from '@/hooks/useFullProfile';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
+import { useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ export const UserMenu = () => {
   const { isFullyAuthenticated, refreshMembershipStatus } = useMembershipAuth();
   const { profile } = useFullProfile();
   const navigate = useNavigate();
+  const location = useLocation();
   const membershipGate = useMembershipGate();
 
   const handleSignOut = async () => {
@@ -43,6 +45,7 @@ export const UserMenu = () => {
   };
 
   const handleMemberLogin = () => {
+    console.log("🔐 UserMenu: Member Login clicked - explicitly triggered by user");
     membershipGate.startWithOtp();
   };
 
@@ -54,6 +57,22 @@ export const UserMenu = () => {
     membershipGate.handleAuthSuccess();
     refreshMembershipStatus();
   };
+
+  // Reset modals when navigating to home page
+  useEffect(() => {
+    if (location.pathname === '/') {
+      console.log('🔐 UserMenu: On home page, ensuring modals are closed');
+      membershipGate.reset();
+    }
+  }, [location.pathname, membershipGate.reset]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      console.log('🔐 UserMenu: Unmounting, cleaning up state');
+      membershipGate.reset();
+    };
+  }, [membershipGate.reset]);
   const memberMenuItems = [
     { icon: Home, label: "My Home", path: "/common-room/member" },
     { icon: LayoutDashboard, label: "Dashboard", path: "/common-room/member/dashboard" },

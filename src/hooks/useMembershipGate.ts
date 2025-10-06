@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { getStoredUserHandle } from "@/lib/biometricAuth";
 import { markBioSuccess, markBioLongSuccess, isBioLongExpired } from "@/hooks/useRecentBiometric";
@@ -27,11 +27,17 @@ export function useMembershipGate(): UseMembershipGate {
   const [authOpen, setAuthOpen] = useState(false);
   const [allowed, setAllowed] = useState(false);
   const [checking, setChecking] = useState(false);
+
+  // Debug logging for state changes
+  useEffect(() => {
+    console.log('🔐 MembershipGate state:', { bioOpen, linkOpen, authOpen, allowed, checking });
+  }, [bioOpen, linkOpen, authOpen, allowed, checking]);
   const inFlightRef = useRef(false);
   const lastStartTsRef = useRef(0);
 
 
   const reset = useCallback(() => {
+    console.log('🔐 MembershipGate: Resetting all state');
     setBioOpen(false);
     setLinkOpen(false);
     setAuthOpen(false);
