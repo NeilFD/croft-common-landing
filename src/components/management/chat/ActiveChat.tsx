@@ -309,6 +309,35 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
         read_by: [],
       }));
 
+      // Load attachments for all messages
+      const messageIds = basicMessages.map(m => m.id);
+      if (messageIds.length > 0) {
+        const { data: attachments } = await supabase
+          .from('attachments')
+          .select('*')
+          .in('message_id', messageIds);
+
+        if (attachments && attachments.length > 0) {
+          // Get public URLs for all attachments
+          const enrichedAttachments = await Promise.all(
+            attachments.map(async (att: any) => {
+              const { data: urlData } = supabase.storage
+                .from('chat-images')
+                .getPublicUrl(att.storage_path);
+              return {
+                ...att,
+                url: urlData.publicUrl,
+              };
+            })
+          );
+
+          // Attach to messages
+          basicMessages.forEach((msg) => {
+            msg.attachments = enrichedAttachments.filter((att: any) => att.message_id === msg.id);
+          });
+        }
+      }
+
       // Sort by created_at ascending
       const sorted = [...basicMessages].sort(
         (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
