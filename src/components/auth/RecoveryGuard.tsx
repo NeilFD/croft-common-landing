@@ -11,6 +11,7 @@ export const RecoveryGuard = () => {
 
   useEffect(() => {
     try {
+      const host = window.location.hostname;
       const params = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
@@ -24,14 +25,28 @@ export const RecoveryGuard = () => {
         params.get('refresh_token') || hashParams.get('refresh_token')
       );
 
+      // If tokens present and on apex domain, redirect to www FIRST
+      if (hasTokens && host === 'croftcommontest.com') {
+        const newUrl = 'https://www.croftcommontest.com' + 
+                       window.location.pathname + 
+                       window.location.search + 
+                       window.location.hash;
+        window.location.replace(newUrl);
+        return;
+      }
+
       if (hasTokens) {
         sessionStorage.setItem('recovery', '1');
       }
 
       const recoveryActive = sessionStorage.getItem('recovery') === '1';
 
+      // Redirect to /management/login preserving all URL params
       if (recoveryActive && location.pathname !== '/management/login') {
-        navigate('/management/login', { replace: true });
+        const redirectUrl = '/management/login' + 
+                           window.location.search + 
+                           window.location.hash;
+        window.location.replace(redirectUrl);
       }
     } catch (e) {
       // no-op
