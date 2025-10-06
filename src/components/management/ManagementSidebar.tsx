@@ -186,7 +186,7 @@ export const ManagementSidebar = () => {
         className="border-r bg-background"
         collapsible="icon"
       >
-        <SidebarHeader className="pt-8 pb-4 px-4 md:p-4 bg-background">
+        <SidebarHeader className="pt-16 pb-4 px-4 md:p-4 bg-background">
           {showText && (
             <div className="font-industrial text-sm md:text-sm text-muted-foreground">
               <div className="font-brutalist font-black uppercase tracking-wide text-foreground text-base md:text-base">MANAGEMENT</div>
@@ -882,7 +882,7 @@ export const ManagementSidebar = () => {
           )}
         </SidebarContent>
 
-        <SidebarFooter className="p-4 pb-6 md:p-4 bg-background border-t">
+        <SidebarFooter className="p-4 pb-10 md:p-4 bg-background border-t">
           {/* Settings Link (Admin Only) */}
           {canAccessSettings() && showText && (
             <Tooltip>
