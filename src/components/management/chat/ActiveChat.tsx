@@ -321,12 +321,12 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
           // Get public URLs for all attachments
           const enrichedAttachments = await Promise.all(
             attachments.map(async (att: any) => {
-              const { data: urlData } = supabase.storage
+              const { data: signed } = await supabase.storage
                 .from('chat-images')
-                .getPublicUrl(att.storage_path);
+                .createSignedUrl(att.storage_path, 60 * 60);
               return {
                 ...att,
-                url: urlData.publicUrl,
+                url: signed?.signedUrl || '',
               };
             })
           );
@@ -661,16 +661,16 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       
       // Get public URL for attachment if present
       if (storagePath) {
-        const { data: urlData } = supabase.storage
+        const { data: signed } = await supabase.storage
           .from('chat-images')
-          .getPublicUrl(storagePath);
+          .createSignedUrl(storagePath, 60 * 60);
         
         enrichedMessage.attachments = [{
           message_id: newMessage.id,
           type: 'image',
           storage_path: storagePath,
           mime: image.type,
-          url: urlData.publicUrl,
+          url: signed?.signedUrl || '',
         }];
       }
 
