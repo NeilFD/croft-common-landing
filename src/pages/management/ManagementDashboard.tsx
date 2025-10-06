@@ -79,7 +79,7 @@ const ManagementDashboard = () => {
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat" 
         style={{ backgroundImage: `url(${industrialBg})` }}
       />
-      <div className="fixed inset-0 z-0 bg-background/85 backdrop-blur-sm" />
+      <div className="fixed inset-0 z-0 bg-background/60 backdrop-blur-sm" />
       
       {/* Content with relative positioning */}
       <div className="relative z-10 space-y-4 md:space-y-6 p-3 md:p-6">
