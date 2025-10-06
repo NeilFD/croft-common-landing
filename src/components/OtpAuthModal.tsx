@@ -153,7 +153,7 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
     return (
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent 
-          className="sm:max-w-[425px] z-[10002]" 
+          className="sm:max-w-[425px]" 
           overlayClassName="bg-black/10"
           onInteractOutside={(e) => { e.preventDefault(); }}
         >
@@ -199,7 +199,7 @@ export const OtpAuthModal = ({ isOpen, onClose, onSuccess, title, description }:
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent 
-        className="sm:max-w-[425px] z-[10002]" 
+        className="sm:max-w-[425px]" 
         overlayClassName="bg-black/10"
         onInteractOutside={(e) => { e.preventDefault(); }}
       >

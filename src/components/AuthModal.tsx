@@ -284,7 +284,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
     return (
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent 
-          className="sm:max-w-[425px] z-[10002]"
+          className="sm:max-w-[425px]"
           overlayClassName="bg-black/10"
           onEscapeKeyDown={(e) => {
             // Allow escape if not in OTP verification stage
@@ -373,7 +373,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent 
-        className="sm:max-w-[425px] z-[10002]"
+        className="sm:max-w-[425px]"
         overlayClassName="bg-black/10"
         onEscapeKeyDown={(e) => {
           // Allow escape if not loading

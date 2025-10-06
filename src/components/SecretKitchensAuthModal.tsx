@@ -208,7 +208,7 @@ export const SecretKitchensAuthModal = ({
     return (
       <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
         <DialogContent 
-          className="sm:max-w-[425px] z-[10002]"
+          className="sm:max-w-[425px]"
           overlayClassName="bg-black/10"
           onEscapeKeyDown={(e) => { e.preventDefault(); }}
           onInteractOutside={(e) => { e.preventDefault(); }}
@@ -255,7 +255,7 @@ export const SecretKitchensAuthModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
       <DialogContent 
-        className="sm:max-w-[425px] z-[10002]"
+        className="sm:max-w-[425px]"
         overlayClassName="bg-black/10"
         onEscapeKeyDown={(e) => { e.preventDefault(); }}
         onInteractOutside={(e) => { e.preventDefault(); }}

@@ -81,7 +81,7 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
-      <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background z-[10002]">
+      <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <CroftLogo size="sm" />
