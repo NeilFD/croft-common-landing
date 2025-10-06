@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import industrialBg from '@/assets/industrial-bg.png';
+import banksyBg from '@/assets/banksy-bg.jpeg';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
@@ -77,9 +77,9 @@ const ManagementDashboard = () => {
       {/* Fixed background image with overlay */}
       <div 
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat" 
-        style={{ backgroundImage: `url(${industrialBg})` }}
+        style={{ backgroundImage: `url(${banksyBg})` }}
       />
-      <div className="fixed inset-0 z-0 bg-background/60 backdrop-blur-sm" />
+      <div className="fixed inset-0 z-0 bg-background/30" />
       
       {/* Content with relative positioning */}
       <div className="relative z-10 space-y-4 md:space-y-6 p-3 md:p-6">
