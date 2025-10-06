@@ -102,8 +102,8 @@ const ClientPortalControls = ({ eventId, eventCode }: ClientPortalControlsProps)
           
           <Button
             onClick={() => setShowRevokeDialog(true)}
-            variant="destructive"
-            className="w-full"
+            variant="ghost"
+            className="w-full bg-accent-pink hover:bg-accent-pink-hover text-white"
           >
             <ShieldOff className="w-4 h-4 mr-2" />
             Revoke All Access

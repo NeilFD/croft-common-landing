@@ -57,8 +57,8 @@ serve(async (req) => {
 
     // Get event details
     const { data: event, error: eventError } = await supabase
-      .from('events')
-      .select('id, event_name, client_name, client_email, event_date')
+      .from('management_events')
+      .select('id, title, client_name, client_email, primary_date')
       .eq('id', event_id)
       .single();
 
@@ -116,11 +116,11 @@ serve(async (req) => {
     });
 
     // Generate portal link
-    const portalUrl = `${Deno.env.get('SUPABASE_URL')}/p/${eventCode}?token=${magicToken}`;
+    const portalUrl = `https://www.croftcommontest.com/p/${eventCode}?token=${magicToken}`;
 
     // TODO: Send email via Resend with branded template
     console.log('Portal link generated:', portalUrl);
-    console.log('For event:', event.event_name);
+    console.log('For event:', event.title);
     console.log('Client:', event.client_name, event.client_email);
 
     return new Response(
