@@ -83,7 +83,7 @@ const ManagementDashboard = () => {
 
         <div className="grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => (
-            <Card key={action.title} className="border-industrial hover:shadow-brutal transition-all">
+            <Card key={action.title} className="border-industrial transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-card/80 backdrop-blur-sm">
               <CardHeader className="pb-3 p-4 md:p-6">
                 <div className="flex items-center space-x-2">
                   <action.icon className={`h-5 w-5 md:h-6 md:w-6 ${action.color}`} />
@@ -103,7 +103,7 @@ const ManagementDashboard = () => {
           ))}
         </div>
 
-        <Card className="border-industrial">
+        <Card className="border-industrial transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:bg-card/80 backdrop-blur-sm">
           <CardHeader className="p-4 md:p-6">
             <CardTitle className="flex items-center space-x-2 font-brutalist uppercase tracking-wide text-base md:text-lg">
               <BarChart3 className="h-4 w-4 md:h-5 md:w-5 text-[hsl(var(--accent-pink))]" />
