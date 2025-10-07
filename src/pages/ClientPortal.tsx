@@ -107,10 +107,12 @@ const ClientPortal = () => {
   const [uploadingFile, setUploadingFile] = useState(false);
   const [newInspirationUrl, setNewInspirationUrl] = useState('');
   const [addingInspiration, setAddingInspiration] = useState(false);
+  const [uploadingInspiration, setUploadingInspiration] = useState(false);
   const [signingContract, setSigningContract] = useState(false);
   const [loadingDocument, setLoadingDocument] = useState(false);
   
   const signatureRef = useRef<SignatureCanvas>(null);
+  const inspirationFileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDownloadDocument = async (documentType: 'beo' | 'contract') => {
     if (!session) return;
@@ -297,6 +299,41 @@ const ClientPortal = () => {
       toast.error('Failed to add inspiration link');
     } finally {
       setAddingInspiration(false);
+    }
+  };
+
+  const handleUploadInspiration = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !session) return;
+
+    setUploadingInspiration(true);
+    try {
+      const formData = new FormData();
+      formData.append('session_id', session.sessionId);
+      formData.append('csrf_token', session.csrfToken);
+      formData.append('file', file);
+      if (newInspirationUrl.trim()) {
+        formData.append('optional_url', newInspirationUrl.trim());
+      }
+
+      const { data, error } = await supabase.functions.invoke('client-upload-inspiration', {
+        body: formData,
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to upload inspiration');
+
+      setNewInspirationUrl('');
+      toast.success('Inspiration uploaded');
+      await loadPortalData(session.sessionId, session.csrfToken);
+    } catch (error) {
+      console.error('Upload inspiration error:', error);
+      toast.error('Failed to upload inspiration');
+    } finally {
+      setUploadingInspiration(false);
+      if (inspirationFileInputRef.current) {
+        inspirationFileInputRef.current.value = '';
+      }
     }
   };
 
@@ -883,31 +920,62 @@ const ClientPortal = () => {
             )}
           </div>
 
-          <div className="pt-4 border-t-[3px] border-black flex gap-2">
-            <Input
-              value={newInspirationUrl}
-              onChange={(e) => setNewInspirationUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddInspiration();
-                }
-              }}
-              placeholder="Paste inspiration link..."
-              className="flex-1 font-industrial border-[3px] border-black rounded-lg bg-background focus:border-accent-pink"
-              disabled={addingInspiration}
+          <div className="pt-4 border-t-[3px] border-black space-y-3">
+            <div className="flex gap-2">
+              <Input
+                value={newInspirationUrl}
+                onChange={(e) => setNewInspirationUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddInspiration();
+                  }
+                }}
+                placeholder="Paste link (optional)..."
+                className="flex-1 font-industrial border-[3px] border-black rounded-lg bg-background focus:border-accent-pink"
+                disabled={addingInspiration || uploadingInspiration}
+              />
+              <button
+                onClick={handleAddInspiration}
+                disabled={!newInspirationUrl.trim() || addingInspiration || uploadingInspiration}
+                className="border-[3px] border-black rounded-lg py-2 px-3 bg-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
+              >
+                {addingInspiration ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <LinkIcon className="w-4 h-4" />
+                    <span className="font-industrial text-xs uppercase hidden sm:inline">Add Link</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            <input
+              ref={inspirationFileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleUploadInspiration}
+              className="hidden"
+              id="inspiration-upload"
+              disabled={uploadingInspiration}
             />
-            <button
-              onClick={handleAddInspiration}
-              disabled={!newInspirationUrl.trim() || addingInspiration}
-              className="border-[3px] border-black rounded-lg py-2 px-3 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+            <label
+              htmlFor="inspiration-upload"
+              className={`w-full border-[3px] border-black rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50 inline-block text-center cursor-pointer ${uploadingInspiration ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {addingInspiration ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+              {uploadingInspiration ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 inline animate-spin" />
+                  Uploading Screenshot...
+                </>
               ) : (
-                <Plus className="w-4 h-4" />
+                <>
+                  <Upload className="w-4 h-4 mr-2 inline" />
+                  Upload Screenshot
+                </>
               )}
-            </button>
+            </label>
           </div>
         </div>
       </div>
