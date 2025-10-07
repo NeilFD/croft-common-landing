@@ -95,7 +95,7 @@ export const useCurrentProposal = (eventId: string) => {
   return useQuery({
     queryKey: ['current-proposal', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: proposal, error: proposalError } = await supabase
         .from('proposal_versions')
         .select('*')
         .eq('event_id', eventId)
@@ -103,8 +103,23 @@ export const useCurrentProposal = (eventId: string) => {
         .limit(1)
         .maybeSingle();
 
-      if (error) throw error;
-      return data as ProposalVersion | null;
+      if (proposalError) throw proposalError;
+      if (!proposal) return null;
+
+      // Fetch line items for this event
+      const { data: lineItems, error: lineItemsError } = await supabase
+        .from('management_event_line_items')
+        .select('*')
+        .eq('event_id', eventId)
+        .order('category', { ascending: true })
+        .order('item_order', { ascending: true });
+
+      if (lineItemsError) throw lineItemsError;
+
+      return {
+        ...proposal,
+        lineItems: lineItems || []
+      } as ProposalVersion & { lineItems: any[] };
     },
     enabled: !!eventId
   });

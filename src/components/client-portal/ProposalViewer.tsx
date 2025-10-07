@@ -1,13 +1,21 @@
-import { Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+
+interface LineItem {
+  id: string;
+  category: string;
+  item_name: string;
+  quantity: number;
+  unit_cost: number;
+  total_cost: number;
+  item_order: number;
+}
 
 interface ProposalContent {
   eventOverview?: {
     clientName?: string;
-    eventCode?: string;
+    eventName?: string;
     headcount?: number;
-    eventDate?: string;
-    eventType?: string;
     contactEmail?: string;
   };
   venue?: {
@@ -59,34 +67,70 @@ interface ProposalViewerProps {
   content: ProposalContent;
   versionNo: number;
   generatedAt: string;
+  lineItems?: LineItem[];
 }
 
-export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalViewerProps) => {
+export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = [] }: ProposalViewerProps) => {
   const [expandedSections, setExpandedSections] = useState({
-    overview: true,
-    venue: true,
-    setup: true,
-    menu: true,
-    equipment: true,
-    timeline: true,
-    pricing: true,
+    overview: false,
+    venue: false,
+    setup: false,
+    menu: false,
+    equipment: false,
+    timeline: false,
+    pricing: false,
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
   };
 
-  // Calculate pricing dynamically from available data
-  const calculatePricing = () => {
-    const venueHire = content.venue?.hire_cost || 0;
-    const vatRate = content.venue?.vat_rate || 20;
-    const serviceChargeRate = 10;
+  const formatTime = (timeString: string) => {
+    if (!timeString) return '';
     
-    const subtotal = venueHire;
-    const serviceCharge = subtotal * (serviceChargeRate / 100);
+    // Handle ISO 8601 timestamp (2025-09-28T10:00:00+00:00)
+    if (timeString.includes('T')) {
+      const date = new Date(timeString);
+      return date.toLocaleTimeString('en-GB', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: false 
+      });
+    }
+    
+    // Handle time-only format (10:00:00)
+    if (timeString.includes(':')) {
+      const [hours, minutes] = timeString.split(':');
+      return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`;
+    }
+    
+    return timeString;
+  };
+
+  const calculatePricing = () => {
+    // Get items excluding service charge and VAT
+    const itemsWithoutTaxes = lineItems.filter(
+      item => item.category !== 'Service Charge' && item.category !== 'VAT'
+    );
+    
+    const subtotal = itemsWithoutTaxes.reduce((sum, item) => sum + item.total_cost, 0);
+    
+    // Find service charge and VAT from line items
+    const serviceChargeItem = lineItems.find(item => item.category === 'Service Charge');
+    const vatItem = lineItems.find(item => item.category === 'VAT');
+    
+    const serviceCharge = serviceChargeItem?.total_cost || 0;
+    const vat = vatItem?.total_cost || 0;
+    
+    // Calculate rates
+    const serviceChargeRate = subtotal > 0 ? (serviceCharge / subtotal) * 100 : 10;
     const subtotalWithService = subtotal + serviceCharge;
-    const vat = subtotalWithService * (vatRate / 100);
-    const total = subtotalWithService + vat;
+    const vatRate = subtotalWithService > 0 ? (vat / subtotalWithService) * 100 : 20;
+    
+    const total = subtotal + serviceCharge + vat;
     
     return { 
       subtotal, 
@@ -98,30 +142,37 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
     };
   };
 
-  const pricing = calculatePricing();
-
-  // Group equipment by category
   const groupedEquipment = content.equipment?.reduce((acc, item) => {
-    const category = item.category || 'Other';
-    if (!acc[category]) {
-      acc[category] = [];
+    if (!acc[item.category]) {
+      acc[item.category] = [];
     }
-    acc[category].push(item);
+    acc[item.category].push(item);
     return acc;
   }, {} as Record<string, typeof content.equipment>);
 
+  // Group line items by category
+  const groupedLineItems = lineItems
+    .filter(item => item.category !== 'Service Charge' && item.category !== 'VAT')
+    .reduce((acc, item) => {
+      if (!acc[item.category]) {
+        acc[item.category] = [];
+      }
+      acc[item.category].push(item);
+      return acc;
+    }, {} as Record<string, LineItem[]>);
+
   return (
-    <div className="border-[3px] border-black rounded-lg bg-background">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="p-6 border-b-[3px] border-black">
-        <div className="flex items-start justify-between gap-4">
+      <div className="border-2 border-industrial bg-card p-4 md:p-6">
+        <div className="flex items-center justify-between">
           <div>
-            <h3 className="font-brutalist text-xl uppercase tracking-wide text-foreground">
-              Event Proposal v{versionNo}
-            </h3>
-            <p className="font-industrial text-xs text-steel mt-1">
+            <h1 className="font-brutalist text-xl md:text-2xl font-black uppercase tracking-wider">
+              PROPOSAL v{versionNo}
+            </h1>
+            <p className="font-industrial text-sm text-muted-foreground mt-1">
               Generated {new Date(generatedAt).toLocaleDateString('en-GB', { 
-                day: 'numeric', 
+                day: '2-digit',
                 month: 'short', 
                 year: 'numeric' 
               })}
@@ -130,307 +181,387 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
         </div>
       </div>
 
-      <div className="divide-y-[3px] divide-black">
-        {/* Event Overview */}
-        {content.eventOverview && (
-          <div>
-            <button
-              onClick={() => toggleSection('overview')}
-              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
-            >
-              <span className="font-industrial uppercase text-sm font-medium text-foreground">Event Overview</span>
-              {expandedSections.overview ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expandedSections.overview && (
-              <div className="p-6 pt-0 grid grid-cols-2 gap-4">
+      {/* Event Overview Section */}
+      {content.eventOverview && (
+        <div className="border-2 border-industrial bg-card">
+          <button
+            onClick={() => toggleSection('overview')}
+            className="w-full px-4 md:px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          >
+            <h2 className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wider">
+              Event Overview
+            </h2>
+            {expandedSections.overview ? (
+              <ChevronDown className="h-5 w-5 text-industrial" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-industrial" />
+            )}
+          </button>
+          
+          {expandedSections.overview && (
+            <div className="px-4 md:px-6 pb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {content.eventOverview.clientName && (
                   <div>
-                    <p className="font-industrial text-xs uppercase text-steel mb-1">Client</p>
-                    <p className="font-industrial text-foreground">{content.eventOverview.clientName}</p>
+                    <span className="font-industrial text-xs uppercase text-steel block mb-1">Client Name</span>
+                    <span className="font-industrial text-foreground">{content.eventOverview.clientName}</span>
                   </div>
                 )}
-                {content.eventOverview.eventCode && (
+                {content.eventOverview.eventName && (
                   <div>
-                    <p className="font-industrial text-xs uppercase text-steel mb-1">Event Code</p>
-                    <p className="font-industrial text-foreground font-mono">{content.eventOverview.eventCode}</p>
+                    <span className="font-industrial text-xs uppercase text-steel block mb-1">Event Name</span>
+                    <span className="font-industrial text-foreground">{content.eventOverview.eventName}</span>
                   </div>
                 )}
                 {content.eventOverview.headcount && (
                   <div>
-                    <p className="font-industrial text-xs uppercase text-steel mb-1">Headcount</p>
-                    <p className="font-industrial text-foreground">{content.eventOverview.headcount} guests</p>
-                  </div>
-                )}
-                {content.eventOverview.eventDate && (
-                  <div>
-                    <p className="font-industrial text-xs uppercase text-steel mb-1">Date</p>
-                    <p className="font-industrial text-foreground">{content.eventOverview.eventDate}</p>
-                  </div>
-                )}
-                {content.eventOverview.eventType && (
-                  <div>
-                    <p className="font-industrial text-xs uppercase text-steel mb-1">Event Type</p>
-                    <p className="font-industrial text-foreground">{content.eventOverview.eventType}</p>
+                    <span className="font-industrial text-xs uppercase text-steel block mb-1">Headcount</span>
+                    <span className="font-industrial text-foreground">{content.eventOverview.headcount} guests</span>
                   </div>
                 )}
                 {content.eventOverview.contactEmail && (
                   <div>
-                    <p className="font-industrial text-xs uppercase text-steel mb-1">Contact Email</p>
-                    <p className="font-industrial text-foreground">{content.eventOverview.contactEmail}</p>
+                    <span className="font-industrial text-xs uppercase text-steel block mb-1">Contact Email</span>
+                    <span className="font-industrial text-foreground">{content.eventOverview.contactEmail}</span>
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
 
-        {/* Venue Details */}
-        {content.venue && (
-          <div>
-            <button
-              onClick={() => toggleSection('venue')}
-              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
-            >
-              <span className="font-industrial uppercase text-sm font-medium text-foreground">Venue Details</span>
-              {expandedSections.venue ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expandedSections.venue && (
-              <div className="p-6 pt-0 space-y-3">
-                {content.venue.venue_name && (
+      {/* Venue Details Section */}
+      {content.venue && (
+        <div className="border-2 border-industrial bg-card">
+          <button
+            onClick={() => toggleSection('venue')}
+            className="w-full px-4 md:px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          >
+            <h2 className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wider">
+              Venue Details
+            </h2>
+            {expandedSections.venue ? (
+              <ChevronDown className="h-5 w-5 text-industrial" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-industrial" />
+            )}
+          </button>
+          
+          {expandedSections.venue && (
+            <div className="px-4 md:px-6 pb-6">
+              <div className="space-y-3">
+                <div className="flex justify-between items-start">
+                  <span className="font-industrial text-steel">Venue</span>
+                  <span className="font-industrial text-foreground font-medium">{content.venue.venue_name}</span>
+                </div>
+                {content.venue.hire_cost !== undefined && (
                   <div className="flex justify-between items-start">
-                    <span className="font-industrial text-steel">Venue</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue.venue_name}</span>
-                  </div>
-                )}
-                {content.venue.capacity !== undefined && (
-                  <div className="flex justify-between items-start">
-                    <span className="font-industrial text-steel">Capacity</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue.capacity} guests</span>
+                    <span className="font-industrial text-steel">Hire Cost</span>
+                    <span className="font-industrial text-foreground font-medium">£{content.venue.hire_cost.toFixed(2)}</span>
                   </div>
                 )}
                 {content.venue.setup_time && (
                   <div className="flex justify-between items-start">
                     <span className="font-industrial text-steel">Setup Time</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue.setup_time}</span>
+                    <span className="font-industrial text-foreground font-medium">{formatTime(content.venue.setup_time)}</span>
                   </div>
                 )}
                 {content.venue.breakdown_time && (
                   <div className="flex justify-between items-start">
                     <span className="font-industrial text-steel">Breakdown Time</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue.breakdown_time}</span>
+                    <span className="font-industrial text-foreground font-medium">{formatTime(content.venue.breakdown_time)}</span>
                   </div>
                 )}
-                {content.venue.hire_cost !== undefined && (
-                  <div className="flex justify-between items-start pt-2 border-t-[2px] border-black">
-                    <span className="font-industrial text-foreground font-medium">Venue Hire</span>
-                    <span className="font-industrial text-foreground font-medium">£{content.venue.hire_cost.toFixed(2)}</span>
+                {content.venue.capacity !== undefined && content.venue.capacity > 0 && (
+                  <div className="flex justify-between items-start">
+                    <span className="font-industrial text-steel">Capacity</span>
+                    <span className="font-industrial text-foreground font-medium">{content.venue.capacity} guests</span>
                   </div>
                 )}
                 {content.venue.notes && (
-                  <div className="pt-2 border-t-[2px] border-black">
-                    <p className="font-industrial text-xs uppercase text-steel mb-1">Notes</p>
-                    <p className="font-industrial text-foreground text-sm">{content.venue.notes}</p>
+                  <div className="pt-2 border-t border-industrial/20">
+                    <span className="font-industrial text-xs uppercase text-steel block mb-1">Notes</span>
+                    <span className="font-industrial text-foreground text-sm">{content.venue.notes}</span>
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
 
-        {/* Setup Details */}
-        {content.setup?.spaces && content.setup.spaces.length > 0 && (
-          <div>
-            <button
-              onClick={() => toggleSection('setup')}
-              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
-            >
-              <span className="font-industrial uppercase text-sm font-medium text-foreground">Setup Details</span>
-              {expandedSections.setup ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expandedSections.setup && (
-              <div className="p-6 pt-0 space-y-4">
-                {content.setup.spaces.map((space, idx) => (
-                  <div key={idx} className="border-l-[3px] border-black pl-4">
-                    <p className="font-industrial font-bold text-foreground mb-2">{space.space_name}</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-start">
-                        <span className="font-industrial text-steel">Layout</span>
-                        <span className="font-industrial text-foreground">{space.layout_type}</span>
-                      </div>
-                      <div className="flex justify-between items-start">
-                        <span className="font-industrial text-steel">Capacity</span>
-                        <span className="font-industrial text-foreground">{space.capacity} guests</span>
-                      </div>
-                      <div className="flex justify-between items-start">
-                        <span className="font-industrial text-steel">Setup</span>
-                        <span className="font-industrial text-foreground">{space.setup_time}</span>
-                      </div>
-                      <div className="flex justify-between items-start">
-                        <span className="font-industrial text-steel">Breakdown</span>
-                        <span className="font-industrial text-foreground">{space.breakdown_time}</span>
-                      </div>
+      {/* Setup Details Section */}
+      {content.setup?.spaces && content.setup.spaces.length > 0 && (
+        <div className="border-2 border-industrial bg-card">
+          <button
+            onClick={() => toggleSection('setup')}
+            className="w-full px-4 md:px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          >
+            <h2 className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wider">
+              Setup Details
+            </h2>
+            {expandedSections.setup ? (
+              <ChevronDown className="h-5 w-5 text-industrial" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-industrial" />
+            )}
+          </button>
+          
+          {expandedSections.setup && (
+            <div className="px-4 md:px-6 pb-6 space-y-6">
+              {content.setup.spaces.map((space, index) => (
+                <div key={index} className="border-l-2 border-industrial pl-4">
+                  <h3 className="font-brutalist text-sm uppercase tracking-wide mb-3">
+                    {space.space_name}
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start">
+                      <span className="font-industrial text-steel">Layout</span>
+                      <span className="font-industrial text-foreground font-medium">{space.layout_type}</span>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <span className="font-industrial text-steel">Capacity</span>
+                      <span className="font-industrial text-foreground font-medium">{space.capacity} guests</span>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <span className="font-industrial text-steel">Setup Time</span>
+                      <span className="font-industrial text-foreground font-medium">{formatTime(space.setup_time)}</span>
+                    </div>
+                    <div className="flex justify-between items-start">
+                      <span className="font-industrial text-steel">Breakdown Time</span>
+                      <span className="font-industrial text-foreground font-medium">{formatTime(space.breakdown_time)}</span>
                     </div>
                     {space.setup_notes && (
-                      <p className="font-industrial text-steel text-sm mt-2">{space.setup_notes}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Menu */}
-        {content.menu?.courses && content.menu.courses.length > 0 && (
-          <div>
-            <button
-              onClick={() => toggleSection('menu')}
-              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
-            >
-              <span className="font-industrial uppercase text-sm font-medium text-foreground">Menu</span>
-              {expandedSections.menu ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expandedSections.menu && (
-              <div className="p-6 pt-0 space-y-4">
-                {content.menu.courses.map((course, idx) => (
-                  <div key={idx}>
-                    <p className="font-industrial uppercase font-bold text-foreground mb-2">{course.course}</p>
-                    {course.items && course.items.length > 0 && (
-                      <div className="space-y-2 ml-4">
-                        {course.items.map((item, itemIdx) => (
-                          <div key={itemIdx}>
-                            <p className="font-industrial text-foreground">{item.item_name}</p>
-                            {item.description && (
-                              <p className="font-industrial text-steel text-sm ml-2">{item.description}</p>
-                            )}
-                            {item.allergens && item.allergens.length > 0 && (
-                              <p className="font-industrial text-steel text-xs ml-2">
-                                Allergens: {item.allergens.join(', ')}
-                              </p>
-                            )}
-                          </div>
-                        ))}
+                      <div className="pt-2 border-t border-industrial/20">
+                        <span className="font-industrial text-steel text-sm">{space.setup_notes}</span>
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Equipment */}
-        {groupedEquipment && Object.keys(groupedEquipment).length > 0 && (
-          <div>
-            <button
-              onClick={() => toggleSection('equipment')}
-              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
-            >
-              <span className="font-industrial uppercase text-sm font-medium text-foreground">Equipment</span>
-              {expandedSections.equipment ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expandedSections.equipment && (
-              <div className="p-6 pt-0 space-y-4">
-                {Object.entries(groupedEquipment).map(([category, items], idx) => (
-                  <div key={idx}>
-                    <p className="font-industrial uppercase font-bold text-foreground mb-2">{category}</p>
-                    <div className="space-y-2 ml-4">
-                      {items?.map((item, itemIdx) => (
-                        <div key={itemIdx}>
-                          <div className="flex justify-between items-start">
-                            <span className="font-industrial text-foreground">
-                              {item.item_name}
-                            </span>
-                            <span className="font-industrial text-steel">
-                              ×{item.quantity}
-                            </span>
-                          </div>
-                          {item.specifications && (
-                            <p className="font-industrial text-steel text-xs ml-2">{item.specifications}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Timeline */}
-        {content.timeline?.schedule && content.timeline.schedule.length > 0 && (
-          <div>
-            <button
-              onClick={() => toggleSection('timeline')}
-              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
-            >
-              <span className="font-industrial uppercase text-sm font-medium text-foreground">Timeline</span>
-              {expandedSections.timeline ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expandedSections.timeline && (
-              <div className="p-6 pt-0 space-y-3">
-                {content.timeline.schedule.map((item, idx) => (
-                  <div key={idx} className="space-y-1">
-                    <div className="flex justify-between items-start">
-                      <span className="font-industrial text-foreground font-bold">{item.time_label}</span>
-                      <span className="font-industrial text-steel font-mono text-sm">{item.scheduled_at}</span>
-                    </div>
-                    {item.duration_minutes && (
-                      <p className="font-industrial text-steel text-xs ml-2">Duration: {item.duration_minutes} minutes</p>
-                    )}
-                    {item.notes && (
-                      <p className="font-industrial text-steel text-sm ml-2">{item.notes}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Pricing */}
-        {pricing.total > 0 && (
-          <div>
-            <button
-              onClick={() => toggleSection('pricing')}
-              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
-            >
-              <span className="font-industrial uppercase text-sm font-medium text-foreground">Financial Breakdown</span>
-              {expandedSections.pricing ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-            {expandedSections.pricing && (
-              <div className="p-6 pt-0 space-y-3">
-                <div className="flex justify-between items-start">
-                  <span className="font-industrial text-steel">Subtotal</span>
-                  <span className="font-industrial text-foreground">£{pricing.subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between items-start">
-                  <span className="font-industrial text-steel">Service Charge ({pricing.serviceChargeRate}%)</span>
-                  <span className="font-industrial text-foreground">£{pricing.serviceCharge.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-start">
-                  <span className="font-industrial text-steel">VAT ({pricing.vatRate}%)</span>
-                  <span className="font-industrial text-foreground">£{pricing.vat.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between items-start pt-3 border-t-[3px] border-black">
-                  <span className="font-industrial text-foreground font-bold text-lg">Total</span>
-                  <span className="font-industrial text-foreground font-bold text-lg">£{pricing.total.toFixed(2)}</span>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Info Footer */}
-      <div className="p-4 border-t-[3px] border-black bg-surface">
-        <div className="flex items-start gap-2">
-          <Info className="w-4 h-4 text-steel mt-0.5 flex-shrink-0" />
-          <p className="font-industrial text-xs text-steel">
-            This proposal is generated from your event details. For the full PDF version, please contact your event coordinator.
-          </p>
+              ))}
+            </div>
+          )}
         </div>
+      )}
+
+      {/* Menu Section */}
+      {content.menu?.courses && content.menu.courses.length > 0 && (
+        <div className="border-2 border-industrial bg-card">
+          <button
+            onClick={() => toggleSection('menu')}
+            className="w-full px-4 md:px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          >
+            <h2 className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wider">
+              Menu
+            </h2>
+            {expandedSections.menu ? (
+              <ChevronDown className="h-5 w-5 text-industrial" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-industrial" />
+            )}
+          </button>
+          
+          {expandedSections.menu && (
+            <div className="px-4 md:px-6 pb-6 space-y-6">
+              {content.menu.courses.map((course, index) => (
+                <div key={index}>
+                  <h3 className="font-brutalist text-sm uppercase tracking-wide mb-3">
+                    {course.course}
+                  </h3>
+                  <div className="space-y-2 pl-4">
+                    {course.items.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-1">
+                        <div className="font-industrial text-foreground">{item.item_name}</div>
+                        {item.description && (
+                          <div className="font-industrial text-steel text-sm">{item.description}</div>
+                        )}
+                        {item.allergens && item.allergens.length > 0 && (
+                          <div className="font-industrial text-steel text-xs">
+                            Allergens: {item.allergens.join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Equipment Section */}
+      {groupedEquipment && Object.keys(groupedEquipment).length > 0 && (
+        <div className="border-2 border-industrial bg-card">
+          <button
+            onClick={() => toggleSection('equipment')}
+            className="w-full px-4 md:px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          >
+            <h2 className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wider">
+              Equipment
+            </h2>
+            {expandedSections.equipment ? (
+              <ChevronDown className="h-5 w-5 text-industrial" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-industrial" />
+            )}
+          </button>
+          
+          {expandedSections.equipment && (
+            <div className="px-4 md:px-6 pb-6 space-y-6">
+              {Object.entries(groupedEquipment).map(([category, items], index) => (
+                <div key={index}>
+                  <h3 className="font-brutalist text-sm uppercase tracking-wide mb-3">
+                    {category}
+                  </h3>
+                  <div className="space-y-2 pl-4">
+                    {items?.map((item, itemIndex) => (
+                      <div key={itemIndex} className="space-y-1">
+                        <div className="flex justify-between items-start">
+                          <span className="font-industrial text-foreground">{item.item_name}</span>
+                          <span className="font-industrial text-steel">×{item.quantity}</span>
+                        </div>
+                        {item.specifications && (
+                          <div className="font-industrial text-steel text-xs">{item.specifications}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Timeline Section */}
+      {content.timeline?.schedule && content.timeline.schedule.length > 0 && (
+        <div className="border-2 border-industrial bg-card">
+          <button
+            onClick={() => toggleSection('timeline')}
+            className="w-full px-4 md:px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+          >
+            <h2 className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wider">
+              Timeline
+            </h2>
+            {expandedSections.timeline ? (
+              <ChevronDown className="h-5 w-5 text-industrial" />
+            ) : (
+              <ChevronRight className="h-5 w-5 text-industrial" />
+            )}
+          </button>
+          
+          {expandedSections.timeline && (
+            <div className="px-4 md:px-6 pb-6 space-y-4">
+              {content.timeline.schedule.map((item, index) => (
+                <div key={index} className="border-l-2 border-industrial pl-4 py-2">
+                  <div className="flex justify-between items-start mb-1">
+                    <span className="font-brutalist text-sm uppercase tracking-wide text-foreground">
+                      {item.time_label}
+                    </span>
+                    <span className="font-industrial text-steel text-sm">{formatTime(item.scheduled_at)}</span>
+                  </div>
+                  {item.duration_minutes && (
+                    <div className="font-industrial text-steel text-xs">
+                      Duration: {item.duration_minutes} minutes
+                    </div>
+                  )}
+                  {item.notes && (
+                    <div className="font-industrial text-steel text-sm mt-1">{item.notes}</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Pricing Section */}
+      <div className="border-2 border-industrial bg-card">
+        <button
+          onClick={() => toggleSection('pricing')}
+          className="w-full px-4 md:px-6 py-4 flex items-center justify-between hover:bg-muted/50 transition-colors"
+        >
+          <h2 className="font-brutalist text-lg md:text-xl font-black uppercase tracking-wider">
+            Financial Breakdown
+          </h2>
+          {expandedSections.pricing ? (
+            <ChevronDown className="h-5 w-5 text-industrial" />
+          ) : (
+            <ChevronRight className="h-5 w-5 text-industrial" />
+          )}
+        </button>
+        
+        {expandedSections.pricing && (
+          <div className="px-4 md:px-6 pb-6 space-y-6">
+            {/* Line Items by Category */}
+            {Object.entries(groupedLineItems).map(([category, items]) => (
+              <div key={category} className="space-y-2">
+                <h3 className="font-brutalist text-sm uppercase tracking-wide text-industrial mb-3">
+                  {category}
+                </h3>
+                {items.map((item) => (
+                  <div key={item.id} className="flex justify-between items-start pl-4">
+                    <div className="flex-1">
+                      <span className="font-industrial text-foreground">
+                        {item.item_name}
+                      </span>
+                      {item.quantity > 1 && (
+                        <span className="font-industrial text-steel text-sm ml-2">
+                          (x{item.quantity} @ £{item.unit_cost.toFixed(2)})
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-industrial text-foreground font-medium ml-4">
+                      £{item.total_cost.toFixed(2)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ))}
+
+            {/* Totals */}
+            {(() => {
+              const pricing = calculatePricing();
+              return (
+                <>
+                  <div className="space-y-2 pt-4 border-t-2 border-industrial/20">
+                    <div className="flex justify-between items-center">
+                      <span className="font-industrial text-steel">Subtotal</span>
+                      <span className="font-industrial text-foreground font-medium">
+                        £{pricing.subtotal.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-industrial text-steel">
+                        Service Charge ({pricing.serviceChargeRate.toFixed(0)}%)
+                      </span>
+                      <span className="font-industrial text-foreground font-medium">
+                        £{pricing.serviceCharge.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-industrial text-steel">
+                        VAT ({pricing.vatRate.toFixed(0)}%)
+                      </span>
+                      <span className="font-industrial text-foreground font-medium">
+                        £{pricing.vat.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center pt-4 border-t-2 border-industrial">
+                    <span className="font-brutalist text-lg uppercase tracking-wide">Total</span>
+                    <span className="font-brutalist text-xl text-foreground">
+                      £{pricing.total.toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+        )}
       </div>
     </div>
   );
