@@ -134,7 +134,7 @@ serve(async (req) => {
     });
 
     // Generate portal link
-    const portalUrl = `https://www.croftcommontest.com/p/${eventCode}?token=${magicToken}`;
+    const portalUrl = `https://www.croftcommontest.com/client-login?c=${eventCode}&t=${magicToken}`;
 
     // TODO: Send email via Resend with branded template
     console.log('Portal link generated:', portalUrl);

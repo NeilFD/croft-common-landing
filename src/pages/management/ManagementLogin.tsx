@@ -99,15 +99,14 @@ const ManagementLogin = () => {
       const token = params.get('token') || hashParams.get('token');
       const email = params.get('email') || hashParams.get('email');
       const type = params.get('type') || hashParams.get('type');
-      const isLoginRoute = window.location.pathname === '/management/login';
 
-      const hasRecoveryTokens = !!(type === 'recovery' || code || tokenHash || accessToken || refreshToken || (token && isLoginRoute));
+      const hasRecoveryTokens = !!(type === 'recovery' || code || tokenHash || accessToken || refreshToken);
  
       // Domain canonicalisation handled by index.html bootstrap
  
       // Detect recovery flow early
       if (hasRecoveryTokens) {
-        console.info('[ManagementLogin] Detected recovery tokens:', { type, code: !!code, tokenHash: !!tokenHash, accessToken: !!accessToken, refreshToken: !!refreshToken, tokenOnly: !!(token && isLoginRoute) });
+        console.info('[ManagementLogin] Detected recovery tokens:', { type, code: !!code, tokenHash: !!tokenHash, accessToken: !!accessToken, refreshToken: !!refreshToken });
         setRecoveryInProgress(true);
         setIsPasswordUpdateMode(true);
         sessionStorage.setItem('recovery', '1');
@@ -136,14 +135,13 @@ const ManagementLogin = () => {
           sessionEstablished = true;
         }
 
-        // Handle recovery verification with token_hash or token on login route, or fallback to token+email when explicitly recovery
-        if (tokenHash || (isLoginRoute && token) || (type === 'recovery' && token && email)) {
-          console.info('[ManagementLogin] Attempting recovery verification via', tokenHash ? 'token_hash' : (isLoginRoute && token) ? 'token_hash(token)' : 'token+email');
+        // Handle recovery verification with token_hash or fallback to token+email when explicitly recovery
+        if (tokenHash || (type === 'recovery' && token && email)) {
+          console.info('[ManagementLogin] Attempting recovery verification via', tokenHash ? 'token_hash' : 'token+email');
           let verified = false;
-          // Try token_hash first (supports both token_hash and legacy token param treated as hash)
-          if (tokenHash || (isLoginRoute && token)) {
-            const hash = tokenHash || (token as string);
-            const { error } = await supabase.auth.verifyOtp({ type: 'recovery', token_hash: hash } as any);
+          // Try token_hash first when present
+          if (tokenHash) {
+            const { error } = await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash } as any);
             if (!error) {
               verified = true;
             } else {
@@ -166,10 +164,6 @@ const ManagementLogin = () => {
           if (verified) {
             sessionEstablished = true;
           } else {
-            // Clear any stale recovery state and exit password-update mode on failure
-            sessionStorage.removeItem('recovery');
-            setIsPasswordUpdateMode(false);
-            setRecoveryInProgress(false);
             throw new Error('Recovery verification failed');
           }
         }
