@@ -1022,6 +1022,53 @@ export type Database = {
           },
         ]
       }
+      client_inspiration_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          event_id: string
+          id: string
+          link_type: string
+          metadata: Json | null
+          thumbnail_url: string | null
+          title: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_id: string
+          id?: string
+          link_type: string
+          metadata?: Json | null
+          thumbnail_url?: string | null
+          title?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          event_id?: string
+          id?: string
+          link_type?: string
+          metadata?: Json | null
+          thumbnail_url?: string | null
+          title?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_inspiration_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "management_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_messages: {
         Row: {
           author: string

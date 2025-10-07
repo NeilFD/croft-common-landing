@@ -109,12 +109,66 @@ Deno.serve(async (req) => {
       })
     );
 
+    // Fetch inspiration links
+    const { data: inspirationLinks, error: inspirationError } = await supabase
+      .from('client_inspiration_links')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false });
+
+    if (inspirationError) {
+      console.error('Inspiration links fetch failed:', inspirationError);
+    }
+
+    // Fetch latest BEO
+    const { data: beo, error: beoError } = await supabase
+      .from('event_beo_versions')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (beoError) {
+      console.error('BEO fetch failed:', beoError);
+    }
+
+    // Fetch latest proposal
+    const { data: proposal, error: proposalError } = await supabase
+      .from('proposal_versions')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (proposalError) {
+      console.error('Proposal fetch failed:', proposalError);
+    }
+
+    // Fetch contract
+    const { data: contract, error: contractError } = await supabase
+      .from('contracts')
+      .select('*')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (contractError) {
+      console.error('Contract fetch failed:', contractError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
         event,
         messages: messages || [],
         files: filesWithUrls,
+        inspirationLinks: inspirationLinks || [],
+        beo: beo || null,
+        proposal: proposal || null,
+        contract: contract || null,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

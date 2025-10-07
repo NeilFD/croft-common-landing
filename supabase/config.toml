@@ -313,3 +313,9 @@ verify_jwt = false
 [functions.client-upload-file]
 verify_jwt = false
 
+[functions.client-add-inspiration]
+verify_jwt = false
+
+[functions.client-sign-contract]
+verify_jwt = false
+
