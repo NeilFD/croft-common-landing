@@ -71,6 +71,7 @@ interface ProposalViewerProps {
 }
 
 export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = [] }: ProposalViewerProps) => {
+  const [showDetails, setShowDetails] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     overview: false,
     venue: false,
@@ -163,9 +164,9 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
 
   return (
     <div className="space-y-4">
-      {/* Header */}
+      {/* Header with Master Toggle */}
       <div className="border-2 border-industrial bg-card p-4 md:p-6">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
             <h1 className="font-brutalist text-xl md:text-2xl font-black uppercase tracking-wider">
               PROPOSAL v{versionNo}
@@ -178,11 +179,21 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
               })}
             </p>
           </div>
+          <button
+            onClick={() => setShowDetails(!showDetails)}
+            className="flex items-center gap-2 font-industrial text-sm font-medium text-industrial hover:text-steel transition-colors border-2 border-industrial px-4 py-2"
+          >
+            {showDetails ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            VIEW PROPOSAL DETAILS
+          </button>
         </div>
       </div>
 
-      {/* Event Overview Section */}
-      {content.eventOverview && (
+      {/* All Sections - Only shown when showDetails is true */}
+      {showDetails && (
+        <>
+          {/* Event Overview Section */}
+          {content.eventOverview && (
         <div className="border-2 border-industrial bg-card">
           <button
             onClick={() => toggleSection('overview')}
@@ -264,19 +275,19 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
                 {content.venue.setup_time && (
                   <div className="flex justify-between items-start">
                     <span className="font-industrial text-steel">Setup Time</span>
-                    <span className="font-industrial text-foreground font-medium">{formatTime(content.venue.setup_time)}</span>
+                    <span className="font-industrial text-foreground font-medium pr-2">{formatTime(content.venue.setup_time)}</span>
                   </div>
                 )}
                 {content.venue.breakdown_time && (
                   <div className="flex justify-between items-start">
                     <span className="font-industrial text-steel">Breakdown Time</span>
-                    <span className="font-industrial text-foreground font-medium">{formatTime(content.venue.breakdown_time)}</span>
+                    <span className="font-industrial text-foreground font-medium pr-2">{formatTime(content.venue.breakdown_time)}</span>
                   </div>
                 )}
                 {content.venue.capacity !== undefined && content.venue.capacity > 0 && (
                   <div className="flex justify-between items-start">
                     <span className="font-industrial text-steel">Capacity</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue.capacity} guests</span>
+                    <span className="font-industrial text-foreground font-medium pr-2">{content.venue.capacity} guests</span>
                   </div>
                 )}
                 {content.venue.notes && (
@@ -320,18 +331,18 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
                       <span className="font-industrial text-steel">Layout</span>
                       <span className="font-industrial text-foreground font-medium">{space.layout_type}</span>
                     </div>
-                    <div className="flex justify-between items-start">
-                      <span className="font-industrial text-steel">Capacity</span>
-                      <span className="font-industrial text-foreground font-medium">{space.capacity} guests</span>
-                    </div>
-                    <div className="flex justify-between items-start">
-                      <span className="font-industrial text-steel">Setup Time</span>
-                      <span className="font-industrial text-foreground font-medium">{formatTime(space.setup_time)}</span>
-                    </div>
-                    <div className="flex justify-between items-start">
-                      <span className="font-industrial text-steel">Breakdown Time</span>
-                      <span className="font-industrial text-foreground font-medium">{formatTime(space.breakdown_time)}</span>
-                    </div>
+                  <div className="flex justify-between items-start">
+                    <span className="font-industrial text-steel">Capacity</span>
+                    <span className="font-industrial text-foreground font-medium pr-2">{space.capacity} guests</span>
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <span className="font-industrial text-steel">Setup Time</span>
+                    <span className="font-industrial text-foreground font-medium pr-2">{formatTime(space.setup_time)}</span>
+                  </div>
+                  <div className="flex justify-between items-start">
+                    <span className="font-industrial text-steel">Breakdown Time</span>
+                    <span className="font-industrial text-foreground font-medium pr-2">{formatTime(space.breakdown_time)}</span>
+                  </div>
                     {space.setup_notes && (
                       <div className="pt-2 border-t border-industrial/20">
                         <span className="font-industrial text-steel text-sm">{space.setup_notes}</span>
@@ -460,7 +471,7 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
                     <span className="font-brutalist text-sm uppercase tracking-wide text-foreground">
                       {item.time_label}
                     </span>
-                    <span className="font-industrial text-steel text-sm">{formatTime(item.scheduled_at)}</span>
+                    <span className="font-industrial text-steel text-sm pr-2">{formatTime(item.scheduled_at)}</span>
                   </div>
                   {item.duration_minutes && (
                     <div className="font-industrial text-steel text-xs">
@@ -563,6 +574,8 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 };

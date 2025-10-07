@@ -111,14 +111,25 @@ export const useCurrentProposal = (eventId: string) => {
         .from('management_event_line_items')
         .select('*')
         .eq('event_id', eventId)
-        .order('category', { ascending: true })
-        .order('item_order', { ascending: true });
+        .order('type', { ascending: true })
+        .order('sort_order', { ascending: true });
 
       if (lineItemsError) throw lineItemsError;
 
+      // Map database fields to expected LineItem interface
+      const mappedLineItems = lineItems?.map(item => ({
+        id: item.id,
+        category: item.type,
+        item_name: item.description,
+        quantity: item.qty,
+        unit_cost: item.unit_price,
+        total_cost: item.qty * item.unit_price,
+        item_order: item.sort_order
+      })) || [];
+
       return {
         ...proposal,
-        lineItems: lineItems || []
+        lineItems: mappedLineItems
       } as ProposalVersion & { lineItems: any[] };
     },
     enabled: !!eventId
