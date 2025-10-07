@@ -358,13 +358,11 @@ const ClientPortal = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Left Column - Event Details & Documents */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Event Details Card with Tabs */}
-            <div className="border-2 border-charcoal p-6 bg-transparent">
-              <h2 className="font-brutalist text-xl uppercase tracking-wide mb-6 text-foreground">Event Details</h2>
+      <div className="max-w-5xl mx-auto p-4 md:p-8">
+        <div className="space-y-6">
+          {/* Event Details Card with Tabs */}
+          <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+            <h2 className="font-brutalist text-xl uppercase tracking-wide mb-6 text-foreground">Event Details</h2>
               
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="w-full border-2 border-charcoal bg-transparent p-0 h-auto mb-6">
@@ -457,7 +455,7 @@ const ClientPortal = () => {
                 {/* Documents Tab */}
                 <TabsContent value="documents" className="space-y-4">
                   {proposal && (
-                    <div className="border-2 border-steel p-4 bg-transparent">
+                    <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
                           <FileText className="w-5 h-5 text-steel mt-0.5" />
@@ -494,7 +492,7 @@ const ClientPortal = () => {
                   )}
                   
                   {beo && (
-                    <div className="border-2 border-steel p-4 bg-transparent">
+                    <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 flex-1">
                           <FileCheck className="w-5 h-5 text-steel mt-0.5" />
