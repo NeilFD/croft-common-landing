@@ -874,12 +874,9 @@ const ClientPortal = () => {
                   {link.thumbnail_url ? (
                     <img
                       src={link.thumbnail_url}
-                      alt="Inspiration"
+                      alt={link.title || 'Inspiration'}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Hide broken image, show fallback
-                        e.currentTarget.style.display = 'none';
-                      }}
+                      loading="lazy"
                     />
                   ) : (
                     <div className="text-center p-6">
