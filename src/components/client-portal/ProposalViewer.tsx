@@ -191,18 +191,20 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
                 {content.menu.courses.map((course, idx) => (
                   <div key={idx}>
                     <p className="font-industrial uppercase text-xs text-steel mb-2">{course.name}</p>
-                    <div className="space-y-1 ml-4">
-                      {course.items.map((item, itemIdx) => (
-                        <div key={itemIdx} className="flex justify-between items-start">
-                          <span className="font-industrial text-foreground">
-                            {item.name} {item.quantity && `(×${item.quantity})`}
-                          </span>
-                          {item.price_per_unit !== undefined && (
-                            <span className="font-industrial text-steel">£{item.price_per_unit.toFixed(2)}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    {course.items && course.items.length > 0 && (
+                      <div className="space-y-1 ml-4">
+                        {course.items.map((item, itemIdx) => (
+                          <div key={itemIdx} className="flex justify-between items-start">
+                            <span className="font-industrial text-foreground">
+                              {item.name} {item.quantity && `(×${item.quantity})`}
+                            </span>
+                            {item.price_per_unit !== undefined && (
+                              <span className="font-industrial text-steel">£{item.price_per_unit.toFixed(2)}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -225,18 +227,20 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
                 {content.equipment.map((category, idx) => (
                   <div key={idx}>
                     <p className="font-industrial uppercase text-xs text-steel mb-2">{category.category}</p>
-                    <div className="space-y-1 ml-4">
-                      {category.items.map((item, itemIdx) => (
-                        <div key={itemIdx} className="flex justify-between items-start">
-                          <span className="font-industrial text-foreground">
-                            {item.name} {item.quantity && `(×${item.quantity})`}
-                          </span>
-                          {item.price !== undefined && (
-                            <span className="font-industrial text-steel">£{item.price.toFixed(2)}</span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
+                    {category.items && category.items.length > 0 && (
+                      <div className="space-y-1 ml-4">
+                        {category.items.map((item, itemIdx) => (
+                          <div key={itemIdx} className="flex justify-between items-start">
+                            <span className="font-industrial text-foreground">
+                              {item.name} {item.quantity && `(×${item.quantity})`}
+                            </span>
+                            {item.price !== undefined && (
+                              <span className="font-industrial text-steel">£{item.price.toFixed(2)}</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
