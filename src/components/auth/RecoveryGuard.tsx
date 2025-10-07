@@ -25,6 +25,17 @@ export const RecoveryGuard = () => {
         params.get('refresh_token') || hashParams.get('refresh_token')
       );
 
+      // Canonicalise to www when tokens are present in browser (avoid native)
+      const isNative = typeof window !== 'undefined' && (window.Capacitor?.isNativePlatform?.() || false);
+      if (hasTokens && host === 'croftcommontest.com' && !isNative) {
+        const newUrl = 'https://www.croftcommontest.com'
+          + window.location.pathname
+          + window.location.search
+          + window.location.hash;
+        console.info('[RecoveryGuard] Canonicalising to www with tokens');
+        window.location.replace(newUrl);
+        return;
+      }
 
       if (hasTokens) {
         sessionStorage.setItem('recovery', '1');
