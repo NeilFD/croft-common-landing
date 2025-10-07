@@ -80,14 +80,14 @@ interface Proposal {
   content_snapshot: any;
 }
 
-interface Contract {
-  id: string;
-  status: string;
-  created_at: string;
-  signed_at: string | null;
-  client_signature: string | null;
-  pdf_url: string | null;
-}
+  interface Contract {
+    id: string;
+    signature_status: string;
+    created_at: string;
+    client_signed_at: string | null;
+    client_signature_data: { signature: string } | null;
+    pdf_url: string | null;
+  }
 
 const ClientPortal = () => {
   const navigate = useNavigate();
@@ -633,7 +633,7 @@ const ClientPortal = () => {
               <TabsContent value="contract" className="space-y-6">
                 <div className="border-[3px] border-black rounded-lg p-6 bg-background">
                   <div className="flex items-center gap-3 mb-4">
-                    {contract.status === 'signed' ? (
+                    {contract.signature_status === 'completed' ? (
                       <CheckCircle className="w-6 h-6 text-green-600" />
                     ) : (
                       <AlertCircle className="w-6 h-6 text-yellow-600" />
@@ -641,8 +641,8 @@ const ClientPortal = () => {
                     <div>
                       <p className="font-industrial font-medium text-foreground">Contract Status</p>
                       <p className="font-industrial text-xs text-steel mt-1">
-                        {contract.status === 'signed' 
-                          ? `Signed on ${format(new Date(contract.signed_at!), 'MMM d, yyyy')}`
+                        {contract.signature_status === 'completed' 
+                          ? `Signed on ${format(new Date(contract.client_signed_at!), 'MMM d, yyyy')}`
                           : 'Awaiting signature'
                         }
                       </p>
@@ -664,7 +664,7 @@ const ClientPortal = () => {
                     {contract.pdf_url ? 'View Contract PDF' : 'PDF Not Available'}
                   </Button>
 
-                  {contract.status !== 'signed' && (
+                  {contract.signature_status !== 'completed' && (
                     <div className="mt-6 pt-6 border-t-[3px] border-black">
                       <p className="font-industrial text-sm text-foreground mb-4">
                         Please sign below to accept the contract terms
@@ -705,10 +705,10 @@ const ClientPortal = () => {
                     </div>
                   )}
 
-                  {contract.status === 'signed' && contract.client_signature && (
+                  {contract.signature_status === 'completed' && contract.client_signature_data?.signature && (
                     <div className="mt-6 pt-6 border-t-[3px] border-black">
                       <p className="font-industrial text-xs uppercase text-steel mb-2">Your Signature</p>
-                      <img src={contract.client_signature} alt="Signature" className="border-[3px] border-black rounded-lg p-2 bg-background max-w-full h-40 object-contain" />
+                      <img src={contract.client_signature_data.signature} alt="Signature" className="border-[3px] border-black rounded-lg p-2 bg-background max-w-full h-40 object-contain" />
                     </div>
                   )}
                 </div>
