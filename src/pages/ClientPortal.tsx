@@ -833,22 +833,33 @@ const ClientPortal = () => {
                 key={link.id} 
                 className="border-[3px] border-black rounded-lg overflow-hidden bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300 group"
               >
-                {link.thumbnail_url && (
-                  <div className="w-full h-64 overflow-hidden bg-muted relative">
+                <div className="w-full h-64 overflow-hidden bg-muted relative flex items-center justify-center">
+                  {link.thumbnail_url ? (
                     <img
                       src={link.thumbnail_url}
                       alt="Inspiration"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        // Hide broken image, show fallback
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
-                    <button
-                      onClick={() => handleDeleteInspiration(link.id)}
-                      className="absolute top-2 right-2 p-2 border-[3px] border-black rounded-lg bg-background/90 hover:bg-destructive hover:border-destructive transition-all duration-300"
-                      aria-label="Delete inspiration"
-                    >
-                      <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
-                    </button>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-center p-6">
+                      <LinkIcon className="w-12 h-12 mx-auto mb-2 text-muted-foreground" />
+                      <p className="font-industrial text-sm uppercase tracking-wide text-muted-foreground">
+                        {link.link_type || 'Link'}
+                      </p>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => handleDeleteInspiration(link.id)}
+                    className="absolute top-2 right-2 p-2 border-[3px] border-black rounded-lg bg-background/90 hover:bg-destructive hover:border-destructive transition-all duration-300"
+                    aria-label="Delete inspiration"
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
+                  </button>
+                </div>
                 <div className="p-3 flex items-center justify-between">
                   <span className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
                     {link.link_type || 'Link'}
