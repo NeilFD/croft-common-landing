@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, LogOut, Send, Upload, FileText, Calendar, Users, Clock, Mail, Download, Link as LinkIcon, Plus, Trash2, FileCheck, CheckCircle, AlertCircle, DollarSign, Info } from 'lucide-react';
-import { FramedBox } from '@/components/ui/FramedBox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,6 +10,7 @@ import { format } from 'date-fns';
 import CroftLogo from '@/components/CroftLogo';
 import { BRAND_NAME } from '@/data/brand';
 import SignatureCanvas from 'react-signature-canvas';
+import { Button } from '@/components/ui/button';
 
 interface ClientSession {
   sessionId: string;
@@ -303,6 +303,12 @@ const ClientPortal = () => {
     toast.success('Logged out');
   };
 
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -314,18 +320,17 @@ const ClientPortal = () => {
   if (!session || !event) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-surface p-4">
-        <div className="max-w-md w-full border-2 border-charcoal p-8 text-center bg-transparent">
+        <div className="max-w-md w-full border-[3px] border-charcoal rounded-lg p-8 text-center bg-background">
           <h1 className="font-brutalist text-2xl uppercase mb-4 text-foreground">Session Required</h1>
           <p className="font-industrial text-steel mb-6">
             Please use the magic link provided to access your event portal.
           </p>
-          <FramedBox
-            as="button"
+          <Button
             onClick={() => navigate('/')}
-            className="w-full cursor-pointer"
+            className="w-full"
           >
             Return Home
-          </FramedBox>
+          </Button>
         </div>
       </div>
     );
@@ -334,8 +339,8 @@ const ClientPortal = () => {
   return (
     <div className="min-h-screen bg-surface">
       {/* Header */}
-      <header className="border-b-2 border-charcoal bg-transparent">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
+      <header className="border-b-[3px] border-charcoal bg-background">
+        <div className="max-w-5xl mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <CroftLogo size="lg" />
             <div>
@@ -345,468 +350,479 @@ const ClientPortal = () => {
           </div>
           <div className="text-right">
             <p className="font-industrial text-sm text-steel mb-2">{session.contactEmail}</p>
-            <FramedBox
-              as="button"
+            <Button
               onClick={handleLogout}
+              variant="outline"
               size="sm"
-              className="cursor-pointer"
+              className="border-[3px]"
             >
-              <LogOut className="w-4 h-4 mr-2 inline" />
+              <LogOut className="w-4 h-4 mr-2" />
               Logout
-            </FramedBox>
+            </Button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-5xl mx-auto p-4 md:p-8">
-        <div className="space-y-6">
-          {/* Event Details Card with Tabs */}
-          <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
-            <h2 className="font-brutalist text-xl uppercase tracking-wide mb-6 text-foreground">Event Details</h2>
-              
-              <Tabs defaultValue="overview" className="w-full">
-                <TabsList className="w-full border-2 border-charcoal bg-transparent p-0 h-auto mb-6">
-                  <TabsTrigger 
-                    value="overview" 
-                    className="flex-1 font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background border-0 rounded-none py-2"
-                  >
-                    Overview
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="documents" 
-                    className="flex-1 font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background border-0 rounded-none py-2"
-                  >
-                    Documents
-                  </TabsTrigger>
-                  {contract && (
-                    <TabsTrigger 
-                      value="contract" 
-                      className="flex-1 font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background border-0 rounded-none py-2"
-                    >
-                      Contract
-                    </TabsTrigger>
-                  )}
-                </TabsList>
+      {/* Main Content - Single Column */}
+      <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+        
+        {/* Event Details */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Event Details</h2>
+          
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 border-[3px] border-charcoal rounded-lg p-0 h-auto mb-6 bg-background">
+              <TabsTrigger 
+                value="overview" 
+                className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1"
+              >
+                Overview
+              </TabsTrigger>
+              <TabsTrigger 
+                value="documents" 
+                className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1"
+              >
+                Documents
+              </TabsTrigger>
+              {contract && (
+                <TabsTrigger 
+                  value="contract" 
+                  className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1"
+                >
+                  Contract
+                </TabsTrigger>
+              )}
+            </TabsList>
 
-                {/* Overview Tab */}
-                <TabsContent value="overview" className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Calendar className="w-5 h-5 text-steel mt-0.5" />
-                        <div>
-                          <p className="font-industrial text-xs uppercase text-steel mb-1">Date</p>
-                          <p className="font-industrial font-medium text-foreground">
-                            {format(new Date(event.primary_date!), 'EEEE, MMMM d, yyyy')}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <Clock className="w-5 h-5 text-steel mt-0.5" />
-                        <div>
-                          <p className="font-industrial text-xs uppercase text-steel mb-1">Time</p>
-                          <p className="font-industrial font-medium text-foreground">{event.start_time || 'TBC'}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-3">
-                        <Users className="w-5 h-5 text-steel mt-0.5" />
-                        <div>
-                          <p className="font-industrial text-xs uppercase text-steel mb-1">Guests</p>
-                          <p className="font-industrial font-medium text-foreground">{event.headcount || 'TBC'}</p>
-                        </div>
+            {/* Overview Tab */}
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  {event.primary_date && (
+                    <div className="flex items-start gap-3">
+                      <Calendar className="w-5 h-5 text-steel mt-0.5" />
+                      <div>
+                        <p className="font-industrial text-xs uppercase text-steel mb-1">Date</p>
+                        <p className="font-industrial font-medium text-foreground">
+                          {format(new Date(event.primary_date), 'EEEE, MMMM d, yyyy')}
+                        </p>
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <div className="flex items-start gap-3">
-                        <Mail className="w-5 h-5 text-steel mt-0.5" />
-                        <div>
-                          <p className="font-industrial text-xs uppercase text-steel mb-1">Event Type</p>
-                          <p className="font-industrial font-medium text-foreground">{event.event_type || 'TBC'}</p>
-                        </div>
-                      </div>
-                      {event.budget && (
-                        <div className="flex items-start gap-3">
-                          <DollarSign className="w-5 h-5 text-steel mt-0.5" />
-                          <div>
-                            <p className="font-industrial text-xs uppercase text-steel mb-1">Budget</p>
-                            <p className="font-industrial font-medium text-foreground">£{event.budget.toLocaleString()}</p>
-                          </div>
-                        </div>
-                      )}
-                      {event.event_code && (
-                        <div className="flex items-start gap-3">
-                          <Info className="w-5 h-5 text-steel mt-0.5" />
-                          <div>
-                            <p className="font-industrial text-xs uppercase text-steel mb-1">Event Code</p>
-                            <p className="font-industrial font-medium text-foreground font-mono">{event.event_code}</p>
-                          </div>
-                        </div>
-                      )}
+                  )}
+                  <div className="flex items-start gap-3">
+                    <Clock className="w-5 h-5 text-steel mt-0.5" />
+                    <div>
+                      <p className="font-industrial text-xs uppercase text-steel mb-1">Time</p>
+                      <p className="font-industrial font-medium text-foreground">{event.start_time || 'TBC'}</p>
                     </div>
                   </div>
-                  {event.notes && (
-                    <div className="pt-4 border-t-2 border-steel">
-                      <p className="font-industrial text-xs uppercase text-steel mb-2">Notes</p>
-                      <p className="font-industrial text-sm text-foreground whitespace-pre-wrap">{event.notes}</p>
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-steel mt-0.5" />
+                    <div>
+                      <p className="font-industrial text-xs uppercase text-steel mb-1">Guests</p>
+                      <p className="font-industrial font-medium text-foreground">{event.headcount || 'TBC'}</p>
                     </div>
-                  )}
-                </TabsContent>
-
-                {/* Documents Tab */}
-                <TabsContent value="documents" className="space-y-4">
-                  {proposal && (
-                    <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                          <FileText className="w-5 h-5 text-steel mt-0.5" />
-                          <div>
-                            <p className="font-industrial font-medium text-foreground">Proposal v{proposal.version_number}</p>
-                            <p className="font-industrial text-xs text-steel mt-1">
-                              Created {format(new Date(proposal.created_at), 'MMM d, yyyy')}
-                            </p>
-                            <div className="mt-2">
-                              <span className={`inline-block px-2 py-1 text-xs font-industrial uppercase border-2 ${
-                                proposal.status === 'approved' ? 'border-green-600 text-green-600' :
-                                proposal.status === 'pending' ? 'border-yellow-600 text-yellow-600' :
-                                'border-steel text-steel'
-                              }`}>
-                                {proposal.status}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        {proposal.pdf_url && (
-                          <FramedBox
-                            as="a"
-                            href={proposal.pdf_url}
-                            target="_blank"
-                            size="sm"
-                            className="cursor-pointer shrink-0"
-                          >
-                            <Download className="w-4 h-4 mr-2 inline" />
-                            Download
-                          </FramedBox>
-                        )}
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-start gap-3">
+                    <Mail className="w-5 h-5 text-steel mt-0.5" />
+                    <div>
+                      <p className="font-industrial text-xs uppercase text-steel mb-1">Event Type</p>
+                      <p className="font-industrial font-medium text-foreground">{event.event_type || 'TBC'}</p>
+                    </div>
+                  </div>
+                  {event.budget && (
+                    <div className="flex items-start gap-3">
+                      <DollarSign className="w-5 h-5 text-steel mt-0.5" />
+                      <div>
+                        <p className="font-industrial text-xs uppercase text-steel mb-1">Budget</p>
+                        <p className="font-industrial font-medium text-foreground">£{event.budget.toLocaleString()}</p>
                       </div>
                     </div>
                   )}
-                  
-                  {beo && (
-                    <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1">
-                          <FileCheck className="w-5 h-5 text-steel mt-0.5" />
-                          <div>
-                            <p className="font-industrial font-medium text-foreground">Banquet Event Order v{beo.version_number}</p>
-                            <p className="font-industrial text-xs text-steel mt-1">
-                              Created {format(new Date(beo.created_at), 'MMM d, yyyy')}
-                            </p>
-                          </div>
-                        </div>
-                        {beo.pdf_url && (
-                          <FramedBox
-                            as="a"
-                            href={beo.pdf_url}
-                            target="_blank"
-                            size="sm"
-                            className="cursor-pointer shrink-0"
-                          >
-                            <Download className="w-4 h-4 mr-2 inline" />
-                            Download
-                          </FramedBox>
-                        )}
+                  {event.event_code && (
+                    <div className="flex items-start gap-3">
+                      <Info className="w-5 h-5 text-steel mt-0.5" />
+                      <div>
+                        <p className="font-industrial text-xs uppercase text-steel mb-1">Event Code</p>
+                        <p className="font-industrial font-medium text-foreground font-mono">{event.event_code}</p>
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+              {event.notes && (
+                <div className="pt-4 border-t-[3px] border-steel">
+                  <p className="font-industrial text-xs uppercase text-steel mb-2">Notes</p>
+                  <p className="font-industrial text-sm text-foreground whitespace-pre-wrap">{event.notes}</p>
+                </div>
+              )}
+            </TabsContent>
 
-                  {!proposal && !beo && (
-                    <p className="font-industrial text-sm text-steel text-center py-8">
-                      No documents available yet
-                    </p>
-                  )}
-                </TabsContent>
-
-                {/* Contract Tab */}
-                {contract && (
-                  <TabsContent value="contract" className="space-y-4">
-                    <div className="border-2 border-steel p-4 bg-transparent">
-                      <div className="flex items-center gap-3 mb-4">
-                        {contract.status === 'signed' ? (
-                          <CheckCircle className="w-6 h-6 text-green-600" />
-                        ) : (
-                          <AlertCircle className="w-6 h-6 text-yellow-600" />
-                        )}
-                        <div>
-                          <p className="font-industrial font-medium text-foreground">Contract Status</p>
-                          <p className="font-industrial text-xs text-steel mt-1">
-                            {contract.status === 'signed' 
-                              ? `Signed on ${format(new Date(contract.signed_at!), 'MMM d, yyyy')}`
-                              : 'Awaiting signature'
-                            }
-                          </p>
+            {/* Documents Tab */}
+            <TabsContent value="documents" className="space-y-4">
+              {proposal && (
+                <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <FileText className="w-5 h-5 text-steel mt-0.5" />
+                      <div>
+                        <p className="font-industrial font-medium text-foreground">Proposal v{proposal.version_number}</p>
+                        <p className="font-industrial text-xs text-steel mt-1">
+                          Created {format(new Date(proposal.created_at), 'MMM d, yyyy')}
+                        </p>
+                        <div className="mt-2">
+                          <span className={`inline-block px-2 py-1 text-xs font-industrial uppercase border-[3px] rounded ${
+                            proposal.status === 'approved' ? 'border-green-600 text-green-600' :
+                            proposal.status === 'pending' ? 'border-yellow-600 text-yellow-600' :
+                            'border-steel text-steel'
+                          }`}>
+                            {proposal.status}
+                          </span>
                         </div>
                       </div>
-
-                      {contract.pdf_url && (
-                        <FramedBox
-                          as="a"
-                          href={contract.pdf_url}
-                          target="_blank"
-                          size="sm"
-                          className="cursor-pointer w-full mb-4"
-                        >
-                          <Download className="w-4 h-4 mr-2 inline" />
-                          View Contract PDF
-                        </FramedBox>
-                      )}
-
-                      {contract.status !== 'signed' && (
-                        <div className="mt-6 pt-6 border-t-2 border-steel">
-                          <p className="font-industrial text-sm text-foreground mb-4">
-                            Please sign below to accept the contract terms
-                          </p>
-                          <div className="border-2 border-charcoal bg-background p-2 mb-4">
-                            <SignatureCanvas
-                              ref={signatureRef}
-                              canvasProps={{
-                                className: 'w-full h-40',
-                              }}
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <FramedBox
-                              as="button"
-                              onClick={() => signatureRef.current?.clear()}
-                              size="sm"
-                              className="cursor-pointer"
-                            >
-                              Clear
-                            </FramedBox>
-                            <FramedBox
-                              as="button"
-                              onClick={handleSignContract}
-                              disabled={signingContract}
-                              size="sm"
-                              className="cursor-pointer flex-1 disabled:opacity-50"
-                            >
-                              {signingContract ? (
-                                <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-                              ) : (
-                                <FileCheck className="w-4 h-4 inline mr-2" />
-                              )}
-                              Sign Contract
-                            </FramedBox>
-                          </div>
-                        </div>
-                      )}
-
-                      {contract.status === 'signed' && contract.client_signature && (
-                        <div className="mt-6 pt-6 border-t-2 border-steel">
-                          <p className="font-industrial text-xs uppercase text-steel mb-2">Your Signature</p>
-                          <img src={contract.client_signature} alt="Signature" className="border-2 border-charcoal p-2 bg-background max-w-full h-40 object-contain" />
-                        </div>
-                      )}
                     </div>
-                  </TabsContent>
-                )}
-              </Tabs>
-            </div>
-
-            {/* Messages */}
-            <div className="border-2 border-charcoal p-6 flex flex-col h-[600px] bg-transparent">
-              <h2 className="font-brutalist text-xl uppercase tracking-wide mb-4 text-foreground">Messages</h2>
+                    {proposal.pdf_url && (
+                      <a
+                        href={proposal.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 border-[3px] border-charcoal rounded-lg py-2 px-4 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
               
-              <div className="flex-1 overflow-y-auto space-y-3 mb-4">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.author === 'client' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`p-3 rounded-none border-2 ${
-                        msg.author === 'client'
-                          ? 'bg-accent-pink text-background border-accent-pink max-w-[70%]'
-                          : 'bg-transparent text-foreground border-charcoal max-w-[75%]'
-                      }`}
-                    >
-                      <p className="font-industrial text-sm whitespace-pre-wrap">{msg.body}</p>
-                      <p className={`font-industrial text-xs mt-1 ${
-                        msg.author === 'client' ? 'text-background/70' : 'text-steel'
-                      }`}>
-                        {format(new Date(msg.created_at), 'HH:mm')}
+              {beo && (
+                <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <FileCheck className="w-5 h-5 text-steel mt-0.5" />
+                      <div>
+                        <p className="font-industrial font-medium text-foreground">Banquet Event Order v{beo.version_number}</p>
+                        <p className="font-industrial text-xs text-steel mt-1">
+                          Created {format(new Date(beo.created_at), 'MMM d, yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                    {beo.pdf_url && (
+                      <a
+                        href={beo.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 border-[3px] border-charcoal rounded-lg py-2 px-4 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!proposal && !beo && (
+                <p className="font-industrial text-sm text-steel text-center py-8">
+                  No documents available yet
+                </p>
+              )}
+            </TabsContent>
+
+            {/* Contract Tab */}
+            {contract && (
+              <TabsContent value="contract" className="space-y-6">
+                <div className="border-[3px] border-steel rounded-lg p-6 bg-background">
+                  <div className="flex items-center gap-3 mb-4">
+                    {contract.status === 'signed' ? (
+                      <CheckCircle className="w-6 h-6 text-green-600" />
+                    ) : (
+                      <AlertCircle className="w-6 h-6 text-yellow-600" />
+                    )}
+                    <div>
+                      <p className="font-industrial font-medium text-foreground">Contract Status</p>
+                      <p className="font-industrial text-xs text-steel mt-1">
+                        {contract.status === 'signed' 
+                          ? `Signed on ${format(new Date(contract.signed_at!), 'MMM d, yyyy')}`
+                          : 'Awaiting signature'
+                        }
                       </p>
                     </div>
                   </div>
-                ))}
-              </div>
 
-              <div className="flex gap-2">
-                <Textarea
-                  placeholder="Type your message..."
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  className="resize-none border-2 border-charcoal bg-transparent font-industrial focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-accent-pink"
-                  rows={3}
-                />
-                <FramedBox
-                  as="button"
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim() || sendingMessage}
-                  className="shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {sendingMessage ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Send className="w-4 h-4" />
+                  {contract.pdf_url && (
+                    <a
+                      href={contract.pdf_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full border-[3px] border-charcoal rounded-lg py-3 px-4 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center justify-center font-industrial uppercase text-sm mb-4"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      View Contract PDF
+                    </a>
                   )}
-                </FramedBox>
+
+                  {contract.status !== 'signed' && (
+                    <div className="mt-6 pt-6 border-t-[3px] border-steel">
+                      <p className="font-industrial text-sm text-foreground mb-4">
+                        Please sign below to accept the contract terms
+                      </p>
+                      <div className="border-[3px] border-steel rounded-lg p-4 bg-background mb-4">
+                        <SignatureCanvas
+                          ref={signatureRef}
+                          canvasProps={{
+                            className: 'w-full h-32 border-[3px] border-steel rounded bg-background',
+                          }}
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => signatureRef.current?.clear()}
+                          className="flex-1 border-[3px] border-charcoal rounded-lg py-2 px-4 font-industrial uppercase text-xs bg-background hover:bg-steel hover:text-background transition-all duration-300"
+                        >
+                          Clear
+                        </button>
+                        <button
+                          onClick={handleSignContract}
+                          disabled={signingContract}
+                          className="flex-1 border-[3px] border-charcoal rounded-lg py-2 px-4 font-industrial uppercase text-xs bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+                        >
+                          {signingContract ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 inline animate-spin" />
+                              Signing...
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle className="w-4 h-4 mr-2 inline" />
+                              Sign Contract
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {contract.status === 'signed' && contract.client_signature && (
+                    <div className="mt-6 pt-6 border-t-[3px] border-steel">
+                      <p className="font-industrial text-xs uppercase text-steel mb-2">Your Signature</p>
+                      <img src={contract.client_signature} alt="Signature" className="border-[3px] border-charcoal rounded-lg p-2 bg-background max-w-full h-40 object-contain" />
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            )}
+          </Tabs>
+        </div>
+
+        {/* Messages */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Messages</h2>
+
+          <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`p-3 rounded-lg border-[3px] ${
+                  msg.author === 'team'
+                    ? 'bg-accent-pink/10 border-accent-pink/20 ml-8'
+                    : 'bg-muted border-steel mr-8'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-brutalist text-xs uppercase">
+                    {msg.author === 'team' ? 'Team' : 'You'}
+                  </span>
+                  <span className="font-industrial text-xs text-muted-foreground">
+                    {format(new Date(msg.created_at), 'MMM d, h:mm a')}
+                  </span>
+                </div>
+                <p className="font-industrial text-sm whitespace-pre-wrap">{msg.body}</p>
               </div>
-            </div>
+            ))}
+            {messages.length === 0 && (
+              <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                No messages yet
+              </p>
+            )}
           </div>
 
-          {/* Right Column - Files & Inspiration */}
-          <div className="space-y-6">
-            <div className="border-2 border-charcoal p-6 bg-transparent">
-              <Tabs defaultValue="files" className="w-full">
-                <TabsList className="w-full border-2 border-charcoal bg-transparent p-0 h-auto mb-6">
-                  <TabsTrigger 
-                    value="files" 
-                    className="flex-1 font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background border-0 rounded-none py-2"
-                  >
-                    Files
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="inspiration" 
-                    className="flex-1 font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background border-0 rounded-none py-2"
-                  >
-                    Inspiration
-                  </TabsTrigger>
-                </TabsList>
+          <div className="space-y-2 pt-4 border-t-[3px] border-steel">
+            <Textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message to the team..."
+              className="font-industrial resize-none border-[3px] border-steel rounded-lg bg-background focus:border-charcoal"
+              rows={3}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim() || sendingMessage}
+              className="w-full border-[3px] border-charcoal rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+            >
+              {sendingMessage ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 inline animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2 inline" />
+                  Send Message
+                </>
+              )}
+            </button>
+          </div>
+        </div>
 
-                {/* Files Tab */}
-                <TabsContent value="files" className="space-y-4">
-                  <FramedBox
-                    as="label"
-                    size="sm"
-                    className={`w-full cursor-pointer ${uploadingFile ? 'opacity-50 cursor-not-allowed' : ''}`}
+        {/* Files */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Files</h2>
+
+          <div className="space-y-3 mb-4">
+            {files.map((file) => (
+              <div 
+                key={file.id} 
+                className="flex items-center justify-between p-3 border-[3px] border-steel rounded-lg bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <FileText className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-industrial text-sm truncate">{file.filename}</p>
+                    <p className="font-industrial text-xs text-muted-foreground">
+                      {formatFileSize(file.size_bytes)} • {format(new Date(file.created_at), 'MMM d, yyyy')}
+                    </p>
+                  </div>
+                </div>
+                {file.download_url && (
+                  <a
+                    href={file.download_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 border-[3px] border-charcoal rounded-lg py-2 px-3 bg-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center"
                   >
-                    {uploadingFile ? (
-                      <Loader2 className="w-4 h-4 animate-spin inline mr-2" />
-                    ) : (
-                      <Upload className="w-4 h-4 mr-2 inline" />
-                    )}
+                    <Download className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
+            ))}
+            {files.length === 0 && (
+              <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                No files uploaded yet
+              </p>
+            )}
+          </div>
+
+          <div className="pt-4 border-t-[3px] border-steel">
+            <label className="block">
+              <input
+                type="file"
+                onChange={handleFileUpload}
+                className="hidden"
+                disabled={uploadingFile}
+                id="file-upload"
+              />
+              <label
+                htmlFor="file-upload"
+                className="w-full border-[3px] border-charcoal rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50 inline-block text-center cursor-pointer"
+              >
+                {uploadingFile ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 inline animate-spin" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2 inline" />
                     Upload File
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={handleFileUpload}
-                      disabled={uploadingFile}
-                    />
-                  </FramedBox>
+                  </>
+                )}
+              </label>
+            </label>
+          </div>
+        </div>
 
-                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                    {files.length === 0 ? (
-                      <p className="font-industrial text-sm text-steel text-center py-8">
-                        No files uploaded yet
-                      </p>
-                    ) : (
-                      files.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-center gap-3 p-3 border-2 border-steel bg-transparent hover:border-accent-pink transition-colors"
-                        >
-                          <FileText className="w-5 h-5 text-steel shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="font-industrial font-medium truncate text-foreground">{file.filename}</p>
-                            <p className="font-industrial text-xs text-steel">
-                              {(file.size_bytes / 1024).toFixed(1)} KB • {format(new Date(file.created_at), 'MMM d, yyyy')}
-                            </p>
-                          </div>
-                        </div>
-                      ))
+        {/* Inspiration */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Inspiration Board</h2>
+
+          <div className="space-y-3 mb-4">
+            {inspirationLinks.map((link) => (
+              <div 
+                key={link.id} 
+                className="border-[3px] border-steel rounded-lg p-3 bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    {link.thumbnail_url && (
+                      <img
+                        src={link.thumbnail_url}
+                        alt=""
+                        className="w-16 h-16 object-cover border-[3px] border-steel rounded-lg flex-shrink-0"
+                      />
                     )}
-                  </div>
-                </TabsContent>
-
-                {/* Inspiration Tab */}
-                <TabsContent value="inspiration" className="space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Paste inspiration link..."
-                      value={newInspirationUrl}
-                      onChange={(e) => setNewInspirationUrl(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddInspiration();
-                        }
-                      }}
-                      className="border-2 border-charcoal bg-transparent font-industrial focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-accent-pink"
-                    />
-                    <FramedBox
-                      as="button"
-                      onClick={handleAddInspiration}
-                      disabled={!newInspirationUrl.trim() || addingInspiration}
-                      size="sm"
-                      className="shrink-0 cursor-pointer disabled:opacity-50"
-                    >
-                      {addingInspiration ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Plus className="w-4 h-4" />
+                    <div className="flex-1 min-w-0">
+                      {link.title && (
+                        <p className="font-industrial text-sm font-medium truncate">{link.title}</p>
                       )}
-                    </FramedBox>
+                      {link.description && (
+                        <p className="font-industrial text-xs text-muted-foreground line-clamp-2">{link.description}</p>
+                      )}
+                      <a 
+                        href={link.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="font-industrial text-xs text-primary hover:underline flex items-center gap-1 mt-1"
+                      >
+                        <LinkIcon className="h-3 w-3" />
+                        View Link
+                      </a>
+                    </div>
                   </div>
+                  <button
+                    onClick={() => handleDeleteInspiration(link.id)}
+                    className="flex-shrink-0 p-2 border-[3px] border-steel rounded-lg hover:bg-destructive hover:border-destructive transition-all duration-300"
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {inspirationLinks.length === 0 && (
+              <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                No inspiration links yet
+              </p>
+            )}
+          </div>
 
-                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                    {inspirationLinks.length === 0 ? (
-                      <p className="font-industrial text-sm text-steel text-center py-8">
-                        No inspiration links yet
-                      </p>
-                    ) : (
-                      inspirationLinks.map((link) => (
-                        <div
-                          key={link.id}
-                          className="border-2 border-steel p-3 bg-transparent hover:border-accent-pink transition-colors group"
-                        >
-                          <div className="flex items-start gap-3">
-                            <LinkIcon className="w-5 h-5 text-steel shrink-0 mt-0.5" />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-industrial font-medium text-foreground text-sm mb-1">
-                                {link.title || 'Link'}
-                              </p>
-                              {link.description && (
-                                <p className="font-industrial text-xs text-steel mb-2">{link.description}</p>
-                              )}
-                              <a 
-                                href={link.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="font-industrial text-xs text-accent-pink hover:underline break-all"
-                              >
-                                {link.url}
-                              </a>
-                            </div>
-                            <button
-                              onClick={() => handleDeleteInspiration(link.id)}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-red-600"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
+          <div className="pt-4 border-t-[3px] border-steel flex gap-2">
+            <Input
+              value={newInspirationUrl}
+              onChange={(e) => setNewInspirationUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddInspiration();
+                }
+              }}
+              placeholder="Paste inspiration link..."
+              className="flex-1 font-industrial border-[3px] border-steel rounded-lg bg-background focus:border-charcoal"
+              disabled={addingInspiration}
+            />
+            <button
+              onClick={handleAddInspiration}
+              disabled={!newInspirationUrl.trim() || addingInspiration}
+              className="border-[3px] border-charcoal rounded-lg py-2 px-3 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+            >
+              {addingInspiration ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+            </button>
           </div>
         </div>
       </div>

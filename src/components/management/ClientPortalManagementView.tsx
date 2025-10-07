@@ -175,7 +175,7 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
   return (
     <div className="space-y-6">
       {/* Info Banner */}
-      <div className="bg-accent-blue/10 border border-accent-blue/20 p-4 rounded-lg">
+      <div className="bg-accent-blue/10 border-[3px] border-accent-blue/20 p-4 rounded-lg">
         <div className="flex items-start gap-3">
           <Info className="h-5 w-5 text-accent-blue flex-shrink-0 mt-0.5" />
           <div className="space-y-1">
@@ -187,21 +187,19 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Left Column: Event Details & Messages */}
-        <div className="space-y-6">
-          {/* Event Overview */}
-          <FramedBox className="p-6 space-y-4">
-            <h2 className="font-brutalist text-2xl uppercase tracking-wide border-b-2 border-industrial pb-2">
-              Event Details
-            </h2>
+      <div className="space-y-6">
+        {/* Event Details */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">
+            Event Details
+          </h2>
             
-            <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="overview" className="font-industrial text-xs">OVERVIEW</TabsTrigger>
-                <TabsTrigger value="documents" className="font-industrial text-xs">DOCUMENTS</TabsTrigger>
-                <TabsTrigger value="contract" className="font-industrial text-xs">CONTRACT</TabsTrigger>
-              </TabsList>
+          <Tabs defaultValue="overview" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 border-[3px] border-charcoal rounded-lg p-0 h-auto mb-6 bg-background">
+              <TabsTrigger value="overview" className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1">OVERVIEW</TabsTrigger>
+              <TabsTrigger value="documents" className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1">DOCUMENTS</TabsTrigger>
+              <TabsTrigger value="contract" className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1">CONTRACT</TabsTrigger>
+            </TabsList>
 
               <TabsContent value="overview" className="space-y-4 mt-4">
                 <div className="grid gap-3">
@@ -224,9 +222,9 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                 </div>
               </TabsContent>
 
-              <TabsContent value="documents" className="space-y-4 mt-4">
-                {beo && (
-                  <div className="border border-industrial p-4 rounded">
+            <TabsContent value="documents" className="space-y-4">
+              {beo && (
+                <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-brutalist uppercase text-sm">BEO v{beo.version_number}</p>
@@ -245,8 +243,8 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                   </div>
                 )}
 
-                {proposal && (
-                  <div className="border border-industrial p-4 rounded">
+              {proposal && (
+                <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-brutalist uppercase text-sm">Proposal v{proposal.version_number}</p>
@@ -265,14 +263,14 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                   </div>
                 )}
 
-                {!beo && !proposal && (
-                  <p className="font-industrial text-sm text-muted-foreground text-center py-8">
-                    No documents available yet
-                  </p>
-                )}
-              </TabsContent>
+              {!beo && !proposal && (
+                <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                  No documents available yet
+                </p>
+              )}
+            </TabsContent>
 
-              <TabsContent value="contract" className="space-y-4 mt-4">
+            <TabsContent value="contract" className="space-y-4">
                 {contract ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
@@ -294,31 +292,31 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                       </Button>
                     )}
                   </div>
-                ) : (
-                  <p className="font-industrial text-sm text-muted-foreground text-center py-8">
-                    No contract available yet
-                  </p>
-                )}
-              </TabsContent>
-            </Tabs>
-          </FramedBox>
+              ) : (
+                <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                  No contract available yet
+                </p>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
 
-          {/* Messages */}
-          <FramedBox className="p-6 space-y-4">
-            <h2 className="font-brutalist text-xl uppercase tracking-wide border-b-2 border-industrial pb-2">
-              Messages
-            </h2>
+        {/* Messages */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">
+            Messages
+          </h2>
 
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`p-3 rounded border ${
-                    msg.author === 'team'
-                      ? 'bg-accent-blue/10 border-accent-blue/20 ml-8'
-                      : 'bg-muted border-industrial mr-8'
-                  }`}
-                >
+          <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`p-3 rounded-lg border-[3px] ${
+                  msg.author === 'team'
+                    ? 'bg-accent-pink/10 border-accent-pink/20 ml-8'
+                    : 'bg-muted border-steel mr-8'
+                }`}
+              >
                   <div className="flex items-center justify-between mb-1">
                     <span className="font-brutalist text-xs uppercase">
                       {msg.author === 'team' ? 'Team' : 'Client'}
@@ -330,56 +328,47 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                   <p className="font-industrial text-sm whitespace-pre-wrap">{msg.body}</p>
                 </div>
               ))}
-              {messages.length === 0 && (
-                <p className="font-industrial text-sm text-muted-foreground text-center py-8">
-                  No messages yet
-                </p>
-              )}
-            </div>
+            {messages.length === 0 && (
+              <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                No messages yet
+              </p>
+            )}
+          </div>
 
-            <div className="space-y-2">
-              <Textarea
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your message to the client..."
-                className="font-industrial resize-none"
-                rows={3}
-              />
-              <Button
-                onClick={handleSendMessage}
-                disabled={!newMessage.trim() || sendingMessage}
-                className="w-full font-brutalist uppercase"
-              >
-                {sendingMessage ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Send Message
-                  </>
-                )}
-              </Button>
-            </div>
-          </FramedBox>
+          <div className="space-y-2 pt-4 border-t-[3px] border-steel">
+            <Textarea
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type your message to the client..."
+              className="font-industrial resize-none border-[3px] border-steel rounded-lg bg-background focus:border-charcoal"
+              rows={3}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim() || sendingMessage}
+              className="w-full border-[3px] border-charcoal rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+            >
+              {sendingMessage ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 inline animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4 mr-2 inline" />
+                  Send Message
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Right Column: Files & Inspiration */}
-        <div className="space-y-6">
-          <Tabs defaultValue="files" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="files" className="font-industrial">FILES</TabsTrigger>
-              <TabsTrigger value="inspiration" className="font-industrial">INSPIRATION</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="files" className="mt-4">
-              <FramedBox className="p-6 space-y-4">
-                <h3 className="font-brutalist text-lg uppercase tracking-wide">Uploaded Files</h3>
-                <div className="space-y-2">
-                  {files.map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 border border-industrial rounded hover:bg-muted/50 transition-colors">
+        {/* Files */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Uploaded Files</h2>
+          <div className="space-y-2">
+            {files.map((file) => (
+              <div key={file.id} className="flex items-center justify-between p-3 border-[3px] border-steel rounded-lg bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300">
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <FileText className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
                         <div className="min-w-0 flex-1">
@@ -389,38 +378,40 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                           </p>
                         </div>
                       </div>
-                      {file.download_url && (
-                        <Button size="sm" variant="ghost" asChild>
-                          <a href={file.download_url} target="_blank" rel="noopener noreferrer">
-                            <Download className="h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                  {files.length === 0 && (
-                    <p className="font-industrial text-sm text-muted-foreground text-center py-8">
-                      No files uploaded yet
-                    </p>
-                  )}
-                </div>
-              </FramedBox>
-            </TabsContent>
+                {file.download_url && (
+                  <a
+                    href={file.download_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 border-[3px] border-charcoal rounded-lg py-2 px-3 bg-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center"
+                  >
+                    <Download className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
+            ))}
+            {files.length === 0 && (
+              <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                No files uploaded yet
+              </p>
+            )}
+          </div>
+        </div>
 
-            <TabsContent value="inspiration" className="mt-4">
-              <FramedBox className="p-6 space-y-4">
-                <h3 className="font-brutalist text-lg uppercase tracking-wide">Inspiration Board</h3>
-                <div className="space-y-3">
-                  {inspirationLinks.map((link) => (
-                    <div key={link.id} className="border border-industrial rounded p-3 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-start gap-3">
-                        {link.thumbnail_url && (
-                          <img 
-                            src={link.thumbnail_url} 
-                            alt=""
-                            className="w-16 h-16 object-cover rounded border border-industrial flex-shrink-0"
-                          />
-                        )}
+        {/* Inspiration */}
+        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+          <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Inspiration Board</h2>
+          <div className="space-y-3">
+            {inspirationLinks.map((link) => (
+              <div key={link.id} className="border-[3px] border-steel rounded-lg p-3 bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300">
+                <div className="flex items-start gap-3">
+                  {link.thumbnail_url && (
+                    <img 
+                      src={link.thumbnail_url} 
+                      alt=""
+                      className="w-16 h-16 object-cover rounded-lg border-[3px] border-steel flex-shrink-0"
+                    />
+                  )}
                         <div className="flex-1 min-w-0">
                           {link.title && (
                             <p className="font-industrial text-sm font-medium truncate">{link.title}</p>
@@ -437,19 +428,16 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                             <LinkIcon className="h-3 w-3" />
                             View Link
                           </a>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {inspirationLinks.length === 0 && (
-                    <p className="font-industrial text-sm text-muted-foreground text-center py-8">
-                      No inspiration links yet
-                    </p>
-                  )}
+                  </div>
                 </div>
-              </FramedBox>
-            </TabsContent>
-          </Tabs>
+              </div>
+            ))}
+            {inspirationLinks.length === 0 && (
+              <p className="font-industrial text-sm text-muted-foreground text-center py-8">
+                No inspiration links yet
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>
