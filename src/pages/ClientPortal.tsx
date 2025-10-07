@@ -191,18 +191,27 @@ const ClientPortal = () => {
   useEffect(() => {
     const loadLineItems = async () => {
       if (!session?.eventId) return;
-      const { data, error } = await supabase
+      const { data: rawItems, error } = await supabase
         .from('management_event_line_items')
-        .select('id, category, item_name, quantity, unit_cost, total_cost, item_order')
+        .select('id, type, description, qty, unit_price, per_person, sort_order')
         .eq('event_id', session.eventId)
-        .order('category', { ascending: true })
-        .order('item_order', { ascending: true });
+        .order('type', { ascending: true })
+        .order('sort_order', { ascending: true });
       if (error) {
         console.error('[ClientPortal] line items error:', error);
         setLineItems([]);
         return;
       }
-      setLineItems(data || []);
+      const mapped = (rawItems || []).map((item: any) => ({
+        id: item.id,
+        category: item.type,
+        item_name: item.description,
+        quantity: item.qty,
+        unit_cost: item.unit_price,
+        total_cost: (item.qty || 0) * (item.unit_price || 0),
+        item_order: item.sort_order,
+      }));
+      setLineItems(mapped);
     };
     loadLineItems();
   }, [session?.eventId, proposal?.id]);

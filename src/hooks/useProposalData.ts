@@ -106,19 +106,29 @@ export const useCurrentProposal = (eventId: string) => {
       if (proposalError) throw proposalError;
       if (!proposal) return null;
 
-      // Fetch line items for this event (use exact columns expected by viewer)
-      const { data: lineItems, error: lineItemsError } = await supabase
+      // Fetch line items for this event (map DB columns to viewer format)
+      const { data: rawItems, error: lineItemsError } = await supabase
         .from('management_event_line_items')
-        .select('id, category, item_name, quantity, unit_cost, total_cost, item_order')
+        .select('id, type, description, qty, unit_price, per_person, sort_order')
         .eq('event_id', eventId)
-        .order('category', { ascending: true })
-        .order('item_order', { ascending: true });
+        .order('type', { ascending: true })
+        .order('sort_order', { ascending: true });
 
       if (lineItemsError) throw lineItemsError;
 
+      const mappedLineItems = (rawItems || []).map((item: any) => ({
+        id: item.id,
+        category: item.type,
+        item_name: item.description,
+        quantity: item.qty,
+        unit_cost: item.unit_price,
+        total_cost: (item.qty || 0) * (item.unit_price || 0),
+        item_order: item.sort_order,
+      }));
+
       return {
         ...proposal,
-        lineItems: lineItems || []
+        lineItems: mappedLineItems
       } as ProposalVersion & { lineItems: any[] };
     },
     enabled: !!eventId

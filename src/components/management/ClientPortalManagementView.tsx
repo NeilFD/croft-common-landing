@@ -116,16 +116,26 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
       setProposal(data.proposal || null);
       setContract(data.contract || null);
 
-      // Fetch line items for ProposalViewer (no remapping needed)
-      const { data: li, error: liErr } = await supabase
+      // Fetch line items for ProposalViewer (map DB to viewer format)
+      const { data: liRaw, error: liErr } = await supabase
         .from('management_event_line_items')
-        .select('id, category, item_name, quantity, unit_cost, total_cost, item_order')
+        .select('id, type, description, qty, unit_price, per_person, sort_order')
         .eq('event_id', eventId)
-        .order('category', { ascending: true })
-        .order('item_order', { ascending: true });
+        .order('type', { ascending: true })
+        .order('sort_order', { ascending: true });
       if (liErr) throw liErr;
 
-      setLineItems(li || []);
+      const li = (liRaw || []).map((item: any) => ({
+        id: item.id,
+        category: item.type,
+        item_name: item.description,
+        quantity: item.qty,
+        unit_cost: item.unit_price,
+        total_cost: (item.qty || 0) * (item.unit_price || 0),
+        item_order: item.sort_order,
+      }));
+
+      setLineItems(li);
     } catch (error) {
       console.error('[ClientPortalManagementView] Error:', error);
       toast.error('Failed to load client portal data');
