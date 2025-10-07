@@ -562,6 +562,7 @@ const ClientPortal = () => {
                     versionNo={proposal.version_no}
                     generatedAt={proposal.generated_at}
                     lineItems={lineItems}
+                    serviceChargePct={event.service_charge_percent || 0}
                   />
                 </div>
               )}
