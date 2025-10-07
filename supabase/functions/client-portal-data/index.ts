@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
     // Fetch event details
     const { data: event, error: eventError } = await supabase
       .from('management_events')
-      .select('id, event_name, event_date, event_time, headcount, event_type, status, notes')
+      .select('*')
       .eq('id', eventId)
       .single();
 
