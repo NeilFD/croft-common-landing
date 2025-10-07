@@ -54,7 +54,7 @@
           var host = loc.hostname;
           var search = loc.search || '';
           var hash = loc.hash || '';
-          var hasTokens = /access_token=|refresh_token=|code=|type=recovery|error=/.test(search + hash);
+          var hasTokens = /access_token=|refresh_token=|code=|type=recovery|token_hash=|token=|error=/.test(search + hash);
 
           if (!isNative) {
             var onApex = host === 'croftcommontest.com';
@@ -86,7 +86,7 @@
 
   <body>
     <div id="root"></div>
-    <script src="capacitor.js"></script>
+    <script src="/capacitor.js"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

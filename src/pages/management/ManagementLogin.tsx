@@ -139,21 +139,43 @@ const ManagementLogin = () => {
           sessionEstablished = true;
         }
 
-        // Handle recovery via token_hash or token
-        if (type === 'recovery' && (tokenHash || token)) {
-          const { error } = await supabase.auth.verifyOtp({
-            type: 'recovery',
-            token_hash: tokenHash || undefined,
-            token: tokenHash ? undefined : (token as string),
-            email: tokenHash ? undefined : (email || undefined),
-          } as any);
-          if (error) throw error;
-          sessionEstablished = true;
+        // Handle recovery verification with token_hash or fallback to token+email
+        if (tokenHash || token) {
+          console.info('[ManagementLogin] Attempting recovery verification via', tokenHash ? 'token_hash' : 'token');
+          let verified = false;
+          // Try token_hash first when present
+          if (tokenHash) {
+            const { error } = await supabase.auth.verifyOtp({ type: 'recovery', token_hash: tokenHash } as any);
+            if (!error) {
+              verified = true;
+            } else {
+              console.warn('[ManagementLogin] token_hash verify failed:', error?.message);
+            }
+          }
+          // Fallback: use token+email when available
+          if (!verified && token && email) {
+            console.info('[ManagementLogin] Falling back to token+email recovery verification');
+            const { error: emailVerifyError } = await supabase.auth.verifyOtp({
+              type: 'recovery',
+              email,
+              token: token as string,
+            } as any);
+            if (!emailVerifyError) {
+              verified = true;
+            } else {
+              console.warn('[ManagementLogin] token+email verify failed:', emailVerifyError?.message);
+            }
+          }
+          if (verified) {
+            sessionEstablished = true;
+          } else if (tokenHash || token) {
+            throw new Error('Recovery verification failed');
+          }
         }
 
         // Wait for session to be confirmed with bounded retries before cleaning URL
         if (sessionEstablished) {
-          const tryValidate = async (attempts = 3) => {
+          const tryValidate = async (attempts = 5) => {
             for (let i = 0; i < attempts; i++) {
               // small incremental backoff
               await new Promise(r => setTimeout(r, 250 + i * 300));
@@ -163,7 +185,7 @@ const ManagementLogin = () => {
             return false;
           };
 
-          const valid = await tryValidate(3);
+          const valid = await tryValidate(5);
 
           if (valid) {
             cleanUrlNowAndLater();
