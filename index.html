@@ -54,14 +54,14 @@
           var host = loc.hostname;
           var search = loc.search || '';
           var hash = loc.hash || '';
-          var hasTokens = /access_token=|refresh_token=|code=|type=recovery|token_hash=|token=|error=/.test(search + hash);
-
-          if (!isNative) {
-            var onApex = host === 'croftcommontest.com';
-            var onWww = host === 'www.croftcommontest.com';
-            var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
-
-            if (hasTokens) {
+           var hasRecoveryTokens = /access_token=|refresh_token=|code=|type=recovery|token_hash=/.test(search + hash);
+ 
+           if (!isNative) {
+             var onApex = host === 'croftcommontest.com';
+             var onWww = host === 'www.croftcommontest.com';
+             var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
+ 
+             if (hasRecoveryTokens) {
               // Single-hop: always send tokens directly to /management/login on www
               if (onApex || (onWww && !onLogin)) {
                 var target = 'https://www.croftcommontest.com/management/login' + search + hash;

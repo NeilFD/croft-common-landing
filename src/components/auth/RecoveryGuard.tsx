@@ -16,18 +16,17 @@ export const RecoveryGuard = () => {
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
       const type = params.get('type') || hashParams.get('type');
-      const hasTokens = Boolean(
+      const hasRecoveryTokens = Boolean(
         type === 'recovery' ||
         params.get('token_hash') || hashParams.get('token_hash') ||
-        params.get('token') || hashParams.get('token') ||
         params.get('code') || hashParams.get('code') ||
         params.get('access_token') || hashParams.get('access_token') ||
         params.get('refresh_token') || hashParams.get('refresh_token')
       );
-
+ 
       // Domain canonicalisation handled in index.html bootstrap script
-
-      if (hasTokens) {
+ 
+      if (hasRecoveryTokens) {
         sessionStorage.setItem('recovery', '1');
       }
 
