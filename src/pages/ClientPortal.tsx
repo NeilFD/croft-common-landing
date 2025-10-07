@@ -106,29 +106,6 @@ const ClientPortal = () => {
     initSession();
   }, []);
 
-  const loadMessages = async (eventId: string) => {
-    const { data, error } = await supabase
-      .from('client_messages')
-      .select('*')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: true });
-
-    if (!error && data) {
-      setMessages(data as Message[]);
-    }
-  };
-
-  const loadFiles = async (eventId: string) => {
-    const { data, error } = await supabase
-      .from('client_files')
-      .select('*')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      setFiles(data);
-    }
-  };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !session) return;
@@ -194,7 +171,18 @@ const ClientPortal = () => {
 
       if (dbError) throw dbError;
 
-      await loadFiles(session.eventId);
+      // Reload portal data to get updated file list
+      const { data: portalData, error: portalError } = await supabase.functions.invoke('client-portal-data', {
+        body: {
+          session_id: session.sessionId,
+          csrf_token: session.csrfToken,
+        },
+      });
+
+      if (!portalError && portalData.success) {
+        setFiles(portalData.files as ClientFile[]);
+      }
+
       toast.success('File uploaded');
     } catch (error) {
       console.error('Upload error:', error);
