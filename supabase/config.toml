@@ -319,3 +319,12 @@ verify_jwt = false
 [functions.client-sign-contract]
 verify_jwt = false
 
+[functions.get-client-document-signed-url]
+verify_jwt = false
+
+[functions.client-delete-inspiration]
+verify_jwt = false
+
+[functions.client-portal-data-management]
+verify_jwt = true
+

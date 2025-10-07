@@ -11,6 +11,7 @@ import CroftLogo from '@/components/CroftLogo';
 import { BRAND_NAME } from '@/data/brand';
 import SignatureCanvas from 'react-signature-canvas';
 import { Button } from '@/components/ui/button';
+import { ProposalViewer } from '@/components/client-portal/ProposalViewer';
 
 interface ClientSession {
   sessionId: string;
@@ -76,6 +77,7 @@ interface Proposal {
   status: string;
   generated_at: string;
   pdf_url: string | null;
+  content_snapshot: any;
 }
 
 interface Contract {
@@ -105,8 +107,35 @@ const ClientPortal = () => {
   const [newInspirationUrl, setNewInspirationUrl] = useState('');
   const [addingInspiration, setAddingInspiration] = useState(false);
   const [signingContract, setSigningContract] = useState(false);
+  const [loadingDocument, setLoadingDocument] = useState(false);
   
   const signatureRef = useRef<SignatureCanvas>(null);
+
+  const handleDownloadDocument = async (documentType: 'beo' | 'contract') => {
+    if (!session) return;
+
+    setLoadingDocument(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-client-document-signed-url', {
+        body: {
+          session_id: session.sessionId,
+          csrf_token: session.csrfToken,
+          document_type: documentType,
+        },
+      });
+
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to get document URL');
+
+      // Open in new tab
+      window.open(data.signedUrl, '_blank');
+    } catch (error) {
+      console.error('Download document error:', error);
+      toast.error(`Failed to open ${documentType === 'beo' ? 'BEO' : 'contract'}`);
+    } finally {
+      setLoadingDocument(false);
+    }
+  };
 
   const loadPortalData = async (sessionId: string, csrfToken: string) => {
     const { data, error } = await supabase.functions.invoke('client-portal-data', {
@@ -478,22 +507,35 @@ const ClientPortal = () => {
                         </p>
                       </div>
                     </div>
-                    {beo.pdf_url && (
-                      <a
-                        href={beo.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 border-[3px] border-black rounded-lg py-2 px-4 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
-                      >
+                    <Button
+                      onClick={() => handleDownloadDocument('beo')}
+                      disabled={!beo.pdf_url || loadingDocument}
+                      className="flex-shrink-0"
+                      variant={beo.pdf_url ? 'default' : 'outline'}
+                      title={!beo.pdf_url ? 'PDF not yet generated' : 'View BEO'}
+                    >
+                      {loadingDocument ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
                         <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </a>
-                    )}
+                      )}
+                      {beo.pdf_url ? 'View BEO' : 'Not Available'}
+                    </Button>
                   </div>
                 </div>
               )}
               
-              {proposal && (
+              {proposal && proposal.content_snapshot && (
+                <div className="space-y-4">
+                  <ProposalViewer 
+                    content={proposal.content_snapshot}
+                    versionNo={proposal.version_no}
+                    generatedAt={proposal.generated_at}
+                  />
+                </div>
+              )}
+              
+              {proposal && !proposal.content_snapshot && (
                 <div className="border-[3px] border-black rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1">
@@ -514,17 +556,14 @@ const ClientPortal = () => {
                         </div>
                       </div>
                     </div>
-                    {proposal.pdf_url && (
-                      <a
-                        href={proposal.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 border-[3px] border-black rounded-lg py-2 px-4 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </a>
-                    )}
+                    <Button
+                      disabled
+                      variant="outline"
+                      title="Proposal details not available"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Not Available
+                    </Button>
                   </div>
                 </div>
               )}
@@ -557,17 +596,20 @@ const ClientPortal = () => {
                     </div>
                   </div>
 
-                  {contract.pdf_url && (
-                    <a
-                      href={contract.pdf_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full border-[3px] border-black rounded-lg py-3 px-4 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center justify-center font-industrial uppercase text-sm mb-4"
-                    >
+                  <Button
+                    onClick={() => handleDownloadDocument('contract')}
+                    disabled={!contract.pdf_url || loadingDocument}
+                    className="w-full mb-4"
+                    variant={contract.pdf_url ? 'default' : 'outline'}
+                    title={!contract.pdf_url ? 'Contract PDF not available' : 'View contract'}
+                  >
+                    {loadingDocument ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
                       <Download className="w-4 h-4 mr-2" />
-                      View Contract PDF
-                    </a>
-                  )}
+                    )}
+                    {contract.pdf_url ? 'View Contract PDF' : 'PDF Not Available'}
+                  </Button>
 
                   {contract.status !== 'signed' && (
                     <div className="mt-6 pt-6 border-t-[3px] border-black">
