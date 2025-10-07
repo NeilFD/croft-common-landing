@@ -24,6 +24,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/comp
 import { BEOBuilder } from '@/components/management/beo/BEOBuilder';
 import { BEOVersions } from '@/components/management/beo/BEOVersions';
 import ClientPortalControls from '@/components/management/ClientPortalControls';
+import { ClientPortalManagementView } from '@/components/management/ClientPortalManagementView';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -360,7 +361,7 @@ const EventDetail = () => {
 
         {/* Event Details Tabs */}
         <Tabs defaultValue="bookings" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-8 bg-[hsl(var(--muted))] border border-industrial">
+          <TabsList className="grid w-full grid-cols-9 bg-[hsl(var(--muted))] border border-industrial">
             <TabsTrigger value="bookings" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
               <Calendar className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">BOOKINGS</span>
@@ -400,6 +401,11 @@ const EventDetail = () => {
               <Clock className="h-3 w-3 md:hidden" />
               <span className="hidden md:inline">LATE CLOSE</span>
               <span className="md:hidden">LATE</span>
+            </TabsTrigger>
+            <TabsTrigger value="client-view" className="font-brutalist uppercase tracking-wide text-xs flex items-center justify-center gap-1">
+              <Eye className="h-3 w-3 md:hidden" />
+              <span className="hidden md:inline">CLIENT VIEW</span>
+              <span className="md:hidden">CLIENT</span>
             </TabsTrigger>
           </TabsList>
 
@@ -595,6 +601,10 @@ const EventDetail = () => {
 
           <TabsContent value="late-close">
             <LateCloseTab event={event} />
+          </TabsContent>
+
+          <TabsContent value="client-view">
+            <ClientPortalManagementView eventId={id!} />
           </TabsContent>
         </Tabs>
       </div>
