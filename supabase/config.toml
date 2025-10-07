@@ -310,3 +310,6 @@ verify_jwt = false
 [functions.client-send-message]
 verify_jwt = false
 
+[functions.client-upload-file]
+verify_jwt = false
+

@@ -152,25 +152,19 @@ const ClientPortal = () => {
 
     setUploadingFile(true);
     try {
-      const fileName = `${session.eventId}/${Date.now()}-${file.name}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('client-files')
-        .upload(fileName, file);
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('session_id', session.sessionId);
+      formData.append('csrf_token', session.csrfToken);
+      formData.append('file', file);
 
-      if (uploadError) throw uploadError;
+      // Upload via edge function with service role access
+      const { data, error } = await supabase.functions.invoke('client-upload-file', {
+        body: formData,
+      });
 
-      const { error: dbError } = await supabase
-        .from('client_files')
-        .insert({
-          event_id: session.eventId,
-          filename: file.name,
-          storage_path: fileName,
-          mime_type: file.type,
-          size_bytes: file.size
-        });
-
-      if (dbError) throw dbError;
+      if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to upload file');
 
       // Reload portal data to get updated file list
       const { data: portalData, error: portalError } = await supabase.functions.invoke('client-portal-data', {
@@ -307,18 +301,24 @@ const ClientPortal = () => {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`p-3 ${
-                    msg.author === 'client'
-                      ? 'bg-accent-pink text-background ml-8'
-                      : 'bg-concrete text-foreground mr-8'
+                  className={`flex ${
+                    msg.author === 'client' ? 'justify-end' : 'justify-start'
                   }`}
                 >
-                  <p className="font-industrial text-sm whitespace-pre-wrap">{msg.body}</p>
-                  <p className={`font-industrial text-xs mt-1 ${
-                    msg.author === 'client' ? 'text-background/70' : 'text-steel'
-                  }`}>
-                    {format(new Date(msg.created_at), 'HH:mm')}
-                  </p>
+                  <div
+                    className={`p-3 rounded-lg ${
+                      msg.author === 'client'
+                        ? 'bg-accent-pink text-background max-w-[70%]'
+                        : 'bg-concrete text-foreground max-w-[75%]'
+                    }`}
+                  >
+                    <p className="font-industrial text-sm whitespace-pre-wrap">{msg.body}</p>
+                    <p className={`font-industrial text-xs mt-1 ${
+                      msg.author === 'client' ? 'text-background/70' : 'text-steel'
+                    }`}>
+                      {format(new Date(msg.created_at), 'HH:mm')}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
