@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import CroftLogo from '@/components/CroftLogo';
+import { BRAND_NAME } from '@/data/brand';
 
 interface ClientSession {
   sessionId: string;
@@ -232,19 +234,25 @@ const ClientPortal = () => {
       {/* Header */}
       <header className="border-b-2 border-charcoal bg-transparent">
         <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="font-brutalist text-3xl uppercase tracking-wide text-foreground">Event Portal</h1>
-            <p className="font-industrial text-sm text-steel mt-1">{session.contactEmail}</p>
+          <div className="flex items-center gap-4">
+            <CroftLogo size="lg" />
+            <div>
+              <h1 className="font-brutalist text-xl uppercase tracking-wide text-foreground">{BRAND_NAME}</h1>
+              <p className="font-industrial text-xs text-steel mt-0.5">Event Portal</p>
+            </div>
           </div>
-          <FramedBox
-            as="button"
-            onClick={handleLogout}
-            size="sm"
-            className="cursor-pointer"
-          >
-            <LogOut className="w-4 h-4 mr-2 inline" />
-            Logout
-          </FramedBox>
+          <div className="text-right">
+            <p className="font-industrial text-sm text-steel mb-2">{session.contactEmail}</p>
+            <FramedBox
+              as="button"
+              onClick={handleLogout}
+              size="sm"
+              className="cursor-pointer"
+            >
+              <LogOut className="w-4 h-4 mr-2 inline" />
+              Logout
+            </FramedBox>
+          </div>
         </div>
       </header>
 
@@ -299,14 +307,16 @@ const ClientPortal = () => {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`border-2 p-3 bg-transparent transition-colors ${
+                  className={`p-3 ${
                     msg.author === 'client'
-                      ? 'border-accent-pink ml-8'
-                      : 'border-steel mr-8'
+                      ? 'bg-accent-pink text-background ml-8'
+                      : 'bg-concrete text-foreground mr-8'
                   }`}
                 >
-                  <p className="font-industrial text-sm whitespace-pre-wrap text-foreground">{msg.body}</p>
-                  <p className="font-industrial text-xs mt-1 text-steel">
+                  <p className="font-industrial text-sm whitespace-pre-wrap">{msg.body}</p>
+                  <p className={`font-industrial text-xs mt-1 ${
+                    msg.author === 'client' ? 'text-background/70' : 'text-steel'
+                  }`}>
                     {format(new Date(msg.created_at), 'HH:mm')}
                   </p>
                 </div>
