@@ -42,6 +42,37 @@
     <meta name="twitter:title" content="Croft Common - Pure Hospitality" />
     <meta name="twitter:description" content="Pure Hospitality - Croft Common Bristol" />
     <meta name="twitter:image" content="/brand/logo.png" />
+    <!-- Bootstrap canonicalisation and token routing BEFORE React loads -->
+    <script>
+      (function () {
+        try {
+          var w = window;
+          var loc = w.location;
+          var hasCap = !!w.Capacitor;
+          var isNative = false;
+          try { isNative = hasCap && typeof w.Capacitor.isNativePlatform === 'function' && w.Capacitor.isNativePlatform(); } catch (e) { isNative = false; }
+          var host = loc.hostname;
+          var search = loc.search || '';
+          var hash = loc.hash || '';
+          var hasTokens = /access_token=|refresh_token=|code=|type=recovery|error=/.test(search + hash);
+
+          if (!isNative) {
+            if (host === 'croftcommontest.com') {
+              var newUrl = 'https://www.croftcommontest.com' + loc.pathname + search + hash;
+              console.info('[bootstrap] Canonicalising to www' + (hasTokens ? ' (with tokens)' : ''));
+              w.location.replace(newUrl);
+              return;
+            }
+            if (hasTokens && !/^\/management\/login\/?$/.test(loc.pathname)) {
+              var target = 'https://www.croftcommontest.com/management/login' + search + hash;
+              console.info('[bootstrap] Routing tokens to /management/login');
+              w.location.replace(target);
+              return;
+            }
+          }
+        } catch (e) { /* swallow to avoid blocking app */ }
+      })();
+    </script>
   </head>
 
   <body>

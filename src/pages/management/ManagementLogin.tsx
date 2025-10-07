@@ -17,7 +17,6 @@ const detectRecoveryFromUrl = (): boolean => {
     const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
     const type = params.get('type') || hashParams.get('type');
     return (
-      sessionStorage.getItem('recovery') === '1' ||
       type === 'recovery' ||
       params.has('token_hash') ||
       params.has('token') ||
@@ -107,29 +106,17 @@ const ManagementLogin = () => {
 
       const hasTokens = !!(type === 'recovery' || code || tokenHash || token || accessToken || refreshToken);
 
-      // Canonicalise to www when tokens are present in browser (avoid native)
-      const host = window.location.hostname;
-      const isNative = typeof window !== 'undefined' && (window.Capacitor?.isNativePlatform?.() || false);
-      if (hasTokens && host === 'croftcommontest.com' && !isNative) {
-        const newUrl = 'https://www.croftcommontest.com'
-          + window.location.pathname
-          + window.location.search
-          + window.location.hash;
-        console.info('[ManagementLogin] Canonicalising to www for token handling');
-        window.location.replace(newUrl);
-        return;
-      }
+      // Domain canonicalisation handled by index.html bootstrap
 
       // Detect recovery flow early
       if (hasTokens) {
-        console.log('[ManagementLogin] Entering password-update mode with tokens');
+        console.info('[ManagementLogin] Tokens detected, entering password-update mode');
         setRecoveryInProgress(true);
         setIsPasswordUpdateMode(true);
         sessionStorage.setItem('recovery', '1');
-      } else if (sessionStorage.getItem('recovery') === '1') {
-        console.log('[ManagementLogin] Entering password-update mode WITHOUT tokens (recovery flag present)');
-        setRecoveryInProgress(true);
-        setIsPasswordUpdateMode(true);
+      } else {
+        // Clear any stale recovery state when no tokens are present
+        sessionStorage.removeItem('recovery');
       }
 
       try {
