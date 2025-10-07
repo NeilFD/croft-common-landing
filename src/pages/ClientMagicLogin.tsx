@@ -34,9 +34,12 @@ const ClientMagicLogin = () => {
           throw new Error(data.error || 'Login failed');
         }
 
-        // Store session details
-        sessionStorage.setItem('client_session_id', data.sessionId);
-        sessionStorage.setItem('client_csrf_token', data.csrfToken);
+        console.log('[ClientMagicLogin] Received session data:', data);
+
+        // Store session details (edge function returns snake_case)
+        sessionStorage.setItem('client_session_id', data.session_id);
+        sessionStorage.setItem('client_csrf_token', data.csrf_token);
+        sessionStorage.setItem('client_event_id', data.event_id);
 
         setStatus('success');
         toast.success('Login successful');

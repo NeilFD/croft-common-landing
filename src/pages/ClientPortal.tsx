@@ -59,21 +59,29 @@ const ClientPortal = () => {
   useEffect(() => {
     const sessionId = sessionStorage.getItem('client_session_id');
     const csrfToken = sessionStorage.getItem('client_csrf_token');
+    const eventId = sessionStorage.getItem('client_event_id');
     
-    if (!sessionId || !csrfToken) {
+    console.log('[ClientPortal] Session data:', { sessionId, csrfToken, eventId });
+    
+    if (!sessionId || !csrfToken || !eventId) {
+      console.warn('[ClientPortal] Missing required session data');
       setLoading(false);
       return;
     }
 
     const initSession = async () => {
       try {
-        // Fetch event details using RLS
+        // Fetch event details by ID
         const { data: eventData, error: eventError } = await supabase
           .from('management_events')
           .select('*')
+          .eq('id', eventId)
           .single();
 
         if (eventError) throw eventError;
+        if (!eventData) throw new Error('Event not found');
+
+        console.log('[ClientPortal] Event loaded:', eventData);
 
         setEvent(eventData as Event);
         setSession({
@@ -91,7 +99,7 @@ const ClientPortal = () => {
 
         setLoading(false);
       } catch (error) {
-        console.error('Session init error:', error);
+        console.error('[ClientPortal] Session init error:', error);
         setLoading(false);
         toast.error('Session expired or invalid');
       }
@@ -189,6 +197,7 @@ const ClientPortal = () => {
   const handleLogout = () => {
     sessionStorage.removeItem('client_session_id');
     sessionStorage.removeItem('client_csrf_token');
+    sessionStorage.removeItem('client_event_id');
     navigate('/');
     toast.success('Logged out');
   };
