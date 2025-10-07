@@ -31,7 +31,7 @@ interface Event {
   client_email?: string;
   budget?: number;
   status?: string;
-  service_charge_percent?: number;
+  service_charge_pct?: number;
   notes?: string;
   event_code?: string;
 }
@@ -583,7 +583,7 @@ const ClientPortal = () => {
                     versionNo={proposal.version_no}
                     generatedAt={proposal.generated_at}
                     lineItems={lineItems}
-                    serviceChargePct={event.service_charge_percent || 0}
+                    serviceChargePct={event.service_charge_pct || 0}
                   />
                 </div>
               )}
