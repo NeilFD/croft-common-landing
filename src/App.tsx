@@ -74,7 +74,7 @@ import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 import { ProtectedRoute } from '@/components/research/ProtectedRoute';
 import InteractionWatchdog from '@/components/InteractionWatchdog';
 import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
-import { CanonicalDomainGuard } from '@/components/auth/CanonicalDomainGuard';
+
 
 // Management system components
 import ManagementLogin from "./pages/management/ManagementLogin";
@@ -260,7 +260,7 @@ const App = () => {
                 <GlobalHandlers />
                 <LowercasePathGuard />
                 <ReverseDomainGuard />
-                <CanonicalDomainGuard />
+                
                 <RecoveryGuard />
                 <RouteImagePreloader />
                 <InteractionWatchdog />

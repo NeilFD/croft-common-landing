@@ -25,6 +25,16 @@ export const RecoveryGuard = () => {
         params.get('refresh_token') || hashParams.get('refresh_token')
       );
 
+      // If tokens present and on apex domain in web browser, canonicalise to www to keep Supabase cookies aligned
+      const isNative = typeof window !== 'undefined' && (window.Capacitor?.isNativePlatform?.() || false);
+      if (hasTokens && host === 'croftcommontest.com' && !isNative) {
+        const newUrl = 'https://www.croftcommontest.com'
+          + window.location.pathname
+          + window.location.search
+          + window.location.hash;
+        window.location.replace(newUrl);
+        return;
+      }
 
       if (hasTokens) {
         sessionStorage.setItem('recovery', '1');
