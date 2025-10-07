@@ -2,48 +2,56 @@ import { Info, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 
 interface ProposalContent {
-  event_overview?: {
-    client_name?: string;
-    event_code?: string;
+  eventOverview?: {
+    clientName?: string;
+    eventCode?: string;
     headcount?: number;
-    event_date?: string;
-    event_type?: string;
+    eventDate?: string;
+    eventType?: string;
+    contactEmail?: string;
   };
-  venue_details?: {
-    space_name?: string;
+  venue?: {
+    venue_name?: string;
     setup_time?: string;
     breakdown_time?: string;
-    venue_hire?: number;
+    hire_cost?: number;
+    vat_rate?: number;
+    capacity?: number;
+    notes?: string;
+  };
+  setup?: {
+    spaces?: Array<{
+      space_name: string;
+      capacity: number;
+      layout_type: string;
+      setup_time: string;
+      breakdown_time: string;
+      setup_notes?: string;
+    }>;
   };
   menu?: {
     courses?: Array<{
-      name: string;
+      course: string;
       items: Array<{
-        name: string;
-        quantity?: number;
-        price_per_unit?: number;
+        item_name: string;
+        allergens?: string[];
+        description?: string;
       }>;
     }>;
   };
   equipment?: Array<{
     category: string;
-    items: Array<{
-      name: string;
-      quantity: number;
-      price?: number;
+    item_name: string;
+    quantity: number;
+    specifications?: string;
+  }>;
+  timeline?: {
+    schedule?: Array<{
+      time_label: string;
+      scheduled_at: string;
+      duration_minutes?: number;
+      notes?: string;
     }>;
-  }>;
-  timeline?: Array<{
-    time: string;
-    activity: string;
-  }>;
-  pricing?: {
-    subtotal?: number;
-    vat_rate?: number;
-    vat_amount?: number;
-    service_charge_rate?: number;
-    service_charge_amount?: number;
-    total?: number;
   };
 }
 
@@ -57,6 +65,7 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
   const [expandedSections, setExpandedSections] = useState({
     overview: true,
     venue: true,
+    setup: true,
     menu: true,
     equipment: true,
     timeline: true,
@@ -66,6 +75,40 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Calculate pricing dynamically from available data
+  const calculatePricing = () => {
+    const venueHire = content.venue?.hire_cost || 0;
+    const vatRate = content.venue?.vat_rate || 20;
+    const serviceChargeRate = 10;
+    
+    const subtotal = venueHire;
+    const serviceCharge = subtotal * (serviceChargeRate / 100);
+    const subtotalWithService = subtotal + serviceCharge;
+    const vat = subtotalWithService * (vatRate / 100);
+    const total = subtotalWithService + vat;
+    
+    return { 
+      subtotal, 
+      serviceCharge, 
+      vat, 
+      total, 
+      vatRate, 
+      serviceChargeRate 
+    };
+  };
+
+  const pricing = calculatePricing();
+
+  // Group equipment by category
+  const groupedEquipment = content.equipment?.reduce((acc, item) => {
+    const category = item.category || 'Other';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {} as Record<string, typeof content.equipment>);
 
   return (
     <div className="border-[3px] border-black rounded-lg bg-background">
@@ -89,7 +132,7 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
 
       <div className="divide-y-[3px] divide-black">
         {/* Event Overview */}
-        {content.event_overview && (
+        {content.eventOverview && (
           <div>
             <button
               onClick={() => toggleSection('overview')}
@@ -100,34 +143,40 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
             </button>
             {expandedSections.overview && (
               <div className="p-6 pt-0 grid grid-cols-2 gap-4">
-                {content.event_overview.client_name && (
+                {content.eventOverview.clientName && (
                   <div>
                     <p className="font-industrial text-xs uppercase text-steel mb-1">Client</p>
-                    <p className="font-industrial text-foreground">{content.event_overview.client_name}</p>
+                    <p className="font-industrial text-foreground">{content.eventOverview.clientName}</p>
                   </div>
                 )}
-                {content.event_overview.event_code && (
+                {content.eventOverview.eventCode && (
                   <div>
                     <p className="font-industrial text-xs uppercase text-steel mb-1">Event Code</p>
-                    <p className="font-industrial text-foreground font-mono">{content.event_overview.event_code}</p>
+                    <p className="font-industrial text-foreground font-mono">{content.eventOverview.eventCode}</p>
                   </div>
                 )}
-                {content.event_overview.headcount && (
+                {content.eventOverview.headcount && (
                   <div>
                     <p className="font-industrial text-xs uppercase text-steel mb-1">Headcount</p>
-                    <p className="font-industrial text-foreground">{content.event_overview.headcount} guests</p>
+                    <p className="font-industrial text-foreground">{content.eventOverview.headcount} guests</p>
                   </div>
                 )}
-                {content.event_overview.event_date && (
+                {content.eventOverview.eventDate && (
                   <div>
                     <p className="font-industrial text-xs uppercase text-steel mb-1">Date</p>
-                    <p className="font-industrial text-foreground">{content.event_overview.event_date}</p>
+                    <p className="font-industrial text-foreground">{content.eventOverview.eventDate}</p>
                   </div>
                 )}
-                {content.event_overview.event_type && (
+                {content.eventOverview.eventType && (
                   <div>
                     <p className="font-industrial text-xs uppercase text-steel mb-1">Event Type</p>
-                    <p className="font-industrial text-foreground">{content.event_overview.event_type}</p>
+                    <p className="font-industrial text-foreground">{content.eventOverview.eventType}</p>
+                  </div>
+                )}
+                {content.eventOverview.contactEmail && (
+                  <div>
+                    <p className="font-industrial text-xs uppercase text-steel mb-1">Contact Email</p>
+                    <p className="font-industrial text-foreground">{content.eventOverview.contactEmail}</p>
                   </div>
                 )}
               </div>
@@ -136,7 +185,7 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
         )}
 
         {/* Venue Details */}
-        {content.venue_details && (
+        {content.venue && (
           <div>
             <button
               onClick={() => toggleSection('venue')}
@@ -147,30 +196,85 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
             </button>
             {expandedSections.venue && (
               <div className="p-6 pt-0 space-y-3">
-                {content.venue_details.space_name && (
+                {content.venue.venue_name && (
                   <div className="flex justify-between items-start">
-                    <span className="font-industrial text-steel">Space</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue_details.space_name}</span>
+                    <span className="font-industrial text-steel">Venue</span>
+                    <span className="font-industrial text-foreground font-medium">{content.venue.venue_name}</span>
                   </div>
                 )}
-                {content.venue_details.setup_time && (
+                {content.venue.capacity !== undefined && (
+                  <div className="flex justify-between items-start">
+                    <span className="font-industrial text-steel">Capacity</span>
+                    <span className="font-industrial text-foreground font-medium">{content.venue.capacity} guests</span>
+                  </div>
+                )}
+                {content.venue.setup_time && (
                   <div className="flex justify-between items-start">
                     <span className="font-industrial text-steel">Setup Time</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue_details.setup_time}</span>
+                    <span className="font-industrial text-foreground font-medium">{content.venue.setup_time}</span>
                   </div>
                 )}
-                {content.venue_details.breakdown_time && (
+                {content.venue.breakdown_time && (
                   <div className="flex justify-between items-start">
                     <span className="font-industrial text-steel">Breakdown Time</span>
-                    <span className="font-industrial text-foreground font-medium">{content.venue_details.breakdown_time}</span>
+                    <span className="font-industrial text-foreground font-medium">{content.venue.breakdown_time}</span>
                   </div>
                 )}
-                {content.venue_details.venue_hire !== undefined && (
+                {content.venue.hire_cost !== undefined && (
                   <div className="flex justify-between items-start pt-2 border-t-[2px] border-black">
                     <span className="font-industrial text-foreground font-medium">Venue Hire</span>
-                    <span className="font-industrial text-foreground font-medium">£{content.venue_details.venue_hire.toFixed(2)}</span>
+                    <span className="font-industrial text-foreground font-medium">£{content.venue.hire_cost.toFixed(2)}</span>
                   </div>
                 )}
+                {content.venue.notes && (
+                  <div className="pt-2 border-t-[2px] border-black">
+                    <p className="font-industrial text-xs uppercase text-steel mb-1">Notes</p>
+                    <p className="font-industrial text-foreground text-sm">{content.venue.notes}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Setup Details */}
+        {content.setup?.spaces && content.setup.spaces.length > 0 && (
+          <div>
+            <button
+              onClick={() => toggleSection('setup')}
+              className="w-full p-4 flex items-center justify-between hover:bg-surface transition-colors"
+            >
+              <span className="font-industrial uppercase text-sm font-medium text-foreground">Setup Details</span>
+              {expandedSections.setup ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            {expandedSections.setup && (
+              <div className="p-6 pt-0 space-y-4">
+                {content.setup.spaces.map((space, idx) => (
+                  <div key={idx} className="border-l-[3px] border-black pl-4">
+                    <p className="font-industrial font-bold text-foreground mb-2">{space.space_name}</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-start">
+                        <span className="font-industrial text-steel">Layout</span>
+                        <span className="font-industrial text-foreground">{space.layout_type}</span>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <span className="font-industrial text-steel">Capacity</span>
+                        <span className="font-industrial text-foreground">{space.capacity} guests</span>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <span className="font-industrial text-steel">Setup</span>
+                        <span className="font-industrial text-foreground">{space.setup_time}</span>
+                      </div>
+                      <div className="flex justify-between items-start">
+                        <span className="font-industrial text-steel">Breakdown</span>
+                        <span className="font-industrial text-foreground">{space.breakdown_time}</span>
+                      </div>
+                    </div>
+                    {space.setup_notes && (
+                      <p className="font-industrial text-steel text-sm mt-2">{space.setup_notes}</p>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -190,16 +294,19 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
               <div className="p-6 pt-0 space-y-4">
                 {content.menu.courses.map((course, idx) => (
                   <div key={idx}>
-                    <p className="font-industrial uppercase text-xs text-steel mb-2">{course.name}</p>
+                    <p className="font-industrial uppercase font-bold text-foreground mb-2">{course.course}</p>
                     {course.items && course.items.length > 0 && (
-                      <div className="space-y-1 ml-4">
+                      <div className="space-y-2 ml-4">
                         {course.items.map((item, itemIdx) => (
-                          <div key={itemIdx} className="flex justify-between items-start">
-                            <span className="font-industrial text-foreground">
-                              {item.name} {item.quantity && `(×${item.quantity})`}
-                            </span>
-                            {item.price_per_unit !== undefined && (
-                              <span className="font-industrial text-steel">£{item.price_per_unit.toFixed(2)}</span>
+                          <div key={itemIdx}>
+                            <p className="font-industrial text-foreground">{item.item_name}</p>
+                            {item.description && (
+                              <p className="font-industrial text-steel text-sm ml-2">{item.description}</p>
+                            )}
+                            {item.allergens && item.allergens.length > 0 && (
+                              <p className="font-industrial text-steel text-xs ml-2">
+                                Allergens: {item.allergens.join(', ')}
+                              </p>
                             )}
                           </div>
                         ))}
@@ -213,7 +320,7 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
         )}
 
         {/* Equipment */}
-        {content.equipment && content.equipment.length > 0 && (
+        {groupedEquipment && Object.keys(groupedEquipment).length > 0 && (
           <div>
             <button
               onClick={() => toggleSection('equipment')}
@@ -224,23 +331,26 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
             </button>
             {expandedSections.equipment && (
               <div className="p-6 pt-0 space-y-4">
-                {content.equipment.map((category, idx) => (
+                {Object.entries(groupedEquipment).map(([category, items], idx) => (
                   <div key={idx}>
-                    <p className="font-industrial uppercase text-xs text-steel mb-2">{category.category}</p>
-                    {category.items && category.items.length > 0 && (
-                      <div className="space-y-1 ml-4">
-                        {category.items.map((item, itemIdx) => (
-                          <div key={itemIdx} className="flex justify-between items-start">
+                    <p className="font-industrial uppercase font-bold text-foreground mb-2">{category}</p>
+                    <div className="space-y-2 ml-4">
+                      {items?.map((item, itemIdx) => (
+                        <div key={itemIdx}>
+                          <div className="flex justify-between items-start">
                             <span className="font-industrial text-foreground">
-                              {item.name} {item.quantity && `(×${item.quantity})`}
+                              {item.item_name}
                             </span>
-                            {item.price !== undefined && (
-                              <span className="font-industrial text-steel">£{item.price.toFixed(2)}</span>
-                            )}
+                            <span className="font-industrial text-steel">
+                              ×{item.quantity}
+                            </span>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                          {item.specifications && (
+                            <p className="font-industrial text-steel text-xs ml-2">{item.specifications}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -249,7 +359,7 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
         )}
 
         {/* Timeline */}
-        {content.timeline && content.timeline.length > 0 && (
+        {content.timeline?.schedule && content.timeline.schedule.length > 0 && (
           <div>
             <button
               onClick={() => toggleSection('timeline')}
@@ -259,11 +369,19 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
               {expandedSections.timeline ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
             {expandedSections.timeline && (
-              <div className="p-6 pt-0 space-y-2">
-                {content.timeline.map((item, idx) => (
-                  <div key={idx} className="flex justify-between items-start">
-                    <span className="font-industrial text-foreground font-medium font-mono">{item.time}</span>
-                    <span className="font-industrial text-foreground text-right flex-1 ml-4">{item.activity}</span>
+              <div className="p-6 pt-0 space-y-3">
+                {content.timeline.schedule.map((item, idx) => (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex justify-between items-start">
+                      <span className="font-industrial text-foreground font-bold">{item.time_label}</span>
+                      <span className="font-industrial text-steel font-mono text-sm">{item.scheduled_at}</span>
+                    </div>
+                    {item.duration_minutes && (
+                      <p className="font-industrial text-steel text-xs ml-2">Duration: {item.duration_minutes} minutes</p>
+                    )}
+                    {item.notes && (
+                      <p className="font-industrial text-steel text-sm ml-2">{item.notes}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -272,7 +390,7 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
         )}
 
         {/* Pricing */}
-        {content.pricing && (
+        {pricing.total > 0 && (
           <div>
             <button
               onClick={() => toggleSection('pricing')}
@@ -283,30 +401,22 @@ export const ProposalViewer = ({ content, versionNo, generatedAt }: ProposalView
             </button>
             {expandedSections.pricing && (
               <div className="p-6 pt-0 space-y-3">
-                {content.pricing.subtotal !== undefined && (
-                  <div className="flex justify-between items-start">
-                    <span className="font-industrial text-steel">Subtotal</span>
-                    <span className="font-industrial text-foreground">£{content.pricing.subtotal.toFixed(2)}</span>
-                  </div>
-                )}
-                {content.pricing.service_charge_rate !== undefined && content.pricing.service_charge_amount !== undefined && (
-                  <div className="flex justify-between items-start">
-                    <span className="font-industrial text-steel">Service Charge ({content.pricing.service_charge_rate}%)</span>
-                    <span className="font-industrial text-foreground">£{content.pricing.service_charge_amount.toFixed(2)}</span>
-                  </div>
-                )}
-                {content.pricing.vat_rate !== undefined && content.pricing.vat_amount !== undefined && (
-                  <div className="flex justify-between items-start">
-                    <span className="font-industrial text-steel">VAT ({content.pricing.vat_rate}%)</span>
-                    <span className="font-industrial text-foreground">£{content.pricing.vat_amount.toFixed(2)}</span>
-                  </div>
-                )}
-                {content.pricing.total !== undefined && (
-                  <div className="flex justify-between items-start pt-3 border-t-[3px] border-black">
-                    <span className="font-industrial text-foreground font-bold text-lg">Total</span>
-                    <span className="font-industrial text-foreground font-bold text-lg">£{content.pricing.total.toFixed(2)}</span>
-                  </div>
-                )}
+                <div className="flex justify-between items-start">
+                  <span className="font-industrial text-steel">Subtotal</span>
+                  <span className="font-industrial text-foreground">£{pricing.subtotal.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-start">
+                  <span className="font-industrial text-steel">Service Charge ({pricing.serviceChargeRate}%)</span>
+                  <span className="font-industrial text-foreground">£{pricing.serviceCharge.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-start">
+                  <span className="font-industrial text-steel">VAT ({pricing.vatRate}%)</span>
+                  <span className="font-industrial text-foreground">£{pricing.vat.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between items-start pt-3 border-t-[3px] border-black">
+                  <span className="font-industrial text-foreground font-bold text-lg">Total</span>
+                  <span className="font-industrial text-foreground font-bold text-lg">£{pricing.total.toFixed(2)}</span>
+                </div>
               </div>
             )}
           </div>
