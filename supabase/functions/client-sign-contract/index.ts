@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    if (contract.signature_status === 'signed') {
+    if (contract.signature_status === 'completed') {
       return new Response(
         JSON.stringify({ error: 'Contract already signed' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -75,7 +75,8 @@ Deno.serve(async (req) => {
     const { error: updateError } = await supabase
       .from('contracts')
       .update({
-        signature_status: 'signed',
+        signature_status: 'completed',
+        is_signed: true,
         client_signature_data: { signature: signature_data },
         client_signed_at: new Date().toISOString(),
       })
