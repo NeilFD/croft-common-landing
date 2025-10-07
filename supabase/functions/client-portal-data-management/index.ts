@@ -107,10 +107,10 @@ Deno.serve(async (req) => {
 
     // Fetch latest BEO
     const { data: beo, error: beoError } = await supabase
-      .from('beo_documents')
+      .from('event_beo_versions')
       .select('*')
       .eq('event_id', event_id)
-      .order('version_number', { ascending: false })
+      .order('version_no', { ascending: false })
       .limit(1)
       .maybeSingle();
 
@@ -118,10 +118,10 @@ Deno.serve(async (req) => {
 
     // Fetch latest proposal
     const { data: proposal, error: proposalError } = await supabase
-      .from('proposals')
+      .from('proposal_versions')
       .select('*')
       .eq('event_id', event_id)
-      .order('version_number', { ascending: false })
+      .order('version_no', { ascending: false })
       .limit(1)
       .maybeSingle();
 

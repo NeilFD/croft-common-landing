@@ -65,16 +65,16 @@ interface InspirationLink {
 
 interface BEO {
   id: string;
-  version_number: number;
-  created_at: string;
+  version_no: number;
+  generated_at: string;
   pdf_url: string | null;
 }
 
 interface Proposal {
   id: string;
-  version_number: number;
+  version_no: number;
   status: string;
-  created_at: string;
+  generated_at: string;
   pdf_url: string | null;
 }
 
@@ -468,9 +468,9 @@ const ClientPortal = () => {
                     <div className="flex items-start gap-3 flex-1">
                       <FileCheck className="w-5 h-5 text-steel mt-0.5" />
                       <div>
-                        <p className="font-industrial font-medium text-foreground">Banquet Event Order v{beo.version_number}</p>
+                        <p className="font-industrial font-medium text-foreground">Banquet Event Order v{beo.version_no}</p>
                         <p className="font-industrial text-xs text-steel mt-1">
-                          Created {format(new Date(beo.created_at), 'MMM d, yyyy')}
+                          Created {format(new Date(beo.generated_at), 'MMM d, yyyy')}
                         </p>
                       </div>
                     </div>
@@ -495,9 +495,9 @@ const ClientPortal = () => {
                     <div className="flex items-start gap-3 flex-1">
                       <FileText className="w-5 h-5 text-steel mt-0.5" />
                       <div>
-                        <p className="font-industrial font-medium text-foreground">Proposal v{proposal.version_number}</p>
+                        <p className="font-industrial font-medium text-foreground">Proposal v{proposal.version_no}</p>
                         <p className="font-industrial text-xs text-steel mt-1">
-                          Created {format(new Date(proposal.created_at), 'MMM d, yyyy')}
+                          Created {format(new Date(proposal.generated_at), 'MMM d, yyyy')}
                         </p>
                         <div className="mt-2">
                           <span className={`inline-block px-2 py-1 text-xs font-industrial uppercase border-[3px] rounded ${

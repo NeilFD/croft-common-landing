@@ -61,16 +61,16 @@ interface InspirationLink {
 
 interface BEO {
   id: string;
-  version_number: number;
-  created_at: string;
+  version_no: number;
+  generated_at: string;
   pdf_url: string | null;
 }
 
 interface Proposal {
   id: string;
-  version_number: number;
+  version_no: number;
   status: string;
-  created_at: string;
+  generated_at: string;
   pdf_url: string | null;
 }
 
@@ -227,9 +227,9 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                 <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-brutalist uppercase text-sm">BEO v{beo.version_number}</p>
+                        <p className="font-brutalist uppercase text-sm">BEO v{beo.version_no}</p>
                         <p className="font-industrial text-xs text-muted-foreground">
-                          {format(new Date(beo.created_at), 'MMM d, yyyy')}
+                          {format(new Date(beo.generated_at), 'MMM d, yyyy')}
                         </p>
                       </div>
                       {beo.pdf_url && (
@@ -247,9 +247,9 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                 <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-brutalist uppercase text-sm">Proposal v{proposal.version_number}</p>
+                        <p className="font-brutalist uppercase text-sm">Proposal v{proposal.version_no}</p>
                         <p className="font-industrial text-xs text-muted-foreground">
-                          {format(new Date(proposal.created_at), 'MMM d, yyyy')}
+                          {format(new Date(proposal.generated_at), 'MMM d, yyyy')}
                         </p>
                       </div>
                       {proposal.pdf_url && (
