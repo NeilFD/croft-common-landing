@@ -76,7 +76,7 @@ interface Proposal {
 
 interface Contract {
   id: string;
-  status: string;
+  signature_status: string;
   created_at: string;
   signed_at: string | null;
   client_signature: string | null;
@@ -226,17 +226,26 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
               {beo && (
                 <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                     <div className="flex items-center justify-between">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-brutalist uppercase text-sm">BEO v{beo.version_no}</p>
                         <p className="font-industrial text-xs text-muted-foreground">
                           {format(new Date(beo.generated_at), 'MMM d, yyyy')}
                         </p>
+                        {!beo.pdf_url && (
+                          <p className="font-industrial text-xs text-accent-pink mt-1">
+                            PDF not yet generated
+                          </p>
+                        )}
                       </div>
-                      {beo.pdf_url && (
+                      {beo.pdf_url ? (
                         <Button size="sm" variant="outline" asChild>
                           <a href={beo.pdf_url} target="_blank" rel="noopener noreferrer">
                             <Download className="h-4 w-4" />
                           </a>
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled>
+                          <Download className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -246,17 +255,26 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
               {proposal && (
                 <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                     <div className="flex items-center justify-between">
-                      <div>
+                      <div className="flex-1">
                         <p className="font-brutalist uppercase text-sm">Proposal v{proposal.version_no}</p>
                         <p className="font-industrial text-xs text-muted-foreground">
                           {format(new Date(proposal.generated_at), 'MMM d, yyyy')}
                         </p>
+                        {!proposal.pdf_url && (
+                          <p className="font-industrial text-xs text-accent-pink mt-1">
+                            PDF not yet generated
+                          </p>
+                        )}
                       </div>
-                      {proposal.pdf_url && (
+                      {proposal.pdf_url ? (
                         <Button size="sm" variant="outline" asChild>
                           <a href={proposal.pdf_url} target="_blank" rel="noopener noreferrer">
                             <Download className="h-4 w-4" />
                           </a>
+                        </Button>
+                      ) : (
+                        <Button size="sm" variant="outline" disabled>
+                          <Download className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -274,8 +292,8 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                 {contract ? (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Badge variant={contract.status === 'signed' ? 'default' : 'outline'}>
-                        {(contract.status || 'pending').toUpperCase()}
+                      <Badge variant={contract.signature_status === 'signed' ? 'default' : 'outline'}>
+                        {(contract.signature_status || 'pending').toUpperCase()}
                       </Badge>
                       {contract.signed_at && (
                         <p className="font-industrial text-xs text-muted-foreground">
@@ -283,13 +301,17 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                         </p>
                       )}
                     </div>
-                    {contract.pdf_url && (
+                    {contract.pdf_url ? (
                       <Button size="sm" variant="outline" asChild className="w-full">
                         <a href={contract.pdf_url} target="_blank" rel="noopener noreferrer">
                           <Download className="h-4 w-4 mr-2" />
                           Download Contract
                         </a>
                       </Button>
+                    ) : (
+                      <p className="font-industrial text-xs text-muted-foreground text-center">
+                        Contract PDF not yet available
+                      </p>
                     )}
                   </div>
               ) : (
@@ -311,10 +333,10 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`p-3 rounded-lg border-[3px] ${
+                className={`p-3 rounded-lg border-[3px] max-w-[70%] ${
                   msg.author === 'team'
-                    ? 'bg-accent-pink/10 border-accent-pink/20 ml-8'
-                    : 'bg-muted border-steel mr-8'
+                    ? 'bg-accent-pink/10 border-accent-pink/20 ml-auto'
+                    : 'bg-muted border-steel mr-auto'
                 }`}
               >
                   <div className="flex items-center justify-between mb-1">
