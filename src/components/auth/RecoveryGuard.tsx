@@ -16,12 +16,15 @@ export const RecoveryGuard = () => {
       const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
 
       const type = params.get('type') || hashParams.get('type');
+      const token = params.get('token') || hashParams.get('token');
+      const isLoginRoute = location.pathname === '/management/login';
       const hasRecoveryTokens = Boolean(
         type === 'recovery' ||
         params.get('token_hash') || hashParams.get('token_hash') ||
         params.get('code') || hashParams.get('code') ||
         params.get('access_token') || hashParams.get('access_token') ||
-        params.get('refresh_token') || hashParams.get('refresh_token')
+        params.get('refresh_token') || hashParams.get('refresh_token') ||
+        (token && isLoginRoute)
       );
  
       // Domain canonicalisation handled in index.html bootstrap script
