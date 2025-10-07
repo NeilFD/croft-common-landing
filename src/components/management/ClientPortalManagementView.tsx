@@ -175,6 +175,26 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
     }
   };
 
+  const handleDeleteInspiration = async (linkId: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('client-delete-inspiration', {
+        body: { 
+          link_id: linkId,
+          event_id: eventId
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) throw new Error('Failed to delete inspiration link');
+
+      toast.success('Inspiration removed');
+      await loadPortalData();
+    } catch (error) {
+      console.error('Delete inspiration error:', error);
+      toast.error('Failed to delete inspiration');
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
@@ -449,32 +469,39 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
           <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Inspiration Board</h2>
           <div className="space-y-3">
             {inspirationLinks.map((link) => (
-              <div key={link.id} className="border-[3px] border-steel rounded-lg p-3 bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300">
-                <div className="flex items-start gap-3">
-                  {link.thumbnail_url && (
+              <div 
+                key={link.id} 
+                className="border-[3px] border-steel rounded-lg overflow-hidden bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300 group"
+              >
+                {link.thumbnail_url && (
+                  <div className="w-full h-64 overflow-hidden bg-muted relative">
                     <img 
                       src={link.thumbnail_url} 
-                      alt=""
-                      className="w-16 h-16 object-cover rounded-lg border-[3px] border-steel flex-shrink-0"
+                      alt="Inspiration"
+                      className="w-full h-full object-cover"
                     />
-                  )}
-                        <div className="flex-1 min-w-0">
-                          {link.title && (
-                            <p className="font-industrial text-sm font-medium truncate">{link.title}</p>
-                          )}
-                          {link.description && (
-                            <p className="font-industrial text-xs text-muted-foreground line-clamp-2">{link.description}</p>
-                          )}
-                          <a 
-                            href={link.url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="font-industrial text-xs text-primary hover:underline flex items-center gap-1 mt-1"
-                          >
-                            <LinkIcon className="h-3 w-3" />
-                            View Link
-                          </a>
+                    <button
+                      onClick={() => handleDeleteInspiration(link.id)}
+                      className="absolute top-2 right-2 p-2 border-[3px] border-steel rounded-lg bg-background/90 hover:bg-destructive hover:border-destructive transition-all duration-300"
+                      aria-label="Delete inspiration"
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
+                    </button>
                   </div>
+                )}
+                <div className="p-3 flex items-center justify-between">
+                  <span className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                    {link.link_type || 'Link'}
+                  </span>
+                  <a 
+                    href={link.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="font-industrial text-xs text-primary hover:underline flex items-center gap-1"
+                  >
+                    <LinkIcon className="h-3 w-3" />
+                    View
+                  </a>
                 </div>
               </div>
             ))}

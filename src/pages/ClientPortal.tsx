@@ -831,43 +831,36 @@ const ClientPortal = () => {
             {inspirationLinks.map((link) => (
               <div 
                 key={link.id} 
-                className="border-[3px] border-black rounded-lg overflow-hidden bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
+                className="border-[3px] border-black rounded-lg overflow-hidden bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300 group"
               >
                 {link.thumbnail_url && (
-                  <div className="w-full h-48 overflow-hidden bg-muted">
+                  <div className="w-full h-64 overflow-hidden bg-muted relative">
                     <img
                       src={link.thumbnail_url}
-                      alt={link.title || 'Inspiration'}
+                      alt="Inspiration"
                       className="w-full h-full object-cover"
                     />
-                  </div>
-                )}
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-3 mb-2">
-                    <div className="flex-1 min-w-0">
-                      {link.title && (
-                        <h3 className="font-industrial text-base font-bold mb-1 truncate">{link.title}</h3>
-                      )}
-                      {link.description && (
-                        <p className="font-industrial text-sm text-muted-foreground line-clamp-2 mb-2">{link.description}</p>
-                      )}
-                    </div>
                     <button
                       onClick={() => handleDeleteInspiration(link.id)}
-                      className="flex-shrink-0 p-2 border-[3px] border-black rounded-lg hover:bg-destructive hover:border-destructive transition-all duration-300"
-                      aria-label="Delete inspiration link"
+                      className="absolute top-2 right-2 p-2 border-[3px] border-black rounded-lg bg-background/90 hover:bg-destructive hover:border-destructive transition-all duration-300"
+                      aria-label="Delete inspiration"
                     >
                       <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
                     </button>
                   </div>
+                )}
+                <div className="p-3 flex items-center justify-between">
+                  <span className="font-industrial text-xs uppercase tracking-wide text-muted-foreground">
+                    {link.link_type || 'Link'}
+                  </span>
                   <a 
                     href={link.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="font-industrial text-sm text-primary hover:underline flex items-center gap-1"
+                    className="font-industrial text-xs text-primary hover:underline flex items-center gap-1"
                   >
                     <LinkIcon className="h-3 w-3" />
-                    View Original Link
+                    View
                   </a>
                 </div>
               </div>
