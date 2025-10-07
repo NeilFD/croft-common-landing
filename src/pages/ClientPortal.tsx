@@ -155,6 +155,19 @@ const ClientPortal = () => {
     setBeo(data.beo || null);
     setProposal(data.proposal || null);
     setContract(data.contract || null);
+    
+    // Map line items from edge function response
+    const rawItems = data.lineItems || [];
+    const mapped = rawItems.map((item: any) => ({
+      id: item.id,
+      category: item.type,
+      item_name: item.description,
+      quantity: item.qty,
+      unit_cost: item.unit_price,
+      total_cost: (item.qty || 0) * (item.unit_price || 0),
+      item_order: item.sort_order,
+    }));
+    setLineItems(mapped);
   };
 
   useEffect(() => {
@@ -188,35 +201,6 @@ const ClientPortal = () => {
 
     initSession();
   }, []);
-
-  // Load line items for financial breakdown
-  useEffect(() => {
-    const loadLineItems = async () => {
-      if (!session?.eventId) return;
-      const { data: rawItems, error } = await supabase
-        .from('management_event_line_items')
-        .select('id, type, description, qty, unit_price, per_person, sort_order')
-        .eq('event_id', session.eventId)
-        .order('type', { ascending: true })
-        .order('sort_order', { ascending: true });
-      if (error) {
-        console.error('[ClientPortal] line items error:', error);
-        setLineItems([]);
-        return;
-      }
-      const mapped = (rawItems || []).map((item: any) => ({
-        id: item.id,
-        category: item.type,
-        item_name: item.description,
-        quantity: item.qty,
-        unit_cost: item.unit_price,
-        total_cost: (item.qty || 0) * (item.unit_price || 0),
-        item_order: item.sort_order,
-      }));
-      setLineItems(mapped);
-    };
-    loadLineItems();
-  }, [session?.eventId, proposal?.id]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !session) return;

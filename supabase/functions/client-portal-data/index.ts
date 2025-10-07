@@ -159,6 +159,18 @@ Deno.serve(async (req) => {
       console.error('Contract fetch failed:', contractError);
     }
 
+    // Fetch line items for financial breakdown
+    const { data: lineItems, error: lineItemsError } = await supabase
+      .from('management_event_line_items')
+      .select('id, type, description, qty, unit_price, per_person, sort_order')
+      .eq('event_id', eventId)
+      .order('type', { ascending: true })
+      .order('sort_order', { ascending: true });
+
+    if (lineItemsError) {
+      console.error('Line items fetch failed:', lineItemsError);
+    }
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -169,6 +181,7 @@ Deno.serve(async (req) => {
         beo: beo || null,
         proposal: proposal || null,
         contract: contract || null,
+        lineItems: lineItems || [],
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
