@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, LogOut, Send, Upload, FileText, Calendar, Users, Clock, Mail } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { FramedBox } from '@/components/ui/FramedBox';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
@@ -210,16 +209,20 @@ const ClientPortal = () => {
 
   if (!session || !event) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="max-w-md w-full p-8 text-center">
-          <h1 className="text-2xl font-bold mb-4">Session Required</h1>
-          <p className="text-muted-foreground mb-6">
+      <div className="min-h-screen flex items-center justify-center bg-surface p-4">
+        <div className="max-w-md w-full border-2 border-charcoal p-8 text-center bg-transparent">
+          <h1 className="font-brutalist text-2xl uppercase mb-4 text-foreground">Session Required</h1>
+          <p className="font-industrial text-steel mb-6">
             Please use the magic link provided to access your event portal.
           </p>
-          <Button onClick={() => navigate('/')} className="w-full">
+          <FramedBox
+            as="button"
+            onClick={() => navigate('/')}
+            className="w-full cursor-pointer"
+          >
             Return Home
-          </Button>
-        </Card>
+          </FramedBox>
+        </div>
       </div>
     );
   }
@@ -227,80 +230,83 @@ const ClientPortal = () => {
   return (
     <div className="min-h-screen bg-surface">
       {/* Header */}
-      <header className="bg-background border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="border-b-2 border-charcoal bg-transparent">
+        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold">Event Portal</h1>
-            <p className="text-sm text-muted-foreground">{session.contactEmail}</p>
+            <h1 className="font-brutalist text-3xl uppercase tracking-wide text-foreground">Event Portal</h1>
+            <p className="font-industrial text-sm text-steel mt-1">{session.contactEmail}</p>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-2" />
+          <FramedBox
+            as="button"
+            onClick={handleLogout}
+            size="sm"
+            className="cursor-pointer"
+          >
+            <LogOut className="w-4 h-4 mr-2 inline" />
             Logout
-          </Button>
+          </FramedBox>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
+      <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-8">
         {/* Event Details */}
-        <Card className="p-6">
-          <h2 className="text-xl font-bold mb-4">Event Details</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
+        <div className="border-2 border-charcoal p-6 bg-transparent">
+          <h2 className="font-brutalist text-xl uppercase tracking-wide mb-6 text-foreground">Event Details</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Calendar className="w-5 h-5 text-steel mt-0.5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Date</p>
-                  <p className="font-medium">
+                  <p className="font-industrial text-xs uppercase text-steel mb-1">Date</p>
+                  <p className="font-industrial font-medium text-foreground">
                     {format(new Date(event.primary_date), 'EEEE, MMMM d, yyyy')}
                   </p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <Clock className="w-5 h-5 text-muted-foreground mt-0.5" />
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-steel mt-0.5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Time</p>
-                  <p className="font-medium">{event.start_time || 'TBC'}</p>
+                  <p className="font-industrial text-xs uppercase text-steel mb-1">Time</p>
+                  <p className="font-industrial font-medium text-foreground">{event.start_time || 'TBC'}</p>
                 </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <Users className="w-5 h-5 text-muted-foreground mt-0.5" />
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Users className="w-5 h-5 text-steel mt-0.5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Guests</p>
-                  <p className="font-medium">{event.headcount}</p>
+                  <p className="font-industrial text-xs uppercase text-steel mb-1">Guests</p>
+                  <p className="font-industrial font-medium text-foreground">{event.headcount}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <Mail className="w-5 h-5 text-muted-foreground mt-0.5" />
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-steel mt-0.5" />
                 <div>
-                  <p className="text-sm text-muted-foreground">Event Type</p>
-                  <p className="font-medium">{event.event_type}</p>
+                  <p className="font-industrial text-xs uppercase text-steel mb-1">Event Type</p>
+                  <p className="font-industrial font-medium text-foreground">{event.event_type}</p>
                 </div>
               </div>
             </div>
           </div>
-        </Card>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Messages */}
-          <Card className="p-6 flex flex-col h-[600px]">
-            <h2 className="text-xl font-bold mb-4">Messages</h2>
+          <div className="border-2 border-charcoal p-6 flex flex-col h-[600px] bg-transparent">
+            <h2 className="font-brutalist text-xl uppercase tracking-wide mb-4 text-foreground">Messages</h2>
             
             <div className="flex-1 overflow-y-auto space-y-3 mb-4">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`p-3 rounded-lg ${
+                  className={`border-2 p-3 bg-transparent transition-colors ${
                     msg.author === 'client'
-                      ? 'bg-accent-pink text-white ml-8'
-                      : 'bg-muted mr-8'
+                      ? 'border-accent-pink ml-8'
+                      : 'border-steel mr-8'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.body}</p>
-                  <p className={`text-xs mt-1 ${
-                    msg.author === 'client' ? 'text-white/70' : 'text-muted-foreground'
-                  }`}>
+                  <p className="font-industrial text-sm whitespace-pre-wrap text-foreground">{msg.body}</p>
+                  <p className="font-industrial text-xs mt-1 text-steel">
                     {format(new Date(msg.created_at), 'HH:mm')}
                   </p>
                 </div>
@@ -318,62 +324,65 @@ const ClientPortal = () => {
                     handleSendMessage();
                   }
                 }}
-                className="resize-none"
+                className="resize-none border-2 border-charcoal bg-transparent font-industrial focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-accent-pink"
                 rows={3}
               />
-              <Button
+              <FramedBox
+                as="button"
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || sendingMessage}
-                className="shrink-0"
+                className="shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {sendingMessage ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <Send className="w-4 h-4" />
                 )}
-              </Button>
+              </FramedBox>
             </div>
-          </Card>
+          </div>
 
           {/* Files */}
-          <Card className="p-6">
+          <div className="border-2 border-charcoal p-6 bg-transparent">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Files</h2>
-              <Button variant="outline" size="sm" disabled={uploadingFile} asChild>
-                <label className="cursor-pointer">
-                  {uploadingFile ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload
-                    </>
-                  )}
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                    disabled={uploadingFile}
-                  />
-                </label>
-              </Button>
+              <h2 className="font-brutalist text-xl uppercase tracking-wide text-foreground">Files</h2>
+              <FramedBox
+                as="label"
+                size="sm"
+                className={`cursor-pointer ${uploadingFile ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {uploadingFile ? (
+                  <Loader2 className="w-4 h-4 animate-spin inline" />
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2 inline" />
+                    Upload
+                  </>
+                )}
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  disabled={uploadingFile}
+                />
+              </FramedBox>
             </div>
 
-            <div className="space-y-2 max-h-[500px] overflow-y-auto">
+            <div className="space-y-3 max-h-[500px] overflow-y-auto">
               {files.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">
+                <p className="font-industrial text-sm text-steel text-center py-8">
                   No files uploaded yet
                 </p>
               ) : (
                 files.map((file) => (
                   <div
                     key={file.id}
-                    className="flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-muted transition-colors"
+                    className="flex items-center gap-3 p-3 border-2 border-steel bg-transparent hover:border-accent-pink transition-colors"
                   >
-                    <FileText className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <FileText className="w-5 h-5 text-steel shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{file.filename}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="font-industrial font-medium truncate text-foreground">{file.filename}</p>
+                      <p className="font-industrial text-xs text-steel">
                         {(file.size_bytes / 1024).toFixed(1)} KB • {format(new Date(file.created_at), 'MMM d, yyyy')}
                       </p>
                     </div>
@@ -381,7 +390,7 @@ const ClientPortal = () => {
                 ))
               )}
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>
