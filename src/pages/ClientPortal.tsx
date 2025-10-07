@@ -71,31 +71,29 @@ const ClientPortal = () => {
 
     const initSession = async () => {
       try {
-        // Fetch event details by ID
-        const { data: eventData, error: eventError } = await supabase
-          .from('management_events')
-          .select('*')
-          .eq('id', eventId)
-          .single();
-
-        if (eventError) throw eventError;
-        if (!eventData) throw new Error('Event not found');
-
-        console.log('[ClientPortal] Event loaded:', eventData);
-
-        setEvent(eventData as Event);
-        setSession({
-          sessionId,
-          eventId: eventData.id,
-          contactEmail: eventData.client_email || '',
-          csrfToken
+        // Fetch all portal data via secure edge function
+        const { data, error } = await supabase.functions.invoke('client-portal-data', {
+          body: {
+            session_id: sessionId,
+            csrf_token: csrfToken,
+          },
         });
 
-        // Fetch messages
-        await loadMessages(eventData.id);
+        if (error) throw error;
+        if (!data.success) throw new Error(data.error || 'Failed to load portal data');
 
-        // Fetch files
-        await loadFiles(eventData.id);
+        console.log('[ClientPortal] Portal data loaded:', data);
+
+        setEvent(data.event as Event);
+        setMessages(data.messages as Message[]);
+        setFiles(data.files as ClientFile[]);
+        
+        setSession({
+          sessionId,
+          csrfToken,
+          eventId: data.event.id,
+          contactEmail: data.event.client_email || '',
+        });
 
         setLoading(false);
       } catch (error) {
@@ -137,19 +135,31 @@ const ClientPortal = () => {
 
     setSendingMessage(true);
     try {
-      const { error } = await supabase
-        .from('client_messages')
-        .insert({
-          event_id: session.eventId,
-          author: 'client',
-          body: newMessage.trim()
-        });
+      const { data, error } = await supabase.functions.invoke('client-send-message', {
+        body: {
+          session_id: session.sessionId,
+          csrf_token: session.csrfToken,
+          body: newMessage.trim(),
+        },
+      });
 
       if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to send message');
 
       setNewMessage('');
-      await loadMessages(session.eventId);
       toast.success('Message sent');
+      
+      // Reload all portal data to get updated messages
+      const { data: portalData, error: portalError } = await supabase.functions.invoke('client-portal-data', {
+        body: {
+          session_id: session.sessionId,
+          csrf_token: session.csrfToken,
+        },
+      });
+
+      if (!portalError && portalData.success) {
+        setMessages(portalData.messages as Message[]);
+      }
     } catch (error) {
       console.error('Send message error:', error);
       toast.error('Failed to send message');
