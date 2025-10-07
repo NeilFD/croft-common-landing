@@ -68,9 +68,10 @@ interface ProposalViewerProps {
   versionNo: number;
   generatedAt: string;
   lineItems?: LineItem[];
+  serviceChargePct?: number;
 }
 
-export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = [] }: ProposalViewerProps) => {
+export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = [], serviceChargePct = 0 }: ProposalViewerProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     overview: false,
@@ -112,34 +113,30 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
   };
 
   const calculatePricing = () => {
-    // Get items excluding service charge and VAT
-    const itemsWithoutTaxes = lineItems.filter(
-      item => item.category !== 'Service Charge' && item.category !== 'VAT'
-    );
-    
-    const subtotal = itemsWithoutTaxes.reduce((sum, item) => sum + item.total_cost, 0);
-    
-    // Find service charge and VAT from line items
-    const serviceChargeItem = lineItems.find(item => item.category === 'Service Charge');
-    const vatItem = lineItems.find(item => item.category === 'VAT');
-    
-    const serviceCharge = serviceChargeItem?.total_cost || 0;
-    const vat = vatItem?.total_cost || 0;
-    
-    // Calculate rates
-    const serviceChargeRate = subtotal > 0 ? (serviceCharge / subtotal) * 100 : 10;
-    const subtotalWithService = subtotal + serviceCharge;
-    const vatRate = subtotalWithService > 0 ? (vat / subtotalWithService) * 100 : 20;
-    
-    const total = subtotal + serviceCharge + vat;
-    
-    return { 
-      subtotal, 
-      serviceCharge, 
-      vat, 
-      total, 
-      vatRate, 
-      serviceChargeRate 
+    // Sum gross (incl. VAT) from line items
+    const grossSubtotal = lineItems.reduce((sum, item) => sum + (item.total_cost || 0), 0);
+
+    // Determine VAT rate from content (fallback 20%)
+    const vatRate = content?.venue?.vat_rate ?? 20;
+
+    // Compute net by removing VAT from gross
+    const netSubtotal = vatRate > 0 ? grossSubtotal / (1 + vatRate / 100) : grossSubtotal;
+    const vat = grossSubtotal - netSubtotal;
+
+    // Service charge: match main builder display (rate applied to gross)
+    const scRate = (serviceChargePct ?? 0);
+    const serviceCharge = grossSubtotal * (scRate / 100);
+
+    const total = grossSubtotal + serviceCharge;
+
+    return {
+      netSubtotal,
+      grossSubtotal,
+      serviceCharge,
+      vat,
+      total,
+      vatRate,
+      serviceChargeRate: scRate,
     };
   };
 
@@ -539,17 +536,9 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
                 <>
                   <div className="space-y-2 pt-4 border-t-2 border-industrial/20">
                     <div className="flex justify-between items-center">
-                      <span className="font-industrial text-steel">Subtotal</span>
+                      <span className="font-industrial text-steel">Net Subtotal</span>
                       <span className="font-industrial text-foreground font-medium">
-                        £{pricing.subtotal.toFixed(2)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-industrial text-steel">
-                        Service Charge ({pricing.serviceChargeRate.toFixed(0)}%)
-                      </span>
-                      <span className="font-industrial text-foreground font-medium">
-                        £{pricing.serviceCharge.toFixed(2)}
+                        £{pricing.netSubtotal.toFixed(2)}
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
@@ -560,10 +549,18 @@ export const ProposalViewer = ({ content, versionNo, generatedAt, lineItems = []
                         £{pricing.vat.toFixed(2)}
                       </span>
                     </div>
+                    <div className="flex justify-between items-center">
+                      <span className="font-industrial text-steel">
+                        Service Charge ({pricing.serviceChargeRate.toFixed(0)}%)
+                      </span>
+                      <span className="font-industrial text-foreground font-medium">
+                        £{pricing.serviceCharge.toFixed(2)}
+                      </span>
+                    </div>
                   </div>
                   
                   <div className="flex justify-between items-center pt-4 border-t-2 border-industrial">
-                    <span className="font-brutalist text-lg uppercase tracking-wide">Total</span>
+                    <span className="font-brutalist text-lg uppercase tracking-wide">Grand Total</span>
                     <span className="font-brutalist text-xl text-foreground">
                       £{pricing.total.toFixed(2)}
                     </span>
