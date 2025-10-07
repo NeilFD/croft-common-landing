@@ -245,12 +245,16 @@ const ClientPortal = () => {
     if (!session) return;
 
     try {
-      const { error } = await supabase
-        .from('client_inspiration_links')
-        .delete()
-        .eq('id', linkId);
+      const { data, error } = await supabase.functions.invoke('client-delete-inspiration', {
+        body: {
+          session_id: session.sessionId,
+          csrf_token: session.csrfToken,
+          link_id: linkId,
+        },
+      });
 
       if (error) throw error;
+      if (!data.success) throw new Error(data.error || 'Failed to delete inspiration link');
 
       toast.success('Inspiration link removed');
       await loadPortalData(session.sessionId, session.csrfToken);
@@ -753,41 +757,44 @@ const ClientPortal = () => {
             {inspirationLinks.map((link) => (
               <div 
                 key={link.id} 
-                className="border-[3px] border-black rounded-lg p-3 bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
+                className="border-[3px] border-black rounded-lg overflow-hidden bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-3 flex-1 min-w-0">
-                    {link.thumbnail_url && (
-                      <img
-                        src={link.thumbnail_url}
-                        alt=""
-                        className="w-16 h-16 object-cover border-[3px] border-black rounded-lg flex-shrink-0"
-                      />
-                    )}
+                {link.thumbnail_url && (
+                  <div className="w-full h-48 overflow-hidden bg-muted">
+                    <img
+                      src={link.thumbnail_url}
+                      alt={link.title || 'Inspiration'}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-3 mb-2">
                     <div className="flex-1 min-w-0">
                       {link.title && (
-                        <p className="font-industrial text-sm font-medium truncate">{link.title}</p>
+                        <h3 className="font-industrial text-base font-bold mb-1 truncate">{link.title}</h3>
                       )}
                       {link.description && (
-                        <p className="font-industrial text-xs text-muted-foreground line-clamp-2">{link.description}</p>
+                        <p className="font-industrial text-sm text-muted-foreground line-clamp-2 mb-2">{link.description}</p>
                       )}
-                      <a 
-                        href={link.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="font-industrial text-xs text-primary hover:underline flex items-center gap-1 mt-1"
-                      >
-                        <LinkIcon className="h-3 w-3" />
-                        View Link
-                      </a>
                     </div>
+                    <button
+                      onClick={() => handleDeleteInspiration(link.id)}
+                      className="flex-shrink-0 p-2 border-[3px] border-black rounded-lg hover:bg-destructive hover:border-destructive transition-all duration-300"
+                      aria-label="Delete inspiration link"
+                    >
+                      <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleDeleteInspiration(link.id)}
-                    className="flex-shrink-0 p-2 border-[3px] border-black rounded-lg hover:bg-destructive hover:border-destructive transition-all duration-300"
+                  <a 
+                    href={link.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="font-industrial text-sm text-primary hover:underline flex items-center gap-1"
                   >
-                    <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
-                  </button>
+                    <LinkIcon className="h-3 w-3" />
+                    View Original Link
+                  </a>
                 </div>
               </div>
             ))}
