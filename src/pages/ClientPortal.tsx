@@ -100,6 +100,7 @@ const ClientPortal = () => {
   const [beo, setBeo] = useState<BEO | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [contract, setContract] = useState<Contract | null>(null);
+  const [lineItems, setLineItems] = useState<any[]>([]);
   
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -185,6 +186,26 @@ const ClientPortal = () => {
 
     initSession();
   }, []);
+
+  // Load line items for financial breakdown
+  useEffect(() => {
+    const loadLineItems = async () => {
+      if (!session?.eventId) return;
+      const { data, error } = await supabase
+        .from('management_event_line_items')
+        .select('id, category, item_name, quantity, unit_cost, total_cost, item_order')
+        .eq('event_id', session.eventId)
+        .order('category', { ascending: true })
+        .order('item_order', { ascending: true });
+      if (error) {
+        console.error('[ClientPortal] line items error:', error);
+        setLineItems([]);
+        return;
+      }
+      setLineItems(data || []);
+    };
+    loadLineItems();
+  }, [session?.eventId, proposal?.id]);
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !session) return;
@@ -531,6 +552,7 @@ const ClientPortal = () => {
                     content={proposal.content_snapshot}
                     versionNo={proposal.version_no}
                     generatedAt={proposal.generated_at}
+                    lineItems={lineItems}
                   />
                 </div>
               )}

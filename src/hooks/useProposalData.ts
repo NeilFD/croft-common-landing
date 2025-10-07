@@ -106,30 +106,19 @@ export const useCurrentProposal = (eventId: string) => {
       if (proposalError) throw proposalError;
       if (!proposal) return null;
 
-      // Fetch line items for this event
+      // Fetch line items for this event (use exact columns expected by viewer)
       const { data: lineItems, error: lineItemsError } = await supabase
         .from('management_event_line_items')
-        .select('*')
+        .select('id, category, item_name, quantity, unit_cost, total_cost, item_order')
         .eq('event_id', eventId)
-        .order('type', { ascending: true })
-        .order('sort_order', { ascending: true });
+        .order('category', { ascending: true })
+        .order('item_order', { ascending: true });
 
       if (lineItemsError) throw lineItemsError;
 
-      // Map database fields to expected LineItem interface
-      const mappedLineItems = lineItems?.map(item => ({
-        id: item.id,
-        category: item.type,
-        item_name: item.description,
-        quantity: item.qty,
-        unit_cost: item.unit_price,
-        total_cost: item.qty * item.unit_price,
-        item_order: item.sort_order
-      })) || [];
-
       return {
         ...proposal,
-        lineItems: mappedLineItems
+        lineItems: lineItems || []
       } as ProposalVersion & { lineItems: any[] };
     },
     enabled: !!eventId

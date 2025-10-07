@@ -94,6 +94,7 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
   const [beo, setBeo] = useState<BEO | null>(null);
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [contract, setContract] = useState<Contract | null>(null);
+  const [lineItems, setLineItems] = useState<any[]>([]);
   
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
@@ -114,6 +115,17 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
       setBeo(data.beo || null);
       setProposal(data.proposal || null);
       setContract(data.contract || null);
+
+      // Fetch line items for ProposalViewer (no remapping needed)
+      const { data: li, error: liErr } = await supabase
+        .from('management_event_line_items')
+        .select('id, category, item_name, quantity, unit_cost, total_cost, item_order')
+        .eq('event_id', eventId)
+        .order('category', { ascending: true })
+        .order('item_order', { ascending: true });
+      if (liErr) throw liErr;
+
+      setLineItems(li || []);
     } catch (error) {
       console.error('[ClientPortalManagementView] Error:', error);
       toast.error('Failed to load client portal data');
@@ -260,6 +272,7 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                     content={proposal.content_snapshot}
                     versionNo={proposal.version_no}
                     generatedAt={proposal.generated_at}
+                    lineItems={lineItems}
                   />
                 </div>
               )}
