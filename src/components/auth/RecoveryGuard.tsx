@@ -25,15 +25,6 @@ export const RecoveryGuard = () => {
         params.get('refresh_token') || hashParams.get('refresh_token')
       );
 
-      // If tokens present and on apex domain, redirect to www FIRST
-      if (hasTokens && host === 'croftcommontest.com') {
-        const newUrl = 'https://www.croftcommontest.com' + 
-                       window.location.pathname + 
-                       window.location.search + 
-                       window.location.hash;
-        window.location.replace(newUrl);
-        return;
-      }
 
       if (hasTokens) {
         sessionStorage.setItem('recovery', '1');
