@@ -275,7 +275,7 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <Badge variant={contract.status === 'signed' ? 'default' : 'outline'}>
-                        {contract.status.toUpperCase()}
+                        {(contract.status || 'pending').toUpperCase()}
                       </Badge>
                       {contract.signed_at && (
                         <p className="font-industrial text-xs text-muted-foreground">
