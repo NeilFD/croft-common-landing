@@ -1017,7 +1017,7 @@ export type Database = {
             foreignKeyName: "client_files_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
-            referencedRelation: "events"
+            referencedRelation: "management_events"
             referencedColumns: ["id"]
           },
         ]

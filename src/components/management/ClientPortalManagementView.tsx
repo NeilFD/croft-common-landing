@@ -189,16 +189,16 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
 
       <div className="space-y-6">
         {/* Event Details */}
-        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+        <div className="border-[3px] border-black rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
           <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">
             Event Details
           </h2>
             
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 border-[3px] border-charcoal rounded-lg p-0 h-auto mb-6 bg-background">
-              <TabsTrigger value="overview" className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1">OVERVIEW</TabsTrigger>
-              <TabsTrigger value="documents" className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1">DOCUMENTS</TabsTrigger>
-              <TabsTrigger value="contract" className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1">CONTRACT</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3 border-[3px] border-black rounded-lg p-0 h-auto mb-6 bg-background">
+              <TabsTrigger value="overview" className="font-industrial uppercase text-xs data-[state=active]:bg-black data-[state=active]:text-background rounded-lg m-1">OVERVIEW</TabsTrigger>
+              <TabsTrigger value="documents" className="font-industrial uppercase text-xs data-[state=active]:bg-black data-[state=active]:text-background rounded-lg m-1">DOCUMENTS</TabsTrigger>
+              <TabsTrigger value="contract" className="font-industrial uppercase text-xs data-[state=active]:bg-black data-[state=active]:text-background rounded-lg m-1">CONTRACT</TabsTrigger>
             </TabsList>
 
               <TabsContent value="overview" className="space-y-4 mt-4">

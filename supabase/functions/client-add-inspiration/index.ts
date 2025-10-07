@@ -50,20 +50,45 @@ Deno.serve(async (req) => {
 
     // Detect link type and extract metadata
     let linkType = 'web';
-    let title = url;
-    let description = '';
+    let title = null;
+    let description = null;
     let thumbnailUrl = null;
 
     if (url.includes('instagram.com') || url.includes('instagr.am')) {
       linkType = 'instagram';
-      const match = url.match(/instagram\.com\/(?:p|reel)\/([^\/]+)/);
-      if (match) {
-        title = `Instagram Post`;
-        description = `Post ID: ${match[1]}`;
+      // Try to fetch Instagram metadata
+      try {
+        const response = await fetch(url);
+        const html = await response.text();
+        
+        // Extract Open Graph metadata
+        const ogTitleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
+        const ogDescMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
+        const ogImageMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
+        
+        if (ogTitleMatch) title = ogTitleMatch[1];
+        if (ogDescMatch) description = ogDescMatch[1];
+        if (ogImageMatch) thumbnailUrl = ogImageMatch[1];
+      } catch (error) {
+        console.log('[client-add-inspiration] Could not fetch Instagram metadata:', error);
       }
     } else if (url.includes('pinterest.com') || url.includes('pin.it')) {
       linkType = 'pinterest';
-      title = 'Pinterest Pin';
+      // Try to fetch Pinterest metadata
+      try {
+        const response = await fetch(url);
+        const html = await response.text();
+        
+        const ogTitleMatch = html.match(/<meta property="og:title" content="([^"]+)"/);
+        const ogDescMatch = html.match(/<meta property="og:description" content="([^"]+)"/);
+        const ogImageMatch = html.match(/<meta property="og:image" content="([^"]+)"/);
+        
+        if (ogTitleMatch) title = ogTitleMatch[1];
+        if (ogDescMatch) description = ogDescMatch[1];
+        if (ogImageMatch) thumbnailUrl = ogImageMatch[1];
+      } catch (error) {
+        console.log('[client-add-inspiration] Could not fetch Pinterest metadata:', error);
+      }
     }
 
     // Insert inspiration link

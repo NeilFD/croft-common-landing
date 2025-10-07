@@ -339,7 +339,7 @@ const ClientPortal = () => {
   return (
     <div className="min-h-screen bg-surface">
       {/* Header */}
-      <header className="border-b-[3px] border-charcoal bg-background">
+      <header className="border-b-[3px] border-black bg-background">
         <div className="max-w-5xl mx-auto px-4 py-6 flex justify-between items-center">
           <div className="flex items-center gap-4">
             <CroftLogo size="lg" />
@@ -367,27 +367,27 @@ const ClientPortal = () => {
       <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
         
         {/* Event Details */}
-        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+        <div className="border-[3px] border-black rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
           <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Event Details</h2>
           
           <Tabs defaultValue="overview" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 border-[3px] border-charcoal rounded-lg p-0 h-auto mb-6 bg-background">
+            <TabsList className="grid w-full grid-cols-3 border-[3px] border-black rounded-lg p-0 h-auto mb-6 bg-background">
               <TabsTrigger 
                 value="overview" 
-                className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1"
+                className="font-industrial uppercase text-xs data-[state=active]:bg-black data-[state=active]:text-background rounded-lg m-1"
               >
                 Overview
               </TabsTrigger>
               <TabsTrigger 
                 value="documents" 
-                className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1"
+                className="font-industrial uppercase text-xs data-[state=active]:bg-black data-[state=active]:text-background rounded-lg m-1"
               >
                 Documents
               </TabsTrigger>
               {contract && (
                 <TabsTrigger 
                   value="contract" 
-                  className="font-industrial uppercase text-xs data-[state=active]:bg-charcoal data-[state=active]:text-background rounded-lg m-1"
+                  className="font-industrial uppercase text-xs data-[state=active]:bg-black data-[state=active]:text-background rounded-lg m-1"
                 >
                   Contract
                 </TabsTrigger>
@@ -453,7 +453,7 @@ const ClientPortal = () => {
                 </div>
               </div>
               {event.notes && (
-                <div className="pt-4 border-t-[3px] border-steel">
+                <div className="pt-4 border-t-[3px] border-black">
                   <p className="font-industrial text-xs uppercase text-steel mb-2">Notes</p>
                   <p className="font-industrial text-sm text-foreground whitespace-pre-wrap">{event.notes}</p>
                 </div>
@@ -462,8 +462,35 @@ const ClientPortal = () => {
 
             {/* Documents Tab */}
             <TabsContent value="documents" className="space-y-4">
+              {beo && (
+                <div className="border-[3px] border-black rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3 flex-1">
+                      <FileCheck className="w-5 h-5 text-steel mt-0.5" />
+                      <div>
+                        <p className="font-industrial font-medium text-foreground">Banquet Event Order v{beo.version_number}</p>
+                        <p className="font-industrial text-xs text-steel mt-1">
+                          Created {format(new Date(beo.created_at), 'MMM d, yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                    {beo.pdf_url && (
+                      <a
+                        href={beo.pdf_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 border-[3px] border-black rounded-lg py-2 px-4 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               {proposal && (
-                <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
+                <div className="border-[3px] border-black rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-3 flex-1">
                       <FileText className="w-5 h-5 text-steel mt-0.5" />
@@ -488,34 +515,7 @@ const ClientPortal = () => {
                         href={proposal.pdf_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-shrink-0 border-[3px] border-charcoal rounded-lg py-2 px-4 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-              
-              {beo && (
-                <div className="border-[3px] border-steel rounded-lg p-4 bg-background transition-all duration-300 hover:shadow-lg hover:shadow-accent-pink/5 hover:border-accent-pink">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex items-start gap-3 flex-1">
-                      <FileCheck className="w-5 h-5 text-steel mt-0.5" />
-                      <div>
-                        <p className="font-industrial font-medium text-foreground">Banquet Event Order v{beo.version_number}</p>
-                        <p className="font-industrial text-xs text-steel mt-1">
-                          Created {format(new Date(beo.created_at), 'MMM d, yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                    {beo.pdf_url && (
-                      <a
-                        href={beo.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-shrink-0 border-[3px] border-charcoal rounded-lg py-2 px-4 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
+                        className="flex-shrink-0 border-[3px] border-black rounded-lg py-2 px-4 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center font-industrial uppercase text-xs"
                       >
                         <Download className="w-4 h-4 mr-2" />
                         Download
@@ -535,7 +535,7 @@ const ClientPortal = () => {
             {/* Contract Tab */}
             {contract && (
               <TabsContent value="contract" className="space-y-6">
-                <div className="border-[3px] border-steel rounded-lg p-6 bg-background">
+                <div className="border-[3px] border-black rounded-lg p-6 bg-background">
                   <div className="flex items-center gap-3 mb-4">
                     {contract.status === 'signed' ? (
                       <CheckCircle className="w-6 h-6 text-green-600" />
@@ -558,7 +558,7 @@ const ClientPortal = () => {
                       href={contract.pdf_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full border-[3px] border-charcoal rounded-lg py-3 px-4 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center justify-center font-industrial uppercase text-sm mb-4"
+                      className="w-full border-[3px] border-black rounded-lg py-3 px-4 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center justify-center font-industrial uppercase text-sm mb-4"
                     >
                       <Download className="w-4 h-4 mr-2" />
                       View Contract PDF
@@ -566,29 +566,29 @@ const ClientPortal = () => {
                   )}
 
                   {contract.status !== 'signed' && (
-                    <div className="mt-6 pt-6 border-t-[3px] border-steel">
+                    <div className="mt-6 pt-6 border-t-[3px] border-black">
                       <p className="font-industrial text-sm text-foreground mb-4">
                         Please sign below to accept the contract terms
                       </p>
-                      <div className="border-[3px] border-steel rounded-lg p-4 bg-background mb-4">
+                      <div className="border-[3px] border-black rounded-lg p-4 bg-background mb-4">
                         <SignatureCanvas
                           ref={signatureRef}
                           canvasProps={{
-                            className: 'w-full h-32 border-[3px] border-steel rounded bg-background',
+                            className: 'w-full h-32 border-[3px] border-black rounded bg-background',
                           }}
                         />
                       </div>
                       <div className="flex gap-2">
                         <button
                           onClick={() => signatureRef.current?.clear()}
-                          className="flex-1 border-[3px] border-charcoal rounded-lg py-2 px-4 font-industrial uppercase text-xs bg-background hover:bg-steel hover:text-background transition-all duration-300"
+                          className="flex-1 border-[3px] border-black rounded-lg py-2 px-4 font-industrial uppercase text-xs bg-background hover:bg-steel hover:text-background transition-all duration-300"
                         >
                           Clear
                         </button>
                         <button
                           onClick={handleSignContract}
                           disabled={signingContract}
-                          className="flex-1 border-[3px] border-charcoal rounded-lg py-2 px-4 font-industrial uppercase text-xs bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+                          className="flex-1 border-[3px] border-black rounded-lg py-2 px-4 font-industrial uppercase text-xs bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
                         >
                           {signingContract ? (
                             <>
@@ -607,9 +607,9 @@ const ClientPortal = () => {
                   )}
 
                   {contract.status === 'signed' && contract.client_signature && (
-                    <div className="mt-6 pt-6 border-t-[3px] border-steel">
+                    <div className="mt-6 pt-6 border-t-[3px] border-black">
                       <p className="font-industrial text-xs uppercase text-steel mb-2">Your Signature</p>
-                      <img src={contract.client_signature} alt="Signature" className="border-[3px] border-charcoal rounded-lg p-2 bg-background max-w-full h-40 object-contain" />
+                      <img src={contract.client_signature} alt="Signature" className="border-[3px] border-black rounded-lg p-2 bg-background max-w-full h-40 object-contain" />
                     </div>
                   )}
                 </div>
@@ -619,17 +619,17 @@ const ClientPortal = () => {
         </div>
 
         {/* Messages */}
-        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+        <div className="border-[3px] border-black rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
           <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Messages</h2>
 
           <div className="space-y-3 max-h-96 overflow-y-auto mb-4">
             {messages.map((msg) => (
               <div
                 key={msg.id}
-                className={`p-3 rounded-lg border-[3px] ${
+                className={`p-3 rounded-lg border-[3px] max-w-[70%] ${
                   msg.author === 'team'
-                    ? 'bg-accent-pink/10 border-accent-pink/20 ml-8'
-                    : 'bg-muted border-steel mr-8'
+                    ? 'border-accent-pink mr-auto'
+                    : 'border-black ml-auto'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
@@ -650,18 +650,18 @@ const ClientPortal = () => {
             )}
           </div>
 
-          <div className="space-y-2 pt-4 border-t-[3px] border-steel">
+          <div className="space-y-2 pt-4 border-t-[3px] border-black">
             <Textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               placeholder="Type your message to the team..."
-              className="font-industrial resize-none border-[3px] border-steel rounded-lg bg-background focus:border-charcoal"
+              className="font-industrial resize-none border-[3px] border-black rounded-lg bg-background focus:border-accent-pink"
               rows={3}
             />
             <button
               onClick={handleSendMessage}
               disabled={!newMessage.trim() || sendingMessage}
-              className="w-full border-[3px] border-charcoal rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+              className="w-full border-[3px] border-black rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
             >
               {sendingMessage ? (
                 <>
@@ -679,14 +679,14 @@ const ClientPortal = () => {
         </div>
 
         {/* Files */}
-        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+        <div className="border-[3px] border-black rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
           <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Files</h2>
 
           <div className="space-y-3 mb-4">
             {files.map((file) => (
               <div 
                 key={file.id} 
-                className="flex items-center justify-between p-3 border-[3px] border-steel rounded-lg bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
+                className="flex items-center justify-between p-3 border-[3px] border-black rounded-lg bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <FileText className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
@@ -702,7 +702,7 @@ const ClientPortal = () => {
                     href={file.download_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-shrink-0 border-[3px] border-charcoal rounded-lg py-2 px-3 bg-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center"
+                    className="flex-shrink-0 border-[3px] border-black rounded-lg py-2 px-3 bg-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 inline-flex items-center"
                   >
                     <Download className="h-4 w-4" />
                   </a>
@@ -716,7 +716,7 @@ const ClientPortal = () => {
             )}
           </div>
 
-          <div className="pt-4 border-t-[3px] border-steel">
+          <div className="pt-4 border-t-[3px] border-black">
             <label className="block">
               <input
                 type="file"
@@ -727,7 +727,7 @@ const ClientPortal = () => {
               />
               <label
                 htmlFor="file-upload"
-                className="w-full border-[3px] border-charcoal rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50 inline-block text-center cursor-pointer"
+                className="w-full border-[3px] border-black rounded-lg py-3 px-4 font-brutalist uppercase text-sm bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50 inline-block text-center cursor-pointer"
               >
                 {uploadingFile ? (
                   <>
@@ -746,14 +746,14 @@ const ClientPortal = () => {
         </div>
 
         {/* Inspiration */}
-        <div className="border-[3px] border-charcoal rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
+        <div className="border-[3px] border-black rounded-lg p-6 bg-background transition-all duration-300 hover:shadow-xl hover:shadow-accent-pink/10 hover:-translate-y-1">
           <h2 className="font-brutalist text-2xl uppercase tracking-wide mb-6 text-foreground">Inspiration Board</h2>
 
           <div className="space-y-3 mb-4">
             {inspirationLinks.map((link) => (
               <div 
                 key={link.id} 
-                className="border-[3px] border-steel rounded-lg p-3 bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
+                className="border-[3px] border-black rounded-lg p-3 bg-background hover:border-accent-pink hover:shadow-lg hover:shadow-accent-pink/10 transition-all duration-300"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-3 flex-1 min-w-0">
@@ -761,7 +761,7 @@ const ClientPortal = () => {
                       <img
                         src={link.thumbnail_url}
                         alt=""
-                        className="w-16 h-16 object-cover border-[3px] border-steel rounded-lg flex-shrink-0"
+                        className="w-16 h-16 object-cover border-[3px] border-black rounded-lg flex-shrink-0"
                       />
                     )}
                     <div className="flex-1 min-w-0">
@@ -784,7 +784,7 @@ const ClientPortal = () => {
                   </div>
                   <button
                     onClick={() => handleDeleteInspiration(link.id)}
-                    className="flex-shrink-0 p-2 border-[3px] border-steel rounded-lg hover:bg-destructive hover:border-destructive transition-all duration-300"
+                    className="flex-shrink-0 p-2 border-[3px] border-black rounded-lg hover:bg-destructive hover:border-destructive transition-all duration-300"
                   >
                     <Trash2 className="w-4 h-4 text-destructive hover:text-background transition-colors" />
                   </button>
@@ -798,7 +798,7 @@ const ClientPortal = () => {
             )}
           </div>
 
-          <div className="pt-4 border-t-[3px] border-steel flex gap-2">
+          <div className="pt-4 border-t-[3px] border-black flex gap-2">
             <Input
               value={newInspirationUrl}
               onChange={(e) => setNewInspirationUrl(e.target.value)}
@@ -809,13 +809,13 @@ const ClientPortal = () => {
                 }
               }}
               placeholder="Paste inspiration link..."
-              className="flex-1 font-industrial border-[3px] border-steel rounded-lg bg-background focus:border-charcoal"
+              className="flex-1 font-industrial border-[3px] border-black rounded-lg bg-background focus:border-accent-pink"
               disabled={addingInspiration}
             />
             <button
               onClick={handleAddInspiration}
               disabled={!newInspirationUrl.trim() || addingInspiration}
-              className="border-[3px] border-charcoal rounded-lg py-2 px-3 bg-charcoal text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
+              className="border-[3px] border-black rounded-lg py-2 px-3 bg-black text-background hover:bg-accent-pink hover:border-accent-pink transition-all duration-300 disabled:opacity-50"
             >
               {addingInspiration ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
