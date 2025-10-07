@@ -151,21 +151,26 @@ const ManagementLogin = () => {
           sessionEstablished = true;
         }
 
-        // Wait for session to be confirmed before cleaning URL
+        // Wait for session to be confirmed with bounded retries before cleaning URL
         if (sessionEstablished) {
-          // Give Supabase time to fully establish the session
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Validate session exists
-          const valid = await validateSession();
-          
+          const tryValidate = async (attempts = 3) => {
+            for (let i = 0; i < attempts; i++) {
+              // small incremental backoff
+              await new Promise(r => setTimeout(r, 250 + i * 300));
+              const ok = await validateSession();
+              if (ok) return true;
+            }
+            return false;
+          };
+
+          const valid = await tryValidate(3);
+
           if (valid) {
-            // Only clean URL after session is confirmed
             cleanUrlNowAndLater();
           } else {
             toast({
               title: 'Session not established',
-              description: 'Please try clicking the reset link again',
+              description: 'Please request a new reset link and try again',
               variant: 'destructive',
             });
           }
@@ -187,21 +192,21 @@ const ManagementLogin = () => {
 
   // React to Supabase auth events
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY') {
         setRecoveryInProgress(true);
         setIsPasswordUpdateMode(true);
         sessionStorage.setItem('recovery', '1');
-        // Validate session immediately
-        await validateSession();
+        // Defer validation to avoid deadlocks in callback
+        setTimeout(() => { validateSession(); }, 0);
       } else if (event === 'SIGNED_IN') {
         const h = window.location.hash;
         if (h && (h.includes('type=recovery') || h.includes('access_token'))) {
           setRecoveryInProgress(true);
           setIsPasswordUpdateMode(true);
           sessionStorage.setItem('recovery', '1');
-          // Validate session before showing form
-          await validateSession();
+          // Defer validation to avoid deadlocks in callback
+          setTimeout(() => { validateSession(); }, 0);
         }
       }
     });

@@ -57,17 +57,26 @@
           var hasTokens = /access_token=|refresh_token=|code=|type=recovery|error=/.test(search + hash);
 
           if (!isNative) {
-            if (host === 'croftcommontest.com') {
-              var newUrl = 'https://www.croftcommontest.com' + loc.pathname + search + hash;
-              console.info('[bootstrap] Canonicalising to www' + (hasTokens ? ' (with tokens)' : ''));
-              w.location.replace(newUrl);
-              return;
-            }
-            if (hasTokens && !/^\/management\/login\/?$/.test(loc.pathname)) {
-              var target = 'https://www.croftcommontest.com/management/login' + search + hash;
-              console.info('[bootstrap] Routing tokens to /management/login');
-              w.location.replace(target);
-              return;
+            var onApex = host === 'croftcommontest.com';
+            var onWww = host === 'www.croftcommontest.com';
+            var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
+
+            if (hasTokens) {
+              // Single-hop: always send tokens directly to /management/login on www
+              if (onApex || (onWww && !onLogin)) {
+                var target = 'https://www.croftcommontest.com/management/login' + search + hash;
+                console.info('[bootstrap] Directing tokens to /management/login on www');
+                w.location.replace(target);
+                return;
+              }
+            } else {
+              // No tokens: canonicalise apex -> www preserving path
+              if (onApex) {
+                var newUrl = 'https://www.croftcommontest.com' + loc.pathname + search + hash;
+                console.info('[bootstrap] Canonicalising to www');
+                w.location.replace(newUrl);
+                return;
+              }
             }
           }
         } catch (e) { /* swallow to avoid blocking app */ }
