@@ -167,137 +167,109 @@ const EventDetail = () => {
           <span>{event.code}</span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate('/management/events')}
-              className="font-brutalist uppercase tracking-wide border-industrial"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              BACK
-            </Button>
-            
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="space-y-1">
-                  <h1 className="font-brutalist text-2xl md:text-4xl font-black uppercase tracking-wider">
-                    {event.event_type || 'Event'}
-                  </h1>
-                  {clientName && (
-                    <p className="font-industrial text-lg md:text-xl text-[hsl(var(--foreground))] font-medium">
-                      {clientName}
-                    </p>
-                  )}
-                  <p className="font-industrial text-sm md:text-base text-muted-foreground">
-                    {event.code}
-                  </p>
-                </div>
-                <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} ml-4`}>
-                  {event.status}
-                </Badge>
-              </div>
+        {/* Back Button */}
+        <div className="mb-6">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate('/management/events')}
+            className="font-brutalist uppercase tracking-wide border-industrial"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            BACK
+          </Button>
+        </div>
 
-              {(clientEmail || clientPhone) && (
-                <div className="mt-3 space-y-1">
-                  <div className="space-x-2 font-industrial text-xs md:text-sm">
-                    {clientEmail && (
-                      <a href={`mailto:${clientEmail}`} className="text-primary hover:underline">{clientEmail}</a>
-                    )}
-                    {clientPhone && (
-                      <>
-                        {clientEmail && <span className="text-muted-foreground">•</span>}
-                        <a href={`tel:${clientPhone}`} className="text-primary hover:underline">{clientPhone}</a>
-                      </>
-                    )}
-                  </div>
-                  <div className="text-xs text-muted-foreground font-industrial">
-                    {event?.client_name || event?.client_email || event?.client_phone ? 
-                      'Event-specific contact details' : 
-                      linkedLead ? 'Contact details from linked lead' : 
-                      derivedLead ? 'Contact details from matched lead' : 
-                      'No contact details available'
-                    }
-                  </div>
-                </div>
+        {/* Event Identity Section */}
+        <div className="mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
+            <h1 className="font-brutalist text-3xl md:text-4xl font-black uppercase tracking-wider">
+              {event.event_type || 'Event'}
+            </h1>
+            <Badge className={`font-industrial text-xs uppercase ${getStatusColor(event.status)} self-start`}>
+              {event.status}
+            </Badge>
+          </div>
+          <p className="font-industrial text-sm text-muted-foreground">
+            {event.code}
+          </p>
+        </div>
+
+        {/* Contact Details Section */}
+        <div className="bg-muted/30 border border-border rounded-lg p-4 mb-6">
+          {clientName && (
+            <p className="font-industrial text-xl md:text-2xl font-semibold mb-2">
+              {clientName}
+            </p>
+          )}
+          {(clientEmail || clientPhone) && (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 font-industrial text-sm mb-2">
+              {clientEmail && (
+                <a href={`mailto:${clientEmail}`} className="text-primary hover:underline break-all">
+                  {clientEmail}
+                </a>
+              )}
+              {clientPhone && (
+                <>
+                  {clientEmail && <span className="hidden sm:inline text-muted-foreground">•</span>}
+                  <a href={`tel:${clientPhone}`} className="text-primary hover:underline">
+                    {clientPhone}
+                  </a>
+                </>
               )}
             </div>
-          </div>
+          )}
+          <p className="text-xs text-muted-foreground font-industrial">
+            {event?.client_name || event?.client_email || event?.client_phone ? 
+              'Event-specific contact details' : 
+              linkedLead ? 'Contact details from linked lead' : 
+              derivedLead ? 'Contact details from matched lead' : 
+              'No contact details available'
+            }
+          </p>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => setShowEditContactDetails(true)}
-                    variant="outline"
-                    size="sm"
-                    className="font-brutalist uppercase tracking-wide border-industrial"
-                  >
-                    <UserCircle className="h-4 w-4 mr-2" />
-                    EDIT CONTACT
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Edit client contact details</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => setShowEditEvent(true)}
-                    variant="outline"
-                    size="sm"
-                    className="font-brutalist uppercase tracking-wide border-industrial"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    EDIT EVENT
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Modify event details such as name, type, dates, and other event information</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              {event.status === 'draft' && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      onClick={() => handleStatusUpdate('active')}
-                      variant="outline"
-                      size="sm"
-                      className="font-brutalist uppercase tracking-wide border-industrial"
-                    >
-                      ACTIVATE
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>Change event status from draft to active. This confirms the event and makes it visible to operations teams</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-              
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => setShowCreateHold(true)}
-                    size="sm"
-                    className="btn-primary font-brutalist uppercase tracking-wide w-full sm:w-auto"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    ADD SPACE BOOKING
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Create a new space booking for this event. Each booking reserves a specific time slot in a venue space</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+        {/* Action Buttons Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          <Button
+            onClick={() => setShowEditContactDetails(true)}
+            variant="outline"
+            size="sm"
+            className="font-brutalist uppercase tracking-wide border-industrial w-full"
+          >
+            <UserCircle className="h-4 w-4 mr-2" />
+            EDIT CONTACT
+          </Button>
+          
+          <Button
+            onClick={() => setShowEditEvent(true)}
+            variant="outline"
+            size="sm"
+            className="font-brutalist uppercase tracking-wide border-industrial w-full"
+          >
+            <Edit className="h-4 w-4 mr-2" />
+            EDIT EVENT
+          </Button>
+          
+          {event.status === 'draft' ? (
+            <Button
+              onClick={() => handleStatusUpdate('active')}
+              variant="outline"
+              size="sm"
+              className="font-brutalist uppercase tracking-wide border-industrial w-full"
+            >
+              ACTIVATE
+            </Button>
+          ) : (
+            <Button
+              onClick={() => setShowCreateHold(true)}
+              size="sm"
+              className="btn-primary font-brutalist uppercase tracking-wide w-full"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              ADD SPACE BOOKING
+            </Button>
+          )}
         </div>
 
         {/* Event Stats */}
