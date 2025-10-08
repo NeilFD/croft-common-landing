@@ -119,7 +119,7 @@ const GlobalHandlers = () => {
   
   // Capacitor native functionality
   useCapacitorDeepLinking();
-  useCapacitorPushNotifications();
+  // Push notifications are now manually controlled via /management diagnostics
   
   return null;
 };
