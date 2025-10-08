@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -30,9 +29,11 @@ export const PushDiagnostics = () => {
     addLog(`Platform: ${plat}, Native: ${native}`);
 
     if (native) {
-      PushNotifications.checkPermissions().then(result => {
-        setPermissionStatus(result.receive);
-        addLog(`Permission status: ${result.receive}`);
+      import('@capacitor/push-notifications').then(({ PushNotifications }) => {
+        PushNotifications.checkPermissions().then(result => {
+          setPermissionStatus(result.receive);
+          addLog(`Permission status: ${result.receive}`);
+        });
       });
     }
   }, []);
@@ -49,6 +50,7 @@ export const PushDiagnostics = () => {
 
     try {
       addLog('Requesting push notification permission...');
+      const { PushNotifications } = await import('@capacitor/push-notifications');
       const result = await PushNotifications.requestPermissions();
       setPermissionStatus(result.receive);
       addLog(`Permission result: ${result.receive}`);
@@ -96,6 +98,8 @@ export const PushDiagnostics = () => {
 
     setIsRegistering(true);
     addLog('🔄 Calling PushNotifications.register()...');
+
+    const { PushNotifications } = await import('@capacitor/push-notifications');
 
     // Set up listener for registration
     const registrationListener = await PushNotifications.addListener('registration', (token) => {

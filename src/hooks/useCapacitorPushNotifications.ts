@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { supabase } from '@/integrations/supabase/client';
 
 export const useCapacitorPushNotifications = () => {
@@ -17,6 +16,8 @@ export const useCapacitorPushNotifications = () => {
     let retryAttempted = false;
 
     const setupListeners = async () => {
+      // Dynamic import only on native platforms
+      const { PushNotifications } = await import('@capacitor/push-notifications');
       // CRITICAL: Set up all listeners BEFORE calling register()
       // This ensures we don't miss any events due to race conditions
       

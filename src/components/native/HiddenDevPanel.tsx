@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Smartphone, Globe, Wifi, WifiOff, User } from 'lucide-react';
 import { Capacitor } from '@capacitor/core';
-import { App as CapacitorApp } from '@capacitor/app';
 
 interface DevPanelProps {
   isOpen: boolean;
@@ -17,9 +16,11 @@ export const HiddenDevPanel: React.FC<DevPanelProps> = ({ isOpen, onClose }) => 
 
   useEffect(() => {
     if (isOpen && Capacitor.isNativePlatform()) {
-      // Get app info if running in Capacitor
-      CapacitorApp.getInfo().then(info => {
-        setAppInfo(info);
+      // Get app info if running in Capacitor (dynamic import)
+      import('@capacitor/app').then(({ App: CapacitorApp }) => {
+        CapacitorApp.getInfo().then(info => {
+          setAppInfo(info);
+        }).catch(console.error);
       }).catch(console.error);
     }
 
