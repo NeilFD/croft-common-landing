@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { WebPush } from "jsr:@negrel/webpush";
+import { sendNotification } from "jsr:@negrel/webpush";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
@@ -135,11 +135,7 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "VAPID keys not configured" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
     }
 
-    const webpush = new WebPush({
-      subject: VAPID_SUBJECT,
-      publicKey: VAPID_PUBLIC_KEY,
-      privateKey: VAPID_PRIVATE_KEY,
-    });
+    // VAPID configuration is ready - no initialization needed
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -213,15 +209,24 @@ serve(async (req) => {
         };
 
         try {
-          await webpush.send({
-            endpoint: s.endpoint,
-            keys: {
-              p256dh: s.p256dh,
-              auth: s.auth,
+          await sendNotification(
+            {
+              endpoint: s.endpoint,
+              keys: {
+                p256dh: s.p256dh,
+                auth: s.auth,
+              }
             },
-            payload: JSON.stringify(payloadForSub),
-            ttl: 86400,
-          });
+            JSON.stringify(payloadForSub),
+            {
+              vapid: {
+                subject: VAPID_SUBJECT,
+                publicKey: VAPID_PUBLIC_KEY,
+                privateKey: VAPID_PRIVATE_KEY,
+              },
+              ttl: 86400,
+            }
+          );
           success++;
 
           await supabase.from("notification_deliveries").insert({

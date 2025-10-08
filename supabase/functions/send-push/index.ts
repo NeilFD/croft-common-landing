@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { WebPush } from "jsr:@negrel/webpush";
+import { sendNotification } from "jsr:@negrel/webpush";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
@@ -242,22 +242,7 @@ serve(async (req) => {
       });
     }
 
-    // Initialize WebPush with VAPID details
-    let webpush: WebPush;
-    try {
-      webpush = new WebPush({
-        subject: VAPID_SUBJECT,
-        publicKey: VAPID_PUBLIC_KEY,
-        privateKey: VAPID_PRIVATE_KEY,
-      });
-      console.log(`✅ DEBUG: WebPush initialized successfully`);
-    } catch (vapidError: any) {
-      console.error(`❌ DEBUG: Failed to initialize WebPush:`, vapidError);
-      return new Response(JSON.stringify({ error: `VAPID configuration error: ${vapidError.message}` }), {
-        status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
-    }
+    // VAPID configuration is ready - no initialization needed
 
     // Parse body, support both shapes
     const rawBody: SendPushRequest = await req.json().catch(() => ({} as any));
@@ -445,15 +430,24 @@ serve(async (req) => {
             }
           });
           
-          await webpush.send({
-            endpoint: s.endpoint,
-            keys: {
-              p256dh: s.p256dh,
-              auth: s.auth,
+          await sendNotification(
+            {
+              endpoint: s.endpoint,
+              keys: {
+                p256dh: s.p256dh,
+                auth: s.auth,
+              }
             },
-            payload: JSON.stringify(payloadForSub),
-            ttl: 86400, // 24 hours
-          });
+            JSON.stringify(payloadForSub),
+            {
+              vapid: {
+                subject: VAPID_SUBJECT,
+                publicKey: VAPID_PUBLIC_KEY,
+                privateKey: VAPID_PRIVATE_KEY,
+              },
+              ttl: 86400, // 24 hours
+            }
+          );
           success++;
           console.log(`✅ DEBUG: Successfully sent web push to subscription ${s.id}`);
         }
