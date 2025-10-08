@@ -28,15 +28,4 @@ export default defineConfig(({ mode }) => ({
       '@capacitor/browser',
     ],
   },
-  build: {
-    rollupOptions: {
-      external: [
-        '@capacitor/core',
-        '@capacitor/status-bar',
-        '@capacitor/push-notifications',
-        '@capacitor/app',
-        '@capacitor/browser',
-      ],
-    },
-  },
 }));
