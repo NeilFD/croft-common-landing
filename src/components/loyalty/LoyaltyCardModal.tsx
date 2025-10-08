@@ -187,7 +187,7 @@ const title = (user && isLucky7) ? 'Lucky Number 7²' : 'Croft Common Coffee';
   return (
     <>
       <Dialog open={open && showCard} onOpenChange={handleOpenChange}>
-        <DialogContent className="sm:max-w-[620px]">
+        <DialogContent hideOverlay={true} className="sm:max-w-[620px]">
           <DialogHeader>
             <DialogTitle className="font-brutalist tracking-wider flex items-center gap-2">
               <CroftLogo size="sm" />

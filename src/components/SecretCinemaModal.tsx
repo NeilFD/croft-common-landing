@@ -225,7 +225,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       />
 
       <Dialog open={open} onOpenChange={resetAndClose}>
-        <DialogContent className="sm:max-w-[600px] z-[10001]">
+        <DialogContent hideOverlay={true} className="sm:max-w-[600px] z-[10001]">
           <DialogHeader>
             <DialogTitle className="font-brutalist tracking-wide">
               Secret Cinema Club

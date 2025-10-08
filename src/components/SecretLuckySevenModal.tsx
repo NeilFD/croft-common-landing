@@ -51,7 +51,7 @@ const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onC
       />
 
       <Dialog open={open && allowed} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
-        <DialogContent className="w-[90vw] max-w-lg border border-border bg-background z-[10001]">
+        <DialogContent hideOverlay={true} className="w-[90vw] max-w-lg border border-border bg-background z-[10001]">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
               <CroftLogo size="sm" />

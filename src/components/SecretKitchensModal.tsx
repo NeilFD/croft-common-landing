@@ -281,6 +281,7 @@ React.useEffect(() => {
       />
       <Dialog open={open && showContent} onOpenChange={(v) => { if (!v) handleCloseAll(); }}>
         <DialogContent
+        hideOverlay={true}
         ref={contentRef}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
