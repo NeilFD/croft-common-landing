@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { sendNotification } from "jsr:@negrel/webpush";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
@@ -14,27 +13,24 @@ function randomHex(bytes = 16): string {
   return Array.from(arr).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-// Very small recurrence helper
-function computeNextOccurrence(
-  currentISO: string,
-  rule: any
-): string | null {
+// Recurrence helper
+function computeNextOccurrence(currentISO: string, rule: any): string | null {
   try {
     if (!rule || rule.type === "none") return null;
     const every = Math.max(1, Number(rule.every ?? 1));
-    const dt = new Date(currentISO); // Work in UTC by ISO
+    const dt = new Date(currentISO);
+    
     if (rule.type === "daily") {
       dt.setUTCDate(dt.getUTCDate() + every);
       return dt.toISOString();
     }
+    
     if (rule.type === "weekly") {
       const weekdays: number[] = Array.isArray(rule.weekdays) ? rule.weekdays.map((n: any) => Number(n)) : [];
-      // Map JS DOW 0..6 (Sun..Sat) -> 1..7 (Mon..Sun)
       const jsToIso = (js: number) => (js === 0 ? 7 : js);
       const current = new Date(currentISO);
       const currentIsoDow = jsToIso(current.getUTCDay());
 
-      // Collect upcoming week days within 'every' weeks horizon
       for (let wk = 0; wk < 8 * every; wk++) {
         for (let d = 1; d <= 7; d++) {
           const candidate = new Date(current);
@@ -45,30 +41,29 @@ function computeNextOccurrence(
           }
         }
       }
-      // fallback: + every weeks
+      
       const fallback = new Date(current);
       fallback.setUTCDate(fallback.getUTCDate() + (7 * every));
       return fallback.toISOString();
     }
+    
     if (rule.type === "monthly") {
       const dayOfMonth = Number(rule.dayOfMonth ?? new Date(currentISO).getUTCDate());
       const current = new Date(currentISO);
       const year = current.getUTCFullYear();
       const month = current.getUTCMonth();
-      // Move months forward
       const nextMonthIndex = month + every;
       const next = new Date(Date.UTC(year, nextMonthIndex, 1, current.getUTCHours(), current.getUTCMinutes(), current.getUTCSeconds()));
-      // Clamp DOM
       const lastDay = new Date(Date.UTC(next.getUTCFullYear(), next.getUTCMonth() + 1, 0)).getUTCDate();
       next.setUTCDate(Math.min(dayOfMonth, lastDay));
       return next.toISOString();
     }
+    
     return null;
   } catch {
     return null;
   }
 }
-
 
 // Personalization helpers
 function renderTemplate(str: string, vars: { [k: string]: string | undefined }): string {
@@ -79,12 +74,130 @@ function renderTemplate(str: string, vars: { [k: string]: string | undefined }):
   });
 }
 
+// APNs JWT Token Generation
+async function createApnsJwt(keyId: string, teamId: string, privateKey: string): Promise<string> {
+  const header = {
+    alg: "ES256",
+    kid: keyId
+  };
+  
+  const payload = {
+    iss: teamId,
+    iat: Math.floor(Date.now() / 1000)
+  };
+  
+  const encoder = new TextEncoder();
+  const headerBytes = encoder.encode(JSON.stringify(header));
+  const payloadBytes = encoder.encode(JSON.stringify(payload));
+  
+  const headerB64 = btoa(String.fromCharCode(...headerBytes)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const payloadB64 = btoa(String.fromCharCode(...payloadBytes)).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  
+  const message = `${headerB64}.${payloadB64}`;
+  
+  const keyData = privateKey
+    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
+    .replace(/-----END PRIVATE KEY-----/g, '')
+    .replace(/\s/g, '');
+  
+  const keyBytes = Uint8Array.from(atob(keyData), c => c.charCodeAt(0));
+  
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    keyBytes,
+    { name: 'ECDSA', namedCurve: 'P-256' },
+    false,
+    ['sign']
+  );
+  
+  const signature = await crypto.subtle.sign(
+    { name: 'ECDSA', hash: 'SHA-256' },
+    cryptoKey,
+    encoder.encode(message)
+  );
+  
+  const signatureB64 = btoa(String.fromCharCode(...new Uint8Array(signature)))
+    .replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  
+  return `${message}.${signatureB64}`;
+}
+
+// Send APNs notification
+async function sendApnsNotification(token: string, payload: any, keyId: string, teamId: string, privateKey: string): Promise<void> {
+  const jwt = await createApnsJwt(keyId, teamId, privateKey);
+  
+  const apnsPayload = {
+    aps: {
+      alert: {
+        title: payload.title,
+        body: payload.body
+      },
+      badge: 1,
+      sound: "default",
+      'mutable-content': 1
+    },
+    url: payload.url,
+    click_token: payload.click_token,
+    notification_id: payload.notification_id
+  };
+  
+  const response = await fetch(`https://api.push.apple.com/3/device/${token}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${jwt}`,
+      'Content-Type': 'application/json',
+      'apns-topic': 'com.croftcommon.beacon',
+      'apns-priority': '10'
+    },
+    body: JSON.stringify(apnsPayload)
+  });
+  
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`APNs error ${response.status}: ${errorBody}`);
+  }
+}
+
+// Send FCM notification (Android)
+async function sendFcmNotification(token: string, payload: any, fcmServerKey: string): Promise<void> {
+  const fcmPayload = {
+    to: token,
+    priority: "high",
+    notification: {
+      title: payload.title,
+      body: payload.body,
+      icon: payload.icon || "/icon-192.png",
+      badge: payload.badge || "/badge-72.png",
+      click_action: payload.url || "/",
+      tag: payload.notification_id
+    },
+    data: {
+      url: payload.url,
+      click_token: payload.click_token,
+      notification_id: payload.notification_id
+    }
+  };
+  
+  const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `key=${fcmServerKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(fcmPayload)
+  });
+  
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`FCM error ${response.status}: ${errorBody}`);
+  }
+}
+
 async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise<Map<string, string>> {
   const uniq = Array.from(new Set((userIds || []).filter(Boolean)));
   const map = new Map<string, string>();
   for (const uid of uniq) {
     try {
-      // First check profiles table for first_name
       const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('first_name')
@@ -93,14 +206,12 @@ async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise
       
       let name: string | undefined = profile?.first_name;
       
-      // If not found in profiles, fallback to auth metadata
       if (!name) {
         const { data: res } = await supabaseAdmin.auth.admin.getUserById(uid);
         const u = res?.user as any;
         const meta: any = u?.user_metadata ?? {};
         name = meta.first_name || meta.given_name || meta.name;
         
-        // If still not found, check subscribers table by email
         if (!name && u?.email) {
           const { data: sub } = await supabaseAdmin
             .from('subscribers')
@@ -128,18 +239,23 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
-    const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
-    const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT")!;
-    if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
-      return new Response(JSON.stringify({ error: "VAPID keys not configured" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+    
+    // Native push credentials
+    const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID");
+    const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
+    const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY");
+    const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
+    
+    if (!APNS_KEY_ID || !APNS_TEAM_ID || !APNS_PRIVATE_KEY) {
+      return new Response(JSON.stringify({ error: "APNs credentials not configured" }), { 
+        status: 500, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      });
     }
-
-    // VAPID configuration is ready - no initialization needed
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Pick due notifications (simple batching)
+    // Pick due notifications
     const nowISO = new Date().toISOString();
     const { data: due, error: dueErr } = await supabase
       .from("notifications")
@@ -151,17 +267,20 @@ serve(async (req) => {
 
     if (dueErr) {
       console.error("Scheduler: failed to fetch due notifications", dueErr);
-      return new Response(JSON.stringify({ error: "Failed to fetch due notifications" }), { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } });
+      return new Response(JSON.stringify({ error: "Failed to fetch due notifications" }), { 
+        status: 500, 
+        headers: { "Content-Type": "application/json", ...corsHeaders } 
+      });
     }
 
     let processed = 0;
     for (const n of due ?? []) {
       processed++;
 
-      // Fetch recipients
+      // Fetch native subscriptions only
       let query = supabase
-      .from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth, user_id")
+        .from("push_subscriptions")
+        .select("id, endpoint, user_id, platform")
         .eq("is_active", true);
 
       if (n.scope === "self" && n.created_by) {
@@ -181,7 +300,7 @@ serve(async (req) => {
       let success = 0;
       let failed = 0;
 
-      // Build personalization map (first names) for user-linked subscriptions
+      // Build personalization map
       const userFirstNames = await buildFirstNameMap(
         supabase,
         (subs ?? []).map((s: any) => s.user_id as string).filter(Boolean)
@@ -193,7 +312,6 @@ serve(async (req) => {
         const personalizedTitle = renderTemplate(n.title, { first_name: first });
         const personalizedBody = renderTemplate(n.body, { first_name: first });
         
-        // Generate relative tracking URL for CTR tracking
         const baseUrl = n.url || "/notifications";
         const userParam = (s as any).user_id ? `&user=${encodeURIComponent((s as any).user_id)}` : '';
         const trackingUrl = `/c/${clickToken}?u=${encodeURIComponent(baseUrl)}${userParam}`;
@@ -208,26 +326,24 @@ serve(async (req) => {
           click_token: clickToken,
         };
 
+        const isIos = s.endpoint.startsWith('ios-token:');
+        const isAndroid = s.endpoint.startsWith('android-token:');
+
         try {
-          await sendNotification(
-            {
-              endpoint: s.endpoint,
-              keys: {
-                p256dh: s.p256dh,
-                auth: s.auth,
-              }
-            },
-            JSON.stringify(payloadForSub),
-            {
-              vapid: {
-                subject: VAPID_SUBJECT,
-                publicKey: VAPID_PUBLIC_KEY,
-                privateKey: VAPID_PRIVATE_KEY,
-              },
-              ttl: 86400,
+          if (isIos) {
+            const iosToken = s.endpoint.replace('ios-token:', '');
+            await sendApnsNotification(iosToken, payloadForSub, APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY);
+            success++;
+          } else if (isAndroid) {
+            if (!FCM_SERVER_KEY) {
+              throw new Error("FCM credentials not configured");
             }
-          );
-          success++;
+            const androidToken = s.endpoint.replace('android-token:', '');
+            await sendFcmNotification(androidToken, payloadForSub, FCM_SERVER_KEY);
+            success++;
+          } else {
+            throw new Error("Unknown platform - not a native token");
+          }
 
           await supabase.from("notification_deliveries").insert({
             notification_id: n.id,
@@ -257,7 +373,7 @@ serve(async (req) => {
         }
       }
 
-      // Determine if we should repeat
+      // Handle recurrence
       const now = new Date().toISOString();
       const timesSent = Number(n.times_sent ?? 0) + 1;
 
@@ -267,7 +383,6 @@ serve(async (req) => {
         nextISO = computeNextOccurrence(n.scheduled_for ?? now, n.repeat_rule);
       }
 
-      // Respect occurrences limit and repeat_until (if present)
       const occurrencesLimit = n.occurrences_limit as number | null;
       const repeatUntil = n.repeat_until as string | null;
 

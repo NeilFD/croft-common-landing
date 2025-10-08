@@ -5,7 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useCapacitorPushNotifications = () => {
   useEffect(() => {
+    // Only run on native iOS/Android platforms
     if (!Capacitor.isNativePlatform()) {
+      console.log('📱 Not a native platform, skipping Capacitor push notifications');
       return;
     }
 
@@ -31,23 +33,29 @@ export const useCapacitorPushNotifications = () => {
 
     // Listen for registration success
     PushNotifications.addListener('registration', async (token) => {
-      console.log('📱 Push registration success, token:', token.value);
+      console.log('📱 Native push registration success, token:', token.value);
       
       try {
+        // Detect platform (iOS or Android)
+        const platform = Capacitor.getPlatform();
+        const tokenPrefix = platform === 'ios' ? 'ios-token:' : 'android-token:';
+        
+        console.log(`📱 Saving ${platform} push token to database...`);
+        
         const { error } = await supabase.functions.invoke('save-push-subscription', {
           body: {
-            endpoint: `ios-token:${token.value}`,
-            platform: 'ios'
+            endpoint: `${tokenPrefix}${token.value}`,
+            platform: platform
           }
         });
         
         if (error) {
-          console.error('📱 Failed to save iOS push token:', error);
+          console.error(`📱 Failed to save ${platform} push token:`, error);
         } else {
-          console.log('📱 iOS push token saved successfully');
+          console.log(`📱 ${platform} push token saved successfully to database`);
         }
       } catch (error) {
-        console.error('📱 Error saving iOS push token:', error);
+        console.error('📱 Error saving native push token:', error);
       }
     });
 

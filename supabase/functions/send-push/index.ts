@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { sendNotification } from "jsr:@negrel/webpush";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
@@ -29,9 +28,8 @@ type SendPushRequest = {
   payload?: PushPayload;
   scope?: SendScope;
   dry_run?: boolean;
-  user_ids?: string[]; // Optional explicit targeting
-  campaign_id?: string; // Link to campaign for tracking
-  // Back-compat legacy top-level fields
+  user_ids?: string[];
+  campaign_id?: string;
   title?: string;
   body?: string;
   url?: string;
@@ -134,13 +132,47 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
   }
 }
 
+// Send FCM notification (Android)
+async function sendFcmNotification(token: string, payload: any, fcmServerKey: string): Promise<void> {
+  const fcmPayload = {
+    to: token,
+    priority: "high",
+    notification: {
+      title: payload.title,
+      body: payload.body,
+      icon: payload.icon || "/icon-192.png",
+      badge: payload.badge || "/badge-72.png",
+      click_action: payload.url || "/",
+      tag: payload.notification_id
+    },
+    data: {
+      url: payload.url,
+      click_token: payload.click_token,
+      notification_id: payload.notification_id
+    }
+  };
+  
+  const response = await fetch('https://fcm.googleapis.com/fcm/send', {
+    method: 'POST',
+    headers: {
+      'Authorization': `key=${fcmServerKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(fcmPayload)
+  });
+  
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new Error(`FCM error ${response.status}: ${errorBody}`);
+  }
+}
+
 async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise<Map<string, string>> {
   const uniq = Array.from(new Set((userIds || []).filter(Boolean)));
-  console.log(`👤 DEBUG: Building first name map for ${uniq.length} user IDs:`, uniq);
+  console.log(`👤 Building first name map for ${uniq.length} users`);
   const map = new Map<string, string>();
   for (const uid of uniq) {
     try {
-      // First check profiles table for first_name
       const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('first_name')
@@ -148,17 +180,13 @@ async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise
         .maybeSingle();
       
       let name: string | undefined = profile?.first_name;
-      console.log(`📝 DEBUG: Profile lookup for ${uid}: first_name="${name}"`);
       
-      // If not found in profiles, fallback to auth metadata
       if (!name) {
         const { data: res } = await supabaseAdmin.auth.admin.getUserById(uid);
         const u = res?.user as any;
         const meta: any = u?.user_metadata ?? {};
         name = meta.first_name || meta.given_name || meta.name;
-        console.log(`🔐 DEBUG: Auth metadata for ${uid}: first_name="${meta.first_name}", given_name="${meta.given_name}", name="${meta.name}" -> using="${name}"`);
         
-        // If still not found, check subscribers table by email
         if (!name && u?.email) {
           const { data: sub } = await supabaseAdmin
             .from('subscribers')
@@ -166,7 +194,6 @@ async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise
             .eq('email', u.email)
             .maybeSingle();
           name = sub?.name as string | undefined;
-          console.log(`📧 DEBUG: Subscriber lookup for ${u.email}: name="${name}"`);
         }
       }
       
@@ -174,16 +201,12 @@ async function buildFirstNameMap(supabaseAdmin: any, userIds: string[]): Promise
         const first = String(name).trim().split(/\s+/)[0];
         if (first) {
           map.set(uid, first);
-          console.log(`✅ DEBUG: Mapped ${uid} -> "${first}"`);
         }
-      } else {
-        console.log(`❌ DEBUG: No name found for ${uid}`);
       }
     } catch (_e) {
-      console.log(`⚠️ DEBUG: Error looking up name for ${uid}:`, _e);
+      console.error(`Error looking up name for ${uid}:`, _e);
     }
   }
-  console.log(`🗺️ DEBUG: Final first name map:`, Object.fromEntries(map));
   return map;
 }
 
@@ -219,32 +242,26 @@ serve(async (req) => {
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
-
-    const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
-    const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
-    const VAPID_SUBJECT = Deno.env.get("VAPID_SUBJECT")!;
     
-    // APNs Configuration
+    // Native push credentials
     const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID");
     const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
     const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY");
+    const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
 
-    console.log(`🔑 DEBUG: VAPID Configuration Check:`);
-    console.log(`  - VAPID_SUBJECT: "${VAPID_SUBJECT || 'EMPTY/NULL'}"`);
-    console.log(`  - VAPID_PUBLIC_KEY length: ${VAPID_PUBLIC_KEY?.length || 0}`);
-    console.log(`  - VAPID_PRIVATE_KEY length: ${VAPID_PRIVATE_KEY?.length || 0}`);
+    console.log(`🔑 Native Push Configuration:`);
+    console.log(`  - APNs configured: ${!!(APNS_KEY_ID && APNS_TEAM_ID && APNS_PRIVATE_KEY)}`);
+    console.log(`  - FCM configured: ${!!FCM_SERVER_KEY}`);
 
-    if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
-      console.error(`❌ DEBUG: Missing VAPID configuration`);
-      return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
+    if (!APNS_KEY_ID || !APNS_TEAM_ID || !APNS_PRIVATE_KEY) {
+      console.error(`❌ Missing APNs configuration`);
+      return new Response(JSON.stringify({ error: "APNs credentials not configured" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
-    // VAPID configuration is ready - no initialization needed
-
-    // Parse body, support both shapes
+    // Parse body
     const rawBody: SendPushRequest = await req.json().catch(() => ({} as any));
     const scope: SendScope = (rawBody?.scope as SendScope) ?? "all";
     const targetUserIds: string[] = Array.from(new Set((rawBody?.user_ids || []).filter(Boolean)));
@@ -271,34 +288,33 @@ serve(async (req) => {
       });
     }
 
-    // Fetch recipients
-    console.log(`🔍 DEBUG: Fetching subscriptions for scope="${scope}" (targetUserIds=${targetUserIds.length})`);
+    // Fetch native push subscriptions only
+    console.log(`🔍 Fetching native subscriptions for scope="${scope}" (targetUserIds=${targetUserIds.length})`);
     let query = supabaseAdmin
       .from("push_subscriptions")
-      .select("id, endpoint, p256dh, auth, user_id, platform")
+      .select("id, endpoint, user_id, platform")
       .eq("is_active", true);
 
     if (targetUserIds.length > 0) {
-      console.log(`🎯 DEBUG: Targeting explicit user_ids:`, targetUserIds);
+      console.log(`🎯 Targeting explicit user_ids:`, targetUserIds);
       query = query.in("user_id", targetUserIds);
     } else if (scope === "self") {
-      // Use the actual authenticated user's ID for testing
-      console.log(`🎯 DEBUG: Self-scope detected, using authenticated user ID: ${userRes.user.id}`);
+      console.log(`🎯 Self-scope detected, using authenticated user ID: ${userRes.user.id}`);
       query = query.eq("user_id", userRes.user.id);
     }
 
     const { data: subs, error: subsErr } = await query;
-    console.log(`📊 DEBUG: Found ${subs?.length || 0} subscriptions for scope="${scope}"`);
+    console.log(`📊 Found ${subs?.length || 0} native subscriptions`);
+    
     if (subs && subs.length > 0) {
-      console.log(`📱 DEBUG: Subscription details:`, subs.map(s => ({
+      console.log(`📱 Subscription details:`, subs.map(s => ({
         id: s.id,
-        platform: (s as any).platform,
-        endpoint_domain: (s as any).platform === 'ios' ? 'iOS APNs' : new URL(s.endpoint).hostname,
+        platform: (s as any).platform || 'unknown',
         user_id: s.user_id,
-        has_keys: !!(s.p256dh && s.auth),
-        is_ios: s.endpoint.startsWith('ios-token:')
+        is_native: s.endpoint.startsWith('ios-token:') || s.endpoint.startsWith('android-token:')
       })));
     }
+    
     if (subsErr) {
       console.error("Failed to load subscriptions:", subsErr);
       return new Response(JSON.stringify({ error: "Failed to load subscriptions" }), {
@@ -307,16 +323,15 @@ serve(async (req) => {
       });
     }
 
-    // Pre-check: no active subscriptions for the target audience
     if (!subs || subs.length === 0) {
-      console.warn("⚠️ DEBUG: No active push subscriptions found for target audience");
+      console.warn("⚠️ No active native push subscriptions found");
       return new Response(
         JSON.stringify({ error: "No active push subscriptions for target audience", recipients: 0, scope }),
         { status: 400, headers: { "Content-Type": "application/json", ...corsHeaders } }
       );
     }
 
-    // Create notification row with banner fields and campaign_id for tracking
+    // Create notification record
     const { data: inserted, error: insertErr } = await supabaseAdmin
       .from("notifications")
       .insert({
@@ -329,8 +344,8 @@ serve(async (req) => {
         badge: payload.badge ?? null,
         banner_message: (payload as any).banner_message ?? null,
         display_mode: (payload as any).display_mode ?? 'navigation',
-        scope: scope, // Always use valid enum value (all/self), targeting handled by user_ids
-        campaign_id: campaignId, // Link notification to campaign for tracking
+        scope: scope,
+        campaign_id: campaignId,
         dry_run: dryRun,
         recipients_count: subs?.length ?? 0,
         status: dryRun ? "sent" : "sending",
@@ -348,7 +363,6 @@ serve(async (req) => {
     }
     const notificationId = inserted.id as string;
 
-    // Dry run: do not send or log deliveries, just return recipients
     if (dryRun) {
       return new Response(
         JSON.stringify({
@@ -364,92 +378,57 @@ serve(async (req) => {
     let success = 0;
     let failed = 0;
 
-    // Build personalization map (first names) for user-linked subscriptions
+    // Build personalization map
     const userFirstNames = await buildFirstNameMap(
       supabaseAdmin,
       (subs ?? []).map((s: any) => s.user_id as string).filter(Boolean)
     );
 
-    // Send sequentially; simple and reliable
-    console.log(`🚀 DEBUG: Starting to send notifications to ${subs?.length || 0} subscriptions`);
+    // Send to each subscription
+    console.log(`🚀 Starting to send native notifications to ${subs?.length || 0} devices`);
     for (const s of subs ?? []) {
       const clickToken = randomHex(16);
       const first = (s as any).user_id ? userFirstNames.get((s as any).user_id) : undefined;
       const personalizedTitle = renderTemplate(payload!.title, { first_name: first });
       const personalizedBody = renderTemplate(payload!.body, { first_name: first });
-      const personalizedBannerMessage = (payload as any).banner_message 
-        ? renderTemplate((payload as any).banner_message, { first_name: first })
-        : null;
       
-      // Generate relative tracking URL: /c/:token?u=<dest>&user=<id> (safer for cross-origin)
       const baseUrl = payload!.url || "/notifications";
       const userParam = (s as any).user_id ? `&user=${encodeURIComponent((s as any).user_id)}` : '';
       const notificationUrl = `/c/${clickToken}?u=${encodeURIComponent(baseUrl)}${userParam}`;
       
       const payloadForSub = { 
-        ...(payload as any), 
         title: personalizedTitle, 
         body: personalizedBody, 
-        banner_message: personalizedBannerMessage,
-        display_mode: (payload as any).display_mode || 'navigation',
         url: notificationUrl,
+        icon: payload!.icon,
+        badge: payload!.badge,
         click_token: clickToken, 
         notification_id: notificationId 
       };
 
       const isIos = s.endpoint.startsWith('ios-token:');
-      console.log(`📬 DEBUG: Processing subscription ${s.id} (${isIos ? 'iOS' : 'Web'}):`);
-      console.log(`  - Platform: ${(s as any).platform || 'web'}`);
-      console.log(`  - Endpoint: ${isIos ? 'iOS APNs Token' : new URL(s.endpoint).hostname}`);
-      console.log(`  - User ID: ${(s as any).user_id || 'null'}`);
-      console.log(`  - First name: "${first || 'none'}"`);
-      console.log(`  - Personalized title: "${personalizedTitle}"`);
-      console.log(`  - Personalized body: "${personalizedBody}"`);
+      const isAndroid = s.endpoint.startsWith('android-token:');
+      
+      console.log(`📬 Processing ${isIos ? 'iOS' : isAndroid ? 'Android' : 'Unknown'} device ${s.id}`);
 
       try {
         if (isIos) {
-          // iOS APNs
-          if (!APNS_KEY_ID || !APNS_TEAM_ID || !APNS_PRIVATE_KEY) {
-            throw new Error("APNs credentials not configured");
-          }
-          
           const iosToken = s.endpoint.replace('ios-token:', '');
-          console.log(`🍎 DEBUG: Sending APNs notification to iOS device...`);
-          
+          console.log(`🍎 Sending APNs notification...`);
           await sendApnsNotification(iosToken, payloadForSub, APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY);
           success++;
-          console.log(`✅ DEBUG: Successfully sent APNs notification to subscription ${s.id}`);
-        } else {
-          // Web Push
-          console.log(`🌐 DEBUG: Sending web push notification to ${new URL(s.endpoint).hostname}...`);
-          console.log(`📦 DEBUG: Subscription data:`, {
-            endpoint: s.endpoint,
-            keys: { 
-              p256dh: s.p256dh ? `${s.p256dh.substring(0, 20)}...` : 'missing',
-              auth: s.auth ? `${s.auth.substring(0, 20)}...` : 'missing'
-            }
-          });
-          
-          await sendNotification(
-            {
-              endpoint: s.endpoint,
-              keys: {
-                p256dh: s.p256dh,
-                auth: s.auth,
-              }
-            },
-            JSON.stringify(payloadForSub),
-            {
-              vapid: {
-                subject: VAPID_SUBJECT,
-                publicKey: VAPID_PUBLIC_KEY,
-                privateKey: VAPID_PRIVATE_KEY,
-              },
-              ttl: 86400, // 24 hours
-            }
-          );
+          console.log(`✅ Successfully sent APNs notification`);
+        } else if (isAndroid) {
+          if (!FCM_SERVER_KEY) {
+            throw new Error("FCM credentials not configured");
+          }
+          const androidToken = s.endpoint.replace('android-token:', '');
+          console.log(`🤖 Sending FCM notification...`);
+          await sendFcmNotification(androidToken, payloadForSub, FCM_SERVER_KEY);
           success++;
-          console.log(`✅ DEBUG: Successfully sent web push to subscription ${s.id}`);
+          console.log(`✅ Successfully sent FCM notification`);
+        } else {
+          throw new Error("Unknown platform - not a native token");
         }
 
         await supabaseAdmin.from("notification_deliveries").insert({
@@ -460,28 +439,14 @@ serve(async (req) => {
           error: null,
           click_token: clickToken,
         } as any);
-        console.log(`💾 DEBUG: Recorded delivery as 'sent' for subscription ${s.id}`);
       } catch (err: any) {
         failed++;
         const statusCode = err?.statusCode ?? err?.status ?? 0;
         const isGone = statusCode === 404 || statusCode === 410;
-        console.log(`❌ DEBUG: Failed to send to subscription ${s.id}:`);
-        console.log(`  - Error message: ${err?.message || err}`);
-        console.log(`  - Error name: ${err?.name}`);
-        console.log(`  - Status code: ${statusCode}`);
-        console.log(`  - Headers: ${JSON.stringify(err?.headers || {})}`);
-        console.log(`  - Body: ${err?.body || 'no body'}`);
-        console.log(`  - Stack: ${err?.stack || 'no stack'}`);
-        console.log(`  - Is gone (404/410): ${isGone}`);
-        console.log(`  - Full error object:`, err);
+        console.error(`❌ Failed to send to ${s.id}:`, err.message);
 
-        // Deactivate dead endpoints
         if (isGone) {
-          await supabaseAdmin
-            .from("push_subscriptions")
-            .update({ is_active: false })
-            .eq("id", s.id);
-          console.log(`🔒 DEBUG: Deactivated subscription ${s.id} due to gone status`);
+          await supabaseAdmin.from("push_subscriptions").update({ is_active: false }).eq("id", s.id);
         }
 
         await supabaseAdmin.from("notification_deliveries").insert({
@@ -492,33 +457,30 @@ serve(async (req) => {
           error: String(err?.message ?? err),
           click_token: clickToken,
         } as any);
-        console.log(`💾 DEBUG: Recorded delivery as '${isGone ? "deactivated" : "failed"}' for subscription ${s.id}`);
       }
     }
 
-    const finalStatus = failed === 0 ? "sent" : success === 0 ? "failed" : "failed";
-    console.log(`📈 DEBUG: Final results - Success: ${success}, Failed: ${failed}, Status: ${finalStatus}`);
-    
+    // Update notification with final counts
     await supabaseAdmin
       .from("notifications")
       .update({
+        status: failed === 0 ? "sent" : "failed",
         success_count: success,
         failed_count: failed,
-        status: finalStatus,
         sent_at: new Date().toISOString(),
-      } as any)
+        updated_at: new Date().toISOString(),
+      })
       .eq("id", notificationId);
-    
-    console.log(`💾 DEBUG: Updated notification ${notificationId} with final counts and status`);
-    console.log(`🏁 DEBUG: send-push function completed successfully`);
+
+    console.log(`✅ Notification complete: ${success} sent, ${failed} failed`);
 
     return new Response(
       JSON.stringify({
+        notification_id: notificationId,
         success,
         failed,
         recipients: subs?.length ?? 0,
         scope,
-        notification_id: notificationId,
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );
