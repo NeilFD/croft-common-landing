@@ -97,7 +97,7 @@ async function createApnsJwt(keyId: string, teamId: string, privateKey: string):
 }
 
 // Send APNs notification
-async function sendApnsNotification(token: string, payload: any, keyId: string, teamId: string, privateKey: string): Promise<void> {
+async function sendApnsNotification(token: string, payload: any, keyId: string, teamId: string, privateKey: string, environment: string = "production"): Promise<void> {
   const jwt = await createApnsJwt(keyId, teamId, privateKey);
   
   const apnsPayload = {
@@ -115,7 +115,11 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
     notification_id: payload.notification_id
   };
   
-  const response = await fetch(`https://api.push.apple.com/3/device/${token}`, {
+  const apnsEndpoint = environment === "sandbox" 
+    ? "https://api.sandbox.push.apple.com"
+    : "https://api.push.apple.com";
+  
+  const response = await fetch(`${apnsEndpoint}/3/device/${token}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${jwt}`,
@@ -247,9 +251,11 @@ serve(async (req) => {
     const APNS_KEY_ID = Deno.env.get("APNS_KEY_ID");
     const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
     const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY");
+    const APNS_ENVIRONMENT = Deno.env.get("APNS_ENVIRONMENT") || "production";
     const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
 
     console.log(`🔑 Native Push Configuration:`);
+    console.log(`  - APNs Environment: ${APNS_ENVIRONMENT}`);
     console.log(`  - APNs configured: ${!!(APNS_KEY_ID && APNS_TEAM_ID && APNS_PRIVATE_KEY)}`);
     console.log(`  - FCM configured: ${!!FCM_SERVER_KEY}`);
 
@@ -414,8 +420,8 @@ serve(async (req) => {
       try {
         if (isIos) {
           const iosToken = s.endpoint.replace('ios-token:', '');
-          console.log(`🍎 Sending APNs notification...`);
-          await sendApnsNotification(iosToken, payloadForSub, APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY);
+          console.log(`🍎 Sending APNs notification to ${APNS_ENVIRONMENT} environment...`);
+          await sendApnsNotification(iosToken, payloadForSub, APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY, APNS_ENVIRONMENT);
           success++;
           console.log(`✅ Successfully sent APNs notification`);
         } else if (isAndroid) {
