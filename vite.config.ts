@@ -19,6 +19,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  optimizeDeps: {
+    exclude: [
+      '@capacitor/core',
+      '@capacitor/status-bar',
+      '@capacitor/push-notifications',
+      '@capacitor/app',
+      '@capacitor/browser',
+    ],
+  },
   build: {
     rollupOptions: {
       external: [
