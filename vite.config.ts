@@ -19,4 +19,15 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      external: [
+        '@capacitor/core',
+        '@capacitor/status-bar',
+        '@capacitor/push-notifications',
+        '@capacitor/app',
+        '@capacitor/browser',
+      ],
+    },
+  },
 }));
