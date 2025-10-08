@@ -4,10 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.croftcommon.beacon',
   appName: 'CroftCommon',
   webDir: 'dist',
-  server: {
-    url: 'https://croftcommontest.com',
-    cleartext: true
-  },
   plugins: {
     SplashScreen: {
       launchShowDuration: 5000,
