@@ -225,7 +225,7 @@ const EventDetail = () => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -250,6 +250,7 @@ const EventDetail = () => {
                   <Button
                     onClick={() => setShowEditEvent(true)}
                     variant="outline"
+                    size="sm"
                     className="font-brutalist uppercase tracking-wide border-industrial"
                   >
                     <Edit className="h-4 w-4 mr-2" />
@@ -267,6 +268,7 @@ const EventDetail = () => {
                     <Button
                       onClick={() => handleStatusUpdate('active')}
                       variant="outline"
+                      size="sm"
                       className="font-brutalist uppercase tracking-wide border-industrial"
                     >
                       ACTIVATE
@@ -282,7 +284,8 @@ const EventDetail = () => {
                 <TooltipTrigger asChild>
                   <Button
                     onClick={() => setShowCreateHold(true)}
-                    className="btn-primary font-brutalist uppercase tracking-wide h-10 md:h-11"
+                    size="sm"
+                    className="btn-primary font-brutalist uppercase tracking-wide w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     ADD SPACE BOOKING
