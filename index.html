@@ -82,6 +82,50 @@
         } catch (e) { /* swallow to avoid blocking app */ }
       })();
     </script>
+    <script id="early-error-catcher">
+      (function(){
+        try{
+          var isNative = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform==='function' && window.Capacitor.isNativePlatform());
+          function showOverlay(text){
+            try{
+              var el=document.getElementById('early-error-overlay');
+              if(!el){
+                el=document.createElement('div');
+                el.id='early-error-overlay';
+                el.setAttribute('role','alert');
+                el.style.position='fixed';
+                el.style.inset='0';
+                el.style.background='#0b0b0b';
+                el.style.color='#ffffff';
+                el.style.fontFamily='ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans, sans-serif';
+                el.style.fontSize='14px';
+                el.style.lineHeight='1.4';
+                el.style.padding='16px';
+                el.style.zIndex='2147483647';
+                el.style.overflow='auto';
+                el.innerHTML='<h1 style="margin:0 0 8px 0;font-size:16px;">Start-up error</h1><pre id="early-error-pre" style="white-space:pre-wrap;word-break:break-word;margin:0;background:#111;padding:12px;border-radius:8px;border:1px solid #333;"></pre>';
+                document.documentElement.appendChild(el);
+              }
+              var pre = document.getElementById('early-error-pre');
+              if(pre){ pre.textContent = text; }
+            }catch(e){}
+          }
+          function record(err){
+            var payload = {
+              time: new Date().toISOString(),
+              userAgent: navigator.userAgent,
+              url: location.href,
+              message: String(err && err.message || err),
+              stack: err && err.stack || null
+            };
+            try{ localStorage.setItem('cc_last_error', JSON.stringify(payload)); }catch(e){}
+            if(isNative){ showOverlay('[native] ' + payload.message + (payload.stack? '\n' + payload.stack : '')); }
+          }
+          window.addEventListener('error', function(e){ if(e && e.error){ record(e.error); } else { record(e.message); } }, {once:false});
+          window.addEventListener('unhandledrejection', function(e){ record(e && e.reason || 'unhandledrejection'); }, {once:false});
+        }catch(e){}
+      })();
+    </script>
   </head>
 
   <body>

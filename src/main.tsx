@@ -1,6 +1,9 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { initBootLogger } from './mobile/bootLogger'
+
+initBootLogger();
 
 // Simplified PWA detection
 const isPWAMode = () => {
@@ -63,19 +66,24 @@ window.addEventListener('unhandledrejection', (event) => {
   recoverFromChunkError(event.reason);
 });
 
-// Initialize PWA with better error handling
-requestAnimationFrame(() => {
-  import('./pwa/deferredPWA')
-    .then(({ initializePWA }) => {
-      if (typeof initializePWA === 'function') {
-        console.log('[PWA] Starting initialization');
-        initializePWA().catch((err) => {
-          console.error('[PWA] Initialization failed:', err);
-        });
-      }
-    })
-    .catch((err) => {
-      console.error('[PWA] Module load failed:', err);
-      recoverFromChunkError(err);
-    });
-});
+// Initialize PWA on web only (skip on native)
+const isNative = Boolean((window as any)?.Capacitor?.isNativePlatform?.() === true);
+if (!isNative) {
+  requestAnimationFrame(() => {
+    import('./pwa/deferredPWA')
+      .then(({ initializePWA }) => {
+        if (typeof initializePWA === 'function') {
+          console.log('[PWA] Starting initialization');
+          initializePWA().catch((err) => {
+            console.error('[PWA] Initialization failed:', err);
+          });
+        }
+      })
+      .catch((err) => {
+        console.error('[PWA] Module load failed:', err);
+        recoverFromChunkError(err);
+      });
+  });
+} else {
+  console.log('[PWA] Skipped initialisation on native platform');
+}
