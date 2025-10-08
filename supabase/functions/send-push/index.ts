@@ -1,7 +1,5 @@
-
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import webpush from "https://esm.sh/web-push@3.6.6";
+import { WebPush } from "jsr:@negrel/webpush";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
@@ -231,29 +229,30 @@ serve(async (req) => {
     const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
     const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY");
 
-    console.log(`🔑 DEBUG: VAPID Configuration Check (force refresh):`);
+    console.log(`🔑 DEBUG: VAPID Configuration Check:`);
     console.log(`  - VAPID_SUBJECT: "${VAPID_SUBJECT || 'EMPTY/NULL'}"`);
     console.log(`  - VAPID_PUBLIC_KEY length: ${VAPID_PUBLIC_KEY?.length || 0}`);
     console.log(`  - VAPID_PRIVATE_KEY length: ${VAPID_PRIVATE_KEY?.length || 0}`);
-    console.log(`  - Expected VAPID_SUBJECT should be: https://thehive-hospitality.com`);
 
     if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY || !VAPID_SUBJECT) {
-      console.error(`❌ DEBUG: Missing VAPID configuration:`, {
-        has_public: !!VAPID_PUBLIC_KEY,
-        has_private: !!VAPID_PRIVATE_KEY,
-        has_subject: !!VAPID_SUBJECT
-      });
+      console.error(`❌ DEBUG: Missing VAPID configuration`);
       return new Response(JSON.stringify({ error: "VAPID keys not configured" }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
     }
 
+    // Initialize WebPush with VAPID details
+    let webpush: WebPush;
     try {
-      webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
-      console.log(`✅ DEBUG: VAPID details set successfully`);
+      webpush = new WebPush({
+        subject: VAPID_SUBJECT,
+        publicKey: VAPID_PUBLIC_KEY,
+        privateKey: VAPID_PRIVATE_KEY,
+      });
+      console.log(`✅ DEBUG: WebPush initialized successfully`);
     } catch (vapidError: any) {
-      console.error(`❌ DEBUG: Failed to set VAPID details:`, vapidError);
+      console.error(`❌ DEBUG: Failed to initialize WebPush:`, vapidError);
       return new Response(JSON.stringify({ error: `VAPID configuration error: ${vapidError.message}` }), {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
@@ -437,13 +436,8 @@ serve(async (req) => {
           console.log(`✅ DEBUG: Successfully sent APNs notification to subscription ${s.id}`);
         } else {
           // Web Push
-          const subscription = {
-            endpoint: s.endpoint,
-            keys: { p256dh: s.p256dh, auth: s.auth },
-          };
-          
           console.log(`🌐 DEBUG: Sending web push notification to ${new URL(s.endpoint).hostname}...`);
-          console.log(`📦 DEBUG: Subscription object:`, {
+          console.log(`📦 DEBUG: Subscription data:`, {
             endpoint: s.endpoint,
             keys: { 
               p256dh: s.p256dh ? `${s.p256dh.substring(0, 20)}...` : 'missing',
@@ -451,9 +445,17 @@ serve(async (req) => {
             }
           });
           
-          const pushResult = await webpush.sendNotification(subscription as any, JSON.stringify(payloadForSub));
+          await webpush.send({
+            endpoint: s.endpoint,
+            keys: {
+              p256dh: s.p256dh,
+              auth: s.auth,
+            },
+            payload: JSON.stringify(payloadForSub),
+            ttl: 86400, // 24 hours
+          });
           success++;
-          console.log(`✅ DEBUG: Successfully sent web push to subscription ${s.id}. Response:`, pushResult);
+          console.log(`✅ DEBUG: Successfully sent web push to subscription ${s.id}`);
         }
 
         await supabaseAdmin.from("notification_deliveries").insert({
