@@ -17,7 +17,7 @@ export const HiddenDevPanel: React.FC<DevPanelProps> = ({ isOpen, onClose }) => 
   useEffect(() => {
     if (isOpen && Capacitor.isNativePlatform()) {
       // Get app info if running in Capacitor (dynamic import)
-      import('@capacitor/app').then(({ App: CapacitorApp }) => {
+      import(/* @vite-ignore */ '@capacitor/app').then(({ App: CapacitorApp }) => {
         CapacitorApp.getInfo().then(info => {
           setAppInfo(info);
         }).catch(console.error);

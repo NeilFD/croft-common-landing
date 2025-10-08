@@ -29,7 +29,7 @@ export const PushDiagnostics = () => {
     addLog(`Platform: ${plat}, Native: ${native}`);
 
     if (native) {
-      import('@capacitor/push-notifications').then(({ PushNotifications }) => {
+      import(/* @vite-ignore */ '@capacitor/push-notifications').then(({ PushNotifications }) => {
         PushNotifications.checkPermissions().then(result => {
           setPermissionStatus(result.receive);
           addLog(`Permission status: ${result.receive}`);
@@ -50,7 +50,7 @@ export const PushDiagnostics = () => {
 
     try {
       addLog('Requesting push notification permission...');
-      const { PushNotifications } = await import('@capacitor/push-notifications');
+      const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
       const result = await PushNotifications.requestPermissions();
       setPermissionStatus(result.receive);
       addLog(`Permission result: ${result.receive}`);
@@ -99,7 +99,7 @@ export const PushDiagnostics = () => {
     setIsRegistering(true);
     addLog('🔄 Calling PushNotifications.register()...');
 
-    const { PushNotifications } = await import('@capacitor/push-notifications');
+    const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
 
     // Set up listener for registration
     const registrationListener = await PushNotifications.addListener('registration', (token) => {

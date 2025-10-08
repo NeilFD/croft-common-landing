@@ -17,7 +17,7 @@ export const useCapacitorPushNotifications = () => {
 
     const setupListeners = async () => {
       // Dynamic import only on native platforms
-      const { PushNotifications } = await import('@capacitor/push-notifications');
+      const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
       // CRITICAL: Set up all listeners BEFORE calling register()
       // This ensures we don't miss any events due to race conditions
       

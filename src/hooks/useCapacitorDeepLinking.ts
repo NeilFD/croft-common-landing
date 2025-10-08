@@ -11,7 +11,7 @@ export const useCapacitorDeepLinking = () => {
     }
 
     // Dynamic import only on native platforms
-    import('@capacitor/app').then(({ App: CapacitorApp }) => {
+    import(/* @vite-ignore */ '@capacitor/app').then(({ App: CapacitorApp }) => {
 
       // Handle app URL when app is opened via deep link
       const handleAppUrlOpen = (event: any) => {

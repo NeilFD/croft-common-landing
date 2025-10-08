@@ -5,7 +5,7 @@ export const initStatusBar = async () => {
     if (!Capacitor.isNativePlatform() || Capacitor.getPlatform() !== 'ios') return;
 
     // Dynamic import only on native iOS
-    const { StatusBar, Style } = await import('@capacitor/status-bar');
+    const { StatusBar, Style } = await import(/* @vite-ignore */ '@capacitor/status-bar');
 
     // Overlay the WebView so content can extend behind the iOS status bar
     await StatusBar.setOverlaysWebView({ overlay: true });
