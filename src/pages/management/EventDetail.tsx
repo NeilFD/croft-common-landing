@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Calendar, Users, Building, Plus, Edit, ChevronRight, Eye, FileText, FileCheck, Receipt, StickyNote, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Building, Plus, Edit, ChevronRight, Eye, FileText, FileCheck, Receipt, StickyNote, Clock, UserCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import { CreateHoldDialog } from '@/components/management/CreateHoldDialog';
@@ -233,8 +233,9 @@ const EventDetail = () => {
                     onClick={() => setShowEditContactDetails(true)}
                     variant="outline"
                     size="sm"
-                    className="font-brutalist uppercase tracking-wide border-industrial text-xs"
+                    className="font-brutalist uppercase tracking-wide border-industrial"
                   >
+                    <UserCircle className="h-4 w-4 mr-2" />
                     EDIT CONTACT
                   </Button>
                 </TooltipTrigger>
