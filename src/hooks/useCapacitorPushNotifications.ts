@@ -11,28 +11,18 @@ export const useCapacitorPushNotifications = () => {
       return;
     }
 
-    const initializePushNotifications = async () => {
-      try {
-        console.log('📱 Initializing push notifications...');
+    console.log('📱 Setting up push notification listeners...');
+    let registrationReceived = false;
+    let listeners: any[] = [];
 
-        // Request permission
-        const permResult = await PushNotifications.requestPermissions();
-        console.log('📱 Push permission result:', permResult);
-
-        if (permResult.receive === 'granted') {
-          // Register for push notifications
-          await PushNotifications.register();
-          console.log('📱 Push notifications registered');
-        } else {
-          console.log('📱 Push notifications permission denied');
-        }
-      } catch (error) {
-        console.error('📱 Error initializing push notifications:', error);
-      }
-    };
-
-    // Listen for registration success
-    PushNotifications.addListener('registration', async (token) => {
+    const setupListeners = async () => {
+      // CRITICAL: Set up all listeners BEFORE calling register()
+      // This ensures we don't miss any events due to race conditions
+      
+      // Listen for registration success
+      const registrationListener = await PushNotifications.addListener('registration', async (token) => {
+      registrationReceived = true;
+      console.log('📱 ✅ Registration event fired!');
       console.log('📱 Native push registration success, token:', token.value);
       console.log('📱 Token details - First 20 chars:', token.value.substring(0, 20), '... Last 20 chars:', token.value.substring(token.value.length - 20));
       
@@ -84,28 +74,75 @@ export const useCapacitorPushNotifications = () => {
         console.error('📱 Error stack:', (error as any)?.stack);
         console.error('📱 Full error object:', JSON.stringify(error, null, 2));
       }
-    });
+      });
+      listeners.push(registrationListener);
+      console.log('📱 ✅ Registration listener attached');
 
-    // Listen for registration error
-    PushNotifications.addListener('registrationError', (error) => {
-      console.error('📱 Push registration error:', error);
-    });
+      // Listen for registration error
+      const registrationErrorListener = await PushNotifications.addListener('registrationError', (error) => {
+        console.error('📱 ❌ Push registration error:', error);
+      });
+      listeners.push(registrationErrorListener);
+      console.log('📱 ✅ Registration error listener attached');
 
-    // Listen for push notifications
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('📱 Push notification received:', notification);
-    });
+      // Listen for push notifications
+      const notificationListener = await PushNotifications.addListener('pushNotificationReceived', (notification) => {
+        console.log('📱 Push notification received:', notification);
+      });
+      listeners.push(notificationListener);
+      console.log('📱 ✅ Push notification listener attached');
 
-    // Listen for notification tap
-    PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      console.log('📱 Push notification action performed:', notification);
-    });
+      // Listen for notification tap
+      const actionListener = await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
+        console.log('📱 Push notification action performed:', notification);
+      });
+      listeners.push(actionListener);
+      console.log('📱 ✅ Notification action listener attached');
 
-    // Initialize
-    initializePushNotifications();
+      const initializePushNotifications = async () => {
+        try {
+          console.log('📱 Initializing push notifications...');
+
+          // Request permission
+          const permResult = await PushNotifications.requestPermissions();
+          console.log('📱 Push permission result:', permResult);
+
+          if (permResult.receive === 'granted') {
+            // Register for push notifications
+            console.log('📱 Calling PushNotifications.register()...');
+            await PushNotifications.register();
+            console.log('📱 Push notifications registered');
+            
+            // Set up a timeout to check if registration event fired
+            setTimeout(() => {
+              if (!registrationReceived) {
+                console.warn('📱 ⚠️ Registration event did NOT fire within 5 seconds!');
+                console.warn('📱 This may indicate a race condition or iOS issue');
+                console.warn('📱 The device token may have been generated but not captured');
+              } else {
+                console.log('📱 ✅ Registration event was successfully received');
+              }
+            }, 5000);
+          } else {
+            console.log('📱 Push notifications permission denied');
+          }
+        } catch (error) {
+          console.error('📱 Error initializing push notifications:', error);
+        }
+      };
+
+      // Small delay to ensure all listeners are fully attached
+      setTimeout(() => {
+        console.log('📱 All listeners attached, starting initialization...');
+        initializePushNotifications();
+      }, 100);
+    };
+
+    setupListeners();
 
     return () => {
-      PushNotifications.removeAllListeners();
+      console.log('📱 Cleaning up push notification listeners...');
+      listeners.forEach(listener => listener.remove());
     };
   }, []);
 };
