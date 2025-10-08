@@ -5,10 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building2, BarChart3, BookOpen, Shield, Layout, FlaskConical, MessageSquare, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { PushDiagnostics } from '@/components/PushDiagnostics';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
   const { canAccessAdmin, canAccessCMS, canAccessResearch, canAccessFeedback } = useRoleBasedAccess();
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
 
   const allQuickActions = [
     {
@@ -127,6 +132,31 @@ const ManagementDashboard = () => {
             </div>
           </CardContent>
         </Card>
+
+        {managementUser?.role === 'admin' && (
+          <Collapsible open={diagnosticsOpen} onOpenChange={setDiagnosticsOpen}>
+            <Card className="border-industrial">
+              <CollapsibleTrigger className="w-full">
+                <CardHeader className="p-4 md:p-6 cursor-pointer hover:bg-muted/50 transition-colors">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center space-x-2 font-brutalist uppercase tracking-wide text-base md:text-lg">
+                      <span>🔧 Push Diagnostics</span>
+                    </CardTitle>
+                    <ChevronDown className={`h-5 w-5 transition-transform ${diagnosticsOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                  <CardDescription className="font-industrial text-left">
+                    Debug and test push notifications manually
+                  </CardDescription>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="p-4 md:p-6 pt-0">
+                  <PushDiagnostics />
+                </CardContent>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        )}
       </div>
     </ManagementLayout>
   );

@@ -14,6 +14,7 @@ export const useCapacitorPushNotifications = () => {
     console.log('📱 Setting up push notification listeners...');
     let registrationReceived = false;
     let listeners: any[] = [];
+    let retryAttempted = false;
 
     const setupListeners = async () => {
       // CRITICAL: Set up all listeners BEFORE calling register()
@@ -81,6 +82,8 @@ export const useCapacitorPushNotifications = () => {
       // Listen for registration error
       const registrationErrorListener = await PushNotifications.addListener('registrationError', (error) => {
         console.error('📱 ❌ Push registration error:', error);
+        console.error('📱 This often indicates missing entitlements or provisioning issues');
+        console.error('📱 Check: 1) Push Notifications capability enabled, 2) Proper provisioning profile, 3) aps-environment entitlement');
       });
       listeners.push(registrationErrorListener);
       console.log('📱 ✅ Registration error listener attached');
@@ -113,16 +116,34 @@ export const useCapacitorPushNotifications = () => {
             await PushNotifications.register();
             console.log('📱 Push notifications registered');
             
-            // Set up a timeout to check if registration event fired
+            // ENHANCED: Idempotent retry mechanism after 8 seconds if no event
+            setTimeout(() => {
+              if (!registrationReceived && !retryAttempted) {
+                retryAttempted = true;
+                console.warn('📱 ⚠️ No registration event after 8s, attempting idempotent retry...');
+                PushNotifications.register().then(() => {
+                  console.log('📱 Retry register() called');
+                }).catch(err => {
+                  console.error('📱 Retry register() failed:', err);
+                });
+              }
+            }, 8000);
+            
+            // EXTENDED: Check at 20 seconds instead of 5
             setTimeout(() => {
               if (!registrationReceived) {
-                console.warn('📱 ⚠️ Registration event did NOT fire within 5 seconds!');
-                console.warn('📱 This may indicate a race condition or iOS issue');
+                console.warn('📱 ⚠️ Registration event did NOT fire within 20 seconds!');
+                console.warn('📱 This indicates an iOS/Capacitor race condition');
                 console.warn('📱 The device token may have been generated but not captured');
+                console.warn('📱 Possible causes:');
+                console.warn('📱   1. Missing aps-environment entitlement');
+                console.warn('📱   2. Provisioning profile issue');
+                console.warn('📱   3. Capacitor plugin timing issue');
+                console.warn('📱 Try using the manual "Register for Push" button in /management diagnostics');
               } else {
                 console.log('📱 ✅ Registration event was successfully received');
               }
-            }, 5000);
+            }, 20000);
           } else {
             console.log('📱 Push notifications permission denied');
           }
