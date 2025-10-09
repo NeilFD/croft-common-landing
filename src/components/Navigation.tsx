@@ -197,6 +197,20 @@ const Navigation = () => {
             );
           })}
 
+          {/* Dev tool: Push Setup (only visible in native app) */}
+          {isCapacitorNative && (
+            <Button
+              variant="frameNeutral"
+              shape="square"
+              size="sm"
+              onClick={() => handleNavClick('/push-setup', 'dev-tool')}
+              className="relative block w-fit text-left self-start font-industrial tracking-tight text-[hsl(var(--charcoal))] transition-all duration-200 hover:scale-105 py-2 pl-2 pr-8 hover:bg-transparent focus:bg-transparent active:bg-transparent border-accent-orange hover:border-accent-orange active:border-accent-orange focus:border-accent-orange"
+            >
+              <span className="whitespace-nowrap">🔧 PUSH SETUP</span>
+              <ArrowUpRight className="size-4 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true" />
+            </Button>
+          )}
+
         </div>
       </div>
     </nav>
