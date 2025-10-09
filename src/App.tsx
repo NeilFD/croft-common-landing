@@ -119,7 +119,7 @@ const GlobalHandlers = () => {
   
   // Capacitor native functionality
   useCapacitorDeepLinking();
-  // Push notifications are now manually controlled via /management diagnostics
+  useCapacitorPushNotifications(); // Initialize native push listeners on app boot
   
   return null;
 };
