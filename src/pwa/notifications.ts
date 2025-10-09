@@ -75,6 +75,17 @@ function logStep(step: string, data?: any, showToast: boolean = false) {
 }
 
 export async function enableNotifications(reg: ServiceWorkerRegistration): Promise<boolean> {
+  // Guard: Don't run web push on native platforms
+  try {
+    const { Capacitor } = await import('@capacitor/core');
+    if (Capacitor.isNativePlatform()) {
+      console.log('📱 Native platform detected - web push disabled');
+      return false;
+    }
+  } catch (e) {
+    // Capacitor not available, continue with web push
+  }
+
   logStep('🚀 Starting notification enablement process', { sessionId: DEBUG_SESSION_ID }, true);
   
   if (!('Notification' in window)) {
