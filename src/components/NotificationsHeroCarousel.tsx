@@ -6,11 +6,13 @@ import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
 import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import CroftLogo from './CroftLogo';
 
 const NotificationsHeroCarousel = () => {
   const isMobile = useIsMobile();
   const { isSlowConnection } = useConnectionSpeed();
+  const { isIOS } = useNativePlatform();
   
   // Fetch CMS images with fallback to static images (same as home page)
   const { images: heroImages, loading: imagesLoading } = useCMSImages(
@@ -19,16 +21,17 @@ const NotificationsHeroCarousel = () => {
     { fallbackImages: fallbackHeroImages }
   );
   
-  // Optimize autoplay delay for mobile/slow connections
+  // Disable autoplay on iOS native to prevent freeze
+  const shouldAutoplay = !isIOS;
   const autoplayDelay = isMobile || isSlowConnection ? 6000 : 4000;
-  const autoplay = useRef(Autoplay({ delay: autoplayDelay, stopOnInteraction: false }));
+  const autoplay = useRef(shouldAutoplay ? Autoplay({ delay: autoplayDelay, stopOnInteraction: false }) : null);
   
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: true,
-      duration: isMobile ? 20 : 30 // Faster transitions on mobile
+      loop: !isIOS,
+      duration: isMobile ? 20 : 30
     },
-    [autoplay.current]
+    autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -53,6 +56,11 @@ const NotificationsHeroCarousel = () => {
   useEffect(() => {
     if (!emblaApi) return;
     
+    if (!shouldAutoplay) {
+      setIsFirstReady(true);
+      return;
+    }
+    
     // Start autoplay immediately without waiting for image decode
     const timeoutId = setTimeout(() => {
       setIsFirstReady(true);
@@ -61,10 +69,10 @@ const NotificationsHeroCarousel = () => {
       } catch (e) {
         // Silent fail
       }
-    }, 100); // Much faster start
+    }, 100);
     
     return () => clearTimeout(timeoutId);
-  }, [emblaApi]);
+  }, [emblaApi, shouldAutoplay]);
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>

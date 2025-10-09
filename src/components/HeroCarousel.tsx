@@ -8,6 +8,7 @@ import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
 import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import BookFloatingButton from './BookFloatingButton';
 import { useConsolidatedPerformance } from '@/hooks/useConsolidatedPerformance';
 
@@ -17,6 +18,7 @@ import CroftLogo from './CroftLogo';
 const HeroCarousel = () => {
   const isMobile = useIsMobile();
   const { isSlowConnection } = useConnectionSpeed();
+  const { isIOS } = useNativePlatform();
   const performance = useConsolidatedPerformance();
   
   
@@ -27,20 +29,21 @@ const HeroCarousel = () => {
     { fallbackImages: fallbackHeroImages }
   );
   
-  // Optimize autoplay delay for mobile/slow connections and page load state
+  // Disable autoplay on iOS native to prevent freeze
+  const shouldAutoplay = !isIOS;
   const autoplayDelay = isMobile || isSlowConnection ? 6000 : 4000;
-  const autoplay = useRef(Autoplay({ 
+  const autoplay = useRef(shouldAutoplay ? Autoplay({ 
     delay: autoplayDelay, 
     stopOnInteraction: false,
-    playOnInit: false // Start paused, enable after page loads
-  }));
+    playOnInit: false
+  }) : null);
   
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: true,
-      duration: isMobile ? 20 : 30 // Faster transitions on mobile
+      loop: !isIOS,
+      duration: isMobile ? 20 : 30
     },
-    [autoplay.current]
+    autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -65,6 +68,11 @@ const HeroCarousel = () => {
   useEffect(() => {
     if (!performance.isPageLoaded || !emblaApi || !heroImages.length) return;
     
+    if (!shouldAutoplay) {
+      setIsFirstReady(true);
+      return;
+    }
+    
     const firstUrl = heroImages[0]?.src;
     let cancelled = false;
     let timeoutId: number | undefined;
@@ -84,17 +92,14 @@ const HeroCarousel = () => {
       return;
     }
     
-    // Load critical image first, defer others
     const img = new Image();
     img.src = firstUrl;
     
-    // Try to decode ASAP for better performance
     // @ts-ignore
     (img as any).decode?.().then(proceed).catch(proceed);
     img.onload = proceed;
     img.onerror = proceed;
     
-    // Safety: start anyway after shorter timeout since page is loaded
     // @ts-ignore
     timeoutId = setTimeout(proceed, 2000);
     
@@ -102,7 +107,7 @@ const HeroCarousel = () => {
       cancelled = true; 
       if (timeoutId) clearTimeout(timeoutId); 
     };
-  }, [emblaApi, heroImages, performance.isPageLoaded]);
+  }, [emblaApi, heroImages, performance.isPageLoaded, shouldAutoplay]);
 
   const currentImage = heroImages[currentSlide];
 

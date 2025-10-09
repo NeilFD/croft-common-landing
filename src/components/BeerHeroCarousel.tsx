@@ -10,26 +10,27 @@ import { beerMenu } from '@/data/menuData';
 import { beerHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
 import { useCMSMenuData } from '@/hooks/useCMSMenuData';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import CroftLogo from './CroftLogo';
 
 const BeerHeroCarousel = () => {
-  // Fetch CMS images with fallback to static images
+  const { isIOS } = useNativePlatform();
   const { images: heroImages, loading: imagesLoading } = useCMSImages(
     'beer', 
     'beer_hero', 
     { fallbackImages: fallbackHeroImages }
   );
   
-  // Fetch CMS menu data with fallback to static data
   const { data: cmsMenuData, loading: menuLoading } = useCMSMenuData('beer', false);
   
-  const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
+  const shouldAutoplay = !isIOS;
+  const autoplay = useRef(shouldAutoplay ? Autoplay({ delay: 4000, stopOnInteraction: false }) : null);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: true,
-      duration: 30 // Smooth transitions
+      loop: !isIOS,
+      duration: 30
     },
-    [autoplay.current]
+    autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -49,6 +50,11 @@ const BeerHeroCarousel = () => {
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
+    if (!shouldAutoplay) {
+      setIsFirstReady(true);
+      return;
+    }
+    
     const firstUrl = heroImages[0]?.src;
     let cancelled = false;
     let timeoutId: number | undefined;
@@ -66,16 +72,14 @@ const BeerHeroCarousel = () => {
     }
     const img = new Image();
     img.src = firstUrl;
-    // Try to decode ASAP, but also attach onload/onerror for wider support
     // @ts-ignore
     (img as any).decode?.().then(proceed).catch(proceed);
     img.onload = proceed;
     img.onerror = proceed;
-    // Safety: start anyway after 4.5s
     // @ts-ignore
     timeoutId = setTimeout(proceed, 4500);
     return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
-  }, [emblaApi]);
+  }, [emblaApi, shouldAutoplay]);
 
   const currentImage = heroImages[currentSlide];
 

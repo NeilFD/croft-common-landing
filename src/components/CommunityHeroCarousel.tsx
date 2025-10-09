@@ -7,12 +7,13 @@ import BookFloatingButton from './BookFloatingButton';
 import { communityMenuData } from '@/data/menuData';
 import { communityHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
 
 const CommunityHeroCarousel = () => {
-  // Fetch CMS images with fallback to static images
+  const { isIOS } = useNativePlatform();
   const { images: heroImages, loading: imagesLoading } = useCMSImages(
     'community', 
     'community_hero', 
@@ -22,13 +23,14 @@ const CommunityHeroCarousel = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFirstReady, setIsFirstReady] = useState(false);
 
-  const autoplay = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
+  const shouldAutoplay = !isIOS;
+  const autoplay = useRef(shouldAutoplay ? Autoplay({ delay: 5000, stopOnInteraction: false }) : null);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: true,
+      loop: !isIOS,
       duration: 30
     },
-    [autoplay.current]
+    autoplay.current ? [autoplay.current] : []
   );
 
   // Images from shared data module
@@ -45,6 +47,11 @@ const CommunityHeroCarousel = () => {
   }, [emblaApi]);
 
   useEffect(() => {
+    if (!shouldAutoplay) {
+      setIsFirstReady(true);
+      return;
+    }
+    
     const firstUrl = heroImages[0]?.src;
     let cancelled = false;
     let timeoutId: number | undefined;
@@ -62,16 +69,14 @@ const CommunityHeroCarousel = () => {
     }
     const img = new Image();
     img.src = firstUrl;
-    // Try to decode ASAP, but also attach onload/onerror for wider support
     // @ts-ignore
     (img as any).decode?.().then(proceed).catch(proceed);
     img.onload = proceed;
     img.onerror = proceed;
-    // Safety: start anyway after 4.5s
     // @ts-ignore
     timeoutId = setTimeout(proceed, 4500);
     return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
-  }, [emblaApi]);
+  }, [emblaApi, shouldAutoplay]);
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>

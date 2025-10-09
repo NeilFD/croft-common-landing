@@ -9,24 +9,26 @@ import { ArrowBox } from '@/components/ui/ArrowBox';
 import { cafeMenu } from '@/data/menuData';
 import { cafeHeroImages as fallbackCafeImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
+import { useNativePlatform } from '@/hooks/useNativePlatform';
 import CroftLogo from './CroftLogo';
 import { CMSText } from './cms/CMSText';
 
 const CafeHeroCarousel = () => {
-  // Fetch CMS images with fallback to static images
+  const { isIOS } = useNativePlatform();
   const { images: cafeImages, loading: imagesLoading } = useCMSImages(
     'cafe', 
     'cafe_hero', 
     { fallbackImages: fallbackCafeImages }
   );
   
-  const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
+  const shouldAutoplay = !isIOS;
+  const autoplay = useRef(shouldAutoplay ? Autoplay({ delay: 4000, stopOnInteraction: false }) : null);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: true,
-      duration: 30 // Smooth transitions
+      loop: !isIOS,
+      duration: 30
     },
-    [autoplay.current]
+    autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -46,7 +48,11 @@ const CafeHeroCarousel = () => {
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
-    // Gate autoplay until the first image is decoded, with a safety timeout
+    if (!shouldAutoplay) {
+      setIsFirstReady(true);
+      return;
+    }
+    
     const firstUrl = cafeImages[0]?.src;
     let cancelled = false;
     let timeoutId: number | undefined;
@@ -64,16 +70,14 @@ const CafeHeroCarousel = () => {
     }
     const img = new Image();
     img.src = firstUrl;
-    // Try to decode ASAP, but also attach onload/onerror for wider support
     // @ts-ignore
     (img as any).decode?.().then(proceed).catch(proceed);
     img.onload = proceed;
     img.onerror = proceed;
-    // Safety: start anyway after 4.5s in case events never fire (Safari quirks)
     // @ts-ignore
     timeoutId = setTimeout(proceed, 4500);
     return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
-  }, [emblaApi]);
+  }, [emblaApi, shouldAutoplay]);
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden z-0" ref={emblaRef}>
