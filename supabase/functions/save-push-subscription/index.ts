@@ -139,13 +139,14 @@ serve(async (req) => {
       });
     }
 
-    const { endpoint, p256dh, auth, user_agent, platform, user_id: providedUserId } = body as {
+    const { endpoint, p256dh, auth, user_agent, platform, user_id: providedUserId, session_id } = body as {
       endpoint?: string;
       p256dh?: string;
       auth?: string;
       user_agent?: string;
       platform?: string;
       user_id?: string;
+      session_id?: string;
     };
 
     // Enhanced input validation
@@ -220,6 +221,26 @@ serve(async (req) => {
 
     if (error) {
       console.error(`[${requestId}] save-push-subscription upsert error`, error);
+      
+      // Mirror error to mobile_debug_logs if session_id provided
+      if (session_id) {
+        try {
+          await adminClient
+            .from('mobile_debug_logs')
+            .insert({
+              session_id,
+              step: 'server:save_push_subscription:error',
+              data: { platform: sanitizedPlatform, error_code: error.code },
+              error_message: error.message,
+              user_agent: sanitizedUserAgent,
+              platform: sanitizedPlatform,
+              user_id: userId
+            });
+        } catch (logErr) {
+          console.warn(`[${requestId}] Failed to mirror error to mobile_debug_logs:`, logErr);
+        }
+      }
+      
       return new Response(JSON.stringify({
         error: "Failed to save push subscription",
         code: "DATABASE_ERROR"
@@ -251,6 +272,26 @@ serve(async (req) => {
     }
 
     console.log(`[${requestId}] Subscription saved successfully - ID: ${upserted?.id}`);
+    
+    // Mirror success to mobile_debug_logs if session_id provided
+    if (session_id) {
+      try {
+        const endpointDomain = isIosToken ? 'ios-token' : new URL(endpoint).hostname;
+        await adminClient
+          .from('mobile_debug_logs')
+          .insert({
+            session_id,
+            step: 'server:save_push_subscription:ok',
+            data: { platform: sanitizedPlatform, endpointDomain, subscription_id: upserted?.id },
+            user_agent: sanitizedUserAgent,
+            platform: sanitizedPlatform,
+            user_id: userId
+          });
+      } catch (logErr) {
+        console.warn(`[${requestId}] Failed to mirror success to mobile_debug_logs:`, logErr);
+      }
+    }
+    
     return new Response(JSON.stringify({ 
       ok: true, 
       subscription_id: upserted?.id, 

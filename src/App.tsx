@@ -109,6 +109,8 @@ const queryClient = new QueryClient();
 
 // Single performance and notification handler
 const GlobalHandlers = () => {
+  const location = useLocation();
+  
   // Call hooks at the top level (Rules of Hooks)
   useConsolidatedPerformance(); // Consolidates all performance optimizations
   useAnalytics();
@@ -121,6 +123,22 @@ const GlobalHandlers = () => {
   // Capacitor native functionality
   useCapacitorDeepLinking();
   useCapacitorPushNotifications(); // Initialize native push listeners on app boot
+  
+  // Boot heartbeat - log session start once
+  useEffect(() => {
+    const logSessionStart = async () => {
+      const { mobileLog } = await import('@/lib/mobileDebug');
+      const { Capacitor } = await import('@capacitor/core');
+      
+      mobileLog('session_start', {
+        route: location.pathname,
+        platform: Capacitor.isNativePlatform() ? Capacitor.getPlatform() : 'web',
+        userAgent: navigator.userAgent.substring(0, 100)
+      });
+    };
+    
+    logSessionStart();
+  }, []); // Only on mount
   
   return null;
 };

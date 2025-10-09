@@ -1,48 +1,10 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { isStandalone, isIosSafari } from './registerPWA';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
+import { mobileLog, DEBUG_SESSION_ID } from '@/lib/mobileDebug';
 
-// Generate unique session ID for debugging
-const DEBUG_SESSION_ID = `mobile-debug-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-// Mobile-friendly logging that saves to database and shows toasts
-async function mobileLog(step: string, data?: any, error?: Error | string, showToast: boolean = false) {
-  const errorMessage = error ? (error instanceof Error ? error.message : error) : undefined;
-  
-  // Always log to console for development
-  console.log(`🔔 [Mobile] ${step}`, data || '');
-  if (error) console.error('Error:', error);
-  
-  // Save to database for mobile debugging
-  try {
-    await supabase.from('mobile_debug_logs').insert({
-      session_id: DEBUG_SESSION_ID,
-      step,
-      data: data ? JSON.parse(JSON.stringify(data)) : null,
-      error_message: errorMessage,
-      user_agent: navigator.userAgent,
-      platform: /iPad|iPhone|iPod/.test(navigator.userAgent) ? 'ios' : (/Android/.test(navigator.userAgent) ? 'android' : 'web')
-    });
-  } catch (dbError) {
-    console.warn('Failed to save debug log:', dbError);
-  }
-  
-  // Show important steps as toasts on mobile
-  if (showToast || error) {
-    const title = error ? "Debug Error" : "Debug Step";
-    const description = error ? errorMessage : step;
-    toast({ 
-      title, 
-      description, 
-      variant: error ? "destructive" : "default",
-      duration: error ? 8000 : 3000 
-    });
-  }
-}
-
-// Export debug session ID for debug panel
+// Re-export for backward compatibility
 export { DEBUG_SESSION_ID };
 
 const VAPID_PUBLIC_KEY = 'BNJzdn55lXCAzsC07XdmDcsJeRb9sN-tLfGkrP5uAFNEt-LyEsEhVoMjD0CtHiBZjsyrTdTh19E2cnRUB5N9Mww';
