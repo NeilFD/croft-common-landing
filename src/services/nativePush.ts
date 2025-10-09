@@ -4,6 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 let isRegistering = false;
 let hasRegistered = false;
 
+// Event bus for token/error events
+type TokenCallback = (token: string) => void;
+type ErrorCallback = (error: string) => void;
+
+let tokenCallbacks: TokenCallback[] = [];
+let errorCallbacks: ErrorCallback[] = [];
+let lastToken: string | null = null;
+let lastError: string | null = null;
+
 /**
  * Centralized Native Push Notification Service
  * Single source of truth for iOS/Android push registration
@@ -26,6 +35,11 @@ export const nativePush = {
     // Set up listeners (once)
     await PushNotifications.addListener('registration', async (token) => {
       console.log('📱 ✅ Push token received:', token.value.substring(0, 20) + '...');
+      
+      // Cache the token and notify all subscribers
+      lastToken = token.value;
+      lastError = null;
+      tokenCallbacks.forEach(cb => cb(token.value));
       
       try {
         const platform = Capacitor.getPlatform();
@@ -58,6 +72,12 @@ export const nativePush = {
 
     await PushNotifications.addListener('registrationError', (error) => {
       console.error('📱 ❌ Registration error:', error);
+      
+      // Cache the error and notify all subscribers
+      const errorMessage = error.error || String(error);
+      lastError = errorMessage;
+      lastToken = null;
+      errorCallbacks.forEach(cb => cb(errorMessage));
     });
 
     await PushNotifications.addListener('pushNotificationReceived', (notification) => {
@@ -132,5 +152,49 @@ export const nativePush = {
 
     const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
     return await PushNotifications.checkPermissions();
+  },
+
+  /**
+   * Subscribe to token events
+   * If a token was already received, the callback fires immediately
+   */
+  onToken(callback: TokenCallback) {
+    tokenCallbacks.push(callback);
+    
+    // If we already have a token, fire immediately
+    if (lastToken) {
+      callback(lastToken);
+    }
+    
+    // Return unsubscribe function
+    return () => {
+      tokenCallbacks = tokenCallbacks.filter(cb => cb !== callback);
+    };
+  },
+
+  /**
+   * Subscribe to error events
+   * If an error was already received, the callback fires immediately
+   */
+  onError(callback: ErrorCallback) {
+    errorCallbacks.push(callback);
+    
+    // If we already have an error, fire immediately
+    if (lastError) {
+      callback(lastError);
+    }
+    
+    // Return unsubscribe function
+    return () => {
+      errorCallbacks = errorCallbacks.filter(cb => cb !== callback);
+    };
+  },
+
+  /**
+   * Clear cached events (useful for re-registration)
+   */
+  clearCache() {
+    lastToken = null;
+    lastError = null;
   }
 };

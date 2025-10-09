@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, CheckCircle } from 'lucide-react';
+import { Bell, CheckCircle, Loader2 } from 'lucide-react';
 import { nativePush } from '@/services/nativePush';
 
 export const PushDiagnostics = () => {
@@ -12,7 +12,10 @@ export const PushDiagnostics = () => {
   const [permissionStatus, setPermissionStatus] = useState<string>('unknown');
   const [logs, setLogs] = useState<string[]>([]);
   const [isRegistering, setIsRegistering] = useState<boolean>(false);
-  const [registrationStatus, setRegistrationStatus] = useState<string>('Not registered');
+  const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'registering' | 'success' | 'error'>('idle');
+  const [receivedToken, setReceivedToken] = useState<string | null>(null);
+  const [receivedError, setReceivedError] = useState<string | null>(null);
+  const watchdogRef = useRef<NodeJS.Timeout | null>(null);
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -33,6 +36,7 @@ export const PushDiagnostics = () => {
         // Defensive: ensure listeners are initialized even if app boot missed it
         addLog('🔧 Ensuring native push listeners are initialized...');
         await nativePush.initialize();
+        addLog('✅ Native push listeners attached');
         
         // Check initial permission
         const perms = await nativePush.checkPermissions();
@@ -42,6 +46,41 @@ export const PushDiagnostics = () => {
     };
 
     initPlatform();
+
+    // Subscribe to token/error events
+    const unsubToken = nativePush.onToken((token) => {
+      addLog(`🎉 TOKEN RECEIVED: ${token.substring(0, 20)}...`);
+      setReceivedToken(token);
+      setRegistrationStatus('success');
+      setIsRegistering(false);
+      
+      // Clear watchdog
+      if (watchdogRef.current) {
+        clearTimeout(watchdogRef.current);
+        watchdogRef.current = null;
+      }
+    });
+
+    const unsubError = nativePush.onError((error) => {
+      addLog(`❌ REGISTRATION ERROR: ${error}`);
+      setReceivedError(error);
+      setRegistrationStatus('error');
+      setIsRegistering(false);
+      
+      // Clear watchdog
+      if (watchdogRef.current) {
+        clearTimeout(watchdogRef.current);
+        watchdogRef.current = null;
+      }
+    });
+
+    return () => {
+      unsubToken();
+      unsubError();
+      if (watchdogRef.current) {
+        clearTimeout(watchdogRef.current);
+      }
+    };
   }, []);
 
   const handleRegister = async () => {
@@ -50,30 +89,35 @@ export const PushDiagnostics = () => {
       return;
     }
 
+    // Clear any previous state
+    setReceivedToken(null);
+    setReceivedError(null);
+    nativePush.clearCache();
+
     setIsRegistering(true);
-    setRegistrationStatus('Registering...');
-    addLog('🔄 Starting registration via centralized service...');
+    setRegistrationStatus('registering');
+    addLog('🚀 Starting registration...');
+    addLog('📡 Calling PushNotifications.register()...');
 
     const result = await nativePush.register();
-
+    
     if (result.success) {
-      addLog('✅ Registration initiated - waiting for token...');
-      setRegistrationStatus('Waiting for token...');
+      addLog('✅ Registration initiated - waiting for native response...');
       
-      // Check after 20 seconds
-      setTimeout(() => {
-        addLog('⏱️ 20 seconds elapsed');
-        addLog('If no token appeared, check:');
-        addLog('1. aps-environment entitlement (must be "production")');
-        addLog('2. Network connectivity (APNs requires internet)');
-        addLog('3. Device restrictions or MDM policies');
-        addLog('4. Use Console.app on Mac to view device logs');
-        setRegistrationStatus('Check logs for details');
-        setIsRegistering(false);
+      // Set watchdog to provide feedback if no response after 20s
+      watchdogRef.current = setTimeout(() => {
+        if (registrationStatus === 'registering') {
+          addLog('⚠️ No response after 20s. Troubleshooting:');
+          addLog('  1. Check Apple Developer Console: Certificates & Profiles');
+          addLog('  2. Xcode: Signing & Capabilities → Push Notifications enabled');
+          addLog('  3. Xcode Console: Look for APNs/registration errors');
+          addLog('  4. Verify provisioning profile has Push capability');
+          setIsRegistering(false);
+        }
       }, 20000);
     } else {
       addLog(`❌ Registration failed: ${result.error}`);
-      setRegistrationStatus(`Failed: ${result.error}`);
+      setRegistrationStatus('error');
       setIsRegistering(false);
     }
   };
@@ -122,8 +166,16 @@ export const PushDiagnostics = () => {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Status:</span>
-                <Badge variant="outline">
-                  {registrationStatus}
+                <Badge variant={
+                  registrationStatus === 'success' ? 'default' :
+                  registrationStatus === 'error' ? 'destructive' :
+                  registrationStatus === 'registering' ? 'secondary' :
+                  'outline'
+                }>
+                  {registrationStatus === 'idle' ? 'Not registered' :
+                   registrationStatus === 'registering' ? 'Registering...' :
+                   registrationStatus === 'success' ? 'Token received' :
+                   'Error'}
                 </Badge>
               </div>
             </>
@@ -131,15 +183,44 @@ export const PushDiagnostics = () => {
         </div>
 
         {isNative && (
-          <div className="space-y-2">
+          <div className="space-y-4">
             <Button 
               onClick={handleRegister} 
               className="w-full"
               disabled={isRegistering}
             >
-              <CheckCircle className="h-4 w-4 mr-2" />
-              {isRegistering ? 'Registering...' : 'Register for Push Notifications'}
+              {isRegistering ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Registering...
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  {registrationStatus === 'success' || registrationStatus === 'error' 
+                    ? 'Re-register' 
+                    : 'Register for Push Notifications'}
+                </>
+              )}
             </Button>
+
+            {receivedToken && (
+              <div className="p-4 bg-green-50 dark:bg-green-950 rounded-lg border border-green-200 dark:border-green-800">
+                <p className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">✅ Token Received</p>
+                <p className="text-xs text-green-700 dark:text-green-300 font-mono break-all">
+                  {receivedToken.substring(0, 40)}...
+                </p>
+              </div>
+            )}
+
+            {receivedError && (
+              <div className="p-4 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                <p className="text-sm font-semibold text-red-900 dark:text-red-100 mb-2">❌ Registration Error</p>
+                <p className="text-xs text-red-700 dark:text-red-300 break-words">
+                  {receivedError}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
