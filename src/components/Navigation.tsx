@@ -174,7 +174,7 @@ const Navigation = () => {
       {/* Mobile Navigation Menu */}
       <div className={`md:hidden bg-background/95 backdrop-blur-sm border-b border-charcoal transition-all duration-300 ease-in-out ${
         isMobileMenuOpen 
-          ? 'max-h-96 opacity-100' 
+          ? 'max-h-[80vh] opacity-100 overflow-y-auto overscroll-contain' 
           : 'max-h-0 opacity-0 overflow-hidden'
       }`}>
         <div className="px-4 py-4 space-y-4 w-full">
@@ -198,7 +198,7 @@ const Navigation = () => {
           })}
 
           {/* Dev tool: Push Setup (only visible in native app) */}
-          {isCapacitorNative && (
+          {(isCapacitorNative || isPWAStandalone || import.meta.env.DEV) && (
             <Button
               variant="frameNeutral"
               shape="square"
