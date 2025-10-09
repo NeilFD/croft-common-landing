@@ -14,66 +14,61 @@ let lastToken: string | null = null;
 let lastError: string | null = null;
 
 /**
- * Centralized Native Push Notification Service
- * Single source of truth for iOS/Android push registration
+ * Simplified Native Push Service
+ * iOS/Android token registration with clear logging
  */
 export const nativePush = {
   /**
-   * Initialize push notifications - sets up listeners only
-   * Does NOT automatically register - that must be explicit
+   * Initialize push listeners only - no auto-registration
    */
   async initialize() {
     if (!Capacitor.isNativePlatform()) {
-      console.log('📱 Not a native platform, skipping native push initialization');
+      console.log('📱 Not native platform, skipping');
       return;
     }
 
-    console.log('📱 Initializing native push service...');
+    console.log('📱 Initialising listeners...');
     
     const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
 
-    // Set up listeners (once)
     await PushNotifications.addListener('registration', async (token) => {
-      console.log('📱 ✅ Push token received:', token.value.substring(0, 20) + '...');
+      console.log('📱 ✅ Token:', token.value.substring(0, 20) + '...');
       
-      // Cache the token and notify all subscribers
       lastToken = token.value;
       lastError = null;
       tokenCallbacks.forEach(cb => cb(token.value));
       
       try {
         const platform = Capacitor.getPlatform();
-        const tokenPrefix = platform === 'ios' ? 'ios-token:' : 'android-token:';
-        
-        console.log(`📱 Saving ${platform} token to Supabase...`);
-        
         const { data: { user } } = await supabase.auth.getUser();
+        
         if (!user) {
-          console.error('📱 No authenticated user - cannot save token');
+          console.error('📱 No user - cannot save token');
           return;
         }
         
-        const { data, error } = await supabase.functions.invoke('save-push-subscription', {
+        console.log(`📱 Saving ${platform} token...`);
+        
+        const { error } = await supabase.functions.invoke('save-push-subscription', {
           body: {
-            endpoint: `${tokenPrefix}${token.value}`,
-            platform: platform
+            endpoint: `${platform}-token:${token.value}`,
+            platform
           }
         });
         
         if (error) {
-          console.error('📱 Failed to save token:', error);
+          console.error('📱 Save error:', error);
         } else {
-          console.log('📱 ✅ Token saved successfully:', data);
+          console.log('📱 ✅ Token saved');
         }
       } catch (error) {
-        console.error('📱 Exception saving token:', error);
+        console.error('📱 Exception:', error);
       }
     });
 
     await PushNotifications.addListener('registrationError', (error) => {
-      console.error('📱 ❌ Registration error:', error);
+      console.error('📱 ❌ Error:', error);
       
-      // Cache the error and notify all subscribers
       const errorMessage = error.error || String(error);
       lastError = errorMessage;
       lastToken = null;
@@ -81,63 +76,60 @@ export const nativePush = {
     });
 
     await PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('📱 Push notification received:', notification);
+      console.log('📱 Push received:', notification);
     });
 
     await PushNotifications.addListener('pushNotificationActionPerformed', (notification) => {
-      console.log('📱 Push notification action performed:', notification);
+      console.log('📱 Push action:', notification);
     });
 
-    console.log('📱 ✅ Native push listeners initialized');
+    console.log('📱 ✅ Listeners ready');
   },
 
   /**
-   * Request permission and register for push notifications
-   * Call this explicitly when user wants to enable push
+   * Explicit registration - call from UI only
    */
   async register(): Promise<{ success: boolean; error?: string }> {
     if (!Capacitor.isNativePlatform()) {
-      return { success: false, error: 'Not a native platform' };
+      return { success: false, error: 'Not native' };
     }
 
     if (isRegistering) {
-      console.log('📱 Registration already in progress...');
-      return { success: false, error: 'Registration in progress' };
+      console.log('📱 Already registering...');
+      return { success: false, error: 'In progress' };
     }
 
     if (hasRegistered) {
-      console.log('📱 Already registered this session');
+      console.log('📱 Already registered');
       return { success: true };
     }
 
     isRegistering = true;
-    console.log('📱 Starting push registration...');
+    console.log('📱 Requesting permission...');
 
     try {
       const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
 
-      // Request permission
       const permResult = await PushNotifications.requestPermissions();
-      console.log('📱 Permission result:', permResult.receive);
+      console.log('📱 Permission:', permResult.receive);
 
       if (permResult.receive !== 'granted') {
         isRegistering = false;
         return { success: false, error: 'Permission denied' };
       }
 
-      // Register with APNs/FCM
-      console.log('📱 Calling PushNotifications.register()...');
+      console.log('📱 Calling register()...');
       await PushNotifications.register();
       
       hasRegistered = true;
       isRegistering = false;
       
-      console.log('📱 ✅ Registration initiated - waiting for token...');
+      console.log('📱 ✅ Waiting for token...');
       return { success: true };
       
     } catch (error) {
       isRegistering = false;
-      console.error('📱 Registration failed:', error);
+      console.error('📱 Failed:', error);
       return { success: false, error: String(error) };
     }
   },
