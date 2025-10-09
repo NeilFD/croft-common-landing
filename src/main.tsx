@@ -1,4 +1,5 @@
 import { createRoot } from 'react-dom/client'
+import { Capacitor } from '@capacitor/core'
 import App from './App.tsx'
 import './index.css'
 import { initBootLogger } from './mobile/bootLogger'
@@ -21,6 +22,48 @@ const isPWAMode = () => {
 };
 
 const pwaMode = isPWAMode();
+
+// Native heartbeat - first 30 seconds only
+if (Capacitor.isNativePlatform?.()) {
+  const bootSessionId = localStorage.getItem('cc_boot_session_id') || `mobile-debug-${Date.now()}`;
+  const platform = Capacitor.getPlatform();
+  let heartbeatCount = 0;
+  const maxHeartbeats = 6;
+  
+  const sendHeartbeat = () => {
+    if (heartbeatCount >= maxHeartbeats) return;
+    
+    const payload = JSON.stringify({
+      session_id: bootSessionId,
+      step: 'native_heartbeat',
+      data: { count: heartbeatCount + 1 },
+      platform,
+      user_agent: navigator.userAgent.substring(0, 500),
+      ts: new Date().toISOString()
+    });
+    
+    if (navigator.sendBeacon) {
+      const blob = new Blob([payload], { type: 'application/json' });
+      navigator.sendBeacon('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log', blob);
+    } else {
+      fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: true
+      }).catch(() => {});
+    }
+    
+    heartbeatCount++;
+    if (heartbeatCount < maxHeartbeats) {
+      setTimeout(sendHeartbeat, 5000);
+    }
+  };
+  
+  // Start first heartbeat after 1 second
+  setTimeout(sendHeartbeat, 1000);
+  console.log('📱 Native heartbeat started (6 beats over 30s)');
+}
 
 // Domain consistency: no client-side redirect (enforce at DNS/edge for canonical URL)
 // This keeps service worker scope, caches, and push subscriptions stable

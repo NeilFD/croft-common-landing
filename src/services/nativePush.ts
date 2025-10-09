@@ -2,6 +2,31 @@ import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { mobileLog, DEBUG_SESSION_ID } from '@/lib/mobileDebug';
 
+// Direct Edge Function logging (bypasses client)
+const EDGE_FUNCTION_URL = 'https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log';
+
+async function directLog(step: string, data?: any, error?: string): Promise<void> {
+  try {
+    const platform = Capacitor.isNativePlatform() ? Capacitor.getPlatform() : 'web';
+    await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: DEBUG_SESSION_ID,
+        step,
+        data,
+        error_message: error,
+        platform,
+        user_agent: navigator.userAgent,
+        ts: new Date().toISOString()
+      }),
+      keepalive: true
+    });
+  } catch (e) {
+    console.warn('Direct log failed:', e);
+  }
+}
+
 let isRegistering = false;
 let hasRegistered = false;
 
@@ -32,6 +57,7 @@ export const nativePush = {
     const { data: { user } } = await supabase.auth.getUser();
     
     mobileLog('native:init', { platform, user_id: user?.id });
+    directLog('native:init', { platform, user_id: user?.id });
 
     console.log('📱 Initialising listeners...');
     
@@ -42,6 +68,7 @@ export const nativePush = {
       
       const tokenPrefix = token.value.substring(0, 12);
       mobileLog('native:token', { token_prefix: tokenPrefix, platform });
+      directLog('native:token', { token_prefix: tokenPrefix, platform });
       
       lastToken = token.value;
       lastError = null;
@@ -86,6 +113,7 @@ export const nativePush = {
       
       const errorMessage = error.error || String(error);
       mobileLog('native:registration_error', { error: errorMessage }, errorMessage);
+      directLog('native:registration_error', { error: errorMessage }, errorMessage);
       
       lastError = errorMessage;
       lastToken = null;
@@ -111,6 +139,7 @@ export const nativePush = {
 
     console.log('📱 ✅ Listeners ready');
     mobileLog('native:listeners_ready', { platform });
+    directLog('native:listeners_ready', { platform });
   },
 
   /**
@@ -137,6 +166,7 @@ export const nativePush = {
     isRegistering = true;
     console.log('📱 Requesting permission...');
     mobileLog('native:request_permissions_start', { platform: Capacitor.getPlatform() });
+    directLog('native:request_permissions_start', { platform: Capacitor.getPlatform() });
 
     try {
       const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
@@ -144,6 +174,7 @@ export const nativePush = {
       const permResult = await PushNotifications.requestPermissions();
       console.log('📱 Permission:', permResult.receive);
       mobileLog('native:permission_result', { receive: permResult.receive });
+      directLog('native:permission_result', { receive: permResult.receive });
 
       if (permResult.receive !== 'granted') {
         isRegistering = false;
@@ -153,6 +184,7 @@ export const nativePush = {
 
       console.log('📱 Calling register()...');
       mobileLog('native:register_called', { platform: Capacitor.getPlatform() });
+      directLog('native:register_called', { platform: Capacitor.getPlatform() });
       await PushNotifications.register();
       
       hasRegistered = true;
@@ -160,6 +192,7 @@ export const nativePush = {
       
       console.log('📱 ✅ Waiting for token...');
       mobileLog('native:register_ok', { platform: Capacitor.getPlatform() });
+      directLog('native:register_ok', { platform: Capacitor.getPlatform() });
       return { success: true };
       
     } catch (error) {

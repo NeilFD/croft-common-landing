@@ -79,6 +79,47 @@
               }
             }
           }
+          
+          // ===== ULTRA-EARLY NATIVE BOOT BEACON =====
+          // Fire immediately if native, before React loads
+          if (isNative) {
+            var sessionId = 'mobile-debug-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+            var platform = 'unknown';
+            try {
+              platform = w.Capacitor.getPlatform ? w.Capacitor.getPlatform() : 'unknown';
+            } catch (e) {}
+            
+            var bootPayload = JSON.stringify({
+              session_id: sessionId,
+              step: 'native_boot',
+              platform: platform,
+              user_agent: navigator.userAgent.substring(0, 500),
+              ts: new Date().toISOString()
+            });
+            
+            // Try sendBeacon first (most reliable)
+            if (navigator.sendBeacon) {
+              var beaconUrl = 'https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log';
+              var blob = new Blob([bootPayload], { type: 'application/json' });
+              navigator.sendBeacon(beaconUrl, blob);
+              console.log('📱 [native_boot] Beacon sent');
+            } else {
+              // Fallback to fetch
+              fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: bootPayload,
+                keepalive: true
+              }).catch(function(e) {
+                console.warn('📱 [native_boot] Failed:', e);
+              });
+            }
+            
+            // Store session ID for later use
+            try {
+              localStorage.setItem('cc_boot_session_id', sessionId);
+            } catch (e) {}
+          }
         } catch (e) { /* swallow to avoid blocking app */ }
       })();
     </script>

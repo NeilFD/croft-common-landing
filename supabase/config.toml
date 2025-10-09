@@ -97,6 +97,9 @@ verify_jwt = false
 [functions.backfill-push-user-links]
 verify_jwt = false
 
+[functions.mobile-debug-log]
+verify_jwt = false
+
 [functions.get-enabled-users-count]
 verify_jwt = false
 
