@@ -124,7 +124,7 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
     headers: {
       'Authorization': `Bearer ${jwt}`,
       'Content-Type': 'application/json',
-      'apns-topic': 'com.croftcommon.beacon',
+      'apns-topic': Deno.env.get("APNS_TOPIC") || 'com.croftcommon.beacon',
       'apns-priority': '10'
     },
     body: JSON.stringify(apnsPayload)
@@ -272,10 +272,12 @@ serve(async (req) => {
     const APNS_TEAM_ID = Deno.env.get("APNS_TEAM_ID");
     const APNS_PRIVATE_KEY = Deno.env.get("APNS_PRIVATE_KEY");
     const APNS_ENVIRONMENT = Deno.env.get("APNS_ENVIRONMENT") || "production";
+    const APNS_TOPIC = Deno.env.get("APNS_TOPIC") || "com.croftcommon.beacon";
     const FCM_SERVER_KEY = Deno.env.get("FCM_SERVER_KEY");
 
     console.log(`🔑 Native Push Configuration:`);
     console.log(`  - APNs Environment: ${APNS_ENVIRONMENT}`);
+    console.log(`  - APNs Topic: ${APNS_TOPIC}`);
     console.log(`  - APNs configured: ${!!(APNS_KEY_ID && APNS_TEAM_ID && APNS_PRIVATE_KEY)}`);
     console.log(`  - FCM configured: ${!!FCM_SERVER_KEY}`);
 
@@ -413,6 +415,7 @@ serve(async (req) => {
 
     let success = 0;
     let failed = 0;
+    const errors: string[] = [];
 
     // Build personalization map
     const userFirstNames = await buildFirstNameMap(
@@ -475,25 +478,57 @@ serve(async (req) => {
           error: null,
           click_token: clickToken,
         } as any);
-      } catch (err: any) {
-        failed++;
-        const statusCode = err?.statusCode ?? err?.status ?? 0;
-        const isGone = statusCode === 404 || statusCode === 410;
-        console.error(`❌ Failed to send to ${s.id}:`, err.message);
+        } catch (err: any) {
+          failed++;
+          const statusCode = err?.statusCode ?? err?.status ?? 0;
+          let isGone = statusCode === 404 || statusCode === 410;
+          const message = String(err?.message ?? err);
+          console.error(`❌ Failed to send to ${s.id}:`, message);
 
-        if (isGone) {
-          await supabaseAdmin.from("push_subscriptions").update({ is_active: false }).eq("id", s.id);
+          // Try to extract a concise reason and auto-deactivate bad tokens
+          let reason: string | undefined;
+          if (message.startsWith('APNs error')) {
+            try {
+              const jsonStart = message.indexOf('{');
+              const jsonStr = jsonStart !== -1 ? message.slice(jsonStart) : '';
+              const parsed = jsonStr ? JSON.parse(jsonStr) : null;
+              const apnsReason = parsed?.reason as string | undefined;
+              if (apnsReason) {
+                reason = `APNs: ${apnsReason}`;
+                if (apnsReason === 'BadDeviceToken') {
+                  isGone = true;
+                }
+              } else if (message.includes('BadDeviceToken')) {
+                reason = 'APNs: BadDeviceToken';
+                isGone = true;
+              }
+            } catch {
+              if (message.includes('BadDeviceToken')) {
+                reason = 'APNs: BadDeviceToken';
+                isGone = true;
+              }
+            }
+          } else if (message.startsWith('FCM error')) {
+            reason = 'FCM: send failed';
+          }
+
+          if (reason) {
+            errors.push(reason);
+          }
+
+          if (isGone) {
+            await supabaseAdmin.from("push_subscriptions").update({ is_active: false }).eq("id", s.id);
+          }
+
+          await supabaseAdmin.from("notification_deliveries").insert({
+            notification_id: notificationId,
+            subscription_id: s.id,
+            endpoint: s.endpoint,
+            status: isGone ? "deactivated" : "failed",
+            error: reason ?? message,
+            click_token: clickToken,
+          } as any);
         }
-
-        await supabaseAdmin.from("notification_deliveries").insert({
-          notification_id: notificationId,
-          subscription_id: s.id,
-          endpoint: s.endpoint,
-          status: isGone ? "deactivated" : "failed",
-          error: String(err?.message ?? err),
-          click_token: clickToken,
-        } as any);
-      }
     }
 
     // Update notification with final counts
@@ -517,6 +552,7 @@ serve(async (req) => {
         failed,
         recipients: subs?.length ?? 0,
         scope,
+        errors
       }),
       { status: 200, headers: { "Content-Type": "application/json", ...corsHeaders } }
     );

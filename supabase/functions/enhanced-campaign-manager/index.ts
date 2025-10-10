@@ -466,8 +466,14 @@ async function sendCampaignPushNotifications(
     const recipientCount = sendResult?.recipients || 0;
     const successCount = sendResult?.success || 0;
     
-    if (recipientCount === 0 || successCount === 0) {
+    if (recipientCount === 0) {
       throw new Error('No active native push subscriptions for target audience');
+    }
+    if (successCount === 0) {
+      const firstError = Array.isArray(sendResult?.errors) && sendResult.errors.length > 0
+        ? sendResult.errors[0]
+        : 'All sends failed';
+      throw new Error(firstError);
     }
     console.log('✅ Push notifications sent:', sendResult);
 
