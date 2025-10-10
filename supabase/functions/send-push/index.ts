@@ -119,12 +119,15 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
     ? "https://api.sandbox.push.apple.com"
     : "https://api.push.apple.com";
   
+  const apnsTopic = Deno.env.get("APNS_TOPIC") || 'com.croftcommon.beacon';
+  
   const response = await fetch(`${apnsEndpoint}/3/device/${token}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${jwt}`,
       'Content-Type': 'application/json',
-      'apns-topic': Deno.env.get("APNS_TOPIC") || 'com.croftcommon.beacon',
+      'apns-topic': apnsTopic,
+      'apns-push-type': 'alert',
       'apns-priority': '10'
     },
     body: JSON.stringify(apnsPayload)
@@ -132,7 +135,7 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
   
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`APNs error ${response.status}: ${errorBody}`);
+    throw new Error(`APNs error ${response.status}: ${errorBody} [env=${environment}, topic=${apnsTopic}]`);
   }
 }
 
@@ -483,7 +486,8 @@ serve(async (req) => {
           const statusCode = err?.statusCode ?? err?.status ?? 0;
           let isGone = statusCode === 404 || statusCode === 410;
           const message = String(err?.message ?? err);
-          console.error(`❌ Failed to send to ${s.id}:`, message);
+          const deviceType = isIos ? 'iOS' : isAndroid ? 'Android' : 'Unknown';
+          console.error(`❌ Failed to send to ${deviceType} device ${s.id} [env=${APNS_ENVIRONMENT}, topic=${APNS_TOPIC}]:`, message);
 
           // Try to extract a concise reason and auto-deactivate bad tokens
           let reason: string | undefined;
