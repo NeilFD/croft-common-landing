@@ -300,6 +300,10 @@ serve(async (req) => {
 
     // Fetch native push subscriptions only
     console.log(`🔍 Fetching native subscriptions for scope="${scope}" (targetUserIds=${targetUserIds.length})`);
+    if (targetUserIds.length > 0) {
+      console.log(`🎯 Targeting explicit user_ids:`, targetUserIds.slice(0, 5), targetUserIds.length > 5 ? `... and ${targetUserIds.length - 5} more` : '');
+    }
+    
     let query = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, user_id, platform")
@@ -307,7 +311,6 @@ serve(async (req) => {
       .or("endpoint.like.ios-token:%,endpoint.like.android-token:%");
 
     if (targetUserIds.length > 0) {
-      console.log(`🎯 Targeting explicit user_ids:`, targetUserIds);
       query = query.in("user_id", targetUserIds);
     } else if (scope === "self") {
       console.log(`🎯 Self-scope detected, using authenticated user ID: ${userRes.user.id}`);

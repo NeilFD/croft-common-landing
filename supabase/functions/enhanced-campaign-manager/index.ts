@@ -310,13 +310,15 @@ Deno.serve(async (req) => {
             })
             .eq('id', campaign.id);
 
+          const recipientMessage = campaignData.test_mode
+            ? 'Test campaign sent successfully'
+            : `Campaign sent successfully to ${pushResult.sent_count} recipient${pushResult.sent_count !== 1 ? 's' : ''}`;
+          
           return new Response(
             JSON.stringify({
               success: true,
               campaign: { ...campaign, ...pushResult },
-              message: campaignData.test_mode
-                ? 'Test campaign sent successfully'
-                : `Campaign sent successfully to ${pushResult.sent_count} recipients`
+              message: recipientMessage
             }),
             {
               status: 200,
@@ -325,15 +327,14 @@ Deno.serve(async (req) => {
           );
         } catch (err: any) {
           console.error('❌ Push send failed:', err);
-          // Allow the UI to surface a clear error when there are no recipients or other issues
-          const status = typeof err?.status === 'number' ? err.status : 400;
+          // Surface clear error messages to UI
+          const errorMessage = err?.message || String(err);
           return new Response(
             JSON.stringify({
               success: false,
-              error: 'Failed to send campaign',
-              details: err?.message || String(err)
+              error: errorMessage
             }),
-            { status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
       }
@@ -422,6 +423,9 @@ async function sendCampaignPushNotifications(
     }
 
     console.log('🎯 Target audience size:', targetUserIds.length);
+    if (targetUserIds.length > 0) {
+      console.log('🎯 Target user IDs:', targetUserIds.slice(0, 5), targetUserIds.length > 5 ? `... and ${targetUserIds.length - 5} more` : '');
+    }
 
     // Prepare push notification payload
     const pushPayload = {
@@ -451,19 +455,35 @@ async function sendCampaignPushNotifications(
     });
 
     const respText = await resp.text();
+    console.log('📡 send-push HTTP status:', resp.status);
+    console.log('📡 send-push raw response:', respText);
+    
     let sendResult: any = {};
     try {
       sendResult = respText ? JSON.parse(respText) : {};
     } catch (_e) {
       console.error('❌ Failed to parse send-push response JSON:', respText);
+      throw new Error(`Invalid response from send-push: ${respText}`);
     }
 
-    console.log('📡 send-push HTTP status:', resp.status);
-    console.log('📦 send-push body:', sendResult);
+    console.log('📦 send-push parsed body:', sendResult);
 
-    if (!resp.ok || sendResult?.error) {
+    // Check for errors or zero recipients
+    if (!resp.ok) {
       const message = sendResult?.error || `send-push failed with status ${resp.status}`;
       throw new Error(message);
+    }
+    
+    if (sendResult?.error) {
+      throw new Error(sendResult.error);
+    }
+    
+    // Check if we actually sent to anyone
+    const recipientCount = sendResult?.recipients || 0;
+    const successCount = sendResult?.success || 0;
+    
+    if (recipientCount === 0 || successCount === 0) {
+      throw new Error('No active native push subscriptions for target audience');
     }
     console.log('✅ Push notifications sent:', sendResult);
 
