@@ -438,41 +438,25 @@ async function sendCampaignPushNotifications(
       campaign_id: campaign.id
     };
 
-    // Call send-push function with service role key (we've already validated the user)
-    console.log('🔐 Invoking send-push via fetch with service role key...');
-    const functionsUrl = `${supabaseUrl}/functions/v1/send-push`;
-    const resp = await fetch(functionsUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'apikey': supabaseAnonKey
-      },
-      body: JSON.stringify({
-        ...pushPayload,
+    // Call send-push function using supabaseAdmin client (service role)
+    console.log('🔐 Invoking send-push via supabaseAdmin.functions.invoke...');
+    const { data: sendResult, error: sendError } = await supabaseAdmin.functions.invoke('send-push', {
+      body: {
+        title: campaign.title,
+        body: campaign.message,
+        scope: campaign.test_mode ? 'self' : 'all',
+        user_ids: targetUserIds,
+        dry_run: campaign.test_mode,
+        personalize: campaign.personalize,
         campaign_id: campaign.id
-      })
+      }
     });
 
-    const respText = await resp.text();
-    console.log('📡 send-push HTTP status:', resp.status);
-    console.log('📡 send-push raw response:', respText);
-    
-    let sendResult: any = {};
-    try {
-      sendResult = respText ? JSON.parse(respText) : {};
-    } catch (_e) {
-      console.error('❌ Failed to parse send-push response JSON:', respText);
-      throw new Error(`Invalid response from send-push: ${respText}`);
+    if (sendError) {
+      throw new Error(sendError.message || 'send-push failed');
     }
 
-    console.log('📦 send-push parsed body:', sendResult);
-
-    // Check for errors or zero recipients
-    if (!resp.ok) {
-      const message = sendResult?.error || `send-push failed with status ${resp.status}`;
-      throw new Error(message);
-    }
+    console.log('✅ send-push result:', sendResult);
     
     if (sendResult?.error) {
       throw new Error(sendResult.error);

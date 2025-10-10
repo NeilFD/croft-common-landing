@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { CalendarIcon, Send, TestTube, Users, Clock, Zap, Eye, MousePointer, Plus, Edit, Target, Trash2, Archive, ArchiveRestore, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
@@ -409,6 +409,9 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Sending Campaign</DialogTitle>
+            <DialogDescription>
+              We're sending your push campaign now. This usually takes a few seconds.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="flex items-center justify-center">
