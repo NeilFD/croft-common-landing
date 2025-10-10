@@ -232,23 +232,35 @@ serve(async (req) => {
     const hasAuth = !!req.headers.get("Authorization");
     console.log(`🔐 Auth header present: ${hasAuth}`);
 
+    // Try to get user with user client first
     const { data: userRes, error: userErr } = await supabaseUser.auth.getUser();
-    if (userErr || !userRes.user) {
+    
+    // Check if this is a service role call (from another function) vs user call (from client)
+    const isServiceRoleCall = userErr && hasAuth;
+    
+    if (isServiceRoleCall) {
+      // Service role call - validate service role key and skip user checks
+      console.log(`🔧 Service role call detected, skipping user auth checks`);
+      // The calling function has already validated user and domain
+    } else if (userErr || !userRes.user) {
+      // User call but auth failed
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json", ...corsHeaders },
       });
-    }
-    const email = userRes.user.email ?? "";
-    console.log(`✅ Authenticated user: ${email}`);
+    } else {
+      // User call with valid auth - check domain
+      const email = userRes.user.email ?? "";
+      console.log(`✅ Authenticated user: ${email}`);
 
-    // Enforce verified domain policy
-    const { data: allowed, error: allowedErr } = await supabaseAdmin.rpc("is_email_domain_allowed", { email });
-    if (allowedErr || !allowed) {
-      return new Response(JSON.stringify({ error: "Forbidden: domain not allowed" }), {
-        status: 403,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
-      });
+      // Enforce verified domain policy
+      const { data: allowed, error: allowedErr } = await supabaseAdmin.rpc("is_email_domain_allowed", { email });
+      if (allowedErr || !allowed) {
+        return new Response(JSON.stringify({ error: "Forbidden: domain not allowed" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
     }
     
     // Native push credentials

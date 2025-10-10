@@ -438,14 +438,14 @@ async function sendCampaignPushNotifications(
       campaign_id: campaign.id
     };
 
-    // Call send-push function with user JWT (via supabaseUser client) for proper authorization
-    console.log('🔐 Invoking send-push via fetch with user JWT...');
+    // Call send-push function with service role key (we've already validated the user)
+    console.log('🔐 Invoking send-push via fetch with service role key...');
     const functionsUrl = `${supabaseUrl}/functions/v1/send-push`;
     const resp = await fetch(functionsUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': authHeader || '',
+        'Authorization': `Bearer ${supabaseServiceKey}`,
         'apikey': supabaseAnonKey
       },
       body: JSON.stringify({
