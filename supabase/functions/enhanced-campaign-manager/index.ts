@@ -451,40 +451,38 @@ async function sendCampaignPushNotifications(
     });
 
     const respText = await resp.text();
-    let pushResult: any = {};
+    let sendResult: any = {};
     try {
-      pushResult = respText ? JSON.parse(respText) : {};
+      sendResult = respText ? JSON.parse(respText) : {};
     } catch (_e) {
       console.error('❌ Failed to parse send-push response JSON:', respText);
     }
 
     console.log('📡 send-push HTTP status:', resp.status);
-    console.log('📦 send-push body:', pushResult);
+    console.log('📦 send-push body:', sendResult);
 
-    if (!resp.ok || pushResult?.error) {
-      const message = pushResult?.error || `send-push failed with status ${resp.status}`;
+    if (!resp.ok || sendResult?.error) {
+      const message = sendResult?.error || `send-push failed with status ${resp.status}`;
       throw new Error(message);
     }
-
-    const pushResult = pushResponse.data;
-    console.log('✅ Push notifications sent:', pushResult);
+    console.log('✅ Push notifications sent:', sendResult);
 
     // Record campaign analytics
-    for (const userId of targetUserIds) {
+    for (const uid of targetUserIds) {
       await supabaseAdmin
         .from('campaign_analytics')
         .insert({
           campaign_id: campaign.id,
-          user_id: userId,
+          user_id: uid,
           event_type: 'sent',
           metadata: { test_mode: campaign.test_mode }
         });
     }
 
     return {
-      sent_count: pushResult.success || 0,
-      delivered_count: pushResult.success || 0, // Assume delivered for now
-      failed_count: pushResult.failed || 0
+      sent_count: sendResult.success || 0,
+      delivered_count: sendResult.success || 0, // Assume delivered for now
+      failed_count: sendResult.failed || 0
     };
 
   } catch (error) {

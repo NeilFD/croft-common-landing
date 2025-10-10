@@ -303,7 +303,8 @@ serve(async (req) => {
     let query = supabaseAdmin
       .from("push_subscriptions")
       .select("id, endpoint, user_id, platform")
-      .eq("is_active", true);
+      .eq("is_active", true)
+      .or("endpoint.like.ios-token:%,endpoint.like.android-token:%");
 
     if (targetUserIds.length > 0) {
       console.log(`🎯 Targeting explicit user_ids:`, targetUserIds);
