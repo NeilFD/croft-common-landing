@@ -300,6 +300,32 @@ Deno.serve(async (req) => {
             supabaseAnonKey
           );
 
+          // Handle no recipients case
+          if (pushResult.code === 'NO_RECIPIENTS') {
+            await supabaseAdmin
+              .from('campaigns')
+              .update({
+                sent_count: 0,
+                delivered_count: 0,
+                status: 'no_recipients',
+                sent_at: new Date().toISOString()
+              })
+              .eq('id', campaign.id);
+            
+            return new Response(
+              JSON.stringify({
+                success: true,
+                campaign: { ...campaign, status: 'no_recipients', sent_count: 0 },
+                message: 'No registered mobile devices for this campaign',
+                code: 'NO_RECIPIENTS'
+              }),
+              {
+                status: 200,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+          }
+
           // Update campaign with actual metrics
           await supabaseAdmin
             .from('campaigns')
@@ -388,6 +414,26 @@ async function sendCampaignPushNotifications(
   try {
     // Get target users based on segment or filters
     let targetUserIds: string[] = [];
+    
+    // Check for active native devices BEFORE proceeding
+    const { data: nativeDevices, error: devicesError } = await supabaseAdmin
+      .from('push_subscriptions')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_active', true)
+      .or('endpoint.ilike.ios-token:%,endpoint.ilike.android-token:%');
+    
+    const nativeDeviceCount = nativeDevices || 0;
+    console.log('📱 Active native devices in system:', nativeDeviceCount);
+    
+    if (nativeDeviceCount === 0) {
+      console.warn('⚠️ No active native devices found in push_subscriptions. Skipping send.');
+      return {
+        sent_count: 0,
+        delivered_count: 0,
+        message: 'No registered mobile devices',
+        code: 'NO_RECIPIENTS'
+      };
+    }
 
     if (campaign.segment_id) {
       // Get users from saved segment

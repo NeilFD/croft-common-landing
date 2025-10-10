@@ -35,6 +35,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
   const [dryRun, setDryRun] = useState(false);
   const [sending, setSending] = useState(false);
   const [usePersonalization, setUsePersonalization] = useState(false);
+  const [nativeDeviceCount, setNativeDeviceCount] = useState<number | null>(null);
   
   // Banner notification fields
   const [bannerMessage, setBannerMessage] = useState('');
@@ -67,6 +68,27 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
         // no-op
       }
     })();
+  }, []);
+
+  // Check for active native devices on mount
+  useEffect(() => {
+    const checkNativeDevices = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('push_subscriptions')
+          .select('id', { count: 'exact', head: true })
+          .eq('is_active', true)
+          .or('endpoint.ilike.ios-token:%,endpoint.ilike.android-token:%');
+        
+        if (!error) {
+          setNativeDeviceCount(count || 0);
+        }
+      } catch (err) {
+        console.error('Failed to check native devices:', err);
+      }
+    };
+    
+    checkNativeDevices();
   }, []);
 
   // Load editing notification into form
@@ -185,7 +207,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
     };
   }, [title, body, icon, badge, normalizedUrl, usePersonalization]);
 
-  const canSend = title.trim().length > 0 && body.trim().length > 0;
+  const canSend = title.trim().length > 0 && body.trim().length > 0 && (nativeDeviceCount === null || nativeDeviceCount > 0);
 
   // Build schedule payload
   const buildScheduledISO = () => {
@@ -362,6 +384,39 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
         <CardTitle>Compose</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {nativeDeviceCount !== null && nativeDeviceCount === 0 && (
+          <div className="rounded-md border border-warning bg-warning/10 p-4 text-sm">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 text-warning">⚠️</div>
+              <div className="flex-1">
+                <p className="font-medium text-warning mb-1">No registered mobile devices</p>
+                <p className="text-muted-foreground mb-2">
+                  To send push notifications, users must register their devices in the native app.
+                </p>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  asChild
+                  className="mt-2"
+                >
+                  <a href="/push-setup" target="_blank" rel="noopener noreferrer">
+                    View Push Setup Guide
+                  </a>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {nativeDeviceCount !== null && nativeDeviceCount > 0 && (
+          <div className="rounded-md border bg-muted/40 p-3 text-sm flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-muted-foreground">Reachable native devices:</span>
+              <Badge variant="secondary">{nativeDeviceCount}</Badge>
+            </div>
+          </div>
+        )}
+
         {editing && (
           <div className="rounded-md border bg-muted/40 p-3 text-sm flex items-center justify-between">
             <div>
