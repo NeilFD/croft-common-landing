@@ -507,11 +507,7 @@ async function sendCampaignPushNotifications(
 
   } catch (error) {
     console.error('❌ Error in sendCampaignPushNotifications:', error);
-    return {
-      sent_count: 0,
-      delivered_count: 0,
-      failed_count: 1
-    };
+    throw (error instanceof Error ? error : new Error(String(error)));
   }
 }
 
