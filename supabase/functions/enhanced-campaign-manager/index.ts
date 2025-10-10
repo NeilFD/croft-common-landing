@@ -290,7 +290,15 @@ Deno.serve(async (req) => {
       // If sending now, trigger the push notification
       if (campaignData.schedule_type === 'now') {
         try {
-          const pushResult = await sendCampaignPushNotifications(supabaseAdmin, supabaseUser, campaign, user.id);
+          const pushResult = await sendCampaignPushNotifications(
+            supabaseAdmin,
+            supabaseUser,
+            campaign,
+            user.id,
+            authHeader,
+            supabaseUrl,
+            supabaseAnonKey
+          );
 
           // Update campaign with actual metrics
           await supabaseAdmin
@@ -365,7 +373,15 @@ Deno.serve(async (req) => {
   }
 });
 
-async function sendCampaignPushNotifications(supabaseAdmin: any, supabaseUser: any, campaign: any, userId: string) {
+async function sendCampaignPushNotifications(
+  supabaseAdmin: any,
+  supabaseUser: any,
+  campaign: any,
+  userId: string,
+  authHeader: string | null,
+  supabaseUrl: string,
+  supabaseAnonKey: string
+) {
   console.log('📱 Sending push notifications for campaign:', campaign.id);
 
   try {
@@ -419,20 +435,35 @@ async function sendCampaignPushNotifications(supabaseAdmin: any, supabaseUser: a
     };
 
     // Call send-push function with user JWT (via supabaseUser client) for proper authorization
-    console.log('🔐 Invoking send-push with user JWT...');
-    const pushResponse = await supabaseUser.functions.invoke('send-push', {
-      body: {
+    console.log('🔐 Invoking send-push via fetch with user JWT...');
+    const functionsUrl = `${supabaseUrl}/functions/v1/send-push`;
+    const resp = await fetch(functionsUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': authHeader || '',
+        'apikey': supabaseAnonKey
+      },
+      body: JSON.stringify({
         ...pushPayload,
-        campaign_id: campaign.id // Add campaign_id for tracking
-      }
+        campaign_id: campaign.id
+      })
     });
 
-    console.log('📡 send-push response status:', pushResponse.status);
-    console.log('📦 send-push response data:', pushResponse.data);
+    const respText = await resp.text();
+    let pushResult: any = {};
+    try {
+      pushResult = respText ? JSON.parse(respText) : {};
+    } catch (_e) {
+      console.error('❌ Failed to parse send-push response JSON:', respText);
+    }
 
-    if (pushResponse.error) {
-      console.error('❌ Error from send-push:', pushResponse.error);
-      throw pushResponse.error;
+    console.log('📡 send-push HTTP status:', resp.status);
+    console.log('📦 send-push body:', pushResult);
+
+    if (!resp.ok || pushResult?.error) {
+      const message = pushResult?.error || `send-push failed with status ${resp.status}`;
+      throw new Error(message);
     }
 
     const pushResult = pushResponse.data;

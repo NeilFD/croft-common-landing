@@ -229,6 +229,9 @@ serve(async (req) => {
     });
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    const hasAuth = !!req.headers.get("Authorization");
+    console.log(`🔐 Auth header present: ${hasAuth}`);
+
     const { data: userRes, error: userErr } = await supabaseUser.auth.getUser();
     if (userErr || !userRes.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -237,6 +240,7 @@ serve(async (req) => {
       });
     }
     const email = userRes.user.email ?? "";
+    console.log(`✅ Authenticated user: ${email}`);
 
     // Enforce verified domain policy
     const { data: allowed, error: allowedErr } = await supabaseAdmin.rpc("is_email_domain_allowed", { email });
