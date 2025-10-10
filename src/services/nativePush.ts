@@ -78,33 +78,49 @@ export const nativePush = {
         const platform = Capacitor.getPlatform();
         const { data: { user } } = await supabase.auth.getUser();
         
-        if (!user) {
-          console.error('📱 No user - cannot save token');
-          mobileLog('native:token_save_error', { reason: 'no_user' }, 'No authenticated user');
-          return;
-        }
+        console.log(`📱 Saving ${platform} token${user ? ` for user ${user.id}` : ' (will link on sign-in)'}...`);
+        mobileLog('native:token_save_start', { platform, user_id: user?.id || null, has_user: !!user });
+        directLog('native:token_save_start', { platform, user_id: user?.id || null });
         
-        console.log(`📱 Saving ${platform} token...`);
-        mobileLog('native:token_save_start', { platform, user_id: user.id });
-        
-        const { error } = await supabase.functions.invoke('save-push-subscription', {
+        const { data, error } = await supabase.functions.invoke('save-push-subscription', {
           body: {
             endpoint: `${platform}-token:${token.value}`,
             platform,
-            session_id: DEBUG_SESSION_ID
+            session_id: DEBUG_SESSION_ID,
+            user_agent: navigator.userAgent
           }
         });
         
+        directLog('native:token_save_response', { 
+          success: !error && data?.ok, 
+          data,
+          error: error?.message 
+        });
+        
         if (error) {
-          console.error('📱 Save error:', error);
-          mobileLog('native:token_save_error', { platform }, error.message || String(error));
+          const errorMsg = error.message || String(error);
+          console.error('📱 ❌ Save failed:', errorMsg);
+          mobileLog('native:token_save_error', { platform }, errorMsg);
+          errorCallbacks.forEach(cb => cb(`Save failed: ${errorMsg}`));
+        } else if (!data?.ok) {
+          const errorMsg = data?.error || 'Server returned failure';
+          console.error('📱 ❌ Server rejected:', errorMsg);
+          mobileLog('native:token_save_rejected', { platform, error: errorMsg });
+          errorCallbacks.forEach(cb => cb(`Server error: ${errorMsg}`));
         } else {
-          console.log('📱 ✅ Token saved');
-          mobileLog('native:token_save_ok', { platform });
+          console.log('📱 ✅ Token saved successfully');
+          mobileLog('native:token_save_ok', { 
+            platform, 
+            subscription_id: data.subscription_id,
+            user_linked: !!user 
+          });
         }
       } catch (error) {
-        console.error('📱 Exception:', error);
-        mobileLog('native:token_save_exception', null, error as Error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        console.error('📱 ❌ Exception:', errorMsg);
+        mobileLog('native:token_save_exception', { platform }, errorMsg);
+        directLog('native:token_save_exception', { platform }, errorMsg);
+        errorCallbacks.forEach(cb => cb(`Exception: ${errorMsg}`));
       }
     });
 

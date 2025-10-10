@@ -4334,13 +4334,13 @@ export type Database = {
       }
       push_subscriptions: {
         Row: {
-          auth: string
+          auth: string | null
           created_at: string
           endpoint: string
           id: string
           is_active: boolean
           last_seen: string | null
-          p256dh: string
+          p256dh: string | null
           platform: string | null
           user_agent: string | null
           user_email: string | null
@@ -4348,13 +4348,13 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          auth: string
+          auth?: string | null
           created_at?: string
           endpoint: string
           id?: string
           is_active?: boolean
           last_seen?: string | null
-          p256dh: string
+          p256dh?: string | null
           platform?: string | null
           user_agent?: string | null
           user_email?: string | null
@@ -4362,13 +4362,13 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          auth?: string
+          auth?: string | null
           created_at?: string
           endpoint?: string
           id?: string
           is_active?: boolean
           last_seen?: string | null
-          p256dh?: string
+          p256dh?: string | null
           platform?: string | null
           user_agent?: string | null
           user_email?: string | null
