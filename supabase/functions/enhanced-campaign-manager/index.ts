@@ -30,15 +30,22 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
     
-    if (!supabaseUrl || !supabaseServiceKey) {
+    if (!supabaseUrl || !supabaseServiceKey || !supabaseAnonKey) {
       throw new Error('Missing Supabase environment variables');
     }
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Admin client for database operations
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+
+    // User client for invoking functions with user JWT
+    const authHeader = req.headers.get('Authorization');
+    const supabaseUser = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader || '' } }
+    });
 
     // Verify JWT token
-    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(
         JSON.stringify({ error: 'Missing authorization header' }),
@@ -47,7 +54,7 @@ Deno.serve(async (req) => {
     }
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     
     if (authError || !user) {
       console.error('❌ Authentication failed:', authError);
@@ -67,7 +74,7 @@ Deno.serve(async (req) => {
     }
 
     const userDomain = userEmail.split('@')[1];
-    const { data: domainData, error: domainError } = await supabase
+    const { data: domainData, error: domainError } = await supabaseAdmin
       .from('allowed_domains')
       .select('domain')
       .eq('domain', userDomain)
@@ -93,7 +100,7 @@ Deno.serve(async (req) => {
           console.log('📊 Retrieving campaign history...');
           const includeArchived = requestBody.include_archived || req.headers.get('x-include-archived') === 'true';
           try {
-            let query = supabase
+            let query = supabaseAdmin
               .from('campaigns')
               .select('*')
               .order('created_at', { ascending: false });
@@ -120,7 +127,7 @@ Deno.serve(async (req) => {
                   let opened = campaign.opened_count || 0;
                   let clicked = campaign.clicked_count || 0;
 
-                  const { data: events } = await supabase
+                  const { data: events } = await supabaseAdmin
                     .from('campaign_analytics')
                     .select('event_type')
                     .eq('campaign_id', campaign.id);
@@ -134,13 +141,13 @@ Deno.serve(async (req) => {
                   }
 
                   if (clicked === 0) {
-                    const { data: notifs } = await supabase
+                    const { data: notifs } = await supabaseAdmin
                       .from('notifications')
                       .select('id')
                       .eq('campaign_id', campaign.id);
                     const notifIds = (notifs || []).map((n: any) => n.id);
                     if (notifIds.length > 0) {
-                      const { data: deliveries } = await supabase
+                      const { data: deliveries } = await supabaseAdmin
                         .from('notification_deliveries')
                         .select('status')
                         .in('notification_id', notifIds);
@@ -209,7 +216,7 @@ Deno.serve(async (req) => {
             );
           }
           try {
-            const { error: updateError } = await supabase
+            const { error: updateError } = await supabaseAdmin
               .from('campaigns')
               .update({ archived })
               .eq('id', campaign_id);
@@ -253,7 +260,7 @@ Deno.serve(async (req) => {
       console.log('📤 Creating enhanced campaign:', campaignData.title);
 
       // Create campaign record
-      const { data: campaign, error: campaignError } = await supabase
+      const { data: campaign, error: campaignError } = await supabaseAdmin
         .from('campaigns')
         .insert({
           title: campaignData.title,
@@ -283,10 +290,10 @@ Deno.serve(async (req) => {
       // If sending now, trigger the push notification
       if (campaignData.schedule_type === 'now') {
         try {
-          const pushResult = await sendCampaignPushNotifications(supabase, campaign, user.id, authHeader);
+          const pushResult = await sendCampaignPushNotifications(supabaseAdmin, supabaseUser, campaign, user.id);
 
           // Update campaign with actual metrics
-          await supabase
+          await supabaseAdmin
             .from('campaigns')
             .update({
               sent_count: pushResult.sent_count,
@@ -358,7 +365,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function sendCampaignPushNotifications(supabase: any, campaign: any, userId: string, authHeader: string) {
+async function sendCampaignPushNotifications(supabaseAdmin: any, supabaseUser: any, campaign: any, userId: string) {
   console.log('📱 Sending push notifications for campaign:', campaign.id);
 
   try {
@@ -367,7 +374,7 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
 
     if (campaign.segment_id) {
       // Get users from saved segment
-      const { data: segmentMembers, error } = await supabase
+      const { data: segmentMembers, error } = await supabaseAdmin
         .from('segment_member_previews')
         .select('user_id')
         .eq('segment_id', campaign.segment_id);
@@ -379,7 +386,7 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
       }
     } else if (campaign.segment_filters) {
       // Get users from dynamic filters using analytics function
-      const { data: analytics, error } = await supabase.rpc('get_advanced_member_analytics', {
+      const { data: analytics, error } = await supabaseAdmin.rpc('get_advanced_member_analytics', {
         p_date_start: campaign.segment_filters.dateRange?.start || null,
         p_date_end: campaign.segment_filters.dateRange?.end || null,
         p_min_age: campaign.segment_filters.ageRange?.min || null,
@@ -411,19 +418,20 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
       campaign_id: campaign.id
     };
 
-    // Call send-push function with user authorization and campaign_id for tracking
-    const pushResponse = await supabase.functions.invoke('send-push', {
+    // Call send-push function with user JWT (via supabaseUser client) for proper authorization
+    console.log('🔐 Invoking send-push with user JWT...');
+    const pushResponse = await supabaseUser.functions.invoke('send-push', {
       body: {
         ...pushPayload,
         campaign_id: campaign.id // Add campaign_id for tracking
-      },
-      headers: {
-        'Authorization': authHeader
       }
     });
 
+    console.log('📡 send-push response status:', pushResponse.status);
+    console.log('📦 send-push response data:', pushResponse.data);
+
     if (pushResponse.error) {
-      console.error('❌ Error sending push notifications:', pushResponse.error);
+      console.error('❌ Error from send-push:', pushResponse.error);
       throw pushResponse.error;
     }
 
@@ -432,7 +440,7 @@ async function sendCampaignPushNotifications(supabase: any, campaign: any, userI
 
     // Record campaign analytics
     for (const userId of targetUserIds) {
-      await supabase
+      await supabaseAdmin
         .from('campaign_analytics')
         .insert({
           campaign_id: campaign.id,
