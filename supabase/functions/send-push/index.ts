@@ -238,6 +238,10 @@ serve(async (req) => {
     // Check if this is a service role call (from another function) vs user call (from client)
     const isServiceRoleCall = userErr && hasAuth;
     
+    // Establish safe auth context variables
+    const authUserId = !isServiceRoleCall && userRes?.user ? userRes.user.id : null;
+    const authEmail = !isServiceRoleCall && userRes?.user ? (userRes.user.email ?? null) : null;
+    
     if (isServiceRoleCall) {
       // Service role call - validate service role key and skip user checks
       console.log(`🔧 Service role call detected, skipping user auth checks`);
@@ -325,8 +329,14 @@ serve(async (req) => {
     if (targetUserIds.length > 0) {
       query = query.in("user_id", targetUserIds);
     } else if (scope === "self") {
-      console.log(`🎯 Self-scope detected, using authenticated user ID: ${userRes.user.id}`);
-      query = query.eq("user_id", userRes.user.id);
+      if (!authUserId) {
+        return new Response(JSON.stringify({ error: "Self scope requires logged-in user" }), {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      }
+      console.log(`🎯 Self-scope detected, using authenticated user ID: ${authUserId}`);
+      query = query.eq("user_id", authUserId);
     }
 
     const { data: subs, error: subsErr } = await query;
@@ -361,8 +371,8 @@ serve(async (req) => {
     const { data: inserted, error: insertErr } = await supabaseAdmin
       .from("notifications")
       .insert({
-        created_by: userRes.user.id,
-        created_by_email: email,
+        created_by: authUserId,
+        created_by_email: authEmail,
         title: payload.title,
         body: payload.body,
         url: payload.url ?? null,
