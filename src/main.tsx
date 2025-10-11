@@ -27,6 +27,21 @@ initBootLogger();
 if (Capacitor.isNativePlatform?.()) {
   console.log('📱 [Push] Early initialise listeners');
   nativePush.initialize('boot:main');
+
+  // On native, ensure no PWA service worker or old caches interfere
+  (async () => {
+    try {
+      const regs = await navigator.serviceWorker?.getRegistrations?.();
+      if (regs && regs.length) {
+        await Promise.all(regs.map(r => r.unregister()))
+      }
+      const names = await caches.keys();
+      await Promise.all(names.map(n => caches.delete(n)));
+      console.log('[Native] Cleared service workers and caches');
+    } catch (e) {
+      console.warn('[Native] SW/cache cleanup failed:', e);
+    }
+  })();
 }
 
 // Simplified PWA detection
