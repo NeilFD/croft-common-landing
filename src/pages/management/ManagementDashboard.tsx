@@ -9,6 +9,7 @@ import { PushDiagnostics } from '@/components/PushDiagnostics';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import { useState } from 'react';
+import AppVersionFooter from '@/components/AppVersionFooter';
 
 const ManagementDashboard = () => {
   const { managementUser } = useManagementAuth();
@@ -165,6 +166,8 @@ const ManagementDashboard = () => {
             </Card>
           </Collapsible>
         )}
+
+        <AppVersionFooter />
       </div>
     </ManagementLayout>
   );
