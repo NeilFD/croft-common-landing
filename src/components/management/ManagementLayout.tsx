@@ -61,19 +61,19 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 overflow-auto p-6 md:p-8 lg:p-12">
-              <div className="max-w-[1600px] mx-auto">
+            <main className="flex-1 overflow-auto p-6 md:p-8 lg:p-12 flex flex-col">
+              <div className="max-w-[1600px] mx-auto flex-1 pb-24">
                 {children}
               </div>
+              
+              {/* Footer with Version Info - Sticky at bottom */}
+              <footer 
+                className="sticky bottom-0 z-10 border-t border-industrial bg-background px-4 py-3 md:px-6" 
+                style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+              >
+                <AppVersionFooter />
+              </footer>
             </main>
-
-            {/* Footer with Version Info */}
-            <footer 
-              className="border-t border-industrial bg-background px-4 py-3 md:px-6" 
-              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-            >
-              <AppVersionFooter />
-            </footer>
           </div>
 
           {/* AI Chat Widget */}
