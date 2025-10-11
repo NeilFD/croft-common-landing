@@ -9,8 +9,6 @@ const AppVersionFooter: React.FC = () => {
     getAppVersion().then(setVersionInfo);
   }, []);
 
-  if (!versionInfo) return null;
-
   const formatBuildDate = (timestamp?: string) => {
     if (!timestamp) return null;
     try {
@@ -20,16 +18,22 @@ const AppVersionFooter: React.FC = () => {
     }
   };
 
-  const buildDate = formatBuildDate(versionInfo.buildTimestamp);
+  const buildDate = formatBuildDate(versionInfo?.buildTimestamp);
 
   return (
-    <div className="mt-8 pt-6 border-t border-border">
+    <div>
       <p className="text-xs md:text-sm text-muted-foreground text-center font-mono">
-        CroftCommon v{versionInfo.version}
-        {versionInfo.buildNumber && ` (${versionInfo.buildNumber})`}
-        {' • '}
-        {versionInfo.platform}
-        {buildDate && ` • Built: ${buildDate}`}
+        {versionInfo ? (
+          <>
+            CroftCommon v{versionInfo.version}
+            {versionInfo.buildNumber && ` (${versionInfo.buildNumber})`}
+            {' • '}
+            {versionInfo.platform}
+            {buildDate && ` • Built: ${buildDate}`}
+          </>
+        ) : (
+          'Loading version…'
+        )}
       </p>
     </div>
   );

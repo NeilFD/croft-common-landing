@@ -7,6 +7,7 @@ import CroftLogo from '@/components/CroftLogo';
 import { ManagementAIProvider } from '@/contexts/ManagementAIContext';
 import { ManagementAIChatWidget } from './ai/ManagementAIChatWidget';
 import { SafeAreaTopCap } from '@/components/SafeAreaTopCap';
+import AppVersionFooter from '@/components/AppVersionFooter';
 
 interface ManagementLayoutProps {
   children: ReactNode;
@@ -65,6 +66,14 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
                 {children}
               </div>
             </main>
+
+            {/* Footer with Version Info */}
+            <footer 
+              className="border-t border-industrial bg-background px-4 py-3 md:px-6" 
+              style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+            >
+              <AppVersionFooter />
+            </footer>
           </div>
 
           {/* AI Chat Widget */}

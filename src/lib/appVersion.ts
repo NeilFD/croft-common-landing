@@ -11,6 +11,8 @@ export interface AppVersionInfo {
 export const getAppVersion = async (): Promise<AppVersionInfo> => {
   const platform = Capacitor.getPlatform();
   
+  console.info('[AppVersionFooter] Platform detected:', platform);
+  
   let buildNumber: string | undefined;
   let appVersion = packageJson.version;
 
@@ -22,15 +24,22 @@ export const getAppVersion = async (): Promise<AppVersionInfo> => {
       const info = await App.getInfo();
       appVersion = info.version;
       buildNumber = info.build;
+      console.info('[AppVersionFooter] Native app info:', { version: appVersion, build: buildNumber });
     } catch (error) {
-      console.warn('Failed to get native app info:', error);
+      console.warn('[AppVersionFooter] Failed to get native app info:', error);
     }
   }
 
-  return {
+  const buildTimestamp = import.meta.env.BUILD_TIME;
+  
+  const versionInfo: AppVersionInfo = {
     version: appVersion,
     buildNumber,
     platform: platform === 'ios' ? 'iOS' : platform === 'android' ? 'Android' : 'Web',
-    buildTimestamp: import.meta.env.BUILD_TIME,
+    buildTimestamp,
   };
+  
+  console.info('[AppVersionFooter] Final version info:', versionInfo);
+
+  return versionInfo;
 };
