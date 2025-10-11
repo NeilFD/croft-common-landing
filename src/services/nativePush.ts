@@ -39,6 +39,10 @@ let errorCallbacks: ErrorCallback[] = [];
 let lastToken: string | null = null;
 let lastError: string | null = null;
 
+// Debouncing for token saves to prevent race conditions
+let saveTimeout: number | null = null;
+const SAVE_DEBOUNCE_MS = 1000; // Wait 1 second before saving
+
 /**
  * Simplified Native Push Service
  * iOS/Android token registration with clear logging
@@ -74,54 +78,61 @@ export const nativePush = {
       lastError = null;
       tokenCallbacks.forEach(cb => cb(token.value));
       
-      try {
-        const platform = Capacitor.getPlatform();
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        console.log(`📱 Saving ${platform} token${user ? ` for user ${user.id}` : ' (will link on sign-in)'}...`);
-        mobileLog('native:token_save_start', { platform, user_id: user?.id || null, has_user: !!user });
-        directLog('native:token_save_start', { platform, user_id: user?.id || null });
-        
-        const { data, error } = await supabase.functions.invoke('save-push-subscription', {
-          body: {
-            endpoint: `${platform}-token:${token.value}`,
-            platform,
-            session_id: DEBUG_SESSION_ID,
-            user_agent: navigator.userAgent
-          }
-        });
-        
-        directLog('native:token_save_response', { 
-          success: !error && data?.ok, 
-          data,
-          error: error?.message 
-        });
-        
-        if (error) {
-          const errorMsg = error.message || String(error);
-          console.error('📱 ❌ Save failed:', errorMsg);
-          mobileLog('native:token_save_error', { platform }, errorMsg);
-          errorCallbacks.forEach(cb => cb(`Save failed: ${errorMsg}`));
-        } else if (!data?.ok) {
-          const errorMsg = data?.error || 'Server returned failure';
-          console.error('📱 ❌ Server rejected:', errorMsg);
-          mobileLog('native:token_save_rejected', { platform, error: errorMsg });
-          errorCallbacks.forEach(cb => cb(`Server error: ${errorMsg}`));
-        } else {
-          console.log('📱 ✅ Token saved successfully');
-          mobileLog('native:token_save_ok', { 
-            platform, 
-            subscription_id: data.subscription_id,
-            user_linked: !!user 
-          });
-        }
-      } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        console.error('📱 ❌ Exception:', errorMsg);
-        mobileLog('native:token_save_exception', { platform }, errorMsg);
-        directLog('native:token_save_exception', { platform }, errorMsg);
-        errorCallbacks.forEach(cb => cb(`Exception: ${errorMsg}`));
+      // Debounce the save operation to prevent race conditions
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
       }
+      
+      saveTimeout = window.setTimeout(async () => {
+        try {
+          const platform = Capacitor.getPlatform();
+          const { data: { user } } = await supabase.auth.getUser();
+          
+          console.log(`📱 Saving ${platform} token${user ? ` for user ${user.id}` : ' (will link on sign-in)'}...`);
+          mobileLog('native:token_save_start', { platform, user_id: user?.id || null, has_user: !!user });
+          directLog('native:token_save_start', { platform, user_id: user?.id || null });
+          
+          const { data, error } = await supabase.functions.invoke('save-push-subscription', {
+            body: {
+              endpoint: `${platform}-token:${token.value}`,
+              platform,
+              session_id: DEBUG_SESSION_ID,
+              user_agent: navigator.userAgent
+            }
+          });
+          
+          directLog('native:token_save_response', { 
+            success: !error && data?.ok, 
+            data,
+            error: error?.message 
+          });
+          
+          if (error) {
+            const errorMsg = error.message || String(error);
+            console.error('📱 ❌ Save failed:', errorMsg);
+            mobileLog('native:token_save_error', { platform }, errorMsg);
+            errorCallbacks.forEach(cb => cb(`Save failed: ${errorMsg}`));
+          } else if (!data?.ok) {
+            const errorMsg = data?.error || 'Server returned failure';
+            console.error('📱 ❌ Server rejected:', errorMsg);
+            mobileLog('native:token_save_rejected', { platform, error: errorMsg });
+            errorCallbacks.forEach(cb => cb(`Server error: ${errorMsg}`));
+          } else {
+            console.log('📱 ✅ Token saved successfully');
+            mobileLog('native:token_save_ok', { 
+              platform, 
+              subscription_id: data.subscription_id,
+              user_linked: !!user 
+            });
+          }
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          console.error('📱 ❌ Exception:', errorMsg);
+          mobileLog('native:token_save_exception', { platform }, errorMsg);
+          directLog('native:token_save_exception', { platform }, errorMsg);
+          errorCallbacks.forEach(cb => cb(`Exception: ${errorMsg}`));
+        }
+      }, SAVE_DEBOUNCE_MS);
     });
 
     await PushNotifications.addListener('registrationError', (error) => {

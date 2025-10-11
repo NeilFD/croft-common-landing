@@ -201,6 +201,17 @@ serve(async (req) => {
       console.log(`[${requestId}] Using WebAuthn-provided user_id: ${providedUserId}`);
     }
 
+    // Advisory lock per user to prevent race conditions
+    // Use a deterministic lock key based on user_id or IP if anonymous
+    const lockKey = userId || `anon-${ip}`;
+    const lockId = BigInt('0x' + Array.from(new TextEncoder().encode(lockKey).slice(0, 8))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('')
+      .padEnd(16, '0'));
+    
+    console.log(`[${requestId}] Acquiring advisory lock for ${userId ? 'user' : 'IP'}: ${lockKey}`);
+    await adminClient.rpc('pg_advisory_xact_lock', { id: lockId });
+
     const row = {
       endpoint,
       p256dh: isIosToken ? null : (p256dh ?? null),

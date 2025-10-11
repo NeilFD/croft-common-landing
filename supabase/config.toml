@@ -85,6 +85,9 @@ verify_jwt = false
 [functions.save-push-subscription]
 verify_jwt = false
 
+[functions.reactivate-push-subscription]
+verify_jwt = true
+
 [functions.delete-push-subscription]
 verify_jwt = false
 

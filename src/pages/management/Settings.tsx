@@ -2,6 +2,7 @@ import { ManagementLayout } from '@/components/management/ManagementLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { UserManagement } from '@/components/management/settings/UserManagement';
 import { MyProfile } from '@/components/management/settings/MyProfile';
+import { PushSubscriptionManagement } from '@/components/management/settings/PushSubscriptionManagement';
 import { useManagementAuth } from '@/hooks/useManagementAuth';
 import { Navigate } from 'react-router-dom';
 
@@ -33,6 +34,7 @@ const Settings = () => {
           <TabsList>
             {isAdmin && <TabsTrigger value="users">User Management</TabsTrigger>}
             <TabsTrigger value="profile">My Profile</TabsTrigger>
+            <TabsTrigger value="push">Push Notifications</TabsTrigger>
           </TabsList>
           
           {isAdmin && (
@@ -43,6 +45,10 @@ const Settings = () => {
           
           <TabsContent value="profile" className="mt-6">
             <MyProfile />
+          </TabsContent>
+
+          <TabsContent value="push" className="mt-6">
+            <PushSubscriptionManagement />
           </TabsContent>
         </Tabs>
       </div>
