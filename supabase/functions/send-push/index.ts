@@ -96,10 +96,29 @@ async function createApnsJwt(keyId: string, teamId: string, privateKey: string):
   return `${message}.${signatureB64}`;
 }
 
-// Send APNs notification
-async function sendApnsNotification(token: string, payload: any, keyId: string, teamId: string, privateKey: string, environment: string = "production"): Promise<void> {
-  const jwt = await createApnsJwt(keyId, teamId, privateKey);
-  
+// APNs utility functions
+function chooseApnsHost(env: string): string {
+  return env === "sandbox" 
+    ? "https://api.sandbox.push.apple.com"
+    : "https://api.push.apple.com";
+}
+
+type ApnsResult = {
+  success: boolean;
+  status?: number;
+  reason?: string;
+  errorBody?: string;
+};
+
+async function sendToApns(
+  host: string,
+  token: string,
+  payload: any,
+  jwt: string,
+  topic: string,
+  deviceId: string,
+  env: string
+): Promise<ApnsResult> {
   const apnsPayload = {
     aps: {
       alert: {
@@ -115,18 +134,14 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
     notification_id: payload.notification_id
   };
   
-  const apnsEndpoint = environment === "sandbox" 
-    ? "https://api.sandbox.push.apple.com"
-    : "https://api.push.apple.com";
+  console.log(`🍎 Sending to APNs [device=${deviceId}, env=${env}, topic=${topic}, host=${host}]`);
   
-  const apnsTopic = Deno.env.get("APNS_TOPIC") || 'com.croftcommon.beacon';
-  
-  const response = await fetch(`${apnsEndpoint}/3/device/${token}`, {
+  const response = await fetch(`${host}/3/device/${token}`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${jwt}`,
       'Content-Type': 'application/json',
-      'apns-topic': apnsTopic,
+      'apns-topic': topic,
       'apns-push-type': 'alert',
       'apns-priority': '10'
     },
@@ -135,8 +150,74 @@ async function sendApnsNotification(token: string, payload: any, keyId: string, 
   
   if (!response.ok) {
     const errorBody = await response.text();
-    throw new Error(`APNs error ${response.status}: ${errorBody} [env=${environment}, topic=${apnsTopic}]`);
+    let reason: string | undefined;
+    try {
+      const parsed = JSON.parse(errorBody);
+      reason = parsed?.reason;
+    } catch {
+      // Not JSON, ignore
+    }
+    
+    console.log(`❌ APNs response [status=${response.status}, reason=${reason || 'unknown'}]`);
+    
+    return {
+      success: false,
+      status: response.status,
+      reason,
+      errorBody
+    };
   }
+  
+  console.log(`✅ APNs delivery successful [device=${deviceId}, env=${env}]`);
+  return { success: true };
+}
+
+// Send APNs notification with automatic environment fallback
+async function sendApnsNotification(
+  token: string, 
+  payload: any, 
+  keyId: string, 
+  teamId: string, 
+  privateKey: string, 
+  primaryEnv: string,
+  deviceId: string,
+  topic: string
+): Promise<void> {
+  const jwt = await createApnsJwt(keyId, teamId, privateKey);
+  
+  const primaryHost = chooseApnsHost(primaryEnv);
+  const primaryResult = await sendToApns(primaryHost, token, payload, jwt, topic, deviceId, primaryEnv);
+  
+  if (primaryResult.success) {
+    return;
+  }
+  
+  // Check if error indicates environment mismatch
+  const shouldFallback = 
+    primaryResult.status === 403 && 
+    (primaryResult.reason === 'BadEnvironmentKeyInToken' || 
+     primaryResult.reason === 'BadEnvironment' ||
+     (primaryResult.errorBody && primaryResult.errorBody.includes('environment')));
+  
+  if (shouldFallback) {
+    const secondaryEnv = primaryEnv === "sandbox" ? "production" : "sandbox";
+    console.log(`🔄 APNs fallback engaged: ${primaryEnv} → ${secondaryEnv}`);
+    
+    const secondaryHost = chooseApnsHost(secondaryEnv);
+    const secondaryResult = await sendToApns(secondaryHost, token, payload, jwt, topic, deviceId, secondaryEnv);
+    
+    if (secondaryResult.success) {
+      // Success on fallback - optionally update subscription environment if column exists
+      // (We skip this silently if column doesn't exist)
+      return;
+    }
+    
+    // Both attempts failed
+    throw new Error(`APNs error ${secondaryResult.status}: ${secondaryResult.errorBody} [env=${secondaryEnv}, topic=${topic}, fallback attempted]`);
+  }
+  
+  // First attempt failed, no fallback applicable
+  throw new Error(`APNs error ${primaryResult.status}: ${primaryResult.errorBody} [env=${primaryEnv}, topic=${topic}]`);
 }
 
 // Send FCM notification (Android)
@@ -456,10 +537,17 @@ serve(async (req) => {
       try {
         if (isIos) {
           const iosToken = s.endpoint.replace('ios-token:', '');
-          console.log(`🍎 Sending APNs notification to ${APNS_ENVIRONMENT} environment...`);
-          await sendApnsNotification(iosToken, payloadForSub, APNS_KEY_ID, APNS_TEAM_ID, APNS_PRIVATE_KEY, APNS_ENVIRONMENT);
+          await sendApnsNotification(
+            iosToken, 
+            payloadForSub, 
+            APNS_KEY_ID, 
+            APNS_TEAM_ID, 
+            APNS_PRIVATE_KEY, 
+            APNS_ENVIRONMENT,
+            s.id,
+            APNS_TOPIC
+          );
           success++;
-          console.log(`✅ Successfully sent APNs notification`);
         } else if (isAndroid) {
           if (!FCM_SERVER_KEY) {
             throw new Error("FCM credentials not configured");
