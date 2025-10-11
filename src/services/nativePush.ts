@@ -29,6 +29,7 @@ async function directLog(step: string, data?: any, error?: string): Promise<void
 
 let isRegistering = false;
 let hasRegistered = false;
+let isInitialized = false;
 
 // Event bus for token/error events
 type TokenCallback = (token: string) => void;
@@ -52,11 +53,17 @@ export const nativePush = {
    * Initialize push listeners only - no auto-registration
    */
   async initialize() {
+    if (isInitialized) {
+      console.log('📱 [Push] Already initialized, skipping');
+      return;
+    }
+
     if (!Capacitor.isNativePlatform()) {
       console.log('📱 Not native platform, skipping');
       return;
     }
 
+    isInitialized = true;
     const platform = Capacitor.getPlatform();
     const { data: { user } } = await supabase.auth.getUser();
     
