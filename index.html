@@ -51,6 +51,10 @@
           var hasCap = !!w.Capacitor;
           var isNative = false;
           try { isNative = hasCap && typeof w.Capacitor.isNativePlatform === 'function' && w.Capacitor.isNativePlatform(); } catch (e) { isNative = false; }
+          // Fallback detection for WKWebView before Capacitor bridge is ready
+          if (!isNative) {
+            try { if (w.webkit && w.webkit.messageHandlers) { isNative = true; } } catch (e) {}
+          }
           var host = loc.hostname;
           var search = loc.search || '';
           var hash = loc.hash || '';
@@ -164,6 +168,85 @@
           }
           window.addEventListener('error', function(e){ if(e && e.error){ record(e.error); } else { record(e.message); } }, {once:false});
           window.addEventListener('unhandledrejection', function(e){ record(e && e.reason || 'unhandledrejection'); }, {once:false});
+        }catch(e){}
+      })();
+    </script>
+    <script>
+      (function(){
+        try{
+          var w = window;
+          var cap = w.Capacitor;
+          var isNative = false;
+          try {
+            isNative = !!(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform());
+            if(!isNative && w.webkit && w.webkit.messageHandlers){ isNative = true; }
+          } catch(e){}
+          if(!isNative) return;
+
+          console.log('[native_link_guard] enabled');
+
+          function resolveUrl(u){
+            try { return new URL(u, w.location.href); } catch(e){ return null; }
+          }
+          function isSameOrigin(u){
+            var url = resolveUrl(u);
+            if(!url) return false;
+            return url.origin === w.location.origin;
+          }
+
+          var origOpen = w.open;
+          w.open = function(u, target, features){
+            try{
+              var url = resolveUrl(u);
+              var t = target || '_blank';
+              if(t === '_blank' || !target){
+                if(url && isSameOrigin(url.href)){
+                  console.log('[native_link_guard] _blank same-origin → in-webview', url.href);
+                  w.location.assign(url.href);
+                  return null;
+                } else {
+                  var browser = cap && (cap.Plugins && cap.Plugins.Browser) || w.Browser;
+                  if(browser && typeof browser.open === 'function'){
+                    console.log('[native_link_guard] _blank external → Capacitor Browser', u);
+                    browser.open({ url: (url? url.href : u) });
+                    return null;
+                  } else {
+                    console.log('[native_link_guard] _blank external → fallback _self', u);
+                    return origOpen ? origOpen.call(w, u, '_self', features) : (w.location.href = u);
+                  }
+                }
+              }
+              return origOpen ? origOpen.apply(w, arguments) : null;
+            }catch(err){
+              try{ return origOpen ? origOpen.apply(w, arguments) : null; }catch(e){}
+            }
+          };
+
+          function onGlobalClick(e){
+            try{
+              var el = e.target && (e.target.closest ? e.target.closest('a[target="_blank"]') : null);
+              if(!el) return;
+              var href = el.getAttribute('href');
+              if(!href) return;
+              e.preventDefault();
+              if(isSameOrigin(href)){
+                console.log('[native_link_guard] click _blank same-origin → in-webview', href);
+                var r = resolveUrl(href); if(r) { w.location.assign(r.href); }
+              } else {
+                var browser = cap && (cap.Plugins && cap.Plugins.Browser) || w.Browser;
+                var r2 = resolveUrl(href);
+                if(browser && typeof browser.open === 'function' && r2){
+                  console.log('[native_link_guard] click _blank external → Capacitor Browser', href);
+                  browser.open({ url: r2.href });
+                } else {
+                  console.log('[native_link_guard] click _blank external → fallback _self', href);
+                  w.open(href, '_self');
+                }
+              }
+            } catch(err){}
+          }
+
+          w.addEventListener('click', onGlobalClick, true);
         }catch(e){}
       })();
     </script>
