@@ -156,14 +156,32 @@
             }catch(e){}
           }
           function record(err){
+            var sess = null;
+            try { sess = localStorage.getItem('cc_boot_session_id'); } catch(e){}
             var payload = {
+              session_id: sess || ('mobile-debug-' + Date.now()),
+              step: 'early_eval_error',
               time: new Date().toISOString(),
-              userAgent: navigator.userAgent,
+              user_agent: navigator.userAgent.substring(0, 500),
               url: location.href,
               message: String(err && err.message || err),
               stack: err && err.stack || null
             };
             try{ localStorage.setItem('cc_last_error', JSON.stringify(payload)); }catch(e){}
+            try{
+              var body = JSON.stringify(payload);
+              if (navigator.sendBeacon) {
+                var blob = new Blob([body], { type: 'application/json' });
+                navigator.sendBeacon('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log', blob);
+              } else {
+                fetch('https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body,
+                  keepalive: true
+                }).catch(function(){});
+              }
+            } catch(e){}
             if(isNative){ showOverlay('[native] ' + payload.message + (payload.stack? '\n' + payload.stack : '')); }
           }
           window.addEventListener('error', function(e){ if(e && e.error){ record(e.error); } else { record(e.message); } }, {once:false});
