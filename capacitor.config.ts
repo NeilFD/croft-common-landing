@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'CroftCommon',
   webDir: 'dist',
   server: {
-    url: 'https://www.croftcommontest.com?native=1&v=20251011-1528',
+    url: 'https://410602d4-4805-4fdf-8c51-900e548d9b20.lovableproject.com',
     cleartext: true
   },
   plugins: {
