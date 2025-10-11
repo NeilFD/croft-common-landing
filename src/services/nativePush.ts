@@ -56,42 +56,18 @@ export const nativePush = {
    * Initialize push listeners only - no auto-registration
    */
   async initialize(source?: string) {
-    // Only meaningful on native platforms
+    // Use global guard so it survives module reloads (React Strict Mode)
+    const g = globalThis as any;
+    if (g[PUSH_INIT_KEY]) {
+      console.log(`📱 [Push] Already initialised, skipping${source ? ` (source: ${source})` : ''}`);
+      return;
+    }
+
     if (!Capacitor.isNativePlatform()) {
       console.log('📱 Not native platform, skipping');
       return;
     }
 
-    const g = globalThis as any;
-
-    // Global guard first (protects against duplicate calls in same navigation)
-    if (g[PUSH_INIT_KEY]) {
-      console.log(`📱 [Push] Already initialised, skipping${source ? ` (source: ${source})` : ''}`);
-      mobileLog('native:init_guard_skip', { source, reason: 'global' });
-      await directLog('native:init_guard_skip', { source, reason: 'global' });
-      return;
-    }
-
-    // Cross-navigation guard via window.name (survives redirects/reloads inside WebView)
-    try {
-      const MARK = '__cc_push_init__';
-      if (typeof window !== 'undefined') {
-        const currentName = window.name || '';
-        if (currentName.includes(MARK)) {
-          console.log(`📱 [Push] Already initialised (window.name), skipping${source ? ` (source: ${source})` : ''}`);
-          mobileLog('native:init_guard_skip', { source, reason: 'window.name' });
-          await directLog('native:init_guard_skip', { source, reason: 'window.name' });
-          return;
-        }
-        // Mark immediately before any awaits
-        window.name = currentName ? `${currentName} ${MARK}` : MARK;
-      }
-    } catch (e) {
-      // Non-fatal; continue without window.name guard
-      console.warn('Init guard (window.name) failed:', e);
-    }
-
-    // Set global guard immediately to avoid races
     g[PUSH_INIT_KEY] = true;
     isInitialized = true;
     const platform = Capacitor.getPlatform();
