@@ -3,8 +3,10 @@ import { Capacitor } from '@capacitor/core';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Bell, CheckCircle, Loader2 } from 'lucide-react';
+import { Bell, CheckCircle, Loader2, RefreshCw } from 'lucide-react';
 import { nativePush } from '@/services/nativePush';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const PushDiagnostics = () => {
   const [platform, setPlatform] = useState<string>('unknown');
@@ -15,7 +17,9 @@ export const PushDiagnostics = () => {
   const [registrationStatus, setRegistrationStatus] = useState<'idle' | 'registering' | 'success' | 'error'>('idle');
   const [receivedToken, setReceivedToken] = useState<string | null>(null);
   const [receivedError, setReceivedError] = useState<string | null>(null);
+  const [isReactivating, setIsReactivating] = useState(false);
   const watchdogRef = useRef<NodeJS.Timeout | null>(null);
+  const { toast } = useToast();
 
   const addLog = (message: string) => {
     const timestamp = new Date().toLocaleTimeString();
@@ -122,6 +126,38 @@ export const PushDiagnostics = () => {
     }
   };
 
+  const handleReactivate = async () => {
+    setIsReactivating(true);
+    addLog('🔄 Reactivating latest push subscription...');
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('reactivate-push-subscription');
+      
+      if (error) throw error;
+      
+      if (data?.ok) {
+        addLog(`✅ Reactivated subscription: ${data.subscription?.id || 'unknown'}`);
+        toast({
+          title: "Success",
+          description: "Push subscription reactivated successfully",
+          variant: "default",
+        });
+      } else {
+        throw new Error(data?.error || "Failed to reactivate subscription");
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Failed to reactivate";
+      addLog(`❌ Reactivation error: ${errorMsg}`);
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive",
+      });
+    } finally {
+      setIsReactivating(false);
+    }
+  };
+
   return (
     <Card className="border-industrial">
       <CardHeader>
@@ -200,6 +236,25 @@ export const PushDiagnostics = () => {
                   {registrationStatus === 'success' || registrationStatus === 'error' 
                     ? 'Re-register' 
                     : 'Register for Push Notifications'}
+                </>
+              )}
+            </Button>
+
+            <Button 
+              onClick={handleReactivate} 
+              className="w-full"
+              variant="outline"
+              disabled={isReactivating}
+            >
+              {isReactivating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Reactivating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Reactivate latest subscription
                 </>
               )}
             </Button>

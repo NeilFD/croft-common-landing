@@ -71,6 +71,14 @@ const ManagementDashboard = () => {
       href: '/management/research',
       color: 'text-[hsl(var(--accent-pink))]',
       show: canAccessResearch()
+    },
+    {
+      title: 'SETTINGS',
+      description: 'Account & push controls',
+      icon: Shield,
+      href: '/management/settings',
+      color: 'text-[hsl(var(--accent-pink))]',
+      show: true
     }
   ];
 
