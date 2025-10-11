@@ -4334,9 +4334,12 @@ export type Database = {
       }
       push_subscriptions: {
         Row: {
+          apns_token: string | null
           auth: string | null
           created_at: string
-          endpoint: string
+          device_info: Json | null
+          endpoint: string | null
+          fcm_token: string | null
           id: string
           is_active: boolean
           last_seen: string | null
@@ -4348,9 +4351,12 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          apns_token?: string | null
           auth?: string | null
           created_at?: string
-          endpoint: string
+          device_info?: Json | null
+          endpoint?: string | null
+          fcm_token?: string | null
           id?: string
           is_active?: boolean
           last_seen?: string | null
@@ -4362,9 +4368,12 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          apns_token?: string | null
           auth?: string | null
           created_at?: string
-          endpoint?: string
+          device_info?: Json | null
+          endpoint?: string | null
+          fcm_token?: string | null
           id?: string
           is_active?: boolean
           last_seen?: string | null
