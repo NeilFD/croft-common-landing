@@ -341,7 +341,7 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
       }
 
       console.log('Sending campaign:', campaign);
-      const { data, error } = await supabase.functions.invoke('campaign-manager', {
+      const { data, error } = await supabase.functions.invoke('enhanced-campaign-manager', {
         headers: {
           Authorization: `Bearer ${session.session.access_token}`,
           'Content-Type': 'application/json'
