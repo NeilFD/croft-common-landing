@@ -189,6 +189,89 @@
         }catch(e){}
       })();
     </script>
+    <script id="native-link-guard-early">
+      (function(){
+        try{
+          var w = window;
+          var cap = w.Capacitor;
+          var isNative = false;
+          try {
+            isNative = !!(cap && typeof cap.isNativePlatform==='function' && cap.isNativePlatform());
+            if(!isNative && w.webkit && w.webkit.messageHandlers){ isNative = true; }
+          } catch(e){}
+          if(!isNative) return;
+
+          var end = Date.now() + 5000;
+          var origOpen = w.open;
+
+          function resolveUrl(u){ try { return new URL(u, w.location.href); } catch(e){ return null; } }
+          function isSameOrigin(u){
+            var url = resolveUrl(u);
+            return !!(url && url.origin === w.location.origin);
+          }
+
+          function deferExternal(u, features){
+            var delay = Math.max(0, end - Date.now());
+            console.log('[native_link_guard:early] external blocked during boot, deferring', u);
+            setTimeout(function(){
+              try{
+                var r = resolveUrl(u);
+                var href = r ? r.href : u;
+                var browser = cap && (cap.Plugins && cap.Plugins.Browser) || w.Browser;
+                if(browser && typeof browser.open === 'function'){
+                  browser.open({ url: href });
+                } else {
+                  origOpen ? origOpen.call(w, href, '_self', features) : (w.location.href = href);
+                }
+              }catch(e){}
+            }, delay);
+          }
+
+          // Intercept window.open during boot
+          w.open = function(u, target, features){
+            var t = target || '_blank';
+            if(Date.now() < end && (t === '_blank' || !target)){
+              var r = resolveUrl(u);
+              if(r && isSameOrigin(r.href)){
+                console.log('[native_link_guard:early] same-origin → in-webview', r.href);
+                w.location.assign(r.href);
+              } else {
+                deferExternal(u, features);
+              }
+              return null;
+            }
+            return origOpen ? origOpen.apply(w, arguments) : null;
+          };
+
+          // Capture _blank clicks during boot
+          function onGlobalClick(e){
+            try{
+              var el = e.target && (e.target.closest ? e.target.closest('a[target="_blank"]') : null);
+              if(!el) return;
+              var href = el.getAttribute('href');
+              if(!href) return;
+              if(Date.now() >= end) return; // let the standard guard take over
+              e.preventDefault();
+              if(isSameOrigin(href)){
+                var r = resolveUrl(href); if(r){ console.log('[native_link_guard:early] click same-origin → in-webview', r.href); w.location.assign(r.href); }
+              } else {
+                deferExternal(href);
+              }
+            } catch(err){}
+          }
+          w.addEventListener('click', onGlobalClick, true);
+
+          console.log('[native_link_guard:early] enabled for 5000ms');
+          setTimeout(function(){
+            try{
+              w.removeEventListener('click', onGlobalClick, true);
+              w.open = origOpen;
+              console.log('[native_link_guard:early] relaxed → standard guard');
+            }catch(e){}
+          }, Math.max(0, end - Date.now()));
+        }catch(e){}
+      })();
+    </script>
     <script>
       (function(){
         try{
