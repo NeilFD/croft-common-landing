@@ -5,7 +5,9 @@ const config: CapacitorConfig = {
   appName: 'CroftCommon',
   webDir: 'dist',
   server: {
-    cleartext: true
+    iosScheme: 'capacitor',
+    hostname: 'localhost',
+    androidScheme: 'https'
   },
   plugins: {
     SplashScreen: {

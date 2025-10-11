@@ -1,4 +1,5 @@
 import { Capacitor } from '@capacitor/core';
+import { Device } from '@capacitor/device';
 import { supabase } from '@/integrations/supabase/client';
 import { mobileLog, DEBUG_SESSION_ID } from '@/lib/mobileDebug';
 
@@ -100,17 +101,21 @@ export const nativePush = {
         try {
           const platform = Capacitor.getPlatform();
           const { data: { user } } = await supabase.auth.getUser();
+          const deviceInfo = await Device.getInfo();
           
-          console.log(`📱 Saving ${platform} token${user ? ` for user ${user.id}` : ' (will link on sign-in)'}...`);
+          console.log(`📱 Saving ${platform} native token${user ? ` for user ${user.id}` : ' (will link on sign-in)'}...`);
           mobileLog('native:token_save_start', { platform, user_id: user?.id || null, has_user: !!user });
           directLog('native:token_save_start', { platform, user_id: user?.id || null });
           
-          const { data, error } = await supabase.functions.invoke('save-push-subscription', {
+          const { data, error } = await supabase.functions.invoke('save-native-push-token', {
             body: {
-              endpoint: `${platform}-token:${token.value}`,
-              platform,
+              platform: platform === 'ios' ? 'ios_native' : 'android_native',
+              apns_token: platform === 'ios' ? token.value : undefined,
+              fcm_token: platform === 'android' ? token.value : undefined,
+              device_model: deviceInfo.model,
+              app_version: deviceInfo.osVersion,
               session_id: DEBUG_SESSION_ID,
-              user_agent: navigator.userAgent
+              user_id: user?.id
             }
           });
           
@@ -126,16 +131,16 @@ export const nativePush = {
             mobileLog('native:token_save_error', { platform }, errorMsg);
             errorCallbacks.forEach(cb => cb(`Save failed: ${errorMsg}`));
           } else if (!data?.ok) {
-            const errorMsg = data?.error || 'Server returned failure';
+            const errorMsg = data?.reason || 'Server returned failure';
             console.error('📱 ❌ Server rejected:', errorMsg);
-            mobileLog('native:token_save_rejected', { platform, error: errorMsg });
+            mobileLog('native:token_save_rejected', { platform, reason: errorMsg });
             errorCallbacks.forEach(cb => cb(`Server error: ${errorMsg}`));
           } else {
-            console.log('📱 ✅ Token saved successfully');
+            console.log('📱 ✅ Native token saved successfully');
             mobileLog('native:token_save_ok', { 
               platform, 
               subscription_id: data.subscription_id,
-              user_linked: !!user 
+              user_linked: data.user_linked
             });
           }
         } catch (error) {
