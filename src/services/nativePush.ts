@@ -2,6 +2,9 @@ import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import { mobileLog, DEBUG_SESSION_ID } from '@/lib/mobileDebug';
 
+// Global singleton guard key
+const PUSH_INIT_KEY = '__cc_push_initialised__';
+
 // Direct Edge Function logging (bypasses client)
 const EDGE_FUNCTION_URL = 'https://xccidvoxhpgcnwinnyin.supabase.co/functions/v1/mobile-debug-log';
 
@@ -52,9 +55,11 @@ export const nativePush = {
   /**
    * Initialize push listeners only - no auto-registration
    */
-  async initialize() {
-    if (isInitialized) {
-      console.log('📱 [Push] Already initialized, skipping');
+  async initialize(source?: string) {
+    // Use global guard so it survives module reloads (React Strict Mode)
+    const g = globalThis as any;
+    if (g[PUSH_INIT_KEY]) {
+      console.log(`📱 [Push] Already initialised, skipping${source ? ` (source: ${source})` : ''}`);
       return;
     }
 
@@ -63,14 +68,15 @@ export const nativePush = {
       return;
     }
 
+    g[PUSH_INIT_KEY] = true;
     isInitialized = true;
     const platform = Capacitor.getPlatform();
     const { data: { user } } = await supabase.auth.getUser();
     
-    mobileLog('native:init', { platform, user_id: user?.id });
-    directLog('native:init', { platform, user_id: user?.id });
+    mobileLog('native:init', { platform, user_id: user?.id, source });
+    directLog('native:init', { platform, user_id: user?.id, source });
 
-    console.log('📱 Initialising listeners...');
+    console.log(`📱 Initialising listeners...${source ? ` (${source})` : ''}`);
     
     const { PushNotifications } = await import(/* @vite-ignore */ '@capacitor/push-notifications');
 
@@ -171,9 +177,9 @@ export const nativePush = {
       });
     });
 
-    console.log('📱 ✅ Listeners ready');
-    mobileLog('native:listeners_ready', { platform });
-    directLog('native:listeners_ready', { platform });
+    console.log(`📱 ✅ Listeners ready${source ? ` (${source})` : ''}`);
+    mobileLog('native:listeners_ready', { platform, source });
+    directLog('native:listeners_ready', { platform, source });
   },
 
   /**

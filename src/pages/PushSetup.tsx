@@ -29,7 +29,7 @@ export const PushSetup = () => {
     }
 
     addLog('Initialising native push service...');
-    nativePush.initialize().then(() => {
+    nativePush.initialize('page:PushSetup').then(() => {
       addLog('✅ Native push service initialised');
     });
 

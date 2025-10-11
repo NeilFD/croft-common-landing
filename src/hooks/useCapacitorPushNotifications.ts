@@ -9,6 +9,6 @@ import { nativePush } from '@/services/nativePush';
 export const useCapacitorPushNotifications = () => {
   useEffect(() => {
     console.log('📱 Initializing native push service...');
-    nativePush.initialize();
+    nativePush.initialize('hook:useCapacitorPushNotifications');
   }, []);
 };

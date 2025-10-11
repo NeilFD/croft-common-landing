@@ -39,7 +39,7 @@ export const PushDiagnostics = () => {
       if (native) {
         // Defensive: ensure listeners are initialized even if app boot missed it
         addLog('🔧 Ensuring native push listeners are initialized...');
-        await nativePush.initialize();
+        await nativePush.initialize('component:PushDiagnostics');
         addLog('✅ Native push listeners attached');
         
         // Check initial permission

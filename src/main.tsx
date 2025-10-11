@@ -26,7 +26,7 @@ initBootLogger();
 
 if (Capacitor.isNativePlatform?.()) {
   console.log('📱 [Push] Early initialise listeners');
-  nativePush.initialize();
+  nativePush.initialize('boot:main');
 }
 
 // Simplified PWA detection
