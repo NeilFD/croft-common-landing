@@ -416,14 +416,13 @@ async function sendCampaignPushNotifications(
     let targetUserIds: string[] = [];
     
     // Check for active native devices BEFORE proceeding
-    const { data: nativeDevices, error: devicesError } = await supabaseAdmin
+    const { count: nativeDeviceCount, error: devicesError } = await supabaseAdmin
       .from('push_subscriptions')
-      .select('id', { count: 'exact', head: true })
+      .select('*', { count: 'exact', head: true })
       .eq('is_active', true)
       .or('endpoint.ilike.ios-token:%,endpoint.ilike.android-token:%');
     
-    const nativeDeviceCount = nativeDevices || 0;
-    console.log('📱 Active native devices in system:', nativeDeviceCount);
+    console.log('📱 Active native devices in system:', nativeDeviceCount || 0);
     
     if (nativeDeviceCount === 0) {
       console.warn('⚠️ No active native devices found in push_subscriptions. Skipping send.');
