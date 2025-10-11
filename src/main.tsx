@@ -3,8 +3,31 @@ import { Capacitor } from '@capacitor/core'
 import App from './App.tsx'
 import './index.css'
 import { initBootLogger } from './mobile/bootLogger'
+import { getAppVersion } from './lib/appVersion'
+import { nativePush } from './services/nativePush'
 
 initBootLogger();
+
+// Build/version logging and early native push initialisation
+(async () => {
+  try {
+    const info = await getAppVersion();
+    console.info('[BUILD] App boot', {
+      now: new Date().toISOString(),
+      version: info.version,
+      build: info.buildNumber,
+      platform: info.platform,
+      buildTime: (import.meta as any).env?.BUILD_TIME
+    });
+  } catch (e) {
+    console.warn('[BUILD] Version lookup failed', e);
+  }
+})();
+
+if (Capacitor.isNativePlatform?.()) {
+  console.log('📱 [Push] Early initialise listeners');
+  nativePush.initialize();
+}
 
 // Simplified PWA detection
 const isPWAMode = () => {
