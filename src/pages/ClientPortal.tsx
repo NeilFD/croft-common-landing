@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import CroftLogo from '@/components/CroftLogo';
+import { openExternal } from '@/utils/openExternal';
 import { BRAND_NAME } from '@/data/brand';
 import SignatureCanvas from 'react-signature-canvas';
 import { Button } from '@/components/ui/button';
@@ -130,8 +131,8 @@ const ClientPortal = () => {
       if (error) throw error;
       if (!data.success) throw new Error(data.error || 'Failed to get document URL');
 
-      // Open in new tab
-      window.open(data.signedUrl, '_blank');
+      // Open in new tab using native-aware helper
+      await openExternal(data.signedUrl);
     } catch (error) {
       console.error('Download document error:', error);
       toast.error(`Failed to open ${documentType === 'beo' ? 'BEO' : 'contract'}`);

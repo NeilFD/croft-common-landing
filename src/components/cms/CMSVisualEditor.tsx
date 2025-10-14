@@ -129,7 +129,8 @@ export const CMSVisualEditor = ({ currentPage }: CMSVisualEditorProps) => {
 
   const handleViewLive = () => {
     const liveUrl = `/${currentPage === 'home' ? '' : currentPage}`;
-    window.open(liveUrl, '_blank');
+    // Same-origin preview, use _self instead of _blank
+    window.open(liveUrl, '_self');
   };
 
   if (!PageComponent) {

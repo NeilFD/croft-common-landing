@@ -69,7 +69,8 @@ const CMSVisual = () => {
   const handleViewLive = () => {
     const liveUrl = `/${currentPage === 'home' ? '' : currentPage}`;
     console.log('👁️ CMSVisual: Opening live URL:', liveUrl);
-    window.open(liveUrl, '_blank');
+    // Same-origin preview, use _self instead of _blank
+    window.open(liveUrl, '_self');
   };
 
   return (

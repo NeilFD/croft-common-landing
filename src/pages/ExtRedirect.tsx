@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { openExternal } from '@/utils/openExternal';
 
 export default function ExtRedirect() {
   const [params] = useSearchParams();
@@ -29,53 +30,16 @@ export default function ExtRedirect() {
     console.info('ExtRedirect: Attempting to open', url);
 
     const attemptOpen = async () => {
-      // Strategy 1: window.open with noopener
+      // Use native-aware helper to open external URL
       try {
-        const opened = window.open(url, '_blank', 'noopener,noreferrer');
-        if (opened) {
-          console.info('ExtRedirect: Opened via window.open');
-          return true;
-        }
-      } catch (e) {
-        console.warn('ExtRedirect: window.open failed', e);
-      }
-
-      // Strategy 2: Try parent window
-      try {
-        if (window.top && window.top !== window.self) {
-          window.top.open(url, '_blank');
-          console.info('ExtRedirect: Opened via window.top.open');
-          return true;
-        }
-      } catch (e) {
-        console.warn('ExtRedirect: window.top.open failed', e);
-      }
-
-      // Strategy 3: Create and click anchor
-      try {
-        const a = document.createElement('a');
-        a.href = url;
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        console.info('ExtRedirect: Opened via synthetic anchor click');
+        await openExternal(url);
+        console.info('ExtRedirect: Opened via openExternal');
         return true;
       } catch (e) {
-        console.warn('ExtRedirect: Synthetic click failed', e);
+        console.warn('ExtRedirect: openExternal failed', e);
+        setShowFallback(true);
+        return false;
       }
-
-      // Strategy 4: Last resort - navigate current window
-      try {
-        window.location.assign(url);
-        console.info('ExtRedirect: Navigating current window');
-        return true;
-      } catch (e) {
-        console.warn('ExtRedirect: window.location.assign failed', e);
-      }
-
-      return false;
     };
 
     // Try to open, if all fail, show fallback UI
@@ -88,7 +52,7 @@ export default function ExtRedirect() {
 
   const handleRetry = () => {
     if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
+      openExternal(url);
     }
   };
 

@@ -8,6 +8,7 @@ import { isInPreviewIframe } from '@/lib/env';
 import { useNavigate } from 'react-router-dom';
 import { useMemo } from 'react';
 import { BeoLink } from './BeoLink';
+import { openExternal as openExternalUrl } from '@/utils/openExternal';
 interface MessageBubbleProps {
   message: {
     id: string;
@@ -67,40 +68,10 @@ function formatTimeSafe(input: string | Date | null | undefined): string {
 }
 
 // Link helpers to ensure links open reliably even inside builders/iframes
-function attemptOpen(href: string) {
-  // Try normal window.open
-  try {
-    const w = window.open(href, '_blank', 'noopener,noreferrer');
-    if (w) return true;
-  } catch {}
-
-  // Try opening from the top window (some builders sandbox popups in the iframe)
-  try {
-    if (window.top && window.top !== window) {
-      const wTop = (window.top as Window).open(href, '_blank', 'noopener,noreferrer');
-      if (wTop) return true;
-    }
-  } catch {}
-
-  // Last resort: synthesize a click on an anchor element
-  try {
-    const a = document.createElement('a');
-    a.href = href;
-    a.target = '_blank';
-    a.rel = 'noopener noreferrer';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    return true;
-  } catch {}
-
-  // Final fallback: navigate current tab
-  try {
-    window.location.href = href;
-    return true;
-  } catch {}
-
-  return false;
+async function attemptOpen(href: string) {
+  // Use the native-aware helper
+  await openExternalUrl(href);
+  return true;
 }
 
 function openExternal(
@@ -514,7 +485,7 @@ export const MessageBubble = ({ message, isOwn, isCleo, isCleoThinking }: Messag
                   src={att.url}
                   alt="Chat attachment image"
                   className="rounded-md max-w-full h-auto max-h-64 object-contain cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => window.open(att.url, '_blank')}
+                  onClick={() => openExternalUrl(att.url)}
                 />
               ))}
             </div>

@@ -177,7 +177,8 @@ export const ManagementSidebar = () => {
 
   const handleNavigateToSite = async () => {
     await signOut();
-    window.location.href = 'https://www.croftcommontest.com/';
+    // Navigate to root instead of full URL to stay in app
+    navigate('/');
   };
 
   return (

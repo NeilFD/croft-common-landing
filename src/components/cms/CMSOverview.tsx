@@ -244,7 +244,10 @@ export const CMSOverview = () => {
             variant="outline" 
             size="sm" 
             className="w-full gap-2"
-            onClick={() => window.open('/', '_blank')}
+            onClick={() => {
+              // Same-origin preview, use react-router navigation instead
+              window.open('/', '_self');
+            }}
           >
             <Eye className="h-4 w-4" />
             Preview Live Site

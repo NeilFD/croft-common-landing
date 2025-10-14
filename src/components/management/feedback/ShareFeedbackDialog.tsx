@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Mail, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { openExternal } from '@/utils/openExternal';
 
 interface ShareFeedbackDialogProps {
   feedback: any;
@@ -20,7 +21,7 @@ export function ShareFeedbackDialog({ feedback, open, onClose, isReport = false 
       : `Customer Feedback from ${format(new Date(feedback.created_at), 'MMM dd, yyyy')}\n\nOverall: ${feedback.overall_rating}/5\n${feedback.message ? `\nComment: ${feedback.message}` : ''}\n\nView more: ${window.location.origin}/management/feedback`;
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    openExternal(whatsappUrl);
     toast.success('Opening WhatsApp');
   };
 
@@ -34,7 +35,7 @@ export function ShareFeedbackDialog({ feedback, open, onClose, isReport = false 
       : `Customer Feedback Details\n\nDate: ${format(new Date(feedback.created_at), 'MMM dd, yyyy HH:mm')}\nCustomer: ${feedback.is_anonymous ? 'Anonymous' : feedback.name || 'Unknown'}\n\nOverall Rating: ${feedback.overall_rating}/5\n\nCategory Ratings:\nhospitality: ${feedback.hospitality_rating}/5\nfood: ${feedback.food_rating}/5\ndrink: ${feedback.drink_rating}/5\nteam: ${feedback.team_rating}/5\nvenue: ${feedback.venue_rating}/5\nprice: ${feedback.price_rating}/5\n\n${feedback.message ? `Comment:\n${feedback.message}` : 'No comment provided'}`;
 
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.location.href = mailtoUrl;
+    openExternal(mailtoUrl);
     toast.success('Opening email client');
   };
 

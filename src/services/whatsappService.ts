@@ -1,4 +1,5 @@
 import { WalkCard } from '@/hooks/useResearch';
+import { openExternal } from '@/utils/openExternal';
 
 const formatTimeBlock = (timeBlock?: string): string => {
   if (!timeBlock) return '';
@@ -79,8 +80,8 @@ export const shareViaWhatsApp = async (
     description: "The PDF has been downloaded. WhatsApp Web is opening with your message - attach the downloaded PDF file to complete the share."
   });
   
-  // Open WhatsApp Web in a new window/tab
-  window.open(whatsappUrl, '_blank');
+  // Open WhatsApp Web using native-aware helper
+  openExternal(whatsappUrl);
   
   return true;
 };

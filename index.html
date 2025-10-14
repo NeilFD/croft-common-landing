@@ -42,6 +42,25 @@
     <meta name="twitter:title" content="Croft Common - Pure Hospitality" />
     <meta name="twitter:description" content="Pure Hospitality - Croft Common Bristol" />
     <meta name="twitter:image" content="/brand/logo.png" />
+    
+    <!-- Temporary window.open debugging shim -->
+    <script>
+      (function() {
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('capacitor')) {
+          const originalOpen = window.open;
+          window.open = function(...args) {
+            console.log('🔍 [TEMP SHIM] window.open called with:', args);
+            console.trace('🔍 [TEMP SHIM] Call stack:');
+            return originalOpen.apply(this, args);
+          };
+          setTimeout(() => {
+            console.log('🔍 [TEMP SHIM] Disabled after 10 seconds');
+            window.open = originalOpen;
+          }, 10000);
+        }
+      })();
+    </script>
+    
     <!-- Bootstrap canonicalisation and token routing BEFORE React loads -->
     <script>
       (function () {

@@ -67,7 +67,8 @@ const CMSMenuModal = () => {
 
   const handleViewLive = () => {
     const liveUrl = `/${page === 'home' ? '' : page}`;
-    window.open(liveUrl, '_blank');
+    // Same-origin preview, use _self instead of _blank
+    window.open(liveUrl, '_self');
   };
 
   // Use CMS data for beer menu, static data for others

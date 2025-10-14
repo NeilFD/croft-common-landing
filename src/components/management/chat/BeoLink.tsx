@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useIOSDetection } from '@/hooks/useIOSDetection';
+import { openExternal } from '@/utils/openExternal';
 
 interface BeoLinkProps {
   fileName: string;
@@ -34,9 +35,6 @@ export const BeoLink = ({ fileName, children, className }: BeoLinkProps) => {
 
     console.log('[BeoLink] Opening BEO with fileName:', fileName, 'Event type:', e.type, 'iOS Safari:', isIOSSafari);
 
-    // Synchronously pre-open blank tab to bypass popup blockers
-    const newTab = window.open('about:blank', '_blank', 'noopener,noreferrer');
-
     try {
       // Fetch signed URL
       const { data, error } = await supabase.functions.invoke('get-beo-signed-url', {
@@ -49,21 +47,15 @@ export const BeoLink = ({ fileName, children, className }: BeoLinkProps) => {
       }
 
       if (data?.signedUrl) {
-        console.log('[BeoLink] Redirecting to signed URL');
-        if (newTab) {
-          newTab.location.href = data.signedUrl;
-        } else {
-          window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
-        }
+        console.log('[BeoLink] Opening signed URL via openExternal');
+        await openExternal(data.signedUrl);
       } else {
         throw new Error('No signed URL returned');
       }
     } catch (err) {
       console.error('[BeoLink] Failed to open BEO, falling back to default href:', err);
-      // Close the blank tab and fall back to default href behavior
-      newTab?.close();
       const fallbackUrl = `/beo/view?f=${encodeURIComponent(fileName)}`;
-      window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
+      await openExternal(fallbackUrl);
     }
   };
 

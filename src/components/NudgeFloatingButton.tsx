@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useNudgeNotification } from "@/contexts/NudgeNotificationContext";
+import { openExternal } from "@/utils/openExternal";
 
 interface NudgeFloatingButtonProps {
   className?: string;
@@ -33,7 +34,7 @@ const NudgeFloatingButton: React.FC<NudgeFloatingButtonProps> = ({ className = "
     // Handle both full URLs and internal paths
     if (nudgeUrl.startsWith('http')) {
       console.log('🎯 NUDGE BUTTON: Opening external URL');
-      window.open(nudgeUrl, '_blank');
+      openExternal(nudgeUrl);
     } else if (nudgeUrl.startsWith('/')) {
       console.log('🎯 NUDGE BUTTON: Navigating to internal path');
       navigate(nudgeUrl);

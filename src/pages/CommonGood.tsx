@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { CMSText } from '@/components/cms/CMSText';
+import { openExternal } from '@/utils/openExternal';
 
 const CommonGood = () => {
   const [amount, setAmount] = useState<string>("");
@@ -41,28 +42,21 @@ const CommonGood = () => {
       toast({ title: 'Amount too small', description: 'Minimum is £1.00', duration: 2500 });
       return;
     }
-    // Open a placeholder tab synchronously to avoid mobile popup blockers
-    let checkoutTab: Window | null = null;
+    
     try {
       setLoading(true);
-      checkoutTab = window.open('', '_blank');
 
       const { data, error } = await supabase.functions.invoke('create-common-good-payment', {
         body: { amount_cents: cents },
       });
       if (error) throw error;
       if (data?.url) {
-        if (checkoutTab) {
-          checkoutTab.location.href = data.url;
-        } else {
-          // Fallback: open in the same tab if popups are blocked
-          window.location.href = data.url;
-        }
+        // Use native-aware helper to open checkout
+        await openExternal(data.url);
       } else {
         throw new Error('No checkout URL returned');
       }
     } catch (e: any) {
-      if (checkoutTab && !checkoutTab.closed) checkoutTab.close();
       toast({ title: 'Checkout failed', description: e.message || 'Please try again', duration: 3000 });
     } finally {
       setLoading(false);
