@@ -1,8 +1,8 @@
 import { homeHeroImages, cafeHeroImages, cocktailHeroImages, beerHeroImages, kitchenHeroImages, hallHeroImages, communityHeroImages, commonRoomHeroImages } from './heroImages';
 
-// Map app routes to the first 2 hero images for aggressive preloading
+// Map app routes to hero images for aggressive preloading (all 4 for home, first 2 for others)
 const routeImages: Record<string, string[]> = {
-  '/': [homeHeroImages[0]?.src, homeHeroImages[1]?.src].filter(Boolean) as string[],
+  '/': [homeHeroImages[0]?.src, homeHeroImages[1]?.src, homeHeroImages[2]?.src, homeHeroImages[3]?.src].filter(Boolean) as string[],
   '/cafe': [cafeHeroImages[0]?.src, cafeHeroImages[1]?.src].filter(Boolean) as string[],
   '/cocktails': [cocktailHeroImages[0]?.src, cocktailHeroImages[1]?.src].filter(Boolean) as string[],
   '/beer': [beerHeroImages[0]?.src, beerHeroImages[1]?.src].filter(Boolean) as string[],

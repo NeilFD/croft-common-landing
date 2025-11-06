@@ -56,11 +56,11 @@ const HeroCarousel = () => {
               src={image.src}
               alt={`Hero image ${index + 1}`}
               className="min-h-screen"
-              priority={index === 0}
-              loading={index === 0 ? 'eager' : 'lazy'}
+              priority={index <= 3}
+              loading={index <= 3 ? 'eager' : 'lazy'}
               sizes="100vw"
               mobileOptimized={true}
-              instantTransition={index === 0}
+              instantTransition={index <= 1}
             />
             {/* Subtle overlay for text readability */}
             <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>

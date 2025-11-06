@@ -9,18 +9,19 @@ const RouteImagePreloader = () => {
     const urls = getRouteImages(location.pathname);
     if (urls.length === 0) return;
 
-    // Aggressively preload first 2 images with high priority
+    // Aggressively preload images with high priority for first 2
     urls.forEach((url, index) => {
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'image';
       link.href = url;
-      if (index === 0) {
+      // High priority for first 2 images only
+      if (index <= 1) {
         link.setAttribute('fetchpriority', 'high');
       }
       document.head.appendChild(link);
       
-      // Also decode immediately for instant paint
+      // Also decode immediately for instant paint (all images)
       const img = new Image();
       img.src = url;
       if ('decode' in img && typeof img.decode === 'function') {
