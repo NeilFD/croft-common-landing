@@ -72,18 +72,12 @@ const OptimizedImage = ({
       url.searchParams.set('r', String(r));
       url.searchParams.set('ts', String(Date.now()));
       
-      // Add mobile optimization hints
-      if (mobileOptimized && (isMobile || isSlowConnection)) {
-        url.searchParams.set('mobile', '1');
-        url.searchParams.set('compress', '1');
-      }
-      
+      // Do not add extra mobile/compress params for same-origin static assets
       return url.toString();
     } catch {
-      // Fallback: naive append
+      // Fallback: naive append without extra params
       const sep = u.includes('?') ? '&' : '?';
-      const mobileParams = mobileOptimized && (isMobile || isSlowConnection) ? '&mobile=1&compress=1' : '';
-      return `${u}${sep}sw-bypass=1&r=${r}&ts=${Date.now()}${mobileParams}`;
+      return `${u}${sep}sw-bypass=1&r=${r}&ts=${Date.now()}`;
     }
   };
 
