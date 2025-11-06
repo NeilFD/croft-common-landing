@@ -74,18 +74,13 @@ const Navigation = () => {
     setIsMobileMenuOpen(false); // Close mobile menu
     
     if (path === '/') {
-      // Only play strobe transition when going home
-      console.log('🔗 [Navigation] Navigating to home with transition');
+      // Navigate to home instantly
+      console.log('🔗 [Navigation] Navigating to home');
       triggerTransition('/');
     } else {
-      // Soft transition for section navigations
+      // Navigate instantly to section
       console.log('🔗 [Navigation] Navigating to section:', path);
-      const preview = getRoutePreview(path);
-      if (preview) {
-        triggerTransition(path, { variant: 'soft', previewSrc: preview });
-      } else {
-        navigate(path);
-      }
+      triggerTransition(path);
     }
   };
 
