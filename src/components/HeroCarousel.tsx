@@ -42,6 +42,25 @@ const HeroCarousel = () => {
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
 
+  // Dev/diagnostics: log resolved hero images and origin once images are available
+  useEffect(() => {
+    if (!heroImages || heroImages.length === 0) return;
+    if (typeof window === 'undefined') return;
+    try {
+      const resolved = heroImages.map((img, idx) => {
+        let origin = 'unknown';
+        try { origin = new URL(img.src, window.location.origin).origin; } catch {}
+        const sameOrigin = origin === window.location.origin;
+        return { index: idx + 1, sameOrigin, origin, src: img.src };
+      });
+      if (import.meta.env.DEV || window.location.hostname.includes('croftcommontest.com')) {
+        console.group('[HeroCarousel] Resolved hero images');
+        console.table(resolved);
+        console.groupEnd();
+      }
+    } catch {}
+  }, [heroImages]);
+
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>

@@ -67,8 +67,117 @@ export const useCMSImages = (
         return fallbackImages;
       }
 
-      // Preload priority images immediately (first 2 high, up to 4 for home/main_hero)
-      const preloadCount = (['home', 'index'].includes(page) && carouselName === 'main_hero') ? 4 : 2;
+      // For home/main_hero, validate images and guarantee 4 slides
+      const isHomeMainHero = (['home', 'index'].includes(page) && carouselName === 'main_hero');
+
+      const isCrossOrigin = (u: string): boolean => {
+        try {
+          if (typeof window === 'undefined') return false;
+          const url = new URL(u, window.location.origin);
+          return url.origin !== window.location.origin;
+        } catch {
+          return true;
+        }
+      };
+
+      const decodeWithTimeout = (src: string, timeoutMs = 2500): Promise<boolean> => {
+        return new Promise((resolve) => {
+          try {
+            const img = new Image();
+            let settled = false;
+            const done = (ok: boolean) => {
+              if (settled) return;
+              settled = true;
+              resolve(ok);
+              cleanup();
+            };
+            const cleanup = () => {
+              img.onload = null;
+              img.onerror = null;
+            };
+            const timer = setTimeout(() => done(false), timeoutMs);
+            img.onload = () => {
+              clearTimeout(timer);
+              try {
+                if ('decode' in img && typeof (img as any).decode === 'function') {
+                  (img as any).decode().then(() => done(true)).catch(() => done(true));
+                } else {
+                  done(true);
+                }
+              } catch {
+                done(true);
+              }
+            };
+            img.onerror = () => {
+              clearTimeout(timer);
+              done(false);
+            };
+            img.src = src;
+          } catch {
+            resolve(false);
+          }
+        });
+      };
+
+      if (isHomeMainHero) {
+        const validated: HeroImage[] = await Promise.all(
+          transformedImages.map(async (img, idx) => {
+            const cross = isCrossOrigin(img.src);
+            let decodeOk = false;
+            try { decodeOk = await decodeWithTimeout(img.src, 2500); } catch { decodeOk = false; }
+            const valid = !cross && decodeOk;
+            if (!valid) {
+              const fallback = fallbackImages[idx];
+              if (fallback?.src) {
+                console.warn('[CMSImages] Replacing invalid hero image with fallback', {
+                  index: idx,
+                  src: img.src,
+                  cross,
+                  decodeOk,
+                  fallback: fallback.src
+                });
+                return { ...fallback };
+              }
+            }
+            return img;
+          })
+        );
+
+        let finalImages = validated.filter(Boolean);
+
+        // Ensure at least 4 slides
+        const minCount = 4;
+        if (finalImages.length < minCount) {
+          for (let i = 0; i < fallbackImages.length && finalImages.length < minCount; i++) {
+            finalImages.push(fallbackImages[i]);
+          }
+        }
+
+        // Preload priority images immediately (first 4 for home/main_hero)
+        const preloadCount = 4;
+        finalImages.slice(0, preloadCount).forEach((img, i) => {
+          if (!imagePreloadCache.has(img.src)) {
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = img.src;
+            if (i <= 1) link.setAttribute('fetchpriority', 'high');
+            document.head.appendChild(link);
+            imagePreloadCache.add(img.src);
+          }
+          // Also decode to make it paint-ready
+          const pre = new Image();
+          pre.src = img.src;
+          if ('decode' in pre && typeof pre.decode === 'function') {
+            pre.decode().catch(() => {});
+          }
+        });
+
+        return finalImages;
+      }
+
+      // Preload priority images immediately (first 2 for other carousels)
+      const preloadCount = 2;
       transformedImages.slice(0, preloadCount).forEach((img, i) => {
         if (!imagePreloadCache.has(img.src)) {
           const link = document.createElement('link');
