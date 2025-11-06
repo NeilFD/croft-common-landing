@@ -10,28 +10,25 @@ import { kitchensMenu } from '@/data/menuData';
 import { kitchenHeroImages as fallbackKitchenImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
 import CroftLogo from './CroftLogo';
+import { useCarouselAutoplay } from '@/hooks/useCarouselAutoplay';
 
 const KitchensHeroCarousel = () => {
-  // Fetch CMS images with fallback to static images
-  const { images: kitchenImages, loading: imagesLoading } = useCMSImages(
+  const { autoplay, shouldAutoplay } = useCarouselAutoplay();
+  const { images: kitchenImages } = useCMSImages(
     'kitchens', 
     'kitchen_hero', 
     { fallbackImages: fallbackKitchenImages }
   );
   
-  const autoplay = useRef(Autoplay({ delay: 4000, stopOnInteraction: false }));
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: true,
-      duration: 30 // Smooth transitions
+      loop: shouldAutoplay,
+      duration: 30
     },
-    [autoplay.current]
+    autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isFirstReady, setIsFirstReady] = useState(false);
-
-  // Images from shared data module
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -43,35 +40,6 @@ const KitchensHeroCarousel = () => {
     onSelect();
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
-
-  useEffect(() => {
-    const firstUrl = kitchenImages[0]?.src;
-    let cancelled = false;
-    let timeoutId: number | undefined;
-    if (autoplay.current && emblaApi) {
-      try { autoplay.current.stop(); } catch {}
-    }
-    const proceed = () => {
-      if (cancelled) return;
-      setIsFirstReady(true);
-      try { autoplay.current?.play?.(); } catch {}
-    };
-    if (!firstUrl) {
-      proceed();
-      return;
-    }
-    const img = new Image();
-    img.src = firstUrl;
-    // Try to decode ASAP, but also attach onload/onerror for wider support
-    // @ts-ignore
-    (img as any).decode?.().then(proceed).catch(proceed);
-    img.onload = proceed;
-    img.onerror = proceed;
-    // Safety: start anyway after 4.5s
-    // @ts-ignore
-    timeoutId = setTimeout(proceed, 4500);
-    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
-  }, [emblaApi]);
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden z-0" ref={emblaRef}>
@@ -89,6 +57,7 @@ const KitchensHeroCarousel = () => {
               priority={index === 0}
               loading={index === 0 ? 'eager' : 'lazy'}
               sizes="100vw"
+              instantTransition={index === 0}
             />
             {/* Subtle overlay for text readability */}
             <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>

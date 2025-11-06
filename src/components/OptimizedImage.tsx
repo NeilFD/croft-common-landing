@@ -78,7 +78,8 @@ const OptimizedImage = ({
     }
   };
 
-  const computedSrc = retryCount > 0 ? buildBypassUrl(src, retryCount) : src;
+  // Priority images skip retry complexity for instant display
+  const computedSrc = (priority || retryCount === 0) ? src : buildBypassUrl(src, retryCount);
   
   // Generate mobile-optimized sizes attribute
   const mobileSizes = mobileOptimized 
@@ -96,6 +97,13 @@ const OptimizedImage = ({
   };
 
   const handleError = (error: any) => {
+    // Priority images don't retry - fail fast
+    if (priority) {
+      setIsBroken(true);
+      console.error('❌ [OptimizedImage] Priority image failed:', src);
+      return;
+    }
+    
     // Only log critical errors, not every retry
     if (retryCount === 0) {
       console.warn('🚨 [OptimizedImage] Failed to load:', {

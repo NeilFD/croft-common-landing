@@ -27,6 +27,7 @@ export const useCMSImages = (
 
   const { data: images = fallbackImages, isLoading: loading, error } = useQuery({
     queryKey: ['cms-images', page, carouselName],
+    initialData: fallbackImages, // Return fallbacks immediately for instant first paint
     queryFn: async () => {
       const { data, error: fetchError } = await supabase
         .from('cms_images')

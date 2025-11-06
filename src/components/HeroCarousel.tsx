@@ -3,51 +3,33 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import OptimizedImage from './OptimizedImage';
-import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
 import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
-import { useNativePlatform } from '@/hooks/useNativePlatform';
 import BookFloatingButton from './BookFloatingButton';
-import { useConsolidatedPerformance } from '@/hooks/useConsolidatedPerformance';
-
-
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import CroftLogo from './CroftLogo';
+import { useCarouselAutoplay } from '@/hooks/useCarouselAutoplay';
+
 const HeroCarousel = () => {
-  const isMobile = useIsMobile();
-  const { isSlowConnection } = useConnectionSpeed();
-  const { isIOS } = useNativePlatform();
-  const performance = useConsolidatedPerformance();
-  
+  const { autoplay, shouldAutoplay } = useCarouselAutoplay();
   
   // Fetch CMS images with fallback to static images
-  const { images: heroImages, loading: imagesLoading } = useCMSImages(
+  const { images: heroImages } = useCMSImages(
     'index', 
     'main_hero', 
     { fallbackImages: fallbackHeroImages }
   );
   
-  // Disable autoplay on iOS native to prevent freeze
-  const shouldAutoplay = !isIOS;
-  const autoplayDelay = isMobile || isSlowConnection ? 6000 : 4000;
-  const autoplay = useRef(shouldAutoplay ? Autoplay({ 
-    delay: autoplayDelay, 
-    stopOnInteraction: false,
-    playOnInit: false
-  }) : null);
-  
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: !isIOS,
-      duration: isMobile ? 20 : 30
+      loop: shouldAutoplay,
+      duration: 30
     },
     autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  const [isFirstReady, setIsFirstReady] = useState(false);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -60,51 +42,6 @@ const HeroCarousel = () => {
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
 
-  useEffect(() => {
-    if (!performance.isPageLoaded || !emblaApi || !heroImages.length) return;
-    
-    if (!shouldAutoplay) {
-      setIsFirstReady(true);
-      return;
-    }
-    
-    const firstUrl = heroImages[0]?.src;
-    let cancelled = false;
-    let timeoutId: number | undefined;
-    
-    if (autoplay.current) {
-      try { autoplay.current.stop(); } catch {}
-    }
-    
-    const proceed = () => {
-      if (cancelled) return;
-      setIsFirstReady(true);
-      try { autoplay.current?.play?.(); } catch {}
-    };
-    
-    if (!firstUrl) {
-      proceed();
-      return;
-    }
-    
-    const img = new Image();
-    img.src = firstUrl;
-    
-    // @ts-ignore
-    (img as any).decode?.().then(proceed).catch(proceed);
-    img.onload = proceed;
-    img.onerror = proceed;
-    
-    // @ts-ignore
-    timeoutId = setTimeout(proceed, 100);
-    
-    return () => { 
-      cancelled = true; 
-      if (timeoutId) clearTimeout(timeoutId); 
-    };
-  }, [emblaApi, heroImages, performance.isPageLoaded, shouldAutoplay]);
-
-  const currentImage = heroImages[currentSlide];
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>

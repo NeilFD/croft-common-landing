@@ -9,31 +9,26 @@ import { ArrowBox } from '@/components/ui/ArrowBox';
 import { cocktailMenu } from '@/data/menuData';
 import { cocktailHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
-import { useNativePlatform } from '@/hooks/useNativePlatform';
 import CroftLogo from './CroftLogo';
+import { useCarouselAutoplay } from '@/hooks/useCarouselAutoplay';
 
 const CocktailHeroCarousel = () => {
-  const { isIOS } = useNativePlatform();
-  const { images: heroImages, loading: imagesLoading } = useCMSImages(
+  const { autoplay, shouldAutoplay } = useCarouselAutoplay();
+  const { images: heroImages } = useCMSImages(
     'cocktails', 
     'cocktail_hero', 
     { fallbackImages: fallbackHeroImages }
   );
   
-  const shouldAutoplay = !isIOS;
-  const autoplay = useRef(shouldAutoplay ? Autoplay({ delay: 4000, stopOnInteraction: false }) : null);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: !isIOS,
+      loop: shouldAutoplay,
       duration: 30
     },
     autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isFirstReady, setIsFirstReady] = useState(false);
-
-  // Images from shared data module
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -45,40 +40,6 @@ const CocktailHeroCarousel = () => {
     onSelect();
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
-
-  useEffect(() => {
-    if (!shouldAutoplay) {
-      setIsFirstReady(true);
-      return;
-    }
-    
-    const firstUrl = heroImages[0]?.src;
-    let cancelled = false;
-    let timeoutId: number | undefined;
-    if (autoplay.current && emblaApi) {
-      try { autoplay.current.stop(); } catch {}
-    }
-    const proceed = () => {
-      if (cancelled) return;
-      setIsFirstReady(true);
-      try { autoplay.current?.play?.(); } catch {}
-    };
-    if (!firstUrl) {
-      proceed();
-      return;
-    }
-    const img = new Image();
-    img.src = firstUrl;
-    // @ts-ignore
-    (img as any).decode?.().then(proceed).catch(proceed);
-    img.onload = proceed;
-    img.onerror = proceed;
-    // @ts-ignore
-    timeoutId = setTimeout(proceed, 4500);
-    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
-  }, [emblaApi, shouldAutoplay]);
-
-  const currentImage = heroImages[currentSlide];
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden z-0" ref={emblaRef}>
@@ -96,6 +57,7 @@ const CocktailHeroCarousel = () => {
               priority={index === 0}
               loading={index === 0 ? 'eager' : 'lazy'}
               sizes="100vw"
+              instantTransition={index === 0}
             />
             {/* Subtle overlay for text readability */}
             <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>

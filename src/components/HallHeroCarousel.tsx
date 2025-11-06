@@ -3,7 +3,6 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { hallHeroImages as fallbackHeroImages } from '@/data/heroImages';
 import { useCMSImages } from '@/hooks/useCMSImages';
-import { useNativePlatform } from '@/hooks/useNativePlatform';
 import OptimizedImage from './OptimizedImage';
 import { ArrowBox } from '@/components/ui/ArrowBox';
 import BookFloatingButton from '@/components/BookFloatingButton';
@@ -13,30 +12,26 @@ import { CMSText } from '@/components/cms/CMSText';
 import CroftLogo from './CroftLogo';
 import { hallMenuData } from '@/data/menuData';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+import { useCarouselAutoplay } from '@/hooks/useCarouselAutoplay';
 
 const HallHeroCarousel = () => {
   const { isCMSMode } = useCMSMode();
-  const { isIOS } = useNativePlatform();
-  const { images: heroImages, loading: imagesLoading } = useCMSImages(
+  const { autoplay, shouldAutoplay } = useCarouselAutoplay();
+  const { images: heroImages } = useCMSImages(
     'hall', 
     'hall_hero', 
     { fallbackImages: fallbackHeroImages }
   );
   
-  const shouldAutoplay = !isIOS;
-  const autoplay = useRef(shouldAutoplay ? Autoplay({ delay: 4000, stopOnInteraction: false }) : null);
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { 
-      loop: !isIOS,
+      loop: shouldAutoplay,
       duration: 30
     },
     autoplay.current ? [autoplay.current] : []
   );
 
   const [currentSlide, setCurrentSlide] = useState(0);
-
-  // Images provided by shared data module
-  const [isFirstReady, setIsFirstReady] = useState(false);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -48,38 +43,6 @@ const HallHeroCarousel = () => {
     onSelect();
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
-
-  useEffect(() => {
-    if (!shouldAutoplay) {
-      setIsFirstReady(true);
-      return;
-    }
-    
-    const firstUrl = heroImages[0]?.src;
-    let cancelled = false;
-    let timeoutId: number | undefined;
-    if (autoplay.current && emblaApi) {
-      try { autoplay.current.stop(); } catch {}
-    }
-    const proceed = () => {
-      if (cancelled) return;
-      setIsFirstReady(true);
-      try { autoplay.current?.play?.(); } catch {}
-    };
-    if (!firstUrl) {
-      proceed();
-      return;
-    }
-    const img = new Image();
-    img.src = firstUrl;
-    // @ts-ignore
-    (img as any).decode?.().then(proceed).catch(proceed);
-    img.onload = proceed;
-    img.onerror = proceed;
-    // @ts-ignore
-    timeoutId = setTimeout(proceed, 4500);
-    return () => { cancelled = true; if (timeoutId) clearTimeout(timeoutId); };
-  }, [emblaApi, shouldAutoplay]);
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>
@@ -97,6 +60,7 @@ const HallHeroCarousel = () => {
               priority={index === 0}
               loading={index === 0 ? 'eager' : 'lazy'}
               sizes="100vw"
+              instantTransition={index === 0}
             />
             {/* Overlay for text readability */}
             <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
