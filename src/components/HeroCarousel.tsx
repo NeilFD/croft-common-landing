@@ -56,7 +56,7 @@ const HeroCarousel = () => {
               src={image.src}
               alt={`Hero image ${index + 1}`}
               className="min-h-screen"
-              priority={index <= 3}
+              priority={index <= 1}
               loading={index <= 3 ? 'eager' : 'lazy'}
               sizes="100vw"
               mobileOptimized={true}

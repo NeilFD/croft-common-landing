@@ -9,8 +9,12 @@ const RouteImagePreloader = () => {
     const urls = getRouteImages(location.pathname);
     if (urls.length === 0) return;
 
-    // Aggressively preload images with high priority for first 2
+    // Aggressively preload images with high priority for first 2, dedupe existing preloads
     urls.forEach((url, index) => {
+      // Skip if already preloaded
+      const existing = document.querySelector(`link[rel="preload"][href="${url}"]`);
+      if (existing) return;
+      
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'image';

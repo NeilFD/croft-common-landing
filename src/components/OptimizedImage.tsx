@@ -30,6 +30,7 @@ const OptimizedImage = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [isBroken, setIsBroken] = useState(false);
+  const [forceBypass, setForceBypass] = useState(false);
   const imgRef = useRef<HTMLImageElement | null>(null);
   const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
@@ -50,6 +51,7 @@ const OptimizedImage = ({
     setIsLoaded(false);
     setRetryCount(0);
     setIsBroken(false);
+    setForceBypass(false);
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current);
       retryTimeoutRef.current = null;
@@ -78,8 +80,10 @@ const OptimizedImage = ({
     }
   };
 
-  // Priority images skip retry complexity for instant display
-  const computedSrc = (priority || retryCount === 0) ? src : buildBypassUrl(src, retryCount);
+  // Compute URL with bypass for priority images on retry, or normal images
+  const computedSrc = (priority && !forceBypass && retryCount === 0)
+    ? src
+    : buildBypassUrl(src, retryCount);
   
   // Generate mobile-optimized sizes attribute
   const mobileSizes = mobileOptimized 
@@ -97,18 +101,38 @@ const OptimizedImage = ({
   };
 
   const handleError = (error: any) => {
-    // Priority images don't retry - fail fast
-    if (priority) {
-      setIsBroken(true);
-      console.error('❌ [OptimizedImage] Priority image failed:', src);
+    // Priority images: one immediate cache-bypass retry, then fail
+    if (priority && !forceBypass) {
+      console.warn('⚠️ [OptimizedImage] Priority image failed, retrying with cache bypass:', {
+        failedUrl: computedSrc,
+        originalSrc: src,
+        priority: true,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+      });
+      setForceBypass(true);
+      setRetryCount(1);
+      setIsBroken(false);
       return;
     }
     
-    // Only log critical errors, not every retry
+    if (priority && forceBypass) {
+      // Bypass retry also failed
+      setIsBroken(true);
+      console.error('❌ [OptimizedImage] Priority image permanently failed (bypass also failed):', {
+        failedUrl: computedSrc,
+        originalSrc: src,
+        priority: true,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+      });
+      return;
+    }
+    
+    // Only log critical errors for non-priority, not every retry
     if (retryCount === 0) {
       console.warn('🚨 [OptimizedImage] Failed to load:', {
-        src: computedSrc,
+        failedUrl: computedSrc,
         originalSrc: src,
+        priority: false,
         error: error?.target?.error || 'Unknown error'
       });
     }
@@ -116,7 +140,11 @@ const OptimizedImage = ({
     // Circuit breaker - if retries exceed limit, mark as permanently broken
     if (retryCount >= 2) {
       setIsBroken(true);
-      console.error('❌ [OptimizedImage] Permanently failed:', src);
+      console.error('❌ [OptimizedImage] Permanently failed:', {
+        failedUrl: computedSrc,
+        originalSrc: src,
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
+      });
       return;
     }
     
@@ -150,11 +178,12 @@ const OptimizedImage = ({
       
       {!isBroken && (
         <img
+        key={computedSrc}
         ref={imgRef}
         src={computedSrc}
         alt={alt}
         loading={priority ? 'eager' : loading}
-        decoding="async"
+        decoding={priority ? 'auto' : 'async'}
         sizes={mobileSizes}
         draggable={false}
         style={objectPosition ? { objectPosition } : undefined}
