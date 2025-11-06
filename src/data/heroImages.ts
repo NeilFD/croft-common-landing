@@ -9,8 +9,7 @@ export interface HeroImage {
 export const homeHeroImages: HeroImage[] = [
   { src: '/lovable-uploads/554a5ea5-4c34-4b71-971b-a896a47f8927.png', type: 'dark', overlay: 'bg-void/30' },
   { src: '/lovable-uploads/2cf25417-28ae-479d-b6b8-19e126392333.png', type: 'warm', overlay: 'bg-void/20' },
-  { src: '/lovable-uploads/64b7fab3-00a9-4045-9318-590eb75f1336.png', type: 'warm', overlay: 'bg-void/30' },
-  { src: '/lovable-uploads/ae7e9f85-42b7-459a-8387-d57b2b637edc.png', type: 'mixed', overlay: 'bg-void/25' },
+  { src: '/lovable-uploads/64b7fab3-00a9-4045-9318-590eb75f1336.png', type: 'warm', overlay: 'bg-void/30' }
 ];
 
 export const cafeHeroImages: HeroImage[] = [
