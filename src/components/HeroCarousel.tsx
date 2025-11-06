@@ -48,10 +48,9 @@ const HeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Smart image loading - prioritize first 2 images on mobile
+  // Aggressive image loading - preload all images immediately
   const imageUrls = heroImages.map(img => img.src);
-  const priorityUrls = isMobile ? imageUrls.slice(0, 2) : imageUrls;
-  const { loading: imagePreloadLoading } = useImagePreloader(priorityUrls, { enabled: !imagesLoading, priority: true });
+  const { loading: imagePreloadLoading } = useImagePreloader(imageUrls, { enabled: !imagesLoading, priority: true });
   const [isFirstReady, setIsFirstReady] = useState(false);
 
   const onSelect = useCallback(() => {
@@ -101,7 +100,7 @@ const HeroCarousel = () => {
     img.onerror = proceed;
     
     // @ts-ignore
-    timeoutId = setTimeout(proceed, 2000);
+    timeoutId = setTimeout(proceed, 500);
     
     return () => { 
       cancelled = true; 

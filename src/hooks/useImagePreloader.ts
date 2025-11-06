@@ -25,9 +25,9 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
     const connection = (navigator as any).connection;
     const isSlowConnection = connection && (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g');
     
-    // Limit concurrent loading on mobile/slow connections
-    const maxConcurrent = (isMobile || isSlowConnection) ? 2 : uniqueUrls.length;
-    const urlsToLoad = uniqueUrls.slice(0, maxConcurrent);
+    // Aggressive loading for home page - load all images immediately
+    const maxConcurrent = uniqueUrls.length;
+    const urlsToLoad = uniqueUrls;
 
     const preloadImages = async () => {
       // Initialize loaded images with already preloaded URLs
@@ -74,27 +74,6 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
 
       try {
         await Promise.all(promises);
-        
-        // Load remaining images progressively on mobile
-        if (isMobile && uniqueUrls.length > maxConcurrent) {
-          setTimeout(() => {
-            if (isMounted) {
-              const remainingUrls = uniqueUrls.slice(maxConcurrent);
-              remainingUrls.forEach(url => {
-                if (!preloadedUrls.has(url)) {
-                  const img = new Image();
-                  img.onload = () => {
-                    preloadedUrls.add(url);
-                    if (isMounted) {
-                      setLoadedImages(prev => new Set([...prev, url]));
-                    }
-                  };
-                  img.src = url;
-                }
-              });
-            }
-          }, 1000);
-        }
       } catch (error) {
         console.warn('Some images failed to preload:', error);
       } finally {

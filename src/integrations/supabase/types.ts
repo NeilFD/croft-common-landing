@@ -675,7 +675,7 @@ export type Database = {
           doc_id: string
           editor_id: string | null
           id: string
-          search_text: unknown | null
+          search_text: unknown
           summary: string | null
           version_no: number
         }
@@ -686,7 +686,7 @@ export type Database = {
           doc_id: string
           editor_id?: string | null
           id?: string
-          search_text?: unknown | null
+          search_text?: unknown
           summary?: string | null
           version_no: number
         }
@@ -697,7 +697,7 @@ export type Database = {
           doc_id?: string
           editor_id?: string | null
           id?: string
-          search_text?: unknown | null
+          search_text?: unknown
           summary?: string | null
           version_no?: number
         }
@@ -2587,7 +2587,7 @@ export type Database = {
           preferred_date: string | null
           preferred_space: string | null
           privacy_accepted_at: string | null
-          search_tsv: unknown | null
+          search_tsv: unknown
           source: string | null
           status: string
           updated_at: string | null
@@ -2613,7 +2613,7 @@ export type Database = {
           preferred_date?: string | null
           preferred_space?: string | null
           privacy_accepted_at?: string | null
-          search_tsv?: unknown | null
+          search_tsv?: unknown
           source?: string | null
           status?: string
           updated_at?: string | null
@@ -2639,7 +2639,7 @@ export type Database = {
           preferred_date?: string | null
           preferred_space?: string | null
           privacy_accepted_at?: string | null
-          search_tsv?: unknown | null
+          search_tsv?: unknown
           source?: string | null
           status?: string
           updated_at?: string | null
@@ -5157,7 +5157,7 @@ export type Database = {
           device_type: string | null
           ended_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           is_authenticated: boolean | null
           os: string | null
           referrer: string | null
@@ -5172,7 +5172,7 @@ export type Database = {
           device_type?: string | null
           ended_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_authenticated?: boolean | null
           os?: string | null
           referrer?: string | null
@@ -5187,7 +5187,7 @@ export type Database = {
           device_type?: string | null
           ended_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           is_authenticated?: boolean | null
           os?: string | null
           referrer?: string | null
@@ -5588,10 +5588,7 @@ export type Database = {
         Args: { p_content_md: string; p_summary?: string; p_version_id: string }
         Returns: boolean
       }
-      approve_late_close: {
-        Args: { p_event: string }
-        Returns: undefined
-      }
+      approve_late_close: { Args: { p_event: string }; Returns: undefined }
       bump_rate_key: {
         Args: { max_hits: number; p_key: string; window_seconds: number }
         Returns: boolean
@@ -5612,10 +5609,7 @@ export type Database = {
         Args: { _chat_id: string; _user_id: string }
         Returns: boolean
       }
-      check_password_change_required: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      check_password_change_required: { Args: never; Returns: boolean }
       check_secret_kitchen_access_status: {
         Args: { user_email: string }
         Returns: {
@@ -5634,18 +5628,12 @@ export type Database = {
         }
         Returns: boolean
       }
-      cleanup_expired_otp_codes: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_expired_secret_kitchens_otp_codes: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: undefined
       }
-      cleanup_expired_webauthn_challenges: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_expired_webauthn_challenges: { Args: never; Returns: undefined }
       clear_webauthn_data_for_handle: {
         Args: { user_handle_input: string }
         Returns: undefined
@@ -5665,25 +5653,18 @@ export type Database = {
           tickets_left: number
         }[]
       }
-      create_group_chat: {
-        Args: { p_name: string }
-        Returns: string
-      }
-      create_hold: {
-        Args: { payload: Json }
-        Returns: string
-      }
+      create_group_chat: { Args: { p_name: string }; Returns: string }
+      create_hold: { Args: { payload: Json }; Returns: string }
       create_invoice: {
         Args: { p_amount: number; p_due_date: string; p_event_id: string }
         Returns: string
       }
-      create_lead: {
-        Args: { client_ip?: string; payload: Json } | { payload: Json }
-        Returns: string
-      }
-      create_management_event: {
-        Args:
-          | {
+      create_lead:
+        | { Args: { client_ip?: string; payload: Json }; Returns: string }
+        | { Args: { payload: Json }; Returns: string }
+      create_management_event:
+        | {
+            Args: {
               p_budget?: number
               p_client_email?: string
               p_client_name?: string
@@ -5695,7 +5676,10 @@ export type Database = {
               p_start_date?: string
               p_start_time?: string
             }
-          | {
+            Returns: string
+          }
+        | {
+            Args: {
               p_budget?: number
               p_client_email?: string
               p_client_name?: string
@@ -5707,9 +5691,9 @@ export type Database = {
               p_start_date?: string
               p_start_time?: string
             }
-          | { payload: Json }
-        Returns: string
-      }
+            Returns: string
+          }
+        | { Args: { payload: Json }; Returns: string }
       create_management_user: {
         Args: {
           p_email: string
@@ -5717,16 +5701,22 @@ export type Database = {
         }
         Returns: Json
       }
-      create_proposal: {
-        Args:
-          | { p_event_id: string; p_items: Json }
-          | {
+      create_proposal:
+        | {
+            Args: {
               p_event_id: string
               p_line_items: Json
               p_service_charge_pct?: number
             }
-        Returns: Json
-      }
+            Returns: Json
+          }
+        | {
+            Args: { p_event_id: string; p_items: Json }
+            Returns: {
+              line_items_created: number
+              proposal_id: string
+            }[]
+          }
       deactivate_management_user: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -5750,26 +5740,11 @@ export type Database = {
         Args: { user_id_input: string }
         Returns: string
       }
-      force_password_change: {
-        Args: { p_user_id: string }
-        Returns: undefined
-      }
-      generate_beo_pdf: {
-        Args: { p_event_id: string }
-        Returns: string
-      }
-      generate_contract: {
-        Args: { p_event_id: string }
-        Returns: string
-      }
-      generate_membership_number: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_temp_password: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      force_password_change: { Args: { p_user_id: string }; Returns: undefined }
+      generate_beo_pdf: { Args: { p_event_id: string }; Returns: string }
+      generate_contract: { Args: { p_event_id: string }; Returns: string }
+      generate_membership_number: { Args: never; Returns: string }
+      generate_temp_password: { Args: never; Returns: string }
       get_advanced_member_analytics: {
         Args: {
           p_activity_logic?: string
@@ -5860,10 +5835,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_app_setting: {
-        Args: { setting_key: string }
-        Returns: string
-      }
+      get_app_setting: { Args: { setting_key: string }; Returns: string }
       get_campaign_metrics: {
         Args: { p_campaign_id: string }
         Returns: {
@@ -5914,7 +5886,7 @@ export type Database = {
         }[]
       }
       get_cinema_status: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           capacity: number
           description: string
@@ -5930,23 +5902,17 @@ export type Database = {
           title: string
         }[]
       }
-      get_client_event_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_client_event_id: { Args: never; Returns: string }
       get_current_week_boundaries: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           week_end: string
           week_start: string
         }[]
       }
-      get_last_thursday: {
-        Args: { month_start: string }
-        Returns: string
-      }
+      get_last_thursday: { Args: { month_start: string }; Returns: string }
       get_management_users: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           email: string
@@ -5957,7 +5923,7 @@ export type Database = {
         }[]
       }
       get_member_analytics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           active_days: number
           active_months: number
@@ -5992,7 +5958,7 @@ export type Database = {
         }[]
       }
       get_member_segments: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           avg_spend: number
           criteria: Json
@@ -6015,7 +5981,7 @@ export type Database = {
         }[]
       }
       get_or_create_current_release: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           capacity: number
           created_at: string
@@ -6029,9 +5995,15 @@ export type Database = {
           screening_time: string
           title: string | null
         }
+        SetofOptions: {
+          from: "*"
+          to: "cinema_releases"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_push_subscribers: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           created_at: string
           device_count: number
@@ -6055,50 +6027,15 @@ export type Database = {
           subscriber_id: string
         }[]
       }
-      get_unread_count: {
-        Args: { _user_id: string }
-        Returns: number
-      }
-      get_user_email: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_unread_count: { Args: { _user_id: string }; Returns: number }
+      get_user_email: { Args: never; Returns: string }
       get_user_management_role: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["management_role"]
       }
-      get_user_type: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_week_end_date: {
-        Args: { input_date: string }
-        Returns: string
-      }
-      get_week_start_date: {
-        Args: { input_date: string }
-        Returns: string
-      }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
+      get_user_type: { Args: never; Returns: string }
+      get_week_end_date: { Args: { input_date: string }; Returns: string }
+      get_week_start_date: { Args: { input_date: string }; Returns: string }
       has_management_role: {
         Args: {
           _role: Database["public"]["Enums"]["management_role"]
@@ -6106,10 +6043,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_admin_user: { Args: never; Returns: boolean }
       is_chat_admin: {
         Args: { _chat_id: string; _user_id: string }
         Returns: boolean
@@ -6118,47 +6052,38 @@ export type Database = {
         Args: { _chat_id: string; _user_id: string }
         Returns: boolean
       }
-      is_email_domain_allowed: {
-        Args: { email: string }
-        Returns: boolean
-      }
+      is_email_domain_allowed: { Args: { email: string }; Returns: boolean }
       is_secret_kitchen_access_expired: {
         Args: { email_input: string }
         Returns: boolean
       }
-      is_secret_kitchens_user: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_secret_kitchens_user: { Args: never; Returns: boolean }
       is_within_venue_bounds: {
         Args: { lat: number; lng: number }
         Returns: boolean
       }
-      log_audit_entry: {
-        Args:
-          | {
-              _action: string
-              _diff?: Json
-              _entity: string
-              _entity_id: string
-            }
-          | {
+      log_audit_entry:
+        | {
+            Args: {
               p_action: string
               p_actor_id: string
               p_diff?: Json
               p_entity: string
               p_entity_id: string
             }
-        Returns: string
-      }
-      mark_password_changed: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      normalize_item_name: {
-        Args: { item_name: string }
-        Returns: string
-      }
+            Returns: string
+          }
+        | {
+            Args: {
+              _action: string
+              _diff?: Json
+              _entity: string
+              _entity_id: string
+            }
+            Returns: string
+          }
+      mark_password_changed: { Args: never; Returns: undefined }
+      normalize_item_name: { Args: { item_name: string }; Returns: string }
       promote_hold: {
         Args: { p_booking: string; p_new_status: string }
         Returns: undefined
@@ -6168,7 +6093,7 @@ export type Database = {
         Returns: undefined
       }
       recalculate_all_capacity_percentages: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           updated_count: number
         }[]
@@ -6177,16 +6102,9 @@ export type Database = {
         Args: { p_event: string; p_reason: string }
         Returns: undefined
       }
-      rpc_ck_create_doc: {
-        Args:
-          | {
-              p_collection_id?: string
-              p_content_md: string
-              p_slug: string
-              p_title: string
-              p_type: string
-            }
-          | {
+      rpc_ck_create_doc:
+        | {
+            Args: {
               p_collection_id?: string
               p_content_md?: string
               p_slug: string
@@ -6195,8 +6113,18 @@ export type Database = {
               p_type: Database["public"]["Enums"]["ck_doc_type"]
               p_zones?: string[]
             }
-        Returns: string
-      }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_collection_id?: string
+              p_content_md: string
+              p_slug: string
+              p_title: string
+              p_type: string
+            }
+            Returns: string
+          }
       rpc_ck_get_signed_url: {
         Args: { p_storage_path: string }
         Returns: string
@@ -6221,34 +6149,15 @@ export type Database = {
         Args: { p_content_md: string; p_doc_id: string; p_summary?: string }
         Returns: string
       }
-      rpc_ck_publish: {
-        Args: { p_doc_id: string }
-        Returns: boolean
-      }
+      rpc_ck_publish: { Args: { p_doc_id: string }; Returns: boolean }
       set_ledger_password: {
         Args: { password_input: string; user_id_input: string }
         Returns: boolean
       }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
-      }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
-      }
-      slugify: {
-        Args: { src: string }
-        Returns: string
-      }
-      soft_delete_message: {
-        Args: { _message_id: string }
-        Returns: boolean
-      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      slugify: { Args: { src: string }; Returns: string }
+      soft_delete_message: { Args: { _message_id: string }; Returns: boolean }
       update_lead: {
         Args: { lead_id_param: string; patch: Json }
         Returns: undefined
