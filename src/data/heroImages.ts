@@ -11,7 +11,7 @@ export const homeHeroImages: HeroImage[] = [
   { src: '/lovable-uploads/2cf25417-28ae-479d-b6b8-19e126392333.png', type: 'warm', overlay: 'bg-void/20' },
   { src: '/lovable-uploads/64b7fab3-00a9-4045-9318-590eb75f1336.png', type: 'warm', overlay: 'bg-void/30' },
   // Replaced previously failing asset with a verified working image
-  { src: '/lovable-uploads/0a0894f9-a169-4747-9282-2150f198561c.png', type: 'dark', overlay: 'bg-void/30' },
+  { src: '/lovable-uploads/home-hero-04.jpg', type: 'dark', overlay: 'bg-void/30' },
 ];
 
 export const cafeHeroImages: HeroImage[] = [
