@@ -71,7 +71,7 @@ const OptimizedImage = ({
         url.searchParams.set('compress', '1');
       }
       
-      return url.pathname + url.search + url.hash;
+      return url.toString();
     } catch {
       // Fallback: naive append
       const sep = u.includes('?') ? '&' : '?';
@@ -80,10 +80,9 @@ const OptimizedImage = ({
     }
   };
 
-  // Compute URL with bypass for priority images on retry, or normal images
-  const computedSrc = (priority && !forceBypass && retryCount === 0)
-    ? src
-    : buildBypassUrl(src, retryCount);
+  // Always use original URL on first attempt; apply bypass on retries
+  const useOriginalOnFirstTry = retryCount === 0 && !forceBypass;
+  const computedSrc = useOriginalOnFirstTry ? src : buildBypassUrl(src, retryCount);
   
   // Generate mobile-optimized sizes attribute
   const mobileSizes = mobileOptimized 
@@ -106,6 +105,7 @@ const OptimizedImage = ({
       console.warn('⚠️ [OptimizedImage] Priority image failed, retrying with cache bypass:', {
         failedUrl: computedSrc,
         originalSrc: src,
+        currentSrc: (error?.target as HTMLImageElement)?.currentSrc,
         priority: true,
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
       });
@@ -121,6 +121,7 @@ const OptimizedImage = ({
       console.error('❌ [OptimizedImage] Priority image permanently failed (bypass also failed):', {
         failedUrl: computedSrc,
         originalSrc: src,
+        currentSrc: (error?.target as HTMLImageElement)?.currentSrc,
         priority: true,
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
       });
@@ -132,6 +133,7 @@ const OptimizedImage = ({
       console.warn('🚨 [OptimizedImage] Failed to load:', {
         failedUrl: computedSrc,
         originalSrc: src,
+        currentSrc: (error?.target as HTMLImageElement)?.currentSrc,
         priority: false,
         error: error?.target?.error || 'Unknown error'
       });
@@ -143,6 +145,7 @@ const OptimizedImage = ({
       console.error('❌ [OptimizedImage] Permanently failed:', {
         failedUrl: computedSrc,
         originalSrc: src,
+        currentSrc: (error?.target as HTMLImageElement)?.currentSrc,
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'
       });
       return;

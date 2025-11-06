@@ -67,16 +67,23 @@ export const useCMSImages = (
         return fallbackImages;
       }
 
-      // Preload priority images immediately
-      transformedImages.slice(0, 2).forEach(img => {
+      // Preload priority images immediately (first 2 high, up to 4 for home/main_hero)
+      const preloadCount = (['home', 'index'].includes(page) && carouselName === 'main_hero') ? 4 : 2;
+      transformedImages.slice(0, preloadCount).forEach((img, i) => {
         if (!imagePreloadCache.has(img.src)) {
           const link = document.createElement('link');
           link.rel = 'preload';
           link.as = 'image';
           link.href = img.src;
-          link.fetchPriority = 'high';
+          if (i <= 1) link.setAttribute('fetchpriority', 'high');
           document.head.appendChild(link);
           imagePreloadCache.add(img.src);
+        }
+        // Also decode to make it paint-ready
+        const pre = new Image();
+        pre.src = img.src;
+        if ('decode' in pre && typeof pre.decode === 'function') {
+          pre.decode().catch(() => {});
         }
       });
 
