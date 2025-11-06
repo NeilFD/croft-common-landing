@@ -101,7 +101,7 @@ export const useImagePreloader = (imageUrls: string[], options: UseImagePreloade
   };
 };
 
-export const preloadImages = (urls: string[]) => {
+export const preloadImages = (urls: string[], highPriority = false) => {
   urls.forEach(url => {
     if (appendedPreloads.has(url)) return;
     appendedPreloads.add(url);
@@ -109,6 +109,9 @@ export const preloadImages = (urls: string[]) => {
     link.rel = 'preload';
     link.as = 'image';
     link.href = url;
+    if (highPriority) {
+      link.setAttribute('fetchpriority', 'high');
+    }
     document.head.appendChild(link);
   });
 };

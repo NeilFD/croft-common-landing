@@ -135,7 +135,7 @@ const OptimizedImage = ({
 
   return (
     <div className={cn('relative overflow-hidden', className)}>
-      {!isLoaded && (
+      {!isLoaded && !priority && (
         <Skeleton className="absolute inset-0 bg-muted/20 pointer-events-none" />
       )}
       

@@ -1,28 +1,34 @@
 import { homeHeroImages, cafeHeroImages, cocktailHeroImages, beerHeroImages, kitchenHeroImages, hallHeroImages, communityHeroImages, commonRoomHeroImages } from './heroImages';
 
-// Map app routes to the first hero image used on that page
-const routeFirstImage: Record<string, string | undefined> = {
-  '/': homeHeroImages[0]?.src,
-  '/cafe': cafeHeroImages[0]?.src,
-  '/cocktails': cocktailHeroImages[0]?.src,
-  '/beer': beerHeroImages[0]?.src,
-  '/kitchens': kitchenHeroImages[0]?.src,
-  '/hall': hallHeroImages[0]?.src,
-  '/community': communityHeroImages[0]?.src,
-  '/common-room': commonRoomHeroImages[0]?.src,
+// Map app routes to the first 2 hero images for aggressive preloading
+const routeImages: Record<string, string[]> = {
+  '/': [homeHeroImages[0]?.src, homeHeroImages[1]?.src].filter(Boolean) as string[],
+  '/cafe': [cafeHeroImages[0]?.src, cafeHeroImages[1]?.src].filter(Boolean) as string[],
+  '/cocktails': [cocktailHeroImages[0]?.src, cocktailHeroImages[1]?.src].filter(Boolean) as string[],
+  '/beer': [beerHeroImages[0]?.src, beerHeroImages[1]?.src].filter(Boolean) as string[],
+  '/kitchens': [kitchenHeroImages[0]?.src, kitchenHeroImages[1]?.src].filter(Boolean) as string[],
+  '/hall': [hallHeroImages[0]?.src, hallHeroImages[1]?.src].filter(Boolean) as string[],
+  '/community': [communityHeroImages[0]?.src, communityHeroImages[1]?.src].filter(Boolean) as string[],
+  '/common-room': [commonRoomHeroImages[0]?.src].filter(Boolean) as string[],
 };
 
-export const getRoutePreview = (path: string): string | null => {
+export const getRouteImages = (path: string): string[] => {
   // Normalize to root segment paths we support (ignore subpaths and params)
   try {
     const url = new URL(path, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
     const first = '/' + (url.pathname.split('/').filter(Boolean)[0] ?? '');
     const key = first === '/' ? '/' : first;
-    return routeFirstImage[key] ?? null;
+    return routeImages[key] ?? [];
   } catch {
     // Fallback if "path" is already a pathname like '/cafe'
     const first = '/' + (path.split('/').filter(Boolean)[0] ?? '');
     const key = first === '/' ? '/' : first;
-    return routeFirstImage[key] ?? null;
+    return routeImages[key] ?? [];
   }
+};
+
+// Backwards compatibility - return first image only
+export const getRoutePreview = (path: string): string | null => {
+  const images = getRouteImages(path);
+  return images[0] ?? null;
 };
