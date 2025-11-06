@@ -44,13 +44,11 @@ export const useConsolidatedPerformance = (): ConsolidatedPerformanceHooks => {
       el.style.transition = '';
     });
 
-    // Resume carousel autoplay after load
-    setTimeout(() => {
-      const carousels = document.querySelectorAll('[data-embla-carousel]');
-      carousels.forEach((carousel) => {
-        (carousel as any)?.__embla__?.plugins()?.autoplay?.play();
-      });
-    }, 500); // Reduced from 1000ms
+    // Resume carousel autoplay immediately
+    const carousels = document.querySelectorAll('[data-embla-carousel]');
+    carousels.forEach((carousel) => {
+      (carousel as any)?.__embla__?.plugins()?.autoplay?.play();
+    });
   }, []);
 
   useEffect(() => {

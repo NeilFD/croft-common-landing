@@ -12,6 +12,7 @@ interface OptimizedImageProps {
   sizes?: string;
   objectPosition?: string;
   mobileOptimized?: boolean;
+  instantTransition?: boolean;
 }
 
 const OptimizedImage = ({ 
@@ -23,7 +24,8 @@ const OptimizedImage = ({
   loading = 'lazy',
   sizes = '100vw',
   objectPosition,
-  mobileOptimized = false
+  mobileOptimized = false,
+  instantTransition = false
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
@@ -149,7 +151,8 @@ const OptimizedImage = ({
         draggable={false}
         style={objectPosition ? { objectPosition } : undefined}
         className={cn(
-          'absolute inset-0 w-full h-full object-cover transition-opacity duration-500',
+          'absolute inset-0 w-full h-full object-cover transition-opacity',
+          instantTransition || priority ? 'duration-0' : 'duration-500',
           isLoaded ? 'opacity-100' : 'opacity-0'
         )}
           onLoad={handleLoad}

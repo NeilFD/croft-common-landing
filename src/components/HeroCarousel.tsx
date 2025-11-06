@@ -3,7 +3,6 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import MenuButton from './MenuButton';
 import OptimizedImage from './OptimizedImage';
-import { useImagePreloader } from '@/hooks/useImagePreloader';
 import { useIsMobile, useConnectionSpeed } from '@/hooks/use-mobile';
 import { homeMenu } from '@/data/menuData';
 import { homeHeroImages as fallbackHeroImages } from '@/data/heroImages';
@@ -48,9 +47,6 @@ const HeroCarousel = () => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Aggressive image loading - preload all images immediately
-  const imageUrls = heroImages.map(img => img.src);
-  const { loading: imagePreloadLoading } = useImagePreloader(imageUrls, { enabled: !imagesLoading, priority: true });
   const [isFirstReady, setIsFirstReady] = useState(false);
 
   const onSelect = useCallback(() => {
@@ -100,7 +96,7 @@ const HeroCarousel = () => {
     img.onerror = proceed;
     
     // @ts-ignore
-    timeoutId = setTimeout(proceed, 500);
+    timeoutId = setTimeout(proceed, 100);
     
     return () => { 
       cancelled = true; 
@@ -127,6 +123,7 @@ const HeroCarousel = () => {
               loading={index === 0 ? 'eager' : 'lazy'}
               sizes="100vw"
               mobileOptimized={true}
+              instantTransition={index === 0}
             />
             {/* Subtle overlay for text readability */}
             <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
