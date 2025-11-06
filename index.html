@@ -76,16 +76,23 @@
             try { if (w.webkit && w.webkit.messageHandlers) { isNative = true; } } catch (e) {}
           }
           var host = loc.hostname;
+          
+          // Skip canonicalization for development/preview domains to avoid redirect chains
+          var isPreviewDomain = /lovable(project)?\.app$/i.test(host) || host === 'localhost' || /^127\.0\.0\./.test(host);
+          if (isPreviewDomain) {
+            return;
+          }
+          
           var search = loc.search || '';
           var hash = loc.hash || '';
-           var hasRecoveryTokens = /access_token=|refresh_token=|code=|type=recovery|token_hash=/.test(search + hash);
+          var hasRecoveryTokens = /access_token=|refresh_token=|code=|type=recovery|token_hash=/.test(search + hash);
  
-           if (!isNative) {
-             var onApex = host === 'croftcommontest.com';
-             var onWww = host === 'www.croftcommontest.com';
-             var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
+          if (!isNative) {
+            var onApex = host === 'croftcommontest.com';
+            var onWww = host === 'www.croftcommontest.com';
+            var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
  
-             if (hasRecoveryTokens) {
+            if (hasRecoveryTokens) {
               // Single-hop: always send tokens directly to /management/login on www
               if (onApex || (onWww && !onLogin)) {
                 var target = 'https://www.croftcommontest.com/management/login' + search + hash;
