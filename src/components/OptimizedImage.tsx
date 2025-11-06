@@ -60,7 +60,14 @@ const OptimizedImage = ({
 
   const buildBypassUrl = (u: string, r: number) => {
     try {
-      const url = new URL(u, window.location.origin);
+      const url = new URL(u, typeof window !== 'undefined' ? window.location.origin : undefined);
+      const isCrossOrigin = typeof window !== 'undefined' ? url.origin !== window.location.origin : false;
+
+      // Never mutate cross-origin URLs (avoid breaking signed/CDN links)
+      if (isCrossOrigin) {
+        return u;
+      }
+
       url.searchParams.set('sw-bypass', '1');
       url.searchParams.set('r', String(r));
       url.searchParams.set('ts', String(Date.now()));
@@ -181,7 +188,7 @@ const OptimizedImage = ({
       
       {!isBroken && (
         <img
-        key={computedSrc}
+        key={`${computedSrc}-${retryCount}`}
         ref={imgRef}
         src={computedSrc}
         alt={alt}
