@@ -9,7 +9,9 @@ const RouteImagePreloader = () => {
     const urls = getRouteImages(location.pathname);
     if (urls.length === 0) return;
 
-    // Phase 5: Preload first 3 images for non-home routes (home already does 4)
+    // Phase 5: Preload ALL carousel images on route change
+    // First 2 images: high priority + immediate decode for instant paint
+    // Remaining images: normal priority for smooth scrolling without grey flash
     urls.forEach((url, index) => {
       // Skip if already preloaded
       const existing = document.querySelector(`link[rel="preload"][href="${url}"]`);
@@ -25,11 +27,13 @@ const RouteImagePreloader = () => {
       }
       document.head.appendChild(link);
       
-      // Decode immediately for instant paint
-      const img = new Image();
-      img.src = url;
-      if ('decode' in img && typeof img.decode === 'function') {
-        img.decode().catch(() => {});
+      // Decode first 2 immediately for instant paint
+      if (index <= 1) {
+        const img = new Image();
+        img.src = url;
+        if ('decode' in img && typeof img.decode === 'function') {
+          img.decode().catch(() => {});
+        }
       }
     });
   }, [location.pathname]);

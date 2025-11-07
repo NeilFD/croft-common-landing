@@ -210,7 +210,8 @@ const OptimizedImage = ({
         className={cn(
           'absolute inset-0 w-full h-full object-cover transition-opacity',
           // Skip transition for preloaded priority images or instant mode
-          instantTransition || isAlreadyPreloaded ? 'duration-0' : priority ? 'duration-150' : 'duration-500',
+          // Faster transition for non-priority to reduce grey flash
+          instantTransition || isAlreadyPreloaded ? 'duration-0' : priority ? 'duration-150' : 'duration-200',
           isLoaded ? 'opacity-100' : 'opacity-0'
         )}
           onLoad={handleLoad}
