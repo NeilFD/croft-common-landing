@@ -22,13 +22,13 @@ const RouteImagePreloader = () => {
       link.as = 'image';
       link.href = url;
       // High priority for first 2 images only
-      if (index <= 1) {
+      if (index <= 3) {
         link.setAttribute('fetchpriority', 'high');
       }
       document.head.appendChild(link);
       
       // Decode first 2 immediately for instant paint
-      if (index <= 1) {
+      if (index <= 3) {
         const img = new Image();
         img.src = url;
         if ('decode' in img && typeof img.decode === 'function') {

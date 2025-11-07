@@ -66,17 +66,51 @@ const HeroCarousel = () => {
 
   useEffect(() => {
     if (!heroImages?.length) return;
-    const initial = heroImages.slice(0, Math.min(heroImages.length, 4));
-    initial.forEach((img) => {
+    const initialCount = Math.min(heroImages.length, 6);
+    const initial = heroImages.slice(0, initialCount);
+    initial.forEach((img, i) => {
       if (!decodedSetRef.current.has(img.src)) {
-        const i = new Image();
-        i.src = img.src;
-        if ('decode' in i && typeof (i as any).decode === 'function') {
-          (i as any).decode().catch(() => {});
+        // Ensure a preload link exists to mark as preloaded for OptimizedImage
+        if (typeof document !== 'undefined' && !document.querySelector(`link[rel="preload"][href="${img.src}"]`)) {
+          const l = document.createElement('link');
+          l.rel = 'preload';
+          l.as = 'image';
+          l.href = img.src;
+          if (i <= 2) l.setAttribute('fetchpriority', 'high');
+          document.head.appendChild(l);
+        }
+        const image = new Image();
+        image.src = img.src;
+        if ('decode' in image && typeof (image as any).decode === 'function') {
+          (image as any).decode().catch(() => {});
         }
         decodedSetRef.current.add(img.src);
       }
     });
+    // Idle decode the rest
+    const ric: any = (window as any).requestIdleCallback || ((cb: any) => setTimeout(() => cb({ didTimeout: true }), 200));
+    const handle = ric(() => {
+      heroImages.slice(initialCount).forEach((img) => {
+        if (decodedSetRef.current.has(img.src)) return;
+        if (typeof document !== 'undefined' && !document.querySelector(`link[rel="preload"][href="${img.src}"]`)) {
+          const l = document.createElement('link');
+          l.rel = 'preload';
+          l.as = 'image';
+          l.href = img.src;
+          document.head.appendChild(l);
+        }
+        const i2 = new Image();
+        i2.src = img.src;
+        if ('decode' in i2 && typeof (i2 as any).decode === 'function') {
+          (i2 as any).decode().catch(() => {});
+        }
+        decodedSetRef.current.add(img.src);
+      });
+    });
+    return () => {
+      const cic: any = (window as any).cancelIdleCallback;
+      if (cic && handle) cic(handle);
+    };
   }, [heroImages]);
 
   // Decode next slides ahead of time as the user scrolls
@@ -88,6 +122,13 @@ const HeroCarousel = () => {
     [next1, next2].forEach((idx) => {
       const src = heroImages[idx]?.src;
       if (!src || decodedSetRef.current.has(src)) return;
+      if (typeof document !== 'undefined' && !document.querySelector(`link[rel="preload"][href="${src}"]`)) {
+        const l = document.createElement('link');
+        l.rel = 'preload';
+        l.as = 'image';
+        l.href = src;
+        document.head.appendChild(l);
+      }
       const i = new Image();
       i.src = src;
       if ('decode' in i && typeof (i as any).decode === 'function') {
@@ -106,7 +147,7 @@ const HeroCarousel = () => {
           const isNext1 = index === ((currentSlide + 1) % total);
           const isNext2 = index === ((currentSlide + 2) % total);
           const isPrioritySlide = isCurrent || isNext1;
-          const eager = isPrioritySlide || isNext2 || index <= 3;
+          const eager = isPrioritySlide || isNext2 || index <= 5;
           return (
             <div 
               key={index}
