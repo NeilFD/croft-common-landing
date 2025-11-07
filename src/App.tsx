@@ -63,6 +63,7 @@ const UncommonStandards = lazy(() => import("./pages/UncommonStandards"));
 
 // Optimized imports that load immediately
 import RouteImagePreloader from '@/components/RouteImagePreloader';
+import NavigationImagePreloader from '@/components/NavigationImagePreloader';
 import ScrollToTop from '@/components/ScrollToTop';
 import DomainGuard from '@/components/DomainGuard';
 import ReverseDomainGuard from '@/components/ReverseDomainGuard';
@@ -284,6 +285,7 @@ const App = () => {
                 
                 <RecoveryGuard />
                 <RouteImagePreloader />
+                <NavigationImagePreloader />
                 <InteractionWatchdog />
                 <NudgeFloatingButton />
                 

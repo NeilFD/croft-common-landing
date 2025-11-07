@@ -9,7 +9,7 @@ const RouteImagePreloader = () => {
     const urls = getRouteImages(location.pathname);
     if (urls.length === 0) return;
 
-    // Aggressively preload images with high priority for first 2, dedupe existing preloads
+    // Phase 5: Preload first 3 images for non-home routes (home already does 4)
     urls.forEach((url, index) => {
       // Skip if already preloaded
       const existing = document.querySelector(`link[rel="preload"][href="${url}"]`);
@@ -25,7 +25,7 @@ const RouteImagePreloader = () => {
       }
       document.head.appendChild(link);
       
-      // Also decode immediately for instant paint (all images)
+      // Decode immediately for instant paint
       const img = new Image();
       img.src = url;
       if ('decode' in img && typeof img.decode === 'function') {

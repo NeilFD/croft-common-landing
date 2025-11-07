@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { HeroImage } from '@/data/heroImages';
@@ -153,54 +154,40 @@ export const useCMSImages = (
           }
         }
 
-        // Preload priority images immediately (first 4 for home/main_hero)
-        const preloadCount = 4;
-        finalImages.slice(0, preloadCount).forEach((img, i) => {
-          if (!imagePreloadCache.has(img.src)) {
-            const link = document.createElement('link');
-            link.rel = 'preload';
-            link.as = 'image';
-            link.href = img.src;
-            if (i <= 1) link.setAttribute('fetchpriority', 'high');
-            document.head.appendChild(link);
-            imagePreloadCache.add(img.src);
-          }
-          // Also decode to make it paint-ready
-          const pre = new Image();
-          pre.src = img.src;
-          if ('decode' in pre && typeof pre.decode === 'function') {
-            pre.decode().catch(() => {});
-          }
-        });
-
         return finalImages;
       }
-
-      // Preload priority images immediately (first 2 for other carousels)
-      const preloadCount = 2;
-      transformedImages.slice(0, preloadCount).forEach((img, i) => {
-        if (!imagePreloadCache.has(img.src)) {
-          const link = document.createElement('link');
-          link.rel = 'preload';
-          link.as = 'image';
-          link.href = img.src;
-          if (i <= 1) link.setAttribute('fetchpriority', 'high');
-          document.head.appendChild(link);
-          imagePreloadCache.add(img.src);
-        }
-        // Also decode to make it paint-ready
-        const pre = new Image();
-        pre.src = img.src;
-        if ('decode' in pre && typeof pre.decode === 'function') {
-          pre.decode().catch(() => {});
-        }
-      });
 
       return transformedImages;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  // Phase 3: Preload images immediately when available (whether from fallback or CMS)
+  useEffect(() => {
+    if (!images || images.length === 0) return;
+
+    const isHomeMainHero = (['home', 'index'].includes(page) && carouselName === 'main_hero');
+    const preloadCount = isHomeMainHero ? 4 : 2;
+
+    images.slice(0, preloadCount).forEach((img, i) => {
+      if (!imagePreloadCache.has(img.src)) {
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = img.src;
+        if (i <= 1) link.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(link);
+        imagePreloadCache.add(img.src);
+      }
+      // Also decode to make it paint-ready
+      const pre = new Image();
+      pre.src = img.src;
+      if ('decode' in pre && typeof pre.decode === 'function') {
+        pre.decode().catch(() => {});
+      }
+    });
+  }, [images, page, carouselName]);
 
   return { images, loading, error: error?.message || null };
 };

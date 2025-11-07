@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
+// Check if image is already preloaded in the document
+const isImagePreloaded = (src: string): boolean => {
+  if (typeof document === 'undefined') return false;
+  return !!document.querySelector(`link[rel="preload"][href="${src}"]`);
+};
+
 interface OptimizedImageProps {
   src: string;
   alt: string;
@@ -89,6 +95,16 @@ const OptimizedImage = ({
   const mobileSizes = mobileOptimized 
     ? '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
     : sizes;
+
+  // Phase 4: Check if image is already preloaded on mount for instant paint
+  const isAlreadyPreloaded = priority && isImagePreloaded(src);
+  
+  useEffect(() => {
+    // If priority image is already preloaded, mark as loaded immediately
+    if (isAlreadyPreloaded && imgRef.current?.complete) {
+      setIsLoaded(true);
+    }
+  }, [isAlreadyPreloaded]);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -193,7 +209,8 @@ const OptimizedImage = ({
         style={objectPosition ? { objectPosition } : undefined}
         className={cn(
           'absolute inset-0 w-full h-full object-cover transition-opacity',
-          instantTransition || priority ? 'duration-0' : 'duration-500',
+          // Skip transition for preloaded priority images or instant mode
+          instantTransition || isAlreadyPreloaded ? 'duration-0' : priority ? 'duration-150' : 'duration-500',
           isLoaded ? 'opacity-100' : 'opacity-0'
         )}
           onLoad={handleLoad}

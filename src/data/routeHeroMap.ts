@@ -1,14 +1,14 @@
 import { homeHeroImages, cafeHeroImages, cocktailHeroImages, beerHeroImages, kitchenHeroImages, hallHeroImages, communityHeroImages, commonRoomHeroImages } from './heroImages';
 
-// Map app routes to hero images for aggressive preloading (all 4 for home, first 2 for others)
+// Map app routes to hero images for aggressive preloading (all 4 for home, first 3 for others)
 const routeImages: Record<string, string[]> = {
   '/': [homeHeroImages[0]?.src, homeHeroImages[1]?.src, homeHeroImages[2]?.src, homeHeroImages[3]?.src].filter(Boolean) as string[],
-  '/cafe': [cafeHeroImages[0]?.src, cafeHeroImages[1]?.src].filter(Boolean) as string[],
-  '/cocktails': [cocktailHeroImages[0]?.src, cocktailHeroImages[1]?.src].filter(Boolean) as string[],
-  '/beer': [beerHeroImages[0]?.src, beerHeroImages[1]?.src].filter(Boolean) as string[],
-  '/kitchens': [kitchenHeroImages[0]?.src, kitchenHeroImages[1]?.src].filter(Boolean) as string[],
-  '/hall': [hallHeroImages[0]?.src, hallHeroImages[1]?.src].filter(Boolean) as string[],
-  '/community': [communityHeroImages[0]?.src, communityHeroImages[1]?.src].filter(Boolean) as string[],
+  '/cafe': [cafeHeroImages[0]?.src, cafeHeroImages[1]?.src, cafeHeroImages[2]?.src].filter(Boolean) as string[],
+  '/cocktails': [cocktailHeroImages[0]?.src, cocktailHeroImages[1]?.src, cocktailHeroImages[2]?.src].filter(Boolean) as string[],
+  '/beer': [beerHeroImages[0]?.src, beerHeroImages[1]?.src, beerHeroImages[2]?.src].filter(Boolean) as string[],
+  '/kitchens': [kitchenHeroImages[0]?.src, kitchenHeroImages[1]?.src, kitchenHeroImages[2]?.src].filter(Boolean) as string[],
+  '/hall': [hallHeroImages[0]?.src, hallHeroImages[1]?.src, hallHeroImages[2]?.src].filter(Boolean) as string[],
+  '/community': [communityHeroImages[0]?.src, communityHeroImages[1]?.src, communityHeroImages[2]?.src].filter(Boolean) as string[],
   '/common-room': [commonRoomHeroImages[0]?.src].filter(Boolean) as string[],
 };
 
