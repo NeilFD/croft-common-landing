@@ -61,30 +61,73 @@ const HeroCarousel = () => {
     } catch {}
   }, [heroImages]);
 
+  // Pre-decode initial images to remove first-pass jank
+  const decodedSetRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!heroImages?.length) return;
+    const initial = heroImages.slice(0, Math.min(heroImages.length, 4));
+    initial.forEach((img) => {
+      if (!decodedSetRef.current.has(img.src)) {
+        const i = new Image();
+        i.src = img.src;
+        if ('decode' in i && typeof (i as any).decode === 'function') {
+          (i as any).decode().catch(() => {});
+        }
+        decodedSetRef.current.add(img.src);
+      }
+    });
+  }, [heroImages]);
+
+  // Decode next slides ahead of time as the user scrolls
+  useEffect(() => {
+    if (!heroImages?.length) return;
+    const total = heroImages.length;
+    const next1 = (currentSlide + 1) % total;
+    const next2 = (currentSlide + 2) % total;
+    [next1, next2].forEach((idx) => {
+      const src = heroImages[idx]?.src;
+      if (!src || decodedSetRef.current.has(src)) return;
+      const i = new Image();
+      i.src = src;
+      if ('decode' in i && typeof (i as any).decode === 'function') {
+        (i as any).decode().catch(() => {});
+      }
+      decodedSetRef.current.add(src);
+    });
+  }, [currentSlide, heroImages]);
 
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden" ref={emblaRef}>
       <div className="flex">
-        {heroImages.map((image, index) => (
-          <div 
-            key={index}
-            className="flex-[0_0_100%] relative min-h-screen"
-          >
-            {/* Optimized Background Image */}
-            <OptimizedImage
-              src={image.src}
-              alt={`Hero image ${index + 1}`}
-              className="min-h-screen"
-              priority={index <= 1}
-              loading={index <= 3 ? 'eager' : 'lazy'}
-              sizes="100vw"
-              mobileOptimized={true}
-              instantTransition={index <= 1}
-            />
-            {/* Subtle overlay for text readability */}
-            <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
-          </div>
-        ))}
+        {heroImages.map((image, index) => {
+          const total = heroImages.length || 1;
+          const isCurrent = index === currentSlide;
+          const isNext1 = index === ((currentSlide + 1) % total);
+          const isNext2 = index === ((currentSlide + 2) % total);
+          const isPrioritySlide = isCurrent || isNext1;
+          const eager = isPrioritySlide || isNext2 || index <= 3;
+          return (
+            <div 
+              key={index}
+              className="flex-[0_0_100%] relative min-h-screen"
+            >
+              {/* Optimized Background Image */}
+              <OptimizedImage
+                src={image.src}
+                alt={`Hero image ${index + 1}`}
+                className="min-h-screen"
+                priority={isPrioritySlide}
+                loading={eager ? 'eager' : 'lazy'}
+                sizes="100vw"
+                mobileOptimized={true}
+                instantTransition={isPrioritySlide || isNext2}
+              />
+              {/* Subtle overlay for text readability */}
+              <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Fixed watermark overlay */}

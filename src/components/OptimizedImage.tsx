@@ -96,11 +96,10 @@ const OptimizedImage = ({
     ? '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
     : sizes;
 
-  // Phase 4: Check if image is already preloaded on mount for instant paint
-  const isAlreadyPreloaded = priority && isImagePreloaded(src);
+  // Check if image is already preloaded via <link rel="preload"> for instant paint (applies to all, not just priority)
+  const isAlreadyPreloaded = isImagePreloaded(src);
   
   useEffect(() => {
-    // If priority image is already preloaded, mark as loaded immediately
     if (isAlreadyPreloaded && imgRef.current?.complete) {
       setIsLoaded(true);
     }
@@ -183,7 +182,7 @@ const OptimizedImage = ({
 
   return (
     <div className={cn('relative overflow-hidden', className)}>
-      {!isLoaded && !priority && (
+      {!isLoaded && !priority && !isAlreadyPreloaded && (
         <Skeleton className="absolute inset-0 bg-muted/20 pointer-events-none" />
       )}
       
@@ -202,8 +201,8 @@ const OptimizedImage = ({
         ref={imgRef}
         src={computedSrc}
         alt={alt}
-        loading={priority ? 'eager' : loading}
-        decoding={priority ? 'auto' : 'async'}
+        loading={priority || isAlreadyPreloaded ? 'eager' : loading}
+        decoding={priority || isAlreadyPreloaded ? 'auto' : 'async'}
         sizes={mobileSizes}
         draggable={false}
         style={objectPosition ? { objectPosition } : undefined}
