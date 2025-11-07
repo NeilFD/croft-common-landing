@@ -42,29 +42,76 @@ const CafeHeroCarousel = () => {
     emblaApi.on('select', onSelect);
   }, [emblaApi, onSelect]);
 
+  // Decode-ahead: pre-decode first 6, idle-decode rest, and decode next slides
+  const decodedSetRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!cafeImages?.length) return;
+    const initialCount = Math.min(cafeImages.length, 6);
+    const initial = cafeImages.slice(0, initialCount);
+    initial.forEach((img, i) => {
+      if (!decodedSetRef.current.has(img.src)) {
+        if (typeof document !== 'undefined' && !document.querySelector(`link[rel="preload"][href="${img.src}"]`)) {
+          const l = document.createElement('link');
+          l.rel = 'preload'; l.as = 'image'; l.href = img.src; if (i <= 2) l.setAttribute('fetchpriority','high'); document.head.appendChild(l);
+        }
+        const im = new Image(); im.src = img.src; if ('decode' in im && typeof (im as any).decode === 'function') {(im as any).decode().catch(() => {});} decodedSetRef.current.add(img.src);
+      }
+    });
+    const ric: any = (window as any).requestIdleCallback || ((cb: any) => setTimeout(() => cb({ didTimeout: true }), 200));
+    const handle = ric(() => {
+      cafeImages.slice(initialCount).forEach((img) => {
+        if (decodedSetRef.current.has(img.src)) return;
+        if (typeof document !== 'undefined' && !document.querySelector(`link[rel="preload"][href="${img.src}"]`)) {
+          const l = document.createElement('link'); l.rel = 'preload'; l.as = 'image'; l.href = img.src; document.head.appendChild(l);
+        }
+        const i2 = new Image(); i2.src = img.src; if ('decode' in i2 && typeof (i2 as any).decode === 'function') {(i2 as any).decode().catch(() => {});} decodedSetRef.current.add(img.src);
+      });
+    });
+    return () => { const cic: any = (window as any).cancelIdleCallback; if (cic && handle) cic(handle); };
+  }, [cafeImages]);
+
+  useEffect(() => {
+    if (!cafeImages?.length) return;
+    const total = cafeImages.length; const next1 = (currentSlide + 1) % total; const next2 = (currentSlide + 2) % total;
+    [next1, next2].forEach((idx) => {
+      const src = cafeImages[idx]?.src; if (!src || decodedSetRef.current.has(src)) return;
+      if (typeof document !== 'undefined' && !document.querySelector(`link[rel="preload"][href="${src}"]`)) { const l = document.createElement('link'); l.rel = 'preload'; l.as = 'image'; l.href = src; document.head.appendChild(l); }
+      const i = new Image(); i.src = src; if ('decode' in i && typeof (i as any).decode === 'function') {(i as any).decode().catch(() => {});} decodedSetRef.current.add(src);
+    });
+  }, [currentSlide, cafeImages]);
+
   return (
     <div className="embla-carousel relative min-h-screen overflow-hidden z-0" ref={emblaRef}>
       <div className="flex">
-        {cafeImages.map((image, index) => (
-          <div 
-            key={index}
-            className="flex-[0_0_100%] relative min-h-screen"
-          >
-            {/* Optimized Background Image */}
-            <OptimizedImage
-              src={image.src}
-              alt={`Cafe hero image ${index + 1}`}
-              className="min-h-screen"
-              priority={index === 0}
-              loading={index === 0 ? 'eager' : 'lazy'}
-              sizes="100vw"
-              objectPosition={image.backgroundPosition}
-              instantTransition={index === 0}
-            />
-            {/* Subtle overlay for text readability */}
-            <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
-          </div>
-        ))}
+        {cafeImages.map((image, index) => {
+          const total = cafeImages.length || 1;
+          const isCurrent = index === currentSlide;
+          const isNext1 = index === ((currentSlide + 1) % total);
+          const isNext2 = index === ((currentSlide + 2) % total);
+          const isPrioritySlide = isCurrent || isNext1;
+          const eager = isPrioritySlide || isNext2 || index <= 5;
+          return (
+            <div 
+              key={index}
+              className="flex-[0_0_100%] relative min-h-screen"
+            >
+              {/* Optimized Background Image */}
+              <OptimizedImage
+                src={image.src}
+                alt={`Cafe hero image ${index + 1}`}
+                className="min-h-screen"
+                priority={isPrioritySlide}
+                loading={eager ? 'eager' : 'lazy'}
+                sizes="100vw"
+                objectPosition={image.backgroundPosition}
+                instantTransition={isPrioritySlide || isNext2}
+              />
+              {/* Subtle overlay for text readability */}
+              <div className={`absolute inset-0 ${image.overlay} transition-all duration-1000`}></div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Fixed watermark overlay */}
