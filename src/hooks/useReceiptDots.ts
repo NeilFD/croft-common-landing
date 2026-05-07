@@ -51,8 +51,8 @@ export const useReceiptDots = () => {
       // Convert to array format
       const dots = Object.entries(dotsByDate).map(([date, data]) => ({
         date,
-        count: data.count,
-        amount: data.amount,
+        count: (data as any).count,
+        amount: (data as any).amount,
       }));
 
       setReceiptDots(dots);
