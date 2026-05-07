@@ -15,15 +15,12 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
     <header
       className={`absolute top-0 left-0 right-0 z-30 px-6 md:px-12 pt-7 flex items-center justify-between ${text}`}
     >
-      <Link to="/" className="flex items-center gap-3 group">
+      <Link to="/" className="flex items-center group">
         <img
           src={bearMark}
           alt="Crazy Bear"
-          className={`h-9 w-9 ${markFilter}`}
+          className={`h-14 w-14 md:h-16 md:w-16 ${markFilter}`}
         />
-        <span className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-90 group-hover:opacity-100">
-          Crazy Bear
-        </span>
       </Link>
       <nav className="flex items-center gap-7 md:gap-10">
         <Link
