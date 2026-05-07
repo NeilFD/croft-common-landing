@@ -38,7 +38,7 @@ const OptimizedImage = ({
   const [isBroken, setIsBroken] = useState(false);
   const [forceBypass, setForceBypass] = useState(false);
   const imgRef = useRef<HTMLImageElement | null>(null);
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const retryTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // Mobile optimization detection (safe for SSR)
   const isMobile = typeof window !== 'undefined' ? window.innerWidth < 768 : false;

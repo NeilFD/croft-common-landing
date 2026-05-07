@@ -107,7 +107,7 @@ export function MobileDebugPanel({ sessionId }: MobileDebugPanelProps) {
       .subscribe();
 
     // Auto-refresh every 2 seconds while panel is open
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isOpen) {
       interval = setInterval(fetchLogs, 2000);
     }

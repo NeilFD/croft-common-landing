@@ -18,7 +18,7 @@ export const PushDiagnostics = () => {
   const [receivedToken, setReceivedToken] = useState<string | null>(null);
   const [receivedError, setReceivedError] = useState<string | null>(null);
   const [isReactivating, setIsReactivating] = useState(false);
-  const watchdogRef = useRef<NodeJS.Timeout | null>(null);
+  const watchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { toast } = useToast();
 
   const addLog = (message: string) => {

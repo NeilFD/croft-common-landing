@@ -171,6 +171,7 @@ export const CinemaManagement: React.FC = () => {
         .from("cinema_releases")
         .insert([
           {
+            title: monthKey,
             month_key: monthKey,
             screening_date: toYMD(lastThursday),
             doors_time: "19:00",
