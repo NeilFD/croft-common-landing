@@ -240,9 +240,20 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
             {loading ? (
               <div className="text-steel">Loading status…</div>
             ) : status ? (
-              <div className="flex flex-col gap-1">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="font-industrial text-foreground">
+              <div className="flex flex-col gap-2">
+                <div className="text-[10px] tracking-[0.4em] uppercase text-steel">
+                  This Month's Film
+                </div>
+                <div className="font-brutalist text-2xl tracking-tight uppercase text-foreground leading-tight">
+                  {status.title ?? 'To Be Announced'}
+                </div>
+                {status.description && (
+                  <p className="text-sm text-foreground/75 italic leading-snug">
+                    {status.description}
+                  </p>
+                )}
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2 border-t border-steel/20 pt-3">
+                  <div className="font-industrial text-foreground text-sm">
                     {formattedScreening}
                   </div>
                   <div className="flex items-center gap-2">
@@ -260,9 +271,6 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                     )}
                   </div>
                 </div>
-                {status.title && (
-                  <div className="text-steel text-sm mt-1">{status.title}</div>
-                )}
               </div>
             ) : (
               <div className="text-steel">No status available.</div>
