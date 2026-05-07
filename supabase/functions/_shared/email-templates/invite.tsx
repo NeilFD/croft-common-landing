@@ -21,26 +21,19 @@ interface InviteEmailProps {
 }
 
 export const InviteEmail = ({
-  siteName,
-  siteUrl,
   confirmationUrl,
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
+    <Preview>You've been invited to The Crazy Bear</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>You've been invited</Heading>
         <Text style={text}>
-          You've been invited to join{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          . Click the button below to accept the invitation and create your
-          account.
+          You've been invited to The Crazy Bear. Tap below to accept and create your account.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Accept Invitation
+          Accept invitation
         </Button>
         <Text style={footer}>
           If you weren't expecting this invitation, you can safely ignore this
