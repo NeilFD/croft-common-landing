@@ -1,8 +1,8 @@
-// Service Worker for Croft App
+// Service Worker for Crazy Bear
 // Handles caching, push notifications, and app communication
 
 // Cache names for versioning
-const CACHE_NAME = 'croft-app-v2.0';
+const CACHE_NAME = 'crazy-bear-app-v3.0';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
 // Install event - cache essential assets
@@ -182,7 +182,7 @@ self.addEventListener('push', event => {
     console.log('🔔 SW: Raw data text:', event.data ? event.data.text() : 'no data');
   }
 
-  const title = data.title || 'Croft Notification';
+  const title = data.title || 'Crazy Bear Notification';
   const body = data.body || 'New notification';
   const icon = data.icon || '/brand/logo.png';
   
