@@ -47,8 +47,20 @@ const SetPassword = () => {
       toast({ title: 'Could not set password', description: error.message, variant: 'destructive' });
       return;
     }
+    // Clear recovery state so RecoveryGuard does not bounce us back here.
+    try { sessionStorage.removeItem('recovery'); } catch {}
+    // Strip any auth tokens left in the URL hash/query before leaving.
+    try {
+      const url = new URL(window.location.href);
+      ['access_token','refresh_token','code','token_hash','token','type','error','error_description']
+        .forEach((p) => url.searchParams.delete(p));
+      url.hash = '';
+      window.history.replaceState({}, document.title, url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''));
+    } catch {}
     toast({ title: 'Password set', description: 'You are signed in.' });
-    navigate('/', { replace: true });
+    // Hard navigate to the Crazy Bear landing so nothing can re-trigger
+    // recovery routing on this tab.
+    window.location.assign('https://www.crazybeartest.com/');
   };
 
   return (
