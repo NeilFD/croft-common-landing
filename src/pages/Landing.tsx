@@ -30,7 +30,7 @@ const Landing = () => {
             alt="The Crazy Bear"
             className="absolute inset-0 h-full w-full object-cover animate-[kenburns_22s_ease-in-out_infinite_alternate]"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/85" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/75" />
 
           <CBTopNav tone="light" />
 
