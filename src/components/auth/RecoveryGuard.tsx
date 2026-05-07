@@ -31,11 +31,11 @@ export const RecoveryGuard = () => {
       }
 
       const recoveryActive = sessionStorage.getItem('recovery') === '1';
+      const recoveryPath = host.includes('crazybeartest.com') ? '/set-password' : '/management/login';
 
-      // Redirect to /management/login preserving all URL params
-      if (recoveryActive && location.pathname !== '/management/login') {
-        const redirectUrl = '/management/login' + 
-                           window.location.search + 
+      if (recoveryActive && location.pathname !== recoveryPath) {
+        const redirectUrl = recoveryPath +
+                           window.location.search +
                            window.location.hash;
         window.location.replace(redirectUrl);
       }
