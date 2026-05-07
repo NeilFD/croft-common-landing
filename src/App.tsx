@@ -209,13 +209,6 @@ const RouteHydrationBeacon = () => {
     try {
       const ev = new CustomEvent('cc:routes-hydrated', { detail: { pathname: location.pathname, ts: Date.now() } });
       window.dispatchEvent(ev);
-      // Also prefetch management chunks when user visits footer-heavy pages
-      if (location.pathname === '/' || location.pathname === '/community') {
-        try {
-          import('./pages/management/ManagementDashboard');
-          import('./pages/management/SpacesDashboard');
-        } catch {}
-      }
     } catch {}
   }, [location.pathname]);
   return null;
@@ -258,14 +251,15 @@ const App = () => {
               <Sonner />
               <Router>
                 <ScrollToTop />
-                <GlobalHandlers />
+                <Suspense fallback={null}>
+                  <GlobalHandlers />
+                </Suspense>
                 <LowercasePathGuard />
                 <ReverseDomainGuard />
                 
                 <RecoveryGuard />
                 <RouteImagePreloader />
                 <NavigationImagePreloader />
-                <InteractionWatchdog />
                 <NudgeFloatingButton />
                 <CBSpotifyPlayer />
                 
