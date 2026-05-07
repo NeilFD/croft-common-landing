@@ -27,22 +27,29 @@ function prefetchCriticalRoutes() {
   }
 }
 
-// Setup service worker controller change handler for auto-reload
+// Setup service worker controller change handler for auto-reload.
+// CRITICAL: Only reload when an existing controller is replaced (a true update).
+// On first install the SW calls skipWaiting()+claim(), which fires controllerchange
+// even though there is nothing stale to reload — reloading there causes the
+// PWA to flash/never-finish-loading on home-screen launch.
 function setupControllerChangeHandler() {
-  let hasReloaded = sessionStorage.getItem('sw-reloaded') === 'true';
-  
+  // Snapshot at module load: was the page already controlled?
+  const hadInitialController = !!navigator.serviceWorker.controller;
+  let hasReloaded = false;
+
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    console.log('[PWA] New service worker activated');
-    
-    // Only reload once to prevent infinite loops
-    if (!hasReloaded) {
-      sessionStorage.setItem('sw-reloaded', 'true');
-      console.log('[PWA] Reloading to activate new service worker');
-      setTimeout(() => {
-        sessionStorage.removeItem('sw-reloaded');
-      }, 5000);
-      window.location.reload();
+    console.log('[PWA] controllerchange fired', { hadInitialController });
+
+    if (!hadInitialController) {
+      // First-ever activation for this client. No reload needed.
+      console.log('[PWA] Initial SW activation, skipping reload');
+      return;
     }
+
+    if (hasReloaded) return;
+    hasReloaded = true;
+    console.log('[PWA] Reloading to activate updated service worker');
+    window.location.reload();
   });
 }
 
