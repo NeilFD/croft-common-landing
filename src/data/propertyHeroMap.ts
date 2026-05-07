@@ -1,5 +1,5 @@
-import stadhampton from "@/assets/stadhampton-property.jpg";
-import beaconsfield from "@/assets/beaconsfield-property.jpg";
+import stadhampton from "@/assets/cb-hero-country.jpg";
+import beaconsfield from "@/assets/cb-hero-town.jpg";
 import pub from "@/assets/cb-hero-pub.jpg";
 import events from "@/assets/cb-hero-events.jpg";
 import parties from "@/assets/cb-hero-parties.jpg";
@@ -24,9 +24,9 @@ export const propertyHeroMap: Record<string, string> = {
   "/country/pub/food": pub,
   "/country/pub/drink": cocktails,
   "/country/pub/hospitality": pub,
-  "/country/rooms": roomsCountry,
-  "/country/rooms/types": roomChateauSuite,
-  "/country/rooms/gallery": roomRedVelvet,
+  "/country/rooms": roomChateauSuite,
+  "/country/rooms/types": roomRedVelvet,
+  "/country/rooms/gallery": roomFireplace,
   "/country/parties": parties,
   "/country/events": events,
   "/country/events/weddings": events,
@@ -40,9 +40,9 @@ export const propertyHeroMap: Record<string, string> = {
   "/town/food/hom-thai": thai,
   "/town/drink": cocktails,
   "/town/drink/cocktails": cocktails,
-  "/town/rooms": roomsTown,
+  "/town/rooms": roomFourposter,
   "/town/rooms/types": roomCopperSuite,
-  "/town/rooms/gallery": roomFourposter,
+  "/town/rooms/gallery": roomMarbleBath,
   "/town/pool": pool,
 };
 

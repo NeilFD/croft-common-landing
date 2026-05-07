@@ -1,40 +1,30 @@
-## Crazy Bear Spotify Player
+You are right. I checked the live mapping and the issue is that the images shown on `/country` and `/town` are still the old property hero files:
 
-A discreet, always-available music control styled in Crazy Bear language. No visible Spotify branding, no autoplay. Press play and the playlist starts (30 second previews for everyone, since this works without anyone needing to log in to Spotify).
+- `/country` is still using `stadhampton-property.jpg`, the copper bath crop
+- `/town` is still using `beaconsfield-property.jpg`, another copper bath crop
+- The better glamorous room images were copied in, but they were mainly wired to `/country/rooms` and `/town/rooms`, not the two property landing pages you are looking at
 
-### What you'll see
+Plan to fix this properly:
 
-A small pill in the footer area:
+1. Replace the main property landing heroes
+   - Change `/country` from the copper bath image to the strongest Stadhampton glamour image, the deep red/zebra lampshade interior already used on the main landing hero.
+   - Change `/town` from the copper bath image to a more glamorous Beaconsfield image from the reference assets, not the current bath crop.
 
-- A spinning vinyl mark (uses our foreground colour) with a play / pause glyph in the centre
-- Two lines of text in our own type:
-  - `PRESS PLAY` / `NOW PLAYING` in `font-cb-mono` uppercase tracking
-  - Playlist / track name in `font-cb-sans`
-- No Spotify logo, no green, no embedded widget visible
+2. Improve the rooms route heroes as well
+   - Use the most eye-catching wide suite image for the main Rooms pages, especially the black four-poster, red drapery and gold suite image.
+   - Keep the copper/tub close-ups only where they make sense as supporting room type or gallery imagery, not as the first thing you see on a property page.
 
-The Spotify iframe itself is rendered off-screen (`sr-only`, `aria-hidden`) so it controls audio but is never seen.
+3. Remove the confusing old mapping
+   - Stop reusing the old `stadhampton-property.jpg` and `beaconsfield-property.jpg` as the primary `/country` and `/town` hero images.
+   - Import named, glamorous assets so it is obvious which image powers each route.
 
-### Files
+4. Verify the visible result
+   - After updating, check `/country`, `/town`, `/country/rooms`, and `/town/rooms` so the first-screen hero is no longer the poor copper-bath crop and looks much more Crazy Bear.
 
-1. New: `src/components/crazybear/CBSpotifyPlayer.tsx`
-   - Loads Spotify's official IFrame API (`https://open.spotify.com/embed/iframe-api/v1`) once
-   - Creates a hidden controller bound to playlist `5jryH9aMgkcQruOslKX7Fc`
-   - Exposes a custom button that calls `controller.togglePlay()`
-   - Listens to `playback_update` to flip between play / pause icon and the `PRESS PLAY` / `NOW PLAYING` label
-   - Fetches the playlist's display title via Spotify's public oEmbed endpoint (no key needed) so the visible name stays in sync if you rename the playlist
-   - All colours via design tokens (`text-foreground`, `bg-background`, `border-foreground/15`)
+Technical detail:
 
-2. Edit: `src/components/crazybear/CBFooter.tsx`
-   - Add `<CBSpotifyPlayer />` into the footer (top of the existing footer block) so it's available on every property page
-
-3. Edit: `tailwind.config.ts`
-   - Add a slow spin keyframe / animation utility `animate-spin-slow` (6s linear infinite) used by the vinyl icon when playing
-
-### Honest limitations (Spotify rules, not ours)
-
-- Without a logged-in Spotify Premium session in the visitor's browser, Spotify only allows ~30 second previews. The button still works, music still plays, but tracks fade after the preview window. This was the trade-off you picked over forcing every visitor to log in.
-- If a visitor is already logged into Spotify Premium in the same browser, the embed will play full tracks for them automatically.
-
-### Out of scope
-
-- No track-by-track artist/title readout (the IFrame API only exposes playback state, not the current track metadata, so we show the playlist name instead of per-track info). If you want live track + artist text, that needs the Web Playback SDK + per-visitor Spotify login, which we agreed to skip.
+- Main file to update: `src/data/propertyHeroMap.ts`
+- Likely assets to use:
+  - `src/assets/cb-landing-hero.jpg` for the dramatic Stadhampton red/zebra interior
+  - `src/assets/cb-rooms-chateau-suite.jpg` for the strongest suite/rooms hero
+  - `src/assets/cb-rooms-copper-suite.jpg` where a copper suite is still useful, but not as the main property landing image
