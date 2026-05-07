@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import GestureOverlay from "@/components/GestureOverlay";
 import { useAuth } from "@/hooks/useAuth";
 import RecipeOfTheMonthModal from "./RecipeOfTheMonthModal";
