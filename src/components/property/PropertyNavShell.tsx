@@ -21,7 +21,7 @@ const PropertyNavShell = ({ property, items }: Props) => {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black text-white">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
-        <Link to={config.basePath} className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-3" aria-label="Crazy Bear home">
           <CrazyBearLogo tone="light" className="h-9 w-9" />
           <span className="hidden sm:block font-serif text-lg leading-tight">
             <span className="block">{config.name}</span>
