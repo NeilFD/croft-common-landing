@@ -14,11 +14,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { SecureLedgerWrapper } from '@/components/ledger/SecureLedgerWrapper';
 import { Helmet } from 'react-helmet-async';
-import { User, PoundSterling, Settings, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { MembershipCard } from '@/components/membership/MembershipCard';
 import Footer from '@/components/Footer';
+import denBg from '@/assets/den-bg.jpg';
+
+const tabTriggerClass = "rounded-none border-2 border-black bg-white text-black data-[state=active]:bg-black data-[state=active]:text-white font-mono uppercase tracking-[0.2em] text-[10px] md:text-xs h-10";
+const pillBtnClass = "border-2 border-black bg-white text-black hover:bg-black hover:text-white font-mono uppercase tracking-[0.3em] text-xs rounded-none h-11 px-6";
 
 const MemberProfile: React.FC = () => {
   const { user } = useAuth();
@@ -74,56 +78,52 @@ const MemberProfile: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>My Profile | The Tavern</title>
-        <meta name="description" content="Manage your member profile, view transaction history, and update preferences." />
+        <title>Profile | The Den</title>
+        <meta name="description" content="Manage your member profile and view your member card." />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        
-        <div className="container mx-auto px-4 py-8 mt-8">
-          {/* Breadcrumb */}
-          <div className="mb-6">
-            <Link 
-              to="/den/member" 
-              className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Member Home
-            </Link>
-          </div>
+      <div className="min-h-screen relative">
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
+          style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
+        />
+        <div className="fixed inset-0 bg-white/85 z-0" />
 
-          <Card className="border-2 border-black shadow-lg mb-6">
-            <CardHeader>
-              <CardTitle className="text-3xl font-brutalist flex items-center gap-3">
-                <User className="h-8 w-8" />
-                Member Profile
-              </CardTitle>
-              <p className="text-xs text-muted-foreground mt-1">Build marker: 21 Sep 2025, 20:15</p>
-            </CardHeader>
-          </Card>
+        <div className="relative z-10">
+          <Navigation />
 
-          <Tabs defaultValue="profile" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="profile" className="flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Profile
-              </TabsTrigger>
-              <TabsTrigger value="ledger" className="flex items-center gap-2">
-                <PoundSterling className="h-4 w-4" />
-                Ledger
-              </TabsTrigger>
-              <TabsTrigger value="settings" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Settings
-              </TabsTrigger>
-            </TabsList>
+          <div className="container mx-auto px-4 py-8" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
+            {/* Breadcrumb */}
+            <div className="mb-6">
+              <Link
+                to="/den/member"
+                className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors font-mono uppercase tracking-[0.2em] text-[10px]"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to the Den
+              </Link>
+            </div>
+
+            {/* Header */}
+            <div className="mb-8">
+              <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-muted-foreground mb-3">Member</p>
+              <h1 className="font-display uppercase text-5xl md:text-7xl tracking-tight leading-none mb-3">Profile</h1>
+              <p className="font-sans text-base md:text-lg text-muted-foreground">Your details. Your card.</p>
+            </div>
+
+            <Tabs defaultValue="profile" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-3 bg-transparent gap-2 p-0 h-auto">
+                <TabsTrigger value="profile" className={tabTriggerClass}>Profile</TabsTrigger>
+                <TabsTrigger value="ledger" className={tabTriggerClass}>Ledger</TabsTrigger>
+                <TabsTrigger value="settings" className={tabTriggerClass}>Settings</TabsTrigger>
+              </TabsList>
 
             <TabsContent value="profile">
               <div className="space-y-6">
                 {/* Membership Card Section */}
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Your Membership Card</h3>
+                  <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-muted-foreground mb-2">The Den</p>
+                  <h3 className="font-display uppercase text-2xl md:text-3xl tracking-tight mb-4">Member Card</h3>
                   <MembershipCard />
                 </div>
 
