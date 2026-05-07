@@ -234,12 +234,10 @@ export const CMSText = ({
           const { data: updateData, error: updateError } = await supabase
             .from('cms_global_content')
             .update({ 
-              content_data: globalContentData,
               content_value: editValue,
-              content_type: 'text',
-              published: false, // Save as draft
+              published: false,
               updated_at: new Date().toISOString()
-            })
+            } as any)
             .eq('id', existingGlobalContent.id)
             .select();
             
