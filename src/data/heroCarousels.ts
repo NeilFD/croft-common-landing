@@ -1,4 +1,5 @@
 // Triptych hero carousels for /town and /country
+import townHero from "@/assets/cb-hero-rooms-town.jpg"; // blue room with copper bath
 import townA from "@/assets/cb-carousel/town-snug-bedroom-at-crazy-bear-beaconsfield-whole-room.jpg";
 import townB from "@/assets/cb-carousel/town-snug-bedroom-at-crazy-bear-beaconsfield-pink.jpg";
 import townC from "@/assets/cb-carousel/town-cosy-bedroom-at-crazy-bear-beaconsfield-mirrored.jpg";
@@ -18,7 +19,7 @@ import countryG from "@/assets/cb-carousel/country-decadent-bedroom-crazy-bear-s
 import countryH from "@/assets/cb-carousel/country-stadhampton-room-copper-bathtub.jpg";
 
 export const heroCarouselMap: Record<string, string[]> = {
-  "/town": [townA, townB, townC, townD, townE, townF, townG, townH],
+  "/town": [townHero, townA, townB, townC, townD, townE, townF, townG, townH],
   "/country": [countryA, countryB, countryC, countryD, countryE, countryF, countryG, countryH],
 };
 
