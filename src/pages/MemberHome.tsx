@@ -53,7 +53,6 @@ const MemberHome: React.FC = () => {
   const [memberStats, setMemberStats] = useState<MemberStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [showPongGame, setShowPongGame] = useState(false);
 
   useEffect(() => {
     console.log('[MemberHome] 🔍 MOBILE: Component mounted', {
@@ -137,13 +136,11 @@ const MemberHome: React.FC = () => {
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
         style={{
-          backgroundImage: `url('/lovable-uploads/5651f236-2692-4b16-a608-b6d821d392ae.png'), linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)`
-        }}
-        onError={(e) => {
-          console.log('[MemberHome] ⚠️ MOBILE: Background image load failed, using fallback');
-          (e.target as HTMLElement).style.backgroundImage = 'linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%)';
+          backgroundImage: `url(${denBg})`,
+          filter: 'grayscale(1) contrast(1.05)',
         }}
       />
+      <div className="fixed inset-0 bg-white/70 z-0" />
       
       {/* Scrollable Content */}
       <div className="relative z-10">
@@ -187,8 +184,8 @@ const MemberHome: React.FC = () => {
                 
                 <Link to="/den/member/lunch-run">
                   <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
-                    <Sandwich className="h-4 w-4 mr-1" />
-                    Lunch Run
+                    <UtensilsCrossed className="h-4 w-4 mr-1" />
+                    CB Home Delivery
                   </Button>
                 </Link>
                 
@@ -226,18 +223,6 @@ const MemberHome: React.FC = () => {
             
             {/* Community Widgets */}
             <div className="space-y-4">
-              <Card className="bg-white rounded-2xl p-4 border-2 border-black hover:border-pink-500 transition-all duration-300">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Gamepad2 className="h-4 w-4 text-foreground" />
-                    Pong Champions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <PongHighScoresWidget onPlayClick={() => setShowPongGame(true)} />
-                </CardContent>
-              </Card>
-
               <Card className="bg-white rounded-2xl p-4 border-2 border-black hover:border-pink-500 transition-all duration-300">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-base">
@@ -296,11 +281,6 @@ const MemberHome: React.FC = () => {
           fetchMemberStats(); // Refresh stats
         }}
       />
-
-      {/* Pong Game Modal */}
-      {showPongGame && (
-        <PongGame onClose={() => setShowPongGame(false)} />
-      )}
 
         <Footer />
         </div>
