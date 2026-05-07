@@ -1,79 +1,40 @@
-## Goal
+## Crazy Bear Spotify Player
 
-Bring back the member sign-up that exists on Croft Common pages (footer subscription + "Common Room" secret gesture entry) and translate the entire experience into Crazy Bear language and styling. Wire it into the Town and Country property pages so it appears at the bottom of every Crazy Bear page.
+A discreet, always-available music control styled in Crazy Bear language. No visible Spotify branding, no autoplay. Press play and the playlist starts (30 second previews for everyone, since this works without anyone needing to log in to Spotify).
 
-The underlying mechanic stays the same (this is the bit that worked perfectly): collect name + email + consent, optional personalisation (phone, birthday, interests), invoke the existing `subscribe-newsletter` edge function, and offer a hidden secret gesture entry to a members area. Only the wrapper, copy and visual styling change.
+### What you'll see
 
-## What gets built
+A small pill in the footer area:
 
-### 1. New Crazy Bear footer component
-`src/components/crazybear/CBFooter.tsx`
+- A spinning vinyl mark (uses our foreground colour) with a play / pause glyph in the centre
+- Two lines of text in our own type:
+  - `PRESS PLAY` / `NOW PLAYING` in `font-cb-mono` uppercase tracking
+  - Playlist / track name in `font-cb-sans`
+- No Spotify logo, no green, no embedded widget visible
 
-A self-contained footer using the CB tokens already in place (`font-display`, `font-cb-sans`, `font-cb-mono`, black/white palette, thin uppercase tracking, hairline borders). No Croft brutalist type, no pink accents, no Common Good total, no Management Login.
+The Spotify iframe itself is rendered off-screen (`sr-only`, `aria-hidden`) so it controls audio but is never seen.
 
-Sections, top to bottom:
-- Subscription block (uses new `CBSubscriptionForm`, see below)
-- Three-column info block: Crazy Bear wordmark + tagline / Town (Beaconsfield address, phone, email) / Country (Stadhampton address, phone, email)
-- Hairline divider
-- Bottom row: copyright left, "Link Membership" text link right (opens existing `MembershipLinkModal`)
-- A small, almost-hidden mark at the very bottom that acts as the secret-gesture target (see section 3)
+### Files
 
-### 2. New Crazy Bear subscription form
-`src/components/crazybear/CBSubscriptionForm.tsx`
+1. New: `src/components/crazybear/CBSpotifyPlayer.tsx`
+   - Loads Spotify's official IFrame API (`https://open.spotify.com/embed/iframe-api/v1`) once
+   - Creates a hidden controller bound to playlist `5jryH9aMgkcQruOslKX7Fc`
+   - Exposes a custom button that calls `controller.togglePlay()`
+   - Listens to `playback_update` to flip between play / pause icon and the `PRESS PLAY` / `NOW PLAYING` label
+   - Fetches the playlist's display title via Spotify's public oEmbed endpoint (no key needed) so the visible name stays in sync if you rename the playlist
+   - All colours via design tokens (`text-foreground`, `bg-background`, `border-foreground/15`)
 
-Same fields, validation, edge-function call (`supabase.functions.invoke('subscribe-newsletter', ...)`) and toast logic as `SubscriptionForm.tsx`. Differences:
-- No `CMSText` wrappers (CB pages aren't CMS-managed); plain copy.
-- CB visual language: black background, white hairline inputs, uppercase mono labels, full-width black/white pill button.
-- New copy throughout, e.g.
+2. Edit: `src/components/crazybear/CBFooter.tsx`
+   - Add `<CBSpotifyPlayer />` into the footer (top of the existing footer block) so it's available on every property page
 
-  - Heading: `THE BEAR'S CIRCLE`
-  - Sub: `Quiet rooms. Loud nights. The odd surprise. Sign up and the bear remembers you.`
-  - Personalise toggle: `TELL THE BEAR MORE` / `LESS`
-  - Submit: `JOIN THE CIRCLE`
-  - Loading: `SIGNING YOU IN...`
-  - Disclaimer: `Members hear first. Town and Country. No noise in between.`
-  - Consent: `I'm happy for The Crazy Bear to email me. See the privacy policy.`
+3. Edit: `tailwind.config.ts`
+   - Add a slow spin keyframe / animation utility `animate-spin-slow` (6s linear infinite) used by the vinyl icon when playing
 
-  All copy uses British spellings, no em dashes.
+### Honest limitations (Spotify rules, not ours)
 
-### 3. Secret gesture entry to a Crazy Bear members area
-Reuse the existing `GestureOverlay`, `useMembershipGate`, `BiometricUnlockModal`, `MembershipLinkModal`, `AuthModal` machinery unchanged (it's the bit the user said worked perfectly). Wire it into the CB footer:
+- Without a logged-in Spotify Premium session in the visitor's browser, Spotify only allows ~30 second previews. The button still works, music still plays, but tracks fade after the preview window. This was the trade-off you picked over forcing every visitor to log in.
+- If a visitor is already logged into Spotify Premium in the same browser, the embed will play full tracks for them automatically.
 
-- The footer renders a `<GestureOverlay>` scoped to a `containerRef` on the footer wrapper, plus the existing modal stack.
-- A small bear mark in the footer doubles as a visual hint for those who know.
-- On successful gesture + auth, navigate to `/bears-den` (new route, see section 4).
+### Out of scope
 
-This keeps the "secret, members-only entry" feel intact and uses code that already passes biometric / auth flows.
-
-### 4. New members landing page (Crazy Bear styled)
-`src/pages/crazybear/BearsDen.tsx`, route `/bears-den`.
-
-Minimal first pass that mirrors `CommonRoomMain` in spirit but in CB language: black hero, large `BEAR'S DEN` wordmark, short welcome line, and placeholder tiles for what will live there later (Diary, Tables, Rooms, Cellar). No CMS. This gives the secret gesture somewhere meaningful to land. Future content can be filled in later.
-
-### 5. Mount the new footer on Town and Country
-Update `src/components/property/PropertyLayout.tsx` to render `CBFooter` in place of the current minimal footer. The Landing page (`/`) keeps its full-bleed entry chooser and does not get the footer (correct behaviour, matches the user's "bottom of the pages" wording).
-
-### 6. Routing
-Add `/bears-den` to `src/App.tsx` alongside the existing CB routes. Public route, gated only by the secret gesture + biometric / auth flow already in place.
-
-## What is intentionally NOT carried over
-
-- Common Good total, Uncommon Standards button, Management Login link, "Stokes Croft, Bristol / Pure Hospitality" copy, brutalist Croft typography, pink accent colour. None of these belong to Crazy Bear.
-- CMS-driven copy: CB pages aren't in the CMS today. All strings live in the component. Adding CB to the CMS is a separate, larger piece of work.
-
-## Files touched
-
-Create
-- `src/components/crazybear/CBFooter.tsx`
-- `src/components/crazybear/CBSubscriptionForm.tsx`
-- `src/pages/crazybear/BearsDen.tsx`
-
-Edit
-- `src/components/property/PropertyLayout.tsx` (swap footer)
-- `src/App.tsx` (add `/bears-den` route)
-
-No database changes, no new edge functions, no new secrets. The `subscribe-newsletter`, biometric and membership-link functions already deployed continue to do the work.
-
-## Open question (one quick check before I build)
-
-Confirm the members destination name. I've used `BEAR'S DEN` / `/bears-den` as the Crazy Bear equivalent of `THE COMMON ROOM`. If you'd prefer `THE SETT`, `THE DEN`, `THE LAIR`, or something else, tell me now and I'll use that name and route instead.
+- No track-by-track artist/title readout (the IFrame API only exposes playback state, not the current track metadata, so we show the playlist name instead of per-track info). If you want live track + artist text, that needs the Web Playback SDK + per-visitor Spotify login, which we agreed to skip.
