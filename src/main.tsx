@@ -148,28 +148,6 @@ window.addEventListener('unhandledrejection', (event) => {
   recoverFromChunkError(event.reason);
 });
 
-// Initialize PWA on web only (skip on native)
-const isNative = isNativeRuntime();
-if (!isNative) {
-  const startPWA = () => {
-    import('./pwa/deferredPWA')
-      .then(({ initializePWA }) => {
-        if (typeof initializePWA === 'function') {
-          console.log('[PWA] Starting initialization');
-          initializePWA().catch((err) => {
-            console.error('[PWA] Initialization failed:', err);
-          });
-        }
-      })
-      .catch((err) => {
-        console.error('[PWA] Module load failed:', err);
-        recoverFromChunkError(err);
-      });
-  };
-
-  window.addEventListener('load', () => {
-    setTimeout(startPWA, 1500);
-  }, { once: true });
-} else {
-  console.log('[PWA] Skipped initialisation on native platform');
-}
+// PWA registration is intentionally disabled. The static worker files in
+// /public are kill-switches that clear old Safari/PWA caches and unregister.
+console.log('[PWA] Registration disabled while mobile cache cleanup ships');
