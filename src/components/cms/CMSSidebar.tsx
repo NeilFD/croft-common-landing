@@ -126,14 +126,6 @@ const pageStructure = [
     ]
   },
   {
-    name: 'Common Good',
-    path: '/cms/visual/common-good',
-    icon: HelpCircle,
-    sections: [
-      { name: 'FAQ', path: '/cms/faq/common-good' }
-    ]
-  },
-  {
     name: 'Book',
     path: '/cms/visual/book',
     icon: FileText,

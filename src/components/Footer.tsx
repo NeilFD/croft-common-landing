@@ -11,34 +11,8 @@ const Footer = ({
   showSubscription?: boolean;
 }) => {
   const navigate = useNavigate();
-  const [cgTotal, setCgTotal] = useState<number | null>(null);
   const [linkModalOpen, setLinkModalOpen] = useState(false);
   const { toast } = useToast();
-  useEffect(() => {
-    let mounted = true;
-    const fetchTotals = async () => {
-      try {
-        const {
-          data,
-          error
-        } = await supabase.functions.invoke('get-common-good-totals', {
-          body: {}
-        });
-        if (!mounted) return;
-        if (error) throw error;
-        const combined = data?.combined_total_cents ?? 0;
-        setCgTotal(combined);
-      } catch (e) {
-        // ignore
-      }
-    };
-    fetchTotals();
-    const id = setInterval(fetchTotals, 60_000);
-    return () => {
-      mounted = false;
-      clearInterval(id);
-    };
-  }, []);
 
   const loginLinkRef = useRef<HTMLAnchorElement | null>(null);
   const prefetchManagement = () => {
@@ -218,20 +192,6 @@ const Footer = ({
           </div>
         </div>
 
-        <div className="border-t border-background/20 mt-8 pt-8 text-center">
-          <div className="text-left mb-2">
-            <CMSText
-              page="global"
-              section="footer"
-              contentKey="common_good_title"
-              fallback="The Common Good"
-              className="font-industrial text-sm uppercase tracking-wide text-background/80 hover:text-background transition-colors duration-200 cursor-pointer"
-              as="div"
-              href="/common-good"
-            />
-          </div>
-          <div className="inline-block px-4 py-2 border-2 border-background rounded-full font-brutalist text-4xl md:text-5xl text-background transition-colors duration-200">{cgTotal !== null ? (cgTotal / 100).toFixed(2) : "—"}</div>
-        </div>
 
         <MembershipLinkModal 
           open={linkModalOpen}
