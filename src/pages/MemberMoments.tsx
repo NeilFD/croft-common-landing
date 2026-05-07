@@ -26,7 +26,7 @@ const MemberMoments: React.FC = () => {
 
   // Redirect to login if not authenticated
   if (!user) {
-    return <Navigate to="/common-room" replace />;
+    return <Navigate to="/den" replace />;
   }
 
   return (
@@ -37,7 +37,7 @@ const MemberMoments: React.FC = () => {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="mb-6">
             <Link 
-              to="/common-room/member" 
+              to="/den/member" 
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />

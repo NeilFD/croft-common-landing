@@ -18,15 +18,7 @@ const Navigation = () => {
   const { isIOS, isPWAStandalone, isCapacitorNative } = useIOSDetection();
   const isNativeIOS = isIOS && (isPWAStandalone || isCapacitorNative);
   
-  const navItems = [
-    { name: 'CAFE', path: '/cafe' },
-    { name: 'COCKTAILS', path: '/cocktails' },
-    { name: 'BEER', path: '/beer' },
-    { name: 'KITCHENS', path: '/kitchens' },
-    { name: 'HALL', path: '/hall' },
-    { name: 'COMMUNITY', path: '/community' },
-    { name: 'THE COMMON ROOM', path: '/common-room' }
-  ];
+  const navItems: { name: string; path: string }[] = [];
 
   // Preload images for better performance
   const pageImages = {
@@ -118,14 +110,9 @@ const Navigation = () => {
             enableDevPanel={false}
             interactive={true}
           />
-          <CMSText
-            page="global"
-            section="navigation"
-            contentKey="brand_name"
-            fallback="CROFT COMMON"
-            className="font-brutalist text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap"
-            as="div"
-          />
+          <span className="font-display uppercase text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
+            The Den
+          </span>
         </button>
         
         {/* Desktop Navigation */}

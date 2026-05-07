@@ -41,7 +41,7 @@ export class MobileErrorBoundary extends React.Component<MobileErrorBoundaryProp
     try {
       window.history.back();
     } catch (e) {
-      window.location.href = '/common-room/main';
+      window.location.href = '/den/main';
     }
   };
 
@@ -131,7 +131,7 @@ export class MobileErrorBoundary extends React.Component<MobileErrorBoundaryProp
                 Try Again
               </Button>
               <Button variant="outline" onClick={this.handleNavigateBack}>
-                Back to Common Room
+                Back to the Den
               </Button>
               {isWebAuthnError && (
                 <Button 

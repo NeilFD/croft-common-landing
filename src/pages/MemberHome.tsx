@@ -67,7 +67,7 @@ const MemberHome: React.FC = () => {
 
     if (!loading && !user) {
       console.log('[MemberHome] ❌ MOBILE: No user found, redirecting to main');
-      navigate('/common-room/main');
+      navigate('/den/main');
       return;
     }
 
@@ -154,11 +154,11 @@ const MemberHome: React.FC = () => {
         {/* Breadcrumb */}
         <div className="mb-6">
           <Link 
-            to="/common-room/main" 
+            to="/den/main" 
             className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Main Common Room
+            Back to the Den
           </Link>
         </div>
 
@@ -186,21 +186,21 @@ const MemberHome: React.FC = () => {
                   Upload
                 </Button>
                 
-                <Link to="/common-room/member/lunch-run">
+                <Link to="/den/member/lunch-run">
                   <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
                     <Sandwich className="h-4 w-4 mr-1" />
                     Lunch Run
                   </Button>
                 </Link>
                 
-                <Link to="/common-room/member/profile">
+                <Link to="/den/member/profile">
                   <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
                     <User className="h-4 w-4 mr-1" />
                     Profile
                   </Button>
                 </Link>
                 
-                <Link to="/common-room/member/moments">
+                <Link to="/den/member/moments">
                   <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
                     <Camera className="h-4 w-4 mr-1" />
                     Moments

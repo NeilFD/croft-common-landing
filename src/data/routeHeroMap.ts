@@ -9,7 +9,7 @@ const routeImages: Record<string, string[]> = {
   '/kitchens': [kitchenHeroImages[0]?.src, kitchenHeroImages[1]?.src, kitchenHeroImages[2]?.src].filter(Boolean) as string[],
   '/hall': [hallHeroImages[0]?.src, hallHeroImages[1]?.src, hallHeroImages[2]?.src].filter(Boolean) as string[],
   '/community': [communityHeroImages[0]?.src, communityHeroImages[1]?.src, communityHeroImages[2]?.src].filter(Boolean) as string[],
-  '/common-room': [commonRoomHeroImages[0]?.src].filter(Boolean) as string[],
+  '/den': [commonRoomHeroImages[0]?.src].filter(Boolean) as string[],
 };
 
 export const getRouteImages = (path: string): string[] => {

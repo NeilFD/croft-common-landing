@@ -357,8 +357,8 @@ const App = () => {
                       <Route path="/bears-den" element={<BearsDen />} />
                       <Route path="/set-password" element={<SetPassword />} />
 
-                      {/* Members entry - re-uses existing common-room */}
-                      <Route path="/members" element={<Navigate to="/common-room" replace />} />
+                      {/* Members entry - the Den */}
+                      <Route path="/members" element={<Navigate to="/den" replace />} />
 
                       {/* Legacy Croft entry retained for members/secret gestures */}
                       <Route path="/croft" element={<Index />} />
@@ -372,14 +372,26 @@ const App = () => {
           <Route path="/hall" element={<Hall />} />
           <Route path="/event-enquiry" element={<EventEnquiry />} />
                       <Route path="/community" element={<Community />} />
-                      <Route path="/common-room" element={<CommonRoom />} />
-                      <Route path="/common-room/main" element={<CommonRoomMain />} />
-                      <Route path="/common-room/member" element={<MemberHome />} />
-                      <Route path="/common-room/member/lunch-run" element={<LunchRun />} />
-                      <Route path="/common-room/member/ledger" element={<MemberLedger />} />
-                      <Route path="/common-room/member/profile" element={<MemberProfile />} />
-                      <Route path="/common-room/member/dashboard" element={<MemberDashboard />} />
-                      <Route path="/common-room/member/moments" element={<MemberMoments />} />
+
+                      {/* The Den - new routes */}
+                      <Route path="/den" element={<CommonRoom />} />
+                      <Route path="/den/main" element={<CommonRoomMain />} />
+                      <Route path="/den/member" element={<MemberHome />} />
+                      <Route path="/den/member/lunch-run" element={<LunchRun />} />
+                      <Route path="/den/member/ledger" element={<MemberLedger />} />
+                      <Route path="/den/member/profile" element={<MemberProfile />} />
+                      <Route path="/den/member/dashboard" element={<MemberDashboard />} />
+                      <Route path="/den/member/moments" element={<MemberMoments />} />
+
+                      {/* Legacy /common-room redirects */}
+                      <Route path="/common-room" element={<Navigate to="/den" replace />} />
+                      <Route path="/common-room/main" element={<Navigate to="/den/main" replace />} />
+                      <Route path="/common-room/member" element={<Navigate to="/den/member" replace />} />
+                      <Route path="/common-room/member/lunch-run" element={<Navigate to="/den/member/lunch-run" replace />} />
+                      <Route path="/common-room/member/ledger" element={<Navigate to="/den/member/ledger" replace />} />
+                      <Route path="/common-room/member/profile" element={<Navigate to="/den/member/profile" replace />} />
+                      <Route path="/common-room/member/dashboard" element={<Navigate to="/den/member/dashboard" replace />} />
+                      <Route path="/common-room/member/moments" element={<Navigate to="/den/member/moments" replace />} />
                       <Route path="/check-in" element={<CheckIn />} />
                       <Route path="/calendar" element={<Calendar />} />
                       <Route path="/manage-event/:token" element={<ManageEvent />} />

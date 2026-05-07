@@ -1,7 +1,5 @@
 import React from 'react';
 import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
-import CommonRoomHeroCarousel from "@/components/CommonRoomHeroCarousel";
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
@@ -25,19 +23,19 @@ const CommonRoomMain = () => {
     });
     
     if (membershipGate.allowed) {
-      console.log('[CommonRoomMain] 🚀 MOBILE: Authentication successful, navigating to /common-room/member');
+      console.log('[CommonRoomMain] 🚀 MOBILE: Authentication successful, navigating to /den/member');
       
       // Add mobile-specific navigation with retry
       const navigateWithRetry = () => {
         try {
-          navigate('/common-room/member', { replace: true });
+          navigate('/den/member', { replace: true });
           console.log('[CommonRoomMain] ✅ MOBILE: Navigation initiated');
         } catch (error) {
           console.error('[CommonRoomMain] ❌ MOBILE: Navigation failed:', error);
           // Retry after short delay
           setTimeout(() => {
             try {
-              window.location.href = '/common-room/member';
+              window.location.href = '/den/member';
             } catch (e) {
               console.error('[CommonRoomMain] ❌ MOBILE: Fallback navigation failed:', e);
             }
@@ -70,64 +68,51 @@ const CommonRoomMain = () => {
         overscrollBehavior: 'contain'
       }}
     >
-      {/* Fixed background image */}
-      <div 
+      {/* Fixed B&W background */}
+      <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{
-          backgroundImage: `url('/lovable-uploads/8f95beef-0163-4ded-a6c4-8b0a8bac8b08.png')`
+          backgroundImage: `url('/lovable-uploads/8f95beef-0163-4ded-a6c4-8b0a8bac8b08.png')`,
+          filter: 'grayscale(1) contrast(1.05)',
         }}
       />
-      
+      <div className="fixed inset-0 bg-black/55 -z-10" />
+
       {/* Scrollable content */}
-      <div className="relative z-10">
+      <div className="relative z-10 text-white">
         {!isCMSMode && <Navigation />}
-        <CommonRoomHeroCarousel />
-        <section className="pb-24 bg-background" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
+        <section className="min-h-screen flex items-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)', paddingBottom: '6rem' }}>
           <div className="container mx-auto px-6 text-center">
+            <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white/70 mb-6">
+              Members
+            </p>
             <CMSText
               page="common-room-main"
               section="hero"
               contentKey="title"
-              fallback="THE COMMON ROOM"
-              as="h2"
-              className="font-brutalist text-4xl md:text-6xl mb-8 text-foreground text-center"
+              fallback="INSIDE THE DEN"
+              as="h1"
+              className="font-display uppercase text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[0.9] mb-8"
             />
             <CMSText
               page="common-room-main"
               section="hero"
               contentKey="description"
-              fallback="Quiet access. Shared space. Early invites. Inside track."
+              fallback="Quiet rooms. Loud nights. Yours."
               as="p"
-              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-4"
+              className="font-sans text-lg md:text-xl text-white/80 max-w-xl mx-auto leading-relaxed mb-12"
             />
-            <CMSText
-              page="common-room-main"
-              section="hero"
-              contentKey="subtitle"
-              fallback="A place to hear first, see first, know first."
-              as="p"
-              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-4"
-            />
-            <CMSText
-              page="common-room-main"
-              section="hero"
-              contentKey="tagline"
-              fallback="Membership, not members."
-              as="p"
-              className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed mb-8"
-            />
-            <div className="mt-8">
+            <div>
               <button
                 onClick={handleMemberLogin}
                 disabled={membershipGate.checking}
-                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 touch-manipulation"
+                className="inline-block border border-white text-white px-10 py-3 font-mono text-xs tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-colors disabled:opacity-50 touch-manipulation"
               >
-                {membershipGate.checking ? 'Checking...' : 'Member Login'}
+                {membershipGate.checking ? 'Opening' : 'Enter'}
               </button>
             </div>
           </div>
         </section>
-        {!isCMSMode && <Footer showSubscription={false} />}
       </div>
       
       {/* Authentication Modals */}
@@ -136,8 +121,8 @@ const CommonRoomMain = () => {
         onClose={membershipGate.reset}
         onSuccess={membershipGate.handleBioSuccess}
         onFallback={membershipGate.handleBioFallback}
-        title="Access Common Room"
-        description="Use Face ID or your device passkey to access the member area."
+        title="Enter the Den"
+        description="Use Face ID or your device passkey to enter."
       />
       
       <MembershipLinkModal
@@ -150,8 +135,8 @@ const CommonRoomMain = () => {
         isOpen={membershipGate.authOpen}
         onClose={membershipGate.reset}
         onSuccess={membershipGate.handleAuthSuccess}
-        title="Member Authentication"
-        description="Enter your member email to receive a 6-digit access code."
+        title="Enter the Den"
+        description="Enter your member email. We'll send a 6-digit code."
       />
     </div>
   );

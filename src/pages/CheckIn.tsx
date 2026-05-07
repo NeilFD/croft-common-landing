@@ -107,11 +107,11 @@ const CheckIn: React.FC = () => {
           {/* Back Link */}
           <div className="mb-6">
             <Link 
-              to="/common-room/main" 
+              to="/den/main" 
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Common Room
+              Back to the Den
             </Link>
           </div>
 
@@ -167,15 +167,15 @@ const CheckIn: React.FC = () => {
                   </div>
 
                   <div className="space-y-3">
-                    <Link to="/common-room/member">
+                    <Link to="/den/member">
                       <Button className="w-full">
                         View Member Home
                       </Button>
                     </Link>
                     
-                    <Link to="/common-room/main">
+                    <Link to="/den/main">
                       <Button variant="outline" className="w-full">
-                        Back to Common Room
+                        Back to the Den
                       </Button>
                     </Link>
                   </div>
@@ -201,7 +201,7 @@ const CheckIn: React.FC = () => {
         isOpen={showAuthModal}
         onClose={() => {
           setShowAuthModal(false);
-          navigate('/common-room/main');
+          navigate('/den/main');
         }}
         onSuccess={handleAuthSuccess}
       />
