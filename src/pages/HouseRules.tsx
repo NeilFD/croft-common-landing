@@ -40,8 +40,8 @@ const HouseRules = () => (
           <p className="mt-12 font-display text-2xl md:text-4xl uppercase leading-tight tracking-tight max-w-2xl">
             {statement}.
           </p>
-          <p className="mt-5 font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-60">
-            Read once.  Don't forget.
+          <p className="mt-5 font-cb-mono tracking-[0.5em] uppercase opacity-60 text-base">
+            Read once. Never think twice.
           </p>
 
           <ol className="mt-16 border-t border-foreground/15">
