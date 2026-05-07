@@ -58,8 +58,10 @@ const SecretGestureHost = ({ variant, children }: Props) => {
               user-select: none !important;
               -webkit-user-select: none !important;
               -webkit-touch-callout: none !important;
+              -webkit-tap-highlight-color: transparent !important;
             }
-            body.gesture-no-select ::selection { background: transparent !important; }
+            body.gesture-no-select ::selection { background: transparent !important; color: inherit !important; }
+            body.gesture-no-select ::-moz-selection { background: transparent !important; color: inherit !important; }
           `}</style>
           <GestureSelectionGuard />
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
