@@ -8,8 +8,8 @@ import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation, useNav
 import { Button } from "@/components/ui/button";
 import { TransitionProvider } from "@/contexts/TransitionContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
-import NudgeFloatingButton from './components/NudgeFloatingButton';
-import CBSpotifyPlayer from './components/crazybear/CBSpotifyPlayer';
+const NudgeFloatingButton = lazy(() => import('./components/NudgeFloatingButton'));
+const CBSpotifyPlayer = lazy(() => import('./components/crazybear/CBSpotifyPlayer'));
 
 // Lazy load pages for better performance
 import Landing from "./pages/Landing";
@@ -285,8 +285,10 @@ const App = () => {
                   <RouteImagePreloader />
                   <NavigationImagePreloader />
                 </Suspense>
-                <NudgeFloatingButton />
-                <CBSpotifyPlayer />
+                <Suspense fallback={null}>
+                  <NudgeFloatingButton />
+                  <CBSpotifyPlayer />
+                </Suspense>
                 
                 <TransitionProvider>
                     <Suspense fallback={<PageLoader />}>
