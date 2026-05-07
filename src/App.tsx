@@ -18,6 +18,7 @@ import CBSpotifyPlayer from './components/crazybear/CBSpotifyPlayer';
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import HouseRules from "./pages/HouseRules";
+import ImagePicker from "./pages/ImagePicker";
 import PropertyLayout from "./components/property/PropertyLayout";
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
 import {
@@ -306,6 +307,7 @@ const App = () => {
                       <Routes>
                       <Route path="/" element={<Landing />} />
                       <Route path="/house-rules" element={<HouseRules />} />
+                      <Route path="/image-picker" element={<ImagePicker />} />
 
                       {/* Crazy Bear Country */}
                       <Route path="/country" element={<PropertyLayout property="country" />}>
