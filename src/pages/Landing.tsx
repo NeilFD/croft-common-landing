@@ -49,7 +49,7 @@ const Landing = () => {
               Crazy Bear
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
-              Country &nbsp; / &nbsp; Town
+              Town &nbsp; / &nbsp; Country
             </p>
           </div>
 
@@ -61,24 +61,8 @@ const Landing = () => {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 border-t border-white/20 backdrop-blur-[1px]">
               <Link
-                to="/country"
-                className="group relative flex items-center justify-between px-7 md:px-12 py-7 md:py-9 hover:bg-white/[0.06] transition-colors"
-              >
-                <div>
-                  <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
-                    Stadhampton
-                  </p>
-                  <p className="mt-2 font-display text-3xl md:text-5xl uppercase tracking-tight">
-                    Country
-                  </p>
-                </div>
-                <span className="font-cb-mono text-xs tracking-[0.4em] uppercase opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
-                  Enter &rarr;
-                </span>
-              </Link>
-              <Link
                 to="/town"
-                className="group relative flex items-center justify-between px-7 md:px-12 py-7 md:py-9 border-t md:border-t-0 md:border-l border-white/20 hover:bg-white/[0.06] transition-colors"
+                className="group relative flex items-center justify-between px-7 md:px-12 py-7 md:py-9 hover:bg-white/[0.06] transition-colors"
               >
                 <div>
                   <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
@@ -86,6 +70,22 @@ const Landing = () => {
                   </p>
                   <p className="mt-2 font-display text-3xl md:text-5xl uppercase tracking-tight">
                     Town
+                  </p>
+                </div>
+                <span className="font-cb-mono text-xs tracking-[0.4em] uppercase opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                  Enter &rarr;
+                </span>
+              </Link>
+              <Link
+                to="/country"
+                className="group relative flex items-center justify-between px-7 md:px-12 py-7 md:py-9 border-t md:border-t-0 md:border-l border-white/20 hover:bg-white/[0.06] transition-colors"
+              >
+                <div>
+                  <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
+                    Stadhampton
+                  </p>
+                  <p className="mt-2 font-display text-3xl md:text-5xl uppercase tracking-tight">
+                    Country
                   </p>
                 </div>
                 <span className="font-cb-mono text-xs tracking-[0.4em] uppercase opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all">

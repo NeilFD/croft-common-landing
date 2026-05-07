@@ -30,16 +30,16 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           House Rules
         </Link>
         <Link
-          to="/country"
-          className="hidden sm:inline font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100"
-        >
-          Country
-        </Link>
-        <Link
           to="/town"
           className="hidden sm:inline font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100"
         >
           Town
+        </Link>
+        <Link
+          to="/country"
+          className="hidden sm:inline font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100"
+        >
+          Country
         </Link>
         <Link
           to="/members"
