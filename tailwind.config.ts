@@ -144,7 +144,8 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'pink-flash': 'pink-flash 0.6s ease-out',
 				'fade-out': 'fade-out 0.2s ease-out',
-				'breathing': 'breathing 3s ease-in-out infinite'
+				'breathing': 'breathing 3s ease-in-out infinite',
+				'spin-slow': 'spin 6s linear infinite'
 			}
 		}
 	},

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBSubscriptionForm from './CBSubscriptionForm';
+import CBSpotifyPlayer from './CBSpotifyPlayer';
 import GestureOverlay from '@/components/GestureOverlay';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
@@ -87,9 +88,12 @@ const CBFooter = () => {
 
         {/* Bottom bar */}
         <div className="mt-16 pt-8 border-t border-white/15 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-          <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-50">
-            &copy; {new Date().getFullYear()} The Crazy Bear
-          </p>
+          <div className="flex items-center gap-6 flex-wrap">
+            <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-50">
+              &copy; {new Date().getFullYear()} The Crazy Bear
+            </p>
+            <CBSpotifyPlayer />
+          </div>
           <div className="flex items-center gap-6">
             <Link
               to="/privacy"
