@@ -1,5 +1,5 @@
-import stadhampton from "@/assets/cb-hero-country.jpg";
-import beaconsfield from "@/assets/cb-hero-town.jpg";
+import stadhampton from "@/assets/cb-hero-country-new.jpg";
+import beaconsfield from "@/assets/cb-hero-town-new.jpg";
 import pub from "@/assets/cb-hero-pub.jpg";
 import events from "@/assets/cb-hero-events.jpg";
 import parties from "@/assets/cb-hero-parties.jpg";
