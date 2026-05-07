@@ -61,7 +61,7 @@ const pageSEOData: Record<string, Partial<SEOData>> = {
     keywords: [...baseKeywords, 'hall', 'events', 'private dining', 'celebrations', 'meetings', 'venue'],
     type: 'place'
   },
-  '/common-room': {
+  '/den': {
     title: 'Common Room - Relaxed Social Space | Croft Common',
     description: 'Unwind in our comfortable common room, perfect for casual meetings, reading, working, or simply enjoying the company of friends and community.',
     keywords: [...baseKeywords, 'common room', 'social space', 'relaxed', 'meetings', 'community'],

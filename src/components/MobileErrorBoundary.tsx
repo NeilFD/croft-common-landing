@@ -41,7 +41,7 @@ export class MobileErrorBoundary extends React.Component<MobileErrorBoundaryProp
     try {
       window.history.back();
     } catch (e) {
-      window.location.href = '/common-room/main';
+      window.location.href = '/den/main';
     }
   };
 

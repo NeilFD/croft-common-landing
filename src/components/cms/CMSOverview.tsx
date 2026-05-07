@@ -105,7 +105,7 @@ export const CMSOverview = () => {
     { name: 'Kitchens', icon: ChefHat, path: '/cms/visual/kitchens', description: 'Full kitchen menu' },
     { name: 'Hall', icon: Calendar, path: '/cms/visual/hall', description: 'Event space information' },
     { name: 'Community', icon: Users, path: '/cms/visual/community', description: 'Community information' },
-    { name: 'Common Room', icon: Building2, path: '/cms/visual/common-room', description: 'Membership space details' }
+    { name: 'Common Room', icon: Building2, path: '/cms/visual/den', description: 'Membership space details' }
   ];
 
 

@@ -25,19 +25,19 @@ const CommonRoomMain = () => {
     });
     
     if (membershipGate.allowed) {
-      console.log('[CommonRoomMain] 🚀 MOBILE: Authentication successful, navigating to /common-room/member');
+      console.log('[CommonRoomMain] 🚀 MOBILE: Authentication successful, navigating to /den/member');
       
       // Add mobile-specific navigation with retry
       const navigateWithRetry = () => {
         try {
-          navigate('/common-room/member', { replace: true });
+          navigate('/den/member', { replace: true });
           console.log('[CommonRoomMain] ✅ MOBILE: Navigation initiated');
         } catch (error) {
           console.error('[CommonRoomMain] ❌ MOBILE: Navigation failed:', error);
           // Retry after short delay
           setTimeout(() => {
             try {
-              window.location.href = '/common-room/member';
+              window.location.href = '/den/member';
             } catch (e) {
               console.error('[CommonRoomMain] ❌ MOBILE: Fallback navigation failed:', e);
             }

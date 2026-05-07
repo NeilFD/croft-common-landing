@@ -26,7 +26,7 @@ const CommonRoom = () => {
   useEffect(() => {
     if (allowed) {
       reset();
-      navigate('/common-room/main');
+      navigate('/den/main');
     }
   }, [allowed, navigate, reset]);
   return (

@@ -683,7 +683,7 @@ export default function LunchRun() {
                 </DialogDescription>
               </DialogHeader>
               <div className="flex justify-end">
-                <Button onClick={() => navigate('/common-room/member')} className="w-full sm:w-auto">
+                <Button onClick={() => navigate('/den/member')} className="w-full sm:w-auto">
                   Back to Member Area
                 </Button>
               </div>

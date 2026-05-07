@@ -74,11 +74,11 @@ export const UserMenu = () => {
     };
   }, [membershipGate.reset]);
   const memberMenuItems = [
-    { icon: Home, label: "My Home", path: "/common-room/member" },
-    { icon: LayoutDashboard, label: "Dashboard", path: "/common-room/member/dashboard" },
-    { icon: User, label: "Profile", path: "/common-room/member/profile" },
-    { icon: ChartBar, label: "Ledger", path: "/common-room/member/ledger" },
-    { icon: Camera, label: "Moments", path: "/common-room/member/moments" },
+    { icon: Home, label: "My Home", path: "/den/member" },
+    { icon: LayoutDashboard, label: "Dashboard", path: "/den/member/dashboard" },
+    { icon: User, label: "Profile", path: "/den/member/profile" },
+    { icon: ChartBar, label: "Ledger", path: "/den/member/ledger" },
+    { icon: Camera, label: "Moments", path: "/den/member/moments" },
   ];
 
   // Show login button if not authenticated

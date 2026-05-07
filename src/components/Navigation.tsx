@@ -25,7 +25,7 @@ const Navigation = () => {
     { name: 'KITCHENS', path: '/kitchens' },
     { name: 'HALL', path: '/hall' },
     { name: 'COMMUNITY', path: '/community' },
-    { name: 'THE COMMON ROOM', path: '/common-room' }
+    { name: 'THE COMMON ROOM', path: '/den' }
   ];
 
   // Preload images for better performance

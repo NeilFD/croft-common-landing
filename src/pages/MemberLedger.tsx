@@ -44,7 +44,7 @@ const MemberLedger: React.FC = () => {
       <div className="container mx-auto px-4 pt-32 pb-8">
         <div className="mb-6">
           <Link 
-            to="/common-room/member" 
+            to="/den/member" 
             className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />

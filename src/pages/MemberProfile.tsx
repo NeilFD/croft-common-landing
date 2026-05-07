@@ -85,7 +85,7 @@ const MemberProfile: React.FC = () => {
           {/* Breadcrumb */}
           <div className="mb-6">
             <Link 
-              to="/common-room/member" 
+              to="/den/member" 
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -398,7 +398,7 @@ const MemberProfile: React.FC = () => {
                     View your transaction history and account activity.
                   </p>
                   <Link 
-                    to="/common-room/member/ledger" 
+                    to="/den/member/ledger" 
                     className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
                   >
                     Open Full Ledger
