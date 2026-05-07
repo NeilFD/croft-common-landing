@@ -341,6 +341,9 @@ const App = () => {
                         <Route path="members" element={<Navigate to="/members" replace />} />
                       </Route>
 
+                      {/* Crazy Bear members entry */}
+                      <Route path="/bears-den" element={<BearsDen />} />
+
                       {/* Members entry - re-uses existing common-room */}
                       <Route path="/members" element={<Navigate to="/common-room" replace />} />
 
