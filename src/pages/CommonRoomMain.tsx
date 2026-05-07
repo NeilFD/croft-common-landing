@@ -1,7 +1,5 @@
 import React from 'react';
 import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
-import CommonRoomHeroCarousel from "@/components/CommonRoomHeroCarousel";
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
