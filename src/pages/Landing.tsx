@@ -105,7 +105,6 @@ const Landing = () => {
         </section>
       </main>
 
-      <CBSpotifyPlayer />
 
       <style>{`
         @keyframes kenburns {
