@@ -159,7 +159,7 @@ export async function mobileLog(
   
   // Store in Supabase (secondary path, may fail in native)
   try {
-    const { error: dbError } = await supabase
+    const { error: dbError } = await (supabase as any)
       .from('mobile_debug_logs')
       .insert({
         session_id: DEBUG_SESSION_ID,
