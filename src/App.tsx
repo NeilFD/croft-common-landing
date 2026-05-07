@@ -16,6 +16,7 @@ import NudgeFloatingButton from './components/NudgeFloatingButton';
 // Lazy load pages for better performance
 import Index from "./pages/Index";
 import Landing from "./pages/Landing";
+import HouseRules from "./pages/HouseRules";
 import PropertyLayout from "./components/property/PropertyLayout";
 import {
   CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
