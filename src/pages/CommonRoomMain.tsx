@@ -123,8 +123,8 @@ const CommonRoomMain = () => {
         onClose={membershipGate.reset}
         onSuccess={membershipGate.handleBioSuccess}
         onFallback={membershipGate.handleBioFallback}
-        title="Access Common Room"
-        description="Use Face ID or your device passkey to access the member area."
+        title="Enter the Den"
+        description="Use Face ID or your device passkey to enter."
       />
       
       <MembershipLinkModal
@@ -137,8 +137,8 @@ const CommonRoomMain = () => {
         isOpen={membershipGate.authOpen}
         onClose={membershipGate.reset}
         onSuccess={membershipGate.handleAuthSuccess}
-        title="Member Authentication"
-        description="Enter your member email to receive a 6-digit access code."
+        title="Enter the Den"
+        description="Enter your member email. We'll send a 6-digit code."
       />
     </div>
   );
