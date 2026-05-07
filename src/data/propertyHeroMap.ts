@@ -7,6 +7,7 @@ import thai from "@/assets/cb-hero-thai.jpg";
 import cocktails from "@/assets/cb-hero-cocktails.jpg";
 const pool = "/lovable-uploads/cb-outdoor-terrace-stadhampton.jpg";
 import blackBear from "@/assets/cb-hero-blackbear.jpg";
+import chefPlating from "@/assets/idea-chef-plating.jpg";
 
 // Glamorous rooms imagery sourced from Crazy Bear reference projects
 import roomsCountry from "@/assets/cb-hero-rooms-country.jpg";
@@ -31,9 +32,9 @@ export const propertyHeroMap: Record<string, string> = {
 
   "/town": beaconsfield,
   "/town/food": blackBear,
-  "/town/food/black-bear": blackBear,
-  "/town/food/bnb": blackBear,
-  "/town/food/hom-thai": thai,
+  "/town/food/black-bear": chefPlating,
+  "/town/food/bnb": chefPlating,
+  "/town/food/hom-thai": chefPlating,
   "/town/drink": cocktails,
   "/town/drink/cocktails": cocktails,
   "/town/rooms": roomsTown,
