@@ -1,55 +1,93 @@
-## Why the membership card is broken
+## Goal
 
-`MembershipCard` calls two Supabase RPCs that do not exist in this project: `ensure_membership_number` and `get_membership_card_details`. So `useMembershipCard` always errors with "Failed to generate membership number" and the card never renders. On top of that, the Apple Wallet flow points at a hardcoded old Supabase project ref (`xccidvoxhpgcnwinnyin`) that is not this Cloud backend, so even if the card loaded the wallet button would 404. The card UI itself is also off-brand — pink gradient, "CROFT COMMON" header, Croft logo.
+Add a member-only "secret 7" gesture across Town and Country pages. When a signed-in member draws a 7, a Crazy Bear styled modal opens with a contextual perk. Also remove "Crazy Bear" from the Parties nav label.
 
-Rather than rebuild Apple Wallet for a project that has been rebranded to Crazy Bear / The Den, I will rip Wallet out for now and ship a clean B&W "Den" member card driven directly by `cb_members`.
+## Pages and what each gesture reveals
 
-## 1. New Den-styled MembershipCard
+### Town
+- `/town/food`, `/town/food/black-bear`, `/town/food/bnb`, `/town/food/hom-thai` → **Recipe of the Month** modal. One main course recipe per kitchen, written in-house. Shows dish name, story line, ingredients list, method steps.
+- `/town/drink`, `/town/drink/cocktails` → **Roll the Dice** modal. Same mechanic as Croft Common: 5 dice, each face = a category (spirit, citrus, sweet, bitter, twist). Roll, get a random Crazy Bear cocktail spec.
+- `/town/rooms`, `/town/rooms/types`, `/town/rooms/gallery` → **Members Room Offer** modal. Room package + bold "Reserve" button → fake link `/book?offer=members-town` (placeholder until booking engine).
+- `/town/pool` → **Day Bed Discount** modal. Members-only discount code + booking CTA.
 
-Rewrite `src/components/membership/MembershipCard.tsx` to:
+### Country
+- `/country/pub`, `/country/pub/food` → **Recipe of the Month** modal (separate dish from Town).
+- `/country/pub/drink` → **Roll the Dice** modal.
+- `/country/rooms`, `/country/rooms/types`, `/country/rooms/gallery` → **Members Room Offer** modal.
+- `/country/parties` → **Secret Cinema** modal (existing `SecretCinemaModal` reused, restyled wrapper if needed).
+- `/country/events` → no gesture yet (TBC).
 
-- Pull from `cb_members` directly (`first_name`, `last_name`, `created_at`) plus `auth.users.email` via the `useAuth` hook. No RPCs, no Apple Wallet, no Croft logo, no pink.
-- Generate a stable display number client-side from the user's UUID (e.g. last 8 chars uppercased, formatted `CB-XXXX-XXXX`). No DB writes needed.
-- Layout: credit-card aspect (`aspect-[1.586/1]`), black background, white type, thin white border, bear mark watermark in the corner at low opacity.
-- Typography:
-  - Eyebrow `THE DEN / MEMBER` in mono, tracked `[0.4em]`, tiny.
-  - Member name in Archivo Black, large.
-  - Member number in mono, tracked.
-  - "MEMBER SINCE 05 / 26" footer in mono.
-- Loading and error states use the same B&W card frame so layout doesn't jump.
-- Remove all Apple Wallet code, fallbacks, reissue, toasts, iOS detection — the file becomes ~70 lines.
+### Nav
+- `src/data/navigation.ts`: change `"Crazy Bear Parties"` → `"Parties"`.
 
-## 2. Profile page typography pass
+## Gesture mechanics
 
-Update `src/pages/MemberProfile.tsx`:
+- Reuse existing `useGestureDetection` + `GestureOverlay` pattern (already used on `/den` and old Calendar).
+- Mount overlay only if `useAuth().user` is signed in. No member → no gesture, no hint.
+- Add tiny mono hint at the bottom of each enabled page: `Members: draw 7` (existing visual language).
+- Cooldown: 2s after a successful gesture before another can fire (existing hook handles this).
 
-- Page title `<title>` from "My Profile | The Tavern" to "Profile | The Den".
-- Header card: drop the "Build marker" line. Replace the title block with Crazy Bear treatment — eyebrow `MEMBER` (mono, tracked), heading `PROFILE` (Archivo Black, big, uppercase), subheading "Your details. Your card." (Space Grotesk).
-- "Back to Member Home" link reads "Back to the Den".
-- "Your Membership Card" section heading: change to `MEMBER CARD` in Archivo Black uppercase, mono eyebrow `THE DEN` above it.
-- `ProfileFormSection` titles already render with their own styles — leave the component but pass uppercased section titles ("Basic Information" stays, fine).
-- `Tabs`:
-  - `TabsList` — keep grid, but restyle the trigger to a black/white pill: black border, black text, on `data-[state=active]` swap to bg-black text-white, no rounded full. Use `font-mono uppercase tracking-[0.2em] text-xs`. Strip lucide icon labels entirely (icons stay too small in this typography); just text labels: `PROFILE`, `LEDGER`, `SETTINGS`.
-- Buttons (`Edit Profile`, `Save Changes`, `Cancel`) — restyle as bordered B&W pills (`border-2 border-black bg-white text-black hover:bg-black hover:text-white font-mono uppercase tracking-[0.3em] text-xs`).
-- Remove the `font-brutalist` class on the title (font isn't loaded in this project) — switch to `font-display`.
-- Page background: same B&W plaster background already used on `/den/member` (`denBg` from `@/assets/den-bg.jpg`) with a `bg-white/85` veil so forms stay readable. This ties it visually into the rest of the den.
+## New components
 
-## 3. Verify
+```
+src/components/secrets/
+  SecretGestureHost.tsx        // wraps page, runs gesture detection, renders chosen modal
+  RecipeOfTheMonthModal.tsx    // dish, story, ingredients, method
+  RollTheDiceModal.tsx         // 5 dice, animated roll, generated cocktail spec
+  RoomsOfferModal.tsx          // hero image, perk copy, fake reserve link
+  PoolDayBedModal.tsx          // discount code, CTA
+src/data/
+  secretRecipes.ts             // 5 recipes: black-bear, bnb, hom-thai, town-pub, country-pub
+  secretCocktailDice.ts        // dice face data for Town + Country
+  secretRoomOffers.ts          // 2 offers (town, country)
+```
 
-- Type-check passes.
-- Membership card renders with my name (Neil Fincham-Dukes) and a stable `CB-XXXX-XXXX` number, no error state.
-- /den/member/profile shows mono eyebrows, Archivo Black headings, B&W everything, no pink, no "Croft Common", no "Tavern".
+`SecretGestureHost` takes a `variant` prop (`'recipe-blackbear' | 'recipe-bnb' | 'recipe-homthai' | 'recipe-townpub' | 'recipe-countrypub' | 'dice-town' | 'dice-country' | 'rooms-town' | 'rooms-country' | 'pool' | 'cinema'`). Wrap each target page (or its layout) with it.
+
+## Recipe content (written in-house, sample shape)
+
+- **The Black Bear (Town)**: Slow-Braised Beef Cheek with Bone Marrow Mash. Story line, 8 ingredients, 6 steps.
+- **B&B (Town)**: Roast Cod with Brown Shrimp Butter and Sea Aster.
+- **Hom Thai (Town)**: Massaman Lamb Shank with Crisp Shallots and Roti.
+- **Country Pub**: Steak and Stout Suet Pudding with Bone Gravy.
+- **Country Pub Food (alt)**: Whole Plaice with Caper Brown Butter and Triple-Cooked Chips.
+
+(Will write proper ingredients + method copy per dish in implementation.)
+
+## Roll the Dice spec
+
+5 dice. Each rolls a category:
+1. Base spirit
+2. Modifier (vermouth, amaro, liqueur)
+3. Citrus or acid
+4. Sweet (syrup, fruit, honey)
+5. Twist (garnish, bitters, smoke)
+
+After roll → composed recipe shown in Crazy Bear typography (`Archivo Black` heading, `Space Grotesk` body, `font-cb-mono` ratios). Re-roll button.
+
+Town and Country share the engine; different garnish/twist pools so each location feels distinct.
+
+## Rooms / Pool / Cinema modals
+
+- **Rooms offer (each property)**: B&W hero, eyebrow `MEMBERS ONLY`, headline `THE INSIDER NIGHT`, perk copy (e.g. "Suite upgrade. Late checkout. Breakfast on us."), `RESERVE` button → `window.open('/book?offer=members-' + property)` (placeholder route, no booking engine yet).
+- **Pool**: eyebrow `MEMBERS ONLY`, headline `THE DAY BED`, copy + code `BEAR25`, `RESERVE` button (placeholder).
+- **Cinema**: reuse `SecretCinemaModal`, opened from gesture host.
+
+## Design
+
+- All modals: `bg-black text-white` or `bg-white text-black`, no rounded corners, no focus rings (use border highlight), Archivo Black headings, Space Grotesk body, mono eyebrows tracked `[0.4em]`. Match existing `MembershipCard` aesthetic.
+- No lucide icons. Plain glyphs / unicode where needed (✕ for close).
+- Backgrounds use existing assets where possible; no AI-generated imagery.
 
 ## Out of scope
 
-- Restoring Apple Wallet for The Den — separate piece of work; needs a new pass type, new certs, and a new edge function pointing at this project's Supabase ref. We can do that next if you want a real wallet pass.
-- Renaming the underlying CMS / page keys.
-- Redesigning the rest of the member sub-pages (ledger, moments) — same treatment can follow once you've signed off this one.
+- Real booking engine wiring.
+- CMS-driven recipes (hard-coded for now).
+- Events page gesture (TBC).
+- Persisting roll history.
 
-## Technical notes
+## Files touched
 
-Files touched:
-
-- `src/components/membership/MembershipCard.tsx` — full rewrite, drop wallet code.
-- `src/pages/MemberProfile.tsx` — header, tabs, buttons, background, copy.
-- No DB migrations. No edge function changes.
+- `src/data/navigation.ts` (rename label)
+- `src/pages/property/index.tsx` (wrap target pages with `SecretGestureHost`)
+- New files under `src/components/secrets/` and `src/data/`
