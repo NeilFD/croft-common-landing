@@ -18,6 +18,7 @@ import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import HouseRules from "./pages/HouseRules";
 import PropertyLayout from "./components/property/PropertyLayout";
+const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
 import {
   CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
   CountryRooms, CountryRoomTypes, CountryRoomGallery,
