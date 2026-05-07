@@ -11,11 +11,7 @@ import blackBear from "@/assets/cb-hero-blackbear.jpg";
 // Glamorous rooms imagery sourced from Crazy Bear reference projects
 import roomsCountry from "@/assets/cb-hero-rooms-country.jpg";
 import roomsTown from "@/assets/cb-hero-rooms-town.jpg";
-import roomChateauSuite from "@/assets/cb-rooms-chateau-suite.jpg";
-import roomRedVelvet from "@/assets/cb-rooms-red-velvet.jpg";
-import roomMarbleBath from "@/assets/cb-rooms-marble-bath.jpg";
 import roomCopperSuite from "@/assets/cb-rooms-copper-suite.jpg";
-import roomFourposter from "@/assets/cb-rooms-fourposter.jpg";
 import roomFireplace from "@/assets/cb-rooms-fireplace.jpg";
 
 export const propertyHeroMap: Record<string, string> = {
@@ -24,8 +20,8 @@ export const propertyHeroMap: Record<string, string> = {
   "/country/pub/food": pub,
   "/country/pub/drink": cocktails,
   "/country/pub/hospitality": pub,
-  "/country/rooms": roomChateauSuite,
-  "/country/rooms/types": roomRedVelvet,
+  "/country/rooms": roomsCountry,
+  "/country/rooms/types": roomsCountry,
   "/country/rooms/gallery": roomFireplace,
   "/country/parties": parties,
   "/country/events": events,
@@ -40,15 +36,14 @@ export const propertyHeroMap: Record<string, string> = {
   "/town/food/hom-thai": thai,
   "/town/drink": cocktails,
   "/town/drink/cocktails": cocktails,
-  "/town/rooms": roomFourposter,
+  "/town/rooms": roomsTown,
   "/town/rooms/types": roomCopperSuite,
-  "/town/rooms/gallery": roomMarbleBath,
+  "/town/rooms/gallery": roomCopperSuite,
   "/town/pool": pool,
 };
 
 // Extra glamour stills available for galleries / future use
 export const roomsGalleryAssets = {
-  marbleBath: roomMarbleBath,
   fireplace: roomFireplace,
 };
 
