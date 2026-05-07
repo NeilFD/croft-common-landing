@@ -1,55 +1,41 @@
 // Service Worker for Crazy Bear
 // Handles caching, push notifications, and app communication
 
-// Cache names for versioning
-const CACHE_NAME = 'crazy-bear-app-v4.0';
+// Cache names for versioning. Bumped to invalidate the previous broken shell
+// that aggressively cached '/' and caused infinite-flash on PWA launch.
+const CACHE_NAME = 'crazy-bear-app-v5.0';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
-// Install event - cache essential assets
-self.addEventListener('install', event => {
-  console.log('🔔 SW: Installing optimized service worker');
-  
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('🔔 SW: Caching essential assets');
-        return cache.addAll(['/']);
-      })
-      .then(() => {
-        console.log('🔔 SW: Assets cached successfully');
-        self.skipWaiting();
-      })
-      .catch((error) => {
-        console.error('🔔 SW: Error caching assets:', error);
-      })
-  );
+// Install: do NOT precache the HTML shell. Precaching '/' is what caused the
+// installed PWA to keep serving a stale index forever and flash on launch.
+self.addEventListener('install', (event) => {
+  // Activate as soon as possible, but only on the very first install. We do not
+  // call skipWaiting on subsequent updates so existing tabs keep working until
+  // they are closed naturally — this prevents controllerchange reload loops.
+  self.skipWaiting();
 });
 
-// Activate event - clean up old caches but preserve CMS cache
-self.addEventListener('activate', event => {
-  console.log('🔔 SW: Activating optimized service worker');
-  
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME && cacheName !== CMS_CACHE_NAME) {
-            console.log('🔔 SW: Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
+// Activate: clean up every old cache from previous versions.
+self.addEventListener('activate', (event) => {
+  event.waitUntil((async () => {
+    try {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames
+          .filter((n) => n !== CACHE_NAME && n !== CMS_CACHE_NAME)
+          .map((n) => caches.delete(n))
       );
-    }).then(() => {
-      console.log('🔔 SW: Optimized service worker activated');
-      return self.clients.claim();
-    })
-  );
+    } catch (e) {
+      console.warn('SW: cache cleanup failed', e);
+    }
+    try { await self.clients.claim(); } catch {}
+  })());
 });
 
-// Safe, simplified fetch event handler
+// Allow explicit SKIP_WAITING from the app if ever needed.
 self.addEventListener('message', (event) => {
   if (event?.data?.type === 'SKIP_WAITING') {
-    try { self.skipWaiting(); } catch (e) { console.warn('SW skipWaiting failed', e); }
+    try { self.skipWaiting(); } catch {}
   }
 });
 
@@ -59,82 +45,62 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(event.request.url);
 
-    // Ignore cross-origin requests entirely
+    // Ignore cross-origin requests entirely.
     if (url.origin !== self.location.origin) return;
 
-    // Bypass caching for Supabase and API endpoints
+    // Never intercept auth, backend functions, storage, OAuth, or bypass requests.
     if (
       url.hostname.includes('supabase') ||
       url.pathname.includes('/functions/v1/') ||
       url.pathname.includes('/auth/v1/') ||
       url.pathname.includes('/rest/v1/') ||
       url.pathname.includes('/storage/v1/') ||
-      url.search.includes('bypass-cache=true')
+      url.pathname.startsWith('/~oauth') ||
+      url.pathname === '/manifest.json' ||
+      url.pathname === '/sw.js' ||
+      url.pathname === '/service-worker.js' ||
+      url.search.includes('bypass-cache=true') ||
+      url.search.includes('bypass-cache=')
     ) {
       return;
     }
 
     const requestDestination = event.request.destination;
-    
-    // CRITICAL: Navigation requests only - network first so old branding cannot stick
+
+    // Navigations: network-only. No HTML caching at all. If the network is down
+    // the browser shows its own offline page — that is far less destructive
+    // than serving an old shell forever.
     if (event.request.mode === 'navigate' || requestDestination === 'document') {
-      console.log('🔔 SW: Navigate request for:', url.pathname);
-      event.respondWith(
-        (async () => {
-          const cache = await caches.open(CACHE_NAME);
-          try {
-            const response = await fetch(event.request, { cache: 'no-cache' });
-            if (response && response.status === 200) {
-              cache.put('/', response.clone());
-            }
-            return response;
-          } catch (err) {
-            const cachedHome = await cache.match('/');
-            return cachedHome || Response.error();
-          }
-        })()
-      );
+      event.respondWith(fetch(event.request, { cache: 'no-store' }).catch(() => Response.error()));
       return;
     }
 
-    // CRITICAL: Script, style, font, image requests - NEVER serve index.html
-    // Use network-first, then cache fallback, but NO HTML fallback
+    // Hashed JS/CSS/fonts/images: network-first with cache fallback.
     if (['script', 'style', 'font', 'image'].includes(requestDestination)) {
-      console.log('🔔 SW: Asset request:', requestDestination, url.pathname);
       event.respondWith(
         fetch(event.request)
           .then(async (resp) => {
             if (resp && resp.status === 200) {
               const cache = await caches.open(CACHE_NAME);
-              cache.put(event.request, resp.clone()).catch(e => 
-                console.warn('SW: cache.put failed', e)
-              );
+              cache.put(event.request, resp.clone()).catch(() => {});
             }
             return resp;
           })
           .catch(async () => {
-            // For assets, only return cached asset, NOT index.html
             const cached = await caches.match(event.request);
-            if (cached) {
-              console.log('🔔 SW: Serving cached asset:', url.pathname);
-              return cached;
-            }
-            console.error('🔔 SW: Asset not found:', url.pathname);
-            return Response.error();
+            return cached || Response.error();
           })
       );
       return;
     }
 
-    // All other requests - network-first with cache fallback
+    // Everything else: pass-through with cache fallback.
     event.respondWith(
       fetch(event.request)
         .then(async (resp) => {
           if (resp && resp.status === 200) {
             const cache = await caches.open(CACHE_NAME);
-            cache.put(event.request, resp.clone()).catch(e => 
-              console.warn('SW: cache.put failed', e)
-            );
+            cache.put(event.request, resp.clone()).catch(() => {});
           }
           return resp;
         })
@@ -144,7 +110,6 @@ self.addEventListener('fetch', (event) => {
         })
     );
   } catch (e) {
-    // Absolute fallback – never throw from SW fetch handler
     console.error('SW fetch handler error', e);
   }
 });

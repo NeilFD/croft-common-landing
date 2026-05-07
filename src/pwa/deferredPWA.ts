@@ -6,95 +6,52 @@ import { BRAND_LOGO } from '@/data/brand';
 
 // Prefetch critical routes after idle
 function prefetchCriticalRoutes() {
+  const run = () => {
+    import('../pages/Book').catch(() => {});
+    import('../pages/management/ManagementLogin').catch(() => {});
+    import('../pages/Hall').catch(() => {});
+    import('../pages/CommonRoom').catch(() => {});
+    import('../pages/CommonRoomMain').catch(() => {});
+  };
   if ('requestIdleCallback' in window) {
-    requestIdleCallback(() => {
-      console.log('[PWA] Prefetching critical routes');
-      import('../pages/Book').catch(e => console.warn('[PWA] Failed to prefetch Book', e));
-      import('../pages/management/ManagementLogin').catch(e => console.warn('[PWA] Failed to prefetch ManagementLogin', e));
-      import('../pages/Hall').catch(e => console.warn('[PWA] Failed to prefetch Hall', e));
-      import('../pages/CommonRoom').catch(e => console.warn('[PWA] Failed to prefetch CommonRoom', e));
-      import('../pages/CommonRoomMain').catch(e => console.warn('[PWA] Failed to prefetch CommonRoomMain', e));
-    }, { timeout: 2000 });
+    (window as any).requestIdleCallback(run, { timeout: 2000 });
   } else {
-    setTimeout(() => {
-      console.log('[PWA] Prefetching critical routes (fallback)');
-      import('../pages/Book').catch(e => console.warn('[PWA] Failed to prefetch Book', e));
-      import('../pages/management/ManagementLogin').catch(e => console.warn('[PWA] Failed to prefetch ManagementLogin', e));
-      import('../pages/Hall').catch(e => console.warn('[PWA] Failed to prefetch Hall', e));
-      import('../pages/CommonRoom').catch(e => console.warn('[PWA] Failed to prefetch CommonRoom', e));
-      import('../pages/CommonRoomMain').catch(e => console.warn('[PWA] Failed to prefetch CommonRoomMain', e));
-    }, 3000);
+    setTimeout(run, 3000);
   }
 }
 
-// Setup service worker controller change handler for auto-reload.
-// CRITICAL: Only reload when an existing controller is replaced (a true update).
-// On first install the SW calls skipWaiting()+claim(), which fires controllerchange
-// even though there is nothing stale to reload — reloading there causes the
-// PWA to flash/never-finish-loading on home-screen launch.
-function setupControllerChangeHandler() {
-  // Snapshot at module load: was the page already controlled?
-  const hadInitialController = !!navigator.serviceWorker.controller;
-  let hasReloaded = false;
+export const initializePWA = async () => {
+  try {
+    // Detect preview/iframe contexts and never run PWA there
+    const isInIframe = (() => {
+      try { return window.self !== window.top; } catch { return true; }
+    })();
+    const host = window.location.hostname;
+    const isPreviewHost =
+      host.includes('id-preview--') || host.includes('lovableproject.com') || host.includes('lovable.app');
 
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    console.log('[PWA] controllerchange fired', { hadInitialController });
-
-    if (!hadInitialController) {
-      // First-ever activation for this client. No reload needed.
-      console.log('[PWA] Initial SW activation, skipping reload');
+    if (isPreviewHost || isInIframe) {
+      // Aggressively clean any prior SW + caches inside preview/iframe
+      try {
+        const regs = await navigator.serviceWorker?.getRegistrations?.();
+        await Promise.all((regs || []).map((r) => r.unregister()));
+      } catch {}
+      try {
+        const names = await caches.keys();
+        await Promise.all(names.map((n) => caches.delete(n)));
+      } catch {}
+      console.log('[PWA] Skipped in preview/iframe context');
       return;
     }
 
-    if (hasReloaded) return;
-    hasReloaded = true;
-    console.log('[PWA] Reloading to activate updated service worker');
-    window.location.reload();
-  });
-}
-
-export const initializePWA = async () => {
-  const startMark = 'pwa-init-start';
-  const endMark = 'pwa-init-end';
-  
-  try {
-    performance.mark(startMark);
-    
-    // Detect iOS PWA mode
-    const isIOSPWA = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-                     (window.navigator as any).standalone === true;
-    
     const path = window.location.pathname;
     if (path.startsWith('/admin')) {
       console.log('[PWA] Skipping initialization for admin paths');
       return;
     }
-    
-    console.log('[PWA] Starting initialization sequence', { isIOSPWA, path });
-    
-    // Setup controller change handler early
-    if ('serviceWorker' in navigator) {
-      setupControllerChangeHandler();
-    }
-    
-    // Less aggressive cache clearing - only clear truly problematic ones
-    if ('caches' in window) {
-      try {
-        const cacheNames = await caches.keys();
-        const problematicCaches = cacheNames.filter(name => 
-          name.includes('images-mobile-v') || 
-          name.includes('hero-images')
-        );
-        
-        if (problematicCaches.length > 0) {
-          await Promise.all(problematicCaches.map(name => caches.delete(name)));
-          console.log(`[PWA] Cleared ${problematicCaches.length} problematic cache(s)`);
-        }
-      } catch (e) {
-        console.warn('[PWA] Cache clearing failed:', e);
-      }
-    }
-    
+
+    console.log('[PWA] Starting initialization sequence', { path });
+
     // Preload critical brand assets
     try {
       const link = document.createElement('link');
@@ -103,44 +60,26 @@ export const initializePWA = async () => {
       link.href = BRAND_LOGO;
       link.setAttribute('fetchpriority', 'high');
       document.head.appendChild(link);
-      console.log('[PWA] Preloaded brand assets');
-    } catch (e) {
-      console.warn('[PWA] Failed to preload brand assets:', e);
-    }
-    
-    // Register service worker with error handling
-    let reg: ServiceWorkerRegistration;
+    } catch {}
+
+    // Register service worker (no auto-reload, no forced update)
+    let reg: ServiceWorkerRegistration | null = null;
     try {
       reg = await registerServiceWorker();
-      console.log('[PWA] Service worker registered successfully');
-      
-      // Force update check on iOS PWA
-      if (isIOSPWA) {
-        console.log('[PWA] iOS PWA detected, forcing SW update check');
-        await reg.update();
-        if (reg.waiting) {
-          console.log('[PWA] New SW waiting, triggering SKIP_WAITING');
-          reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-        }
+      if (reg) {
+        console.log('[PWA] Service worker registered successfully');
+        prefetchCriticalRoutes();
       }
-      
-      // Start prefetching critical routes
-      prefetchCriticalRoutes();
     } catch (e) {
       console.error('[PWA] Service worker registration failed:', e);
-      // Continue without service worker - app should still work
       return;
     }
-    
-    // Defer non-critical PWA UI to improve load times
+
+    // Defer non-critical PWA UI
     setTimeout(() => {
       try {
-        if (!isStandalone) {
-          console.log('[PWA] Mounting install overlay');
-          mountInstallOverlay();
-        }
-        console.log('[PWA] Mounting notifications overlay');
-        mountNotificationsOverlay(reg);
+        if (!isStandalone) mountInstallOverlay();
+        if (reg) mountNotificationsOverlay(reg);
       } catch (e) {
         console.warn('[PWA] Failed to mount overlays:', e);
       }
@@ -148,54 +87,35 @@ export const initializePWA = async () => {
 
     // Opportunistic push subscription linking
     try {
-      const [{ data: user }, sub] = await Promise.all([
-        supabase.auth.getUser(),
-        reg.pushManager.getSubscription(),
-      ]);
-      const endpoint = (sub?.toJSON() as any)?.endpoint as string | undefined;
-      const userId = user.user?.id;
-      if (userId && endpoint) {
-        console.log('[PWA] Linking push subscription');
-        void supabase.functions.invoke("auto-link-push-subscription", { body: { endpoint } });
+      if (reg) {
+        const [{ data: user }, sub] = await Promise.all([
+          supabase.auth.getUser(),
+          reg.pushManager.getSubscription(),
+        ]);
+        const endpoint = (sub?.toJSON() as any)?.endpoint as string | undefined;
+        const userId = user.user?.id;
+        if (userId && endpoint) {
+          void supabase.functions.invoke('auto-link-push-subscription', { body: { endpoint } });
+        }
       }
-    } catch (e) {
-      console.warn('[PWA] Push subscription linking failed:', e);
-    }
+    } catch {}
 
     // Track notification opens
     try {
-       const url = new URL(window.location.href);
-       const token = url.searchParams.get('ntk');
-       if (token) {
-         console.log('[PWA] Tracking notification open');
-         try {
-           sessionStorage.setItem('notifications.last_ntk', token);
-         } catch (_) {}
-   
-         void supabase.functions.invoke('track-notification-event', {
-           body: { type: 'notification_open', token },
-         });
-         url.searchParams.delete('ntk');
-         window.history.replaceState({}, document.title, url.toString());
-       }
-    } catch (e) {
-      console.warn('[PWA] Notification tracking failed:', e);
-    }
-    
+      const url = new URL(window.location.href);
+      const token = url.searchParams.get('ntk');
+      if (token) {
+        try { sessionStorage.setItem('notifications.last_ntk', token); } catch {}
+        void supabase.functions.invoke('track-notification-event', {
+          body: { type: 'notification_open', token },
+        });
+        url.searchParams.delete('ntk');
+        window.history.replaceState({}, document.title, url.toString());
+      }
+    } catch {}
+
     (window as any).__pwaReg = reg;
-    
-    // Performance measurement
-    performance.mark(endMark);
-    const measure = performance.measure('pwa-initialization', startMark, endMark);
-    
-    console.log('[PWA] Initialization complete:', {
-      totalMs: Math.round(measure.duration),
-      swRegistered: !!reg,
-      timestamp: new Date().toISOString()
-    });
-    
   } catch (error) {
     console.error('[PWA] Initialization error:', error);
-    // Don't throw - allow app to continue without PWA features
   }
 };
