@@ -345,21 +345,21 @@ const MemberProfile: React.FC = () => {
                   </div>
                 </ProfileFormSection>
 
-                <div className="flex gap-4">
+                <div className="flex gap-3">
                   {!isEditing ? (
-                    <Button onClick={() => setIsEditing(true)}>
+                    <Button onClick={() => setIsEditing(true)} className={pillBtnClass}>
                       Edit Profile
                     </Button>
                   ) : (
                     <>
-                      <Button onClick={handleSave} disabled={loading}>
-                        {loading ? 'Saving...' : 'Save Changes'}
+                      <Button onClick={handleSave} disabled={loading} className={pillBtnClass}>
+                        {loading ? 'Saving' : 'Save Changes'}
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
+                        className={pillBtnClass}
                         onClick={() => {
                           setIsEditing(false);
-                          // Reset form data
                           if (profile) {
                             setFormData({
                               first_name: profile.first_name || '',
@@ -389,17 +389,17 @@ const MemberProfile: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="ledger">
-              <Card className="border-2 border-black shadow-md">
+              <Card className="border-2 border-black shadow-md bg-white">
                 <CardHeader>
-                  <CardTitle>Member Ledger</CardTitle>
+                  <CardTitle className="font-display uppercase tracking-tight">Member Ledger</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground mb-4">
                     View your transaction history and account activity.
                   </p>
-                  <Link 
-                    to="/den/member/ledger" 
-                    className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+                  <Link
+                    to="/den/member/ledger"
+                    className={`inline-flex items-center justify-center ${pillBtnClass}`}
                   >
                     Open Full Ledger
                   </Link>
@@ -408,9 +408,9 @@ const MemberProfile: React.FC = () => {
             </TabsContent>
 
             <TabsContent value="settings">
-              <Card className="border-2 border-black shadow-md">
+              <Card className="border-2 border-black shadow-md bg-white">
                 <CardHeader>
-                  <CardTitle>Account Settings</CardTitle>
+                  <CardTitle className="font-display uppercase tracking-tight">Account Settings</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">
@@ -420,9 +420,10 @@ const MemberProfile: React.FC = () => {
               </Card>
             </TabsContent>
           </Tabs>
+          </div>
+
+          <Footer />
         </div>
-        
-        <Footer />
       </div>
     </>
   );
