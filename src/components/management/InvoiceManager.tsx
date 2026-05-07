@@ -42,7 +42,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
   const { data: eventData } = useQuery({
     queryKey: ['management-event', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select('*')
         .eq('id', eventId)
@@ -57,7 +57,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('invoices')
         .select(`
           *,
@@ -79,7 +79,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
   // Create invoice mutation
   const createInvoice = useMutation({
     mutationFn: async (data: CreateInvoiceData) => {
-      const { data: result, error } = await supabase.rpc('create_invoice', {
+      const { data: result, error } = await (supabase as any).rpc('create_invoice', {
         p_event_id: eventId,
         p_due_date: data.due_date,
         p_amount: data.amount
@@ -109,7 +109,7 @@ export const InvoiceManager: React.FC<InvoiceManagerProps> = ({ eventId }) => {
   // Update invoice mutation
   const updateInvoice = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<CreateInvoiceData> }) => {
-      const { data: result, error } = await supabase
+      const { data: result, error } = await (supabase as any)
         .from('invoices')
         .update({
           total: data.amount,

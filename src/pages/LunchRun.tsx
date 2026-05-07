@@ -73,7 +73,7 @@ export default function LunchRun() {
       setProfileLoading(true);
       try {
         // Try to get display name from profile
-        const { data: profile, error } = await supabase
+        const { data: profile, error } = await (supabase as any)
           .from('member_profiles_extended')
           .select('display_name')
           .eq('user_id', user.id)

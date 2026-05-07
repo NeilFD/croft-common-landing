@@ -21,7 +21,7 @@ export const useCMSContent = (page: string, section: string, contentKey: string,
       setLoading(true);
       
       // Build query - if showDrafts is true, get the latest content regardless of published status
-      let query = supabase
+      let query = (supabase as any)
         .from('cms_content')
         .select('*')
         .eq('page', page)

@@ -36,7 +36,7 @@ export const useKitchensMenuData = (tabName: string, showDrafts: boolean = false
   const { data: sections, isLoading: sectionsLoading, error: sectionsError } = useQuery({
     queryKey: ['kitchens-menu-sections', pageKey, showDrafts],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('cms_menu_sections')
         .select(`
           id,

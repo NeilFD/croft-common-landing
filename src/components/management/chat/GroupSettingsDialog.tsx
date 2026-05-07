@@ -56,7 +56,7 @@ export const GroupSettingsDialog = ({
     setCurrentUserId(user.id);
 
     // Load members
-    const { data: membersData, error: membersError } = await supabase
+    const { data: membersData, error: membersError } = await (supabase as any)
       .from('chat_members')
       .select('*')
       .eq('chat_id', chatId);
@@ -69,7 +69,7 @@ export const GroupSettingsDialog = ({
     // Enrich with user info
     const enrichedMembers = await Promise.all(
       (membersData || []).map(async (member) => {
-        const { data: roleData } = await supabase
+        const { data: roleData } = await (supabase as any)
           .from('user_roles')
           .select('role')
           .eq('user_id', member.user_id)
@@ -93,7 +93,7 @@ export const GroupSettingsDialog = ({
 
     // Load all users (only if admin)
     if (currentMember?.is_admin) {
-      const { data: rolesData } = await supabase.from('user_roles').select('user_id, role');
+      const { data: rolesData } = await (supabase as any).from('user_roles').select('user_id, role');
 
       if (rolesData) {
         const usersWithRoles = await Promise.all(
@@ -118,7 +118,7 @@ export const GroupSettingsDialog = ({
     }
 
     setLoading(true);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('chats')
       .update({ name: newName })
       .eq('id', chatId);
@@ -137,7 +137,7 @@ export const GroupSettingsDialog = ({
     if (!isAdmin || !selectedUserId) return;
 
     setLoading(true);
-    const { error } = await supabase.from('chat_members').insert({
+    const { error } = await (supabase as any).from('chat_members').insert({
       chat_id: chatId,
       user_id: selectedUserId,
       is_admin: false,
@@ -161,7 +161,7 @@ export const GroupSettingsDialog = ({
     }
 
     setLoading(true);
-    const { error } = await supabase.from('chat_members').delete().eq('id', memberId);
+    const { error } = await (supabase as any).from('chat_members').delete().eq('id', memberId);
 
     setLoading(false);
 
@@ -175,7 +175,7 @@ export const GroupSettingsDialog = ({
 
   const handleLeaveChat = async () => {
     setLoading(true);
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('chat_members')
       .delete()
       .eq('chat_id', chatId)
@@ -201,7 +201,7 @@ export const GroupSettingsDialog = ({
     if (!confirm('Are you sure you want to delete this chat? This cannot be undone.')) return;
 
     setLoading(true);
-    const { error } = await supabase.from('chats').delete().eq('id', chatId);
+    const { error } = await (supabase as any).from('chats').delete().eq('id', chatId);
 
     setLoading(false);
 

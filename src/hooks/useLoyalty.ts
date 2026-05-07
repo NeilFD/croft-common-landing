@@ -61,7 +61,7 @@ export function useLoyalty(user: User | null) {
   const isLucky7 = card?.card_type === 'lucky7';
 
   const refreshEntries = useCallback(async (cardId: string) => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('loyalty_entries')
       .select('*')
       .eq('card_id', cardId)
@@ -97,7 +97,7 @@ export function useLoyalty(user: User | null) {
     setLoading(true);
     try {
       // 1) Try to fetch an incomplete card
-      const { data: existing, error: fetchErr } = await supabase
+      const { data: existing, error: fetchErr } = await (supabase as any)
         .from('loyalty_cards')
         .select('*')
         .eq('user_id', user.id)
@@ -113,7 +113,7 @@ export function useLoyalty(user: User | null) {
 
       // 2) If none, try to create a regular card (policy requires active subscriber)
       if (!active) {
-        const { data: created, error: insertErr } = await supabase
+        const { data: created, error: insertErr } = await (supabase as any)
           .from('loyalty_cards')
           .insert({
             user_id: user.id,
@@ -150,7 +150,7 @@ export function useLoyalty(user: User | null) {
     if (!user) return;
 
     // Recompute completion conditions from entries to be safe
-    const { data: allEntries, error: entriesErr } = await supabase
+    const { data: allEntries, error: entriesErr } = await (supabase as any)
       .from('loyalty_entries')
       .select('id, kind')
       .eq('card_id', current.id);
@@ -175,7 +175,7 @@ export function useLoyalty(user: User | null) {
     }
 
     // Mark current card complete and update counters
-    const { error: updateErr } = await supabase
+    const { error: updateErr } = await (supabase as any)
       .from('loyalty_cards')
       .update({
         is_complete: true,
@@ -196,7 +196,7 @@ export function useLoyalty(user: User | null) {
 
       if (current.card_type === 'regular') {
         // Count completed regular cards for this user
-        const { count: regCompletedCount, error: countErr } = await supabase
+        const { count: regCompletedCount, error: countErr } = await (supabase as any)
           .from('loyalty_cards')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id)
@@ -212,7 +212,7 @@ export function useLoyalty(user: User | null) {
         nextType = 'regular';
       }
 
-      const { data: newCard, error: newErr } = await supabase
+      const { data: newCard, error: newErr } = await (supabase as any)
         .from('loyalty_cards')
         .insert({
           user_id: user.id,
@@ -276,7 +276,7 @@ export function useLoyalty(user: User | null) {
         return;
       }
 
-      const { error: insertErr } = await supabase.from('loyalty_entries').insert({
+      const { error: insertErr } = await (supabase as any).from('loyalty_entries').insert({
         card_id: card.id,
         index,
         kind,
@@ -293,7 +293,7 @@ export function useLoyalty(user: User | null) {
       await refreshEntries(card.id);
 
       // Optionally update live counts on the card
-      const { error: updateErr } = await supabase
+      const { error: updateErr } = await (supabase as any)
         .from('loyalty_cards')
         .update({
           punches_count: kind === 'punch' ? (card.punches_count + 1) : card.punches_count,
@@ -343,7 +343,7 @@ export function useLoyalty(user: User | null) {
         }
 
         // Delete from database
-        const { error: dbError } = await supabase
+        const { error: dbError } = await (supabase as any)
           .from('loyalty_entries')
           .delete()
           .eq('id', entryId);
@@ -358,7 +358,7 @@ export function useLoyalty(user: User | null) {
         const newPunchesCount = entryToDelete.kind === 'punch' ? Math.max(0, card.punches_count - 1) : card.punches_count;
         const newRewardsCount = entryToDelete.kind === 'reward' ? Math.max(0, card.rewards_count - 1) : card.rewards_count;
 
-        const { error: updateError } = await supabase
+        const { error: updateError } = await (supabase as any)
           .from('loyalty_cards')
           .update({
             punches_count: newPunchesCount,

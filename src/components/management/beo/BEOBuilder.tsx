@@ -33,7 +33,7 @@ export const BEOBuilder: React.FC<BEOBuilderProps> = ({
   const { data: eventExists, isLoading: eventCheckLoading } = useQuery({
     queryKey: ['event-exists', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select('id')
         .eq('id', eventId)

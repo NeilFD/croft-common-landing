@@ -57,7 +57,7 @@ export const useBookings = (filters?: BookingFilters) => {
   return useQuery({
     queryKey: ["bookings", filters],
     queryFn: async (): Promise<Booking[]> => {
-      let query = supabase
+      let query = (supabase as any)
         .from("bookings")
         .select(`
           *,
@@ -93,7 +93,7 @@ export const useBooking = (id: string) => {
   return useQuery({
     queryKey: ["booking", id],
     queryFn: async (): Promise<Booking | null> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("bookings")
         .select(`
           *,
@@ -120,7 +120,7 @@ export const useCreateBooking = () => {
   return useMutation({
     mutationFn: async (bookingData: CreateBookingData): Promise<Booking> => {
       // Call secure RPC function using rpc with proper typing
-      const { data: bookingId, error } = await supabase.rpc('create_booking' as any, {
+      const { data: bookingId, error } = await (supabase as any).rpc('create_booking' as any, {
         payload: {
           space_id: bookingData.space_id,
           lead_id: bookingData.lead_id,
@@ -138,7 +138,7 @@ export const useCreateBooking = () => {
       }
 
       // Fetch the created booking with joins
-      const { data: booking, error: fetchError } = await supabase
+      const { data: booking, error: fetchError } = await (supabase as any)
         .from("bookings")
         .select(`
           *,
@@ -195,7 +195,7 @@ export const useUpdateBooking = (id: string) => {
   return useMutation({
     mutationFn: async (updates: UpdateBookingData): Promise<Booking> => {
       // Call secure RPC function
-      const { error } = await supabase.rpc('update_booking' as any, {
+      const { error } = await (supabase as any).rpc('update_booking' as any, {
         p_id: id,
         patch: updates
       });
@@ -206,7 +206,7 @@ export const useUpdateBooking = (id: string) => {
       }
 
       // Fetch the updated booking with joins
-      const { data: booking, error: fetchError } = await supabase
+      const { data: booking, error: fetchError } = await (supabase as any)
         .from("bookings")
         .select(`
           *,
@@ -264,7 +264,7 @@ export const useDeleteBooking = () => {
 
   return useMutation({
     mutationFn: async (id: string): Promise<void> => {
-      const { error } = await supabase.rpc('delete_booking' as any, {
+      const { error } = await (supabase as any).rpc('delete_booking' as any, {
         p_id: id
       });
 

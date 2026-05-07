@@ -59,7 +59,7 @@ export const useMemberMoments = () => {
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       
       // First get moments
-      const { data: momentsData, error: momentsError } = await supabase
+      const { data: momentsData, error: momentsError } = await (supabase as any)
         .from('member_moments')
         .select('*')
         .eq('moderation_status', 'approved')
@@ -79,7 +79,7 @@ export const useMemberMoments = () => {
       const userIds = [...new Set(momentsData?.map(moment => moment.user_id) || [])];
       
       // Get profiles for those users
-      const { data: profilesData, error: profilesError } = await supabase
+      const { data: profilesData, error: profilesError } = await (supabase as any)
         .from('profiles')
         .select('user_id, first_name, last_name')
         .in('user_id', userIds);
@@ -92,7 +92,7 @@ export const useMemberMoments = () => {
       const momentIds = momentsData?.map(moment => moment.id) || [];
       
       // Get like counts
-      const { data: likeCounts, error: likeCountError } = await supabase
+      const { data: likeCounts, error: likeCountError } = await (supabase as any)
         .from('moment_likes')
         .select('moment_id')
         .in('moment_id', momentIds);
@@ -100,7 +100,7 @@ export const useMemberMoments = () => {
       // Get user's likes if authenticated
       let userLikes: any[] = [];
       if (currentUser) {
-        const { data: userLikesData, error: userLikesError } = await supabase
+        const { data: userLikesData, error: userLikesError } = await (supabase as any)
           .from('moment_likes')
           .select('moment_id')
           .eq('user_id', currentUser.id)
@@ -110,7 +110,7 @@ export const useMemberMoments = () => {
       }
 
       // Get likers with profiles for tooltips
-      const { data: likersData, error: likersError } = await supabase
+      const { data: likersData, error: likersError } = await (supabase as any)
         .from('moment_likes')
         .select(`
           moment_id,
@@ -459,7 +459,7 @@ export const useMemberMoments = () => {
         throw sessionError;
       }
       
-      const { data: insertedMoment, error: insertError } = await supabase
+      const { data: insertedMoment, error: insertError } = await (supabase as any)
         .from('member_moments')
         .insert([momentData])
         .select('*')
@@ -550,7 +550,7 @@ export const useMemberMoments = () => {
 
   const deleteMoment = async (momentId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('member_moments')
         .delete()
         .eq('id', momentId);
@@ -592,7 +592,7 @@ export const useMemberMoments = () => {
         tags: tags.filter(tag => tag.trim().length > 0)
       };
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('member_moments')
         .update(updateData)
         .eq('id', momentId)
@@ -629,7 +629,7 @@ export const useMemberMoments = () => {
         return;
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('moment_likes')
         .insert([{ moment_id: momentId, user_id: user.id }]);
 
@@ -685,7 +685,7 @@ export const useMemberMoments = () => {
         return;
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('moment_likes')
         .delete()
         .eq('moment_id', momentId)

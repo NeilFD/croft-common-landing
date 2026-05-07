@@ -36,7 +36,7 @@ export const EditBookingDialog = ({ eventId, booking, open, onOpenChange }: Edit
   const { data: spaces } = useQuery({
     queryKey: ['spaces'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('spaces')
         .select('*')
         .order('name');
@@ -71,7 +71,7 @@ export const EditBookingDialog = ({ eventId, booking, open, onOpenChange }: Edit
     setLoading(true);
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('bookings')
         .update({
           space_id: formData.space_id,
@@ -101,7 +101,7 @@ export const EditBookingDialog = ({ eventId, booking, open, onOpenChange }: Edit
     setDeleteLoading(true);
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('bookings')
         .delete()
         .eq('id', booking.id);

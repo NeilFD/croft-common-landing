@@ -59,7 +59,7 @@ export const WalkHistoryCard: React.FC<WalkHistoryCardProps> = ({
       const walkDateStr = (walkCard.date || '').slice(0, 10) || new Date(walkCard.created_at).toISOString().slice(0, 10);
       
       // Get all entries for this walk card
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('walk_entries')
         .select('*')
         .eq('walk_card_id', walkCard.id)

@@ -90,7 +90,7 @@ export const useLeads = (filters?: {
   return useQuery({
     queryKey: ['leads', filters],
     queryFn: async (): Promise<LeadWithSpace[]> => {
-      let query = supabase
+      let query = (supabase as any)
         .from('leads')
         .select(`
           *,
@@ -140,7 +140,7 @@ export const useLead = (leadId: string) => {
   return useQuery({
     queryKey: ['leads', leadId],
     queryFn: async (): Promise<LeadWithSpace | null> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('leads')
         .select(`
           *,
@@ -164,7 +164,7 @@ export const useLeadActivity = (leadId: string) => {
   return useQuery({
     queryKey: ['lead-activity', leadId],
     queryFn: async (): Promise<LeadActivity[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('lead_activity')
         .select('*')
         .eq('lead_id', leadId)
@@ -186,7 +186,7 @@ export const useCreateLead = () => {
 
   return useMutation({
     mutationFn: async (payload: CreateLeadPayload): Promise<string> => {
-      const { data, error } = await supabase.rpc('create_lead', { 
+      const { data, error } = await (supabase as any).rpc('create_lead', { 
         payload: payload as any,
         client_ip: 'management_interface'
       });
@@ -239,7 +239,7 @@ export const useUpdateLead = () => {
 
   return useMutation({
     mutationFn: async ({ leadId, patch }: { leadId: string; patch: Partial<Lead> }) => {
-      const { error } = await supabase.rpc('update_lead', {
+      const { error } = await (supabase as any).rpc('update_lead', {
         lead_id_param: leadId,
         patch: patch,
       });
@@ -266,7 +266,7 @@ export const useAddLeadNote = () => {
 
   return useMutation({
     mutationFn: async ({ leadId, body }: { leadId: string; body: string }) => {
-      const { error } = await supabase.rpc('add_lead_note', {
+      const { error } = await (supabase as any).rpc('add_lead_note', {
         lead_id_param: leadId,
         note_body: body,
       });
@@ -291,7 +291,7 @@ export const useReassignLead = () => {
 
   return useMutation({
     mutationFn: async ({ leadId, ownerId }: { leadId: string; ownerId: string }) => {
-      const { error } = await supabase.rpc('reassign_lead', {
+      const { error } = await (supabase as any).rpc('reassign_lead', {
         lead_id_param: leadId,
         new_owner_id: ownerId,
       });

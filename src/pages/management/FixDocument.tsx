@@ -29,7 +29,7 @@ export default function FixDocument() {
     setLoading(true);
     try {
       // 1) Find the doc and file
-      const { data: doc, error: docErr } = await supabase
+      const { data: doc, error: docErr } = await (supabase as any)
         .from('ck_docs')
         .select(`id, slug, version_current_id, ck_files (storage_path, filename, mime) `)
         .eq('slug', 'croft-common-hospitality-300925')
@@ -58,7 +58,7 @@ export default function FixDocument() {
       }
 
       // 4) Update via SECURITY DEFINER RPC
-      const { error: rpcErr } = await supabase.rpc('admin_update_doc_content', {
+      const { error: rpcErr } = await (supabase as any).rpc('admin_update_doc_content', {
         p_version_id: versionId,
         p_content_md: extractedText,
         p_summary: extractedText.substring(0, 500)

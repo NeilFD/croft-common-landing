@@ -62,7 +62,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   const loadStatus = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_cinema_status');
+      const { data, error } = await (supabase as any).rpc('get_cinema_status');
       if (error) throw error;
       // RPC returns a setof rows; always handle as an array
       const rows = (data as unknown as CinemaStatus[]) ?? [];
@@ -119,7 +119,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
 
     setBooking(true);
     try {
-      const { data, error } = await supabase.rpc('create_cinema_booking', {
+      const { data, error } = await (supabase as any).rpc('create_cinema_booking', {
         _user_id: user.id,
         _email: user.email,
         _primary_name: primaryName.trim(),

@@ -38,7 +38,7 @@ export const FAQManager = ({ page, onPublish }: FAQManagerProps) => {
 
   const fetchFAQs = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_faq_content')
         .select('*')
         .eq('page', page)
@@ -60,7 +60,7 @@ export const FAQManager = ({ page, onPublish }: FAQManagerProps) => {
 
   const handleSave = async (faq: FAQItem) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_faq_content')
         .update({
           question: faq.question,
@@ -91,7 +91,7 @@ export const FAQManager = ({ page, onPublish }: FAQManagerProps) => {
     try {
       const maxOrder = Math.max(...faqs.map(f => f.sort_order), 0);
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_faq_content')
         .insert({
           ...newFAQ,
@@ -126,7 +126,7 @@ export const FAQManager = ({ page, onPublish }: FAQManagerProps) => {
 
   const handleDelete = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_faq_content')
         .delete()
         .eq('id', id);
@@ -167,7 +167,7 @@ export const FAQManager = ({ page, onPublish }: FAQManagerProps) => {
 
     try {
       for (const update of updates) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('cms_faq_content')
           .update({ sort_order: update.sort_order })
           .eq('id', update.id);

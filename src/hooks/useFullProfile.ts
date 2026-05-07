@@ -46,7 +46,7 @@ export const useFullProfile = () => {
       setError(null);
 
       // Fetch basic profile data
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await (supabase as any)
         .from('profiles')
         .select('*')
         .eq('user_id', user.id)
@@ -57,7 +57,7 @@ export const useFullProfile = () => {
       }
 
       // Fetch extended profile data
-      const { data: extendedData, error: extendedError } = await supabase
+      const { data: extendedData, error: extendedError } = await (supabase as any)
         .from('member_profiles_extended')
         .select('*')
         .eq('user_id', user.id)
@@ -124,7 +124,7 @@ export const useFullProfile = () => {
 
       // Update profiles table if needed
       if (Object.keys(profileUpdates).length > 0) {
-        const { error: profileError } = await supabase
+        const { error: profileError } = await (supabase as any)
           .from('profiles')
           .upsert({ user_id: user.id, ...profileUpdates }, { onConflict: 'user_id' });
 
@@ -133,7 +133,7 @@ export const useFullProfile = () => {
 
       // Update member_profiles_extended table if needed
       if (Object.keys(extendedUpdates).length > 0) {
-        const { error: extendedError } = await supabase
+        const { error: extendedError } = await (supabase as any)
           .from('member_profiles_extended')
           .upsert({ user_id: user.id, ...extendedUpdates }, { onConflict: 'user_id' });
 

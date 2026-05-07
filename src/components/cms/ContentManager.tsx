@@ -39,7 +39,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
 
   const fetchContent = async () => {
     try {
-      let query = supabase
+      let query = (supabase as any)
         .from('cms_content')
         .select('*');
 
@@ -73,7 +73,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
       // Clean the text before saving
       const cleanedText = sanitizeContentText(newText);
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_content')
         .update({
           content_data: { text: cleanedText },
@@ -112,7 +112,7 @@ const ContentManager = ({ page: selectedPage, pageTitle, section: selectedSectio
       const { success, failed } = await bulkCleanContent(
         records,
         async (id, cleanedContent) => {
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from('cms_content')
             .update({
               content_data: { text: cleanedContent },

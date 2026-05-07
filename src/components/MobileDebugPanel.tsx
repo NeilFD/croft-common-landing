@@ -26,7 +26,7 @@ export function MobileDebugPanel({ sessionId }: MobileDebugPanelProps) {
   const fetchLogs = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('mobile_debug_logs')
         .select('*')
         .eq('session_id', sessionId)
@@ -44,7 +44,7 @@ export function MobileDebugPanel({ sessionId }: MobileDebugPanelProps) {
 
   const clearLogs = async () => {
     try {
-      await supabase
+      await (supabase as any)
         .from('mobile_debug_logs')
         .delete()
         .eq('session_id', sessionId);

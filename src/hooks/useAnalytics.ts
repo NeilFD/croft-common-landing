@@ -60,7 +60,7 @@ export const useAnalytics = () => {
             const deviceInfo = getDeviceInfo();
             const referrer = document.referrer || null;
             
-            await supabase.from('user_sessions').upsert({
+            await (supabase as any).from('user_sessions').upsert({
               session_id: sessionId,
               user_id: user?.id || null,
               started_at: new Date().toISOString(),
@@ -84,7 +84,7 @@ export const useAnalytics = () => {
             const deviceInfo = getDeviceInfo();
             const referrer = document.referrer || null;
             
-            await supabase.from('user_sessions').upsert({
+            await (supabase as any).from('user_sessions').upsert({
               session_id: sessionId,
               user_id: user?.id || null,
               started_at: new Date().toISOString(),
@@ -118,7 +118,7 @@ export const useAnalytics = () => {
         if (lastPagePath.current && lastPagePath.current !== currentPath) {
           const timeSpent = Math.round((currentTime - pageStartTime.current) / 1000);
           
-          await supabase.from('page_views').update({
+          await (supabase as any).from('page_views').update({
             time_spent_seconds: timeSpent,
             scroll_depth_percent: maxScrollDepth.current,
             is_bounce: timeSpent < 5 // Consider less than 5 seconds a bounce
@@ -128,7 +128,7 @@ export const useAnalytics = () => {
             .limit(1);
           
           // Track user journey
-          await supabase.from('user_journeys').insert({
+          await (supabase as any).from('user_journeys').insert({
             session_id: sessionId,
             user_id: user?.id || null,
             from_page: lastPagePath.current,
@@ -138,7 +138,7 @@ export const useAnalytics = () => {
         }
         
         // Track new page view
-        await supabase.from('page_views').insert({
+        await (supabase as any).from('page_views').insert({
           session_id: sessionId,
           user_id: user?.id || null,
           page_path: currentPath,
@@ -188,7 +188,7 @@ export const useAnalytics = () => {
     additionalData?: any
   ) => {
     try {
-      await supabase.from('user_interactions').insert({
+      await (supabase as any).from('user_interactions').insert({
         session_id: sessionId,
         user_id: user?.id || null,
         page_path: location.pathname,
@@ -351,7 +351,7 @@ export const useAnalytics = () => {
         }));
         
         // Update session end time
-        await supabase.from('user_sessions').update({
+        await (supabase as any).from('user_sessions').update({
           ended_at: new Date().toISOString()
         }).eq('session_id', sessionId);
       } catch (error) {

@@ -74,7 +74,7 @@ export const ComposeNotificationForm: React.FC<Props> = ({ onSent, editing, onCl
   useEffect(() => {
     const checkNativeDevices = async () => {
       try {
-        const { count, error } = await supabase
+        const { count, error } = await (supabase as any)
           .from('push_subscriptions')
           .select('id', { count: 'exact', head: true })
           .eq('is_active', true)

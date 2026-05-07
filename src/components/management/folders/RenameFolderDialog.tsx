@@ -64,7 +64,7 @@ export function RenameFolderDialog({
     try {
       const slug = generateSlug(name);
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ck_collections")
         .update({
           name: name.trim(),

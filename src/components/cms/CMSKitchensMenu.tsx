@@ -25,7 +25,7 @@ export const CMSKitchensMenu: React.FC<CMSKitchensMenuProps> = ({ tab, onDataUpd
     if (!newSectionName.trim()) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_menu_sections')
         .insert({
           page: `kitchens-${tab}`,
@@ -46,7 +46,7 @@ export const CMSKitchensMenu: React.FC<CMSKitchensMenuProps> = ({ tab, onDataUpd
 
   const handleAddItem = async (sectionId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_menu_items')
         .insert({
           section_id: sectionId,

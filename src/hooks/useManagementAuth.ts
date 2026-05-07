@@ -25,7 +25,7 @@ export const useManagementAuth = () => {
           // Get user's management role with timeout
           console.log('🔑 useManagementAuth: Fetching role for user:', session.user.id);
           
-          const rolePromise = supabase.rpc('get_user_management_role', { _user_id: session.user.id });
+          const rolePromise = (supabase as any).rpc('get_user_management_role', { _user_id: session.user.id });
           const timeoutPromise = new Promise((_, reject) => 
             setTimeout(() => reject(new Error('Role fetch timeout')), 5000)
           );
@@ -80,7 +80,7 @@ export const useManagementAuth = () => {
         // Defer role fetch to avoid blocking auth state change callback
         setTimeout(async () => {
           try {
-            const rolePromise = supabase.rpc('get_user_management_role', { _user_id: session.user.id });
+            const rolePromise = (supabase as any).rpc('get_user_management_role', { _user_id: session.user.id });
             const timeoutPromise = new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Role fetch timeout')), 5000)
             );

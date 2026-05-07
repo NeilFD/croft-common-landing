@@ -30,7 +30,7 @@ export const useCMSImages = (
     queryKey: ['cms-images', page, carouselName],
     initialData: fallbackImages, // Return fallbacks immediately for instant first paint
     queryFn: async () => {
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await (supabase as any)
         .from('cms_images')
         .select('*')
         .eq('page', page)

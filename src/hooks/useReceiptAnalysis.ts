@@ -31,7 +31,7 @@ export const useReceiptAnalysis = (dateRange?: { start?: Date; end?: Date }) => 
     const fetchAndAnalyzeReceipts = async () => {
       try {
         // Get deep dive data which includes fuzzy-matched individual items
-        const { data, error } = await supabase.rpc('get_member_deep_dive', {
+        const { data, error } = await (supabase as any).rpc('get_member_deep_dive', {
           p_user_id: user.id
         });
 
@@ -49,7 +49,7 @@ export const useReceiptAnalysis = (dateRange?: { start?: Date; end?: Date }) => 
         // Apply date range filtering if provided
         if (dateRange?.start || dateRange?.end) {
           // If date filtering is needed, we need to get receipts and filter
-          let receiptQuery = supabase
+          let receiptQuery = (supabase as any)
             .from('member_receipts')
             .select('items, receipt_date')
             .eq('user_id', user.id)

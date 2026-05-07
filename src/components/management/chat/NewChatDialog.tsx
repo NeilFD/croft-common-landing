@@ -27,7 +27,7 @@ export const NewChatDialog = ({ open, onOpenChange, onChatCreated }: NewChatDial
     setCreating(true);
     try {
       // Use the secure RPC function to create chat and add creator as admin
-      const { data: newChatId, error } = await supabase
+      const { data: newChatId, error } = await (supabase as any)
         .rpc('create_group_chat', {
           p_name: chatName.trim()
         });

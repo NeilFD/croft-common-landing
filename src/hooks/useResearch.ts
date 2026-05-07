@@ -68,7 +68,7 @@ export const useResearch = () => {
   // Fetch geo areas
   const fetchGeoAreas = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('geo_areas')
         .select('*')
         .eq('is_active', true)
@@ -85,7 +85,7 @@ export const useResearch = () => {
   // Fetch venues
   const fetchVenues = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('venues')
         .select('*')
         .eq('is_active', true)
@@ -102,7 +102,7 @@ export const useResearch = () => {
   // Fetch walk cards
   const fetchWalkCards = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('walk_cards')
         .select('*')
         .order('created_at', { ascending: false });
@@ -118,7 +118,7 @@ export const useResearch = () => {
   // Fetch walk entries for a specific card
   const fetchWalkEntries = useCallback(async (walkCardId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('walk_entries')
         .select('*')
         .eq('walk_card_id', walkCardId);
@@ -134,7 +134,7 @@ export const useResearch = () => {
   // Fetch all walk entries for analysis
   const fetchAllWalkEntries = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('walk_entries')
         .select('*')
         .order('recorded_at', { ascending: false });
@@ -151,7 +151,7 @@ export const useResearch = () => {
   const recalculateAllCapacityPercentages = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase.rpc('recalculate_all_capacity_percentages');
+      const { data, error } = await (supabase as any).rpc('recalculate_all_capacity_percentages');
       
       if (error) throw error;
       
@@ -181,7 +181,7 @@ export const useResearch = () => {
   // Fetch geo areas for a walk card
   const fetchWalkCardGeoAreas = useCallback(async (walkCardId: string): Promise<GeoArea[]> => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('walk_card_geo_areas')
         .select(`
           geo_area_id,
@@ -206,7 +206,7 @@ export const useResearch = () => {
   // Add geo area to walk card
   const addGeoAreaToWalkCard = async (walkCardId: string, geoAreaId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('walk_card_geo_areas')
         .insert({ walk_card_id: walkCardId, geo_area_id: geoAreaId });
       
@@ -221,7 +221,7 @@ export const useResearch = () => {
   // Remove geo area from walk card
   const removeGeoAreaFromWalkCard = async (walkCardId: string, geoAreaId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('walk_card_geo_areas')
         .delete()
         .eq('walk_card_id', walkCardId)
@@ -246,7 +246,7 @@ export const useResearch = () => {
       // Generate title if not provided
       const title = cardData.title || `${cardData.date} ${cardData.time_block}`;
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('walk_cards')
         .insert({
           date: cardData.date!,
@@ -270,7 +270,7 @@ export const useResearch = () => {
           geo_area_id: geoAreaId
         }));
 
-        const { error: linkError } = await supabase
+        const { error: linkError } = await (supabase as any)
           .from('walk_card_geo_areas')
           .insert(geoAreaLinks);
 
@@ -301,7 +301,7 @@ export const useResearch = () => {
         updates.completed_at = new Date().toISOString();
       }
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('walk_cards')
         .update(updates)
         .eq('id', cardId);
@@ -323,7 +323,7 @@ export const useResearch = () => {
     try {
       setLoading(true);
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('walk_cards')
         .update(updates)
         .eq('id', cardId);
@@ -358,7 +358,7 @@ export const useResearch = () => {
         console.log('🔍 No visit number provided, querying for max visit number...');
         
         // Query database directly to get the current maximum visit number for this venue and walk card
-        const { data: existingEntries, error: queryError } = await supabase
+        const { data: existingEntries, error: queryError } = await (supabase as any)
           .from('walk_entries')
           .select('visit_number')
           .eq('venue_id', entryData.venue_id!)
@@ -396,7 +396,7 @@ export const useResearch = () => {
       
       console.log('💾 Upserting walk entry:', finalEntry);
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('walk_entries')
         .upsert(finalEntry, {
           onConflict: 'walk_card_id,venue_id,visit_number'
@@ -428,7 +428,7 @@ export const useResearch = () => {
   const createGeoArea = async (name: string) => {
     try {
       setLoading(true);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('geo_areas')
         .insert({ name });
       
@@ -448,7 +448,7 @@ export const useResearch = () => {
   const createVenue = async (venueData: { name: string; geo_area_id: string; address?: string | null; max_capacity?: number | null }) => {
     try {
       setLoading(true);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('venues')
         .insert(venueData);
       
@@ -468,7 +468,7 @@ export const useResearch = () => {
   const updateVenue = async (venueId: string, updates: Partial<Venue>) => {
     try {
       setLoading(true);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('venues')
         .update(updates)
         .eq('id', venueId);
@@ -493,7 +493,7 @@ export const useResearch = () => {
 
     try {
       setLoading(true);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('venues')
         .update({ is_active: false })
         .eq('id', venueId);
@@ -516,7 +516,7 @@ export const useResearch = () => {
   const updateGeoArea = async (areaId: string, updates: Partial<GeoArea>) => {
     try {
       setLoading(true);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('geo_areas')
         .update(updates)
         .eq('id', areaId);
@@ -540,7 +540,7 @@ export const useResearch = () => {
     setGeoAreas((prev) => prev.filter((a) => a.id !== areaId));
     try {
       setLoading(true);
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('geo_areas')
         .update({ is_active: false })
         .eq('id', areaId);
@@ -567,7 +567,7 @@ export const useResearch = () => {
       console.log('Attempting to delete walk card:', cardId);
       
       // First, delete associated walk entries
-      const { error: entriesError } = await supabase
+      const { error: entriesError } = await (supabase as any)
         .from('walk_entries')
         .delete()
         .eq('walk_card_id', cardId);
@@ -578,7 +578,7 @@ export const useResearch = () => {
       }
       
       // Delete associated geo area links
-      const { error: geoLinksError } = await supabase
+      const { error: geoLinksError } = await (supabase as any)
         .from('walk_card_geo_areas')
         .delete()
         .eq('walk_card_id', cardId);
@@ -589,7 +589,7 @@ export const useResearch = () => {
       }
       
       // Finally delete the walk card
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('walk_cards')
         .delete()
         .eq('id', cardId);

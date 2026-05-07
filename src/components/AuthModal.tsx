@@ -24,7 +24,7 @@ interface AuthModalProps {
 }
 
 const validateEmailDomain = async (email: string): Promise<boolean> => {
-  const { data, error } = await supabase.rpc('is_email_domain_allowed', {
+  const { data, error } = await (supabase as any).rpc('is_email_domain_allowed', {
     email: email
   });
   

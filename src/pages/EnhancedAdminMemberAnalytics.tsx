@@ -127,7 +127,7 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
           console.warn('member-analytics edge function fallback failed, trying direct RPC...', e);
         }
         // Then direct RPC as last resort
-        const { data: basicRpc, error: basicRpcError } = await supabase.rpc('get_member_analytics');
+        const { data: basicRpc, error: basicRpcError } = await (supabase as any).rpc('get_member_analytics');
         if (basicRpcError) {
           console.error('Basic RPC fallback error:', basicRpcError);
           return [];
@@ -169,7 +169,7 @@ const EnhancedAdminMemberAnalytics: React.FC = () => {
         }
       } else {
         console.warn('Edge function failed or returned no data, falling back to direct RPC...', error);
-        const { data: rpcData, error: rpcError } = await supabase.rpc('get_advanced_member_analytics', {
+        const { data: rpcData, error: rpcError } = await (supabase as any).rpc('get_advanced_member_analytics', {
           p_date_start: filters.dateStart ? filters.dateStart.toISOString().split('T')[0] : null,
           p_date_end: filters.dateEnd ? filters.dateEnd.toISOString().split('T')[0] : null,
           p_min_age: filters.minAge || null,

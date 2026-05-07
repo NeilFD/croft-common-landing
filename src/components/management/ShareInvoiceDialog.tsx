@@ -69,7 +69,7 @@ export const ShareInvoiceDialog: React.FC<ShareInvoiceDialogProps> = ({
       const pdfUrl = signedUrlData?.signedUrl || pdfData.pdfUrl;
 
       // Update invoice status to sent with metadata
-      await supabase
+      await (supabase as any)
         .from('invoices')
         .update({
           status: 'sent',

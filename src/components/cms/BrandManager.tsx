@@ -41,8 +41,8 @@ const BrandManager = () => {
   const fetchBrandData = async () => {
     try {
       const [brandResponse, tokensResponse] = await Promise.all([
-        supabase.from('cms_brand_assets').select('*').order('asset_type'),
-        supabase.from('cms_design_tokens').select('*').order('token_type')
+        (supabase as any).from('cms_brand_assets').select('*').order('asset_type'),
+        (supabase as any).from('cms_design_tokens').select('*').order('token_type')
       ]);
 
       if (brandResponse.error) throw brandResponse.error;
@@ -60,7 +60,7 @@ const BrandManager = () => {
 
   const updateBrandAsset = async (assetId: string, updates: Partial<BrandAsset>) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_brand_assets')
         .update(updates)
         .eq('id', assetId);
@@ -80,7 +80,7 @@ const BrandManager = () => {
 
   const updateDesignToken = async (tokenId: string, updates: Partial<DesignToken>) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_design_tokens')
         .update(updates)
         .eq('id', tokenId);

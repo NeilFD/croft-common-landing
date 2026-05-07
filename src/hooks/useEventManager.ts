@@ -99,7 +99,7 @@ export const useEventManager = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('events')
         .select('*')
         .order('date', { ascending: true });
@@ -162,7 +162,7 @@ export const useEventManager = () => {
       };
 
       console.log('Inserting event to database:', dbEvent);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('events')
         .insert([dbEvent])
         .select()
@@ -243,7 +243,7 @@ export const useEventManager = () => {
 
       const dbEventData = transformEventForDb(eventData as Omit<Event, 'id'>);
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('events')
         .update(dbEventData)
         .eq('id', id)
@@ -290,7 +290,7 @@ export const useEventManager = () => {
         return;
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('events')
         .delete()
         .eq('id', id)

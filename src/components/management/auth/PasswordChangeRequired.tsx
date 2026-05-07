@@ -56,7 +56,7 @@ const PasswordChangeRequired = () => {
       if (error) throw error;
 
       // Mark password as changed
-      await supabase.rpc('mark_password_changed');
+      await (supabase as any).rpc('mark_password_changed');
 
       toast({
         title: 'Password updated',

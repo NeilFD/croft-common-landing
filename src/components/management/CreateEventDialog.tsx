@@ -78,7 +78,7 @@ export const CreateEventDialog = ({ open, onOpenChange, leadId }: CreateEventDia
       // Parse budget number from text
       const budgetNumber = formData.budget ? parseFloat(formData.budget.replace(/[£,\s-]/g, '').split(' ')[0]) || null : null;
       
-      const { data: eventId, error } = await supabase.rpc('create_management_event', {
+      const { data: eventId, error } = await (supabase as any).rpc('create_management_event', {
         p_event_type: formData.event_type || null,
         p_headcount: formData.headcount ? parseInt(formData.headcount) : null,
         p_notes: formData.notes || null,

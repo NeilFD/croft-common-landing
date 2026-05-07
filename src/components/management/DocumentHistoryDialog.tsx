@@ -24,7 +24,7 @@ export function DocumentHistoryDialog({
   const { data: versions, isLoading } = useQuery({
     queryKey: ["doc-versions", docId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("ck_doc_versions")
         .select(`
           *,

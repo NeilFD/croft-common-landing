@@ -22,7 +22,7 @@ export function FeedbackAnalytics({ data, dateRange }: FeedbackAnalyticsProps) {
     queryFn: async () => {
       const today = new Date().toISOString().split('T')[0];
       
-      const { data: report, error } = await supabase
+      const { data: report, error } = await (supabase as any)
         .from('feedback_daily_reports')
         .select('*')
         .eq('report_date', today)

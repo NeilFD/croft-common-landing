@@ -87,7 +87,7 @@ export function DocumentEditDialog({
   const handleSave = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ck_docs")
         .update({
           title: formData.title,
@@ -122,7 +122,7 @@ export function DocumentEditDialog({
     setLoading(true);
     try {
       // Delete associated files from storage
-      const { data: files } = await supabase
+      const { data: files } = await (supabase as any)
         .from("ck_files")
         .select("storage_path")
         .eq("doc_id", document.id);
@@ -133,7 +133,7 @@ export function DocumentEditDialog({
       }
 
       // Delete document (cascade will handle related records)
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ck_docs")
         .delete()
         .eq("id", document.id);

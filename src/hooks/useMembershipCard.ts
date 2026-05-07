@@ -30,7 +30,7 @@ export const useMembershipCard = () => {
       setError(null);
 
       // First, ensure the user has a membership number
-      const { data: membershipNumber, error: ensureError } = await supabase
+      const { data: membershipNumber, error: ensureError } = await (supabase as any)
         .rpc('ensure_membership_number', { user_id_input: user.id });
 
       if (ensureError) {
@@ -40,7 +40,7 @@ export const useMembershipCard = () => {
       }
 
       // Then fetch the full card details
-      const { data, error: fetchError } = await supabase
+      const { data, error: fetchError } = await (supabase as any)
         .rpc('get_membership_card_details', { user_id_input: user.id });
 
       if (fetchError) {

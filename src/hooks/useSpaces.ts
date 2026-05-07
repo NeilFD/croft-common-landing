@@ -72,7 +72,7 @@ export const useSpaces = () => {
   return useQuery({
     queryKey: ['spaces'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('spaces')
         .select('*')
         .order('display_order', { ascending: true });
@@ -87,7 +87,7 @@ export const useActiveSpaces = () => {
   return useQuery({
     queryKey: ['spaces', 'active'],
     queryFn: async (): Promise<Space[]> => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('spaces')
         .select('*')
         .eq('is_active', true)
@@ -106,7 +106,7 @@ export const useSpace = (id: string) => {
   return useQuery({
     queryKey: ['space', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('spaces')
         .select('*')
         .eq('id', id)
@@ -123,7 +123,7 @@ export const useSpaceHours = (spaceId: string) => {
   return useQuery({
     queryKey: ['space-hours', spaceId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('space_hours')
         .select('*')
         .eq('space_id', spaceId)
@@ -141,7 +141,7 @@ export const useCreateSpace = () => {
   
   return useMutation({
     mutationFn: async (data: CreateSpaceData) => {
-      const { data: space, error } = await supabase
+      const { data: space, error } = await (supabase as any)
         .from('spaces')
         .insert(data)
         .select()
@@ -150,7 +150,7 @@ export const useCreateSpace = () => {
       if (error) throw error;
 
       // Log audit entry
-      await supabase.rpc('log_audit_entry', {
+      await (supabase as any).rpc('log_audit_entry', {
         _action: 'CREATE',
         _entity: 'spaces',
         _entity_id: space.id,
@@ -181,7 +181,7 @@ export const useUpdateSpace = () => {
   
   return useMutation({
     mutationFn: async ({ id, ...data }: UpdateSpaceData) => {
-      const { data: space, error } = await supabase
+      const { data: space, error } = await (supabase as any)
         .from('spaces')
         .update(data)
         .eq('id', id)
@@ -191,7 +191,7 @@ export const useUpdateSpace = () => {
       if (error) throw error;
 
       // Log audit entry
-      await supabase.rpc('log_audit_entry', {
+      await (supabase as any).rpc('log_audit_entry', {
         _action: 'UPDATE',
         _entity: 'spaces',
         _entity_id: id,
@@ -223,7 +223,7 @@ export const useDeleteSpace = () => {
   
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('spaces')
         .delete()
         .eq('id', id);
@@ -231,7 +231,7 @@ export const useDeleteSpace = () => {
       if (error) throw error;
 
       // Log audit entry
-      await supabase.rpc('log_audit_entry', {
+      await (supabase as any).rpc('log_audit_entry', {
         _action: 'DELETE',
         _entity: 'spaces',
         _entity_id: id
@@ -269,7 +269,7 @@ export const useUpdateSpaceHours = () => {
         buffer_after_min: hour.buffer_after_min || 0
       }));
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('space_hours')
         .upsert(updates, { onConflict: 'space_id,day_of_week' })
         .select();
@@ -277,7 +277,7 @@ export const useUpdateSpaceHours = () => {
       if (error) throw error;
 
       // Log audit entry
-      await supabase.rpc('log_audit_entry', {
+      await (supabase as any).rpc('log_audit_entry', {
         _action: 'UPDATE',
         _entity: 'space_hours',
         _entity_id: spaceId,

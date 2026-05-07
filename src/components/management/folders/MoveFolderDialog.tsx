@@ -51,7 +51,7 @@ export function MoveFolderDialog({
   const handleMove = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ck_docs")
         .update({
           collection_id: selectedFolderId,

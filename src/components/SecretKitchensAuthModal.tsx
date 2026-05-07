@@ -30,7 +30,7 @@ export const SecretKitchensAuthModal = ({
   const { user, refreshSession } = useAuth();
 
   const validateSecretKitchensAccess = async (email: string): Promise<boolean> => {
-    const { data, error } = await supabase.rpc('check_secret_kitchen_access_status', {
+    const { data, error } = await (supabase as any).rpc('check_secret_kitchen_access_status', {
       user_email: email
     });
     

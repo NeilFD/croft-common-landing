@@ -11,7 +11,7 @@ export const useDraftContent = (page: string) => {
       console.log('🎯 useDraftContent: Fetching draft count for page:', page);
       
       // Count page-specific drafts
-      const { count: pageCount, error: pageError } = await supabase
+      const { count: pageCount, error: pageError } = await (supabase as any)
         .from('cms_content')
         .select('*', { count: 'exact', head: true })
         .eq('page', page)
@@ -23,7 +23,7 @@ export const useDraftContent = (page: string) => {
       }
 
       // Count global content drafts (affects all pages)
-      const { count: globalCount, error: globalError } = await supabase
+      const { count: globalCount, error: globalError } = await (supabase as any)
         .from('cms_global_content')
         .select('*', { count: 'exact', head: true })
         .eq('published', false);
@@ -48,7 +48,7 @@ export const useDraftContent = (page: string) => {
       console.log('🎯 useDraftContent: Publishing drafts for page:', page);
       
       // Publish page-specific drafts
-      const { error: pageError } = await supabase
+      const { error: pageError } = await (supabase as any)
         .from('cms_content')
         .update({ published: true })
         .eq('page', page)
@@ -60,7 +60,7 @@ export const useDraftContent = (page: string) => {
       }
 
       // Publish global content drafts
-      const { error: globalError } = await supabase
+      const { error: globalError } = await (supabase as any)
         .from('cms_global_content')
         .update({ published: true })
         .eq('published', false);

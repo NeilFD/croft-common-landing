@@ -80,7 +80,7 @@ export const GranularAnalytics: React.FC = () => {
   const { data: buttonClicksData, isLoading: buttonClicksLoading } = useQuery({
     queryKey: ['detailed-button-clicks', timeRange, selectedPage, searchTerm],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('user_interactions')
         .select('*')
         .eq('interaction_type', 'button_click');
@@ -111,7 +111,7 @@ export const GranularAnalytics: React.FC = () => {
   const { data: gesturesData, isLoading: gesturesLoading } = useQuery({
     queryKey: ['detailed-gestures', timeRange, selectedPage],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('user_interactions')
         .select('*')
         .like('interaction_type', 'secret_gesture_%');
@@ -141,7 +141,7 @@ export const GranularAnalytics: React.FC = () => {
       const dateFilter = getDateFilter(timeRange);
       
       // Get page views with sessions  
-      let pageViewQuery = supabase
+      let pageViewQuery = (supabase as any)
         .from('page_views')
         .select('*');
       

@@ -30,7 +30,7 @@ export const useLedgerPassword = () => {
     console.log('Checking password status for user:', user.id);
     
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('ledger_passwords')
         .select('*')
         .eq('user_id', user.id)
@@ -60,7 +60,7 @@ export const useLedgerPassword = () => {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('set_ledger_password', {
+      const { data, error } = await (supabase as any).rpc('set_ledger_password', {
         user_id_input: user.id,
         password_input: password
       });
@@ -89,7 +89,7 @@ export const useLedgerPassword = () => {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('validate_ledger_password', {
+      const { data, error } = await (supabase as any).rpc('validate_ledger_password', {
         user_id_input: user.id,
         password_input: password
       });

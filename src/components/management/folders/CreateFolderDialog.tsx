@@ -54,7 +54,7 @@ export function CreateFolderDialog({
       const slug = generateSlug(name);
       const { data: user } = await supabase.auth.getUser();
 
-      const { error } = await supabase.from("ck_collections").insert({
+      const { error } = await (supabase as any).from("ck_collections").insert({
         name: name.trim(),
         slug,
         parent_id: parentId,

@@ -237,7 +237,7 @@ export const AdminNotificationsApp: React.FC = () => {
       // Test database session after auth change
       if (session?.user) {
         try {
-          const { data: testData, error: testError } = await supabase
+          const { data: testData, error: testError } = await (supabase as any)
             .from('member_moments')
             .select('id')
             .limit(1);
@@ -277,7 +277,7 @@ export const AdminNotificationsApp: React.FC = () => {
         // Test database session on initial load
         if (session?.user) {
           try {
-            const { data: testData, error: testError } = await supabase
+            const { data: testData, error: testError } = await (supabase as any)
               .from('member_moments')
               .select('id')
               .limit(1);
@@ -317,7 +317,7 @@ export const AdminNotificationsApp: React.FC = () => {
     queryKey: ["notification", selectedId],
     enabled: !!selectedId,
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("notifications")
         .select("id, title, body, url, icon, badge, scope, dry_run, status, scheduled_for, schedule_timezone, repeat_rule, repeat_until, occurrences_limit")
         .eq("id", selectedId)

@@ -67,7 +67,7 @@ export const useCMSContentBatch = (queries: BatchQuery[]) => {
           }
 
           const queryPromise = (async () => {
-            let dbQuery = supabase
+            let dbQuery = (supabase as any)
               .from('cms_content')
               .select('*')
               .eq('page', query.page)

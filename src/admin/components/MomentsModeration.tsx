@@ -74,7 +74,7 @@ const MomentsModeration: React.FC = () => {
       try {
         console.log('🔍 MomentsModeration: Fetching moments with status:', selectedStatus);
         
-        let query = supabase
+        let query = (supabase as any)
           .from('member_moments')
           .select('*')
           .order('uploaded_at', { ascending: false });
@@ -111,7 +111,7 @@ const MomentsModeration: React.FC = () => {
   // Moderation mutations
   const moderateMoment = useMutation({
     mutationFn: async ({ momentId, status, reason }: { momentId: string; status: 'approved' | 'rejected' | 'archived'; reason?: string }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('member_moments')
         .update({
           moderation_status: status,
@@ -142,7 +142,7 @@ const MomentsModeration: React.FC = () => {
 
   const toggleFeatured = useMutation({
     mutationFn: async ({ momentId, featured }: { momentId: string; featured: boolean }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('member_moments')
         .update({ is_featured: featured })
         .eq('id', momentId);
@@ -160,7 +160,7 @@ const MomentsModeration: React.FC = () => {
 
   const toggleVisibility = useMutation({
     mutationFn: async ({ momentId, visible }: { momentId: string; visible: boolean }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('member_moments')
         .update({ is_visible: visible })
         .eq('id', momentId);

@@ -34,7 +34,7 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.rpc('request_late_close', {
+      const { error } = await (supabase as any).rpc('request_late_close', {
         p_event: event.id,
         p_reason: requestReason
       });
@@ -56,7 +56,7 @@ export const LateCloseTab = ({ event }: LateCloseTabProps) => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.rpc('approve_late_close', {
+      const { error } = await (supabase as any).rpc('approve_late_close', {
         p_event: event.id
       });
 

@@ -64,7 +64,7 @@ export const EditContactDetailsDialog = ({ eventId, event, open, onOpenChange }:
         client_phone: formData.client_phone.trim() || null
       };
 
-      const { error } = await supabase.rpc('update_management_event', {
+      const { error } = await (supabase as any).rpc('update_management_event', {
         p_id: eventId,
         patch: updateData
       });

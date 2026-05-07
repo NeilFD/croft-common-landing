@@ -18,7 +18,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
   const { data: notifications, isLoading, error } = useQuery({
     queryKey: ["notifications", filterMode, archivedFilter, statusFilter],
     queryFn: async () => {
-    let q = supabase
+    let q = (supabase as any)
       .from("notifications")
       .select(
         "id, created_at, title, status, scope, dry_run, recipients_count, success_count, failed_count, sent_at, archived, scheduled_for"
@@ -51,7 +51,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
     enabled: !!notifications && notifications.length > 0,
     queryFn: async () => {
       const ids = (notifications ?? []).map((n: any) => n.id);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('notification_deliveries')
         .select('notification_id, clicked_at')
         .in('notification_id', ids)
@@ -77,7 +77,7 @@ export const NotificationsTable: React.FC<Props> = ({ onSelect, selectedId, filt
 
   const toggleArchive = async (id: string, next: boolean) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('notifications')
         .update({ archived: next } as any)
         .eq('id', id);

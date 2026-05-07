@@ -89,7 +89,7 @@ export default function CommonKnowledgeDashboard() {
       if (!user) return;
 
       // Fetch all collections
-      const { data: colls, error: collsError } = await supabase
+      const { data: colls, error: collsError } = await (supabase as any)
         .from("ck_collections")
         .select("*")
         .order("name");
@@ -98,7 +98,7 @@ export default function CommonKnowledgeDashboard() {
       setCollections(colls || []);
       
       // Fetch all documents
-      const { data: docs, error } = await supabase
+      const { data: docs, error } = await (supabase as any)
         .from("ck_docs")
         .select("*")
         .order("created_at", { ascending: false });
@@ -113,7 +113,7 @@ export default function CommonKnowledgeDashboard() {
       const in_review = docs?.filter(d => d.status === "in_review").length || 0;
       
       // Fetch pinned documents with details
-      const { data: pins, error: pinsError } = await supabase
+      const { data: pins, error: pinsError } = await (supabase as any)
         .from("ck_pins")
         .select(`
           created_at,
@@ -186,7 +186,7 @@ export default function CommonKnowledgeDashboard() {
     
     try {
       const { data: user } = await supabase.auth.getUser();
-      const { error } = await supabase.from("ck_collections").insert({
+      const { error } = await (supabase as any).from("ck_collections").insert({
         name: `${contextFolder.name} (Copy)`,
         slug: `${contextFolder.slug}-copy-${Date.now()}`,
         parent_id: contextFolder.parent_id,
