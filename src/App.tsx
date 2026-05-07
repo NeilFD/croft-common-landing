@@ -7,7 +7,6 @@ import { useEffect, Suspense, lazy, useState } from "react";
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TransitionProvider } from "@/contexts/TransitionContext";
-import { MembershipAuthProvider } from "@/contexts/MembershipAuthContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
 import NudgeFloatingButton from './components/NudgeFloatingButton';
 import CBSpotifyPlayer from './components/crazybear/CBSpotifyPlayer';
@@ -99,6 +98,7 @@ import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 import { ProtectedRoute } from '@/components/research/ProtectedRoute';
 import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
 const GlobalHandlers = lazy(() => import('@/components/GlobalHandlers'));
+const MembershipAuthProvider = lazy(() => import("@/contexts/MembershipAuthContext").then((m) => ({ default: m.MembershipAuthProvider })));
 
 
 // Management system components
