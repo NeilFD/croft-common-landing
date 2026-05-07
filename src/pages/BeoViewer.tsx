@@ -41,7 +41,8 @@ const BeoViewer = () => {
 
         // Build full edge function URL (public) and send auth for verify_jwt
         // Note: We import SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY from the client
-        const { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } = await import('@/integrations/supabase/client');
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+        const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
         const functionUrl = `${SUPABASE_URL}/functions/v1/proxy-beo-pdf?fileName=${encodeURIComponent(fileName)}`;
 
         const res = await fetch(functionUrl, {
