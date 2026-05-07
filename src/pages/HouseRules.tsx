@@ -41,7 +41,7 @@ const HouseRules = () => (
             {statement}.
           </p>
           <p className="mt-5 font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-60">
-            Our statement &mdash; everything else follows.
+            Read once.  Don't forget.
           </p>
 
           <ol className="mt-16 border-t border-foreground/15">
