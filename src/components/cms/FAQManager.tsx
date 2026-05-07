@@ -14,7 +14,7 @@ interface FAQItem {
   question: string;
   answer: string;
   sort_order: number;
-  published: boolean;
+  published?: boolean;
 }
 
 interface FAQManagerProps {
@@ -97,7 +97,7 @@ export const FAQManager = ({ page, onPublish }: FAQManagerProps) => {
           ...newFAQ,
           sort_order: maxOrder + 1,
           created_by: (await supabase.auth.getUser()).data.user?.id
-        });
+        } as any);
 
       if (error) throw error;
 

@@ -18,7 +18,7 @@ interface GlobalContent {
   content_key: string;
   content_value: string;
   content_data?: any;
-  published: boolean;
+  published?: boolean;
 }
 
 interface GlobalContentManagerProps {

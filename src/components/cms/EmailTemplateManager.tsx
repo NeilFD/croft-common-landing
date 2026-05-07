@@ -16,7 +16,7 @@ interface EmailContent {
   id: string;
   content_key: string;
   content_value: string;
-  published: boolean;
+  published?: boolean;
 }
 
 interface EmailTemplateManagerProps {
