@@ -103,7 +103,7 @@ const Landing = () => (
         </section>
 
         <footer className="px-6 pb-16">
-          <div className="mx-auto w-full max-w-5xl flex flex-col sm:flex-row gap-10 sm:gap-16">
+          <div className="mx-auto w-full max-w-5xl flex flex-col sm:flex-row sm:justify-between gap-10">
             <Link
               to="/country"
               className="group flex flex-col items-start text-left"
