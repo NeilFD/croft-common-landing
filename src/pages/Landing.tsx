@@ -91,9 +91,7 @@ const Landing = () => (
 
         <section className="flex-1 flex items-center px-6 py-16">
           <div className="mx-auto w-full max-w-5xl text-left">
-            <p className="text-[10px] tracking-[0.5em] uppercase opacity-70 mb-6">
-              The Contract
-            </p>
+            
             <h1 className="font-serif text-2xl md:text-4xl lg:text-5xl leading-[1.15] text-[hsl(330,85%,62%)] drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]">
               <span className="block whitespace-nowrap">We identify as anything you want us to be.</span>
               <span className="block whitespace-nowrap mt-1">Your job is to observe the below.</span>
