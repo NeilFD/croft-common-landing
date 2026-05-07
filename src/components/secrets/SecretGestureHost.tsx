@@ -32,9 +32,15 @@ const GestureSelectionGuard = () => {
       try { window.getSelection()?.removeAllRanges(); } catch {}
     };
     document.addEventListener("selectionchange", clear);
+    document.addEventListener("touchstart", clear, { passive: true });
+    document.addEventListener("touchmove", clear, { passive: true });
+    document.addEventListener("touchend", clear, { passive: true });
     return () => {
       document.body.classList.remove("gesture-no-select");
       document.removeEventListener("selectionchange", clear);
+      document.removeEventListener("touchstart", clear);
+      document.removeEventListener("touchmove", clear);
+      document.removeEventListener("touchend", clear);
     };
   }, []);
   return null;
@@ -58,8 +64,10 @@ const SecretGestureHost = ({ variant, children }: Props) => {
               user-select: none !important;
               -webkit-user-select: none !important;
               -webkit-touch-callout: none !important;
+              -webkit-tap-highlight-color: transparent !important;
             }
-            body.gesture-no-select ::selection { background: transparent !important; }
+            body.gesture-no-select ::selection { background: transparent !important; color: inherit !important; }
+            body.gesture-no-select ::-moz-selection { background: transparent !important; color: inherit !important; }
           `}</style>
           <GestureSelectionGuard />
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
