@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { cn } from "@/lib/utils";
-import { BRAND_LOGO } from "@/data/brand";
+import { BRAND_LOGO, BRAND_NAME } from "@/data/brand";
 import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
 import { useLongPress } from '@/hooks/useLongPress';
 
@@ -57,7 +57,7 @@ const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDe
       {!imageError ? (
         <img
           src={BRAND_LOGO}
-          alt="Croft Common Logo"
+          alt={`${BRAND_NAME} logo`}
           className="w-full h-full object-contain"
           onError={() => setImageError(true)}
           loading={priority ? 'eager' : 'lazy'}
@@ -66,7 +66,7 @@ const CroftLogo = ({ className, size = 'md', priority = false, onClick, enableDe
       ) : (
         <img
           src="/brand/logo.png"
-          alt="Croft Common Logo"
+          alt={`${BRAND_NAME} logo`}
           className="w-full h-full object-contain"
           loading={priority ? 'eager' : 'lazy'}
           draggable={false}
