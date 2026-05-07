@@ -21,6 +21,7 @@ import HouseRules from "./pages/HouseRules";
 import ImagePicker from "./pages/ImagePicker";
 import PropertyLayout from "./components/property/PropertyLayout";
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
+const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 import {
   CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
   CountryRooms, CountryRoomTypes, CountryRoomGallery,
@@ -345,6 +346,7 @@ const App = () => {
 
                       {/* Crazy Bear members entry */}
                       <Route path="/bears-den" element={<BearsDen />} />
+                      <Route path="/set-password" element={<SetPassword />} />
 
                       {/* Members entry - re-uses existing common-room */}
                       <Route path="/members" element={<Navigate to="/common-room" replace />} />

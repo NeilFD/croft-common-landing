@@ -1,5 +1,8 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import bearMark from "@/assets/crazy-bear-mark.png";
+import { useCBMember } from "@/hooks/useCBMember";
+import CBMemberLoginModal from "@/components/crazybear/CBMemberLoginModal";
 
 interface CBTopNavProps {
   /** "light" = white text on dark hero. "dark" = black text on light page. */
@@ -10,45 +13,43 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
   const isLight = tone === "light";
   const text = isLight ? "text-white" : "text-foreground";
   const markFilter = isLight ? "invert" : "";
+  const { isMember, profile, signOut } = useCBMember();
+  const [loginOpen, setLoginOpen] = useState(false);
+
+  const linkCls = "font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100";
 
   return (
-    <header
-      className={`absolute top-0 left-0 right-0 z-30 px-6 md:px-12 pt-7 flex items-center justify-between ${text}`}
-    >
-      <Link to="/" className="flex items-center group">
-        <img
-          src={bearMark}
-          alt="Crazy Bear"
-          className={`h-14 w-14 md:h-16 md:w-16 ${markFilter}`}
-        />
-      </Link>
-      <nav className="flex items-center gap-7 md:gap-10">
-        <Link
-          to="/house-rules"
-          className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100"
-        >
-          House Rules
+    <>
+      <header
+        className={`absolute top-0 left-0 right-0 z-30 px-6 md:px-12 pt-7 flex items-center justify-between ${text}`}
+      >
+        <Link to="/" className="flex items-center group">
+          <img
+            src={bearMark}
+            alt="Crazy Bear"
+            className={`h-14 w-14 md:h-16 md:w-16 ${markFilter}`}
+          />
         </Link>
-        <Link
-          to="/town"
-          className="hidden sm:inline font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100"
-        >
-          Town
-        </Link>
-        <Link
-          to="/country"
-          className="hidden sm:inline font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100"
-        >
-          Country
-        </Link>
-        <Link
-          to="/members"
-          className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100"
-        >
-          Members
-        </Link>
-      </nav>
-    </header>
+        <nav className="flex items-center gap-7 md:gap-10">
+          <Link to="/house-rules" className={linkCls}>House Rules</Link>
+          <Link to="/town" className={`hidden sm:inline ${linkCls}`}>Town</Link>
+          <Link to="/country" className={`hidden sm:inline ${linkCls}`}>Country</Link>
+          {isMember ? (
+            <>
+              <Link to="/members" className={linkCls}>Members</Link>
+              <button onClick={() => signOut()} className={linkCls} type="button">
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button onClick={() => setLoginOpen(true)} className={linkCls} type="button">
+              Member Login
+            </button>
+          )}
+        </nav>
+      </header>
+      <CBMemberLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+    </>
   );
 };
 

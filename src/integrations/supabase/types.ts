@@ -260,6 +260,57 @@ export type Database = {
         }
         Relationships: []
       }
+      cb_members: {
+        Row: {
+          birthday_day: number | null
+          birthday_month: string | null
+          consent_at: string | null
+          consent_given: boolean
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          interests: string[] | null
+          last_name: string | null
+          marketing_opt_in: boolean
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthday_day?: number | null
+          birthday_month?: string | null
+          consent_at?: string | null
+          consent_given?: boolean
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: string
+          interests?: string[] | null
+          last_name?: string | null
+          marketing_opt_in?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthday_day?: number | null
+          birthday_month?: string | null
+          consent_at?: string | null
+          consent_given?: boolean
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          interests?: string[] | null
+          last_name?: string | null
+          marketing_opt_in?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_members: {
         Row: {
           chat_id: string

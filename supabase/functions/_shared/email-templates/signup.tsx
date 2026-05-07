@@ -38,13 +38,14 @@ export const SignupEmail = ({
         <Heading style={h1}>Welcome to the den</Heading>
 
         <Text style={text}>
-          You're nearly in. Confirm your email and the door swings open.
-          Town and Country. Members hear first. No noise in between.
+          You're nearly in. Tap the button below to set your password and the
+          door swings open. Town and Country. Members hear first. No noise in
+          between.
         </Text>
 
         <Section style={buttonWrap}>
           <Button style={button} href={confirmationUrl}>
-            Enter the den
+            Set your password
           </Button>
         </Section>
 
