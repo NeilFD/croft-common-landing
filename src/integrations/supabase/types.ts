@@ -2736,6 +2736,8 @@ export type Database = {
       }
       subscribers: {
         Row: {
+          consent_given: boolean | null
+          consent_timestamp: string | null
           created_at: string | null
           email: string
           first_name: string | null
@@ -2743,8 +2745,11 @@ export type Database = {
           interests: string[] | null
           is_active: boolean | null
           last_name: string | null
+          name: string | null
         }
         Insert: {
+          consent_given?: boolean | null
+          consent_timestamp?: string | null
           created_at?: string | null
           email: string
           first_name?: string | null
@@ -2752,8 +2757,11 @@ export type Database = {
           interests?: string[] | null
           is_active?: boolean | null
           last_name?: string | null
+          name?: string | null
         }
         Update: {
+          consent_given?: boolean | null
+          consent_timestamp?: string | null
           created_at?: string | null
           email?: string
           first_name?: string | null
@@ -2761,6 +2769,7 @@ export type Database = {
           interests?: string[] | null
           is_active?: boolean | null
           last_name?: string | null
+          name?: string | null
         }
         Relationships: []
       }
