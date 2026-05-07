@@ -1,6 +1,8 @@
 import { Helmet } from "react-helmet-async";
+import { useLocation } from "react-router-dom";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import type { Menu, MenuItem, MenuSection } from "@/data/menus";
+import { getHeroFor } from "@/data/propertyHeroMap";
 
 interface Props {
   menu: Menu;
@@ -89,11 +91,22 @@ const Section = ({ section }: { section: MenuSection }) => {
 };
 
 const CBMenuPage = ({ menu }: Props) => {
+  const location = useLocation();
+  const hero = getHeroFor(location.pathname, "");
   return (
     <>
       <Helmet>
         <title>{menu.title} | The Crazy Bear</title>
       </Helmet>
+
+      {hero && (
+        <section
+          className="relative w-full h-[70vh] min-h-[480px] bg-cover bg-center"
+          style={{ backgroundImage: `url(${hero})` }}
+        >
+          <div className="absolute inset-0 bg-black/40" />
+        </section>
+      )}
 
       <section className="bg-white text-black font-cb-sans min-h-screen antialiased">
         <div className="max-w-2xl mx-auto px-6 sm:px-10 py-20">
