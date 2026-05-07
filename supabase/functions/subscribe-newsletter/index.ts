@@ -326,10 +326,11 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send email verification for new users (replaces manual magic link generation)
-    if (isNewUser) {
+    // Send a magic-link / verification email on every successful signup,
+    // for both brand new and existing auth users.
+    {
       const redirectUrl = `${Deno.env.get('SUPABASE_URL')?.replace('supabase.co', 'lovable.app') || 'https://preview--croft-common-landing.lovable.app'}/`;
-      
+
       const { error: emailError } = await supabaseAdmin.auth.signInWithOtp({
         email: sanitizedEmail,
         options: {
@@ -352,8 +353,8 @@ const handler = async (req: Request): Promise<Response> => {
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
       }
-      
-      console.log(`[${requestId}] Verification email sent to ${sanitizedEmail}`);
+
+      console.log(`[${requestId}] Verification email sent to ${sanitizedEmail} (isNewUser=${isNewUser})`);
     }
 
     // Note: Welcome email will be sent automatically after email verification via database trigger

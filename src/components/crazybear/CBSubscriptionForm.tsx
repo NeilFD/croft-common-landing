@@ -73,7 +73,7 @@ const CBSubscriptionForm = () => {
       if (error) throw error;
 
       toast({
-        title: 'Welcome to the circle',
+        title: 'Welcome to the den',
         description: 'Check your email to finish signing in.',
       });
       setEmail('');
