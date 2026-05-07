@@ -59,7 +59,7 @@ export const useLunchRun = () => {
       
       // Load menu from database directly since the edge function might be having issues
       console.log('📋 Fetching menu from database...');
-      const { data: menuItems, error: menuError } = await supabase
+      const { data: menuItems, error: menuError } = await (supabase as any)
         .from('lunch_menu')
         .select('*')
         .eq('is_available', true)

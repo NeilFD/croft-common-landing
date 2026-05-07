@@ -20,7 +20,7 @@ const Community = () => {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await (supabase.from('common_good_messages' as any)
+      const { data, error } = await ((supabase as any).from('common_good_messages' as any)
         .select('message, posted_at')
         .order('posted_at', { ascending: false }) as any);
       if (!error && data) setMessages(data as CommonGoodRow[]);

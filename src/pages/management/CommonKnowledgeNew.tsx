@@ -49,7 +49,7 @@ export default function CommonKnowledgeNew() {
 
   const fetchCollections = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("ck_collections")
         .select("*")
         .order("name");
@@ -75,7 +75,7 @@ export default function CommonKnowledgeNew() {
     try {
       const slug = generateSlug(formData.title);
 
-      const { data, error } = await supabase.rpc("rpc_ck_create_doc", {
+      const { data, error } = await (supabase as any).rpc("rpc_ck_create_doc", {
         p_title: formData.title,
         p_slug: slug,
         p_type: formData.type as any,

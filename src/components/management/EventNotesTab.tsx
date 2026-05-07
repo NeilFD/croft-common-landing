@@ -22,7 +22,7 @@ export const EventNotesTab = ({ eventId, notes }: EventNotesTabProps) => {
     setLoading(true);
     
     try {
-      const { error } = await supabase.rpc('update_management_event', {
+      const { error } = await (supabase as any).rpc('update_management_event', {
         p_id: eventId,
         patch: { notes: editedNotes }
       });

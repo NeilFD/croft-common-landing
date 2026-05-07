@@ -118,7 +118,7 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
       setContract(data.contract || null);
 
       // Fetch line items for ProposalViewer (map DB to viewer format)
-      const { data: liRaw, error: liErr } = await supabase
+      const { data: liRaw, error: liErr } = await (supabase as any)
         .from('management_event_line_items')
         .select('id, type, description, qty, unit_price, per_person, sort_order')
         .eq('event_id', eventId)
@@ -154,7 +154,7 @@ export const ClientPortalManagementView = ({ eventId }: ClientPortalManagementVi
 
     setSendingMessage(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('client_messages')
         .insert({
           event_id: eventId,

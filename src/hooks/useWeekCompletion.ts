@@ -43,7 +43,7 @@ export const useWeekCompletion = () => {
       const sixteenWeeksAgo = new Date();
       sixteenWeeksAgo.setDate(sixteenWeeksAgo.getDate() - (16 * 7));
 
-      const { data: receipts, error: receiptError } = await supabase
+      const { data: receipts, error: receiptError } = await (supabase as any)
         .from('member_receipts')
         .select('receipt_date, total_amount')
         .eq('user_id', user.id)

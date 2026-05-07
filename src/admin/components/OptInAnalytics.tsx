@@ -22,7 +22,7 @@ export const OptInAnalytics: React.FC<Props> = ({ embedded = false }) => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["push-optin-events", range],
     queryFn: async () => {
-      let q = supabase
+      let q = (supabase as any)
         .from("push_optin_events")
         .select("event, created_at")
         .order("created_at", { ascending: false })

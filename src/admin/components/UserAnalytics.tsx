@@ -45,22 +45,22 @@ const UserAnalytics: React.FC<{ embedded?: boolean }> = ({ embedded = false }) =
       const dateFilter = getDateFilter(timeRange);
       
       const [pageViewsRes, userSessionsRes, userInteractionsRes, userJourneysRes] = await Promise.all([
-        supabase
+        (supabase as any)
           .from('page_views')
           .select('*')
           .gte('viewed_at', dateFilter || '1970-01-01')
           .order('viewed_at', { ascending: false }),
-        supabase
+        (supabase as any)
           .from('user_sessions')
           .select('*')
           .gte('started_at', dateFilter || '1970-01-01')
           .order('started_at', { ascending: false }),
-        supabase
+        (supabase as any)
           .from('user_interactions')
           .select('*')
           .gte('occurred_at', dateFilter || '1970-01-01')
           .order('occurred_at', { ascending: false }),
-        supabase
+        (supabase as any)
           .from('user_journeys')
           .select('*')
           .gte('occurred_at', dateFilter || '1970-01-01')

@@ -216,7 +216,7 @@ export const CMSText = ({
       
       if (isGlobalContent) {
         // Handle global content
-        const { data: existingGlobalContent, error: selectError } = await supabase
+        const { data: existingGlobalContent, error: selectError } = await (supabase as any)
           .from('cms_global_content')
           .select('id, created_by')
           .eq('content_key', contentKey)
@@ -231,7 +231,7 @@ export const CMSText = ({
           console.log('🎯 CMS: Updating existing global content with ID:', existingGlobalContent.id);
           
           // Update existing global content as draft
-          const { data: updateData, error: updateError } = await supabase
+          const { data: updateData, error: updateError } = await (supabase as any)
             .from('cms_global_content')
             .update({ 
               content_value: editValue,
@@ -251,7 +251,7 @@ export const CMSText = ({
           console.log('🎯 CMS: Creating new global content entry with created_by:', user.id);
           
           // Create new global content as draft
-          const { data: insertData, error: insertError } = await supabase
+          const { data: insertData, error: insertError } = await (supabase as any)
             .from('cms_global_content')
             .insert({
               content_key: contentKey,
@@ -271,7 +271,7 @@ export const CMSText = ({
         }
       } else {
         // Handle page-specific content (existing logic)
-        const { data: existingContent, error: selectError } = await supabase
+        const { data: existingContent, error: selectError } = await (supabase as any)
           .from('cms_content')
           .select('id, created_by')
           .eq('page', page)
@@ -288,7 +288,7 @@ export const CMSText = ({
           console.log('🎯 CMS: Updating existing content with ID:', existingContent.id);
           
           // Update existing content as draft
-          const { data: updateData, error: updateError } = await supabase
+          const { data: updateData, error: updateError } = await (supabase as any)
             .from('cms_content')
             .update({ 
               content_data: contentData,
@@ -308,7 +308,7 @@ export const CMSText = ({
           console.log('🎯 CMS: Creating new content entry with created_by:', user.id);
           
           // Create new content as draft
-          const { data: insertData, error: insertError } = await supabase
+          const { data: insertData, error: insertError } = await (supabase as any)
             .from('cms_content')
             .insert({
               page,

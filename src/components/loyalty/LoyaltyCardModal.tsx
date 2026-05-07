@@ -95,7 +95,7 @@ useEffect(() => {
       return;
     }
     const { supabase } = await import('@/integrations/supabase/client');
-    const { count, error } = await supabase
+    const { count, error } = await (supabase as any)
       .from('loyalty_cards')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', user.id)

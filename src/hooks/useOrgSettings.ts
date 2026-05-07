@@ -6,7 +6,7 @@ export const useOrgSettings = () => {
   return useQuery({
     queryKey: ['org-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('org_settings')
         .select('*')
         .order('setting_key');
@@ -22,7 +22,7 @@ export const useUpdateOrgSetting = () => {
 
   return useMutation({
     mutationFn: async ({ settingKey, settingValue }: { settingKey: string; settingValue: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('org_settings')
         .upsert({
           setting_key: settingKey,

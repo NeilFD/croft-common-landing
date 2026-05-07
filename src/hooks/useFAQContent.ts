@@ -20,7 +20,7 @@ export const useFAQContent = (page: string, showDrafts = false) => {
   const fetchFAQs = async () => {
     try {
       setLoading(true);
-      let query = supabase
+      let query = (supabase as any)
         .from('cms_faq_content')
         .select('*')
         .eq('page', page)

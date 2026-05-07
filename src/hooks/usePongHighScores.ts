@@ -18,7 +18,7 @@ export const usePongHighScores = () => {
 
   const fetchHighScores = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('pong_scores')
         .select('*')
         .order('score', { ascending: false })
@@ -44,7 +44,7 @@ export const usePongHighScores = () => {
       if (user) {
         // Authenticated user - get profile name
         userId = user.id;
-        const { data: profile, error: profileError } = await supabase
+        const { data: profile, error: profileError } = await (supabase as any)
           .from('profiles')
           .select('first_name, last_name')
           .eq('user_id', user.id)
@@ -75,7 +75,7 @@ export const usePongHighScores = () => {
 
       // Check for recent duplicate scores to prevent resurrection
       if (user) {
-        const { data: recentScores } = await supabase
+        const { data: recentScores } = await (supabase as any)
           .from('pong_scores')
           .select('id, score, created_at')
           .eq('user_id', user.id)
@@ -88,7 +88,7 @@ export const usePongHighScores = () => {
         }
       }
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('pong_scores')
         .insert({
           user_id: userId,

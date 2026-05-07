@@ -33,7 +33,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
   const { data: spaces } = useQuery({
     queryKey: ['spaces'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('spaces')
         .select('*')
         .order('name');
@@ -46,7 +46,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
   const { data: event } = useQuery({
     queryKey: ['management-event', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select('*')
         .eq('id', eventId)
@@ -96,7 +96,7 @@ export const CreateHoldDialog = ({ eventId, open, onOpenChange }: CreateHoldDial
     setLoading(true);
 
     try {
-      const { error } = await supabase.rpc('create_hold', {
+      const { error } = await (supabase as any).rpc('create_hold', {
         payload: {
           event_id: eventId,
           space_id: formData.space_id,

@@ -113,13 +113,13 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
             // If reply context not found locally, fetch minimal info and patch message
             if (replyId && !messages.find((m) => m.id === replyId)) {
               try {
-                const { data: replyRow } = await supabase
+                const { data: replyRow } = await (supabase as any)
                   .from('messages')
                   .select('id, sender_id, body_text')
                   .eq('id', replyId)
                   .maybeSingle();
                 if (replyRow) {
-                  const { data: userData } = await supabase
+                  const { data: userData } = await (supabase as any)
                     .rpc('get_chat_user_info', { _user_id: replyRow.sender_id })
                     .single();
                   const preview = {
@@ -213,7 +213,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   }, [chatMembers, messages]);
 
   const loadChat = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('chats')
       .select('*')
       .eq('id', chatId)
@@ -228,7 +228,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   };
 
   const loadChatMembers = async () => {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('chat_members')
       .select('user_id, last_read_at')
       .eq('chat_id', chatId);
@@ -241,7 +241,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     // Enrich with user names
     const enrichedMembers = await Promise.all(
       (data || []).map(async (member) => {
-        const { data: userData } = await supabase
+        const { data: userData } = await (supabase as any)
           .rpc('get_chat_user_info', { _user_id: member.user_id })
           .single();
 
@@ -284,7 +284,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     setLoading(true);
     try {
       // Use security definer RPC to bypass RLS for read
-      const { data: rows, error } = await supabase
+      const { data: rows, error } = await (supabase as any)
         .rpc('get_chat_messages_basic', { _chat_id: chatId });
 
       if (error) {
@@ -312,7 +312,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       // Load attachments for all messages
       const messageIds = basicMessages.map(m => m.id);
       if (messageIds.length > 0) {
-        const { data: attachments } = await supabase
+        const { data: attachments } = await (supabase as any)
           .from('attachments')
           .select('*')
           .in('message_id', messageIds);
@@ -378,7 +378,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
   };
 
   const loadUserInfo = async (message: Message): Promise<Message> => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .rpc('get_chat_user_info', { _user_id: message.sender_id })
       .single();
 
@@ -455,7 +455,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       let textBuffer = '';
 
       // Create Cleo's message
-      const { data: cleoMessage, error: cleoError } = await supabase
+      const { data: cleoMessage, error: cleoError } = await (supabase as any)
         .from('messages')
         .insert({
           chat_id: chatId,
@@ -504,7 +504,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
                 cleoContent += content;
                 
                 // Update message in database
-                await supabase
+                await (supabase as any)
                   .from('messages')
                   .update({ body_text: cleoContent })
                   .eq('id', cleoMessage.id);
@@ -561,7 +561,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     if (!messageToDelete) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('messages')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', messageToDelete.id);
@@ -584,7 +584,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
     if (!newText.trim()) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('messages')
         .update({ 
           body_text: newText,
@@ -633,7 +633,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       }
 
       // Insert message
-      const { data: newMessage, error: messageError } = await supabase
+      const { data: newMessage, error: messageError } = await (supabase as any)
         .from('messages')
         .insert({
           chat_id: chatId,
@@ -648,7 +648,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
 
       // Insert attachment if image was uploaded
       if (storagePath) {
-        await supabase.from('attachments').insert({
+        await (supabase as any).from('attachments').insert({
           message_id: newMessage.id,
           type: 'image',
           storage_path: storagePath,
@@ -684,13 +684,13 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
               body_text: local.body_text,
             };
           } else {
-            const { data: replyRow } = await supabase
+            const { data: replyRow } = await (supabase as any)
               .from('messages')
               .select('id, sender_id, body_text')
               .eq('id', replyToId)
               .maybeSingle();
             if (replyRow) {
-              const { data: userData } = await supabase
+              const { data: userData } = await (supabase as any)
                 .rpc('get_chat_user_info', { _user_id: replyRow.sender_id })
                 .single();
               enrichedMessage.reply_to_message = {
@@ -709,7 +709,7 @@ export const ActiveChat = ({ chatId, onBack }: ActiveChatProps) => {
       scrollToBottom();
 
       // Update last_read_at
-      await supabase
+      await (supabase as any)
         .from('chat_members')
         .update({ last_read_at: new Date().toISOString() })
         .eq('chat_id', chatId)

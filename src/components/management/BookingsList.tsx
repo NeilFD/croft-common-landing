@@ -52,7 +52,7 @@ export const BookingsList = ({ eventId, bookings }: BookingsListProps) => {
 
   const handlePromoteHold = async (bookingId: string, newStatus: string) => {
     try {
-      const { error } = await supabase.rpc('promote_hold', {
+      const { error } = await (supabase as any).rpc('promote_hold', {
         p_booking: bookingId,
         p_new_status: newStatus
       });

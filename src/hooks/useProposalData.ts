@@ -77,7 +77,7 @@ export const useProposalVersions = (eventId: string) => {
   return useQuery({
     queryKey: ['proposal-versions', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('proposal_versions')
         .select('*')
         .eq('event_id', eventId)
@@ -95,7 +95,7 @@ export const useCurrentProposal = (eventId: string) => {
   return useQuery({
     queryKey: ['current-proposal', eventId],
     queryFn: async () => {
-      const { data: proposal, error: proposalError } = await supabase
+      const { data: proposal, error: proposalError } = await (supabase as any)
         .from('proposal_versions')
         .select('*')
         .eq('event_id', eventId)
@@ -107,7 +107,7 @@ export const useCurrentProposal = (eventId: string) => {
       if (!proposal) return null;
 
       // Fetch line items for this event (map DB columns to viewer format)
-      const { data: rawItems, error: lineItemsError } = await supabase
+      const { data: rawItems, error: lineItemsError } = await (supabase as any)
         .from('management_event_line_items')
         .select('id, type, description, qty, unit_price, per_person, sort_order')
         .eq('event_id', eventId)
@@ -179,7 +179,7 @@ export const useProposalMutations = (eventId: string) => {
       status: ProposalVersion['status'];
       notes?: string;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('proposal_versions')
         .update({
           status: params.status,
@@ -205,7 +205,7 @@ export const useProposalMutations = (eventId: string) => {
 
   const markProposalApproved = useMutation({
     mutationFn: async (versionId: string) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('proposal_versions')
         .update({
           status: 'approved',

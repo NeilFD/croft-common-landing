@@ -43,7 +43,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
   const { data: eventData } = useQuery({
     queryKey: ['management-event', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select('*')
         .eq('id', eventId)
@@ -59,7 +59,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
   const { data: contractData, refetch: refetchContract } = useQuery({
     queryKey: ['contract', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('contracts')
         .select('*')
         .eq('event_id', eventId)
@@ -77,7 +77,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
   const { data: lineItems } = useQuery({
     queryKey: ['line-items', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_event_line_items')
         .select('*')
         .eq('event_id', eventId)
@@ -91,7 +91,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
   // Generate contract mutation
   const generateContract = useMutation({
     mutationFn: async () => {
-      const { data, error } = await supabase.rpc('generate_contract', {
+      const { data, error } = await (supabase as any).rpc('generate_contract', {
         p_event_id: eventId
       });
       
@@ -208,7 +208,7 @@ export const ContractPreview = ({ eventId }: ContractPreviewProps) => {
   // Sign contract as staff
   const signContractAsStaff = useMutation({
     mutationFn: async ({ eventId, signatureData }: { eventId: string; signatureData: any }) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('contracts')
         .update({
           staff_signature_data: signatureData,

@@ -233,7 +233,7 @@ const SecretKitchensContent = () => {
 
   const checkEmailAccess = async (email: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('secret_kitchen_access')
         .select('email')
         .eq('email', email.toLowerCase())
@@ -254,7 +254,7 @@ const SecretKitchensContent = () => {
 
   const checkUserAccessStatus = async (email: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .rpc('check_secret_kitchen_access_status', { user_email: email.toLowerCase() });
 
       if (error) {
@@ -401,7 +401,7 @@ const SecretKitchensContent = () => {
         
         // Update first access and get expiration time
         try {
-          const { data: accessData, error: accessError } = await supabase
+          const { data: accessData, error: accessError } = await (supabase as any)
             .rpc('update_secret_kitchen_first_access', { user_email: email.toLowerCase() });
 
           if (accessError) {

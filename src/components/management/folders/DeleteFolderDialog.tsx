@@ -45,7 +45,7 @@ export function DeleteFolderDialog({
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from("ck_collections")
         .delete()
         .eq("id", folderId);

@@ -70,7 +70,7 @@ export const EditEventDialog = ({ eventId, event, open, onOpenChange }: EditEven
         updateData.primary_date = format(formData.primary_date, 'yyyy-MM-dd');
       }
 
-      const { error } = await supabase.rpc('update_management_event', {
+      const { error } = await (supabase as any).rpc('update_management_event', {
         p_id: eventId,
         patch: updateData
       });

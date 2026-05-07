@@ -62,7 +62,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
     queryKey: ['event-line-items', eventId],
     queryFn: async () => {
       // First check if this is a management event or regular event
-      const { data: managementEventData } = await supabase
+      const { data: managementEventData } = await (supabase as any)
         .from('management_events')
         .select('id')
         .eq('id', eventId)
@@ -71,7 +71,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
       const isManagementEvent = !!managementEventData;
       const tableName = isManagementEvent ? 'management_event_line_items' : 'event_line_items';
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from(tableName)
         .select('*')
         .eq('event_id', eventId)
@@ -86,7 +86,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   const { data: eventDetails } = useQuery({
     queryKey: ['event-details', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select('*')
         .eq('id', eventId)
@@ -101,7 +101,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   const { data: proposalPdfs } = useQuery({
     queryKey: ['proposal-pdfs', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('proposal_pdfs')
         .select('id')
         .eq('event_id', eventId);
@@ -135,7 +135,7 @@ export const ProposalBuilder: React.FC<ProposalBuilderProps> = ({ eventId, headc
   // Save proposal mutation
   const saveProposal = useMutation({
     mutationFn: async (items: LineItem[]) => {
-      const { data, error } = await supabase.rpc('create_proposal', {
+      const { data, error } = await (supabase as any).rpc('create_proposal', {
         p_event_id: eventId,
         p_line_items: items.map(item => ({
           type: item.type,

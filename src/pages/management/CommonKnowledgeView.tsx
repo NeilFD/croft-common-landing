@@ -100,13 +100,13 @@ export default function CommonKnowledgeView() {
       setLoading(true);
 
       // Fetch collections
-      const { data: colls } = await supabase
+      const { data: colls } = await (supabase as any)
         .from("ck_collections")
         .select("*")
         .order("name");
       setCollections(colls || []);
 
-      const { data: docData, error: docError } = await supabase
+      const { data: docData, error: docError } = await (supabase as any)
         .from("ck_docs")
         .select("*")
         .eq("slug", slug)
@@ -116,7 +116,7 @@ export default function CommonKnowledgeView() {
       setDoc(docData);
 
       // Check if document is pinned
-      const { data: pinData } = await supabase
+      const { data: pinData } = await (supabase as any)
         .from("ck_pins")
         .select("id")
         .eq("doc_id", docData.id)
@@ -130,7 +130,7 @@ export default function CommonKnowledgeView() {
 
       // Fetch version if exists
       if (docData.version_current_id) {
-        const { data: versionData, error: versionError } = await supabase
+        const { data: versionData, error: versionError } = await (supabase as any)
           .from("ck_doc_versions")
           .select("*")
           .eq("id", docData.version_current_id)
@@ -142,7 +142,7 @@ export default function CommonKnowledgeView() {
       }
 
       // Fetch file if exists
-      const { data: fileData, error: fileError } = await supabase
+      const { data: fileData, error: fileError } = await (supabase as any)
         .from("ck_files")
         .select("*")
         .eq("doc_id", docData.id)
@@ -182,7 +182,7 @@ export default function CommonKnowledgeView() {
             const extracted = allText.replace(/\s+/g, ' ').trim();
 
             if (extracted && extracted.length > 100) {
-              const { error: rpcErr } = await supabase.rpc('admin_update_doc_content', {
+              const { error: rpcErr } = await (supabase as any).rpc('admin_update_doc_content', {
                 p_version_id: currentVersion.id,
                 p_content_md: extracted,
                 p_summary: extracted.substring(0, 500)
@@ -214,14 +214,14 @@ export default function CommonKnowledgeView() {
       if (!user.data.user || !doc) return;
 
       if (isPinned) {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("ck_pins")
           .delete()
           .eq("doc_id", doc.id)
           .eq("user_id", user.data.user.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from("ck_pins")
           .insert({ doc_id: doc.id, user_id: user.data.user.id });
         if (error) throw error;

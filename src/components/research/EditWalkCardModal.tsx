@@ -55,7 +55,7 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
       const geoAreaIds = walkCardGeoAreas.map(area => area.id);
       
       // Fetch fresh venue data directly from Supabase
-      const { data: freshVenues, error: venuesError } = await supabase
+      const { data: freshVenues, error: venuesError } = await (supabase as any)
         .from('venues')
         .select('*')
         .in('geo_area_id', geoAreaIds)
@@ -67,7 +67,7 @@ export const EditWalkCardModal: React.FC<EditWalkCardModalProps> = ({
       }
 
       // Load walk entries for this specific walk card and get them directly
-      const { data: walkCardEntries, error } = await supabase
+      const { data: walkCardEntries, error } = await (supabase as any)
         .from('walk_entries')
         .select('*')
         .eq('walk_card_id', walkCard.id);

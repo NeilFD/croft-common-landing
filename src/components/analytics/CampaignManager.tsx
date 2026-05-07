@@ -167,7 +167,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
       if (error || !data) {
         console.error('Error loading campaign history via function, falling back to direct query:', error);
         // Fallback: query campaigns directly and compute clicks from deliveries
-        let query = supabase
+        let query = (supabase as any)
           .from('campaigns')
           .select('*')
           .order('created_at', { ascending: false })
@@ -182,7 +182,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
           try {
             const campaignIds = campaigns.map((c: any) => c.id);
             if (campaignIds.length > 0) {
-              const { data: notifRows, error: notifErr } = await supabase
+              const { data: notifRows, error: notifErr } = await (supabase as any)
                 .from('notifications')
                 .select('id, campaign_id')
                 .in('campaign_id', campaignIds);
@@ -193,7 +193,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
                 const notifToCampaign: Record<string, string> = {};
                 (notifRows || []).forEach((n: any) => { notifToCampaign[n.id] = n.campaign_id; });
                 if (notifIds.length > 0) {
-                  const { data: deliveries, error: delErr } = await supabase
+                  const { data: deliveries, error: delErr } = await (supabase as any)
                     .from('notification_deliveries')
                     .select('notification_id, status, clicked_at')
                     .in('notification_id', notifIds);
@@ -270,7 +270,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
   // Load saved segments on component mount
   const loadSavedSegments = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('campaign_segments')
         .select('*')
         .eq('is_active', true)
@@ -386,7 +386,7 @@ const CampaignManager: React.FC<CampaignManagerProps> = ({ segments, onSendCampa
 
   const handleSegmentDelete = async (segmentId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('campaign_segments')
         .update({ is_active: false })
         .eq('id', segmentId);

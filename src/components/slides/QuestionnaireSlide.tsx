@@ -74,7 +74,7 @@ export const QuestionnaireSlide: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('kitchen_vendor_inquiries')
         .insert({
           business_name: data.businessName,

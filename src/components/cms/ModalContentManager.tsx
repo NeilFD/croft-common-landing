@@ -59,7 +59,7 @@ export const ModalContentManager = () => {
   const fetchContent = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_modal_content')
         .select('*')
         .eq('modal_type', selectedModalType)
@@ -84,7 +84,7 @@ export const ModalContentManager = () => {
     if (!newItem.content_key.trim() || !user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_modal_content')
         .insert({
           modal_type: selectedModalType,
@@ -124,7 +124,7 @@ export const ModalContentManager = () => {
         ? sanitizeContentText(value) 
         : value;
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_modal_content')
         .update({ [field]: cleanedValue })
         .eq('id', id);
@@ -164,7 +164,7 @@ export const ModalContentManager = () => {
       const { success, failed } = await bulkCleanContent(
         records,
         async (id, cleanedContent) => {
-          const { error } = await supabase
+          const { error } = await (supabase as any)
             .from('cms_modal_content')
             .update({
               content_value: cleanedContent,
@@ -209,7 +209,7 @@ export const ModalContentManager = () => {
 
   const deleteContent = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_modal_content')
         .delete()
         .eq('id', id);
@@ -246,7 +246,7 @@ export const ModalContentManager = () => {
       const exists = content.find(c => c.content_section === item.section && c.content_key === item.key);
       if (!exists) {
         try {
-          await supabase
+          await (supabase as any)
             .from('cms_modal_content')
             .insert({
               modal_type: selectedModalType,

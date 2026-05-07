@@ -31,7 +31,7 @@ export const PushSubscriptionManagement = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('push_subscriptions')
         .select('id, platform, endpoint, is_active, last_seen, created_at')
         .eq('user_id', user.id)

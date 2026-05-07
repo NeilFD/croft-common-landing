@@ -39,7 +39,7 @@ const EventDetail = () => {
     queryFn: async () => {
       if (!id) throw new Error('Event ID is required');
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select(`
           *,
@@ -60,7 +60,7 @@ const EventDetail = () => {
   const { data: bookings } = useQuery({
     queryKey: ['event-bookings', id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('bookings')
         .select('id, title, start_ts, end_ts, setup_min, teardown_min, status, space:spaces(name)')
         .eq('event_id', id);
@@ -86,7 +86,7 @@ const EventDetail = () => {
     queryFn: async () => {
       const leadId = event?.lead_id;
       if (!leadId) return null;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('leads')
         .select('id, first_name, last_name, email, phone')
         .eq('id', leadId)
@@ -102,7 +102,7 @@ const EventDetail = () => {
     queryKey: ['lead-derived', id, event?.primary_date, event?.event_type, event?.headcount],
     queryFn: async () => {
       if (!event) return null;
-      let query = supabase
+      let query = (supabase as any)
         .from('leads')
         .select('id, first_name, last_name, email, phone')
         .eq('preferred_date', event.primary_date)
@@ -125,7 +125,7 @@ const EventDetail = () => {
     if (!id) return;
 
     try {
-      const { error } = await supabase.rpc('update_management_event', {
+      const { error } = await (supabase as any).rpc('update_management_event', {
         p_id: id,
         patch: { status: newStatus }
       });

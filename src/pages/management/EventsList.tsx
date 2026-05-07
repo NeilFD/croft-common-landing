@@ -21,7 +21,7 @@ const EventsList = () => {
   const { data: events, isLoading } = useQuery({
     queryKey: ['management-events'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select(`
           *,

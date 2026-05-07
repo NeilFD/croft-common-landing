@@ -30,7 +30,7 @@ export function useSecretWordOfTheDay() {
     queryKey: ["secret-words"],
     queryFn: async () => {
       console.log("[SecretWords] Fetching from Supabase...");
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("secret_words")
         .select("word")
         .eq("is_active", true)

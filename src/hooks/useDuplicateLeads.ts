@@ -5,7 +5,7 @@ export const useDuplicateLeads = (leadId: string) => {
   return useQuery({
     queryKey: ['duplicate-leads', leadId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('v_lead_possible_duplicates')
         .select(`
           possible_duplicate_id,

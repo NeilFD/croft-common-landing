@@ -60,7 +60,7 @@ export const SecretContentManager = ({ type, pageTitle }: SecretContentManagerPr
   const fetchContent = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_modal_content')
         .select('*')
         .eq('modal_type', type)
@@ -84,7 +84,7 @@ export const SecretContentManager = ({ type, pageTitle }: SecretContentManagerPr
     if (!newContentKey.trim() || !user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_modal_content')
         .insert({
           modal_type: type,
@@ -115,7 +115,7 @@ export const SecretContentManager = ({ type, pageTitle }: SecretContentManagerPr
 
   const updateContent = async (id: string, field: string, value: any) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_modal_content')
         .update({ [field]: value })
         .eq('id', id);
@@ -144,7 +144,7 @@ export const SecretContentManager = ({ type, pageTitle }: SecretContentManagerPr
 
   const deleteContent = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_modal_content')
         .delete()
         .eq('id', id);
@@ -174,7 +174,7 @@ export const SecretContentManager = ({ type, pageTitle }: SecretContentManagerPr
       const exists = content.find(item => item.content_key === section.key);
       if (!exists) {
         try {
-          await supabase
+          await (supabase as any)
             .from('cms_modal_content')
             .insert({
               modal_type: type,

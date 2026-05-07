@@ -43,7 +43,7 @@ export const ChangeRoleDialog = ({ user, open, onOpenChange, onSuccess }: Change
 
     try {
       setLoading(true);
-      const { error } = await supabase.rpc('update_management_user_role', {
+      const { error } = await (supabase as any).rpc('update_management_user_role', {
         p_user_id: user.user_id,
         p_new_role: newRole
       });

@@ -54,7 +54,7 @@ export const UserManagementTable = ({ users, onRefresh }: UserManagementTablePro
 
     try {
       setLoading(true);
-      const { error } = await supabase.rpc('deactivate_management_user', {
+      const { error } = await (supabase as any).rpc('deactivate_management_user', {
         p_user_id: deactivateUser.user_id
       });
 
@@ -81,7 +81,7 @@ export const UserManagementTable = ({ users, onRefresh }: UserManagementTablePro
 
   const handleForcePasswordChange = async (userId: string, email: string) => {
     try {
-      const { error } = await supabase.rpc('force_password_change', {
+      const { error } = await (supabase as any).rpc('force_password_change', {
         p_user_id: userId
       });
 

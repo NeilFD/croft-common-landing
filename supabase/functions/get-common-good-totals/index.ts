@@ -39,7 +39,16 @@ serve(async (req) => {
 
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("Missing STRIPE_SECRET_KEY");
+    if (!stripeKey) {
+      return new Response(
+        JSON.stringify({
+          common_people_total_cents: 0,
+          croft_common_total_cents: 0,
+          combined_total_cents: 0,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
 
     const commonGoodProductId = Deno.env.get("STRIPE_COMMON_GOOD_PRODUCT_ID") || undefined;
 

@@ -42,7 +42,7 @@ export default function ManageEvent() {
         setLoading(true);
         console.log('Loading event with token:', token);
         
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('events')
           .select('*')
           .eq('management_token', token)
@@ -121,7 +121,7 @@ export default function ManageEvent() {
         management_email: formData.managementEmail || formData.contactEmail
       };
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('events')
         .update(updateData)
         .eq('management_token', token);
@@ -161,7 +161,7 @@ export default function ManageEvent() {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('events')
         .delete()
         .eq('management_token', token);

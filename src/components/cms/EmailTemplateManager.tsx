@@ -189,7 +189,7 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   const fetchContent = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_global_content')
         .select('*')
         .eq('content_type', 'email_template')
@@ -236,7 +236,7 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   const updateContent = async (key: string, value: string) => {
     setSaving(key);
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_global_content')
         .update({ 
           content_value: value,
@@ -279,7 +279,7 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
     const newFieldKey = getNextFieldKey(sectionName);
     
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_global_content')
         .insert({
           content_key: newFieldKey,
@@ -323,7 +323,7 @@ export const EmailTemplateManager = ({ templateType }: EmailTemplateManagerProps
   // Remove field from section
   const removeField = async (sectionName: string, fieldKey: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_global_content')
         .delete()
         .eq('content_key', fieldKey);

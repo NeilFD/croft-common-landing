@@ -20,7 +20,7 @@ export default function FeedbackManagement() {
   const { data: feedbackData, isLoading } = useQuery({
     queryKey: ['feedback-submissions', dateRange],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('feedback_submissions')
         .select('*')
         .order('created_at', { ascending: false });

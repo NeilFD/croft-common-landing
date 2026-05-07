@@ -62,7 +62,7 @@ export const ChatLayout = () => {
       const userId = managementUser.user.id;
 
       // 1) Chats the user is a member of (with last_read_at for unread calc)
-      const { data: memberRows, error: membersError } = await supabase
+      const { data: memberRows, error: membersError } = await (supabase as any)
         .from('chat_members')
         .select('chat_id, last_read_at, chats(*)')
         .eq('user_id', userId);
@@ -71,7 +71,7 @@ export const ChatLayout = () => {
       // 2) System chats visible to management (even without explicit membership)
       let systemChats: any[] = [];
       if (managementUser.role) {
-        const { data: sysChats, error: sysErr } = await supabase
+        const { data: sysChats, error: sysErr } = await (supabase as any)
           .from('chats')
           .select('*')
           .eq('is_system', true);
@@ -96,7 +96,7 @@ export const ChatLayout = () => {
       const chatsWithMessages = await Promise.all(
         mergedChats.map(async (chat: any) => {
           // Last message
-          const { data: lastMessage } = await supabase
+          const { data: lastMessage } = await (supabase as any)
             .from('messages')
             .select('body_text, created_at, sender_id')
             .eq('chat_id', chat.id)
@@ -108,7 +108,7 @@ export const ChatLayout = () => {
           // Sender name (if any)
           let senderName = '';
           if (lastMessage) {
-            const { data: senderInfo } = await supabase
+            const { data: senderInfo } = await (supabase as any)
               .rpc('get_chat_user_info', { _user_id: lastMessage.sender_id })
               .single();
             senderName = senderInfo?.display_name || 'Unknown';
@@ -117,7 +117,7 @@ export const ChatLayout = () => {
           // Unread count only when we have last_read_at (membership present)
           let unread_count = 0;
           if ((chat as any).last_read_at) {
-            const { count } = await supabase
+            const { count } = await (supabase as any)
               .from('messages')
               .select('id', { count: 'exact', head: true })
               .eq('chat_id', chat.id)

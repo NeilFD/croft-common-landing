@@ -24,7 +24,7 @@ export const UserManagement = () => {
     try {
       setLoading(true);
       
-      const { data, error } = await supabase.rpc('get_management_users');
+      const { data, error } = await (supabase as any).rpc('get_management_users');
 
       if (error) throw error;
 

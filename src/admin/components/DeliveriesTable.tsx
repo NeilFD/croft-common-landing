@@ -18,7 +18,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       console.log("Fetching deliveries for notification:", notificationId);
       
       // First get the basic delivery data
-      const { data: deliveryData, error } = await supabase
+      const { data: deliveryData, error } = await (supabase as any)
         .from("notification_deliveries")
         .select("*")
         .eq("notification_id", notificationId)
@@ -44,7 +44,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       console.log("Subscription IDs:", subscriptionIds);
 
       // Get push subscriptions first
-      const { data: subscriptionData, error: subError } = await supabase
+      const { data: subscriptionData, error: subError } = await (supabase as any)
         .from("push_subscriptions")
         .select("id, user_id")
         .in("id", subscriptionIds);
@@ -60,7 +60,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       console.log("User IDs:", userIds);
 
       // Get profiles separately
-      const { data: profilesData, error: profileError } = await supabase
+      const { data: profilesData, error: profileError } = await (supabase as any)
         .from("profiles")
         .select("user_id, first_name, last_name")
         .in("user_id", userIds);
@@ -72,7 +72,7 @@ export const DeliveriesTable: React.FC<Props> = ({ notificationId }) => {
       console.log("Profiles data:", profilesData);
 
       // Also try to get names from subscribers table
-      const { data: subscribersData, error: subsError } = await supabase
+      const { data: subscribersData, error: subsError } = await (supabase as any)
         .from("subscribers")
         .select("email, name")
         .eq("is_active", true);

@@ -47,7 +47,7 @@ export const useMemberLedger = (dateRange?: { start?: Date; end?: Date }) => {
 
     const fetchLedgerEntries = async () => {
       try {
-        let query = supabase
+        let query = (supabase as any)
           .from('member_ledger')
           .select('*')
           .eq('user_id', user.id);
@@ -85,7 +85,7 @@ export const useMemberLedger = (dateRange?: { start?: Date; end?: Date }) => {
         let receiptsMap = new Map();
         if (receiptIds.length > 0) {
           console.log('useMemberLedger: Fetching receipt data...');
-          const { data: receiptsData, error: receiptsError } = await supabase
+          const { data: receiptsData, error: receiptsError } = await (supabase as any)
             .from('member_receipts')
             .select('id, receipt_image_url, venue_location, items, total_amount')
             .in('id', receiptIds);
@@ -143,14 +143,14 @@ export const useMemberStats = () => {
     const fetchMemberStats = async () => {
       try {
         // Fetch streak data
-        const { data: streakData } = await supabase
+        const { data: streakData } = await (supabase as any)
           .from('member_streaks')
           .select('*')
           .eq('user_id', user.id)
           .single();
 
         // Fetch spending data from ledger
-        const { data: ledgerData } = await supabase
+        const { data: ledgerData } = await (supabase as any)
           .from('member_ledger')
           .select('amount, activity_date, currency')
           .eq('user_id', user.id)

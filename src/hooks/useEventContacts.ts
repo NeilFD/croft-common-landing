@@ -19,7 +19,7 @@ export const useEventContacts = (eventId: string) => {
   return useQuery({
     queryKey: ['event-contacts', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_contacts')
         .select('*')
         .eq('event_id', eventId)
@@ -46,7 +46,7 @@ export const useContactMutations = (eventId: string) => {
       email?: string;
       notes?: string;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_contacts')
         .insert({
           event_id: eventId,
@@ -80,7 +80,7 @@ export const useContactMutations = (eventId: string) => {
       notes?: string;
     }) => {
       const { id, ...updateData } = params;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_contacts')
         .update(updateData)
         .eq('id', id);
@@ -103,7 +103,7 @@ export const useContactMutations = (eventId: string) => {
 
   const deleteContact = useMutation({
     mutationFn: async (contactId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('event_contacts')
         .delete()
         .eq('id', contactId);

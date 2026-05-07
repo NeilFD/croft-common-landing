@@ -57,7 +57,7 @@ export const EnhancedUserAnalytics: React.FC<{ embedded?: boolean }> = ({ embedd
   const { data: interactionData, isLoading: interactionLoading } = useQuery({
     queryKey: ['interaction-analytics', timeRange],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('user_interactions')
         .select('*');
       

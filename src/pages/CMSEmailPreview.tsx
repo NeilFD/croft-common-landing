@@ -24,7 +24,7 @@ export default function CMSEmailPreview() {
   const fetchContent = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_global_content')
         .select('content_key, content_value')
         .eq('content_type', 'email_template')

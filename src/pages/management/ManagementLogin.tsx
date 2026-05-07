@@ -363,7 +363,7 @@ const ManagementLogin = () => {
       }
 
       // Check if password change is required
-      const { data: mustChange } = await supabase.rpc('check_password_change_required');
+      const { data: mustChange } = await (supabase as any).rpc('check_password_change_required');
       
       if (mustChange) {
         toast({

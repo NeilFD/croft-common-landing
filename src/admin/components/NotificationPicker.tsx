@@ -23,7 +23,7 @@ export const NotificationPicker: React.FC<Props> = ({ value, onChange }) => {
   const { data, isLoading } = useQuery<NotificationOption[]>({
     queryKey: ["notification-picker"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("notifications")
         .select("id, title, created_at, archived, dry_run, success_count")
         .order("created_at", { ascending: false })

@@ -13,7 +13,7 @@ export const AdminDashboard = () => {
     queryFn: async () => {
       const [enabledUsersRes, recentNotificationsRes] = await Promise.all([
         supabase.functions.invoke("get-enabled-users-count"),
-        supabase.from('notifications')
+        (supabase as any).from('notifications')
           .select('id, title, status, created_at, recipients_count')
           .order('created_at', { ascending: false })
           .limit(5)

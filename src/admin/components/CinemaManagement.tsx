@@ -45,7 +45,7 @@ export const CinemaManagement: React.FC = () => {
   const { data: releases, isLoading } = useQuery({
     queryKey: ["cinema-releases"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("cinema_releases")
         .select("*")
         .order("month_key", { ascending: false });
@@ -59,7 +59,7 @@ export const CinemaManagement: React.FC = () => {
   const { data: bookingCounts } = useQuery({
     queryKey: ["cinema-booking-counts"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("cinema_bookings")
         .select("release_id, quantity")
         .in("release_id", releases?.map(r => r.id) || []);
@@ -79,7 +79,7 @@ export const CinemaManagement: React.FC = () => {
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<CinemaRelease> }) => {
       console.log("🎬 Updating cinema release:", { id, updates });
       
-      const { error, data } = await supabase
+      const { error, data } = await (supabase as any)
         .from("cinema_releases")
         .update(updates)
         .eq("id", id)
@@ -167,7 +167,7 @@ export const CinemaManagement: React.FC = () => {
 
       const toYMD = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
-      const { error, data } = await supabase
+      const { error, data } = await (supabase as any)
         .from("cinema_releases")
         .insert([
           {

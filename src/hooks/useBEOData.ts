@@ -102,7 +102,7 @@ export const useEventMenus = (eventId: string) => {
   return useQuery({
     queryKey: ['event-menus', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_menus')
         .select('*')
         .eq('event_id', eventId)
@@ -121,7 +121,7 @@ export const useEventStaffing = (eventId: string) => {
   return useQuery({
     queryKey: ['event-staffing', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_staffing')
         .select('*')
         .eq('event_id', eventId)
@@ -139,7 +139,7 @@ export const useEventSchedule = (eventId: string) => {
   return useQuery({
     queryKey: ['event-schedule', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_schedule')
         .select('*')
         .eq('event_id', eventId)
@@ -157,7 +157,7 @@ export const useEventRoomLayouts = (eventId: string) => {
   return useQuery({
     queryKey: ['event-room-layouts', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_room_layouts')
         .select('*')
         .eq('event_id', eventId)
@@ -175,7 +175,7 @@ export const useEventEquipment = (eventId: string) => {
   return useQuery({
     queryKey: ['event-equipment', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_equipment')
         .select('*')
         .eq('event_id', eventId)
@@ -194,7 +194,7 @@ export const useEventVenueHire = (eventId: string) => {
   return useQuery({
     queryKey: ['event-venue-hire', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_venue_hire')
         .select('*')
         .eq('event_id', eventId)
@@ -212,7 +212,7 @@ export const useBEOVersions = (eventId: string) => {
   return useQuery({
     queryKey: ['beo-versions', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_beo_versions')
         .select('*')
         .eq('event_id', eventId)
@@ -239,7 +239,7 @@ export const useBEOMutations = (eventId: string) => {
       notes?: string;
       allergens?: string[];
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_menus')
         .insert({
           event_id: eventId,
@@ -279,7 +279,7 @@ export const useBEOMutations = (eventId: string) => {
       hourly_rate?: number;
       notes?: string;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_staffing')
         .insert({
           event_id: eventId,
@@ -318,7 +318,7 @@ export const useBEOMutations = (eventId: string) => {
       responsible_role?: string;
       notes?: string;
     }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_schedule')
         .insert({
           event_id: eventId,
@@ -358,7 +358,7 @@ export const useBEOMutations = (eventId: string) => {
       breakdown_time?: string;
       special_requirements?: string;
     }) => {
-      const { data, error } = await supabase.rpc('add_room_layout', {
+      const { data, error } = await (supabase as any).rpc('add_room_layout', {
         p_event_id: eventId,
         p_space_name: params.space_name,
         p_layout_type: params.layout_type,
@@ -401,7 +401,7 @@ export const useBEOMutations = (eventId: string) => {
       contact_details?: string;
       setup_instructions?: string;
     }) => {
-      const { data, error } = await supabase.rpc('add_equipment_item', {
+      const { data, error } = await (supabase as any).rpc('add_equipment_item', {
         p_event_id: eventId,
         p_category: params.category,
         p_item_name: params.item_name,
@@ -487,7 +487,7 @@ export const useBEOMutations = (eventId: string) => {
 
   const deleteMenuItem = useMutation({
     mutationFn: async (itemId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('event_menus')
         .delete()
         .eq('id', itemId);
@@ -508,7 +508,7 @@ export const useBEOMutations = (eventId: string) => {
 
   const deleteStaffingRequirement = useMutation({
     mutationFn: async (itemId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('event_staffing')
         .delete()
         .eq('id', itemId);
@@ -529,7 +529,7 @@ export const useBEOMutations = (eventId: string) => {
 
   const deleteScheduleItem = useMutation({
     mutationFn: async (itemId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('event_schedule')
         .delete()
         .eq('id', itemId);
@@ -550,7 +550,7 @@ export const useBEOMutations = (eventId: string) => {
 
   const deleteRoomLayout = useMutation({
     mutationFn: async (itemId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('event_room_layouts')
         .delete()
         .eq('id', itemId);
@@ -571,7 +571,7 @@ export const useBEOMutations = (eventId: string) => {
 
   const deleteEquipmentItem = useMutation({
     mutationFn: async (itemId: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('event_equipment')
         .delete()
         .eq('id', itemId);
@@ -601,7 +601,7 @@ export const useBEOMutations = (eventId: string) => {
       allergens?: string[];
     }) => {
       const { id, ...updates } = params;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_menus')
         .update(updates)
         .eq('id', id);
@@ -632,7 +632,7 @@ export const useBEOMutations = (eventId: string) => {
       notes?: string;
     }) => {
       const { id, ...updates } = params;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_staffing')
         .update(updates)
         .eq('id', id);
@@ -662,7 +662,7 @@ export const useBEOMutations = (eventId: string) => {
       notes?: string;
     }) => {
       const { id, ...updates } = params;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_schedule')
         .update(updates)
         .eq('id', id);
@@ -694,7 +694,7 @@ export const useBEOMutations = (eventId: string) => {
       special_requirements?: string;
     }) => {
       const { id, ...updates } = params;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_room_layouts')
         .update(updates)
         .eq('id', id);
@@ -729,7 +729,7 @@ export const useBEOMutations = (eventId: string) => {
       setup_instructions?: string;
     }) => {
       const { id, ...updates } = params;
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_equipment')
         .update(updates)
         .eq('id', id);
@@ -782,7 +782,7 @@ export const useBEOMutations = (eventId: string) => {
   // Venue hire mutations
   const addVenueHire = useMutation({
     mutationFn: async (venueHire: Omit<EventVenueHire, 'id' | 'created_at' | 'updated_at' | 'event_id'>) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_venue_hire')
         .insert([{ ...venueHire, event_id: eventId }])
         .select()
@@ -802,7 +802,7 @@ export const useBEOMutations = (eventId: string) => {
 
   const updateVenueHire = useMutation({
     mutationFn: async ({ id, ...updates }: Partial<EventVenueHire> & { id: string }) => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('event_venue_hire')
         .update(updates)
         .eq('id', id)
@@ -823,7 +823,7 @@ export const useBEOMutations = (eventId: string) => {
 
   const deleteVenueHire = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('event_venue_hire')
         .delete()
         .eq('id', id);

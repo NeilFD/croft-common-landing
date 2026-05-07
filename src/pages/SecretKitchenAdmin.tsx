@@ -171,7 +171,7 @@ export default function SecretKitchenAdmin() {
   const loadAdminData = async () => {
     try {
       // Load enhanced access users with application details
-      const { data: users, error: usersError } = await supabase
+      const { data: users, error: usersError } = await (supabase as any)
         .from('secret_kitchen_access')
         .select(`
           *,
@@ -216,7 +216,7 @@ export default function SecretKitchenAdmin() {
       setAccessUsers(enhancedUsers);
 
       // Load usage records
-      const { data: usage, error: usageError } = await supabase
+      const { data: usage, error: usageError } = await (supabase as any)
         .from('secret_kitchen_usage')
         .select('*')
         .order('accessed_at', { ascending: false })
@@ -240,7 +240,7 @@ export default function SecretKitchenAdmin() {
     }
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('secret_kitchen_access')
         .insert([{
           ...newUser,
@@ -267,7 +267,7 @@ export default function SecretKitchenAdmin() {
 
   const toggleUserStatus = async (userId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('secret_kitchen_access')
         .update({ is_active: !currentStatus })
         .eq('id', userId);
@@ -290,7 +290,7 @@ export default function SecretKitchenAdmin() {
 
   const toggleMeetingStatus = async (userEmail: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase.rpc('update_meeting_status', {
+      const { error } = await (supabase as any).rpc('update_meeting_status', {
         user_email: userEmail,
         booking_status: !currentStatus,
         booking_date: !currentStatus ? new Date().toISOString() : null
@@ -316,7 +316,7 @@ export default function SecretKitchenAdmin() {
     if (!confirm(`Are you sure you want to delete ${userName}?`)) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('secret_kitchen_access')
         .delete()
         .eq('id', userId);

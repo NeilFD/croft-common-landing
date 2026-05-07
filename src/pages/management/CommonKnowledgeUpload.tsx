@@ -55,7 +55,7 @@ export default function CommonKnowledgeUpload() {
 
   const fetchCollections = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from("ck_collections")
         .select("*")
         .order("name");
@@ -141,7 +141,7 @@ export default function CommonKnowledgeUpload() {
       const ownerId = authData?.user?.id || null;
 
       // Create document first
-      const { data: docData, error: docError } = await supabase
+      const { data: docData, error: docError } = await (supabase as any)
         .from('ck_docs')
         .insert({
           title: formData.title,
@@ -159,7 +159,7 @@ export default function CommonKnowledgeUpload() {
       const docId = docData.id;
 
       // Create initial version and set as current
-      const { data: versionData, error: versionError } = await supabase
+      const { data: versionData, error: versionError } = await (supabase as any)
         .from('ck_doc_versions')
         .insert({
           doc_id: docId,
@@ -173,7 +173,7 @@ export default function CommonKnowledgeUpload() {
       if (versionError) throw versionError;
 
       // Update document with current version id
-      const { error: updateDocError } = await supabase
+      const { error: updateDocError } = await (supabase as any)
         .from('ck_docs')
         .update({ version_current_id: versionData.id })
         .eq('id', docId);
@@ -194,7 +194,7 @@ export default function CommonKnowledgeUpload() {
       if (uploadError) throw uploadError;
 
       // Create file record
-      const { error: fileError } = await supabase
+      const { error: fileError } = await (supabase as any)
         .from('ck_files')
         .insert({
           doc_id: docId,
@@ -214,7 +214,7 @@ export default function CommonKnowledgeUpload() {
           
           if (extractedText.length > 100) {
             // Update version with extracted content via RPC (SECURITY DEFINER)
-            const { error: rpcError } = await supabase.rpc('admin_update_doc_content', {
+            const { error: rpcError } = await (supabase as any).rpc('admin_update_doc_content', {
               p_version_id: versionData.id,
               p_content_md: extractedText,
               p_summary: extractedText.substring(0, 500)

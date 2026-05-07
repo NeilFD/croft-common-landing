@@ -33,7 +33,7 @@ export const useCMSMenuData = (page: string, showDrafts: boolean = false) => {
   const { data: sections, isLoading: sectionsLoading, error: sectionsError } = useQuery({
     queryKey: ['cms-menu-sections', page, showDrafts],
     queryFn: async () => {
-      let query = supabase
+      let query = (supabase as any)
         .from('cms_menu_sections')
         .select(`
           id,

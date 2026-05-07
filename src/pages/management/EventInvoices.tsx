@@ -15,7 +15,7 @@ const EventInvoices = () => {
     queryFn: async () => {
       if (!id) throw new Error('Event ID is required');
       
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_events')
         .select('*')
         .eq('id', id)

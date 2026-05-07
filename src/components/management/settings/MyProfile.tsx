@@ -27,7 +27,7 @@ export const MyProfile = () => {
     if (!managementUser?.user?.id) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('management_profiles')
         .select('user_name, job_title')
         .eq('user_id', managementUser.user.id)
@@ -59,7 +59,7 @@ export const MyProfile = () => {
     setProfileLoading(true);
 
     try {
-      const { error } = await supabase.rpc('update_my_management_profile', {
+      const { error } = await (supabase as any).rpc('update_my_management_profile', {
         p_user_name: userName.trim(),
         p_job_title: jobTitle.trim()
       });
@@ -124,7 +124,7 @@ export const MyProfile = () => {
       if (error) throw error;
 
       // Mark password as changed
-      await supabase.rpc('mark_password_changed');
+      await (supabase as any).rpc('mark_password_changed');
 
       toast({
         title: 'Password updated',

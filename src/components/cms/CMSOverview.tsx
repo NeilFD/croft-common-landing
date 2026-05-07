@@ -63,16 +63,16 @@ export const CMSOverview = () => {
         { count: imagesCount },
         { count: brandAssetsCount }
       ] = await Promise.all([
-        supabase.from('cms_content').select('*', { count: 'exact', head: true }),
-        supabase.from('cms_content').select('*', { count: 'exact', head: true }).eq('published', true),
-        supabase.from('cms_menu_sections').select('*', { count: 'exact', head: true }),
-        supabase.from('cms_menu_items').select('*', { count: 'exact', head: true }),
-        supabase.from('cms_images').select('*', { count: 'exact', head: true }),
-        supabase.from('cms_brand_assets').select('*', { count: 'exact', head: true })
+        (supabase as any).from('cms_content').select('*', { count: 'exact', head: true }),
+        (supabase as any).from('cms_content').select('*', { count: 'exact', head: true }).eq('published', true),
+        (supabase as any).from('cms_menu_sections').select('*', { count: 'exact', head: true }),
+        (supabase as any).from('cms_menu_items').select('*', { count: 'exact', head: true }),
+        (supabase as any).from('cms_images').select('*', { count: 'exact', head: true }),
+        (supabase as any).from('cms_brand_assets').select('*', { count: 'exact', head: true })
       ]);
 
       // Get last updated time
-      const { data: lastUpdatedData } = await supabase
+      const { data: lastUpdatedData } = await (supabase as any)
         .from('cms_content')
         .select('updated_at')
         .order('updated_at', { ascending: false })
