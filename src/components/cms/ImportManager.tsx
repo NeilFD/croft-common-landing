@@ -93,7 +93,7 @@ const ImportManager = () => {
       console.log('🔄 User email:', user.email);
       
       // Test authentication and permissions first
-      const { data: testData, error: testError } = await supabase
+      const { data: testData, error: testError } = await (supabase as any)
         .from('cms_content')
         .select('count')
         .limit(1);
@@ -277,7 +277,7 @@ const ImportManager = () => {
         }
       }));
 
-      const { error: contentError } = await supabase
+      const { error: contentError } = await (supabase as any)
         .from('cms_content')
         .upsert(cleanedContentData, { 
           onConflict: 'page,section,content_key',
@@ -776,7 +776,7 @@ const ImportManager = () => {
         },
       ];
 
-      const { error: imageError } = await supabase
+      const { error: imageError } = await (supabase as any)
         .from('cms_images')
         .upsert(imageData, { 
           onConflict: 'image_url,page,carousel_name',
@@ -925,7 +925,7 @@ const ImportManager = () => {
         const { items, ...sectionData } = menuSection;
         
         // Insert section without onConflict to avoid constraint issues
-        const { data: sectionResult, error: sectionError } = await supabase
+        const { data: sectionResult, error: sectionError } = await (supabase as any)
           .from('cms_menu_sections')
           .insert(sectionData)
           .select('id')
@@ -934,7 +934,7 @@ const ImportManager = () => {
         if (sectionError) {
           // If it's a duplicate, try to find existing section
           if (sectionError.code === '23505') {
-            const { data: existingSection } = await supabase
+            const { data: existingSection } = await (supabase as any)
               .from('cms_menu_sections')
               .select('id')
               .eq('page', sectionData.page)
@@ -948,7 +948,7 @@ const ImportManager = () => {
               }));
 
               // Try to insert items, ignore duplicates
-              await supabase
+              await (supabase as any)
                 .from('cms_menu_items')
                 .insert(itemsWithSectionId);
             }
@@ -961,7 +961,7 @@ const ImportManager = () => {
             section_id: sectionResult.id,
           }));
 
-          const { error: itemsError } = await supabase
+          const { error: itemsError } = await (supabase as any)
             .from('cms_menu_items')
             .insert(itemsWithSectionId);
 
@@ -1098,7 +1098,7 @@ const ImportManager = () => {
           content_value: sanitizeContentText(content.content_value)
         };
 
-        const { error: modalError } = await supabase
+        const { error: modalError } = await (supabase as any)
           .from('cms_modal_content')
           .insert(cleanedContent);
 
@@ -1250,7 +1250,7 @@ const ImportManager = () => {
           content_value: sanitizeContentText(content.content_value)
         };
 
-        const { error: globalError } = await supabase
+        const { error: globalError } = await (supabase as any)
           .from('cms_global_content')
           .insert(cleanedContent);
 
@@ -1304,7 +1304,7 @@ const ImportManager = () => {
         },
       ];
 
-      const { error: brandError } = await supabase
+      const { error: brandError } = await (supabase as any)
         .from('cms_brand_assets')
         .upsert(brandData, { 
           onConflict: 'asset_key,asset_type',
@@ -1491,7 +1491,7 @@ const ImportManager = () => {
         },
       ];
 
-      const { error: designError } = await supabase
+      const { error: designError } = await (supabase as any)
         .from('cms_design_tokens')
         .upsert(designTokens, { 
           onConflict: 'token_key',
