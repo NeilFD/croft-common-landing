@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import { useProperty } from "@/contexts/PropertyContext";
-import { getHeroFor } from "@/data/propertyHeroMap";
+import { getHeroFor, getHeroFitFor } from "@/data/propertyHeroMap";
 
 interface Props {
   title: string;
@@ -14,6 +14,7 @@ const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
   const { config } = useProperty();
   const location = useLocation();
   const hero = getHeroFor(location.pathname, fallbackHero ?? "");
+  const fit = getHeroFitFor(location.pathname);
 
   return (
     <>
@@ -25,7 +26,7 @@ const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
           <img
             src={hero}
             alt={title}
-            className="absolute inset-0 h-full w-full object-cover"
+            className={`absolute inset-0 h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
