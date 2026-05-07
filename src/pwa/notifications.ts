@@ -237,7 +237,7 @@ export async function enableNotifications(reg: ServiceWorkerRegistration): Promi
     
     if (userHandle) {
       try {
-        const { data: userLink, error } = await supabase
+        const { data: userLink, error } = await (supabase as any)
           .from('webauthn_user_links')
           .select('user_id')
           .eq('user_handle', userHandle)
