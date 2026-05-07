@@ -5,7 +5,7 @@ import events from "@/assets/cb-hero-events.jpg";
 import parties from "@/assets/cb-hero-parties.jpg";
 import thai from "@/assets/cb-hero-thai.jpg";
 import cocktails from "@/assets/cb-hero-cocktails.jpg";
-const pool = "/lovable-uploads/cb-outdoor-terrace-stadhampton.jpg";
+import pool from "@/assets/hero-final-poolside.png";
 import blackBear from "@/assets/cb-hero-blackbear.jpg";
 import chefPlating from "@/assets/idea-chef-plating.jpg";
 import englishMenu from "@/assets/hero-english-menu.png";
