@@ -20,7 +20,8 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
   return (
     <>
       <header
-        className={`absolute top-0 left-0 right-0 z-30 px-6 md:px-12 pt-7 flex items-center justify-between ${text}`}
+        className={`absolute top-0 left-0 right-0 z-30 px-6 md:px-12 flex items-center justify-between ${text}`}
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 28px)' }}
       >
         <Link to="/" className="flex items-center group">
           <img
