@@ -1,142 +1,112 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
-import heroImage from "@/assets/stadhampton-property.jpg";
+import heroImage from "@/assets/cb-landing-hero.jpg";
+import bearMark from "@/assets/crazy-bear-mark.png";
+import CBTopNav from "@/components/crazybear/CBTopNav";
 
-const rules = [
-  "Inhibitions will get you nowhere",
-  "Dress like your ex is watching",
-  "Crazy Bear is for the 'gram, not on a gram",
-  "No phones = No evidence",
-  "Everyone's got problems, keep yours to yourself",
-  "Be cool, no-one likes that guy",
-  "Be safe, be respectful, be anything but your midweek self",
-];
-
-const TYPING_SPEED = 22;
-const LINE_PAUSE = 350;
-
-const TypewriterRules = () => {
-  const [lineIdx, setLineIdx] = useState(0);
-  const [charIdx, setCharIdx] = useState(0);
+const Landing = () => {
+  const [introDone, setIntroDone] = useState(false);
 
   useEffect(() => {
-    if (lineIdx >= rules.length) return;
-    const current = rules[lineIdx];
-    if (charIdx < current.length) {
-      const t = setTimeout(() => setCharIdx((c) => c + 1), TYPING_SPEED);
-      return () => clearTimeout(t);
-    }
-    const t = setTimeout(() => {
-      setLineIdx((l) => l + 1);
-      setCharIdx(0);
-    }, LINE_PAUSE);
+    const t = setTimeout(() => setIntroDone(true), 900);
     return () => clearTimeout(t);
-  }, [lineIdx, charIdx]);
+  }, []);
 
   return (
-    <ol className="space-y-3">
-      {rules.map((r, i) => {
-        const text =
-          i < lineIdx ? r : i === lineIdx ? r.slice(0, charIdx) : "";
-        const isTyping = i === lineIdx && charIdx < r.length;
-        return (
-          <li
-            key={i}
-            className="font-serif text-lg md:text-xl leading-snug text-white min-h-[1.6em]"
+    <>
+      <Helmet>
+        <title>The Crazy Bear | Country & Town</title>
+        <meta
+          name="description"
+          content="The Crazy Bear. Two hotels, one spirit. Country in Stadhampton, Town in Beaconsfield."
+        />
+      </Helmet>
+
+      <main className="bg-black text-white font-cb-sans">
+        <section className="relative h-screen w-full overflow-hidden">
+          <img
+            src={heroImage}
+            alt="The Crazy Bear"
+            className="absolute inset-0 h-full w-full object-cover animate-[kenburns_22s_ease-in-out_infinite_alternate]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/25 to-black/85" />
+
+          <CBTopNav tone="light" />
+
+          {/* Centred mark / wordmark */}
+          <div
+            className={`absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6 transition-all duration-[1400ms] ease-out ${
+              introDone ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+            }`}
           >
-            {text}
-            {isTyping && (
-              <span className="inline-block w-[2px] h-[1em] -mb-[2px] ml-[2px] bg-white animate-pulse" />
-            )}
-          </li>
-        );
-      })}
-    </ol>
-  );
-};
-
-const Landing = () => (
-  <>
-    <Helmet>
-      <title>Crazy Bear | House Rules</title>
-      <meta
-        name="description"
-        content="The Crazy Bear house rules. Country in Stadhampton, Town in Beaconsfield."
-      />
-    </Helmet>
-    <main className="relative min-h-screen text-white overflow-hidden">
-      {/* Hero background */}
-      <img
-        src={heroImage}
-        alt="Crazy Bear country house"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-black/65" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/80" />
-
-      {/* Content */}
-      <div className="relative z-10 flex min-h-screen flex-col">
-        <header className="px-8 pt-10 flex items-center justify-between max-w-3xl mx-auto w-full">
-          <p className="text-[10px] tracking-[0.4em] uppercase opacity-80">
-            Crazy Bear
-          </p>
-          <Link
-            to="/members"
-            className="text-[10px] tracking-[0.4em] uppercase opacity-80 hover:opacity-100"
-          >
-            Members
-          </Link>
-        </header>
-
-        <section className="flex-1 flex items-center px-6 py-16">
-          <div className="mx-auto w-full max-w-5xl text-left">
-            
-            <h1 className="font-serif text-2xl md:text-4xl lg:text-5xl leading-[1.15] text-[hsl(42,65%,60%)] drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]">
-              <span className="block whitespace-nowrap">We identify as anything you want us to be.</span>
-              <span className="block whitespace-nowrap mt-1">The expectation of you ...</span>
+            <img
+              src={bearMark}
+              alt=""
+              className="h-20 md:h-28 w-auto invert opacity-95"
+            />
+            <h1 className="mt-7 font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight">
+              The
+              <br />
+              Crazy Bear
             </h1>
-            <div className="mt-10 max-w-2xl">
-              <TypewriterRules />
+            <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
+              Country &nbsp; / &nbsp; Town
+            </p>
+          </div>
+
+          {/* Bottom entry chooser */}
+          <div
+            className={`absolute bottom-0 left-0 right-0 z-10 transition-all duration-[1400ms] delay-500 ease-out ${
+              introDone ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+            }`}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 border-t border-white/20 backdrop-blur-[1px]">
+              <Link
+                to="/country"
+                className="group relative flex items-center justify-between px-7 md:px-12 py-7 md:py-9 hover:bg-white/[0.06] transition-colors"
+              >
+                <div>
+                  <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
+                    Stadhampton
+                  </p>
+                  <p className="mt-2 font-display text-3xl md:text-5xl uppercase tracking-tight">
+                    Country
+                  </p>
+                </div>
+                <span className="font-cb-mono text-xs tracking-[0.4em] uppercase opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                  Enter &rarr;
+                </span>
+              </Link>
+              <Link
+                to="/town"
+                className="group relative flex items-center justify-between px-7 md:px-12 py-7 md:py-9 border-t md:border-t-0 md:border-l border-white/20 hover:bg-white/[0.06] transition-colors"
+              >
+                <div>
+                  <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-70">
+                    Beaconsfield
+                  </p>
+                  <p className="mt-2 font-display text-3xl md:text-5xl uppercase tracking-tight">
+                    Town
+                  </p>
+                </div>
+                <span className="font-cb-mono text-xs tracking-[0.4em] uppercase opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                  Enter &rarr;
+                </span>
+              </Link>
             </div>
           </div>
         </section>
+      </main>
 
-        <footer className="px-6 pb-16">
-          <div className="mx-auto w-full max-w-5xl flex flex-col sm:flex-row sm:justify-between gap-10">
-            <Link
-              to="/town"
-              className="group flex flex-col items-start text-left"
-            >
-              <span className="text-[10px] tracking-[0.4em] uppercase opacity-70 group-hover:opacity-100">
-                Enter
-              </span>
-              <span className="mt-3 font-serif text-5xl md:text-6xl border-b-2 border-white/30 pb-2 group-hover:border-white">
-                Town
-              </span>
-              <span className="mt-2 text-xs tracking-[0.3em] uppercase opacity-70">
-                Beaconsfield
-              </span>
-            </Link>
-            <Link
-              to="/country"
-              className="group flex flex-col items-end text-right"
-            >
-              <span className="text-[10px] tracking-[0.4em] uppercase opacity-70 group-hover:opacity-100">
-                Enter
-              </span>
-              <span className="mt-3 font-serif text-5xl md:text-6xl border-b-2 border-white/30 pb-2 group-hover:border-white">
-                Country
-              </span>
-              <span className="mt-2 text-xs tracking-[0.3em] uppercase opacity-70">
-                Stadhampton
-              </span>
-            </Link>
-          </div>
-        </footer>
-      </div>
-    </main>
-  </>
-);
+      <style>{`
+        @keyframes kenburns {
+          0%   { transform: scale(1)    translate(0, 0); }
+          100% { transform: scale(1.08) translate(-1%, -1%); }
+        }
+      `}</style>
+    </>
+  );
+};
 
 export default Landing;
