@@ -92,6 +92,13 @@
             var onBearWww = host === 'www.crazybeartest.com';
             var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
             var onSetPassword = /^\/set-password\/?$/.test(loc.pathname);
+
+            if ((onBearApex || onBearWww) && onLogin) {
+              var bearLoginTarget = 'https://www.crazybeartest.com/set-password' + search + hash;
+              console.info('[bootstrap] Blocking legacy management login on Crazy Bear');
+              w.location.replace(bearLoginTarget);
+              return;
+            }
  
             if (hasRecoveryTokens) {
               if (onBearApex || (onBearWww && !onSetPassword)) {

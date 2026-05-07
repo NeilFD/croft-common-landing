@@ -44,6 +44,14 @@ const ManagementLogin = () => {
   const [sessionValid, setSessionValid] = useState(false);
   const [sessionCheckComplete, setSessionCheckComplete] = useState(false);
 
+  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybeartest.com');
+
+  useEffect(() => {
+    if (!isCrazyBearHost) return;
+    const target = '/set-password' + window.location.search + window.location.hash;
+    window.location.replace(target);
+  }, [isCrazyBearHost]);
+
 
   // Utility: remove auth artefacts (# fragments and sensitive query params)
   const stripAuthArtifacts = () => {
@@ -102,6 +110,7 @@ const ManagementLogin = () => {
 
       const hasRecoveryTokens = !!(type === 'recovery' || code || tokenHash || accessToken || refreshToken);
  
+      if (isCrazyBearHost) return;
       // Domain canonicalisation handled by index.html bootstrap
  
       // Detect recovery flow early
@@ -205,7 +214,7 @@ const ManagementLogin = () => {
     };
 
     processAuthTokens();
-  }, []);
+  }, [isCrazyBearHost]);
 
   // React to Supabase auth events
   useEffect(() => {
@@ -315,7 +324,7 @@ const ManagementLogin = () => {
       
       // Redirect to login
       setTimeout(() => {
-        window.location.assign('https://www.croftcommontest.com/management/login');
+        window.location.assign(isCrazyBearHost ? 'https://www.crazybeartest.com/' : 'https://www.croftcommontest.com/management/login');
       }, 500);
       
     } catch (error: any) {
@@ -406,7 +415,7 @@ const ManagementLogin = () => {
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://www.croftcommontest.com/management/login"
+        redirectTo: isCrazyBearHost ? "https://www.crazybeartest.com/set-password" : "https://www.croftcommontest.com/management/login"
       });
 
       if (error) {
@@ -434,6 +443,8 @@ const ManagementLogin = () => {
       setIsLoading(false);
     }
   };
+
+  if (isCrazyBearHost) return null;
 
   return (
     <div className="min-h-screen bg-transparent px-4">
