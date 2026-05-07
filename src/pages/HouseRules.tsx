@@ -1,8 +1,9 @@
 import { Helmet } from "react-helmet-async";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 
+const statement = "We identify as anything you want us to be";
+
 const rules = [
-  "We identify as anything you want us to be",
   "Inhibitions will get you nowhere",
   "Dress like your ex is watching",
   "Crazy Bear is for the 'gram, not on a gram",
@@ -35,8 +36,12 @@ const HouseRules = () => (
             <br />
             Rules
           </h1>
-          <p className="mt-8 font-cb-sans text-base md:text-lg max-w-xl opacity-70 leading-relaxed">
-            Read once. Forget at your peril. The bear is watching.
+
+          <p className="mt-12 font-display text-2xl md:text-4xl uppercase leading-tight tracking-tight max-w-2xl">
+            {statement}.
+          </p>
+          <p className="mt-5 font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-60">
+            Our statement &mdash; everything else follows.
           </p>
 
           <ol className="mt-16 border-t border-foreground/15">
