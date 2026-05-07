@@ -85,7 +85,7 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <CroftLogo size="sm" />
-            <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
+            <span className="font-brutalist text-foreground tracking-wider">THE DEN</span>
           </div>
           {step === 'email' && (
             <>

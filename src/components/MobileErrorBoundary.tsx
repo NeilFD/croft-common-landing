@@ -131,7 +131,7 @@ export class MobileErrorBoundary extends React.Component<MobileErrorBoundaryProp
                 Try Again
               </Button>
               <Button variant="outline" onClick={this.handleNavigateBack}>
-                Back to Common Room
+                Back to the Den
               </Button>
               {isWebAuthnError && (
                 <Button 

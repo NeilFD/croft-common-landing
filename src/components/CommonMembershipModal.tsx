@@ -14,7 +14,7 @@ const CommonMembershipModal: React.FC<CommonMembershipModalProps> = ({ open, onC
         <DialogHeader>
           <div className="flex items-center gap-3">
             <CroftLogo size="sm" />
-            <span className="font-brutalist text-foreground tracking-wider">CROFT COMMON</span>
+            <span className="font-brutalist text-foreground tracking-wider">THE DEN</span>
           </div>
           <DialogTitle className="font-brutalist text-foreground tracking-wider text-xl">Common Membership</DialogTitle>
           <DialogDescription className="font-industrial text-foreground/80">

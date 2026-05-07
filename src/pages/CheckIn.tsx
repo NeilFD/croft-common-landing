@@ -111,7 +111,7 @@ const CheckIn: React.FC = () => {
               className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Common Room
+              Back to the Den
             </Link>
           </div>
 
@@ -175,7 +175,7 @@ const CheckIn: React.FC = () => {
                     
                     <Link to="/den/main">
                       <Button variant="outline" className="w-full">
-                        Back to Common Room
+                        Back to the Den
                       </Button>
                     </Link>
                   </div>
