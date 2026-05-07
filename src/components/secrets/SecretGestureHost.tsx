@@ -25,6 +25,21 @@ interface Props {
   children: ReactNode;
 }
 
+const GestureSelectionGuard = () => {
+  useEffect(() => {
+    document.body.classList.add("gesture-no-select");
+    const clear = () => {
+      try { window.getSelection()?.removeAllRanges(); } catch {}
+    };
+    document.addEventListener("selectionchange", clear);
+    return () => {
+      document.body.classList.remove("gesture-no-select");
+      document.removeEventListener("selectionchange", clear);
+    };
+  }, []);
+  return null;
+};
+
 const SecretGestureHost = ({ variant, children }: Props) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
