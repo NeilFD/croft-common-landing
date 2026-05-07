@@ -10,7 +10,7 @@ export const CountryHome = () => (
     body="The original Crazy Bear. A 16th century inn with rooms, restaurants and a country pub spirit that refuses to behave."
   />
 );
-export const CountryPub = () => <PropertyPage title="The Pub" />;
+export const CountryPub = () => <CBMenuPage menu={countryPubMenu} />;
 export const CountryPubFood = () => <CBMenuPage menu={countryPubMenu} />;
 export const CountryPubDrink = () => <PropertyPage title="Drink" eyebrow="The Pub" />;
 export const CountryPubHospitality = () => (
