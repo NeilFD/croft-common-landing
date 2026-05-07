@@ -9,8 +9,6 @@ import { Button } from "@/components/ui/button";
 import { TransitionProvider } from "@/contexts/TransitionContext";
 import { MembershipAuthProvider } from "@/contexts/MembershipAuthContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
-import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
-import { useTrackNotificationClick } from "@/hooks/useTrackNotificationClick";
 import NudgeFloatingButton from './components/NudgeFloatingButton';
 import CBSpotifyPlayer from './components/crazybear/CBSpotifyPlayer';
 
@@ -79,15 +77,11 @@ import NavigationImagePreloader from '@/components/NavigationImagePreloader';
 import ScrollToTop from '@/components/ScrollToTop';
 import DomainGuard from '@/components/DomainGuard';
 import ReverseDomainGuard from '@/components/ReverseDomainGuard';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { useConsolidatedPerformance } from '@/hooks/useConsolidatedPerformance';
-import { useCapacitorDeepLinking } from '@/hooks/useCapacitorDeepLinking';
-import { useCapacitorPushNotifications } from '@/hooks/useCapacitorPushNotifications';
 import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
 import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 import { ProtectedRoute } from '@/components/research/ProtectedRoute';
-import InteractionWatchdog from '@/components/InteractionWatchdog';
 import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
+const GlobalHandlers = lazy(() => import('@/components/GlobalHandlers'));
 
 
 // Management system components
@@ -119,42 +113,6 @@ const ClientPortal = lazy(() => import("./pages/ClientPortal"));
 
 const queryClient = new QueryClient();
 
-
-// Single performance and notification handler
-const GlobalHandlers = () => {
-  const location = useLocation();
-  
-  // Call hooks at the top level (Rules of Hooks)
-  useConsolidatedPerformance(); // Consolidates all performance optimizations
-  useAnalytics();
-  
-  // Handle nudge notifications
-  useNudgeNotificationHandler();
-  // Track notification clicks via URL tokens
-  useTrackNotificationClick();
-  
-  // Capacitor native functionality
-  useCapacitorDeepLinking();
-  useCapacitorPushNotifications(); // Initialize native push listeners on app boot
-  
-  // Boot heartbeat - log session start once
-  useEffect(() => {
-    const logSessionStart = async () => {
-      const { mobileLog } = await import('@/lib/mobileDebug');
-      const { Capacitor } = await import('@capacitor/core');
-      
-      mobileLog('session_start', {
-        route: location.pathname,
-        platform: Capacitor.isNativePlatform() ? Capacitor.getPlatform() : 'web',
-        userAgent: navigator.userAgent.substring(0, 100)
-      });
-    };
-    
-    logSessionStart();
-  }, []); // Only on mount
-  
-  return null;
-};
 
 const LowercasePathGuard = () => {
   const location = useLocation();
