@@ -3,7 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
-import { useEffect, Suspense, lazy, useState } from "react";
+import { useEffect, Suspense, lazy, useState, type ReactNode } from "react";
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TransitionProvider } from "@/contexts/TransitionContext";
@@ -88,8 +88,8 @@ const Research = lazy(() => import("./pages/Research"));
 const UncommonStandards = lazy(() => import("./pages/UncommonStandards"));
 
 // Optimized imports that load immediately
-import RouteImagePreloader from '@/components/RouteImagePreloader';
-import NavigationImagePreloader from '@/components/NavigationImagePreloader';
+const RouteImagePreloader = lazy(() => import('@/components/RouteImagePreloader'));
+const NavigationImagePreloader = lazy(() => import('@/components/NavigationImagePreloader'));
 import ScrollToTop from '@/components/ScrollToTop';
 import DomainGuard from '@/components/DomainGuard';
 import ReverseDomainGuard from '@/components/ReverseDomainGuard';
@@ -240,7 +240,7 @@ const ManagementLoginRoute = () => {
   return <ManagementLogin />;
 };
 
-const MemberRoutes = ({ children }: { children: React.ReactNode }) => (
+const MemberRoutes = ({ children }: { children: ReactNode }) => (
   <Suspense fallback={<PageLoader />}>
     <MembershipAuthProvider>{children}</MembershipAuthProvider>
   </Suspense>
