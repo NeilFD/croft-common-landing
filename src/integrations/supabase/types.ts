@@ -3292,14 +3292,32 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
-      get_cinema_status: {
-        Args: { p_release_id: string }
-        Returns: {
-          remaining_capacity: number
-          total_bookings: number
-          total_quantity: number
-        }[]
-      }
+      get_cinema_status:
+        | {
+            Args: never
+            Returns: {
+              capacity: number
+              description: string
+              doors_time: string
+              is_sold_out: boolean
+              month_key: string
+              poster_url: string
+              release_id: string
+              screening_date: string
+              screening_time: string
+              tickets_left: number
+              tickets_sold: number
+              title: string
+            }[]
+          }
+        | {
+            Args: { p_release_id: string }
+            Returns: {
+              remaining_capacity: number
+              total_bookings: number
+              total_quantity: number
+            }[]
+          }
       is_email_domain_allowed: { Args: { email: string }; Returns: boolean }
       move_to_dlq: {
         Args: {
