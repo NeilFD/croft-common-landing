@@ -1,43 +1,49 @@
-I’ve checked the PWA boot path. The previous fix only stopped one reload trigger. There are still several boot-time service worker behaviours that can keep replacing, claiming, updating, or serving a stale shell, which matches the infinite flash you are seeing from the home-screen app.
+## Root cause (found)
 
-Plan to fix it properly:
+The site is in an **infinite redirect loop** on `crazybeartest.com`. Every page load reboots the whole React app, re-fetches the heavy Google Fonts CSS, re-parses the JS bundle, etc. On mobile this looks exactly like "won't load / takes ages".
 
-1. Remove automatic PWA reloads completely
-- Delete the `controllerchange` auto-reload behaviour from the PWA initialisation.
-- Do not reload the page when a service worker changes.
-- Do not force `SKIP_WAITING` during normal app launch.
+Proof from the live network log on `https://www.crazybeartest.com/?nocache=1`:
 
-2. Make service worker registration safe
-- Stop forcing `reg.update()` and `SKIP_WAITING` on every launch.
-- Keep service worker registration only for the live, installed app context.
-- Prevent registration in preview/iframe contexts and clean up existing preview registrations so the editor preview stops being affected.
+- 6+ separate `Document` requests for `crazybeartest.com/?nocache=1` in a single page load
+- 6+ duplicate fetches of `index-Dr-8O5TY.js`, `index-BgOVAm_b.css`, `manifest.json`, `~flock.js`, `brand/logo.png`
+- `Task Duration: 6.14s`, `Documents: 7`, `JS Heap: 5.2MB` from re-mounting the app repeatedly
 
-3. Replace the risky caching strategy
-- Stop caching `/` during service worker install.
-- For page navigations, always try the network first and only use cached HTML as a last resort.
-- Never cache or intercept internal/auth routes like `/~oauth`, auth endpoints, backend functions, or bypass-cache requests.
-- Keep notification click handling and nudge messaging intact.
+The loop is caused by two layers fighting each other:
 
-4. Add a one-release cleanup path for already-installed broken PWAs
-- Update `/sw.js` so devices that already have the old worker get a clean activation.
-- Clear old app caches created by previous versions.
-- Avoid client navigation loops during cleanup.
-- Let the app load normally after the cleanup rather than forcing repeated reloads.
+1. **Cloudflare/edge** rule sends `www.crazybeartest.com` → `crazybeartest.com` (302). Confirmed: `curl -I https://www.crazybeartest.com/` returns `302 Location: https://crazybeartest.com/`.
+2. **`index.html` bootstrap script** (lines 117-124) does the opposite: when host is the apex (`crazybeartest.com`), it calls `location.replace('https://www.crazybeartest.com' + path)`.
 
-5. Fix the mobile debug log mismatch
-- The console shows `mobile_debug_logs` is being written with an `error_message` field that the current table does not have.
-- I’ll align the app and backend logging to the current table shape so PWA/mobile diagnostics work again.
+Result: `www → 302 → apex → JS redirect → www → 302 → apex → ...` until Safari finally gives up or the user does. That is why "two hours ago it was fine" — a recent DNS/edge change flipped the canonical direction and the in-page JS still believes the old direction.
 
-Files I expect to change:
-- `src/pwa/deferredPWA.ts`
-- `src/pwa/registerPWA.ts`
-- `public/sw.js`
-- `src/lib/mobileDebug.ts`
-- `supabase/functions/mobile-debug-log/index.ts`
+Croft Common (`croftcommontest.com`) is fine because its edge sends apex → www, matching the bootstrap.
 
-Expected result:
-- Opening the app from the phone home screen should load once and stay loaded.
-- No infinite flashing.
-- No repeated service worker reload cycle.
-- The live app keeps installability and notification/nudge support.
-- Mobile debug logging stops throwing schema-cache errors, so future phone issues are easier to trace.
+## Fix (one tiny change, proper, no workarounds)
+
+Edit the canonicalisation block in `index.html` so it agrees with what the edge is actually doing:
+
+- Croft Common: keep `apex → www` (matches edge).
+- Crazy Bear: flip to `www → apex` (matches the new edge rule), or simply skip canonicalisation for the Bear hosts and let Cloudflare do it once at the edge.
+
+Recommended: **skip JS canonicalisation for the Bear hosts entirely.** Cloudflare already does it in a single 302; the JS layer is redundant and the source of the loop. For Croft, leave the existing behaviour unchanged.
+
+## Secondary cleanup (same edit pass, all real wins, no fluff)
+
+While we are in `index.html`:
+
+1. **Drop the unused Google Font families.** The `<link>` currently loads Playfair Display, Inter, Oswald, Work Sans, Archivo, Archivo Black, Space Grotesk and Space Mono — eight families, all weights. Brand only uses **Space Grotesk** + **Archivo Black** (per project memory). Cutting the rest removes ~6 render-blocking woff2 downloads on first paint.
+2. **Remove the `localhost`-only `window.open` debug shim** (lines 46-61). Dead in production.
+3. **Keep `<link rel="manifest">`** — the live site returns `200` for `/manifest.json`, so no 401 problem on the Bear domain. No change needed.
+
+That is the whole fix. No new service worker, no route changes, no nav/branding changes, no removal of `CBSpotifyPlayer`/`GlobalHandlers` (they were never the cause — the app was just being booted six times in a row).
+
+## Verification after publish
+
+1. `curl -I https://www.crazybeartest.com/` should still 302 to apex (edge), but the apex response should no longer redirect back.
+2. Re-run the mobile performance profile — expect a single Document request, single JS bundle, single CSS, FCP back under 2s on 4G.
+3. Hard-close Safari, reopen `https://www.crazybeartest.com` — should land on the Crazy Bear hero immediately.
+
+## Files touched
+
+- `index.html` — bootstrap canonicalisation block + Google Fonts `<link>` + remove debug shim.
+
+Nothing else.
