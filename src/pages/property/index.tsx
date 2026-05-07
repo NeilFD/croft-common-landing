@@ -49,7 +49,7 @@ export const CountryRoomGallery = () => (
 export const CountryParties = () => (
   <PropertyPage
     title="Crazy Bear Parties"
-    body="Loud, long, late. Bring everyone."
+    body="Loud, long, late."
   />
 );
 export const CountryEvents = () => (
