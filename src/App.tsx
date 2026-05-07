@@ -13,28 +13,45 @@ import NudgeFloatingButton from './components/NudgeFloatingButton';
 import CBSpotifyPlayer from './components/crazybear/CBSpotifyPlayer';
 
 // Lazy load pages for better performance
-import Index from "./pages/Index";
 import Landing from "./pages/Landing";
-import HouseRules from "./pages/HouseRules";
-import ImagePicker from "./pages/ImagePicker";
-import PropertyLayout from "./components/property/PropertyLayout";
+const Index = lazy(() => import("./pages/Index"));
+const HouseRules = lazy(() => import("./pages/HouseRules"));
+const ImagePicker = lazy(() => import("./pages/ImagePicker"));
+const PropertyLayout = lazy(() => import("./components/property/PropertyLayout"));
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
-import {
-  CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
-  CountryRooms, CountryRoomTypes, CountryRoomGallery,
-  CountryParties, CountryEvents, CountryWeddings, CountryBirthdays, CountryBusiness,
-  TownHome, TownFood, TownBlackBear, TownBnB, TownHomThai,
-  TownDrink, TownCocktails, TownRooms, TownRoomTypes, TownRoomGallery, TownPool,
-} from "./pages/property";
-import Cafe from "./pages/Cafe";
-import Cocktails from "./pages/Cocktails";
-import Beer from "./pages/Beer";
-import Kitchens from "./pages/Kitchens";
+const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));
+const CountryPub = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPub })));
+const CountryPubFood = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubFood })));
+const CountryPubDrink = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubDrink })));
+const CountryPubHospitality = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubHospitality })));
+const CountryRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRooms })));
+const CountryRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomTypes })));
+const CountryRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomGallery })));
+const CountryParties = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryParties })));
+const CountryEvents = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryEvents })));
+const CountryWeddings = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryWeddings })));
+const CountryBirthdays = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryBirthdays })));
+const CountryBusiness = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryBusiness })));
+const TownHome = lazy(() => import("./pages/property").then((m) => ({ default: m.TownHome })));
+const TownFood = lazy(() => import("./pages/property").then((m) => ({ default: m.TownFood })));
+const TownBlackBear = lazy(() => import("./pages/property").then((m) => ({ default: m.TownBlackBear })));
+const TownBnB = lazy(() => import("./pages/property").then((m) => ({ default: m.TownBnB })));
+const TownHomThai = lazy(() => import("./pages/property").then((m) => ({ default: m.TownHomThai })));
+const TownDrink = lazy(() => import("./pages/property").then((m) => ({ default: m.TownDrink })));
+const TownCocktails = lazy(() => import("./pages/property").then((m) => ({ default: m.TownCocktails })));
+const TownRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRooms })));
+const TownRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomTypes })));
+const TownRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomGallery })));
+const TownPool = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPool })));
+const Cafe = lazy(() => import("./pages/Cafe"));
+const Cocktails = lazy(() => import("./pages/Cocktails"));
+const Beer = lazy(() => import("./pages/Beer"));
+const Kitchens = lazy(() => import("./pages/Kitchens"));
 const Hall = lazy(() => import("./pages/Hall"));
 const EventEnquiry = lazy(() => import("./pages/EventEnquiry"));
 const Community = lazy(() => import("./pages/Community"));
-import CommonRoom from "./pages/CommonRoom";
+const CommonRoom = lazy(() => import("./pages/CommonRoom"));
 const CommonRoomMain = lazy(() => import("./pages/CommonRoomMain"));
 const MemberHome = lazy(() => import("./pages/MemberHome"));
 const LunchRun = lazy(() => import("./pages/LunchRun"));
@@ -85,7 +102,7 @@ const GlobalHandlers = lazy(() => import('@/components/GlobalHandlers'));
 
 
 // Management system components
-import ManagementLogin from "./pages/management/ManagementLogin";
+const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
 const ManagementAIAssistant = lazy(() => import("./pages/management/ManagementAIAssistant"));
 const FeedbackManagement = lazy(() => import("./pages/management/FeedbackManagement"));
