@@ -81,9 +81,9 @@ const CommonRoomMain = () => {
       {/* Scrollable content */}
       <div className="relative z-10 text-white">
         {!isCMSMode && <Navigation />}
-        <section className="min-h-screen flex items-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)', paddingBottom: '6rem' }}>
-          <div className="container mx-auto px-6 text-center">
-            <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white/70 mb-6">
+        <section className="min-h-screen flex items-center justify-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)', paddingBottom: '6rem' }}>
+          <div className="mx-auto px-6 text-center flex flex-col items-center max-w-3xl w-full">
+            <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white/70 mb-6 text-center">
               Members
             </p>
             <CMSText
@@ -92,7 +92,7 @@ const CommonRoomMain = () => {
               contentKey="title"
               fallback="INSIDE THE DEN"
               as="h1"
-              className="font-display uppercase text-5xl md:text-7xl lg:text-8xl tracking-tight leading-[0.9] mb-8"
+              className="font-display uppercase text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[0.9] mb-8 text-center w-full"
             />
             <CMSText
               page="common-room-main"
@@ -100,9 +100,9 @@ const CommonRoomMain = () => {
               contentKey="description"
               fallback="Quiet rooms. Loud nights. Yours."
               as="p"
-              className="font-sans text-lg md:text-xl text-white/80 max-w-xl mx-auto leading-relaxed mb-12"
+              className="font-sans text-base md:text-lg text-white/80 max-w-md mx-auto leading-relaxed mb-12 text-center"
             />
-            <div>
+            <div className="text-center">
               <button
                 onClick={handleMemberLogin}
                 disabled={membershipGate.checking}
