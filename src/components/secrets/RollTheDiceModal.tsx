@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { townDice, countryDice, type DiceCategory } from "@/data/secretCocktailDice";
 
 interface Props {
   open: boolean;
@@ -8,79 +7,156 @@ interface Props {
   variant: "dice-town" | "dice-country";
 }
 
-const roll = (dice: DiceCategory[]) =>
-  dice.map((d) => d.faces[Math.floor(Math.random() * d.faces.length)]);
+const PIPS: Record<number, [number, number][]> = {
+  1: [[1, 1]],
+  2: [[0, 0], [2, 2]],
+  3: [[0, 0], [1, 1], [2, 2]],
+  4: [[0, 0], [0, 2], [2, 0], [2, 2]],
+  5: [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2]],
+  6: [[0, 0], [0, 2], [1, 0], [1, 2], [2, 0], [2, 2]],
+};
+
+const Die = ({ value, rolling }: { value: number; rolling: boolean }) => (
+  <div
+    className={`w-24 h-24 sm:w-28 sm:h-28 bg-white text-black border-2 border-white grid grid-cols-3 grid-rows-3 gap-1 p-3 transition-transform ${
+      rolling ? "animate-spin" : ""
+    }`}
+    aria-label={`Die showing ${value}`}
+  >
+    {Array.from({ length: 9 }).map((_, i) => {
+      const r = Math.floor(i / 3);
+      const c = i % 3;
+      const on = PIPS[value]?.some(([pr, pc]) => pr === r && pc === c);
+      return (
+        <span
+          key={i}
+          className={`rounded-full ${on ? "bg-black" : "bg-transparent"}`}
+        />
+      );
+    })}
+  </div>
+);
+
+// Crypto-backed unbiased uniform 1..6
+const rollDie = (): number => {
+  const buf = new Uint32Array(1);
+  // Rejection sampling so distribution is exactly uniform
+  const limit = Math.floor(0xffffffff / 6) * 6;
+  while (true) {
+    crypto.getRandomValues(buf);
+    if (buf[0] < limit) return (buf[0] % 6) + 1;
+  }
+};
 
 const RollTheDiceModal = ({ open, onClose, variant }: Props) => {
-  const dice = variant === "dice-town" ? townDice : countryDice;
-  const [result, setResult] = useState<string[]>(() => roll(dice));
+  const [a, setA] = useState(1);
+  const [b, setB] = useState(6);
   const [rolling, setRolling] = useState(false);
+  const [done, setDone] = useState(false);
+  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const reroll = () => {
+  const region = variant === "dice-town" ? "Town" : "Country";
+
+  const roll = () => {
+    setDone(false);
     setRolling(true);
+    if (tickRef.current) clearInterval(tickRef.current);
     let n = 0;
-    const tick = setInterval(() => {
-      setResult(roll(dice));
+    tickRef.current = setInterval(() => {
+      setA(rollDie());
+      setB(rollDie());
       n++;
-      if (n >= 8) {
-        clearInterval(tick);
+      if (n >= 12) {
+        if (tickRef.current) clearInterval(tickRef.current);
+        const finalA = rollDie();
+        const finalB = rollDie();
+        setA(finalA);
+        setB(finalB);
         setRolling(false);
+        setDone(true);
       }
-    }, 70);
+    }, 80);
   };
 
+  const total = a + b;
+  const win = done && total === 7;
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-xl bg-black text-white border border-white rounded-none p-0">
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) {
+          if (tickRef.current) clearInterval(tickRef.current);
+          setDone(false);
+          setRolling(false);
+          onClose();
+        }
+      }}
+    >
+      <DialogContent className="max-w-lg bg-black text-white border border-white rounded-none p-0">
         <div className="px-8 py-10 sm:px-12">
           <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-white/60">
-            Members Only
+            Members Only / {region}
           </p>
           <h2 className="mt-3 font-display uppercase text-3xl sm:text-4xl tracking-tight">
             Roll The Dice
           </h2>
           <p className="mt-3 font-cb-sans text-[13px] text-white/70 italic">
-            Five dice. One drink. The bar will make whatever lands.
+            Two dice. Land on seven, the round is on us.
           </p>
 
           <div className="w-full h-px my-8 bg-white/20" />
 
-          <div className="space-y-4">
-            {dice.map((d, idx) => (
-              <div key={d.label} className="flex items-baseline justify-between gap-4 border-b border-white/15 pb-3">
-                <span className="font-cb-mono text-[10px] tracking-[0.4em] uppercase text-white/50">
-                  {d.label}
-                </span>
-                <span
-                  className={`font-display uppercase text-xl sm:text-2xl tracking-tight ${
-                    rolling ? "opacity-60" : ""
-                  }`}
-                >
-                  {result[idx]}
-                </span>
-              </div>
-            ))}
+          <div className="flex items-center justify-center gap-6">
+            <Die value={a} rolling={rolling} />
+            <span className="font-display text-3xl text-white/40">+</span>
+            <Die value={b} rolling={rolling} />
           </div>
 
-          <div className="mt-8 flex gap-3">
+          <div className="mt-8 text-center min-h-[80px]">
+            <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase text-white/50">
+              Total
+            </p>
+            <p className="mt-1 font-display uppercase text-5xl tracking-tight">
+              {rolling ? "—" : total}
+            </p>
+            {done && (
+              win ? (
+                <p className="mt-3 font-display uppercase text-xl tracking-tight text-white">
+                  Seven. The round is on us.
+                </p>
+              ) : (
+                <p className="mt-3 font-cb-mono text-[11px] tracking-[0.3em] uppercase text-white/60">
+                  Not seven. Roll again.
+                </p>
+              )
+            )}
+          </div>
+
+          <div className="mt-6 flex gap-3">
             <button
-              onClick={reroll}
+              onClick={roll}
               disabled={rolling}
               className="flex-1 border border-white bg-white text-black font-cb-mono text-[11px] tracking-[0.4em] uppercase py-4 hover:bg-black hover:text-white transition-colors disabled:opacity-50"
             >
-              {rolling ? "Rolling" : "Roll Again"}
+              {rolling ? "Rolling" : done ? "Roll Again" : "Roll"}
             </button>
             <button
-              onClick={onClose}
+              onClick={() => {
+                if (tickRef.current) clearInterval(tickRef.current);
+                onClose();
+              }}
               className="flex-1 border border-white text-white font-cb-mono text-[11px] tracking-[0.4em] uppercase py-4 hover:bg-white hover:text-black transition-colors"
             >
               Close
             </button>
           </div>
 
-          <p className="mt-6 font-cb-mono text-[9px] tracking-[0.3em] uppercase text-white/40 text-center">
-            Show this screen at the bar
-          </p>
+          {win && (
+            <p className="mt-6 font-cb-mono text-[9px] tracking-[0.3em] uppercase text-white/50 text-center">
+              Show this screen at the bar
+            </p>
+          )}
         </div>
       </DialogContent>
     </Dialog>
