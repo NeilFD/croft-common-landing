@@ -1,4 +1,6 @@
 import PropertyPage from "@/components/property/PropertyPage";
+import CBMenuPage from "@/components/crazybear/CBMenuPage";
+import { blackBearMenu, bnbMenu, countryPubMenu } from "@/data/menus";
 
 // Country pages
 export const CountryHome = () => (
