@@ -2,7 +2,7 @@
 // Handles caching, push notifications, and app communication
 
 // Cache names for versioning
-const CACHE_NAME = 'crazy-bear-app-v3.0';
+const CACHE_NAME = 'crazy-bear-app-v4.0';
 const CMS_CACHE_NAME = 'cms-images-v1.0';
 
 // Install event - cache essential assets
@@ -76,30 +76,12 @@ self.addEventListener('fetch', (event) => {
 
     const requestDestination = event.request.destination;
     
-    // CRITICAL: Navigation requests only - serve cached HTML
+    // CRITICAL: Navigation requests only - network first so old branding cannot stick
     if (event.request.mode === 'navigate' || requestDestination === 'document') {
       console.log('🔔 SW: Navigate request for:', url.pathname);
       event.respondWith(
         (async () => {
           const cache = await caches.open(CACHE_NAME);
-          const cachedHome = await cache.match('/');
-          
-          // Respond immediately with cached shell if available
-          if (cachedHome) {
-            // Update cache in background
-            event.waitUntil(
-              fetch('/', { cache: 'no-cache' })
-                .then(freshResponse => {
-                  if (freshResponse && freshResponse.status === 200) {
-                    cache.put('/', freshResponse.clone());
-                  }
-                })
-                .catch(err => console.warn('SW: Background update failed', err))
-            );
-            return cachedHome;
-          }
-          
-          // No cache: fetch from network
           try {
             const response = await fetch(event.request, { cache: 'no-cache' });
             if (response && response.status === 200) {
@@ -107,7 +89,8 @@ self.addEventListener('fetch', (event) => {
             }
             return response;
           } catch (err) {
-            return Response.error();
+            const cachedHome = await cache.match('/');
+            return cachedHome || Response.error();
           }
         })()
       );

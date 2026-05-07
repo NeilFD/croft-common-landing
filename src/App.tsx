@@ -263,6 +263,15 @@ const RouteHydrationBeacon = () => {
   return null;
 };
 
+const ManagementLoginRoute = () => {
+  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybeartest.com');
+  if (isCrazyBearHost) {
+    const target = '/set-password' + window.location.search + window.location.hash;
+    return <Navigate to={target} replace />;
+  }
+  return <ManagementLogin />;
+};
+
 const App = () => {
   const { isOpen, handleLogoTap, closePanel } = useHiddenDevPanel();
   
@@ -405,7 +414,7 @@ const App = () => {
                       <Route path="/ext" element={<ExtRedirect />} />
                        
                         {/* Management Routes */}
-                        <Route path="/management/login" element={<ManagementLogin />} />
+                        <Route path="/management/login" element={<ManagementLoginRoute />} />
                         <Route path="/management/password-change" element={<PasswordChangeRequired />} />
                         <Route path="/management" element={<ManagementDashboard />} />
                         <Route path="/management/ai-assistant" element={<ManagementAIAssistant />} />

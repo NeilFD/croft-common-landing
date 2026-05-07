@@ -115,12 +115,12 @@ const PasswordChangeRequired = () => {
               />
             </div>
 
-            <div className="p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-500 rounded text-sm">
-              <strong>First Login:</strong> You must change your temporary password before accessing the management portal.
+            <div className="p-3 bg-muted border border-border rounded text-sm">
+              <strong>First sign in:</strong> Set your password before continuing.
             </div>
 
             <Button type="submit" className="w-full" disabled={loading || !newPassword || !confirmPassword}>
-              {loading ? 'Setting Password...' : 'Set New Password'}
+              {loading ? 'Setting password...' : 'Set password'}
             </Button>
           </form>
         </CardContent>

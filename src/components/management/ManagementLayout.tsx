@@ -8,6 +8,7 @@ import { ManagementAIProvider } from '@/contexts/ManagementAIContext';
 import { ManagementAIChatWidget } from './ai/ManagementAIChatWidget';
 import { SafeAreaTopCap } from '@/components/SafeAreaTopCap';
 import AppVersionFooter from '@/components/AppVersionFooter';
+import { BRAND_NAME } from '@/data/brand';
 
 interface ManagementLayoutProps {
   children: ReactNode;
@@ -16,9 +17,12 @@ interface ManagementLayoutProps {
 export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
   const { managementUser, loading } = useManagementAuth();
 
+  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybeartest.com');
+  const recoveryPath = isCrazyBearHost ? '/set-password' : '/management/login';
+
   // Block management pages during password recovery
   if (typeof window !== 'undefined' && sessionStorage.getItem('recovery') === '1') {
-    return <Navigate to="/management/login" replace />;
+    return <Navigate to={recoveryPath} replace />;
   }
 
   if (loading) {
@@ -54,7 +58,7 @@ export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
                 <div className="flex items-center space-x-2 md:space-x-3">
                   <CroftLogo size="sm" className="shrink-0 h-8 w-8 md:h-10 md:w-10" />
                   <h1 className="font-brutalist text-sm md:text-xl font-black uppercase tracking-wider text-foreground">
-                    CROFT COMMON
+                    {BRAND_NAME.toUpperCase()}
                   </h1>
                 </div>
               </div>
