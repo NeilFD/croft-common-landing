@@ -38,6 +38,15 @@ const SecretGestureHost = ({ variant, children }: Props) => {
       {user && (
         <>
           <GestureOverlay onGestureComplete={onGesture} />
+          <style>{`
+            body.gesture-no-select, body.gesture-no-select * {
+              user-select: none !important;
+              -webkit-user-select: none !important;
+              -webkit-touch-callout: none !important;
+            }
+            body.gesture-no-select ::selection { background: transparent !important; }
+          `}</style>
+          <GestureSelectionGuard />
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
             <span className="font-cb-mono text-[9px] tracking-[0.4em] uppercase text-white/70 bg-black/60 px-3 py-1.5 backdrop-blur">
               Members: draw 7
