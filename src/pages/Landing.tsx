@@ -90,22 +90,22 @@ const Landing = () => (
         </header>
 
         <section className="flex-1 flex items-center px-6 py-16">
-          <div className="mx-auto w-full max-w-2xl text-left">
+          <div className="mx-auto w-full max-w-5xl text-left">
             <p className="text-[10px] tracking-[0.5em] uppercase opacity-70 mb-6">
               The Contract
             </p>
-            <h1 className="font-serif text-4xl md:text-6xl leading-[1.05] text-[hsl(330,85%,62%)] drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]">
-              <span className="block">We identify as anything you want us to be.</span>
-              <span className="block mt-2">Your job is to observe the below.</span>
+            <h1 className="font-serif text-2xl md:text-4xl lg:text-5xl leading-[1.15] text-[hsl(330,85%,62%)] drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]">
+              <span className="block whitespace-nowrap">We identify as anything you want us to be.</span>
+              <span className="block whitespace-nowrap mt-1">Your job is to observe the below.</span>
             </h1>
-            <div className="mt-10">
+            <div className="mt-10 max-w-2xl">
               <TypewriterRules />
             </div>
           </div>
         </section>
 
         <footer className="px-6 pb-16">
-          <div className="mx-auto w-full max-w-2xl flex flex-col sm:flex-row gap-10 sm:gap-16">
+          <div className="mx-auto w-full max-w-5xl flex flex-col sm:flex-row gap-10 sm:gap-16">
             <Link
               to="/country"
               className="group flex flex-col items-start text-left"
