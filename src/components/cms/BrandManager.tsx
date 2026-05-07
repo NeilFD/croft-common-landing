@@ -48,8 +48,8 @@ const BrandManager = () => {
       if (brandResponse.error) throw brandResponse.error;
       if (tokensResponse.error) throw tokensResponse.error;
 
-      setBrandAssets(brandResponse.data || []);
-      setDesignTokens(tokensResponse.data || []);
+      setBrandAssets(brandResponse.data as any || []);
+      setDesignTokens(tokensResponse.data as any || []);
     } catch (error) {
       console.error('Error fetching brand data:', error);
       toast.error('Failed to load brand data');
