@@ -8,7 +8,8 @@ interface DuplicateLeadsBannerProps {
 }
 
 export const DuplicateLeadsBanner = ({ leadId }: DuplicateLeadsBannerProps) => {
-  const { data: duplicates, isLoading } = useDuplicateLeads(leadId);
+  const { data: duplicatesRaw, isLoading } = useDuplicateLeads(leadId);
+  const duplicates = (duplicatesRaw as any[]) ?? [];
 
   if (isLoading || !duplicates || duplicates.length === 0) {
     return null;
