@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 export const useHiddenDevPanel = () => {
   const [isOpen, setIsOpen] = useState(false);
   const tapCountRef = useRef(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleLogoTap = useCallback(() => {
     tapCountRef.current++;

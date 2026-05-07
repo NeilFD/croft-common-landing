@@ -36,10 +36,10 @@ export const ManagementAIChatWidget = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const pointerTargetRef = useRef<HTMLDivElement | null>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
-  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const dragStartPosRef = useRef({ x: 0, y: 0 });
-  const touchTimerRef = useRef<NodeJS.Timeout>();
+  const touchTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const globalListenersRef = useRef(false);
   const dragPreventClickRef = useRef(false);
   const miniPointerStartRef = useRef<{ x: number; y: number } | null>(null);

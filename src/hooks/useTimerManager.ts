@@ -8,7 +8,7 @@ interface TimerManager {
 }
 
 export const useTimerManager = (): TimerManager => {
-  const timers = useRef<Map<string, { id: NodeJS.Timeout; callback: () => void; interval: number; paused: boolean }>>(new Map());
+  const timers = useRef<Map<string, { id: ReturnType<typeof setTimeout>; callback: () => void; interval: number; paused: boolean }>>(new Map());
   const isPaused = useRef(false);
 
   const addTimer = (id: string, callback: () => void, interval: number) => {
