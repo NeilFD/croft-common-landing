@@ -30,9 +30,8 @@ export const CMSKitchensMenu: React.FC<CMSKitchensMenuProps> = ({ tab, onDataUpd
         .insert({
           page: `kitchens-${tab}`,
           section_name: newSectionName,
-          sort_order: (menuData?.length || 0) * 10 + 10,
-          published: true
-        });
+          sort_order: (menuData?.length || 0) * 10 + 10
+        } as any);
 
       if (error) throw error;
 
@@ -51,12 +50,10 @@ export const CMSKitchensMenu: React.FC<CMSKitchensMenuProps> = ({ tab, onDataUpd
         .from('cms_menu_items')
         .insert({
           section_id: sectionId,
-          item_name: 'New Item',
+          name: 'New Item',
           description: 'Item description',
-          price: '£0',
-          sort_order: 10,
-          published: true
-        });
+          sort_order: 10
+        } as any);
 
       if (error) throw error;
 

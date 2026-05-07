@@ -103,9 +103,8 @@ export const DesignTokenManager = () => {
           token_value: newToken.token_value,
           css_variable: newToken.css_variable || `--${newToken.token_key.trim()}`,
           description: newToken.description,
-          created_by: user.id,
           published: false
-        });
+        } as any);
 
       if (error) throw error;
 
