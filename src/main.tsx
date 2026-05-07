@@ -1,33 +1,48 @@
 import { createRoot } from 'react-dom/client'
-import { Capacitor } from '@capacitor/core'
 import App from './App.tsx'
 import './index.css'
 import { initBootLogger } from './mobile/bootLogger'
-import { getAppVersion } from './lib/appVersion'
-import { nativePush } from './services/nativePush'
 
 initBootLogger();
 
-// Build/version logging and early native push initialisation
-(async () => {
-  try {
-    const info = await getAppVersion();
-    console.info('[BUILD] App boot', {
-      now: new Date().toISOString(),
-      version: info.version,
-      build: info.buildNumber,
-      platform: info.platform,
-      buildTime: (import.meta as any).env?.BUILD_TIME
-    });
-  } catch (e) {
-    console.warn('[BUILD] Version lookup failed', e);
-  }
-})();
+const isNativeRuntime = () => Boolean((window as any)?.Capacitor?.isNativePlatform?.() === true);
 
-if (Capacitor.isNativePlatform?.()) {
-  console.log('📱 [Push] Early initialise listeners');
-  nativePush.initialize('boot:main');
-}
+// Build/version logging and native push initialisation must not block first paint.
+const initialiseNativeAfterPaint = () => {
+  try {
+    const run = async () => {
+      try {
+        const [{ getAppVersion }, { nativePush }] = await Promise.all([
+          import('./lib/appVersion'),
+          import('./services/nativePush'),
+        ]);
+        const info = await getAppVersion();
+        console.info('[BUILD] App boot', {
+          now: new Date().toISOString(),
+          version: info.version,
+          build: info.buildNumber,
+          platform: info.platform,
+          buildTime: (import.meta as any).env?.BUILD_TIME,
+        });
+
+        if (isNativeRuntime()) {
+          console.log('📱 [Push] Early initialise listeners');
+          nativePush.initialize('boot:main');
+        }
+      } catch (e) {
+        console.warn('[BUILD] Version lookup failed', e);
+      }
+    };
+
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(run, { timeout: 2500 });
+    } else {
+      setTimeout(run, 1500);
+    }
+  } catch (e) {
+    console.warn('[BUILD] Deferred initialisation failed', e);
+  }
+};
 
 // Simplified PWA detection
 const isPWAMode = () => {
@@ -47,9 +62,9 @@ const isPWAMode = () => {
 const pwaMode = isPWAMode();
 
 // Native heartbeat - first 30 seconds only
-if (Capacitor.isNativePlatform?.()) {
+if (isNativeRuntime()) {
   const bootSessionId = localStorage.getItem('cc_boot_session_id') || `mobile-debug-${Date.now()}`;
-  const platform = Capacitor.getPlatform();
+  const platform = (window as any).Capacitor?.getPlatform?.() || 'native';
   let heartbeatCount = 0;
   const maxHeartbeats = 6;
   
@@ -93,6 +108,7 @@ if (Capacitor.isNativePlatform?.()) {
 console.log(`[Init] Starting app (PWA mode: ${pwaMode})`);
 
 createRoot(document.getElementById("root")!).render(<App />);
+initialiseNativeAfterPaint();
   
 // Initialise native status bar (iOS) without blocking render
 import('./mobile/initStatusBar')
@@ -133,9 +149,9 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // Initialize PWA on web only (skip on native)
-const isNative = Boolean((window as any)?.Capacitor?.isNativePlatform?.() === true);
+const isNative = isNativeRuntime();
 if (!isNative) {
-  requestAnimationFrame(() => {
+  const startPWA = () => {
     import('./pwa/deferredPWA')
       .then(({ initializePWA }) => {
         if (typeof initializePWA === 'function') {
@@ -149,7 +165,11 @@ if (!isNative) {
         console.error('[PWA] Module load failed:', err);
         recoverFromChunkError(err);
       });
-  });
+  };
+
+  window.addEventListener('load', () => {
+    setTimeout(startPWA, 1500);
+  }, { once: true });
 } else {
   console.log('[PWA] Skipped initialisation on native platform');
 }
