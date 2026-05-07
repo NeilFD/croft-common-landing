@@ -94,7 +94,7 @@ const Landing = () => (
             
             <h1 className="font-serif text-2xl md:text-4xl lg:text-5xl leading-[1.15] text-[hsl(42,65%,60%)] drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]">
               <span className="block whitespace-nowrap">We identify as anything you want us to be.</span>
-              <span className="block whitespace-nowrap mt-1">Your job is to observe the below.</span>
+              <span className="block whitespace-nowrap mt-1">Our exceptions of our guests are that ...</span>
             </h1>
             <div className="mt-10 max-w-2xl">
               <TypewriterRules />
