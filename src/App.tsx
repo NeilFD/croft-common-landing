@@ -345,6 +345,7 @@ const App = () => {
 
                       {/* Crazy Bear members entry */}
                       <Route path="/bears-den" element={<BearsDen />} />
+                      <Route path="/set-password" element={<SetPassword />} />
 
                       {/* Members entry - re-uses existing common-room */}
                       <Route path="/members" element={<Navigate to="/common-room" replace />} />
