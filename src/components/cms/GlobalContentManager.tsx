@@ -98,7 +98,7 @@ export const GlobalContentManager = ({ contentType }: GlobalContentManagerProps)
   const fetchContent = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_global_content')
         .select('*')
         .eq('content_type', contentType)
@@ -122,7 +122,7 @@ export const GlobalContentManager = ({ contentType }: GlobalContentManagerProps)
     if (!newKey.trim() || !newValue.trim() || !user) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_global_content')
         .insert([{
           content_type: contentType,
@@ -155,7 +155,7 @@ export const GlobalContentManager = ({ contentType }: GlobalContentManagerProps)
 
   const updateContent = async (item: GlobalContent) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_global_content')
         .update({
           content_key: item.content_key,
@@ -182,7 +182,7 @@ export const GlobalContentManager = ({ contentType }: GlobalContentManagerProps)
 
   const deleteContent = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_global_content')
         .delete()
         .eq('id', id);
@@ -209,7 +209,7 @@ export const GlobalContentManager = ({ contentType }: GlobalContentManagerProps)
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_global_content')
         .insert([{
           content_type: contentType,

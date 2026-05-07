@@ -71,7 +71,7 @@ export const DesignTokenManager = () => {
   const fetchTokens = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_design_tokens')
         .select('*')
         .eq('token_type', selectedType)
@@ -95,7 +95,7 @@ export const DesignTokenManager = () => {
     if (!newToken.token_key.trim() || !user) return;
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_design_tokens')
         .insert({
           token_type: selectedType,
@@ -131,7 +131,7 @@ export const DesignTokenManager = () => {
 
   const updateToken = async (id: string, field: string, value: any) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_design_tokens')
         .update({ [field]: value })
         .eq('id', id);
@@ -160,7 +160,7 @@ export const DesignTokenManager = () => {
 
   const deleteToken = async (id: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_design_tokens')
         .delete()
         .eq('id', id);
@@ -190,7 +190,7 @@ export const DesignTokenManager = () => {
       const exists = tokens.find(t => t.token_key === token.key);
       if (!exists) {
         try {
-          await supabase
+          await (supabase as any)
             .from('cms_design_tokens')
             .insert({
               token_type: selectedType,

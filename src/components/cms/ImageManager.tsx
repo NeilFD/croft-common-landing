@@ -70,7 +70,7 @@ const ImageManager = () => {
 
   const fetchImages = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_images')
         .select('*')
         .order('carousel_name', { ascending: true })
@@ -126,7 +126,7 @@ const ImageManager = () => {
       const nextSortOrder = Math.max(0, ...existingImages.map(img => img.sort_order)) + 1;
 
       // Insert into database (as draft by default)
-      const { data: dbData, error: dbError } = await supabase
+      const { data: dbData, error: dbError } = await (supabase as any)
         .from('cms_images')
         .insert({
           asset_type: 'carousel_image' as const,
@@ -157,7 +157,7 @@ const ImageManager = () => {
 
   const updateImage = async (imageId: string, updates: any) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_images')
         .update(updates)
         .eq('id', imageId);
@@ -181,7 +181,7 @@ const ImageManager = () => {
       if (!image) return;
 
       // Delete from database
-      const { error: dbError } = await supabase
+      const { error: dbError } = await (supabase as any)
         .from('cms_images')
         .delete()
         .eq('id', imageId);
@@ -212,7 +212,7 @@ const ImageManager = () => {
 
   const bulkPublish = async () => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_images')
         .update({ published: true })
         .in('id', Array.from(selectedImages));
@@ -253,7 +253,7 @@ const ImageManager = () => {
       }));
 
       for (const update of updates) {
-        await supabase
+        await (supabase as any)
           .from('cms_images')
           .update({ sort_order: update.sort_order })
           .eq('id', update.id);
