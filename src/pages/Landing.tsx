@@ -105,20 +105,6 @@ const Landing = () => (
         <footer className="px-6 pb-16">
           <div className="mx-auto w-full max-w-5xl flex flex-col sm:flex-row sm:justify-between gap-10">
             <Link
-              to="/country"
-              className="group flex flex-col items-start text-left"
-            >
-              <span className="text-[10px] tracking-[0.4em] uppercase opacity-70 group-hover:opacity-100">
-                Enter
-              </span>
-              <span className="mt-3 font-serif text-5xl md:text-6xl border-b-2 border-white/30 pb-2 group-hover:border-white">
-                Country
-              </span>
-              <span className="mt-2 text-xs tracking-[0.3em] uppercase opacity-70">
-                Stadhampton
-              </span>
-            </Link>
-            <Link
               to="/town"
               className="group flex flex-col items-start text-left"
             >
@@ -130,6 +116,20 @@ const Landing = () => (
               </span>
               <span className="mt-2 text-xs tracking-[0.3em] uppercase opacity-70">
                 Beaconsfield
+              </span>
+            </Link>
+            <Link
+              to="/country"
+              className="group flex flex-col items-end text-right"
+            >
+              <span className="text-[10px] tracking-[0.4em] uppercase opacity-70 group-hover:opacity-100">
+                Enter
+              </span>
+              <span className="mt-3 font-serif text-5xl md:text-6xl border-b-2 border-white/30 pb-2 group-hover:border-white">
+                Country
+              </span>
+              <span className="mt-2 text-xs tracking-[0.3em] uppercase opacity-70">
+                Stadhampton
               </span>
             </Link>
           </div>
