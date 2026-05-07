@@ -8,7 +8,7 @@ import { CMSText } from "@/components/cms/CMSText";
 
 const Book: React.FC = () => {
   const navigate = useNavigate();
-  const [cgTotal, setCgTotal] = useState<number | null>(null);
+  
   const { isCMSMode } = useCMSMode();
 
   // SEO: title, description, canonical
@@ -34,30 +34,6 @@ const Book: React.FC = () => {
     canonical.href = window.location.href;
   }, []);
 
-  // Fetch Common Good running total
-  useEffect(() => {
-    let mounted = true;
-    const fetchTotals = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-common-good-totals', { body: {} });
-        if (!mounted) return;
-        if (error) throw error;
-        const combined = data?.combined_total_cents ?? 0;
-        setCgTotal(combined);
-      } catch (e) {
-        // silent
-      }
-    };
-    fetchTotals();
-    const id = setInterval(fetchTotals, 60_000);
-    return () => { mounted = false; clearInterval(id); };
-  }, []);
-
-  const formattedTotal = useMemo(() => (
-    cgTotal !== null
-      ? (cgTotal / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-      : "—"
-  ), [cgTotal]);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -96,18 +72,6 @@ const Book: React.FC = () => {
         />
       </main>
 
-      <footer className="bg-void text-background py-8">
-        <div className="container mx-auto px-6 text-center">
-          <CMSText 
-            page="book" 
-            section="footer" 
-            contentKey="label"
-            fallback="The Common Good"
-            className="font-industrial text-xs uppercase tracking-wide mb-1"
-          />
-          <div className="font-brutalist text-3xl">{formattedTotal}</div>
-        </div>
-      </footer>
     </div>
   );
 };

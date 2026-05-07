@@ -63,36 +63,6 @@ const Community = () => {
         </div>
       </section>
 
-      <section className="pb-24 bg-background">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <Accordion type="single" collapsible>
-            <AccordionItem value="common-good-thread">
-              <AccordionTrigger className="font-industrial text-sm uppercase tracking-wide inline-flex items-center gap-2 leading-none border-2 border-foreground rounded-full px-3 py-2 mb-4 no-underline hover:no-underline hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">Common Good thread</AccordionTrigger>
-              <AccordionContent>
-                <div className="max-h-[360px] overflow-y-auto pr-2">
-                  {grouped.length === 0 ? (
-                    <p className="font-industrial text-muted-foreground">No messages yet.</p>
-                  ) : (
-                    grouped.map(([month, items]) => (
-                      <div key={month} className="mb-6">
-                        <h3 className="inline-block font-industrial text-xs uppercase tracking-wide text-foreground/80 mb-2 border border-foreground/60 rounded-md px-2 py-1">{month}</h3>
-                        <ul className="space-y-3">
-                          {items.map((m, idx) => (
-                            <li key={idx} className="border border-border rounded-md p-3 text-left">
-                              <div className="font-industrial text-xs text-muted-foreground mb-1">{format(new Date(m.posted_at), 'dd MMM yyyy')}</div>
-                              <div className="text-foreground/90 leading-relaxed">{m.message}</div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </section>
 
       {!isCMSMode && <Footer />}
     </div>
