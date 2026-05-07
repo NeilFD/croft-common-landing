@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import heroImage from "@/assets/hero-exterior.jpg";
-import bearMark from "@/assets/crazy-bear-mark.png";
 import CBTopNav from "@/components/crazybear/CBTopNav";
-import CBSubscriptionForm from "@/components/crazybear/CBSubscriptionForm";
+const CBSubscriptionForm = lazy(() => import("@/components/crazybear/CBSubscriptionForm"));
 
 
 const Landing = () => {
@@ -95,7 +94,9 @@ const Landing = () => {
 
         <section className="border-t border-white/15 bg-black px-6 py-20 md:py-28">
           <div className="mx-auto max-w-6xl">
-            <CBSubscriptionForm />
+            <Suspense fallback={null}>
+              <CBSubscriptionForm />
+            </Suspense>
           </div>
         </section>
       </main>

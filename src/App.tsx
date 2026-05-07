@@ -3,40 +3,54 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
-import { useEffect, Suspense, lazy, useState } from "react";
+import { useEffect, Suspense, lazy, useState, type ReactNode } from "react";
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TransitionProvider } from "@/contexts/TransitionContext";
-import { MembershipAuthProvider } from "@/contexts/MembershipAuthContext";
 import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
-import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
-import { useTrackNotificationClick } from "@/hooks/useTrackNotificationClick";
-import NudgeFloatingButton from './components/NudgeFloatingButton';
-import CBSpotifyPlayer from './components/crazybear/CBSpotifyPlayer';
+const NudgeFloatingButton = lazy(() => import('./components/NudgeFloatingButton'));
+const CBSpotifyPlayer = lazy(() => import('./components/crazybear/CBSpotifyPlayer'));
 
 // Lazy load pages for better performance
-import Index from "./pages/Index";
 import Landing from "./pages/Landing";
-import HouseRules from "./pages/HouseRules";
-import ImagePicker from "./pages/ImagePicker";
-import PropertyLayout from "./components/property/PropertyLayout";
+const Index = lazy(() => import("./pages/Index"));
+const HouseRules = lazy(() => import("./pages/HouseRules"));
+const ImagePicker = lazy(() => import("./pages/ImagePicker"));
+const PropertyLayout = lazy(() => import("./components/property/PropertyLayout"));
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
 const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
-import {
-  CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
-  CountryRooms, CountryRoomTypes, CountryRoomGallery,
-  CountryParties, CountryEvents, CountryWeddings, CountryBirthdays, CountryBusiness,
-  TownHome, TownFood, TownBlackBear, TownBnB, TownHomThai,
-  TownDrink, TownCocktails, TownRooms, TownRoomTypes, TownRoomGallery, TownPool,
-} from "./pages/property";
-import Cafe from "./pages/Cafe";
-import Cocktails from "./pages/Cocktails";
-import Beer from "./pages/Beer";
-import Kitchens from "./pages/Kitchens";
+const CountryHome = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryHome })));
+const CountryPub = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPub })));
+const CountryPubFood = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubFood })));
+const CountryPubDrink = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubDrink })));
+const CountryPubHospitality = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryPubHospitality })));
+const CountryRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRooms })));
+const CountryRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomTypes })));
+const CountryRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryRoomGallery })));
+const CountryParties = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryParties })));
+const CountryEvents = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryEvents })));
+const CountryWeddings = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryWeddings })));
+const CountryBirthdays = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryBirthdays })));
+const CountryBusiness = lazy(() => import("./pages/property").then((m) => ({ default: m.CountryBusiness })));
+const TownHome = lazy(() => import("./pages/property").then((m) => ({ default: m.TownHome })));
+const TownFood = lazy(() => import("./pages/property").then((m) => ({ default: m.TownFood })));
+const TownBlackBear = lazy(() => import("./pages/property").then((m) => ({ default: m.TownBlackBear })));
+const TownBnB = lazy(() => import("./pages/property").then((m) => ({ default: m.TownBnB })));
+const TownHomThai = lazy(() => import("./pages/property").then((m) => ({ default: m.TownHomThai })));
+const TownDrink = lazy(() => import("./pages/property").then((m) => ({ default: m.TownDrink })));
+const TownCocktails = lazy(() => import("./pages/property").then((m) => ({ default: m.TownCocktails })));
+const TownRooms = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRooms })));
+const TownRoomTypes = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomTypes })));
+const TownRoomGallery = lazy(() => import("./pages/property").then((m) => ({ default: m.TownRoomGallery })));
+const TownPool = lazy(() => import("./pages/property").then((m) => ({ default: m.TownPool })));
+const Cafe = lazy(() => import("./pages/Cafe"));
+const Cocktails = lazy(() => import("./pages/Cocktails"));
+const Beer = lazy(() => import("./pages/Beer"));
+const Kitchens = lazy(() => import("./pages/Kitchens"));
 const Hall = lazy(() => import("./pages/Hall"));
 const EventEnquiry = lazy(() => import("./pages/EventEnquiry"));
 const Community = lazy(() => import("./pages/Community"));
-import CommonRoom from "./pages/CommonRoom";
+const CommonRoom = lazy(() => import("./pages/CommonRoom"));
 const CommonRoomMain = lazy(() => import("./pages/CommonRoomMain"));
 const MemberHome = lazy(() => import("./pages/MemberHome"));
 const LunchRun = lazy(() => import("./pages/LunchRun"));
@@ -74,24 +88,21 @@ const Research = lazy(() => import("./pages/Research"));
 const UncommonStandards = lazy(() => import("./pages/UncommonStandards"));
 
 // Optimized imports that load immediately
-import RouteImagePreloader from '@/components/RouteImagePreloader';
-import NavigationImagePreloader from '@/components/NavigationImagePreloader';
+const RouteImagePreloader = lazy(() => import('@/components/RouteImagePreloader'));
+const NavigationImagePreloader = lazy(() => import('@/components/NavigationImagePreloader'));
 import ScrollToTop from '@/components/ScrollToTop';
 import DomainGuard from '@/components/DomainGuard';
 import ReverseDomainGuard from '@/components/ReverseDomainGuard';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { useConsolidatedPerformance } from '@/hooks/useConsolidatedPerformance';
-import { useCapacitorDeepLinking } from '@/hooks/useCapacitorDeepLinking';
-import { useCapacitorPushNotifications } from '@/hooks/useCapacitorPushNotifications';
 import { useHiddenDevPanel } from '@/hooks/useHiddenDevPanel';
 import { HiddenDevPanel } from '@/components/native/HiddenDevPanel';
 import { ProtectedRoute } from '@/components/research/ProtectedRoute';
-import InteractionWatchdog from '@/components/InteractionWatchdog';
 import { RecoveryGuard } from '@/components/auth/RecoveryGuard';
+const GlobalHandlers = lazy(() => import('@/components/GlobalHandlers'));
+const MembershipAuthProvider = lazy(() => import("@/contexts/MembershipAuthContext").then((m) => ({ default: m.MembershipAuthProvider })));
 
 
 // Management system components
-import ManagementLogin from "./pages/management/ManagementLogin";
+const ManagementLogin = lazy(() => import("./pages/management/ManagementLogin"));
 const ManagementDashboard = lazy(() => import("./pages/management/ManagementDashboard"));
 const ManagementAIAssistant = lazy(() => import("./pages/management/ManagementAIAssistant"));
 const FeedbackManagement = lazy(() => import("./pages/management/FeedbackManagement"));
@@ -119,42 +130,6 @@ const ClientPortal = lazy(() => import("./pages/ClientPortal"));
 
 const queryClient = new QueryClient();
 
-
-// Single performance and notification handler
-const GlobalHandlers = () => {
-  const location = useLocation();
-  
-  // Call hooks at the top level (Rules of Hooks)
-  useConsolidatedPerformance(); // Consolidates all performance optimizations
-  useAnalytics();
-  
-  // Handle nudge notifications
-  useNudgeNotificationHandler();
-  // Track notification clicks via URL tokens
-  useTrackNotificationClick();
-  
-  // Capacitor native functionality
-  useCapacitorDeepLinking();
-  useCapacitorPushNotifications(); // Initialize native push listeners on app boot
-  
-  // Boot heartbeat - log session start once
-  useEffect(() => {
-    const logSessionStart = async () => {
-      const { mobileLog } = await import('@/lib/mobileDebug');
-      const { Capacitor } = await import('@capacitor/core');
-      
-      mobileLog('session_start', {
-        route: location.pathname,
-        platform: Capacitor.isNativePlatform() ? Capacitor.getPlatform() : 'web',
-        userAgent: navigator.userAgent.substring(0, 100)
-      });
-    };
-    
-    logSessionStart();
-  }, []); // Only on mount
-  
-  return null;
-};
 
 const LowercasePathGuard = () => {
   const location = useLocation();
@@ -251,13 +226,6 @@ const RouteHydrationBeacon = () => {
     try {
       const ev = new CustomEvent('cc:routes-hydrated', { detail: { pathname: location.pathname, ts: Date.now() } });
       window.dispatchEvent(ev);
-      // Also prefetch management chunks when user visits footer-heavy pages
-      if (location.pathname === '/' || location.pathname === '/community') {
-        try {
-          import('./pages/management/ManagementDashboard');
-          import('./pages/management/SpacesDashboard');
-        } catch {}
-      }
     } catch {}
   }, [location.pathname]);
   return null;
@@ -271,6 +239,12 @@ const ManagementLoginRoute = () => {
   }
   return <ManagementLogin />;
 };
+
+const MemberRoutes = ({ children }: { children: ReactNode }) => (
+  <Suspense fallback={<PageLoader />}>
+    <MembershipAuthProvider>{children}</MembershipAuthProvider>
+  </Suspense>
+);
 
 const App = () => {
   const { isOpen, handleLogoTap, closePanel } = useHiddenDevPanel();
@@ -300,19 +274,23 @@ const App = () => {
               <Sonner />
               <Router>
                 <ScrollToTop />
-                <GlobalHandlers />
+                <Suspense fallback={null}>
+                  <GlobalHandlers />
+                </Suspense>
                 <LowercasePathGuard />
                 <ReverseDomainGuard />
                 
                 <RecoveryGuard />
-                <RouteImagePreloader />
-                <NavigationImagePreloader />
-                <InteractionWatchdog />
-                <NudgeFloatingButton />
-                <CBSpotifyPlayer />
+                <Suspense fallback={null}>
+                  <RouteImagePreloader />
+                  <NavigationImagePreloader />
+                </Suspense>
+                <Suspense fallback={null}>
+                  <NudgeFloatingButton />
+                  <CBSpotifyPlayer />
+                </Suspense>
                 
                 <TransitionProvider>
-                  <MembershipAuthProvider>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                       <Route path="/" element={<Landing />} />
@@ -374,14 +352,14 @@ const App = () => {
                       <Route path="/community" element={<Community />} />
 
                       {/* The Den - new routes */}
-                      <Route path="/den" element={<CommonRoom />} />
-                      <Route path="/den/main" element={<CommonRoomMain />} />
-                      <Route path="/den/member" element={<MemberHome />} />
-                      <Route path="/den/member/lunch-run" element={<LunchRun />} />
-                      <Route path="/den/member/ledger" element={<MemberLedger />} />
-                      <Route path="/den/member/profile" element={<MemberProfile />} />
-                      <Route path="/den/member/dashboard" element={<MemberDashboard />} />
-                      <Route path="/den/member/moments" element={<MemberMoments />} />
+                      <Route path="/den" element={<MemberRoutes><CommonRoom /></MemberRoutes>} />
+                      <Route path="/den/main" element={<MemberRoutes><CommonRoomMain /></MemberRoutes>} />
+                      <Route path="/den/member" element={<MemberRoutes><MemberHome /></MemberRoutes>} />
+                      <Route path="/den/member/lunch-run" element={<MemberRoutes><LunchRun /></MemberRoutes>} />
+                      <Route path="/den/member/ledger" element={<MemberRoutes><MemberLedger /></MemberRoutes>} />
+                      <Route path="/den/member/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
+                      <Route path="/den/member/dashboard" element={<MemberRoutes><MemberDashboard /></MemberRoutes>} />
+                      <Route path="/den/member/moments" element={<MemberRoutes><MemberMoments /></MemberRoutes>} />
 
                       {/* Legacy /common-room redirects */}
                       <Route path="/common-room" element={<Navigate to="/den" replace />} />
@@ -420,7 +398,7 @@ const App = () => {
                       <Route path="/research" element={<Navigate to="/management/research" replace />} />
                       
                       <Route path="/enquire" element={<EnquirePage />} />
-                      <Route path="/profile" element={<MemberProfile />} />
+                      <Route path="/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/uncommon-standards" element={<UncommonStandards />} />
                       <Route path="/ext" element={<ExtRedirect />} />
@@ -491,7 +469,6 @@ const App = () => {
                       </Routes>
                       <RouteHydrationBeacon />
                     </Suspense>
-                  </MembershipAuthProvider>
                 </TransitionProvider>
               </Router>
               

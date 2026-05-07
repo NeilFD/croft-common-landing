@@ -6,36 +6,29 @@ const RouteImagePreloader = () => {
   const location = useLocation();
 
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return;
+
     const urls = getRouteImages(location.pathname);
     if (urls.length === 0) return;
 
-    // Phase 5: Preload ALL carousel images on route change
-    // First 2 images: high priority + immediate decode for instant paint
-    // Remaining images: normal priority for smooth scrolling without grey flash
-    urls.forEach((url, index) => {
-      // Skip if already preloaded
-      const existing = document.querySelector(`link[rel="preload"][href="${url}"]`);
-      if (existing) return;
-      
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'image';
-      link.href = url;
-      // High priority for first 2 images only
-      if (index <= 5) {
-        link.setAttribute('fetchpriority', 'high');
-      }
-      document.head.appendChild(link);
-      
-      // Decode first 2 immediately for instant paint
-      if (index <= 5) {
-        const img = new Image();
-        img.src = url;
-        if ('decode' in img && typeof img.decode === 'function') {
-          img.decode().catch(() => {});
-        }
-      }
-    });
+    const run = () => {
+      urls.slice(0, 1).forEach((url) => {
+        const existing = document.querySelector(`link[rel="preload"][href="${url}"]`);
+        if (existing) return;
+
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = url;
+        document.head.appendChild(link);
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(run, { timeout: 5000 });
+    } else {
+      setTimeout(run, 5000);
+    }
   }, [location.pathname]);
 
   return null;
