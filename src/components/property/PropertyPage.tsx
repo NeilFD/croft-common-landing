@@ -20,7 +20,7 @@ const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
       <Helmet>
         <title>{`${title} | ${config.name}`}</title>
       </Helmet>
-      <section className="relative h-screen min-h-[640px] w-full overflow-hidden bg-black text-white">
+      <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden bg-black text-white">
         {hero && (
           <img
             src={hero}
