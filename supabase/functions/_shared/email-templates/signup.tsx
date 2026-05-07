@@ -55,9 +55,7 @@ export const SignupEmail = ({
         <Text style={linkText}>{confirmationUrl}</Text>
 
         <Hr style={rule} />
-        <Text style={footer}>
-          Didn't sign up? Ignore this email and nothing happens.
-        </Text>
+        <Text style={footer}>Didn't sign up? Ignore this email and nothing happens.</Text>
         <Text style={signoff}>The Crazy Bear, Stadhampton & Beaconsfield</Text>
       </Container>
     </Body>
