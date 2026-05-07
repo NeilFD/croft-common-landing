@@ -2,6 +2,8 @@ import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import { useProperty } from "@/contexts/PropertyContext";
 import { getHeroFor, getHeroFitFor } from "@/data/propertyHeroMap";
+import { getHeroCarouselFor } from "@/data/heroCarousels";
+import HeroCarousel from "./HeroCarousel";
 
 interface Props {
   title: string;
@@ -15,6 +17,7 @@ const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
   const location = useLocation();
   const hero = getHeroFor(location.pathname, fallbackHero ?? "");
   const fit = getHeroFitFor(location.pathname);
+  const carousel = getHeroCarouselFor(location.pathname);
 
   return (
     <>
@@ -22,12 +25,16 @@ const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
         <title>{`${title} | ${config.name}`}</title>
       </Helmet>
       <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden bg-black text-white">
-        {hero && (
-          <img
-            src={hero}
-            alt={title}
-            className={`absolute inset-0 h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
-          />
+        {carousel ? (
+          <HeroCarousel images={carousel} alt={title} />
+        ) : (
+          hero && (
+            <img
+              src={hero}
+              alt={title}
+              className={`absolute inset-0 h-full w-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
+            />
+          )
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         <div className="relative z-10 flex h-full items-end px-6 pb-24 md:px-12 md:pb-28">

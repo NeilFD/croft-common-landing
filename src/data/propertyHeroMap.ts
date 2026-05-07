@@ -46,9 +46,7 @@ export const propertyHeroMap: Record<string, string> = {
 
 // Routes whose hero image should be shown in full (contain) instead of cover.
 // Useful when the source image is tightly cropped and we want more perspective.
-export const heroFitMap: Record<string, "cover" | "contain"> = {
-  "/town": "contain",
-};
+export const heroFitMap: Record<string, "cover" | "contain"> = {};
 
 // Extra glamour stills available for galleries / future use
 export const roomsGalleryAssets = {
