@@ -10,7 +10,7 @@ interface ConsolidatedPerformanceHooks {
 let globalPerformanceManager: ConsolidatedPerformanceHooks | null = null;
 let initializationCount = 0;
 let metricsQueue: any[] = [];
-let debounceTimer: NodeJS.Timeout;
+let debounceTimer: ReturnType<typeof setTimeout>;
 
 export const useConsolidatedPerformance = (): ConsolidatedPerformanceHooks => {
   const isPageLoaded = useRef(false);

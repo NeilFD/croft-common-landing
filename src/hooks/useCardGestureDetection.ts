@@ -17,7 +17,7 @@ const useCardGestureDetection = (onGestureComplete: () => void) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [points, setPoints] = useState<Point[]>([]);
   const [isComplete, setIsComplete] = useState(false);
-  const gestureTimeoutRef = useRef<NodeJS.Timeout>();
+  const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const clearGesture = useCallback(() => {
     setPoints([]);

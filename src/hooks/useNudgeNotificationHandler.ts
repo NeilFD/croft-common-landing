@@ -374,7 +374,7 @@ export const useNudgeNotificationHandler = () => {
     console.log('🎯 NUDGE WINDOW: ✅ Window message listener added');
 
     // Debounced visibility change handler
-    let visibilityTimeout: NodeJS.Timeout;
+    let visibilityTimeout: ReturnType<typeof setTimeout>;
     const handleVisibilityChange = () => {
       if (!document.hidden) {
         console.log('🎯 NUDGE: 👁️ Page became visible, checking for fresh service worker messages...');

@@ -19,7 +19,7 @@ const useGestureDetection = (onGestureComplete: () => void) => {
   const [points, setPoints] = useState<Point[]>([]);
   const [isComplete, setIsComplete] = useState(false);
   const [lastGestureTime, setLastGestureTime] = useState(0);
-  const gestureTimeoutRef = useRef<NodeJS.Timeout>();
+  const gestureTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const attemptStartTime = useRef<number | null>(null);
   const { trackSecretGesture } = useAnalytics();
 
