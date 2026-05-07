@@ -15,6 +15,15 @@ import NudgeFloatingButton from './components/NudgeFloatingButton';
 
 // Lazy load pages for better performance
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import PropertyLayout from "./components/property/PropertyLayout";
+import {
+  CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
+  CountryRooms, CountryRoomTypes, CountryRoomGallery,
+  CountryParties, CountryEvents, CountryWeddings, CountryBirthdays, CountryBusiness,
+  TownHome, TownFood, TownBlackBear, TownBnB, TownHomThai,
+  TownDrink, TownCocktails, TownRooms, TownRoomTypes, TownRoomGallery, TownPool,
+} from "./pages/property";
 import Cafe from "./pages/Cafe";
 import Cocktails from "./pages/Cocktails";
 import Beer from "./pages/Beer";
@@ -293,7 +302,47 @@ const App = () => {
                   <MembershipAuthProvider>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
-                      <Route path="/" element={<Index />} />
+                      <Route path="/" element={<Landing />} />
+
+                      {/* Crazy Bear Country */}
+                      <Route path="/country" element={<PropertyLayout property="country" />}>
+                        <Route index element={<CountryHome />} />
+                        <Route path="pub" element={<CountryPub />} />
+                        <Route path="pub/food" element={<CountryPubFood />} />
+                        <Route path="pub/drink" element={<CountryPubDrink />} />
+                        <Route path="pub/hospitality" element={<CountryPubHospitality />} />
+                        <Route path="rooms" element={<CountryRooms />} />
+                        <Route path="rooms/types" element={<CountryRoomTypes />} />
+                        <Route path="rooms/gallery" element={<CountryRoomGallery />} />
+                        <Route path="parties" element={<CountryParties />} />
+                        <Route path="events" element={<CountryEvents />} />
+                        <Route path="events/weddings" element={<CountryWeddings />} />
+                        <Route path="events/birthdays" element={<CountryBirthdays />} />
+                        <Route path="events/business" element={<CountryBusiness />} />
+                        <Route path="members" element={<Navigate to="/members" replace />} />
+                      </Route>
+
+                      {/* Crazy Bear Town */}
+                      <Route path="/town" element={<PropertyLayout property="town" />}>
+                        <Route index element={<TownHome />} />
+                        <Route path="food" element={<TownFood />} />
+                        <Route path="food/black-bear" element={<TownBlackBear />} />
+                        <Route path="food/bnb" element={<TownBnB />} />
+                        <Route path="food/hom-thai" element={<TownHomThai />} />
+                        <Route path="drink" element={<TownDrink />} />
+                        <Route path="drink/cocktails" element={<TownCocktails />} />
+                        <Route path="rooms" element={<TownRooms />} />
+                        <Route path="rooms/types" element={<TownRoomTypes />} />
+                        <Route path="rooms/gallery" element={<TownRoomGallery />} />
+                        <Route path="pool" element={<TownPool />} />
+                        <Route path="members" element={<Navigate to="/members" replace />} />
+                      </Route>
+
+                      {/* Members entry - re-uses existing common-room */}
+                      <Route path="/members" element={<Navigate to="/common-room" replace />} />
+
+                      {/* Legacy Croft entry retained for members/secret gestures */}
+                      <Route path="/croft" element={<Index />} />
                       <Route path="/cafe" element={<Cafe />} />
                       <Route path="/cocktails" element={<Cocktails />} />
                       <Route path="/beer" element={<Beer />} />

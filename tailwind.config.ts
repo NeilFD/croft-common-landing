@@ -29,6 +29,7 @@ export default {
 			fontFamily: {
 				'brutalist': ['Oswald', 'Arial Black', 'Helvetica', 'sans-serif'],
 				'industrial': ['Work Sans', 'Arial', 'Helvetica', 'sans-serif'],
+				'serif': ['Playfair Display', 'Georgia', 'serif'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
