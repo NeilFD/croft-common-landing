@@ -59,22 +59,32 @@ const CBSubscriptionForm = () => {
 
     setIsLoading(true);
     try {
-      const birthday = birthdayDay && birthdayMonth ? `${birthdayDay}/${birthdayMonth}` : null;
-      const { error } = await supabase.functions.invoke('subscribe-newsletter', {
-        body: {
-          email,
-          name,
-          consent,
-          phone: phone || null,
-          birthday,
-          interests: interests.length > 0 ? interests : null,
+      const [firstName, ...rest] = name.trim().split(/\s+/);
+      const lastName = rest.join(' ') || null;
+      const { error } = await supabase.auth.signUp({
+        email,
+        // Random placeholder password. The user will set their real password
+        // via the link in the confirmation email (lands at /set-password).
+        password: crypto.randomUUID() + crypto.randomUUID(),
+        options: {
+          emailRedirectTo: `${window.location.origin}/set-password`,
+          data: {
+            first_name: firstName || null,
+            last_name: lastName,
+            phone: phone || null,
+            birthday_day: birthdayDay || null,
+            birthday_month: birthdayMonth || null,
+            interests: interests.length > 0 ? interests : null,
+            consent_given: consent,
+            marketing_opt_in: true,
+          },
         },
       });
       if (error) throw error;
 
       toast({
         title: 'Welcome to the den',
-        description: 'Check your email to finish signing in.',
+        description: 'Check your email to set your password.',
       });
       setEmail('');
       setName('');
