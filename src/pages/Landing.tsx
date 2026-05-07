@@ -5,6 +5,7 @@ import heroImage from "@/assets/cb-landing-hero.jpg";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBSubscriptionForm from "@/components/crazybear/CBSubscriptionForm";
+import CBSpotifyPlayer from "@/components/crazybear/CBSpotifyPlayer";
 
 const Landing = () => {
   const [introDone, setIntroDone] = useState(false);
@@ -103,6 +104,8 @@ const Landing = () => {
           </div>
         </section>
       </main>
+
+      <CBSpotifyPlayer />
 
       <style>{`
         @keyframes kenburns {
