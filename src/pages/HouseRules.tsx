@@ -61,7 +61,7 @@ const HouseRules = () => (
           </ol>
 
           <p className="mt-20 font-cb-mono text-[10px] tracking-[0.5em] uppercase opacity-50">
-            End of transmission.
+            End.
           </p>
         </div>
       </section>
