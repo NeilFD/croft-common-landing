@@ -133,7 +133,7 @@ export const TownRoomGallery = () => (
   <PropertyPage
     title="Gallery"
     eyebrow="Rooms"
-    body="Look closer. Then book one."
+    body="Step inside."
   />
 );
 export const TownPool = () => (
