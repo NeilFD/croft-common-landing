@@ -4,6 +4,7 @@ import { setupInstallPromptListener, isStandalone, isIosSafari, BeforeInstallPro
 import { enableNotifications } from './notifications';
 import { toast } from '@/hooks/use-toast';
 import CroftLogo from '@/components/CroftLogo';
+import { BRAND_NAME } from '@/data/brand';
 import { X } from 'lucide-react';
 
 function isiOS(): boolean {
@@ -96,7 +97,7 @@ const Overlay: React.FC = () => {
         if (success) {
           toast({
             title: 'Notifications enabled!',
-            description: 'You\'ll now receive important updates from Croft Common.',
+            description: `You'll now receive important updates from ${BRAND_NAME}.`,
           });
           setShow(false); // Hide the overlay on success
         } else {
@@ -126,7 +127,7 @@ const Overlay: React.FC = () => {
           <div className="flex items-center gap-3 min-w-0">
             <CroftLogo size="sm" />
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-foreground">Download "Croft Common"</span>
+              <span className="text-sm font-medium text-foreground">Download "{BRAND_NAME}"</span>
               <span className="text-xs text-muted-foreground">Add to your Home Screen for a faster app-like experience.</span>
             </div>
           </div>
