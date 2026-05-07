@@ -1,42 +1,16 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CommunityHeroCarousel from "@/components/CommunityHeroCarousel";
-import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { format } from 'date-fns';
+import { useEffect } from 'react';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 
-interface CommonGoodRow { message: string; posted_at: string; }
-
 const Community = () => {
-  const [messages, setMessages] = useState<CommonGoodRow[]>([]);
   const { isCMSMode } = useCMSMode();
 
   useEffect(() => {
     document.title = 'Community | Croft Common';
   }, []);
-
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await ((supabase as any).from('common_good_messages' as any)
-        .select('message, posted_at')
-        .order('posted_at', { ascending: false }) as any);
-      if (!error && data) setMessages(data as CommonGoodRow[]);
-    })();
-  }, []);
-
-  const grouped = useMemo(() => {
-    const map = new Map<string, CommonGoodRow[]>();
-    for (const m of messages) {
-      const d = new Date(m.posted_at);
-      const key = format(d, 'MMMM yyyy');
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(m);
-    }
-    return Array.from(map.entries());
-  }, [messages]);
 
   return (
     <div className="min-h-screen">
@@ -63,36 +37,6 @@ const Community = () => {
         </div>
       </section>
 
-      <section className="pb-24 bg-background">
-        <div className="container mx-auto px-6 max-w-3xl">
-          <Accordion type="single" collapsible>
-            <AccordionItem value="common-good-thread">
-              <AccordionTrigger className="font-industrial text-sm uppercase tracking-wide inline-flex items-center gap-2 leading-none border-2 border-foreground rounded-full px-3 py-2 mb-4 no-underline hover:no-underline hover:border-[hsl(var(--accent-pink))] hover:text-[hsl(var(--accent-pink))]">Common Good thread</AccordionTrigger>
-              <AccordionContent>
-                <div className="max-h-[360px] overflow-y-auto pr-2">
-                  {grouped.length === 0 ? (
-                    <p className="font-industrial text-muted-foreground">No messages yet.</p>
-                  ) : (
-                    grouped.map(([month, items]) => (
-                      <div key={month} className="mb-6">
-                        <h3 className="inline-block font-industrial text-xs uppercase tracking-wide text-foreground/80 mb-2 border border-foreground/60 rounded-md px-2 py-1">{month}</h3>
-                        <ul className="space-y-3">
-                          {items.map((m, idx) => (
-                            <li key={idx} className="border border-border rounded-md p-3 text-left">
-                              <div className="font-industrial text-xs text-muted-foreground mb-1">{format(new Date(m.posted_at), 'dd MMM yyyy')}</div>
-                              <div className="text-foreground/90 leading-relaxed">{m.message}</div>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </section>
 
       {!isCMSMode && <Footer />}
     </div>

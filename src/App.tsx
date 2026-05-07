@@ -48,8 +48,6 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Branding = lazy(() => import("./pages/Branding"));
-const CommonGood = lazy(() => import("./pages/CommonGood"));
-const CommonGoodMessage = lazy(() => import("./pages/CommonGoodMessage"));
 const PushSetup = lazy(() => import("./pages/PushSetup").then(m => ({ default: m.PushSetup })));
 const ClickRedirect = lazy(() => import("./pages/ClickRedirect"));
 const ExtRedirect = lazy(() => import("./pages/ExtRedirect"));
@@ -175,7 +173,7 @@ const LowercasePathGuard = () => {
      "privacy",
      "unsubscribe",
      "branding",
-     "common-good",
+     
      "book",
      "admin",
      "croft-common-datetime",
@@ -373,8 +371,6 @@ const App = () => {
                       <Route path="/privacy" element={<Privacy />} />
                       <Route path="/unsubscribe" element={<Unsubscribe />} />
                       <Route path="/branding" element={<Branding />} />
-                      <Route path="/common-good" element={<CommonGood />} />
-                      <Route path="/common-good/message" element={<CommonGoodMessage />} />
                       <Route path="/push-setup" element={<PushSetup />} />
                       <Route path="/croft-common-datetime" element={<CroftCommonDateTime />} />
                       <Route path="/CroftCommonDate&Time" element={<Navigate to="/croft-common-datetime" replace />} />

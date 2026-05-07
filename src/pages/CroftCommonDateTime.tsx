@@ -6,7 +6,7 @@ import { useCMSMode } from '@/contexts/CMSModeContext';
 
 const CroftCommonDateTime: React.FC = () => {
   const [now, setNow] = useState(new Date());
-  const [cgTotal, setCgTotal] = useState<number | null>(null);
+  
   const { isCMSMode } = useCMSMode();
 
   // Tick every second
@@ -38,24 +38,6 @@ const CroftCommonDateTime: React.FC = () => {
     canonical.href = new URL('/croft-common-datetime', window.location.origin).toString();
   }, []);
 
-  // Fetch Common Good running total
-  useEffect(() => {
-    let mounted = true;
-    const fetchTotals = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('get-common-good-totals', { body: {} });
-        if (!mounted) return;
-        if (error) throw error;
-        const combined = data?.combined_total_cents ?? 0;
-        setCgTotal(combined);
-      } catch (e) {
-        // silent
-      }
-    };
-    fetchTotals();
-    const id = setInterval(fetchTotals, 60_000);
-    return () => { mounted = false; clearInterval(id); };
-  }, []);
 
   const dateStr = useMemo(() => now.toLocaleDateString(undefined, {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
@@ -103,21 +85,6 @@ const CroftCommonDateTime: React.FC = () => {
         </section>
       </main>
 
-      <footer className="bg-void text-background py-8">
-        <div className="container mx-auto px-6 text-center">
-          <CMSText
-            page="croft-common-datetime"
-            section="footer"
-            contentKey="label"
-            fallback="The Common Good"
-            as="div"
-            className="font-industrial text-xs uppercase tracking-wide mb-1"
-          />
-          <div className="font-brutalist text-3xl">
-            {cgTotal !== null ? (cgTotal / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

@@ -19,7 +19,7 @@ import Index from '@/pages/Index';
 import Book from '@/pages/Book';
 import Calendar from '@/pages/Calendar';
 import Notifications from '@/pages/Notifications';
-import CommonGood from '@/pages/CommonGood';
+
 import Privacy from '@/pages/Privacy';
 import CroftCommonDateTime from '@/pages/CroftCommonDateTime';
 import CMSMenuModal from '@/pages/CMSMenuModal';
@@ -48,7 +48,7 @@ const pageComponents: Record<string, React.ComponentType> = {
   'book': Book,
   'calendar': Calendar,
   'notifications': Notifications,
-  'common-good': CommonGood,
+  
   'privacy': Privacy,
   'croftcommondatetime': CroftCommonDateTime,
   'croft-common-datetime': CroftCommonDateTime,

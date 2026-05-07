@@ -159,14 +159,8 @@ const MenuModal = ({ isOpen, onClose, pageType, menuData }: MenuModalProps) => {
 
   const handleSecretSuccess = useCallback(() => {
     try { window.getSelection()?.removeAllRanges(); } catch {}
-    if (pageType === 'community') {
-      handleClose();
-      toast({ title: 'Access granted', description: 'Common Good Fund unlocked', duration: 1800 });
-      navigate('/common-good');
-    } else {
-      setShowSecret(true);
-    }
-  }, [navigate, handleClose, pageType]);
+    setShowSecret(true);
+  }, []);
 
   const {
     isDrawing,
