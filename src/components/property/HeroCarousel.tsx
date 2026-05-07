@@ -7,51 +7,42 @@ interface Props {
   alt?: string;
 }
 
-// Triptych hero: left third + wide centre + right third, with thin gaps
-// between panels. Each panel slides smoothly from one image to the next on a
-// long, eased transition. Chevron controls advance or reverse manually.
+// Triptych hero: side image + wide centre image + side image, with defined gaps.
+// Each panel uses a three-frame strip so the movement is only a direct slide.
 const HeroCarousel = ({
   images,
-  intervalMs = 9000,
-  transitionMs = 2200,
+  intervalMs = 12000,
+  transitionMs = 3200,
   alt = "",
 }: Props) => {
   const total = images.length;
-  // We render images.length + 1 frames per panel (last frame duplicates the
-  // first) so a slide from index = total - 1 to total looks seamless. After
-  // the transition ends we silently snap back to 0.
   const [index, setIndex] = useState(0);
-  const [animate, setAnimate] = useState(true);
+  const [slideOffset, setSlideOffset] = useState(0);
+  const [isSliding, setIsSliding] = useState(false);
   const pausedRef = useRef(false);
+  const movingRef = useRef(false);
+  const finishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const wrapIndex = useCallback((value: number) => ((value % total) + total) % total, [total]);
 
   const advance = useCallback(
     (dir: 1 | -1) => {
-      setAnimate(true);
-      setIndex((i) => {
-        if (dir === 1) return i + 1; // may overshoot to `total`, handled below
-        return i === 0 ? total - 1 : i - 1;
-      });
+      if (total < 2 || movingRef.current) return;
+
+      movingRef.current = true;
+      setIsSliding(true);
+      setSlideOffset(dir);
+
+      if (finishTimerRef.current) clearTimeout(finishTimerRef.current);
+      finishTimerRef.current = setTimeout(() => {
+        setIsSliding(false);
+        setIndex((i) => wrapIndex(i + dir));
+        setSlideOffset(0);
+        movingRef.current = false;
+      }, transitionMs);
     },
-    [total],
+    [total, transitionMs, wrapIndex],
   );
-
-  // After we slide into the duplicate frame at index === total, snap back
-  // to 0 without an animation so the next forward slide picks up cleanly.
-  useEffect(() => {
-    if (index !== total) return;
-    const t = setTimeout(() => {
-      setAnimate(false);
-      setIndex(0);
-    }, transitionMs);
-    return () => clearTimeout(t);
-  }, [index, total, transitionMs]);
-
-  // Re-enable animation on the next frame after a silent snap.
-  useEffect(() => {
-    if (animate) return;
-    const r = requestAnimationFrame(() => setAnimate(true));
-    return () => cancelAnimationFrame(r);
-  }, [animate]);
 
   useEffect(() => {
     if (total < 2) return;
@@ -61,20 +52,27 @@ const HeroCarousel = ({
     return () => clearInterval(id);
   }, [total, intervalMs, advance]);
 
+  useEffect(() => {
+    return () => {
+      if (finishTimerRef.current) clearTimeout(finishTimerRef.current);
+    };
+  }, []);
+
   if (total === 0) return null;
 
   const Panel = ({ offset }: { offset: number }) => {
-    const ordered = Array.from({ length: total }, (_, i) => images[(i + offset) % total]);
-    const strip = [...ordered, ordered[0]]; // duplicate first frame at the end
+    const panelIndex = index + offset;
+    const strip = [images[wrapIndex(panelIndex - 1)], images[wrapIndex(panelIndex)], images[wrapIndex(panelIndex + 1)]];
+
     return (
-      <div className="relative h-full w-full overflow-hidden bg-black">
+      <div className="relative h-full w-full overflow-hidden bg-background">
         <div
           className="flex h-full"
           style={{
-            width: `${strip.length * 100}%`,
-            transform: `translateX(-${(index * 100) / strip.length}%)`,
-            transition: animate
-              ? `transform ${transitionMs}ms cubic-bezier(0.65, 0, 0.35, 1)`
+            width: "300%",
+            transform: `translateX(-${(1 + slideOffset) * (100 / 3)}%)`,
+            transition: isSliding
+              ? `transform ${transitionMs}ms cubic-bezier(0.45, 0, 0.2, 1)`
               : "none",
           }}
         >
@@ -82,7 +80,7 @@ const HeroCarousel = ({
             <div
               key={`${src}-${i}`}
               className="h-full"
-              style={{ width: `${100 / strip.length}%` }}
+              style={{ width: `${100 / 3}%` }}
             >
               <img
                 src={src}
@@ -104,13 +102,13 @@ const HeroCarousel = ({
       onMouseEnter={() => (pausedRef.current = true)}
       onMouseLeave={() => (pausedRef.current = false)}
     >
-      <div className="absolute inset-0 grid grid-cols-1 md:grid-cols-[1fr_3fr_1fr] gap-2 bg-black">
+      <div className="absolute inset-0 grid grid-cols-1 md:grid-cols-[1fr_3fr_1fr] gap-4 md:gap-6 bg-background">
         <div className="hidden md:block">
-          <Panel offset={0} />
+          <Panel offset={-1} />
         </div>
-        <Panel offset={1} />
+        <Panel offset={0} />
         <div className="hidden md:block">
-          <Panel offset={2} />
+          <Panel offset={1} />
         </div>
       </div>
 
@@ -118,7 +116,7 @@ const HeroCarousel = ({
         type="button"
         aria-label="Previous image"
         onClick={() => advance(-1)}
-        className="absolute left-3 md:left-6 top-1/2 z-20 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition-colors"
+        className="absolute left-3 md:left-6 top-1/2 z-20 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-background/45 text-background-foreground backdrop-blur-sm transition-colors hover:bg-background/75"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
@@ -128,7 +126,7 @@ const HeroCarousel = ({
         type="button"
         aria-label="Next image"
         onClick={() => advance(1)}
-        className="absolute right-3 md:right-6 top-1/2 z-20 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition-colors"
+        className="absolute right-3 md:right-6 top-1/2 z-20 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-background/45 text-background-foreground backdrop-blur-sm transition-colors hover:bg-background/75"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
