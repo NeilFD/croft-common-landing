@@ -1,4 +1,6 @@
 import PropertyPage from "@/components/property/PropertyPage";
+import CBMenuPage from "@/components/crazybear/CBMenuPage";
+import { blackBearMenu, bnbMenu, countryPubMenu } from "@/data/menus";
 
 // Country pages
 export const CountryHome = () => (
@@ -8,8 +10,8 @@ export const CountryHome = () => (
     body="The original Crazy Bear. A 16th century inn with rooms, restaurants and a country pub spirit that refuses to behave."
   />
 );
-export const CountryPub = () => <PropertyPage title="The Pub" />;
-export const CountryPubFood = () => <PropertyPage title="Food" eyebrow="The Pub" />;
+export const CountryPub = () => <CBMenuPage menu={countryPubMenu} />;
+export const CountryPubFood = () => <CBMenuPage menu={countryPubMenu} />;
 export const CountryPubDrink = () => <PropertyPage title="Drink" eyebrow="The Pub" />;
 export const CountryPubHospitality = () => (
   <PropertyPage title="Hospitality" eyebrow="The Pub" />
@@ -32,10 +34,8 @@ export const TownHome = () => (
   />
 );
 export const TownFood = () => <PropertyPage title="Food" />;
-export const TownBlackBear = () => (
-  <PropertyPage title="The Black Bear" eyebrow="Food" />
-);
-export const TownBnB = () => <PropertyPage title="B&B" eyebrow="Food" />;
+export const TownBlackBear = () => <CBMenuPage menu={blackBearMenu} />;
+export const TownBnB = () => <CBMenuPage menu={bnbMenu} />;
 export const TownHomThai = () => <PropertyPage title="Hom Thai" eyebrow="Food" />;
 export const TownDrink = () => <PropertyPage title="Drink" />;
 export const TownCocktails = () => <PropertyPage title="Cocktails" eyebrow="Drink" />;
