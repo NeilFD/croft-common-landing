@@ -86,13 +86,13 @@ export const UserMenu = () => {
     return (
       <>
         <Button
-          variant="ghost"
+          variant="outline"
           size="sm"
           onClick={handleMemberLogin}
-          className="gap-2 text-xs"
+          className="gap-1.5 text-xs font-industrial uppercase tracking-wide h-9 px-3 border-foreground/30 hover:border-accent-pink hover:text-accent-pink transition-colors"
         >
           <User className="h-4 w-4" />
-          <span className="hidden sm:inline">Member Login</span>
+          <span>Sign In</span>
         </Button>
 
         {/* Authentication Modals */}
