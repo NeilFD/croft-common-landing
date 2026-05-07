@@ -18,6 +18,7 @@ import Index from "./pages/Index";
 import Landing from "./pages/Landing";
 import HouseRules from "./pages/HouseRules";
 import PropertyLayout from "./components/property/PropertyLayout";
+const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
 import {
   CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
   CountryRooms, CountryRoomTypes, CountryRoomGallery,
@@ -339,6 +340,9 @@ const App = () => {
                         <Route path="pool" element={<TownPool />} />
                         <Route path="members" element={<Navigate to="/members" replace />} />
                       </Route>
+
+                      {/* Crazy Bear members entry */}
+                      <Route path="/bears-den" element={<BearsDen />} />
 
                       {/* Members entry - re-uses existing common-room */}
                       <Route path="/members" element={<Navigate to="/common-room" replace />} />

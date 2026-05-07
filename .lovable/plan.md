@@ -1,173 +1,79 @@
+## Goal
 
-# Phase 1: Crazy Bear Rebrand - Landing + Navigation
+Bring back the member sign-up that exists on Croft Common pages (footer subscription + "Common Room" secret gesture entry) and translate the entire experience into Crazy Bear language and styling. Wire it into the Town and Country property pages so it appears at the bottom of every Crazy Bear page.
 
-Scope is shaping the new architecture and porting text/branding from Croft Common to Crazy Bear. All app functionality, members area, secret gestures and Common Room logic stays intact and is reused under "Members" for both properties. Visual scheme stays black & white (Croft style), not the gold/dark of the old Bear projects.
+The underlying mechanic stays the same (this is the bit that worked perfectly): collect name + email + consent, optional personalisation (phone, birthday, interests), invoke the existing `subscribe-newsletter` edge function, and offer a hidden secret gesture entry to a members area. Only the wrapper, copy and visual styling change.
 
-## 1. Information Architecture
+## What gets built
 
-New top-level routes:
+### 1. New Crazy Bear footer component
+`src/components/crazybear/CBFooter.tsx`
 
-```text
-/                     Landing chooser (Country | Town)
-/country              Crazy Bear Country (Stadhampton) home
-/town                 Crazy Bear Town (Beaconsfield) home
-/members              Shared members entry (existing Common Room logic)
-```
+A self-contained footer using the CB tokens already in place (`font-display`, `font-cb-sans`, `font-cb-mono`, black/white palette, thin uppercase tracking, hairline borders). No Croft brutalist type, no pink accents, no Common Good total, no Management Login.
 
-### Country (Stadhampton) sub-tree
-```text
-/country/pub
-/country/pub/food
-/country/pub/drink
-/country/pub/hospitality
-/country/rooms
-/country/rooms/types
-/country/rooms/gallery
-/country/parties
-/country/events
-/country/events/weddings
-/country/events/birthdays
-/country/events/business
-/country/members          -> reuses /members
-```
+Sections, top to bottom:
+- Subscription block (uses new `CBSubscriptionForm`, see below)
+- Three-column info block: Crazy Bear wordmark + tagline / Town (Beaconsfield address, phone, email) / Country (Stadhampton address, phone, email)
+- Hairline divider
+- Bottom row: copyright left, "Link Membership" text link right (opens existing `MembershipLinkModal`)
+- A small, almost-hidden mark at the very bottom that acts as the secret-gesture target (see section 3)
 
-### Town (Beaconsfield) sub-tree
-```text
-/town/food
-/town/food/black-bear
-/town/food/bnb
-/town/food/hom-thai
-/town/drink
-/town/drink/cocktails
-/town/rooms
-/town/rooms/types
-/town/rooms/gallery
-/town/pool
-/town/members             -> reuses /members
-```
+### 2. New Crazy Bear subscription form
+`src/components/crazybear/CBSubscriptionForm.tsx`
 
-A `PropertyContext` (country | town) wraps each subtree so nav, theming accents and members deep-links know which property the user is in.
+Same fields, validation, edge-function call (`supabase.functions.invoke('subscribe-newsletter', ...)`) and toast logic as `SubscriptionForm.tsx`. Differences:
+- No `CMSText` wrappers (CB pages aren't CMS-managed); plain copy.
+- CB visual language: black background, white hairline inputs, uppercase mono labels, full-width black/white pill button.
+- New copy throughout, e.g.
 
-## 2. Landing Page (`/`)
+  - Heading: `THE BEAR'S CIRCLE`
+  - Sub: `Quiet rooms. Loud nights. The odd surprise. Sign up and the bear remembers you.`
+  - Personalise toggle: `TELL THE BEAR MORE` / `LESS`
+  - Submit: `JOIN THE CIRCLE`
+  - Loading: `SIGNING YOU IN...`
+  - Disclaimer: `Members hear first. Town and Country. No noise in between.`
+  - Consent: `I'm happy for The Crazy Bear to email me. See the privacy policy.`
 
-Replaces current Croft `Index.tsx`. Two large split panels (stacked on mobile):
+  All copy uses British spellings, no em dashes.
 
-```text
-+-------------------------+-------------------------+
-|     CRAZY BEAR          |     CRAZY BEAR          |
-|       COUNTRY           |        TOWN             |
-|     Stadhampton         |     Beaconsfield        |
-|   [stadhampton image]   |   [beaconsfield image]  |
-+-------------------------+-------------------------+
-```
+### 3. Secret gesture entry to a Crazy Bear members area
+Reuse the existing `GestureOverlay`, `useMembershipGate`, `BiometricUnlockModal`, `MembershipLinkModal`, `AuthModal` machinery unchanged (it's the bit the user said worked perfectly). Wire it into the CB footer:
 
-Uses `stadhampton-property.jpg` and `beaconsfield-property.jpg` from Bear Compass (copied across). Black & white treatment, white serif display type, hover reveals a short tagline + ENTER chevron. Bottom strip: small "Members" link that goes to `/members` directly (preserves the gesture-access surface used by existing members).
+- The footer renders a `<GestureOverlay>` scoped to a `containerRef` on the footer wrapper, plus the existing modal stack.
+- A small bear mark in the footer doubles as a visual hint for those who know.
+- On successful gesture + auth, navigate to `/bears-den` (new route, see section 4).
 
-## 3. Navigation Components
+This keeps the "secret, members-only entry" feel intact and uses code that already passes biometric / auth flows.
 
-Replace the single `Navigation.tsx` with three cooperating components:
+### 4. New members landing page (Crazy Bear styled)
+`src/pages/crazybear/BearsDen.tsx`, route `/bears-den`.
 
-- `LandingNav.tsx` - minimal, only logo + Members link, used on `/`.
-- `CountryNav.tsx` - top bar for `/country/*` with the Country menu.
-- `TownNav.tsx` - top bar for `/town/*` with the Town menu.
+Minimal first pass that mirrors `CommonRoomMain` in spirit but in CB language: black hero, large `BEAR'S DEN` wordmark, short welcome line, and placeholder tiles for what will live there later (Diary, Tables, Rooms, Cellar). No CMS. This gives the secret gesture somewhere meaningful to land. Future content can be filled in later.
 
-Both property navs share a `PropertyNavShell` that handles:
-- Logo (Crazy Bear mark, links back to property home)
-- Property switcher chip on the right ("Switch to Town" / "Switch to Country")
-- Desktop: top items with hover-reveal sub menu (matches current Croft black/white styling)
-- Mobile: full-screen overlay with accordions per top item
-- Members entry preserved on every nav (so secret gestures still work from anywhere)
+### 5. Mount the new footer on Town and Country
+Update `src/components/property/PropertyLayout.tsx` to render `CBFooter` in place of the current minimal footer. The Landing page (`/`) keeps its full-bleed entry chooser and does not get the footer (correct behaviour, matches the user's "bottom of the pages" wording).
 
-Menu data lives in `src/data/navigation.ts`:
+### 6. Routing
+Add `/bears-den` to `src/App.tsx` alongside the existing CB routes. Public route, gated only by the secret gesture + biometric / auth flow already in place.
 
-```ts
-export const countryNav = [
-  { label: 'Pub',     path: '/country/pub',     children: [
-      { label: 'Food',         path: '/country/pub/food' },
-      { label: 'Drink',        path: '/country/pub/drink' },
-      { label: 'Hospitality',  path: '/country/pub/hospitality' },
-  ]},
-  { label: 'Rooms',   path: '/country/rooms',   children: [
-      { label: 'Room Types', path: '/country/rooms/types' },
-      { label: 'Gallery',    path: '/country/rooms/gallery' },
-  ]},
-  { label: 'Crazy Bear Parties', path: '/country/parties' },
-  { label: 'Events',  path: '/country/events',  children: [
-      { label: 'Weddings',  path: '/country/events/weddings' },
-      { label: 'Birthdays', path: '/country/events/birthdays' },
-      { label: 'Business',  path: '/country/events/business' },
-  ]},
-  { label: 'Members', path: '/members' },
-];
+## What is intentionally NOT carried over
 
-export const townNav = [ /* mirrors structure above for Town */ ];
-```
+- Common Good total, Uncommon Standards button, Management Login link, "Stokes Croft, Bristol / Pure Hospitality" copy, brutalist Croft typography, pink accent colour. None of these belong to Crazy Bear.
+- CMS-driven copy: CB pages aren't in the CMS today. All strings live in the component. Adding CB to the CMS is a separate, larger piece of work.
 
-## 4. Page Scaffolding
+## Files touched
 
-For each route above, create a simple page component using a shared `PropertyPageLayout`:
-- Hero image (placeholder from Bear Compass assets, mapped per page)
-- Page title (serif), short body, "Coming soon" / placeholder copy
-- Re-uses existing `MenuButton` + `MenuModal` so the secret "7" swipe gesture still works on every property page
+Create
+- `src/components/crazybear/CBFooter.tsx`
+- `src/components/crazybear/CBSubscriptionForm.tsx`
+- `src/pages/crazybear/BearsDen.tsx`
 
-This keeps Phase 1 focused on structure; real copy/menus land in Phase 2.
+Edit
+- `src/components/property/PropertyLayout.tsx` (swap footer)
+- `src/App.tsx` (add `/bears-den` route)
 
-## 5. Branding Sweep (text only, no design overhaul)
+No database changes, no new edge functions, no new secrets. The `subscribe-newsletter`, biometric and membership-link functions already deployed continue to do the work.
 
-Rename references project-wide while keeping the black & white Croft visual system:
+## Open question (one quick check before I build)
 
-- `Croft Common` -> `Crazy Bear`
-- `The Common Room` -> `Members` (label) but keep underlying routes/components named CommonRoom internally to avoid touching members/auth logic
-- Logo component: replace `CroftLogo` usage in the new landing/nav with a new `CrazyBearLogo` wrapper that renders `crazy-bear-logo.svg` (copied from Bear Compass)
-- Update `index.html` title, meta description, OG tags
-- Update `src/data/brand.ts` (name, tagline, social handles placeholders)
-- Footer: replace Croft contact block with two-column "Country | Town" placeholder addresses
-
-What is NOT changed in Phase 1:
-- Member auth, push, WebAuthn, ledger, moments, lunch run, gestures - all retained as-is
-- Management app and CMS - retained, only label strings updated where they say "Croft Common"
-- Colour tokens - stay on existing black/white Croft palette
-- All edge functions and database
-
-## 6. Asset Migration
-
-Copy from `Bear Compass` project into this repo:
-
-```text
-src/assets/crazy-bear-logo.svg
-src/assets/crazy-bear-logo.png
-src/assets/crazy-bear-full-logo.png
-src/assets/stadhampton-property.jpg
-src/assets/beaconsfield-property.jpg
-```
-
-Plus a curated set of hero images per section (pub, rooms, events, pool, food sub-pages) selected from the `idea-*` and `hero-*` images already in Bear Compass. Mapped in a new `src/data/propertyHeroMap.ts`.
-
-## 7. Routing Wiring
-
-Update `src/App.tsx`:
-- `/` -> `LandingPage`
-- `/country/*` -> `CountryLayout` (wraps `CountryNav` + `Outlet`)
-- `/town/*` -> `TownLayout` (wraps `TownNav` + `Outlet`)
-- `/members` and existing `/common-room/*`, `/check-in`, etc. unchanged
-- All current Croft venue routes (`/cafe`, `/cocktails`, `/beer`, `/kitchens`, `/hall`, `/community`) get redirects to the new equivalents (or to landing) so existing inbound links don't 404
-
-## 8. Out of scope for Phase 1 (logged for later phases)
-
-- Final menus, room descriptions, real photography, pricing
-- Booking integrations for rooms and events
-- Pool page detail
-- Crazy Bear Parties detail
-- Mobile app (Capacitor) icon/splash refresh
-- CMS content seeding for the new pages
-
-## 9. Suggested implementation order once approved
-
-1. Copy assets and add `CrazyBearLogo` + brand tokens
-2. Build `LandingPage` and route `/`
-3. Add nav data + `CountryNav`, `TownNav`, `PropertyNavShell`
-4. Add `CountryLayout`, `TownLayout` and stub pages for every route
-5. Add legacy redirects from Croft routes to new structure
-6. Sweep visible "Croft Common" strings to "Crazy Bear" (excluding internal route/component names)
-
-After this phase the site has the full new structure with placeholder content, members area fully working under both properties, and ready for Phase 2 content population.
+Confirm the members destination name. I've used `BEAR'S DEN` / `/bears-den` as the Crazy Bear equivalent of `THE COMMON ROOM`. If you'd prefer `THE SETT`, `THE DEN`, `THE LAIR`, or something else, tell me now and I'll use that name and route instead.
