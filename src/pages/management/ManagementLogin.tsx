@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { Mail, Eye, EyeOff } from 'lucide-react';
 import CroftLogo from '@/components/CroftLogo';
+import { BRAND_NAME } from '@/data/brand';
 
 // Synchronous detector to block redirects before effects run
 const detectRecoveryFromUrl = (): boolean => {
@@ -455,15 +455,15 @@ const ManagementLogin = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">
-              Croft Common
+              {BRAND_NAME}
             </h1>
-            <p className="text-muted-foreground">Management Portal</p>
+            <p className="text-muted-foreground">Password access</p>
           </div>
 
           <Card>
             <CardHeader>
               <CardTitle>
-                {isPasswordUpdateMode ? 'Set New Password' : isResetMode ? 'Reset Password' : 'Sign In'}
+                {isPasswordUpdateMode ? 'Set your password' : isResetMode ? 'Reset password' : 'Sign in'}
               </CardTitle>
               <CardDescription>
                 {isPasswordUpdateMode 
@@ -506,12 +506,12 @@ const ManagementLogin = () => {
                   ) : (
                     <form onSubmit={handlePasswordUpdate} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="newPassword">New Password</Label>
+                            <Label htmlFor="newPassword">New password</Label>
                         <div className="relative">
                           <Input
                             id="newPassword"
                             type={showPassword ? "text" : "password"}
-                            placeholder="Enter your new password"
+                              placeholder="Enter your new password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
                             className="pr-10"
@@ -524,13 +524,13 @@ const ManagementLogin = () => {
                             className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                             onClick={() => setShowPassword(!showPassword)}
                           >
-                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                <span aria-hidden="true" className="text-sm">{showPassword ? 'Hide' : 'Show'}</span>
                           </Button>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="confirmPassword">Confirm Password</Label>
+                            <Label htmlFor="confirmPassword">Confirm password</Label>
                         <Input
                           id="confirmPassword"
                           type={showPassword ? "text" : "password"}
@@ -552,7 +552,7 @@ const ManagementLogin = () => {
                             <span>Updating...</span>
                           </div>
                         ) : (
-                          'Update Password'
+                              'Save password'
                         )}
                       </Button>
                     </form>
