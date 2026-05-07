@@ -1,42 +1,16 @@
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import CommunityHeroCarousel from "@/components/CommunityHeroCarousel";
-import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { format } from 'date-fns';
+import { useEffect } from 'react';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 
-interface CommonGoodRow { message: string; posted_at: string; }
-
 const Community = () => {
-  const [messages, setMessages] = useState<CommonGoodRow[]>([]);
   const { isCMSMode } = useCMSMode();
 
   useEffect(() => {
     document.title = 'Community | Croft Common';
   }, []);
-
-  useEffect(() => {
-    (async () => {
-      const { data, error } = await ((supabase as any).from('common_good_messages' as any)
-        .select('message, posted_at')
-        .order('posted_at', { ascending: false }) as any);
-      if (!error && data) setMessages(data as CommonGoodRow[]);
-    })();
-  }, []);
-
-  const grouped = useMemo(() => {
-    const map = new Map<string, CommonGoodRow[]>();
-    for (const m of messages) {
-      const d = new Date(m.posted_at);
-      const key = format(d, 'MMMM yyyy');
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(m);
-    }
-    return Array.from(map.entries());
-  }, [messages]);
 
   return (
     <div className="min-h-screen">
