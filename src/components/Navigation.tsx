@@ -18,15 +18,7 @@ const Navigation = () => {
   const { isIOS, isPWAStandalone, isCapacitorNative } = useIOSDetection();
   const isNativeIOS = isIOS && (isPWAStandalone || isCapacitorNative);
   
-  const navItems = [
-    { name: 'CAFE', path: '/cafe' },
-    { name: 'COCKTAILS', path: '/cocktails' },
-    { name: 'BEER', path: '/beer' },
-    { name: 'KITCHENS', path: '/kitchens' },
-    { name: 'HALL', path: '/hall' },
-    { name: 'COMMUNITY', path: '/community' },
-    { name: 'THE COMMON ROOM', path: '/den' }
-  ];
+  const navItems: { name: string; path: string }[] = [];
 
   // Preload images for better performance
   const pageImages = {
