@@ -6,7 +6,7 @@ import events from "@/assets/cb-hero-events.jpg";
 import parties from "@/assets/cb-hero-parties.jpg";
 import thai from "@/assets/cb-hero-thai.jpg";
 import cocktails from "@/assets/cb-hero-cocktails.jpg";
-import pool from "@/assets/cb-hero-pool.png";
+const pool = "/lovable-uploads/cb-outdoor-terrace-stadhampton.jpg";
 import blackBear from "@/assets/cb-hero-blackbear.jpg";
 
 export const propertyHeroMap: Record<string, string> = {
