@@ -14,7 +14,7 @@ export const PROPERTIES = {
     key: "town" as const,
     name: "Crazy Bear Town",
     location: "Beaconsfield",
-    tagline: "Townhouse glamour, just off the M40.",
+    tagline: "Townhouse glamour, almost in London.",
     basePath: "/town",
   },
 };

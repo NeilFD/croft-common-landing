@@ -28,7 +28,7 @@ export const TownHome = () => (
   <PropertyPage
     title="Crazy Bear Town"
     eyebrow="Beaconsfield, Buckinghamshire"
-    body="Townhouse glamour, just off the M40. Three restaurants, hidden bedrooms and a rooftop pool."
+    body="Townhouse glamour, almost in London. Three restaurants, signature bedrooms and a hidden pool."
   />
 );
 export const TownFood = () => <PropertyPage title="Food" />;
