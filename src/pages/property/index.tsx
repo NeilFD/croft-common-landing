@@ -34,10 +34,8 @@ export const TownHome = () => (
   />
 );
 export const TownFood = () => <PropertyPage title="Food" />;
-export const TownBlackBear = () => (
-  <PropertyPage title="The Black Bear" eyebrow="Food" />
-);
-export const TownBnB = () => <PropertyPage title="B&B" eyebrow="Food" />;
+export const TownBlackBear = () => <CBMenuPage menu={blackBearMenu} />;
+export const TownBnB = () => <CBMenuPage menu={bnbMenu} />;
 export const TownHomThai = () => <PropertyPage title="Hom Thai" eyebrow="Food" />;
 export const TownDrink = () => <PropertyPage title="Drink" />;
 export const TownCocktails = () => <PropertyPage title="Cocktails" eyebrow="Drink" />;
