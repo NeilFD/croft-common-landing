@@ -11,7 +11,7 @@ export const CountryHome = () => (
   />
 );
 export const CountryPub = () => <PropertyPage title="The Pub" />;
-export const CountryPubFood = () => <PropertyPage title="Food" eyebrow="The Pub" />;
+export const CountryPubFood = () => <CBMenuPage menu={countryPubMenu} />;
 export const CountryPubDrink = () => <PropertyPage title="Drink" eyebrow="The Pub" />;
 export const CountryPubHospitality = () => (
   <PropertyPage title="Hospitality" eyebrow="The Pub" />
