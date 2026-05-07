@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import { useCBMember } from "@/hooks/useCBMember";
-import CBMemberLoginModal from "@/components/crazybear/CBMemberLoginModal";
+const CBMemberLoginModal = lazy(() => import("@/components/crazybear/CBMemberLoginModal"));
 
 interface CBTopNavProps {
   /** "light" = white text on dark hero. "dark" = black text on light page. */
@@ -48,7 +48,11 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           )}
         </nav>
       </header>
-      <CBMemberLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      {loginOpen && (
+        <Suspense fallback={null}>
+          <CBMemberLoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+        </Suspense>
+      )}
     </>
   );
 };
