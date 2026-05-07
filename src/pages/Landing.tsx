@@ -46,8 +46,6 @@ const Landing = () => {
               className="h-20 md:h-28 w-auto invert opacity-95"
             />
             <h1 className="mt-7 font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight">
-              The
-              <br />
               Crazy Bear
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
