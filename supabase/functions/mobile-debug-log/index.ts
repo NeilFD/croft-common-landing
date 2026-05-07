@@ -100,17 +100,18 @@ Deno.serve(async (req) => {
     const truncatedUserAgent = user_agent ? user_agent.substring(0, 500) : null;
     const truncatedError = error_message ? error_message.substring(0, 1000) : null;
 
-    // Insert log with service role (bypasses RLS)
+    // Insert log with service role (bypasses RLS).
+    // Table schema: session_id, step, level, message, data, metadata, user_id
     const { error: insertError } = await supabaseAdmin
       .from('mobile_debug_logs')
       .insert({
         session_id,
         step,
+        level: truncatedError ? 'error' : 'info',
+        message: truncatedError,
         data: sanitizedData,
-        error_message: truncatedError,
-        platform: platform || 'unknown',
-        user_agent: truncatedUserAgent,
-        user_id: null // No auth context for these logs
+        metadata: { platform: platform || 'unknown', user_agent: truncatedUserAgent },
+        user_id: null,
       });
 
     if (insertError) {

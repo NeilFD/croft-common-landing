@@ -157,20 +157,21 @@ export async function mobileLog(
     // Silent fail - user might not be authenticated
   }
   
-  // Store in Supabase (secondary path, may fail in native)
+  // Store in Supabase (secondary path). Schema uses level/message/metadata.
   try {
+    const errMsg = error instanceof Error ? error.message : (error || null);
     const { error: dbError } = await (supabase as any)
       .from('mobile_debug_logs')
       .insert({
         session_id: DEBUG_SESSION_ID,
         step,
+        level: errMsg ? 'error' : 'info',
+        message: errMsg,
         data: data ? JSON.parse(JSON.stringify(data)) : null,
-        error_message: error instanceof Error ? error.message : (error || null),
-        user_agent: userAgent,
-        platform,
-        user_id: userId
+        metadata: { platform, user_agent: userAgent },
+        user_id: userId,
       });
-    
+
     if (dbError) {
       console.warn('Failed to log to mobile_debug_logs:', dbError);
     }
