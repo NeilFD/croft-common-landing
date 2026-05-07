@@ -110,7 +110,9 @@ const Navigation = () => {
             enableDevPanel={false}
             interactive={true}
           />
-          <CMSText
+          <span className="font-display uppercase text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
+            The Den
+          </span>
             page="global"
             section="navigation"
             contentKey="brand_name"
