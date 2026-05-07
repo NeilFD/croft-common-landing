@@ -110,11 +110,11 @@ const pageStructure = [
   },
   {
     name: 'Common Room',
-    path: '/cms/visual/den',
+    path: '/cms/visual/common-room',
     icon: Building2,
     sections: [
-      { name: 'Main', path: '/cms/visual/den/main' },
-      { name: 'FAQ', path: '/cms/faq/den' }
+      { name: 'Main', path: '/cms/visual/common-room/main' },
+      { name: 'FAQ', path: '/cms/faq/common-room' }
     ]
   },
   {

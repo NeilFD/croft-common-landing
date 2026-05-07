@@ -46,8 +46,8 @@ export default function CMSDashboard() {
         <Route path="pages/community/content" element={<ContentManager page="community" pageTitle="Community" />} />
         <Route path="pages/community/menu" element={<MenuManager page="community" pageTitle="Community" />} />
         
-        <Route path="pages/den/content" element={<ContentManager page="common-room" pageTitle="Common Room" />} />
-        <Route path="pages/den/menu" element={<MenuManager page="common-room" pageTitle="Common Room" />} />
+        <Route path="pages/common-room/content" element={<ContentManager page="common-room" pageTitle="Common Room" />} />
+        <Route path="pages/common-room/menu" element={<MenuManager page="common-room" pageTitle="Common Room" />} />
         
         {/* Global Content Management - Legacy routes only */}
         <Route path="global/modals" element={<ModalContentManager />} />
