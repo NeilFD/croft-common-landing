@@ -257,10 +257,9 @@ export const CMSText = ({
               content_key: contentKey,
               content_type: 'text',
               content_value: editValue,
-              content_data: globalContentData,
-              published: false, // Save as draft
-              created_by: user.id  // Set the creator
-            })
+              published: false,
+              created_by: user.id
+            } as any)
             .select();
             
           console.log('🎯 CMS: Global insert result:', insertData, 'Error:', insertError);
