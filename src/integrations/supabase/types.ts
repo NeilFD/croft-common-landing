@@ -648,28 +648,40 @@ export type Database = {
       cms_content: {
         Row: {
           content: string | null
+          content_data: Json | null
+          content_key: string | null
+          content_type: string | null
           created_at: string | null
           id: string
           is_published: boolean | null
           page: string
+          published: boolean | null
           section: string
           updated_at: string | null
         }
         Insert: {
           content?: string | null
+          content_data?: Json | null
+          content_key?: string | null
+          content_type?: string | null
           created_at?: string | null
           id?: string
           is_published?: boolean | null
           page: string
+          published?: boolean | null
           section: string
           updated_at?: string | null
         }
         Update: {
           content?: string | null
+          content_data?: Json | null
+          content_key?: string | null
+          content_type?: string | null
           created_at?: string | null
           id?: string
           is_published?: boolean | null
           page?: string
+          published?: boolean | null
           section?: string
           updated_at?: string | null
         }
@@ -679,22 +691,37 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string | null
+          css_variable: string | null
           id: string
           name: string
+          published: boolean | null
+          token_key: string | null
+          token_type: string | null
+          token_value: string | null
           value: string
         }
         Insert: {
           category?: string | null
           created_at?: string | null
+          css_variable?: string | null
           id?: string
           name: string
+          published?: boolean | null
+          token_key?: string | null
+          token_type?: string | null
+          token_value?: string | null
           value: string
         }
         Update: {
           category?: string | null
           created_at?: string | null
+          css_variable?: string | null
           id?: string
           name?: string
+          published?: boolean | null
+          token_key?: string | null
+          token_type?: string | null
+          token_value?: string | null
           value?: string
         }
         Relationships: []
@@ -728,24 +755,33 @@ export type Database = {
       }
       cms_global_content: {
         Row: {
+          content_key: string | null
           content_type: string | null
+          content_value: string | null
           created_at: string | null
+          created_by: string | null
           id: string
           key: string
           updated_at: string | null
           value: string | null
         }
         Insert: {
+          content_key?: string | null
           content_type?: string | null
+          content_value?: string | null
           created_at?: string | null
+          created_by?: string | null
           id?: string
           key: string
           updated_at?: string | null
           value?: string | null
         }
         Update: {
+          content_key?: string | null
           content_type?: string | null
+          content_value?: string | null
           created_at?: string | null
+          created_by?: string | null
           id?: string
           key?: string
           updated_at?: string | null
@@ -3045,17 +3081,25 @@ export type Database = {
     }
     Functions: {
       check_secret_kitchen_access_status: {
-        Args: { p_kitchen_slug: string }
-        Returns: Json
+        Args: { user_email: string }
+        Returns: {
+          granted_at: string
+          has_access: boolean
+          kitchen_slug: string
+        }[]
       }
       create_cinema_booking: {
         Args: {
-          p_guest_email?: string
-          p_guest_name?: string
-          p_quantity: number
-          p_release_id: string
+          _email: string
+          _guest_name: string
+          _primary_name: string
+          _quantity: number
+          _user_id: string
         }
-        Returns: Json
+        Returns: {
+          release_id: string
+          ticket_numbers: number[]
+        }[]
       }
       get_cinema_status: {
         Args: { p_release_id: string }
