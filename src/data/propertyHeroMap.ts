@@ -31,7 +31,7 @@ export const propertyHeroMap: Record<string, string> = {
   "/country/events/birthdays": parties,
   "/country/events/business": events,
 
-  "/town": beaconsfield,
+  "/town": roomsTown,
   "/town/food": blackBear,
   "/town/food/black-bear": chefPlating,
   "/town/food/bnb": chefPlating,
