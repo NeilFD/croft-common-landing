@@ -47,12 +47,30 @@ serve(async (req) => {
       .eq('user_id', user.id)
       .single()
 
-    // Get basic profile
-    const { data: basicProfile } = await supabase
+    // Get basic profile (fall back to cb_members)
+    let { data: basicProfile } = await supabase
       .from('profiles')
       .select('first_name, last_name')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
+
+    if (!basicProfile?.first_name && !basicProfile?.last_name) {
+      const { data: cbMember } = await supabase
+        .from('cb_members')
+        .select('first_name, last_name')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (cbMember) basicProfile = cbMember as any
+    }
+
+    // Final fallback to auth user metadata
+    if (!basicProfile?.first_name && !basicProfile?.last_name) {
+      const meta: any = (user as any).user_metadata || {}
+      basicProfile = {
+        first_name: meta.first_name || '',
+        last_name: meta.last_name || '',
+      } as any
+    }
 
     // Get recent check-ins for calendar
     const { data: recentCheckins } = await supabase
