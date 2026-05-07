@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
-import heroImage from "@/assets/cb-landing-hero.jpg";
+import heroImage from "@/assets/hero-exterior.jpg";
 import bearMark from "@/assets/crazy-bear-mark.png";
 import CBTopNav from "@/components/crazybear/CBTopNav";
 import CBSubscriptionForm from "@/components/crazybear/CBSubscriptionForm";
