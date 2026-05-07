@@ -12,18 +12,73 @@ export const CountryHome = () => (
 );
 export const CountryPub = () => <CBMenuPage menu={countryPubMenu} />;
 export const CountryPubFood = () => <CBMenuPage menu={countryPubMenu} />;
-export const CountryPubDrink = () => <PropertyPage title="Drink" eyebrow="The Pub" />;
-export const CountryPubHospitality = () => (
-  <PropertyPage title="Hospitality" eyebrow="The Pub" />
+export const CountryPubDrink = () => (
+  <PropertyPage
+    title="Drink"
+    eyebrow="The Pub"
+    body="Real ale. Proper wine. Cocktails that bite back."
+  />
 );
-export const CountryRooms = () => <PropertyPage title="Rooms" />;
-export const CountryRoomTypes = () => <PropertyPage title="Room Types" eyebrow="Rooms" />;
-export const CountryRoomGallery = () => <PropertyPage title="Gallery" eyebrow="Rooms" />;
-export const CountryParties = () => <PropertyPage title="Crazy Bear Parties" />;
-export const CountryEvents = () => <PropertyPage title="Events" />;
-export const CountryWeddings = () => <PropertyPage title="Weddings" eyebrow="Events" />;
-export const CountryBirthdays = () => <PropertyPage title="Birthdays" eyebrow="Events" />;
-export const CountryBusiness = () => <PropertyPage title="Business" eyebrow="Events" />;
+export const CountryPubHospitality = () => (
+  <PropertyPage
+    title="Hospitality"
+    eyebrow="The Pub"
+    body="Fires lit. Doors open. Stay as long as you like."
+  />
+);
+export const CountryRooms = () => (
+  <PropertyPage
+    title="Rooms"
+    body="Theatrical. Indulgent. Never the same twice."
+  />
+);
+export const CountryRoomTypes = () => (
+  <PropertyPage
+    title="Room Types"
+    eyebrow="Rooms"
+    body="Pick your character. Sleep accordingly."
+  />
+);
+export const CountryRoomGallery = () => (
+  <PropertyPage
+    title="Gallery"
+    eyebrow="Rooms"
+    body="A look behind the bedroom doors."
+  />
+);
+export const CountryParties = () => (
+  <PropertyPage
+    title="Crazy Bear Parties"
+    body="Loud, long, late. Bring everyone."
+  />
+);
+export const CountryEvents = () => (
+  <PropertyPage
+    title="Events"
+    body="Private rooms. Whole house. Whatever you need."
+  />
+);
+export const CountryWeddings = () => (
+  <PropertyPage
+    title="Weddings"
+    eyebrow="Events"
+    body="Vows, dinner, dancing. Done properly."
+  />
+);
+export const CountryBirthdays = () => (
+  <PropertyPage
+    title="Birthdays"
+    eyebrow="Events"
+    body="Another year. Worth marking."
+  />
+);
+export const CountryBusiness = () => (
+  <PropertyPage
+    title="Business"
+    eyebrow="Events"
+    body="Meetings that don't feel like meetings."
+  />
+);
 
 // Town pages
 export const TownHome = () => (
@@ -33,13 +88,57 @@ export const TownHome = () => (
     body="Townhouse glamour, almost in London. Three restaurants, crisp cocktails, signature bedrooms and a hidden pool."
   />
 );
-export const TownFood = () => <PropertyPage title="Food" />;
+export const TownFood = () => (
+  <PropertyPage
+    title="Food"
+    body="Two kitchens. One appetite."
+  />
+);
 export const TownBlackBear = () => <CBMenuPage menu={blackBearMenu} />;
 export const TownBnB = () => <CBMenuPage menu={bnbMenu} />;
-export const TownHomThai = () => <PropertyPage title="Hom Thai" eyebrow="Food" />;
-export const TownDrink = () => <PropertyPage title="Drink" />;
-export const TownCocktails = () => <PropertyPage title="Cocktails" eyebrow="Drink" />;
-export const TownRooms = () => <PropertyPage title="Rooms" />;
-export const TownRoomTypes = () => <PropertyPage title="Room Types" eyebrow="Rooms" />;
-export const TownRoomGallery = () => <PropertyPage title="Gallery" eyebrow="Rooms" />;
-export const TownPool = () => <PropertyPage title="Pool" />;
+export const TownHomThai = () => (
+  <PropertyPage
+    title="Hom Thai"
+    eyebrow="Food"
+    body="Bangkok by way of Beaconsfield. Sharp, fragrant, fierce."
+  />
+);
+export const TownDrink = () => (
+  <PropertyPage
+    title="Drink"
+    body="Mirrored bars. Mischievous pours."
+  />
+);
+export const TownCocktails = () => (
+  <PropertyPage
+    title="Cocktails"
+    eyebrow="Drink"
+    body="Stirred with intent. Served without apology."
+  />
+);
+export const TownRooms = () => (
+  <PropertyPage
+    title="Rooms"
+    body="Velvet, mirror, marble. Sleep like a rumour."
+  />
+);
+export const TownRoomTypes = () => (
+  <PropertyPage
+    title="Room Types"
+    eyebrow="Rooms"
+    body="Each one its own world. None of them shy."
+  />
+);
+export const TownRoomGallery = () => (
+  <PropertyPage
+    title="Gallery"
+    eyebrow="Rooms"
+    body="Look closer. Then book one."
+  />
+);
+export const TownPool = () => (
+  <PropertyPage
+    title="Pool"
+    body="Hidden. Heated. Yours for the afternoon."
+  />
+);
