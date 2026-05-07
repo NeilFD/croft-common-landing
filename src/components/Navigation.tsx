@@ -97,20 +97,20 @@ const Navigation = () => {
         className={`fixed top-0 left-0 right-0 z-[100] bg-background/95 backdrop-blur-sm border-b border-charcoal isolate transform-gpu`}
         style={{ paddingTop: 'calc(env(safe-area-inset-top) + 12px)' }}
       >
-      <div className="container mx-auto px-1 sm:px-2 md:px-6 py-4 flex justify-between items-center">
+      <div className="container mx-auto px-3 sm:px-4 md:px-6 py-2.5 md:py-4 flex justify-between items-center gap-2">
         <button 
           onClick={() => handleNavClick('/', 'logo-click')}
           onPointerUp={() => handleNavClick('/', 'logo-pointer')}
-          className="flex items-center space-x-4 hover:scale-105 transition-transform duration-200"
+          className="flex items-center space-x-2 md:space-x-4 hover:scale-105 transition-transform duration-200 min-w-0"
         >
           <CroftLogo 
             size="lg"
-            className="w-[4.5rem] h-[4.5rem] md:translate-x-2"
+            className="w-12 h-12 md:w-[4.5rem] md:h-[4.5rem] md:translate-x-2 shrink-0"
             priority={true}
             enableDevPanel={false}
             interactive={true}
           />
-          <span className="font-display uppercase text-xl md:text-2xl text-foreground tracking-tight whitespace-nowrap">
+          <span className="font-display uppercase text-lg md:text-2xl text-foreground tracking-tight whitespace-nowrap">
             The Den
           </span>
         </button>
@@ -141,15 +141,17 @@ const Navigation = () => {
         </div>
         
         {/* Mobile header items */}
-        <div className="md:hidden flex items-center gap-2">
+        <div className="md:hidden flex items-center gap-1.5 shrink-0">
           <UserMenu />
-          <button 
-            onClick={toggleMobileMenu}
-            className="font-industrial text-sm text-foreground p-2 hover:scale-105 transition-transform duration-200"
-            aria-label="Toggle mobile menu"
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {navItems.length > 0 && (
+            <button 
+              onClick={toggleMobileMenu}
+              className="font-industrial text-sm text-foreground p-2 hover:scale-105 transition-transform duration-200"
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          )}
         </div>
       </div>
       
