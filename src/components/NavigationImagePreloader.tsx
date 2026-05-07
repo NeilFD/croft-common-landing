@@ -17,6 +17,8 @@ const NavigationImagePreloader = () => {
 
   // Phase 1: Aggressively preload first image from every carousel on app init
   useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) return;
+
     const allFirstImages = [
       cafeHeroImages[0]?.src,
       cocktailHeroImages[0]?.src,
@@ -106,6 +108,8 @@ const NavigationImagePreloader = () => {
 
   // Phase 3: IntersectionObserver for mobile - preload when nav is visible
   useEffect(() => {
+    return;
+
     if (typeof window === 'undefined' || window.innerWidth >= 768) return; // Desktop already has hover
 
     const allSecondaryImages = [
