@@ -99,7 +99,7 @@ const CBSubscriptionForm = () => {
     <div className="w-full max-w-xl mx-auto text-white">
       <div className="text-center mb-8">
         <h3 className="font-display uppercase text-3xl md:text-4xl tracking-tight">
-          The Bear's Circle
+          The Bear's Den
         </h3>
         <p className="mt-3 font-cb-mono text-[10px] md:text-xs tracking-[0.4em] uppercase opacity-70">
           Town &nbsp;/&nbsp; Country
