@@ -30,6 +30,10 @@ export default {
 				'brutalist': ['Oswald', 'Arial Black', 'Helvetica', 'sans-serif'],
 				'industrial': ['Work Sans', 'Arial', 'Helvetica', 'sans-serif'],
 				'serif': ['Playfair Display', 'Georgia', 'serif'],
+				/* Crazy Bear typography - architectural, cool, irreverent */
+				'display': ['"Archivo Black"', 'Archivo', 'Helvetica', 'sans-serif'],
+				'cb-sans': ['"Space Grotesk"', 'Inter', 'Helvetica', 'sans-serif'],
+				'cb-mono': ['"Space Mono"', 'ui-monospace', 'monospace'],
 			},
 			colors: {
 				border: 'hsl(var(--border))',
