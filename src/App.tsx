@@ -281,8 +281,10 @@ const App = () => {
                 <ReverseDomainGuard />
                 
                 <RecoveryGuard />
-                <RouteImagePreloader />
-                <NavigationImagePreloader />
+                <Suspense fallback={null}>
+                  <RouteImagePreloader />
+                  <NavigationImagePreloader />
+                </Suspense>
                 <NudgeFloatingButton />
                 <CBSpotifyPlayer />
                 
