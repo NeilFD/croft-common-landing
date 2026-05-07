@@ -652,6 +652,7 @@ export type Database = {
           content_key: string | null
           content_type: string | null
           created_at: string | null
+          created_by: string | null
           id: string
           is_published: boolean | null
           page: string
@@ -665,6 +666,7 @@ export type Database = {
           content_key?: string | null
           content_type?: string | null
           created_at?: string | null
+          created_by?: string | null
           id?: string
           is_published?: boolean | null
           page: string
@@ -678,6 +680,7 @@ export type Database = {
           content_key?: string | null
           content_type?: string | null
           created_at?: string | null
+          created_by?: string | null
           id?: string
           is_published?: boolean | null
           page?: string
@@ -692,6 +695,7 @@ export type Database = {
           category: string | null
           created_at: string | null
           css_variable: string | null
+          description: string | null
           id: string
           name: string
           published: boolean | null
@@ -704,6 +708,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           css_variable?: string | null
+          description?: string | null
           id?: string
           name: string
           published?: boolean | null
@@ -716,6 +721,7 @@ export type Database = {
           category?: string | null
           created_at?: string | null
           css_variable?: string | null
+          description?: string | null
           id?: string
           name?: string
           published?: boolean | null
@@ -732,6 +738,7 @@ export type Database = {
           created_at: string | null
           id: string
           page: string
+          published: boolean | null
           question: string
           sort_order: number | null
         }
@@ -740,6 +747,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           page: string
+          published?: boolean | null
           question: string
           sort_order?: number | null
         }
@@ -748,6 +756,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           page?: string
+          published?: boolean | null
           question?: string
           sort_order?: number | null
         }
@@ -761,7 +770,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           id: string
-          key: string
+          key: string | null
           updated_at: string | null
           value: string | null
         }
@@ -772,7 +781,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
-          key: string
+          key?: string | null
           updated_at?: string | null
           value?: string | null
         }
@@ -783,7 +792,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           id?: string
-          key?: string
+          key?: string | null
           updated_at?: string | null
           value?: string | null
         }
@@ -2215,6 +2224,7 @@ export type Database = {
       }
       notification_deliveries: {
         Row: {
+          campaign_id: string | null
           clicked_at: string | null
           created_at: string | null
           delivered_at: string | null
@@ -2225,6 +2235,7 @@ export type Database = {
           subscription_id: string
         }
         Insert: {
+          campaign_id?: string | null
           clicked_at?: string | null
           created_at?: string | null
           delivered_at?: string | null
@@ -2235,6 +2246,7 @@ export type Database = {
           subscription_id: string
         }
         Update: {
+          campaign_id?: string | null
           clicked_at?: string | null
           created_at?: string | null
           delivered_at?: string | null
