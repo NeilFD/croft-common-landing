@@ -102,7 +102,7 @@ const RollTheDiceModal = ({ open, onClose, variant }: Props) => {
             Roll The Dice
           </h2>
           <p className="mt-3 font-cb-sans text-[13px] text-white/70 italic">
-            Two dice. Land on seven, the round is on us.
+            Take this to the bar. Ask the bartender to play. They will watch you roll.
           </p>
 
           <div className="w-full h-px my-8 bg-white/20" />
@@ -123,11 +123,11 @@ const RollTheDiceModal = ({ open, onClose, variant }: Props) => {
             {done && (
               win ? (
                 <p className="mt-3 font-display uppercase text-xl tracking-tight text-white">
-                  Seven. The round is on us.
+                  Seven
                 </p>
               ) : (
                 <p className="mt-3 font-cb-mono text-[11px] tracking-[0.3em] uppercase text-white/60">
-                  Not seven. Roll again.
+                  Not this time
                 </p>
               )
             )}
@@ -152,11 +152,15 @@ const RollTheDiceModal = ({ open, onClose, variant }: Props) => {
             </button>
           </div>
 
-          {win && (
-            <p className="mt-6 font-cb-mono text-[9px] tracking-[0.3em] uppercase text-white/50 text-center">
-              Show this screen at the bar
+          <div className="mt-8 border-t border-white/15 pt-6 space-y-1.5">
+            <p className="font-cb-mono text-[9px] tracking-[0.4em] uppercase text-white/50">
+              House Rules
             </p>
-          )}
+            <p className="font-cb-sans text-[12px] text-white/65 leading-relaxed">
+              One roll per member, per visit. Bartender must witness the roll. All wins honoured at the discretion of The Crazy Bear.
+            </p>
+          </div>
+
         </div>
       </DialogContent>
     </Dialog>
