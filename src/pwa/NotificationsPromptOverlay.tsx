@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { enableNotifications, resetNotifications, DEBUG_SESSION_ID } from './notifications';
 import { isStandalone, isIosSafari } from './registerPWA';
-import { BRAND_LOGO } from '@/data/brand';
+import { BRAND_LOGO, BRAND_NAME } from '@/data/brand';
 import { supabase } from '@/integrations/supabase/client';
 import { MobileDebugPanel } from '@/components/MobileDebugPanel';
 
@@ -123,12 +123,12 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
         <div className="mx-auto max-w-sm rounded-lg border bg-background text-foreground shadow-xl">
           <div className="p-4">
             <div className="flex items-center gap-2">
-              <img src={BRAND_LOGO} alt="Croft Common logo" className="h-4 w-4 rounded-sm" loading="lazy" />
+              <img src={BRAND_LOGO} alt={`${BRAND_NAME} logo`} className="h-4 w-4 rounded-sm" loading="lazy" />
               <h3 className="text-sm font-medium">Enable notifications</h3>
             </div>
             
             <p className="mt-1 text-sm text-muted-foreground">
-              Get updates from Croft Common
+              Get updates from {BRAND_NAME}
             </p>
             
             {/* Success state */}
@@ -139,7 +139,7 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <p className="text-sm font-medium">Notifications enabled!</p>
-                  <p className="text-xs mt-1">You'll now receive updates from Croft Common</p>
+                  <p className="text-xs mt-1">You'll now receive updates from {BRAND_NAME}</p>
                 </div>
               </div>
             )}
@@ -150,7 +150,7 @@ const Banner: React.FC<{ onClose: () => void } & { swReg: ServiceWorkerRegistrat
                 <p className="text-sm text-destructive">{error}</p>
                 {isIosSafari() && (
                   <p className="text-xs text-muted-foreground mt-2">
-                    <strong>iPhone users:</strong> Make sure to add this app to your Home Screen first, then enable notifications in Settings → Notifications → Croft Common.
+                    <strong>iPhone users:</strong> Make sure to add this app to your Home Screen first, then enable notifications in Settings → Notifications → {BRAND_NAME}.
                   </p>
                 )}
               </div>
