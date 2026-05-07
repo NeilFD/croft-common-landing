@@ -116,7 +116,7 @@ const HeroCarousel = ({
         type="button"
         aria-label="Previous image"
         onClick={() => advance(-1)}
-        className="absolute left-3 md:left-6 top-1/2 z-20 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition-colors"
+        className="absolute left-3 md:left-6 top-1/2 z-20 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-background/45 text-background-foreground backdrop-blur-sm transition-colors hover:bg-background/75"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M15 6l-6 6 6 6" />
@@ -126,7 +126,7 @@ const HeroCarousel = ({
         type="button"
         aria-label="Next image"
         onClick={() => advance(1)}
-        className="absolute right-3 md:right-6 top-1/2 z-20 -translate-y-1/2 grid place-items-center h-11 w-11 rounded-full bg-black/40 hover:bg-black/70 text-white backdrop-blur-sm transition-colors"
+        className="absolute right-3 md:right-6 top-1/2 z-20 -translate-y-1/2 grid h-11 w-11 place-items-center rounded-full bg-background/45 text-background-foreground backdrop-blur-sm transition-colors hover:bg-background/75"
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 6l6 6-6 6" />
