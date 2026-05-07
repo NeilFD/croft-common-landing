@@ -1,89 +1,55 @@
-## Goal
+## Why the membership card is broken
 
-Rebrand the gated members area (currently `/common-room`) to **The Den** — Crazy Bear style. Strip the legacy Croft top nav, change the URL, and overhaul the visuals / copy / typography on the den entry and main page.
+`MembershipCard` calls two Supabase RPCs that do not exist in this project: `ensure_membership_number` and `get_membership_card_details`. So `useMembershipCard` always errors with "Failed to generate membership number" and the card never renders. On top of that, the Apple Wallet flow points at a hardcoded old Supabase project ref (`xccidvoxhpgcnwinnyin`) that is not this Cloud backend, so even if the card loaded the wallet button would 404. The card UI itself is also off-brand — pink gradient, "CROFT COMMON" header, Croft logo.
 
-## 1. Route rename: `/common-room` → `/den`
+Rather than rebuild Apple Wallet for a project that has been rebranded to Crazy Bear / The Den, I will rip Wallet out for now and ship a clean B&W "Den" member card driven directly by `cb_members`.
 
-Add new routes alongside the old ones, then redirect the old paths so any existing links (emails, bookmarks, cached PWAs) still work.
+## 1. New Den-styled MembershipCard
 
-New routes:
-- `/den` → den entry (gesture sign-in)
-- `/den/main` → den main hero
-- `/den/member`, `/den/member/lunch-run`, `/den/member/ledger`, `/den/member/profile`, `/den/member/dashboard`, `/den/member/moments`
+Rewrite `src/components/membership/MembershipCard.tsx` to:
 
-Old routes become 301-style `<Navigate>` redirects:
-- `/common-room` → `/den`
-- `/common-room/main` → `/den/main`
-- `/common-room/member/*` → `/den/member/*`
-- `/members` → `/den` (currently goes to `/common-room`)
+- Pull from `cb_members` directly (`first_name`, `last_name`, `created_at`) plus `auth.users.email` via the `useAuth` hook. No RPCs, no Apple Wallet, no Croft logo, no pink.
+- Generate a stable display number client-side from the user's UUID (e.g. last 8 chars uppercased, formatted `CB-XXXX-XXXX`). No DB writes needed.
+- Layout: credit-card aspect (`aspect-[1.586/1]`), black background, white type, thin white border, bear mark watermark in the corner at low opacity.
+- Typography:
+  - Eyebrow `THE DEN / MEMBER` in mono, tracked `[0.4em]`, tiny.
+  - Member name in Archivo Black, large.
+  - Member number in mono, tracked.
+  - "MEMBER SINCE 05 / 26" footer in mono.
+- Loading and error states use the same B&W card frame so layout doesn't jump.
+- Remove all Apple Wallet code, fallbacks, reissue, toasts, iOS detection — the file becomes ~70 lines.
 
-Internal links in the codebase get updated to point at `/den` (Navigation, UserMenu, MemberHome, CheckIn, LunchRun, MemberLedger, MemberProfile, MemberMoments, MemberDashboard, CommonRoomHeroCarousel, etc.). CMS / admin internals that reference the string `"common-room"` as a CMS page key stay as-is so existing CMS content is not orphaned (the URL changes, the CMS slug does not).
+## 2. Profile page typography pass
 
-## 2. Top nav overhaul
+Update `src/pages/MemberProfile.tsx`:
 
-In `src/components/Navigation.tsx`:
-- Remove the `navItems` array entirely (Cafe, Cocktails, Beer, Kitchens, Hall, Community, The Common Room) on both desktop and mobile.
-- Remove the "CROFT COMMON" wordmark next to the bear icon. Replace it with a single Crazy Bear wordmark "THE DEN" (Archivo Black, tracked, B&W) so the top-left is just: bear icon + "THE DEN".
-- Drop the mobile hamburger (no items left to show). Keep only the `UserMenu` on the right.
-- Logo click still routes to `/` (Crazy Bear landing).
+- Page title `<title>` from "My Profile | The Tavern" to "Profile | The Den".
+- Header card: drop the "Build marker" line. Replace the title block with Crazy Bear treatment — eyebrow `MEMBER` (mono, tracked), heading `PROFILE` (Archivo Black, big, uppercase), subheading "Your details. Your card." (Space Grotesk).
+- "Back to Member Home" link reads "Back to the Den".
+- "Your Membership Card" section heading: change to `MEMBER CARD` in Archivo Black uppercase, mono eyebrow `THE DEN` above it.
+- `ProfileFormSection` titles already render with their own styles — leave the component but pass uppercased section titles ("Basic Information" stays, fine).
+- `Tabs`:
+  - `TabsList` — keep grid, but restyle the trigger to a black/white pill: black border, black text, on `data-[state=active]` swap to bg-black text-white, no rounded full. Use `font-mono uppercase tracking-[0.2em] text-xs`. Strip lucide icon labels entirely (icons stay too small in this typography); just text labels: `PROFILE`, `LEDGER`, `SETTINGS`.
+- Buttons (`Edit Profile`, `Save Changes`, `Cancel`) — restyle as bordered B&W pills (`border-2 border-black bg-white text-black hover:bg-black hover:text-white font-mono uppercase tracking-[0.3em] text-xs`).
+- Remove the `font-brutalist` class on the title (font isn't loaded in this project) — switch to `font-display`.
+- Page background: same B&W plaster background already used on `/den/member` (`denBg` from `@/assets/den-bg.jpg`) with a `bg-white/85` veil so forms stay readable. This ties it visually into the rest of the den.
 
-This nav is only used on the den pages now, so legacy public Croft pages (cafe, cocktails, etc., still routable for internal use) won't get this stripped nav. Those pages keep working but are no longer surfaced.
+## 3. Verify
 
-## 3. Secret sign-in goes straight into the Den
+- Type-check passes.
+- Membership card renders with my name (Neil Fincham-Dukes) and a stable `CB-XXXX-XXXX` number, no error state.
+- /den/member/profile shows mono eyebrows, Archivo Black headings, B&W everything, no pink, no "Croft Common", no "Tavern".
 
-Currently the gesture on `/common-room` runs the membership gate (biometric → membership link → email auth). The user wants the secret sign-in to "just open the common room".
+## Out of scope
 
-Change `/den` so the gesture completion navigates straight to `/den/main` without the biometric / link / auth modals. The modals and `useMembershipGate` hook stay in the codebase but are no longer wired to the den entry gesture. (We can revisit gating later if needed.)
-
-## 4. Den entry page redesign (`/den`)
-
-Replace the current "THE COMMON ROOM / Sign in here / faded bear watermark" layout with a Crazy Bear styled holding screen:
-
-- Black background, white type (matches Bears Den system).
-- Centred Archivo Black wordmark: **THE DEN**.
-- Single line of mono micro-copy underneath: "Members only. Find the bear."
-- Large bear mark watermark in muted white, B&W.
-- Gesture overlay still active and invisible — drawing the secret shape navigates to `/den/main`.
-
-Copy is short, staccato, confident — matches the Bears Den tone-of-voice rule.
-
-## 5. Den main page redesign (`/den/main`)
-
-- Swap the colour hero background image for a **black-and-white** treatment (CSS `filter: grayscale(1) contrast(1.05)` on the existing hero, no new asset needed).
-- Replace existing copy blocks with Bears Den voice:
-  - Eyebrow: "MEMBERS"
-  - Heading: "INSIDE THE DEN"
-  - Sub: "Quiet rooms. Loud nights. Yours."
-  - CTA pill: "ENTER"
-- Typography: Archivo Black for the heading, Space Grotesk for body, mono for the eyebrow — matching the visual identity rules already set for the project.
-- Remove any remaining "Croft Common" / "Common Room" strings on this page.
-
-## 6. Sweep remaining "Common Room" copy in the den flow
-
-Update user-facing strings on the den pages and modals only (not historical Croft pages):
-- `BiometricUnlockModal` title `"Unlock The Common Room"` → `"Unlock the Den"` (where used in den flow).
-- `AuthModal` title `"Unlock The Common Room"` → `"Enter the Den"`.
-- `UserMenu` "Common Room" link label → "The Den".
-- Any toast strings on the den pages mentioning "Common Room".
-
-Public Croft pages (Cafe, Cocktails, Privacy, Footer, etc.) and CMS internals are left alone in this pass — the brief is the den area.
-
-## Out of scope (can do next if you want)
-
-- Renaming the CMS page key `common-room` itself.
-- Rewriting the public Croft landing pages.
-- Replacing the bear mark asset.
-- Auth email copy for the den (already done in the Crazy Bear pass).
+- Restoring Apple Wallet for The Den — separate piece of work; needs a new pass type, new certs, and a new edge function pointing at this project's Supabase ref. We can do that next if you want a real wallet pass.
+- Renaming the underlying CMS / page keys.
+- Redesigning the rest of the member sub-pages (ledger, moments) — same treatment can follow once you've signed off this one.
 
 ## Technical notes
 
 Files touched:
-- `src/App.tsx` — add `/den/*` routes, redirect `/common-room/*` and `/members`.
-- `src/pages/CommonRoom.tsx` → keep file but rename component usage to `Den`; new layout. (Or add `src/pages/Den.tsx` and leave old as redirect.)
-- `src/pages/CommonRoomMain.tsx` → `DenMain` with new hero / copy / B&W filter.
-- `src/components/Navigation.tsx` — remove nav items + CROFT COMMON wordmark, swap to "THE DEN".
-- `src/components/UserMenu.tsx` — relabel + repath.
-- `src/pages/MemberHome.tsx`, `MemberDashboard.tsx`, `MemberLedger.tsx`, `MemberProfile.tsx`, `MemberMoments.tsx`, `LunchRun.tsx`, `CheckIn.tsx` — update internal `/common-room/*` links to `/den/*`.
-- `src/components/BiometricUnlockModal.tsx`, `src/components/AuthModal.tsx` — den-flow copy.
 
-I will not touch: `supabase/functions/*`, `index.html` bootstrap, public Croft landing routes, CMS page-key strings.
+- `src/components/membership/MembershipCard.tsx` — full rewrite, drop wallet code.
+- `src/pages/MemberProfile.tsx` — header, tabs, buttons, background, copy.
+- No DB migrations. No edge function changes.
