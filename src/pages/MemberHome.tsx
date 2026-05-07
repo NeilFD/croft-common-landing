@@ -4,18 +4,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, Gamepad2, CalendarDays, Camera, Sparkles, Sandwich } from 'lucide-react';
+import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, CalendarDays, Camera, Sparkles, UtensilsCrossed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useCMSMode } from '@/contexts/CMSModeContext';
-import PongHighScoresWidget from '@/components/PongHighScoresWidget';
 import UpcomingEventsCarousel from '@/components/UpcomingEventsCarousel';
 import MemberMomentsCarousel from '@/components/MemberMomentsCarousel';
-import PongGame from '@/components/PongGame';
 import TraditionalStreakCalendar from '@/components/TraditionalStreakCalendar';
 import { MobileErrorBoundary } from '@/components/MobileErrorBoundary';
+import denBg from '@/assets/den-bg.jpg';
 
 interface MemberStats {
   user: {
