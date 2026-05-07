@@ -27,10 +27,10 @@
     <!-- Preload critical images for instant load -->
     <link rel="preload" as="image" href="/brand/logo.png" fetchpriority="high">
     
-    <!-- Google Fonts -->
+    <!-- Google Fonts (brand: Space Grotesk + Archivo Black only) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Oswald:wght@400;500;600;700&family=Work+Sans:wght@300;400;500;600&family=Archivo:wght@400;500;600;700;800;900&family=Archivo+Black&family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     
     
@@ -42,23 +42,6 @@
     
     <meta name="twitter:image" content="/brand/logo.png">
     
-    <!-- Temporary window.open debugging shim -->
-    <script>
-      (function() {
-        if (window.location.hostname === 'localhost' || window.location.hostname.includes('capacitor')) {
-          const originalOpen = window.open;
-          window.open = function(...args) {
-            console.log('🔍 [TEMP SHIM] window.open called with:', args);
-            console.trace('🔍 [TEMP SHIM] Call stack:');
-            return originalOpen.apply(this, args);
-          };
-          setTimeout(() => {
-            console.log('🔍 [TEMP SHIM] Disabled after 10 seconds');
-            window.open = originalOpen;
-          }, 10000);
-        }
-      })();
-    </script>
     
     <!-- Bootstrap canonicalisation and token routing BEFORE React loads -->
     <script>
@@ -93,21 +76,23 @@
             var onLogin = /^\/management\/login\/?$/.test(loc.pathname);
             var onSetPassword = /^\/set-password\/?$/.test(loc.pathname);
 
+            // Crazy Bear: edge already canonicalises www -> apex. Do NOT redirect
+            // again from JS (causes www <-> apex loop). Only handle special routes.
             if ((onBearApex || onBearWww) && onLogin) {
-              var bearLoginTarget = 'https://www.crazybeartest.com/set-password' + search + hash;
+              var bearLoginTarget = 'https://crazybeartest.com/set-password' + search + hash;
               console.info('[bootstrap] Blocking legacy management login on Crazy Bear');
               w.location.replace(bearLoginTarget);
               return;
             }
- 
+
             if (hasRecoveryTokens) {
-              if (onBearApex || (onBearWww && !onSetPassword)) {
-                var bearTarget = 'https://www.crazybeartest.com/set-password' + search + hash;
+              if ((onBearApex || onBearWww) && !onSetPassword) {
+                var bearTarget = 'https://crazybeartest.com/set-password' + search + hash;
                 console.info('[bootstrap] Directing tokens to /set-password on Crazy Bear');
                 w.location.replace(bearTarget);
                 return;
               }
-              // Single-hop: always send Croft tokens directly to /management/login on www
+              // Croft: edge does apex -> www; send tokens straight to login on www.
               if (onCroftApex || (onCroftWww && !onLogin)) {
                 var target = 'https://www.croftcommontest.com/management/login' + search + hash;
                 console.info('[bootstrap] Directing tokens to /management/login on www');
@@ -115,10 +100,10 @@
                 return;
               }
             } else {
-              // No tokens: canonicalise apex -> www preserving path
-              if (onCroftApex || onBearApex) {
-                var newUrl = (onBearApex ? 'https://www.crazybeartest.com' : 'https://www.croftcommontest.com') + loc.pathname + search + hash;
-                console.info('[bootstrap] Canonicalising to www');
+              // No tokens: only canonicalise Croft (apex -> www). Bear is handled at edge.
+              if (onCroftApex) {
+                var newUrl = 'https://www.croftcommontest.com' + loc.pathname + search + hash;
+                console.info('[bootstrap] Canonicalising Croft apex to www');
                 w.location.replace(newUrl);
                 return;
               }
