@@ -22,7 +22,7 @@ const PropertyNavShell = ({ property, items }: Props) => {
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black text-white">
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
         <Link to={config.basePath} className="flex items-center gap-3">
-          <CrazyBearLogo className="h-9 w-auto" />
+          <CrazyBearLogo tone="light" className="h-9 w-9" />
           <span className="hidden sm:block font-serif text-lg leading-tight">
             <span className="block">{config.name}</span>
             <span className="block text-[9px] tracking-[0.3em] uppercase opacity-70">
@@ -91,7 +91,7 @@ const PropertyNavShell = ({ property, items }: Props) => {
         <div className="fixed inset-0 z-50 bg-black text-white">
           <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
             <Link to={config.basePath} onClick={() => setOpen(false)}>
-              <CrazyBearLogo className="h-9 w-auto" />
+              <CrazyBearLogo tone="light" className="h-9 w-9" />
             </Link>
             <button aria-label="Close menu" onClick={() => setOpen(false)} className="p-2">
               <X className="h-6 w-6" />
