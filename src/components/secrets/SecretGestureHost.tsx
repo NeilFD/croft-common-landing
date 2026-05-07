@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import GestureOverlay from "@/components/GestureOverlay";
 import { useAuth } from "@/hooks/useAuth";
 import RecipeOfTheMonthModal from "./RecipeOfTheMonthModal";
@@ -25,6 +25,21 @@ interface Props {
   children: ReactNode;
 }
 
+const GestureSelectionGuard = () => {
+  useEffect(() => {
+    document.body.classList.add("gesture-no-select");
+    const clear = () => {
+      try { window.getSelection()?.removeAllRanges(); } catch {}
+    };
+    document.addEventListener("selectionchange", clear);
+    return () => {
+      document.body.classList.remove("gesture-no-select");
+      document.removeEventListener("selectionchange", clear);
+    };
+  }, []);
+  return null;
+};
+
 const SecretGestureHost = ({ variant, children }: Props) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
@@ -38,6 +53,15 @@ const SecretGestureHost = ({ variant, children }: Props) => {
       {user && (
         <>
           <GestureOverlay onGestureComplete={onGesture} />
+          <style>{`
+            body.gesture-no-select, body.gesture-no-select * {
+              user-select: none !important;
+              -webkit-user-select: none !important;
+              -webkit-touch-callout: none !important;
+            }
+            body.gesture-no-select ::selection { background: transparent !important; }
+          `}</style>
+          <GestureSelectionGuard />
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
             <span className="font-cb-mono text-[9px] tracking-[0.4em] uppercase text-white/70 bg-black/60 px-3 py-1.5 backdrop-blur">
               Members: draw 7
