@@ -91,7 +91,7 @@ const PropertyNavShell = ({ property, items }: Props) => {
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-black text-white">
+        <div className="fixed inset-0 z-50 bg-black text-white" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
             <Link to="/" onClick={() => setOpen(false)} aria-label="Crazy Bear home">
               <CrazyBearLogo tone="light" className="h-9 w-9" />
@@ -100,7 +100,10 @@ const PropertyNavShell = ({ property, items }: Props) => {
               <X className="h-6 w-6" />
             </button>
           </div>
-          <nav className="px-6 py-8 space-y-6 overflow-y-auto h-[calc(100vh-4rem)]">
+          <nav
+            className="px-6 py-8 space-y-6 overflow-y-auto"
+            style={{ height: 'calc(100vh - 4rem - env(safe-area-inset-top))' }}
+          >
             {items.map((item) => (
               <div key={item.path}>
                 <Link
