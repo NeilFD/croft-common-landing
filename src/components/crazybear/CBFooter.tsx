@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import bearMark from '@/assets/crazy-bear-mark.png';
 import CBSubscriptionForm from './CBSubscriptionForm';
-import CBSpotifyPlayer from './CBSpotifyPlayer';
+
 import GestureOverlay from '@/components/GestureOverlay';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';

@@ -12,6 +12,7 @@ import { NudgeNotificationProvider } from "@/contexts/NudgeNotificationContext";
 import { useNudgeNotificationHandler } from "@/hooks/useNudgeNotificationHandler";
 import { useTrackNotificationClick } from "@/hooks/useTrackNotificationClick";
 import NudgeFloatingButton from './components/NudgeFloatingButton';
+import CBSpotifyPlayer from './components/crazybear/CBSpotifyPlayer';
 
 // Lazy load pages for better performance
 import Index from "./pages/Index";
@@ -297,6 +298,7 @@ const App = () => {
                 <NavigationImagePreloader />
                 <InteractionWatchdog />
                 <NudgeFloatingButton />
+                <CBSpotifyPlayer />
                 
                 <TransitionProvider>
                   <MembershipAuthProvider>
