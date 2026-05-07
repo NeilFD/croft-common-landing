@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Suspense, lazy, useState } from "react";
 import bearMark from "@/assets/crazy-bear-mark.png";
-import { useCBMember } from "@/hooks/useCBMember";
+const CBMemberNavItems = lazy(() => import("@/components/crazybear/CBMemberNavItems"));
 const CBMemberLoginModal = lazy(() => import("@/components/crazybear/CBMemberLoginModal"));
 
 interface CBTopNavProps {
@@ -13,7 +13,6 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
   const isLight = tone === "light";
   const text = isLight ? "text-white" : "text-foreground";
   const markFilter = isLight ? "invert" : "";
-  const { isMember, profile, signOut } = useCBMember();
   const [loginOpen, setLoginOpen] = useState(false);
 
   const linkCls = "font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-80 hover:opacity-100";
@@ -34,18 +33,9 @@ const CBTopNav = ({ tone = "light" }: CBTopNavProps) => {
           <Link to="/house-rules" className={linkCls}>House Rules</Link>
           <Link to="/town" className={`hidden sm:inline ${linkCls}`}>Town</Link>
           <Link to="/country" className={`hidden sm:inline ${linkCls}`}>Country</Link>
-          {isMember ? (
-            <>
-              <Link to="/members" className={linkCls}>Members</Link>
-              <button onClick={() => signOut()} className={linkCls} type="button">
-                Sign out
-              </button>
-            </>
-          ) : (
-            <button onClick={() => setLoginOpen(true)} className={linkCls} type="button">
-              Member Login
-            </button>
-          )}
+          <Suspense fallback={<button onClick={() => setLoginOpen(true)} className={linkCls} type="button">Member Login</button>}>
+            <CBMemberNavItems linkCls={linkCls} onLoginOpen={() => setLoginOpen(true)} />
+          </Suspense>
         </nav>
       </header>
       {loginOpen && (
