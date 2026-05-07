@@ -304,6 +304,7 @@ const App = () => {
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                       <Route path="/" element={<Landing />} />
+                      <Route path="/house-rules" element={<HouseRules />} />
 
                       {/* Crazy Bear Country */}
                       <Route path="/country" element={<PropertyLayout property="country" />}>
