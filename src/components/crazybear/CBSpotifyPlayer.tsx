@@ -112,39 +112,43 @@ const CBSpotifyPlayer = () => {
   };
 
   return (
-    <div className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-3 py-2 backdrop-blur">
-      <button
-        type="button"
-        onClick={toggle}
-        disabled={!ready}
-        aria-label={isPlaying ? "Pause Crazy Bear Sessions" : "Play Crazy Bear Sessions"}
-        className="flex items-center gap-3 text-white transition-opacity disabled:opacity-50"
-      >
-        <span className="relative flex items-center justify-center text-white">
-          <VinylIcon spinning={isPlaying} />
-          <span className="absolute inset-0 flex items-center justify-center text-black">
-            {isPlaying ? <PauseIcon /> : <PlayIcon />}
+    <div className="fixed bottom-6 right-6 z-50">
+      <div className="group inline-flex items-center gap-3 rounded-full border border-white/15 bg-black/85 pl-2 pr-4 py-2 text-white shadow-2xl backdrop-blur-md">
+        <button
+          type="button"
+          onClick={toggle}
+          disabled={!ready}
+          aria-label={isPlaying ? "Pause Crazy Bear Sessions" : "Play Crazy Bear Sessions"}
+          className="flex items-center gap-3 transition-opacity disabled:opacity-50"
+        >
+          <span className="relative flex items-center justify-center text-white">
+            <VinylIcon spinning={isPlaying} />
+            <span className="absolute inset-0 flex items-center justify-center text-black">
+              {isPlaying ? <PauseIcon /> : <PlayIcon />}
+            </span>
           </span>
-        </span>
-        <span className="flex flex-col items-start leading-tight pr-2">
-          <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
-            {isPlaying ? "Now Playing" : "Press Play"}
+          <span className="hidden sm:flex flex-col items-start leading-tight">
+            <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
+              {isPlaying ? "Now Playing" : "Press Play"}
+            </span>
+            <span className="font-cb-sans text-sm tracking-wide max-w-[180px] truncate">
+              {playlistTitle}
+            </span>
           </span>
-          <span className="font-cb-sans text-sm tracking-wide">{playlistTitle}</span>
-        </span>
-      </button>
-      <div ref={containerRef} className="sr-only" aria-hidden="true">
-        <div data-spotify-embed />
+        </button>
+        <div ref={containerRef} className="sr-only" aria-hidden="true">
+          <div data-spotify-embed />
+        </div>
+        <noscript>
+          <iframe
+            title="Crazy Bear Sessions"
+            src={EMBED_SRC}
+            width="0"
+            height="0"
+            style={{ position: "absolute", left: "-9999px" }}
+          />
+        </noscript>
       </div>
-      <noscript>
-        <iframe
-          title="Crazy Bear Sessions"
-          src={EMBED_SRC}
-          width="0"
-          height="0"
-          style={{ position: "absolute", left: "-9999px" }}
-        />
-      </noscript>
     </div>
   );
 };

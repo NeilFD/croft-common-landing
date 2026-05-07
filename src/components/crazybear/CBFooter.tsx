@@ -92,7 +92,6 @@ const CBFooter = () => {
             <p className="font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-50">
               &copy; {new Date().getFullYear()} The Crazy Bear
             </p>
-            <CBSpotifyPlayer />
           </div>
           <div className="flex items-center gap-6">
             <Link
