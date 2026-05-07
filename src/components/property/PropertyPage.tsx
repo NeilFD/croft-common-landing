@@ -51,8 +51,7 @@ const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
       </section>
       <section id="cb-page-body" className="mx-auto max-w-3xl px-6 py-20 text-foreground scroll-mt-16">
         <p className="font-cb-sans text-xl md:text-2xl leading-relaxed">
-          {body ??
-            "Coming soon. We are crafting this page with care - check back shortly."}
+          {body ?? "More soon. Worth the wait."}
         </p>
       </section>
     </>
