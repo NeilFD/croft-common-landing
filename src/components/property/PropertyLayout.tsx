@@ -16,7 +16,7 @@ const PropertyLayout = ({ property }: { property: PropertyKey }) => {
         <footer className="border-t border-border bg-black text-white/70 py-10 px-6 text-xs tracking-[0.2em] uppercase">
           <div className="mx-auto max-w-7xl flex flex-col md:flex-row md:justify-between gap-4">
             <span>&copy; {new Date().getFullYear()} Crazy Bear</span>
-            <span>Country - Stadhampton &nbsp;&middot;&nbsp; Town - Beaconsfield</span>
+            <span>Town - Beaconsfield &nbsp;&middot;&nbsp; Country - Stadhampton</span>
           </div>
         </footer>
       </div>

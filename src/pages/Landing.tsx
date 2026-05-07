@@ -49,7 +49,7 @@ const Landing = () => {
               Crazy Bear
             </h1>
             <p className="mt-7 font-cb-mono text-[10px] md:text-xs tracking-[0.55em] uppercase opacity-85">
-              Country &nbsp; / &nbsp; Town
+              Town Country &nbsp; / &nbsp; Townnbsp; / Country &nbsp; / &nbsp; Townnbsp; Country
             </p>
           </div>
 
