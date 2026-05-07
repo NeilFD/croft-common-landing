@@ -240,6 +240,12 @@ const ManagementLoginRoute = () => {
   return <ManagementLogin />;
 };
 
+const MemberRoutes = ({ children }: { children: React.ReactNode }) => (
+  <Suspense fallback={<PageLoader />}>
+    <MembershipAuthProvider>{children}</MembershipAuthProvider>
+  </Suspense>
+);
+
 const App = () => {
   const { isOpen, handleLogoTap, closePanel } = useHiddenDevPanel();
   
@@ -281,7 +287,6 @@ const App = () => {
                 <CBSpotifyPlayer />
                 
                 <TransitionProvider>
-                  <MembershipAuthProvider>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                       <Route path="/" element={<Landing />} />
@@ -343,14 +348,14 @@ const App = () => {
                       <Route path="/community" element={<Community />} />
 
                       {/* The Den - new routes */}
-                      <Route path="/den" element={<CommonRoom />} />
-                      <Route path="/den/main" element={<CommonRoomMain />} />
-                      <Route path="/den/member" element={<MemberHome />} />
-                      <Route path="/den/member/lunch-run" element={<LunchRun />} />
-                      <Route path="/den/member/ledger" element={<MemberLedger />} />
-                      <Route path="/den/member/profile" element={<MemberProfile />} />
-                      <Route path="/den/member/dashboard" element={<MemberDashboard />} />
-                      <Route path="/den/member/moments" element={<MemberMoments />} />
+                      <Route path="/den" element={<MemberRoutes><CommonRoom /></MemberRoutes>} />
+                      <Route path="/den/main" element={<MemberRoutes><CommonRoomMain /></MemberRoutes>} />
+                      <Route path="/den/member" element={<MemberRoutes><MemberHome /></MemberRoutes>} />
+                      <Route path="/den/member/lunch-run" element={<MemberRoutes><LunchRun /></MemberRoutes>} />
+                      <Route path="/den/member/ledger" element={<MemberRoutes><MemberLedger /></MemberRoutes>} />
+                      <Route path="/den/member/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
+                      <Route path="/den/member/dashboard" element={<MemberRoutes><MemberDashboard /></MemberRoutes>} />
+                      <Route path="/den/member/moments" element={<MemberRoutes><MemberMoments /></MemberRoutes>} />
 
                       {/* Legacy /common-room redirects */}
                       <Route path="/common-room" element={<Navigate to="/den" replace />} />
@@ -389,7 +394,7 @@ const App = () => {
                       <Route path="/research" element={<Navigate to="/management/research" replace />} />
                       
                       <Route path="/enquire" element={<EnquirePage />} />
-                      <Route path="/profile" element={<MemberProfile />} />
+                      <Route path="/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/uncommon-standards" element={<UncommonStandards />} />
                       <Route path="/ext" element={<ExtRedirect />} />
@@ -460,7 +465,6 @@ const App = () => {
                       </Routes>
                       <RouteHydrationBeacon />
                     </Suspense>
-                  </MembershipAuthProvider>
                 </TransitionProvider>
               </Router>
               
