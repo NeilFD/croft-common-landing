@@ -8,42 +8,64 @@ interface Props {
 }
 
 // Triptych hero: left third + wide centre + right third, with thin gaps
-// between panels. Each panel slides smoothly to the next image; chevron
-// controls let you advance or reverse manually.
+// between panels. Each panel slides smoothly from one image to the next on a
+// long, eased transition. Chevron controls advance or reverse manually.
 const HeroCarousel = ({
   images,
   intervalMs = 9000,
   transitionMs = 2200,
   alt = "",
 }: Props) => {
+  const total = images.length;
+  // We render images.length + 1 frames per panel (last frame duplicates the
+  // first) so a slide from index = total - 1 to total looks seamless. After
+  // the transition ends we silently snap back to 0.
   const [index, setIndex] = useState(0);
+  const [animate, setAnimate] = useState(true);
   const pausedRef = useRef(false);
 
   const advance = useCallback(
     (dir: 1 | -1) => {
-      setIndex((i) => (i + dir + images.length) % images.length);
+      setAnimate(true);
+      setIndex((i) => {
+        if (dir === 1) return i + 1; // may overshoot to `total`, handled below
+        return i === 0 ? total - 1 : i - 1;
+      });
     },
-    [images.length],
+    [total],
   );
 
+  // After we slide into the duplicate frame at index === total, snap back
+  // to 0 without an animation so the next forward slide picks up cleanly.
   useEffect(() => {
-    if (images.length < 2) return;
+    if (index !== total) return;
+    const t = setTimeout(() => {
+      setAnimate(false);
+      setIndex(0);
+    }, transitionMs);
+    return () => clearTimeout(t);
+  }, [index, total, transitionMs]);
+
+  // Re-enable animation on the next frame after a silent snap.
+  useEffect(() => {
+    if (animate) return;
+    const r = requestAnimationFrame(() => setAnimate(true));
+    return () => cancelAnimationFrame(r);
+  }, [animate]);
+
+  useEffect(() => {
+    if (total < 2) return;
     const id = setInterval(() => {
       if (!pausedRef.current) advance(1);
     }, intervalMs);
     return () => clearInterval(id);
-  }, [images.length, intervalMs, advance]);
+  }, [total, intervalMs, advance]);
 
-  if (images.length === 0) return null;
+  if (total === 0) return null;
 
-  // A single panel that holds a horizontal strip of every image and
-  // translates between them. The strip is duplicated so the loop wraps
-  // without a visible reset.
   const Panel = ({ offset }: { offset: number }) => {
-    const total = images.length;
     const ordered = Array.from({ length: total }, (_, i) => images[(i + offset) % total]);
-    // Duplicate to allow seamless wrap from last back to first.
-    const strip = [...ordered, ordered[0]];
+    const strip = [...ordered, ordered[0]]; // duplicate first frame at the end
     return (
       <div className="relative h-full w-full overflow-hidden bg-black">
         <div
@@ -51,7 +73,9 @@ const HeroCarousel = ({
           style={{
             width: `${strip.length * 100}%`,
             transform: `translateX(-${(index * 100) / strip.length}%)`,
-            transition: `transform ${transitionMs}ms cubic-bezier(0.65, 0, 0.35, 1)`,
+            transition: animate
+              ? `transform ${transitionMs}ms cubic-bezier(0.65, 0, 0.35, 1)`
+              : "none",
           }}
         >
           {strip.map((src, i) => (
@@ -90,7 +114,6 @@ const HeroCarousel = ({
         </div>
       </div>
 
-      {/* Chevron controls */}
       <button
         type="button"
         aria-label="Previous image"
