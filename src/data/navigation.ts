@@ -22,7 +22,7 @@ export const countryNav: NavItem[] = [
       { label: "Gallery", path: "/country/rooms/gallery" },
     ],
   },
-  { label: "Crazy Bear Parties", path: "/country/parties" },
+  { label: "Parties", path: "/country/parties" },
   {
     label: "Events",
     path: "/country/events",
