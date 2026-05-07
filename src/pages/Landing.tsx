@@ -42,11 +42,6 @@ const Landing = () => {
               introDone ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
             }`}
           >
-            <img
-              src={bearMark}
-              alt=""
-              className="h-20 md:h-28 w-auto invert opacity-95"
-            />
             <h1 className="mt-7 font-display text-6xl md:text-8xl lg:text-9xl uppercase leading-[0.85] tracking-tight">
               Crazy Bear
             </h1>
