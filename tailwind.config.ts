@@ -137,6 +137,10 @@ export default {
 					'0%': { opacity: '0' },
 					'50%': { opacity: '0.6' },
 					'100%': { opacity: '0' }
+				},
+				'cb-bounce': {
+					'0%, 100%': { transform: 'translateY(0)', opacity: '0.6' },
+					'50%': { transform: 'translateY(8px)', opacity: '1' }
 				}
 			},
 			animation: {
@@ -145,7 +149,8 @@ export default {
 				'pink-flash': 'pink-flash 0.6s ease-out',
 				'fade-out': 'fade-out 0.2s ease-out',
 				'breathing': 'breathing 3s ease-in-out infinite',
-				'spin-slow': 'spin 6s linear infinite'
+				'spin-slow': 'spin 6s linear infinite',
+				'cb-bounce': 'cb-bounce 1.8s ease-in-out infinite'
 			}
 		}
 	},
