@@ -57,7 +57,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
       setLoading(true);
       
       // Fetch sections
-      const { data: sectionsData, error: sectionsError } = await supabase
+      const { data: sectionsData, error: sectionsError } = await (supabase as any)
         .from('cms_menu_sections')
         .select('*')
         .eq('page', page)
@@ -68,7 +68,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
 
       // Fetch items for all sections
       if (sectionsData?.length) {
-        const { data: itemsData, error: itemsError } = await supabase
+        const { data: itemsData, error: itemsError } = await (supabase as any)
           .from('cms_menu_items')
           .select('*')
           .in('section_id', sectionsData.map(s => s.id))
@@ -101,7 +101,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
     if (!newSectionName.trim() || !user) return;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_menu_sections')
         .insert([{
           page,
@@ -133,7 +133,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
 
   const updateSection = async (section: MenuSection) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_menu_sections')
         .update({
           section_name: section.section_name,
@@ -159,7 +159,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
 
   const deleteSection = async (sectionId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_menu_sections')
         .delete()
         .eq('id', sectionId);
@@ -192,7 +192,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
 
     try {
       const sectionItems = items[sectionId] || [];
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('cms_menu_items')
         .insert([{
           section_id: sectionId,
@@ -234,7 +234,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
         price: item.price ? sanitizeContentText(item.price) : item.price
       };
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_menu_items')
         .update({
           item_name: cleanedItem.item_name,
@@ -292,7 +292,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
             const item = sectionItems.find(i => i.id === id);
             if (!item) return;
 
-            const { error } = await supabase
+            const { error } = await (supabase as any)
               .from('cms_menu_items')
               .update({
                 item_name: sanitizeContentText(item.item_name),
@@ -343,7 +343,7 @@ export const MenuManager = ({ page, pageTitle }: MenuManagerProps) => {
 
   const deleteItem = async (itemId: string, sectionId: string) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('cms_menu_items')
         .delete()
         .eq('id', itemId);
