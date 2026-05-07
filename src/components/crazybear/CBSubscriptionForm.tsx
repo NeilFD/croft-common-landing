@@ -228,7 +228,7 @@ const CBSubscriptionForm = () => {
           disabled={isLoading}
           className="w-full h-12 rounded-none bg-white text-black hover:bg-white/90 font-cb-mono text-xs tracking-[0.4em] uppercase"
         >
-          {isLoading ? 'Signing you in...' : 'Join the circle'}
+          {isLoading ? 'Signing you in...' : 'Enter the den'}
         </Button>
 
         <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase text-center opacity-50 pt-2">
