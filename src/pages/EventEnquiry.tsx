@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { EventEnquiryChat } from '@/components/enquiry/EventEnquiryChat';
 import { EnquiryReview } from '@/components/enquiry/EnquiryReview';
-import warehouseBg from '@/assets/warehouse-bg.jpg';
+
 
 export type Message = {
   role: 'user' | 'assistant';
@@ -65,16 +65,7 @@ const EventEnquiry = () => {
   return (
     <div className="min-h-screen flex flex-col relative">
       {/* Fixed Background Image */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          backgroundImage: `url(${warehouseBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-        }}
-      >
-        {/* Dark overlay for readability */}
+      <div className="fixed inset-0 z-0 bg-background">
         <div className="absolute inset-0 bg-background/60" />
       </div>
       
