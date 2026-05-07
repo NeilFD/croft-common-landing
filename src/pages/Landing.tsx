@@ -92,10 +92,11 @@ const Landing = () => (
         <section className="flex-1 flex items-center px-6 py-16">
           <div className="mx-auto w-full max-w-2xl text-left">
             <p className="text-[10px] tracking-[0.5em] uppercase opacity-70 mb-6">
-              House Rules
+              The Contract
             </p>
             <h1 className="font-serif text-4xl md:text-6xl leading-[1.05] text-[hsl(330,85%,62%)] drop-shadow-[0_2px_20px_rgba(0,0,0,0.4)]">
-              We identify as anything you want us to be
+              <span className="block">We identify as anything you want us to be.</span>
+              <span className="block mt-2">Your job is to observe the below.</span>
             </h1>
             <div className="mt-10">
               <TypewriterRules />
