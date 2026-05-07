@@ -21,6 +21,7 @@ import HouseRules from "./pages/HouseRules";
 import ImagePicker from "./pages/ImagePicker";
 import PropertyLayout from "./components/property/PropertyLayout";
 const BearsDen = lazy(() => import("./pages/crazybear/BearsDen"));
+const SetPassword = lazy(() => import("./pages/crazybear/SetPassword"));
 import {
   CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
   CountryRooms, CountryRoomTypes, CountryRoomGallery,
