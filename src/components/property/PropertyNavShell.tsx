@@ -19,7 +19,10 @@ const PropertyNavShell = ({ property, items }: Props) => {
   const other = PROPERTIES[otherKey];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-black text-white">
+    <header
+      className="sticky top-0 z-40 w-full border-b border-white/10 bg-black text-white"
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
+    >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-3" aria-label="Crazy Bear home">
           <CrazyBearLogo tone="light" className="h-9 w-9" />
@@ -88,7 +91,7 @@ const PropertyNavShell = ({ property, items }: Props) => {
       </div>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-black text-white">
+        <div className="fixed inset-0 z-50 bg-black text-white" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
             <Link to="/" onClick={() => setOpen(false)} aria-label="Crazy Bear home">
               <CrazyBearLogo tone="light" className="h-9 w-9" />
@@ -97,7 +100,10 @@ const PropertyNavShell = ({ property, items }: Props) => {
               <X className="h-6 w-6" />
             </button>
           </div>
-          <nav className="px-6 py-8 space-y-6 overflow-y-auto h-[calc(100vh-4rem)]">
+          <nav
+            className="px-6 py-8 space-y-6 overflow-y-auto"
+            style={{ height: 'calc(100vh - 4rem - env(safe-area-inset-top))' }}
+          >
             {items.map((item) => (
               <div key={item.path}>
                 <Link

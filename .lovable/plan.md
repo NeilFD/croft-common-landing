@@ -1,23 +1,24 @@
 ## Problem
 
-On the Crazy Bear landing (and other CB pages) viewed as a PWA / on iOS, the bear mark logo and top nav links (HOUSE RULES, MEMBER LOGIN) sit too close to the status bar / notch. Currently `CBTopNav` uses a fixed `pt-7` with no safe-area inset.
+The screenshot is a `/country` page rendered by `PropertyLayout` -> `PropertyNavShell`, NOT by `CBTopNav`. That's why the previous edits to `CBTopNav` and the main `Navigation` had no effect on these pages — they use a third, separate header.
+
+`src/components/property/PropertyNavShell.tsx` uses a plain `sticky top-0 ... h-16` header with no `env(safe-area-inset-top)` handling. On iOS PWA / standalone, the bear icon and hamburger sit directly under the notch / status bar.
 
 ## Fix
 
-Update `src/components/crazybear/CBTopNav.tsx` so the header respects the iOS status bar / notch:
+Update `src/components/property/PropertyNavShell.tsx` only:
 
-- Replace the static `pt-7` with an inline style that combines `env(safe-area-inset-top)` plus a comfortable base offset, e.g.:
-  ```
-  style={{ paddingTop: 'calc(env(safe-area-inset-top) + 28px)' }}
-  ```
-  and drop `pt-7` from the className.
+1. On the outer `<header>` (line 22), add an inline style:
+   `style={{ paddingTop: 'env(safe-area-inset-top)' }}`
+   so the inset pushes the inner row down on iOS, and is 0 in the browser.
 
-This gives:
-- Browser (no inset): ~28px top padding (matches current look)
-- PWA / iOS standalone with notch: inset (~47px on iPhone) + 28px = clear breathing room above the bear mark and nav links
+2. On the mobile fullscreen menu's top bar (line 92, the inner `<div className="flex h-16 ...">`), apply the same inline `paddingTop: 'env(safe-area-inset-top)'` so the close (X) button and logo also clear the status bar when the menu is open.
 
-No other components need changes. `CBTopNav` is used by Landing, BearsDen, Town, Country, HouseRules, SetPassword etc. so all CB pages benefit from one edit.
+3. On the mobile menu nav (line 100), change the height calc to also subtract the inset:
+   `style={{ height: 'calc(100vh - 4rem - env(safe-area-inset-top))' }}` and drop the `h-[calc(100vh-4rem)]` class. This keeps the menu scroll area correct.
+
+No other files change. This covers every `/town/*` and `/country/*` route, since they all render through `PropertyLayout` -> `PropertyNavShell`.
 
 ## Files
 
-- `src/components/crazybear/CBTopNav.tsx` — header padding only, no markup/structure changes.
+- `src/components/property/PropertyNavShell.tsx` — three small additions, no markup restructure.
