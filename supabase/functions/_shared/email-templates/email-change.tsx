@@ -8,57 +8,62 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
-  Link,
   Preview,
+  Section,
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-interface EmailChangeEmailProps {
+interface EmailChangeProps {
   siteName: string
-  // oldEmail is the user's current address (HookData.OldEmail). For the
-  // NEW-recipient half of a secure email_change fanout, `email` equals the
-  // recipient (NEW), so the "from" line must render oldEmail to read
-  // "from OLD to NEW" instead of "from NEW to NEW".
-  oldEmail: string
-  email: string
-  newEmail: string
+  siteUrl: string
+  recipient: string
   confirmationUrl: string
+  email?: string
+  newEmail?: string
 }
 
 export const EmailChangeEmail = ({
-  siteName,
-  oldEmail,
-  newEmail,
   confirmationUrl,
-}: EmailChangeEmailProps) => (
+  email,
+  newEmail,
+}: EmailChangeProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for {siteName}</Preview>
+    <Preview>Confirm your new email</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email change</Heading>
+        <Section style={header}>
+          <Text style={eyebrow}>The Crazy Bear</Text>
+          <Hr style={rule} />
+        </Section>
+
+        <Heading style={h1}>Confirm your new email</Heading>
+
         <Text style={text}>
-          You requested to change your email address for {siteName} from{' '}
-          <Link href={`mailto:${oldEmail}`} style={link}>
-            {oldEmail}
-          </Link>{' '}
-          to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>
-            {newEmail}
-          </Link>
-          .
+          You asked to change your email
+          {email ? <> from <strong>{email}</strong></> : null}
+          {newEmail ? <> to <strong>{newEmail}</strong></> : null}.
+          Confirm it below and we'll make the swap.
         </Text>
-        <Text style={text}>
-          Click the button below to confirm this change:
+
+        <Section style={buttonWrap}>
+          <Button style={button} href={confirmationUrl}>
+            Confirm change
+          </Button>
+        </Section>
+
+        <Text style={small}>
+          If the button doesn't work, paste this link into your browser:
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Confirm Email Change
-        </Button>
+        <Text style={linkText}>{confirmationUrl}</Text>
+
+        <Hr style={rule} />
         <Text style={footer}>
-          If you didn't request this change, please secure your account
-          immediately.
+          Didn't ask for this? Ignore the email and nothing changes.
         </Text>
+        <Text style={signoff}>The Crazy Bear, Stadhampton & Beaconsfield</Text>
       </Container>
     </Body>
   </Html>
@@ -66,27 +71,16 @@ export const EmailChangeEmail = ({
 
 export default EmailChangeEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: 'Helvetica, Arial, sans-serif', margin: 0, padding: 0 }
+const container = { maxWidth: '560px', margin: '0 auto', padding: '40px 32px', backgroundColor: '#ffffff' }
+const header = { marginBottom: '32px' }
+const eyebrow = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '11px', letterSpacing: '0.4em', textTransform: 'uppercase' as const, color: '#000000', margin: '0 0 16px' }
+const rule = { borderColor: '#000000', borderTopWidth: '1px', borderTopStyle: 'solid' as const, margin: '0' }
+const h1 = { fontSize: '32px', fontWeight: 'normal' as const, color: '#000000', letterSpacing: '-0.01em', lineHeight: '1.1', margin: '32px 0 24px' }
+const text = { fontSize: '15px', color: '#000000', lineHeight: '1.6', margin: '0 0 28px' }
+const buttonWrap = { margin: '0 0 32px' }
+const button = { backgroundColor: '#000000', color: '#ffffff', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '12px', letterSpacing: '0.4em', textTransform: 'uppercase' as const, borderRadius: '0px', padding: '16px 28px', textDecoration: 'none', display: 'inline-block' }
+const small = { fontSize: '12px', color: '#666666', margin: '0 0 6px' }
+const linkText = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '11px', color: '#000000', wordBreak: 'break-all' as const, margin: '0 0 32px' }
+const footer = { fontSize: '12px', color: '#666666', margin: '24px 0 8px' }
+const signoff = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: '10px', letterSpacing: '0.3em', textTransform: 'uppercase' as const, color: '#000000', margin: '16px 0 0' }
