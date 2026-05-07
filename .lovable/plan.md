@@ -1,30 +1,38 @@
-You are right. I checked the live mapping and the issue is that the images shown on `/country` and `/town` are still the old property hero files:
+I agree this needs replacing properly rather than another tweak to the current logic.
 
-- `/country` is still using `stadhampton-property.jpg`, the copper bath crop
-- `/town` is still using `beaconsfield-property.jpg`, another copper bath crop
-- The better glamorous room images were copied in, but they were mainly wired to `/country/rooms` and `/town/rooms`, not the two property landing pages you are looking at
+Plan:
 
-Plan to fix this properly:
+1. Rebuild `src/components/property/HeroCarousel.tsx` as one continuous horizontal track
+   - Remove the current three separate panel strips, which is what is causing the flare and reset effect.
+   - Use one single sliding row for all images, so the movement is only `translateX` across a stable strip.
+   - Keep the carousel inside the existing hero image space only, without changing the rest of the page structure.
 
-1. Replace the main property landing heroes
-   - Change `/country` from the copper bath image to the strongest Stadhampton glamour image, the deep red/zebra lampshade interior already used on the main landing hero.
-   - Change `/town` from the copper bath image to a more glamorous Beaconsfield image from the reference assets, not the current bath crop.
+2. Make the slide motion simple and smooth
+   - No fade, no opacity change, no image swapping during the visible transition.
+   - Use a slow glide transition only.
+   - Allow chevron clicks to respond immediately and reliably.
+   - If a user clicks during movement, queue or ignore safely without causing flashing.
 
-2. Improve the rooms route heroes as well
-   - Use the most eye-catching wide suite image for the main Rooms pages, especially the black four-poster, red drapery and gold suite image.
-   - Keep the copper/tub close-ups only where they make sense as supporting room type or gallery imagery, not as the first thing you see on a property page.
+3. Preserve the triptych layout with stronger gaps
+   - Keep the wide centre image with partial side images visible on desktop.
+   - Increase the visible separations between images so the gaps are clearly defined.
+   - On mobile, keep it as a clean single-image slide so it does not squeeze the layout.
 
-3. Remove the confusing old mapping
-   - Stop reusing the old `stadhampton-property.jpg` and `beaconsfield-property.jpg` as the primary `/country` and `/town` hero images.
-   - Import named, glamorous assets so it is obvious which image powers each route.
+4. Ensure `/town` starts on the blue room with copper bath
+   - Keep the current `/town` image order where the blue room is first.
+   - Make sure the carousel initial position renders that image as the first centre image, not just as a side image.
 
-4. Verify the visible result
-   - After updating, check `/country`, `/town`, `/country/rooms`, and `/town/rooms` so the first-screen hero is no longer the poor copper-bath crop and looks much more Crazy Bear.
+5. Keep controls clean and non-lucide
+   - Use inline SVG chevrons only, not lucide icons.
+   - Make the button hit areas larger and more reliable.
+   - Keep the controls above the carousel but below the existing hero text overlay.
 
-Technical detail:
+6. Add image preloading/decoding for the visible and adjacent slides
+   - Preload the first few images and neighbouring images so the browser is not loading images mid-glide.
+   - This should prevent blank frames and flicker during navigation.
 
-- Main file to update: `src/data/propertyHeroMap.ts`
-- Likely assets to use:
-  - `src/assets/cb-landing-hero.jpg` for the dramatic Stadhampton red/zebra interior
-  - `src/assets/cb-rooms-chateau-suite.jpg` for the strongest suite/rooms hero
-  - `src/assets/cb-rooms-copper-suite.jpg` where a copper suite is still useful, but not as the main property landing image
+7. Verify behaviour after implementation
+   - Check `/town` and `/country` hero carousel rendering.
+   - Confirm chevrons respond.
+   - Confirm no flashing, fading or opacity transition is used.
+   - Confirm the rest of the page structure remains untouched.
