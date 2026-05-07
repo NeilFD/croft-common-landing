@@ -15,6 +15,15 @@ import NudgeFloatingButton from './components/NudgeFloatingButton';
 
 // Lazy load pages for better performance
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import PropertyLayout from "./components/property/PropertyLayout";
+import {
+  CountryHome, CountryPub, CountryPubFood, CountryPubDrink, CountryPubHospitality,
+  CountryRooms, CountryRoomTypes, CountryRoomGallery,
+  CountryParties, CountryEvents, CountryWeddings, CountryBirthdays, CountryBusiness,
+  TownHome, TownFood, TownBlackBear, TownBnB, TownHomThai,
+  TownDrink, TownCocktails, TownRooms, TownRoomTypes, TownRoomGallery, TownPool,
+} from "./pages/property";
 import Cafe from "./pages/Cafe";
 import Cocktails from "./pages/Cocktails";
 import Beer from "./pages/Beer";
