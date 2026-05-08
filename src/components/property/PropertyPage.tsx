@@ -1,29 +1,86 @@
-import { Helmet } from "react-helmet-async";
 import { useLocation } from "react-router-dom";
 import { useProperty } from "@/contexts/PropertyContext";
 import { getHeroFor, getHeroFitFor } from "@/data/propertyHeroMap";
 import { getHeroCarouselFor } from "@/data/heroCarousels";
 import HeroCarousel from "./HeroCarousel";
+import { CBSeo } from "@/components/seo/CBSeo";
+import CBFAQ from "@/components/seo/CBFAQ";
+import {
+  hotelSchema,
+  restaurantSchema,
+  barSchema,
+  breadcrumbSchema,
+  faqSchema,
+} from "@/components/seo/CBStructuredData";
+import { cbFaqs } from "@/data/cbFaqs";
 
 interface Props {
   title: string;
   eyebrow?: string;
   body?: string;
   fallbackHero?: string;
+  seoDescription?: string;
+  faqKey?: string;
+  schemaKind?: "hotel" | "restaurant" | "bar" | "none";
+  cuisine?: string[];
 }
 
-const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
+const PropertyPage = ({
+  title,
+  eyebrow,
+  body,
+  fallbackHero,
+  seoDescription,
+  faqKey,
+  schemaKind = "none",
+  cuisine,
+}: Props) => {
   const { config } = useProperty();
   const location = useLocation();
   const hero = getHeroFor(location.pathname, fallbackHero ?? "");
   const fit = getHeroFitFor(location.pathname);
   const carousel = getHeroCarouselFor(location.pathname);
 
+  const property: "town" | "country" = location.pathname.startsWith("/town") ? "town" : "country";
+  const fullTitle = `${title} | ${config.name}`;
+  const description =
+    seoDescription ?? body ?? `${title} at ${config.name}.`;
+
+  const faqEntry = faqKey ? cbFaqs[faqKey] : undefined;
+
+  const ld: Record<string, any>[] = [breadcrumbSchema(location.pathname)];
+  if (schemaKind === "hotel") {
+    ld.push(hotelSchema(property));
+  } else if (schemaKind === "restaurant") {
+    ld.push(
+      restaurantSchema({
+        name: `${title} at ${config.name}`,
+        description,
+        property,
+        cuisine: cuisine ?? ["British"],
+        path: location.pathname,
+      })
+    );
+  } else if (schemaKind === "bar") {
+    ld.push(
+      barSchema({
+        name: `${title} at ${config.name}`,
+        description,
+        property,
+        path: location.pathname,
+      })
+    );
+  }
+  if (faqEntry) ld.push(faqSchema(faqEntry.faqs));
+
   return (
     <>
-      <Helmet>
-        <title>{`${title} | ${config.name}`}</title>
-      </Helmet>
+      <CBSeo
+        title={fullTitle}
+        description={description.slice(0, 158)}
+        path={location.pathname}
+        jsonLd={ld}
+      />
       <section className="relative h-[70vh] min-h-[480px] w-full overflow-hidden bg-black text-white">
         {carousel ? (
           <HeroCarousel images={carousel} alt={title} />
@@ -62,6 +119,7 @@ const PropertyPage = ({ title, eyebrow, body, fallbackHero }: Props) => {
           {body ?? "More soon. Worth the wait."}
         </p>
       </section>
+      {faqEntry && <CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />}
     </>
   );
 };

@@ -1,11 +1,45 @@
 import PropertyPage from "@/components/property/PropertyPage";
 import CBMenuPage from "@/components/crazybear/CBMenuPage";
-import { blackBearMenu, bnbMenu, countryPubMenu } from "@/data/menus";
+import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus";
 import SecretGestureHost, { type SecretVariant } from "@/components/secrets/SecretGestureHost";
+import { CBSeo } from "@/components/seo/CBSeo";
+import CBFAQ from "@/components/seo/CBFAQ";
+import {
+  restaurantSchema,
+  breadcrumbSchema,
+  faqSchema,
+} from "@/components/seo/CBStructuredData";
+import { cbFaqs } from "@/data/cbFaqs";
 
 const withSecret = (variant: SecretVariant, node: JSX.Element) => (
   <SecretGestureHost variant={variant}>{node}</SecretGestureHost>
 );
+
+interface MenuRouteProps {
+  menu: Menu;
+  property: "town" | "country";
+  path: string;
+  title: string;
+  description: string;
+  cuisine: string[];
+  faqKey?: string;
+}
+
+const MenuRoute = ({ menu, property, path, title, description, cuisine, faqKey }: MenuRouteProps) => {
+  const faqEntry = faqKey ? cbFaqs[faqKey] : undefined;
+  const ld: Record<string, any>[] = [
+    breadcrumbSchema(path),
+    restaurantSchema({ name: title, description, property, cuisine, path }),
+  ];
+  if (faqEntry) ld.push(faqSchema(faqEntry.faqs));
+  return (
+    <>
+      <CBSeo title={`${title} | Crazy Bear`} description={description.slice(0, 158)} path={path} jsonLd={ld} />
+      <CBMenuPage menu={menu} />
+      {faqEntry && <CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />}
+    </>
+  );
+};
 
 // Country pages
 export const CountryHome = () => (
@@ -13,10 +47,37 @@ export const CountryHome = () => (
     title="Crazy Bear Country"
     eyebrow="Stadhampton, Oxfordshire"
     body="The original Crazy Bear. A 16th century inn with rooms, restaurants and a country pub spirit that refuses to behave."
+    seoDescription="Crazy Bear Country. 16th century inn in Stadhampton, Oxfordshire. Rooms, restaurants, a pub that refuses to behave."
+    faqKey="/country"
+    schemaKind="hotel"
   />
 );
-export const CountryPub = () => withSecret("recipe-countrypub", <CBMenuPage menu={countryPubMenu} />);
-export const CountryPubFood = () => withSecret("recipe-countrypub", <CBMenuPage menu={countryPubMenu} />);
+export const CountryPub = () =>
+  withSecret(
+    "recipe-countrypub",
+    <MenuRoute
+      menu={countryPubMenu}
+      property="country"
+      path="/country/pub"
+      title="The Country Pub"
+      description="Real ale, proper food, fires lit. The pub at Crazy Bear Country, Stadhampton."
+      cuisine={["British", "Pub"]}
+      faqKey="/country/pub"
+    />
+  );
+export const CountryPubFood = () =>
+  withSecret(
+    "recipe-countrypub",
+    <MenuRoute
+      menu={countryPubMenu}
+      property="country"
+      path="/country/pub/food"
+      title="Country Pub Food"
+      description="Pub food, properly done. Lunch and dinner every day."
+      cuisine={["British", "Pub"]}
+      faqKey="/country/pub"
+    />
+  );
 export const CountryPubDrink = () =>
   withSecret(
     "dice-country",
@@ -24,6 +85,8 @@ export const CountryPubDrink = () =>
       title="Drink"
       eyebrow="The Pub"
       body="Real ale. Proper wine. Cocktails that bite back."
+      seoDescription="Real ale, proper wine, cocktails that bite back. The bar at Crazy Bear Country."
+      schemaKind="bar"
     />
   );
 export const CountryPubHospitality = () => (
@@ -31,39 +94,85 @@ export const CountryPubHospitality = () => (
     title="Hospitality"
     eyebrow="The Pub"
     body="Fires lit. Doors open. Stay as long as you like."
+    seoDescription="Fires lit. Doors open. Country pub hospitality at Crazy Bear, Stadhampton."
   />
 );
 export const CountryRooms = () =>
   withSecret(
     "rooms-country",
-    <PropertyPage title="Rooms" body="Theatrical. Indulgent. Never the same twice." />
+    <PropertyPage
+      title="Rooms"
+      body="Theatrical. Indulgent. Never the same twice."
+      seoDescription="Bedrooms at Crazy Bear Country. Theatrical, indulgent, never the same twice."
+      faqKey="/country/rooms"
+      schemaKind="hotel"
+    />
   );
 export const CountryRoomTypes = () =>
   withSecret(
     "rooms-country",
-    <PropertyPage title="Room Types" eyebrow="Rooms" body="Pick your character. Sleep accordingly." />
+    <PropertyPage
+      title="Room Types"
+      eyebrow="Rooms"
+      body="Pick your character. Sleep accordingly."
+      seoDescription="Room types at Crazy Bear Country. Pick your character. Sleep accordingly."
+      faqKey="/country/rooms"
+    />
   );
 export const CountryRoomGallery = () =>
   withSecret(
     "rooms-country",
-    <PropertyPage title="Gallery" eyebrow="Rooms" body="A look behind the bedroom doors." />
+    <PropertyPage
+      title="Gallery"
+      eyebrow="Rooms"
+      body="A look behind the bedroom doors."
+      seoDescription="Bedroom gallery at Crazy Bear Country. A look behind the doors."
+    />
   );
 export const CountryParties = () =>
   withSecret(
     "cinema",
-    <PropertyPage title="Parties" body="Loud, long, late." />
+    <PropertyPage
+      title="Parties"
+      body="Loud, long, late."
+      seoDescription="Parties at Crazy Bear Country. Loud, long, late. Group bookings and exclusive use."
+      faqKey="/country/parties"
+    />
   );
 export const CountryEvents = () => (
-  <PropertyPage title="Events" body="Private rooms. Whole house. Whatever you need." />
+  <PropertyPage
+    title="Events"
+    body="Private rooms. Whole house. Whatever you need."
+    seoDescription="Events at Crazy Bear Country. Private rooms, marquee, exclusive use."
+    faqKey="/country/events"
+  />
 );
 export const CountryWeddings = () => (
-  <PropertyPage title="Weddings" eyebrow="Events" body="Vows, dinner, dancing. Done properly." />
+  <PropertyPage
+    title="Weddings"
+    eyebrow="Events"
+    body="Vows, dinner, dancing. Done properly."
+    seoDescription="Weddings at Crazy Bear Country. Vows, dinner, dancing. Licensed for ceremonies."
+    faqKey="/country/events/weddings"
+  />
 );
 export const CountryBirthdays = () => (
-  <PropertyPage title="Birthdays" eyebrow="Events" body="Another year. Worth marking." />
+  <PropertyPage
+    title="Birthdays"
+    eyebrow="Events"
+    body="Another year. Worth marking."
+    seoDescription="Birthday parties at Crazy Bear Country. From long tables to whole house hire."
+    faqKey="/country/events/birthdays"
+  />
 );
 export const CountryBusiness = () => (
-  <PropertyPage title="Business" eyebrow="Events" body="Meetings that don't feel like meetings." />
+  <PropertyPage
+    title="Business"
+    eyebrow="Events"
+    body="Meetings that don't feel like meetings."
+    seoDescription="Business meetings and away days at Crazy Bear Country. Private rooms, dinner, rooms."
+    faqKey="/country/events/business"
+  />
 );
 
 // Town pages
@@ -72,15 +181,47 @@ export const TownHome = () => (
     title="Crazy Bear Town"
     eyebrow="Beaconsfield, Buckinghamshire"
     body="Townhouse glamour, almost in London. Three restaurants, crisp cocktails, signature bedrooms and a hidden pool."
+    seoDescription="Crazy Bear Town. Beaconsfield townhouse. Three restaurants, cocktails, signature rooms, hidden pool."
+    faqKey="/town"
+    schemaKind="hotel"
   />
 );
 export const TownFood = () =>
   withSecret(
     "recipe-blackbear",
-    <PropertyPage title="Food" body="Two kitchens. One appetite." />
+    <PropertyPage
+      title="Food"
+      body="Two kitchens. One appetite."
+      seoDescription="Food at Crazy Bear Town. The Black Bear, the B&B and Hom Thai."
+      faqKey="/town/food"
+    />
   );
-export const TownBlackBear = () => withSecret("recipe-blackbear", <CBMenuPage menu={blackBearMenu} />);
-export const TownBnB = () => withSecret("recipe-bnb", <CBMenuPage menu={bnbMenu} />);
+export const TownBlackBear = () =>
+  withSecret(
+    "recipe-blackbear",
+    <MenuRoute
+      menu={blackBearMenu}
+      property="town"
+      path="/town/food/black-bear"
+      title="The Black Bear"
+      description="Modern British plates, charcoal and fire. The Black Bear restaurant at Crazy Bear Town."
+      cuisine={["British", "Modern European"]}
+      faqKey="/town/food"
+    />
+  );
+export const TownBnB = () =>
+  withSecret(
+    "recipe-bnb",
+    <MenuRoute
+      menu={bnbMenu}
+      property="town"
+      path="/town/food/bnb"
+      title="The B&B"
+      description="All day kitchen. Breakfast, brunch and into the night, at Crazy Bear Town."
+      cuisine={["British", "Brunch"]}
+      faqKey="/town/food"
+    />
+  );
 export const TownHomThai = () =>
   withSecret(
     "recipe-homthai",
@@ -88,12 +229,22 @@ export const TownHomThai = () =>
       title="Hom Thai"
       eyebrow="Food"
       body="Bangkok by way of Beaconsfield. Sharp, fragrant, fierce."
+      seoDescription="Hom Thai at Crazy Bear Town. Bangkok by way of Beaconsfield. Sharp, fragrant, fierce."
+      schemaKind="restaurant"
+      cuisine={["Thai", "Asian"]}
+      faqKey="/town/food"
     />
   );
 export const TownDrink = () =>
   withSecret(
     "dice-town",
-    <PropertyPage title="Drink" body="Mirrored bars. Mischievous pours." />
+    <PropertyPage
+      title="Drink"
+      body="Mirrored bars. Mischievous pours."
+      seoDescription="Bars at Crazy Bear Town. Mirrored rooms, low light, sharp pours."
+      schemaKind="bar"
+      faqKey="/town/drink"
+    />
   );
 export const TownCocktails = () =>
   withSecret(
@@ -102,25 +253,50 @@ export const TownCocktails = () =>
       title="Cocktails"
       eyebrow="Drink"
       body="Stirred with intent. Served without apology."
+      seoDescription="Cocktail bar at Crazy Bear Town. Stirred with intent. Served without apology."
+      schemaKind="bar"
+      faqKey="/town/drink/cocktails"
     />
   );
 export const TownRooms = () =>
   withSecret(
     "rooms-town",
-    <PropertyPage title="Rooms" body="Velvet, mirror, marble. Sleep like a rumour." />
+    <PropertyPage
+      title="Rooms"
+      body="Velvet, mirror, marble. Sleep like a rumour."
+      seoDescription="Rooms at Crazy Bear Town. Velvet, mirror, marble. Each one its own world."
+      schemaKind="hotel"
+      faqKey="/town/rooms"
+    />
   );
 export const TownRoomTypes = () =>
   withSecret(
     "rooms-town",
-    <PropertyPage title="Room Types" eyebrow="Rooms" body="Each one its own world. None of them shy." />
+    <PropertyPage
+      title="Room Types"
+      eyebrow="Rooms"
+      body="Each one its own world. None of them shy."
+      seoDescription="Room types at Crazy Bear Town. Each one its own world."
+      faqKey="/town/rooms"
+    />
   );
 export const TownRoomGallery = () =>
   withSecret(
     "rooms-town",
-    <PropertyPage title="Gallery" eyebrow="Rooms" body="Step inside." />
+    <PropertyPage
+      title="Gallery"
+      eyebrow="Rooms"
+      body="Step inside."
+      seoDescription="Bedroom gallery at Crazy Bear Town. Step inside."
+    />
   );
 export const TownPool = () =>
   withSecret(
     "pool",
-    <PropertyPage title="Pool" body="Hidden. Heated. Yours for the afternoon." />
+    <PropertyPage
+      title="Pool"
+      body="Hidden. Heated. Yours for the afternoon."
+      seoDescription="The hidden pool at Crazy Bear Town. Heated, daytime, hotel guests only."
+      faqKey="/town/pool"
+    />
   );
