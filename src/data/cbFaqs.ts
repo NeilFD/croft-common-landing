@@ -27,7 +27,7 @@ export const cbFaqs: Record<string, { title?: string; faqs: FAQ[] }> = {
       },
       {
         question: "Dress code?",
-        answer: "Dress with intent. No sportswear.",
+        answer: "As per the House Rules, dress like your ex is watching.",
       },
     ],
   },
