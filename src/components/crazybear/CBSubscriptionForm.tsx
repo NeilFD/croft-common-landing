@@ -165,10 +165,10 @@ const CBSubscriptionForm = () => {
               </Label>
               <div className="grid grid-cols-2 gap-3">
                 <Select value={birthdayDay} onValueChange={setBirthdayDay}>
-                  <SelectTrigger className="font-cb-sans bg-transparent border-white/30 text-white rounded-none h-12 focus:ring-0">
+                  <SelectTrigger className="font-cb-sans bg-black border-white/30 text-white rounded-none h-12 focus:ring-0">
                     <SelectValue placeholder="Day" />
                   </SelectTrigger>
-                  <SelectContent className="bg-black border border-white/30 text-white">
+                  <SelectContent className="bg-black border border-white/30 text-white [&>div]:bg-black">
                     {dayOptions.map((d) => (
                       <SelectItem
                         key={d}
@@ -181,10 +181,10 @@ const CBSubscriptionForm = () => {
                   </SelectContent>
                 </Select>
                 <Select value={birthdayMonth} onValueChange={setBirthdayMonth}>
-                  <SelectTrigger className="font-cb-sans bg-transparent border-white/30 text-white rounded-none h-12 focus:ring-0">
+                  <SelectTrigger className="font-cb-sans bg-black border-white/30 text-white rounded-none h-12 focus:ring-0">
                     <SelectValue placeholder="Month" />
                   </SelectTrigger>
-                  <SelectContent className="bg-black border border-white/30 text-white">
+                  <SelectContent className="bg-black border border-white/30 text-white [&>div]:bg-black">
                     {monthOptions.map((m) => (
                       <SelectItem
                         key={m}
