@@ -19,7 +19,7 @@ export const cbFaqs: Record<string, { title?: string; faqs: FAQ[] }> = {
       },
       {
         question: "Dogs?",
-        answer: "Well behaved dogs welcome in selected areas. Call ahead.",
+        answer: "No dogs here i'm afraid, but our Sister Bear in the country LOVES them.",
       },
       {
         question: "Check in and out?",
