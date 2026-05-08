@@ -14,6 +14,27 @@ export const INTEREST_OPTIONS = [
   'Business Meetings & Workspace'
 ];
 
+// Crazy Bear specific interests. F&B first, then events / hospitality.
+export const CB_INTEREST_OPTIONS = [
+  'Fine Dining',
+  'Casual Dining',
+  'Thai Food',
+  'Sunday Lunch',
+  'Afternoon Tea',
+  'Cocktails',
+  'Wine',
+  'Real Ale',
+  'Private Events & Bookings',
+  'Weddings',
+  'Corporate Hospitality',
+  'Wine Tastings & Masterclasses',
+  'Cocktail Masterclasses',
+  'Cooking Classes',
+  'Live Music & Entertainment',
+  'Special Occasions & Celebrations',
+  'Business Meetings & Workspace',
+];
+
 export const VENUE_PREFERENCES = [
   'Beer Hall', 'Cafe', 'Cocktail Bar', 'Common Room', 'Kitchens', 'Event Spaces'
 ];

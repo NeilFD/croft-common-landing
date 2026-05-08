@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { INTEREST_OPTIONS } from '@/data/interests';
+import { CB_INTEREST_OPTIONS as INTEREST_OPTIONS } from '@/data/interests';
 
 const CBSubscriptionForm = () => {
   const [email, setEmail] = useState('');
