@@ -125,7 +125,12 @@ let hasRecovered = false;
 const recoverFromChunkError = async (error: any) => {
   if (hasRecovered) return;
   const msg = error?.message || String(error);
-  if (msg.includes('ChunkLoadError') || msg.includes('Failed to fetch dynamically imported module')) {
+  if (
+    msg.includes('ChunkLoadError') ||
+    msg.includes('Failed to fetch dynamically imported module') ||
+    msg.includes('Importing a module script failed') ||
+    msg.includes('error loading dynamically imported module')
+  ) {
     hasRecovered = true;
     console.error('[ChunkLoad] Detected chunk load failure, recovering:', msg);
     try {
