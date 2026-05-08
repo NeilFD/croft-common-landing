@@ -86,6 +86,23 @@ Deno.serve(async (req) => {
       .maybeSingle()
     if (member?.first_name) firstName = member.first_name
 
+    const { data: existingToken } = await admin
+      .from('email_unsubscribe_tokens')
+      .select('token')
+      .eq('email', recipient)
+      .is('used_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const unsubscribeToken = existingToken?.token ?? crypto.randomUUID()
+    if (!existingToken?.token) {
+      await admin.from('email_unsubscribe_tokens').insert({
+        email: recipient,
+        token: unsubscribeToken,
+      })
+    }
+
     const html = await renderAsync(
       React.createElement(CBWelcomeEmail, { recipient, firstName }),
     )
@@ -114,6 +131,7 @@ Deno.serve(async (req) => {
         text,
         purpose: 'transactional',
         label: 'cb_welcome',
+        unsubscribe_token: unsubscribeToken,
         queued_at: new Date().toISOString(),
       },
     })
