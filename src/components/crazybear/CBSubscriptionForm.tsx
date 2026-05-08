@@ -170,7 +170,11 @@ const CBSubscriptionForm = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-black border border-white/30 text-white">
                     {dayOptions.map((d) => (
-                      <SelectItem key={d} value={d} className="font-cb-sans focus:bg-white focus:text-black">
+                      <SelectItem
+                        key={d}
+                        value={d}
+                        className="font-cb-sans text-white data-[highlighted]:bg-white data-[highlighted]:text-black focus:bg-white focus:text-black"
+                      >
                         {d}
                       </SelectItem>
                     ))}
@@ -182,7 +186,11 @@ const CBSubscriptionForm = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-black border border-white/30 text-white">
                     {monthOptions.map((m) => (
-                      <SelectItem key={m} value={m} className="font-cb-sans focus:bg-white focus:text-black">
+                      <SelectItem
+                        key={m}
+                        value={m}
+                        className="font-cb-sans text-white data-[highlighted]:bg-white data-[highlighted]:text-black focus:bg-white focus:text-black"
+                      >
                         {m}
                       </SelectItem>
                     ))}
