@@ -112,10 +112,6 @@ export const CBWelcomeEmail = ({ firstName }: CBWelcomeEmailProps) => (
         <Text style={text}>
           Room, bubbles, dinner, maybe more. Bundled quietly. Changing frequently. Priced for members who know to ask.
         </Text>
-        <Text style={text}>
-          The prompt pool has the current offer. If it doesn't, wait. The bear rotates.
-        </Text>
-
         <Hr style={ruleSoft} />
 
         <Text style={text}>
