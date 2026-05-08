@@ -292,7 +292,9 @@ export const TownRoomGallery = () =>
       eyebrow="Rooms"
       body="Step inside."
       seoDescription="Bedroom gallery at Crazy Bear Town. Step inside."
-    />
+    >
+      <CBGallery items={townGallery} eyebrow="Town" title="Step inside." />
+    </PropertyPage>
   );
 export const TownPool = () =>
   withSecret(
