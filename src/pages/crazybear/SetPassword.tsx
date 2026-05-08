@@ -100,6 +100,13 @@ const SetPassword = () => {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
+      const msg = (error.message || '').toLowerCase();
+      // If the new password matches the old, the account is already set up.
+      // Treat as success and send them home.
+      if (msg.includes('different from the old')) {
+        await finalise();
+        return;
+      }
       toast({ title: 'Could not set password', description: error.message, variant: 'destructive' });
       return;
     }
