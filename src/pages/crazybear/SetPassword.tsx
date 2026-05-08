@@ -180,11 +180,9 @@ const SetPassword = () => {
                 >
                   {loading ? 'Saving...' : 'Save and enter'}
                 </Button>
-                {!hasSession && (
-                  <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-2 text-center">
-                    Code sent to your inbox. Check spam if it's missing.
-                  </p>
-                )}
+                <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-2 text-center">
+                  Code sent to your inbox. Check spam if it's missing.
+                </p>
               </form>
             )}
           </div>
