@@ -10,7 +10,15 @@ import blackBear from "@/assets/cb-hero-blackbear.jpg";
 import chefPlating from "@/assets/idea-chef-plating.jpg";
 import englishMenu from "@/assets/hero-english-menu.png";
 
-// Glamorous rooms imagery sourced from Crazy Bear reference projects
+// Carousel room shots reused as room page heroes
+import country01 from "@/assets/cb-carousel-new/country-01.jpg"; // red velvet room with copper bath
+import country02 from "@/assets/cb-carousel-new/country-02.jpg"; // barn-beam suite
+import country04 from "@/assets/cb-carousel-new/country-04.jpg"; // copper bath close-up
+import town01 from "@/assets/cb-carousel-new/town-01.jpg"; // blue glittery bedroom
+import town02 from "@/assets/cb-carousel-new/town-02.jpg"; // teal room with copper bath
+import town03 from "@/assets/cb-carousel-new/town-03.jpg"; // dark gold bed room
+
+// Legacy glamour stills (kept for non-room routes / fallback)
 import roomsCountry from "@/assets/cb-hero-rooms-country.jpg";
 import roomsTown from "@/assets/cb-hero-rooms-town.jpg";
 import roomCopperSuite from "@/assets/cb-rooms-copper-suite.jpg";
@@ -23,8 +31,8 @@ export const propertyHeroMap: Record<string, string> = {
   "/country/pub/drink": cocktails,
   "/country/pub/hospitality": pub,
   "/country/rooms": roomsCountry,
-  "/country/rooms/types": roomsCountry,
-  "/country/rooms/gallery": roomFireplace,
+  "/country/rooms/types": country02,
+  "/country/rooms/gallery": country01,
   "/country/parties": parties,
   "/country/events": events,
   "/country/events/weddings": events,
@@ -39,8 +47,8 @@ export const propertyHeroMap: Record<string, string> = {
   "/town/drink": cocktails,
   "/town/drink/cocktails": cocktails,
   "/town/rooms": roomsTown,
-  "/town/rooms/types": roomCopperSuite,
-  "/town/rooms/gallery": roomCopperSuite,
+  "/town/rooms/types": town01,
+  "/town/rooms/gallery": town03,
   "/town/pool": pool,
 };
 
