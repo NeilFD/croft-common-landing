@@ -1,24 +1,43 @@
-## Problem
+## Country carousel reset
 
-The screenshot is a `/country` page rendered by `PropertyLayout` -> `PropertyNavShell`, NOT by `CBTopNav`. That's why the previous edits to `CBTopNav` and the main `Navigation` had no effect on these pages — they use a third, separate header.
+Replace the current `/country` triptych carousel with the 6 newly uploaded country images, curated for visual rhythm (statement room → atmosphere → room → outdoors → food → arrival).
 
-`src/components/property/PropertyNavShell.tsx` uses a plain `sticky top-0 ... h-16` header with no `env(safe-area-inset-top)` handling. On iOS PWA / standalone, the bear icon and hamburger sit directly under the notch / status bar.
+### New assets (to be saved)
 
-## Fix
+Save the 6 uploads into `src/assets/cb-carousel-new/`:
 
-Update `src/components/property/PropertyNavShell.tsx` only:
+1. `country-01.jpg` — red velvet room with copper bath (Stad_Room1)
+2. `country-02.jpg` — barn-beam suite with copper bath, gold buttoned wall (Stad_Room3)
+3. `country-03.jpg` — outdoor terrace firepit at night (Stad_Outsdie_Terrace)
+4. `country-04.jpg` — copper bath close-up, red velvet ceiling (89-2R2A2806)
+5. `country-05.jpg` — Thai food sharing spread, overhead (Crazy_Bear_Autumn_2022-14-2)
+6. `country-06.jpg` — red Routemaster bus reception (20240523-CRAZYBEAR627)
 
-1. On the outer `<header>` (line 22), add an inline style:
-   `style={{ paddingTop: 'env(safe-area-inset-top)' }}`
-   so the inset pushes the inner row down on iOS, and is 0 in the browser.
+(`country-01–03` already saved in earlier batch; only 04–06 are new.)
 
-2. On the mobile fullscreen menu's top bar (line 92, the inner `<div className="flex h-16 ...">`), apply the same inline `paddingTop: 'env(safe-area-inset-top)'` so the close (X) button and logo also clear the status bar when the menu is open.
+### Curated order
 
-3. On the mobile menu nav (line 100), change the height calc to also subtract the inset:
-   `style={{ height: 'calc(100vh - 4rem - env(safe-area-inset-top))' }}` and drop the `h-[calc(100vh-4rem)]` class. This keeps the menu scroll area correct.
+Lead with the most cinematic, high-impact bedroom (barn-beam suite), then alternate room / atmosphere / outdoors / food / arrival to keep the triptych moving:
 
-No other files change. This covers every `/town/*` and `/country/*` route, since they all render through `PropertyLayout` -> `PropertyNavShell`.
+```
+1. country-02  barn-beam suite (hero)
+2. country-04  copper bath close-up (texture / detail)
+3. country-01  red velvet room
+4. country-03  terrace firepit (outdoors)
+5. country-05  Thai food spread
+6. country-06  red bus reception (arrival / signature)
+```
 
-## Files
+### File changes
 
-- `src/components/property/PropertyNavShell.tsx` — three small additions, no markup restructure.
+`src/data/heroCarousels.ts`:
+
+- Remove old `countryA–H` imports.
+- Add 6 new imports from `cb-carousel-new/country-0*.jpg`.
+- Update `heroCarouselMap["/country"]` to the 6-image curated order above.
+
+No other files touched. The old `cb-carousel/country-*` files are left in place (still referenced elsewhere if needed) but unused by the hero.
+
+### Confirm before implementing
+
+Lead slide is the **barn-beam suite (country-02)** — same approach as Town, leading with the most distinctive room. Say if you'd prefer a different opener (e.g. the red velvet room or the firepit) and I'll re-curate.
