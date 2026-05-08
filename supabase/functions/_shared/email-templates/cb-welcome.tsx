@@ -51,25 +51,25 @@ export const CBWelcomeEmail = ({ firstName }: CBWelcomeEmailProps) => (
         </Text>
 
         <Text style={text}>
-          Inhibitions will get you nowhere
+          01. Inhibitions will get you nowhere
         </Text>
         <Text style={text}>
-          Dress like your ex is watching
+          02. Dress like your ex is watching
         </Text>
         <Text style={text}>
-          Crazy Bear is for the 'gram, not on a gram.
+          03. Crazy Bear is for the 'gram, not on a gram.
         </Text>
         <Text style={text}>
-          No phones = No evidence
+          04. No phones = No evidence
         </Text>
         <Text style={text}>
-          Everyone's got problems, keep yours to yourself.
+          05. Everyone's got problems, keep yours to yourself.
         </Text>
         <Text style={text}>
-          Be cool, No-one likes that guy.
+          06. Be cool, No-one likes that guy.
         </Text>
         <Text style={text}>
-          Be safe, be respectful, be anything but your midweek self.
+          07. Be safe, be respectful, be anything but your midweek self.
         </Text>
 
         <Hr style={ruleSoft} />
