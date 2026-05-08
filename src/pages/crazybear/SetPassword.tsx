@@ -83,7 +83,7 @@ const SetPassword = () => {
       }
       const { error: otpError } = await supabase.auth.verifyOtp({
         email: email.trim(),
-        token: code.replace(/\s/g, ''),
+        token: cleanCode,
         type: 'email',
       });
       if (otpError) {
