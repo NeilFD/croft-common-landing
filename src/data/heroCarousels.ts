@@ -16,7 +16,7 @@ import countryG from "@/assets/cb-carousel/country-decadent-bedroom-crazy-bear-s
 import countryH from "@/assets/cb-carousel/country-stadhampton-room-copper-bathtub.jpg";
 
 export const heroCarouselMap: Record<string, string[]> = {
-  "/town": [town01, town02, town05, town03, town04, town06],
+  "/town": [town02, town01, town05, town03, town04, town06],
   "/country": [countryA, countryB, countryC, countryD, countryE, countryF, countryG, countryH],
 };
 
