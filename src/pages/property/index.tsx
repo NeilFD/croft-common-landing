@@ -1,6 +1,6 @@
 import PropertyPage from "@/components/property/PropertyPage";
 import CBMenuPage from "@/components/crazybear/CBMenuPage";
-import { blackBearMenu, bnbMenu, countryPubMenu } from "@/data/menus";
+import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus";
 import SecretGestureHost, { type SecretVariant } from "@/components/secrets/SecretGestureHost";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
@@ -16,7 +16,7 @@ const withSecret = (variant: SecretVariant, node: JSX.Element) => (
 );
 
 interface MenuRouteProps {
-  menu: typeof blackBearMenu;
+  menu: Menu;
   property: "town" | "country";
   path: string;
   title: string;
