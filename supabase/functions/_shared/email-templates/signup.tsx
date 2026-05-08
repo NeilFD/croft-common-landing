@@ -100,6 +100,20 @@ const text = {
   margin: '0 0 28px',
 }
 const buttonWrap = { margin: '0 0 32px' }
+const codeWrap = {
+  margin: '0 0 24px',
+  padding: '24px',
+  backgroundColor: '#000000',
+  textAlign: 'center' as const,
+}
+const code = {
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontSize: '36px',
+  letterSpacing: '0.5em',
+  color: '#ffffff',
+  margin: 0,
+  paddingLeft: '0.5em',
+}
 const button = {
   backgroundColor: '#000000',
   color: '#ffffff',
@@ -115,7 +129,7 @@ const button = {
 const small = {
   fontSize: '12px',
   color: '#666666',
-  margin: '0 0 6px',
+  margin: '0 0 24px',
 }
 const linkText = {
   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
