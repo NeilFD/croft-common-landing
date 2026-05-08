@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -8,27 +7,54 @@ import { useToast } from '@/hooks/use-toast';
 import CBTopNav from '@/components/crazybear/CBTopNav';
 
 const SetPassword = () => {
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
-  const [ready, setReady] = useState(false);
-  const navigate = useNavigate();
+  const [hasSession, setHasSession] = useState(false);
+  const [verifying, setVerifying] = useState(true);
   const { toast } = useToast();
 
-  // The link from the auth email lands here with an active recovery/signup
-  // session. We just need to wait for the session to settle before letting
-  // the user set their password.
+  // Pre-fill email from URL, and detect if we already have a valid session
+  // (e.g. user clicked a working magic link).
   useEffect(() => {
     let mounted = true;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const e = params.get('email');
+      if (e) setEmail(e);
+    } catch {}
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, sess) => {
-      if (mounted && sess) setReady(true);
+      if (mounted && sess) setHasSession(true);
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (mounted && session) setReady(true);
-      if (mounted) setTimeout(() => setReady((r) => r || !!session), 600);
+      if (!mounted) return;
+      if (session) setHasSession(true);
+      setVerifying(false);
     });
     return () => { mounted = false; subscription.unsubscribe(); };
   }, []);
+
+  const finalise = async () => {
+    // Fire branded welcome email (idempotent server-side).
+    try {
+      await supabase.functions.invoke('cb-send-welcome');
+    } catch (err) {
+      console.warn('cb-send-welcome invoke failed', err);
+    }
+    try { sessionStorage.removeItem('recovery'); } catch {}
+    try {
+      const url = new URL(window.location.href);
+      ['access_token','refresh_token','code','token_hash','token','type','error','error_description','email']
+        .forEach((p) => url.searchParams.delete(p));
+      url.hash = '';
+      window.history.replaceState({}, document.title, url.pathname);
+    } catch {}
+    toast({ title: 'Password set', description: 'You are signed in.' });
+    window.location.assign('https://www.crazybeartest.com/');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,33 +66,43 @@ const SetPassword = () => {
       toast({ title: 'Passwords do not match', variant: 'destructive' });
       return;
     }
+
     setLoading(true);
+
+    // If we don't have a session yet, verify the OTP first.
+    if (!hasSession) {
+      if (!email || !code || code.replace(/\s/g, '').length < 6) {
+        setLoading(false);
+        toast({
+          title: 'Enter your code',
+          description: 'Add the email and the 6 digit code from your inbox.',
+          variant: 'destructive',
+        });
+        return;
+      }
+      const { error: otpError } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: code.replace(/\s/g, ''),
+        type: 'email',
+      });
+      if (otpError) {
+        setLoading(false);
+        toast({
+          title: 'Code did not work',
+          description: otpError.message || 'Check the code and try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) {
       toast({ title: 'Could not set password', description: error.message, variant: 'destructive' });
       return;
     }
-    // Fire branded welcome email (idempotent server-side, safe to await briefly).
-    try {
-      await supabase.functions.invoke('cb-send-welcome');
-    } catch (err) {
-      console.warn('cb-send-welcome invoke failed', err);
-    }
-    // Clear recovery state so RecoveryGuard does not bounce us back here.
-    try { sessionStorage.removeItem('recovery'); } catch {}
-    // Strip any auth tokens left in the URL hash/query before leaving.
-    try {
-      const url = new URL(window.location.href);
-      ['access_token','refresh_token','code','token_hash','token','type','error','error_description']
-        .forEach((p) => url.searchParams.delete(p));
-      url.hash = '';
-      window.history.replaceState({}, document.title, url.pathname + (url.searchParams.toString() ? `?${url.searchParams.toString()}` : ''));
-    } catch {}
-    toast({ title: 'Password set', description: 'You are signed in.' });
-    // Hard navigate to the Crazy Bear landing so nothing can re-trigger
-    // recovery routing on this tab.
-    window.location.assign('https://www.crazybeartest.com/');
+    await finalise();
   };
 
   return (
@@ -85,12 +121,38 @@ const SetPassword = () => {
             <p className="font-cb-mono text-[10px] tracking-[0.45em] uppercase opacity-60 mb-8">
               One key. The den remembers.
             </p>
-            {!ready ? (
+
+            {verifying ? (
               <p className="font-cb-mono text-xs tracking-[0.3em] uppercase opacity-60">
-                Verifying link...
+                Loading...
               </p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                {!hasSession && (
+                  <>
+                    <Input
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoComplete="email"
+                      className="font-cb-sans bg-transparent border-white/30 text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:border-white rounded-none h-12"
+                    />
+                    <Input
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      placeholder="6 digit code from email"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                      required
+                      autoComplete="one-time-code"
+                      className="font-cb-mono tracking-[0.5em] text-center bg-transparent border-white/30 text-white placeholder:text-white/40 placeholder:tracking-normal placeholder:font-cb-sans focus-visible:ring-0 focus-visible:border-white rounded-none h-12 text-lg"
+                    />
+                  </>
+                )}
                 <Input
                   type="password"
                   placeholder="New password"
@@ -116,6 +178,11 @@ const SetPassword = () => {
                 >
                   {loading ? 'Saving...' : 'Save and enter'}
                 </Button>
+                {!hasSession && (
+                  <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-2 text-center">
+                    Code sent to your inbox. Check spam if it's missing.
+                  </p>
+                )}
               </form>
             )}
           </div>
