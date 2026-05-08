@@ -25,6 +25,7 @@ interface Props {
   faqKey?: string;
   schemaKind?: "hotel" | "restaurant" | "bar" | "none";
   cuisine?: string[];
+  extraJsonLd?: Record<string, any>[];
   children?: React.ReactNode;
 }
 
@@ -37,6 +38,7 @@ const PropertyPage = ({
   faqKey,
   schemaKind = "none",
   cuisine,
+  extraJsonLd,
   children,
 }: Props) => {
   const { config } = useProperty();
