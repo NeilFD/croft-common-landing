@@ -1,5 +1,7 @@
 import PropertyPage from "@/components/property/PropertyPage";
 import CBMenuPage from "@/components/crazybear/CBMenuPage";
+import CBGallery from "@/components/property/CBGallery";
+import { townGallery, countryGallery } from "@/data/galleryData";
 import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus";
 import SecretGestureHost, { type SecretVariant } from "@/components/secrets/SecretGestureHost";
 import { CBSeo } from "@/components/seo/CBSeo";
