@@ -127,15 +127,17 @@ const CBSubscriptionForm = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="font-cb-sans bg-transparent border-white/30 text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:border-white rounded-none h-12"
+            style={{ WebkitBoxShadow: '0 0 0 1000px #ffffff inset', WebkitTextFillColor: '#000000', caretColor: '#000000' }}
+            className="font-cb-sans bg-white border-white text-black placeholder:text-black/60 focus-visible:ring-0 focus-visible:border-white rounded-none h-12"
           />
           <Input
             type="email"
-            placeholder="Email"
+            placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="font-cb-sans bg-transparent border-white/30 text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:border-white rounded-none h-12"
+            style={{ WebkitBoxShadow: '0 0 0 1000px #ffffff inset', WebkitTextFillColor: '#000000', caretColor: '#000000' }}
+            className="font-cb-sans bg-white border-white text-black placeholder:text-black/60 focus-visible:ring-0 focus-visible:border-white rounded-none h-12"
           />
         </div>
 
