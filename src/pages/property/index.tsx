@@ -10,7 +10,9 @@ import {
   restaurantSchema,
   breadcrumbSchema,
   faqSchema,
+  imageGallerySchema,
 } from "@/components/seo/CBStructuredData";
+import { CB_SITE } from "@/components/seo/CBSeo";
 import { cbFaqs } from "@/data/cbFaqs";
 
 const withSecret = (variant: SecretVariant, node: JSX.Element) => (
@@ -125,10 +127,11 @@ export const CountryRoomGallery = () =>
   withSecret(
     "rooms-country",
     <PropertyPage
-      title="Gallery"
+      title="Bedroom Gallery"
       eyebrow="Rooms"
       body="A look behind the bedroom doors."
-      seoDescription="Bedroom gallery at Crazy Bear Country. A look behind the doors."
+      seoDescription="Bedroom gallery at Crazy Bear Country, Stadhampton. Theatrical, indulgent, never the same twice. A look behind the doors."
+      extraJsonLd={[imageGallerySchema(countryGallery, `${CB_SITE}/country/rooms/gallery`)]}
     >
       <CBGallery items={countryGallery} eyebrow="Country" title="Behind the doors." />
     </PropertyPage>
@@ -288,10 +291,11 @@ export const TownRoomGallery = () =>
   withSecret(
     "rooms-town",
     <PropertyPage
-      title="Gallery"
+      title="Bedroom Gallery"
       eyebrow="Rooms"
       body="Step inside."
-      seoDescription="Bedroom gallery at Crazy Bear Town. Step inside."
+      seoDescription="Bedroom gallery at Crazy Bear Town, Beaconsfield. Velvet, mirror, marble. Each bedroom its own world. Step inside."
+      extraJsonLd={[imageGallerySchema(townGallery, `${CB_SITE}/town/rooms/gallery`)]}
     >
       <CBGallery items={townGallery} eyebrow="Town" title="Step inside." />
     </PropertyPage>

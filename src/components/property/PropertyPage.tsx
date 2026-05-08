@@ -5,12 +5,14 @@ import { getHeroCarouselFor } from "@/data/heroCarousels";
 import HeroCarousel from "./HeroCarousel";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
+import CBBreadcrumb from "@/components/seo/CBBreadcrumb";
 import {
   hotelSchema,
   restaurantSchema,
   barSchema,
   breadcrumbSchema,
   faqSchema,
+  organizationSchema,
 } from "@/components/seo/CBStructuredData";
 import { cbFaqs } from "@/data/cbFaqs";
 
@@ -23,6 +25,7 @@ interface Props {
   faqKey?: string;
   schemaKind?: "hotel" | "restaurant" | "bar" | "none";
   cuisine?: string[];
+  extraJsonLd?: Record<string, any>[];
   children?: React.ReactNode;
 }
 
@@ -35,6 +38,7 @@ const PropertyPage = ({
   faqKey,
   schemaKind = "none",
   cuisine,
+  extraJsonLd,
   children,
 }: Props) => {
   const { config } = useProperty();
@@ -50,7 +54,9 @@ const PropertyPage = ({
 
   const faqEntry = faqKey ? cbFaqs[faqKey] : undefined;
 
+  const isPropertyHome = location.pathname === "/town" || location.pathname === "/country";
   const ld: Record<string, any>[] = [breadcrumbSchema(location.pathname)];
+  if (isPropertyHome) ld.push(organizationSchema());
   if (schemaKind === "hotel") {
     ld.push(hotelSchema(property));
   } else if (schemaKind === "restaurant") {
@@ -74,6 +80,7 @@ const PropertyPage = ({
     );
   }
   if (faqEntry) ld.push(faqSchema(faqEntry.faqs));
+  if (extraJsonLd) ld.push(...extraJsonLd);
 
   return (
     <>
@@ -116,7 +123,8 @@ const PropertyPage = ({
           </span>
         </a>
       </section>
-      <section id="cb-page-body" className="mx-auto max-w-3xl px-6 py-20 text-foreground scroll-mt-16">
+      <CBBreadcrumb />
+      <section id="cb-page-body" className="mx-auto max-w-3xl px-6 pt-10 pb-20 text-foreground scroll-mt-16">
         <p className="font-cb-sans text-xl md:text-2xl leading-relaxed">
           {body ?? "More soon. Worth the wait."}
         </p>

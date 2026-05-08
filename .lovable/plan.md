@@ -1,85 +1,58 @@
-## SEO + AI search optimisation for Crazy Bear
+## SEO maximisation pass
 
-Lightweight, copy-minimal upgrade. No long marketing paragraphs. Focus on signals that traditional search engines (Google) and AI search (ChatGPT, Perplexity, Gemini, Google AI Overviews) actually consume: structured metadata + FAQ schema.
+The on-page SEO + FAQ schema work is in. These are the gaps still hurting visibility on Google and AI search (ChatGPT, Perplexity, Gemini, AI Overviews).
 
-### Scope
+### 1. Sitemap + robots (wrong site)
 
-- Town and Country property pages (all `/town/*` and `/country/*` routes).
-- Two new landing-style files only. No edits to component design, no changes to existing copy on the page.
+Currently `public/sitemap.xml` lists Croft Common URLs and `robots.txt` points to the Croft sitemap. Crazy Bear has zero sitemap coverage.
 
-### What gets added
+- Rewrite `public/sitemap.xml` with every Crazy Bear route under `https://www.crazybeartest.com` (Town + Country home, food/restaurants, drink, rooms, gallery, pool, parties, events, weddings, business, country pub).
+- Update `public/robots.txt` to reference the Crazy Bear sitemap and keep AI bots (GPTBot, ChatGPT-User, PerplexityBot, Google-Extended, ClaudeBot, CCBot) explicitly allowed.
 
-1. **Per-route SEO meta** (one liner each) — title, description, canonical, OG/Twitter, via `react-helmet-async` already in use.
-2. **JSON-LD structured data** on every page:
-  - `Hotel` + `LocalBusiness` for `/town` and `/country` roots (NAP, geo, hours, priceRange, sameAs).
-  - `Restaurant` for food pages (Black Bear, B&B, Hom Thai, Country Pub).
-  - `BarOrPub` for drink pages.
-  - `BreadcrumbList` on every nested page.
-  - `FAQPage` wherever an FAQ is rendered.
-3. **FAQ accordion** on key pages — short, on-brand, 4–6 Q&As each. AI engines lift these almost verbatim.
+### 2. Richer entity schema
 
-### Routes that get FAQs (Crazy Bear voice — short, witty, irreverent)
+Right now `Hotel` / `Restaurant` schema is missing fields that Google and LLMs use to build the entity card.
 
-Town:
+Add to `src/components/seo/CBStructuredData.ts`:
 
-- `/town` — about, location, parking, dress code, dogs, check-in/out
-- `/town/rooms` — what makes a room, accessibility, kids, pets
-- `/town/food` — three restaurants overview
-- `/town/drink` / `/town/drink/cocktails` — bar hours, walk-ins
-- `/town/pool` — guests-only, opening hours
+- `telephone`, `email`, `geo` (lat/lng) for both Town and Country.
+- `openingHoursSpecification` per property (rooms 24/7, restaurant + bar hours).
+- `sameAs` pointing to Crazy Bear Instagram / Facebook (need URLs, see questions).
+- A reusable `organizationSchema` for the brand parent ("Crazy Bear"), injected once on the home routes.
+- `hasMap` linking to Google Maps for each property.
+- For `Hotel`, add `starRating` if applicable and `checkinTime` / `checkoutTime`.
 
-Country:
+### 3. Default head metadata (`index.html`)
 
-- `/country` — about, location, parking, dogs, check-in/out
-- `/country/rooms` — same pattern
-- `/country/pub` — food service times, walk-ins, dogs
-- `/country/events` / `/weddings` / `/business` — capacities, exclusive hire
-- `/country/parties` — late licence, group size
+- Replace the OG/Twitter image (currently `/brand/logo.png`, a small square) with a proper 1200x630 hero. Use one of the existing carousel shots or a new branded card.
+- Add `<meta name="theme-color">`, `<meta name="robots" content="index,follow,max-image-preview:large">`, and `<link rel="alternate" hreflang="en-GB">`.
+- Tighten the default title to lead with the brand keyword: `Crazy Bear | Boutique Hotels in Beaconsfield & Stadhampton`.
 
-### File changes (small, contained)
+### 4. Per-page polish
 
-1. **New** `src/components/seo/CBSeo.tsx`
-  - Props: `title`, `description`, `path`, `image?`, `type?`.
-  - Renders `<Helmet>` (title, meta description, canonical, OG, Twitter) + `<script type="application/ld+json">` for breadcrumbs.
-2. **New** `src/components/seo/CBStructuredData.tsx`
-  - Exports helpers: `hotelSchema(property)`, `restaurantSchema(...)`, `barSchema(...)`, `faqSchema(faqs)`. Hard-coded Crazy Bear NAP for Town (Beaconsfield) and Country (Stadhampton). No Croft Common references anywhere.
-3. **New** `src/components/seo/CBFAQ.tsx`
-  - Self-contained accordion (uses existing `@/components/ui/accordion`). Renders questions + injects matching `FAQPage` JSON-LD. No CMS dependency, no `useFAQContent` (that's Croft Common).
-  - Styling matches Crazy Bear tokens (`font-cb-sans`, black/white minimal).
-4. **New** `src/data/cbFaqs.ts`
-  - Static FAQ map keyed by route. ~6 questions per page max. Crazy Bear tone.
-5. **Edit** `src/components/property/PropertyPage.tsx`
-  - Accept optional `seo?: { description: string }` and `faqKey?: string` props.
-  - Render `<CBSeo />` (always) and `<CBFAQ route={...} />` (when `faqKey` present, sits below the body section).
-  - Render hotel/restaurant/bar JSON-LD based on route prefix.
-6. **Edit** `src/pages/property/index.tsx`
-  - Add a one-line `seo.description` per route and `faqKey` for routes that get FAQs (list above). All copy in Crazy Bear voice, no Croft Common phrasing.
-7. **Edit** `index.html`
-  - Verify `<meta name="description">` is generic Crazy Bear, not Croft Common. Update if needed.
-  - Add `<link rel="canonical">` placeholder (handled per-page by Helmet anyway).
+- Audit `seoDescription` strings in `src/pages/property/index.tsx` so each is 140-158 chars and front-loads location + offer (currently several are <90 chars and miss the place name).
+- Make sure every `PropertyPage` `title` produces a unique `<title>` under 60 chars (a couple like "Drink", "Rooms", "Gallery" are too generic — prefix with property: "Drink at Crazy Bear Town").
+- Add `ImageObject` JSON-LD on the gallery pages (uses captions already in `galleryData.ts`) so AI search can attribute images.
 
-### What is explicitly NOT in scope
+### 5. Performance signals (Core Web Vitals)
 
-- No changes to Croft Common SEO files (`src/components/SEO/*`, `useFAQContent`, CMS FAQ manager).
-- No long-form copy added to pages. FAQs are the only new visible text.
-- No sitemap regeneration logic (existing `public/sitemap.xml` left alone for now — flag if you want it refreshed in a follow-up).
-- No image alt-text audit (separate task).
+- Add `loading="lazy"` and explicit `width`/`height` to gallery images in `CBGallery.tsx`.
+- Add `fetchpriority="high"` to the first hero carousel image.
+- Preload the brand font CSS already done; also `preconnect` to the Supabase asset host if hero images come from there.
 
-### AI search specifics
+### 6. Internal linking + breadcrumbs UI
 
-Why this works for ChatGPT / Perplexity / Google AI Overviews:
+Schema breadcrumbs exist, but there's no visible breadcrumb on the page. Adding a small breadcrumb strip (Town › Rooms › Gallery) on nested pages reinforces the schema and helps both Google and users.
 
-- `FAQPage` schema is the single most-quoted source by LLM search.
-- `Hotel` / `Restaurant` schema feeds the entity graph (location, hours, price).
-- Concise meta descriptions (≤155 chars) get used verbatim as snippets.
-- Canonical URLs prevent duplicate-page dilution between `crazybeartest.com` and the lovable preview.
+### Out of scope for this pass
 
-### Confirm before implementing
+- New copy beyond meta descriptions and titles.
+- Image regeneration (we'll reuse existing assets for OG).
+- Backlink / off-page work.
 
-- OK with **static FAQs in code** (fast, simple, no admin UI) vs CMS-managed? Static is recommended — fewer moving parts, easier to keep tone consistent.  
-  
-STATIC IS FINE  
+### Open questions
 
-- Production domain to use in canonical / schema URLs: `https://www.crazybeartest.com` — confirm or give the live domain.  
-  
-i DONT UNDERSTAND DO WHAT IS MOST LIKE TEH REAL THING
+1. Live domain for canonical + sitemap: stick with `https://www.crazybeartest.com`, or is there a final domain to swap in now?
+2. Social profiles for `sameAs` (Instagram / Facebook / TikTok handles for Crazy Bear)?
+3. Phone numbers for Town and Country reception (for `telephone` in schema)?
+4. OK to add a visible breadcrumb strip on nested property pages, or keep purely schema-only?
