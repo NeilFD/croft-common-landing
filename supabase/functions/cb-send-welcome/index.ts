@@ -55,15 +55,24 @@ Deno.serve(async (req) => {
 
     // Idempotency: only send the welcome once per user
     const idempotencyKey = `cb-welcome-${user.id}`
-    const { data: existing } = await admin
+    const { data: latestDelivery } = await admin
       .from('email_send_log')
-      .select('message_id')
+      .select('status')
       .eq('message_id', idempotencyKey)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
 
-    if (existing) {
+    if (latestDelivery?.status === 'sent') {
       return new Response(
         JSON.stringify({ success: true, skipped: 'already_sent' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    if (latestDelivery?.status === 'pending' || latestDelivery?.status === 'rate_limited') {
+      return new Response(
+        JSON.stringify({ success: true, skipped: 'already_queued' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
@@ -76,6 +85,23 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id)
       .maybeSingle()
     if (member?.first_name) firstName = member.first_name
+
+    const { data: existingToken } = await admin
+      .from('email_unsubscribe_tokens')
+      .select('token')
+      .eq('email', recipient)
+      .is('used_at', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+
+    const unsubscribeToken = existingToken?.token ?? crypto.randomUUID()
+    if (!existingToken?.token) {
+      await admin.from('email_unsubscribe_tokens').insert({
+        email: recipient,
+        token: unsubscribeToken,
+      })
+    }
 
     const html = await renderAsync(
       React.createElement(CBWelcomeEmail, { recipient, firstName }),
@@ -105,6 +131,7 @@ Deno.serve(async (req) => {
         text,
         purpose: 'transactional',
         label: 'cb_welcome',
+        unsubscribe_token: unsubscribeToken,
         queued_at: new Date().toISOString(),
       },
     })
