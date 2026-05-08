@@ -5,6 +5,69 @@ import { initBootLogger } from './mobile/bootLogger'
 
 initBootLogger();
 
+let hasRecoveredFromChunkError = false;
+
+const getChunkErrorText = (source: any) => [
+  source?.message,
+  source?.error?.message,
+  source?.reason?.message,
+  source?.sourceUrl,
+  typeof source === 'string' ? source : undefined,
+].filter(Boolean).join(' ');
+
+const isChunkLoadFailure = (text: string) => (
+  text.includes('ChunkLoadError') ||
+  text.includes('Failed to fetch dynamically imported module') ||
+  text.includes('Importing a module script failed') ||
+  text.includes('error loading dynamically imported module') ||
+  /\/assets\/.*\.js/.test(text) ||
+  /\/node_modules\/\.vite\/deps\/.*\.js/.test(text)
+);
+
+const recoverFromChunkError = async (source: any) => {
+  if (hasRecoveredFromChunkError) return;
+
+  const text = getChunkErrorText(source);
+  if (!isChunkLoadFailure(text)) return;
+
+  hasRecoveredFromChunkError = true;
+  console.error('[ChunkLoad] Detected module load failure, recovering:', text);
+
+  try {
+    const lastRecovery = Number(sessionStorage.getItem('cc_chunk_recovery_at') || '0');
+    if (Date.now() - lastRecovery < 5000) return;
+    sessionStorage.setItem('cc_chunk_recovery_at', String(Date.now()));
+  } catch {}
+
+  try {
+    const registrations = await navigator.serviceWorker?.getRegistrations?.();
+    await Promise.all((registrations || []).map((reg) => reg.unregister()));
+
+    if ('caches' in window) {
+      const cacheNames = await caches.keys();
+      await Promise.all(cacheNames.map((name) => caches.delete(name)));
+    }
+  } catch (e) {
+    console.warn('[ChunkLoad] Recovery cleanup failed:', e);
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set('bypass-cache', Date.now().toString());
+  window.location.replace(url.toString());
+};
+
+window.addEventListener('error', (event) => {
+  const target = event.target as HTMLElement | null;
+  const sourceUrl = event.filename ||
+    (target instanceof HTMLScriptElement ? target.src : '') ||
+    (target instanceof HTMLLinkElement ? target.href : '');
+  recoverFromChunkError({ message: event.message, error: event.error, sourceUrl });
+}, true);
+
+window.addEventListener('unhandledrejection', (event) => {
+  recoverFromChunkError(event.reason);
+});
+
 const isNativeRuntime = () => Boolean((window as any)?.Capacitor?.isNativePlatform?.() === true);
 
 // Build/version logging and native push initialisation must not block first paint.
@@ -119,39 +182,6 @@ import('./mobile/initStatusBar')
     }
   })
   .catch((err) => { console.warn('[StatusBar] Init skipped:', err); });
-
-// Chunk-load error recovery for iOS PWA
-let hasRecovered = false;
-const recoverFromChunkError = async (error: any) => {
-  if (hasRecovered) return;
-  const msg = error?.message || String(error);
-  if (
-    msg.includes('ChunkLoadError') ||
-    msg.includes('Failed to fetch dynamically imported module') ||
-    msg.includes('Importing a module script failed') ||
-    msg.includes('error loading dynamically imported module')
-  ) {
-    hasRecovered = true;
-    console.error('[ChunkLoad] Detected chunk load failure, recovering:', msg);
-    try {
-      const reg = await navigator.serviceWorker?.getRegistration();
-      if (reg) await reg.unregister();
-      const cacheNames = await caches.keys();
-      await Promise.all(cacheNames.map(name => caches.delete(name)));
-    } catch (e) {
-      console.warn('[ChunkLoad] Recovery cleanup failed:', e);
-    }
-    window.location.replace(window.location.pathname + '?bypass-cache=' + Date.now());
-  }
-};
-
-window.addEventListener('error', (event) => {
-  recoverFromChunkError(event.error);
-});
-
-window.addEventListener('unhandledrejection', (event) => {
-  recoverFromChunkError(event.reason);
-});
 
 // PWA registration is intentionally disabled. The static worker files in
 // /public are kill-switches that clear old Safari/PWA caches and unregister.
