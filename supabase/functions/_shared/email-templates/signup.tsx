@@ -4,7 +4,6 @@ import * as React from 'npm:react@18.3.1'
 
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -20,14 +19,15 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
-  confirmationUrl,
+  token,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to the den</Preview>
+    <Preview>Your code to enter the den</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
@@ -38,21 +38,15 @@ export const SignupEmail = ({
         <Heading style={h1}>Welcome to the den</Heading>
 
         <Text style={text}>
-          You're nearly in. Tap the button below to set your password and the
-          door swings open. Town and Country. Members hear first. No noise in
-          between.
+          Enter the six digit code below at www.crazybeartest.com/set-password
+          to set your password. The door swings open.
         </Text>
 
-        <Section style={buttonWrap}>
-          <Button style={button} href={confirmationUrl}>
-            Set your password
-          </Button>
+        <Section style={codeWrap}>
+          <Text style={code}>{token || '------'}</Text>
         </Section>
 
-        <Text style={small}>
-          If the button doesn't work, paste this link into your browser:
-        </Text>
-        <Text style={linkText}>{confirmationUrl}</Text>
+        <Text style={small}>This code expires in one hour. One use only.</Text>
 
         <Hr style={rule} />
         <Text style={footer}>Didn't sign up? Ignore this email and nothing happens.</Text>
