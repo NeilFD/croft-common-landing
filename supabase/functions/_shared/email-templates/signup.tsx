@@ -38,7 +38,7 @@ export const SignupEmail = ({
         <Heading style={h1}>Welcome to the den</Heading>
 
         <Text style={text}>
-          Enter the six digit code below at www.crazybeartest.com/set-password
+          Enter the code below at www.crazybeartest.com/set-password
           to set your password. The door swings open.
         </Text>
 

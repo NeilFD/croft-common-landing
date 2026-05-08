@@ -84,7 +84,7 @@ const CBSubscriptionForm = () => {
 
       toast({
         title: 'Check your email',
-        description: 'We sent you a 6 digit code to set your password.',
+        description: 'We sent you a code to set your password.',
       });
       // Send the user straight to the code entry screen with email pre-filled
       window.location.assign(`/set-password?email=${encodeURIComponent(email)}`);
