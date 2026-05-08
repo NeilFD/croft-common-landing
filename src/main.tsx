@@ -59,7 +59,8 @@ const recoverFromChunkError = async (source: any) => {
 window.addEventListener('error', (event) => {
   const target = event.target as HTMLElement | null;
   const sourceUrl = event.filename ||
-    ((target instanceof HTMLScriptElement || target instanceof HTMLLinkElement) ? target.href || target.getAttribute('src') || '' : '');
+    (target instanceof HTMLScriptElement ? target.src : '') ||
+    (target instanceof HTMLLinkElement ? target.href : '');
   recoverFromChunkError({ message: event.message, error: event.error, sourceUrl });
 }, true);
 
