@@ -69,32 +69,30 @@ const SetPassword = () => {
 
     setLoading(true);
 
-    // If we don't have a session yet, verify the OTP first.
-    if (!hasSession) {
-      const cleanCode = code.replace(/\s/g, '');
-      if (!email || !cleanCode || (cleanCode.length !== 6 && cleanCode.length !== 8)) {
-        setLoading(false);
-        toast({
-          title: 'Enter your code',
-          description: 'Add the email and the code from your inbox.',
-          variant: 'destructive',
-        });
-        return;
-      }
-      const { error: otpError } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: cleanCode,
-        type: 'email',
+    // Always verify the OTP code from the email — even if a stale session exists.
+    const cleanCode = code.replace(/\s/g, '');
+    if (!email || !cleanCode || (cleanCode.length !== 6 && cleanCode.length !== 8)) {
+      setLoading(false);
+      toast({
+        title: 'Enter your code',
+        description: 'Add the email and the code from your inbox.',
+        variant: 'destructive',
       });
-      if (otpError) {
-        setLoading(false);
-        toast({
-          title: 'Code did not work',
-          description: otpError.message || 'Check the code and try again.',
-          variant: 'destructive',
-        });
-        return;
-      }
+      return;
+    }
+    const { error: otpError } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: cleanCode,
+      type: 'email',
+    });
+    if (otpError) {
+      setLoading(false);
+      toast({
+        title: 'Code did not work',
+        description: otpError.message || 'Check the code and try again.',
+        variant: 'destructive',
+      });
+      return;
     }
 
     const { error } = await supabase.auth.updateUser({ password });
@@ -136,31 +134,27 @@ const SetPassword = () => {
               </p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                {!hasSession && (
-                  <>
-                    <Input
-                      type="email"
-                      placeholder="Email address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      autoComplete="email"
-                      className="font-cb-sans bg-transparent border-white/30 text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:border-white rounded-none h-12"
-                    />
-                    <Input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={8}
-                      placeholder="Code from email"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                      required
-                      autoComplete="one-time-code"
-                      className="font-cb-mono tracking-[0.5em] text-center bg-transparent border-white/30 text-white placeholder:text-white/40 placeholder:tracking-normal placeholder:font-cb-sans focus-visible:ring-0 focus-visible:border-white rounded-none h-12 text-lg"
-                    />
-                  </>
-                )}
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="font-cb-sans bg-transparent border-white/30 text-white placeholder:text-white/50 focus-visible:ring-0 focus-visible:border-white rounded-none h-12"
+                />
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={8}
+                  placeholder="Code from email"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                  required
+                  autoComplete="one-time-code"
+                  className="font-cb-mono tracking-[0.5em] text-center bg-transparent border-white/30 text-white placeholder:text-white/40 placeholder:tracking-normal placeholder:font-cb-sans focus-visible:ring-0 focus-visible:border-white rounded-none h-12 text-lg"
+                />
                 <Input
                   type="password"
                   placeholder="New password"
@@ -186,11 +180,9 @@ const SetPassword = () => {
                 >
                   {loading ? 'Saving...' : 'Save and enter'}
                 </Button>
-                {!hasSession && (
-                  <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-2 text-center">
-                    Code sent to your inbox. Check spam if it's missing.
-                  </p>
-                )}
+                <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-2 text-center">
+                  Code sent to your inbox. Check spam if it's missing.
+                </p>
               </form>
             )}
           </div>
