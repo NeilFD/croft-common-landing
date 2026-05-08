@@ -19,7 +19,7 @@ export interface GalleryItem {
 }
 
 export const townGallery: GalleryItem[] = [
-  { src: town02, alt: "Teal suite with copper bath", caption: "Soak. Sulk. Repeat." },
+  { src: town02, alt: "Teal suite with copper bath", caption: "Sexy. Soak. Repeat." },
   { src: town01, alt: "Blue glitter bedroom", caption: "Bedtime, but make it disco." },
   { src: town05, alt: "Chandelier lounge", caption: "Sit pretty. Stay late." },
   { src: town03, alt: "Dark gold bedroom", caption: "Gold standard. Lights low." },
