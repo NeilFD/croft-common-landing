@@ -69,7 +69,7 @@ export const cbFaqs: Record<string, { title?: string; faqs: FAQ[] }> = {
       },
       {
         question: "Private dining?",
-        answer: "Yes. Small rooms to the whole house.",
+        answer: "Yes. The Studio. Coming soon.",
       },
       {
         question: "Dietary requirements?",
