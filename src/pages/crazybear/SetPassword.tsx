@@ -47,6 +47,12 @@ const SetPassword = () => {
       toast({ title: 'Could not set password', description: error.message, variant: 'destructive' });
       return;
     }
+    // Fire branded welcome email (idempotent server-side, safe to await briefly).
+    try {
+      await supabase.functions.invoke('cb-send-welcome');
+    } catch (err) {
+      console.warn('cb-send-welcome invoke failed', err);
+    }
     // Clear recovery state so RecoveryGuard does not bounce us back here.
     try { sessionStorage.removeItem('recovery'); } catch {}
     // Strip any auth tokens left in the URL hash/query before leaving.
