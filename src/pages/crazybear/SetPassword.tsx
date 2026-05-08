@@ -71,11 +71,12 @@ const SetPassword = () => {
 
     // If we don't have a session yet, verify the OTP first.
     if (!hasSession) {
-      if (!email || !code || code.replace(/\s/g, '').length < 6) {
+      const cleanCode = code.replace(/\s/g, '');
+      if (!email || !cleanCode || (cleanCode.length !== 6 && cleanCode.length !== 8)) {
         setLoading(false);
         toast({
           title: 'Enter your code',
-          description: 'Add the email and the 6 digit code from your inbox.',
+          description: 'Add the email and the code from your inbox.',
           variant: 'destructive',
         });
         return;
