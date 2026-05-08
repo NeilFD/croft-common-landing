@@ -80,6 +80,7 @@ const PropertyPage = ({
     );
   }
   if (faqEntry) ld.push(faqSchema(faqEntry.faqs));
+  if (extraJsonLd) ld.push(...extraJsonLd);
 
   return (
     <>
