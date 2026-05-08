@@ -14,7 +14,53 @@ const SetPassword = () => {
   const [loading, setLoading] = useState(false);
   const [hasSession, setHasSession] = useState(false);
   const [verifying, setVerifying] = useState(true);
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const { toast } = useToast();
+
+  // Tick down the resend cooldown each second
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const t = setTimeout(() => setResendCooldown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [resendCooldown]);
+
+  const handleResend = async () => {
+    const target = email.trim();
+    if (!target) {
+      toast({
+        title: 'Add your email',
+        description: 'Enter the email address you signed up with.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (resending || resendCooldown > 0) return;
+    setResending(true);
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: target,
+      options: { emailRedirectTo: 'https://www.crazybeartest.com/set-password' },
+    });
+    setResending(false);
+    if (error) {
+      const msg = error.message || '';
+      // Surface rate-limit clearly
+      const wait = /(\d+)\s*seconds?/i.exec(msg)?.[1];
+      if (wait) setResendCooldown(parseInt(wait, 10));
+      toast({
+        title: 'Could not resend',
+        description: msg || 'Try again in a moment.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setResendCooldown(45);
+    toast({
+      title: 'Code sent',
+      description: 'Check your inbox. It can take a minute.',
+    });
+  };
 
   // Pre-fill email from URL, and detect if we already have a valid session
   // (e.g. user clicked a working magic link).
@@ -180,8 +226,20 @@ const SetPassword = () => {
                 >
                   {loading ? 'Saving...' : 'Save and enter'}
                 </Button>
-                <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-2 text-center">
-                  Code sent to your inbox. Check spam if it's missing.
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resending || resendCooldown > 0}
+                  className="w-full font-cb-mono text-[10px] tracking-[0.4em] uppercase opacity-70 hover:opacity-100 disabled:opacity-40 pt-2"
+                >
+                  {resending
+                    ? 'Sending...'
+                    : resendCooldown > 0
+                      ? `Resend code (${resendCooldown}s)`
+                      : 'Resend code'}
+                </button>
+                <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-1 text-center">
+                  Check spam if it's missing.
                 </p>
               </form>
             )}
