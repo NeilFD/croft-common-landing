@@ -4,7 +4,6 @@ import * as React from 'npm:react@18.3.1'
 
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -20,14 +19,15 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
-  confirmationUrl,
+  token,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Welcome to the den</Preview>
+    <Preview>Your code to enter the den</Preview>
     <Body style={main}>
       <Container style={container}>
         <Section style={header}>
@@ -38,21 +38,15 @@ export const SignupEmail = ({
         <Heading style={h1}>Welcome to the den</Heading>
 
         <Text style={text}>
-          You're nearly in. Tap the button below to set your password and the
-          door swings open. Town and Country. Members hear first. No noise in
-          between.
+          Enter the six digit code below at www.crazybeartest.com/set-password
+          to set your password. The door swings open.
         </Text>
 
-        <Section style={buttonWrap}>
-          <Button style={button} href={confirmationUrl}>
-            Set your password
-          </Button>
+        <Section style={codeWrap}>
+          <Text style={code}>{token || '------'}</Text>
         </Section>
 
-        <Text style={small}>
-          If the button doesn't work, paste this link into your browser:
-        </Text>
-        <Text style={linkText}>{confirmationUrl}</Text>
+        <Text style={small}>This code expires in one hour. One use only.</Text>
 
         <Hr style={rule} />
         <Text style={footer}>Didn't sign up? Ignore this email and nothing happens.</Text>
@@ -106,6 +100,20 @@ const text = {
   margin: '0 0 28px',
 }
 const buttonWrap = { margin: '0 0 32px' }
+const codeWrap = {
+  margin: '0 0 24px',
+  padding: '24px',
+  backgroundColor: '#000000',
+  textAlign: 'center' as const,
+}
+const code = {
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontSize: '36px',
+  letterSpacing: '0.5em',
+  color: '#ffffff',
+  margin: 0,
+  paddingLeft: '0.5em',
+}
 const button = {
   backgroundColor: '#000000',
   color: '#ffffff',
@@ -121,7 +129,7 @@ const button = {
 const small = {
   fontSize: '12px',
   color: '#666666',
-  margin: '0 0 6px',
+  margin: '0 0 24px',
 }
 const linkText = {
   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
