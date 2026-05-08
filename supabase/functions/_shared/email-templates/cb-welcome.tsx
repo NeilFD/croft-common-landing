@@ -35,38 +35,91 @@ export const CBWelcomeEmail = ({ firstName }: CBWelcomeEmailProps) => (
         </Heading>
 
         <Text style={text}>
-          Password set. Door shut behind you. The den remembers.
+          Password set. Door shut behind you. You're in the den.
         </Text>
 
         <Text style={text}>
-          You are now part of the secret. No fanfare. No badge. Just a quiet
-          arrangement between you and the bear.
+          You're now part of the secret. No fanfare. No badge. Just a quiet arrangement between you and the bear.
+        </Text>
+
+        <Text style={text}>
+          You are the guardians of the House Rules, our examples to the newcomers. You're here to protect the standards.
+        </Text>
+
+        <Text style={text}>
+          We identify as anything you want us to be:
+        </Text>
+
+        <Text style={text}>
+          Inhibitions will get you nowhere
+        </Text>
+        <Text style={text}>
+          Dress like your ex is watching
+        </Text>
+        <Text style={text}>
+          Crazy Bear is for the 'gram, not on a gram.
+        </Text>
+        <Text style={text}>
+          No phones = No evidence
+        </Text>
+        <Text style={text}>
+          Everyone's got problems, keep yours to yourself.
+        </Text>
+        <Text style={text}>
+          Be cool, No-one likes that guy.
+        </Text>
+        <Text style={text}>
+          Be safe, be respectful, be anything but your midweek self.
         </Text>
 
         <Hr style={ruleSoft} />
 
-        <Text style={sectionLabel}>The Secret 7</Text>
-        <Heading style={h2}>Tap the bear. Seven times.</Heading>
+        <Text style={sectionLabel}>The Seven</Text>
+        <Heading style={h2}>Draw a 7. The den notices.</Heading>
         <Text style={text}>
-          On the site. On the app. Anywhere a bear is loitering. Find one.
-          Tap it seven times. The den notices.
+          When you're logged in on the website, you'll spot a small mark on some of the pages: 'MEMBERS: DRAW 7'. That's your cue.
         </Text>
         <Text style={text}>
-          What happens after seven is the point. We won't spoil it. That
-          would be rude.
+          Draw a '7' across the screen with your finger or mouse. And, Member doors open.
         </Text>
 
         <Hr style={ruleSoft} />
 
-        <Text style={sectionLabel}>The Members' Draw 7</Text>
-        <Heading style={h2}>Seven of you. Once a month.</Heading>
+        <Text style={sectionLabel}>The Dice</Text>
+        <Heading style={h2}>Roll the bones. The bear pays.</Heading>
         <Text style={text}>
-          Every month the den picks seven members at random. No leaderboard.
-          No grovelling. No spend required. The bear simply points.
+          At the bar, the dice decide your bill.
         </Text>
         <Text style={text}>
-          If the bear points at you, something good happens. If it doesn't,
-          you wait. The seven rotates. Patience is rewarded. Eventually.
+          Show the bartender. Roll a seven. Your drink's on us.
+        </Text>
+
+        <Hr style={ruleSoft} />
+
+        <Text style={sectionLabel}>Secret Cinema</Text>
+        <Heading style={h2}>Crazy Bear Country. Members only.</Heading>
+        <Text style={text}>
+          No queue. No public listings. Just a screen, some space, and a film you won't find anywhere else.
+        </Text>
+        <Text style={text}>
+          Members only.
+        </Text>
+
+        <Hr style={ruleSoft} />
+
+        <Text style={sectionLabel}>Secret Room Escapes</Text>
+        <Heading style={h2}>Not on the website. Just for members</Heading>
+        <Text style={text}>
+          Room, bubbles, dinner, maybe more. Bundled quietly. Changing frequently. Priced for members who know to ask.
+        </Text>
+        <Text style={text}>
+          The prompt pool has the current offer. If it doesn't, wait. The bear rotates.
+        </Text>
+
+        <Hr style={ruleSoft} />
+
+        <Text style={text}>
+          And there may well be more, you'll need to hunt them down.
         </Text>
 
         <Hr style={rule} />
@@ -74,7 +127,7 @@ export const CBWelcomeEmail = ({ firstName }: CBWelcomeEmailProps) => (
         <Text style={footer}>
           That's the welcome. The rest is up to you.
         </Text>
-        <Text style={signoff}>The Crazy Bear, Stadhampton & Beaconsfield</Text>
+        <Text style={signoff}>THE CRAZY BEAR, STADHAMPTON & BEACONSFIELD</Text>
       </Container>
     </Body>
   </Html>
