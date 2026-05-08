@@ -13,9 +13,15 @@ import country04 from "@/assets/cb-carousel-new/country-04.jpg"; // copper bath 
 import country05 from "@/assets/cb-carousel-new/country-05.jpg"; // thai food spread
 import country06 from "@/assets/cb-carousel-new/country-06.jpg"; // red bus reception
 
+// Room-only subsets for the Rooms hero
+const townRoomImages = [town02, town01, town05, town03];
+const countryRoomImages = [country02, country04, country01];
+
 export const heroCarouselMap: Record<string, string[]> = {
   "/town": [town02, town01, town05, town03, town04, town06],
   "/country": [country02, country04, country01, country03, country05, country06],
+  "/town/rooms": townRoomImages,
+  "/country/rooms": countryRoomImages,
 };
 
 export const getHeroCarouselFor = (path: string): string[] | undefined =>

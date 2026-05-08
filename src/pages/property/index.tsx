@@ -1,5 +1,7 @@
 import PropertyPage from "@/components/property/PropertyPage";
 import CBMenuPage from "@/components/crazybear/CBMenuPage";
+import CBGallery from "@/components/property/CBGallery";
+import { townGallery, countryGallery } from "@/data/galleryData";
 import { blackBearMenu, bnbMenu, countryPubMenu, type Menu } from "@/data/menus";
 import SecretGestureHost, { type SecretVariant } from "@/components/secrets/SecretGestureHost";
 import { CBSeo } from "@/components/seo/CBSeo";
@@ -127,7 +129,9 @@ export const CountryRoomGallery = () =>
       eyebrow="Rooms"
       body="A look behind the bedroom doors."
       seoDescription="Bedroom gallery at Crazy Bear Country. A look behind the doors."
-    />
+    >
+      <CBGallery items={countryGallery} eyebrow="Country" title="Behind the doors." />
+    </PropertyPage>
   );
 export const CountryParties = () =>
   withSecret(
@@ -288,7 +292,9 @@ export const TownRoomGallery = () =>
       eyebrow="Rooms"
       body="Step inside."
       seoDescription="Bedroom gallery at Crazy Bear Town. Step inside."
-    />
+    >
+      <CBGallery items={townGallery} eyebrow="Town" title="Step inside." />
+    </PropertyPage>
   );
 export const TownPool = () =>
   withSecret(
