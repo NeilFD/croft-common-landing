@@ -129,7 +129,9 @@ export const CountryRoomGallery = () =>
       eyebrow="Rooms"
       body="A look behind the bedroom doors."
       seoDescription="Bedroom gallery at Crazy Bear Country. A look behind the doors."
-    />
+    >
+      <CBGallery items={countryGallery} eyebrow="Country" title="Behind the doors." />
+    </PropertyPage>
   );
 export const CountryParties = () =>
   withSecret(
