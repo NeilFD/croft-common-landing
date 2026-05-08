@@ -5,12 +5,14 @@ import { getHeroCarouselFor } from "@/data/heroCarousels";
 import HeroCarousel from "./HeroCarousel";
 import { CBSeo } from "@/components/seo/CBSeo";
 import CBFAQ from "@/components/seo/CBFAQ";
+import CBBreadcrumb from "@/components/seo/CBBreadcrumb";
 import {
   hotelSchema,
   restaurantSchema,
   barSchema,
   breadcrumbSchema,
   faqSchema,
+  organizationSchema,
 } from "@/components/seo/CBStructuredData";
 import { cbFaqs } from "@/data/cbFaqs";
 
