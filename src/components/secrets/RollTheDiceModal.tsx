@@ -161,7 +161,7 @@ const RollTheDiceModal = ({ open, onClose, variant }: Props) => {
               House Rules
             </p>
             <p className="font-cb-sans text-[12px] text-white/65 leading-relaxed">
-              One roll per member, per visit. Bartender must witness the roll. All wins honoured at the discretion of The Crazy Bear.
+              Bartender must witness the roll. All wins honoured at the discretion of The Crazy Bear.
             </p>
           </div>
 
