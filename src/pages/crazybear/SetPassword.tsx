@@ -144,8 +144,8 @@ const SetPassword = () => {
                       type="text"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      maxLength={6}
-                      placeholder="6 digit code from email"
+                      maxLength={8}
+                      placeholder="Code from email"
                       value={code}
                       onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                       required
