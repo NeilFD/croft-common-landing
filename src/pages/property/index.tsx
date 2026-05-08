@@ -10,7 +10,9 @@ import {
   restaurantSchema,
   breadcrumbSchema,
   faqSchema,
+  imageGallerySchema,
 } from "@/components/seo/CBStructuredData";
+import { CB_SITE } from "@/components/seo/CBSeo";
 import { cbFaqs } from "@/data/cbFaqs";
 
 const withSecret = (variant: SecretVariant, node: JSX.Element) => (
