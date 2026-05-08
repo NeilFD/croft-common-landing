@@ -55,15 +55,24 @@ Deno.serve(async (req) => {
 
     // Idempotency: only send the welcome once per user
     const idempotencyKey = `cb-welcome-${user.id}`
-    const { data: existing } = await admin
+    const { data: latestDelivery } = await admin
       .from('email_send_log')
-      .select('message_id')
+      .select('status')
       .eq('message_id', idempotencyKey)
+      .order('created_at', { ascending: false })
+      .limit(1)
       .maybeSingle()
 
-    if (existing) {
+    if (latestDelivery?.status === 'sent') {
       return new Response(
         JSON.stringify({ success: true, skipped: 'already_sent' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
+    if (latestDelivery?.status === 'pending' || latestDelivery?.status === 'rate_limited') {
+      return new Response(
+        JSON.stringify({ success: true, skipped: 'already_queued' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
