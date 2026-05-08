@@ -25,6 +25,9 @@ const CBGallery = ({ items, eyebrow, title }: Props) => {
                 src={item.src}
                 alt={item.alt}
                 loading="lazy"
+                decoding="async"
+                width={1200}
+                height={1500}
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
               />
             </div>

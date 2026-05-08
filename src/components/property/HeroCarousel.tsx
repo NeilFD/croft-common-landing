@@ -81,7 +81,9 @@ const HeroCarousel = ({ images, intervalMs = 6500, alt = "" }: Props) => {
                   alt={alt}
                   className="h-full w-full object-cover select-none"
                   draggable={false}
-                  loading={i <= 2 ? "eager" : "lazy"}
+                  loading={i === 0 ? "eager" : i <= 2 ? "eager" : "lazy"}
+                  decoding={i === 0 ? "sync" : "async"}
+                  fetchPriority={i === 0 ? "high" : "auto"}
                 />
               </div>
             </div>
