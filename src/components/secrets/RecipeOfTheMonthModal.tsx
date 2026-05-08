@@ -11,7 +11,11 @@ const RecipeOfTheMonthModal = ({ open, onClose, variant }: Props) => {
   const r = recipeForRoute(variant);
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-black border border-black rounded-none p-0">
+      <DialogContent
+        className="max-w-2xl max-h-[90vh] overflow-y-auto bg-white text-black border border-black rounded-none p-0"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <div className="px-8 py-10 sm:px-12">
           <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-black/60">
             Members Only / Recipe Of The Month
