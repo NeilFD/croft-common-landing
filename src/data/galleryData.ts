@@ -33,5 +33,5 @@ export const countryGallery: GalleryItem[] = [
   { src: country01, alt: "Red velvet room with copper bath", caption: "Red room. No rules." },
   { src: country03, alt: "Terrace firepit", caption: "Outside. On fire." },
   { src: country05, alt: "Thai food spread", caption: "Thailand via Stadhampton." },
-  { src: country06, alt: "Red bus reception", caption: "All aboard. Bar's that way." },
+  { src: country06, alt: "Red bus reception", caption: "On the Bus. Welcome." },
 ];
