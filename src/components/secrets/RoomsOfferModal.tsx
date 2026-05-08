@@ -11,7 +11,11 @@ const RoomsOfferModal = ({ open, onClose, variant }: Props) => {
   const offer = roomOffers[variant === "rooms-town" ? "town" : "country"];
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg bg-black text-white border border-white rounded-none p-0">
+      <DialogContent
+        className="max-w-lg bg-black text-white border border-white rounded-none p-0"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <div className="px-8 py-10 sm:px-12">
           <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-white/60">
             {offer.eyebrow}
