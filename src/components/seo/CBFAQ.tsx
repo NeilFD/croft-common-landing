@@ -17,7 +17,7 @@ const CBFAQ = ({ faqs, title = "Asked and answered." }: CBFAQProps) => {
   return (
     <section className="border-t border-foreground/10 bg-background">
       <div className="mx-auto max-w-3xl px-6 py-16 md:py-20">
-        <h2 className="font-cb-display text-3xl md:text-4xl uppercase tracking-tight text-foreground">
+        <h2 className="font-display text-3xl md:text-4xl uppercase tracking-tight text-foreground">
           {title}
         </h2>
         <Accordion type="single" collapsible className="mt-8 divide-y divide-foreground/10 border-y border-foreground/10">
