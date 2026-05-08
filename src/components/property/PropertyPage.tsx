@@ -121,6 +121,7 @@ const PropertyPage = ({
           {body ?? "More soon. Worth the wait."}
         </p>
       </section>
+      {children}
       {faqEntry && <CBFAQ faqs={faqEntry.faqs} title={faqEntry.title} />}
     </>
   );
