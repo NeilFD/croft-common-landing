@@ -22,17 +22,19 @@ serve(async (req) => {
     });
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    // Get authenticated user
-    const { data: userData } = await authClient.auth.getUser();
-    if (!userData?.user) {
+    // Validate JWT via claims (works even if the auth.users row was rotated)
+    const authHeader = req.headers.get("Authorization") || "";
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims?.sub) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = userData.user.id;
-    const userEmail = userData.user.email;
+    const userId = claimsData.claims.sub as string;
+    const userEmail = (claimsData.claims as any).email as string | undefined;
 
     // Find unlinked push subscriptions for this user's email
     // This looks for subscriptions from the same browser/device that aren't linked yet
