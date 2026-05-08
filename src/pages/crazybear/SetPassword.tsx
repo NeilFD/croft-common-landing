@@ -69,32 +69,30 @@ const SetPassword = () => {
 
     setLoading(true);
 
-    // If we don't have a session yet, verify the OTP first.
-    if (!hasSession) {
-      const cleanCode = code.replace(/\s/g, '');
-      if (!email || !cleanCode || (cleanCode.length !== 6 && cleanCode.length !== 8)) {
-        setLoading(false);
-        toast({
-          title: 'Enter your code',
-          description: 'Add the email and the code from your inbox.',
-          variant: 'destructive',
-        });
-        return;
-      }
-      const { error: otpError } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: cleanCode,
-        type: 'email',
+    // Always verify the OTP code from the email — even if a stale session exists.
+    const cleanCode = code.replace(/\s/g, '');
+    if (!email || !cleanCode || (cleanCode.length !== 6 && cleanCode.length !== 8)) {
+      setLoading(false);
+      toast({
+        title: 'Enter your code',
+        description: 'Add the email and the code from your inbox.',
+        variant: 'destructive',
       });
-      if (otpError) {
-        setLoading(false);
-        toast({
-          title: 'Code did not work',
-          description: otpError.message || 'Check the code and try again.',
-          variant: 'destructive',
-        });
-        return;
-      }
+      return;
+    }
+    const { error: otpError } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token: cleanCode,
+      type: 'email',
+    });
+    if (otpError) {
+      setLoading(false);
+      toast({
+        title: 'Code did not work',
+        description: otpError.message || 'Check the code and try again.',
+        variant: 'destructive',
+      });
+      return;
     }
 
     const { error } = await supabase.auth.updateUser({ password });
