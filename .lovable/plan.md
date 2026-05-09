@@ -1,104 +1,54 @@
-# Payments + Gold Membership
+# Finish Gold v1 (no staff scanner)
 
-## What you'll get
+Backend (Stripe, webhook, subscriptions table, referrals, lunch checkout) is already in place. This wraps the front of house.
 
-1. Takeaway baskets must be paid before the order is created. Stripe Checkout (hosted page), members return to a confirmation screen.
-2. £69/month Gold subscription. Card turns gold, 25% off auto-applied to every paid order in the app, shown on the in-venue card so staff can honour 25% off in person.
-3. Three "smart" extras (see end). You pick which to include now vs later.
+## What I'll build
 
-## How it works
+### 1. Gold landing page — `/den/member/gold`
+- Headline, three-line benefits ("25% off. Always. In-app and in-venue."), £69/month price.
+- Not Gold: "Go Gold" button opens embedded Stripe Checkout in a modal. Optional referral code field.
+- Already Gold: shows status, renewal date, "Manage subscription" (opens Stripe Portal in new tab via existing `create-portal-session`), and the member's referral code with a copy button + share link (`/den/member/gold?ref=BEAR-XXXXXX`).
+- If `?ref=` is in the URL, prefill the referral field for non-Gold visitors.
 
-### Payments setup
+### 2. MembershipCard gold variant
+- `MembershipCard.tsx` reads `useGoldStatus()`. When Gold:
+  - Black -> warm metallic gradient using new `--gold-*` tokens (HSL only, added to `index.css` + `tailwind.config.ts`).
+  - "GOLD" wordmark top-left, "25% off, always" sub-line.
+  - Renewal date replaces "Member Since" when Gold (or shows both compactly).
+  - Subtle shimmer on edge, gated by `prefers-reduced-motion`.
+- No layout change for non-Gold members.
 
-- Use Lovable's built-in Stripe payments (no account setup, instant test mode, live after verification). Removes the previous "no Stripe" project rule.
-- Two products created in Stripe:
-  - **Takeaway order** — dynamic line items per basket, one-time payment.
-  - **Bear's Den Gold** — £69/month recurring subscription.
+### 3. Referral surface
+- New `useReferralCode()` hook calls a tiny edge function `get-referral-code` that runs `ensure_referral_code(auth.uid())` and returns the code. Shown on the Gold page.
+- No standalone referrals page in v1.
 
-### Takeaway flow (replaces current instant-create)
+### 4. Routing
+- Add `/den/member/gold` to `App.tsx` (lazy import, inside `<MemberRoutes>`).
+- Add a "Go Gold" / "Manage Gold" tile on `/den/member` (MemberHome) so members can find it.
 
-```text
-Basket -> "Pay & Confirm" -> Stripe Checkout (hosted) -> /lunch-run/success
-                                                     \-> /lunch-run (cancelled, basket kept)
-```
+### 5. Skip for v1 (per your answer)
+- No `/den/member/card` full-screen view, no `/staff/verify`, no `verify-gold-qr` function, no `STAFF_VERIFY_PIN` / `GOLD_QR_SIGNING_SECRET`. Staff trust the gold card visual in person.
 
-- New edge function `create-lunch-checkout`: validates basket + slot, applies Gold 25% if member is Gold, creates a Stripe Checkout Session, stores a pending `lunch_orders` row with `status='awaiting_payment'` and `stripe_session_id`.
-- New edge function `stripe-webhook`: on `checkout.session.completed` flips the order to `confirmed`, decrements slot capacity, fires the existing notification flow. On expiry/cancel, deletes the pending row.
-- Existing `create-lunch-order` is retired (or kept as internal helper called by the webhook).
-- Order ref shown to member only after webhook confirmation.
-
-### Gold subscription flow
-
-- New page `/den/member/gold` explaining benefits + "Go Gold £69/month" button.
-- New edge function `create-gold-checkout` -> Stripe Checkout in subscription mode, `customer_email` prefilled.
-- Same `stripe-webhook` handles:
-  - `customer.subscription.created/updated` -> upsert into new `member_subscriptions` table with `status`, `current_period_end`, `stripe_customer_id`, `stripe_subscription_id`.
-  - `customer.subscription.deleted` -> mark `status='canceled'` but keep `current_period_end` so Gold persists until period end (per your choice).
-  - `invoice.payment_failed` -> log, don't strip Gold yet.
-- Helper view/RPC `is_gold(user_id)` -> true when `status in ('active','trialing','canceled')` AND `current_period_end > now()`.
-
-### Gold card visuals + in-venue verification
-
-- `MembershipCard.tsx` reads `is_gold`. When true:
-  - Background switches to gold (warm metallic gradient using design tokens, no off-brand colours).
-  - "GOLD" wordmark + "25% off, always" line.
-  - Subtle animated shimmer on the card edge (respects `prefers-reduced-motion`).
-- New `/den/member/card` full-screen "show to staff" view: large card, member name, expiry date, a server-signed short-lived QR code (5 min TTL) staff can scan from a simple `/staff/verify` page (PIN-protected) that returns name + Gold status + expiry. Stops screenshot abuse.
-
-### 25% discount application
-
-- Single helper `applyGoldDiscount(subtotal, isGold)` used in:
-  - Basket UI (shows strikethrough subtotal + new total).
-  - `create-lunch-checkout` server side (recomputes server-side, never trusts client).
-- Future paid flows (cinema, events) call the same helper.
-
-### Cancellation / management
-
-- On `/den/member/gold`: if Gold, show "Manage subscription" button -> Stripe Customer Portal (one edge function `create-portal-session`).
-- On cancel: card stays gold until `current_period_end`, then auto-reverts on next webhook tick or on read via `is_gold`.
-
-## Smart extras (pick any)
-
-1. **Member-only Gold price for one-offs**: members not yet Gold see "Go Gold and save £X on this basket" CTA when their basket is over £30 — converts at the moment of value.
-2. **Refer a friend, get a month free**: each Gold member gets a code; when a new member subscribes with it, both get one month credited via Stripe coupon. Cheap to build, strong loyalty mechanic.
-3. **Gold-only perks beyond %off**: priority lunch slot at 11:30, monthly free coffee voucher (QR), early access to cinema releases. Makes Gold feel like a club, not just a discount.
+### 6. Memory rules
+Update `mem://index.md` Core:
+- Remove "No Stripe or Common Good integrations (payments permanently removed)."
+- Add: "Stripe payments enabled (Lovable built-in). Bear's Den Gold = £69/month, 25% off everywhere. Never use the term 'membership tiers'."
 
 ## Technical detail
 
-### New tables
+- New file: `src/pages/GoldMembership.tsx` (the landing page).
+- New file: `src/hooks/useReferralCode.ts`.
+- New edge function: `supabase/functions/get-referral-code/index.ts` (verifies JWT, calls `ensure_referral_code`, returns `{ code }`). Already-registered RLS covers the row.
+- Edited: `src/components/membership/MembershipCard.tsx` (gold variant), `src/App.tsx` (route), `src/pages/MemberHome.tsx` (Gold tile), `src/index.css` + `tailwind.config.ts` (gold tokens), `mem://index.md` (rules).
+- All Stripe checkout reuses existing `create-checkout` (`kind: 'gold'`) and `StripeEmbeddedCheckout` component. No new server-side payment code.
 
-- `member_subscriptions` (user_id PK, stripe_customer_id, stripe_subscription_id, status, current_period_end, created_at, updated_at). RLS: owner-read only.
-- Add columns to `lunch_orders`: `stripe_session_id text`, `stripe_payment_intent_id text`, `discount_amount numeric`, `is_gold_at_purchase boolean`. Update `status` check to allow `awaiting_payment`.
+## How to test in preview
 
-### New edge functions
+1. Sign in as a member, visit `/den/member/gold`, click **Go Gold**.
+2. In the embedded Stripe form use card `4242 4242 4242 4242`, any future expiry, any CVC, any postcode.
+3. After return, the page should show Gold status; `/den/member` membership card should turn gold within a few seconds (realtime subscription).
+4. Add a basket on `/den/member/lunch-run` — total should show 25% off.
+5. Open `/den/member/gold` again, copy the referral code, open in a private window with a second account, paste the code on checkout — webhook will credit both accounts £69 on Stripe after the second account pays.
+6. Click **Manage subscription** -> Stripe Portal -> cancel. Card stays gold until `current_period_end`.
 
-- `create-lunch-checkout` (verify_jwt true, member auth required)
-- `create-gold-checkout` (verify_jwt true)
-- `create-portal-session` (verify_jwt true)
-- `stripe-webhook` (verify_jwt false, signature verified with `STRIPE_WEBHOOK_SECRET`)
-- `verify-gold-qr` (verify_jwt false, used by /staff/verify, PIN gated)
-
-### Secrets needed
-
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_GOLD_PRICE_ID`, `STAFF_VERIFY_PIN`. (First two are auto-provisioned by Lovable's built-in Stripe; the price id is created when we register the £69 product.)
-
-### Memory updates
-
-- Lift "No Stripe" core rule.
-- Lift "no membership tiers" rule and replace with: "Gold is the only paid tier (£69/mo), 25% off everywhere."
-
-## Out of scope (this plan)
-
-- Apple/Google Pay native sheets (Checkout already shows them on supported devices).
-- Refunds UI (handled in Stripe dashboard).
-- Group/family Gold accounts.
-
----
-
-Reply with which **smart extras** you want included in v1, and confirm the **rule lifts**. I'll then build it in this order: Stripe enable -> DB migration -> webhook + checkout functions -> takeaway flow -> Gold subscription -> Gold card visuals -> staff verify page -> chosen extras.
-
-&nbsp;
-
-&nbsp;
-
-I only want referral 
+To decline a payment, use card `4000 0000 0000 0002`.
