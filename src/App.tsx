@@ -364,6 +364,7 @@ const App = () => {
                       <Route path="/den/member/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
                       <Route path="/den/member/dashboard" element={<MemberRoutes><MemberDashboard /></MemberRoutes>} />
                       <Route path="/den/member/moments" element={<MemberRoutes><MemberMoments /></MemberRoutes>} />
+                      <Route path="/den/member/gold" element={<MemberRoutes><GoldMembership /></MemberRoutes>} />
                       <Route path="/den/verify" element={<DenVerify />} />
 
                       {/* Legacy /common-room redirects */}
