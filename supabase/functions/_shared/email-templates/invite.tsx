@@ -8,6 +8,7 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
   Link,
   Preview,
@@ -17,6 +18,7 @@ import {
 interface InviteEmailProps {
   siteName: string
   siteUrl: string
+  recipient: string
   confirmationUrl: string
 }
 
@@ -27,24 +29,23 @@ export const InviteEmail = ({
 }: InviteEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>You've been invited to join {siteName}</Preview>
+    <Preview>You're invited.</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>You've been invited</Heading>
-        <Text style={text}>
-          You've been invited to join{' '}
-          <Link href={siteUrl} style={link}>
-            <strong>{siteName}</strong>
-          </Link>
-          . Click the button below to accept the invitation and create your
-          account.
-        </Text>
+        <Text style={eyebrow}>THE BEARS DEN</Text>
+        <Heading style={h1}>YOU'RE IN.</Heading>
+        <Text style={text}>An invite. From us. Take it.</Text>
         <Button style={button} href={confirmationUrl}>
-          Accept Invitation
+          ACCEPT INVITE
         </Button>
+        <Text style={text}>Set your password. Then come find us.</Text>
+        <Hr style={hr} />
         <Text style={footer}>
-          If you weren't expecting this invitation, you can safely ignore this
-          email.
+          Not expecting this? Ignore it.
+          <br />
+          <Link href={siteUrl} style={footerLink}>
+            {siteName}
+          </Link>
         </Text>
       </Container>
     </Body>
@@ -53,27 +54,44 @@ export const InviteEmail = ({
 
 export default InviteEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
+const main = {
+  backgroundColor: '#ffffff',
+  fontFamily: "'Space Grotesk', Helvetica, Arial, sans-serif",
+}
+const container = { padding: '40px 32px', maxWidth: '560px' }
+const eyebrow = {
+  fontFamily: "'Archivo Black', Impact, sans-serif",
+  fontSize: '11px',
+  letterSpacing: '0.2em',
   color: '#000000',
-  margin: '0 0 20px',
+  margin: '0 0 24px',
+}
+const h1 = {
+  fontFamily: "'Archivo Black', Impact, sans-serif",
+  fontSize: '32px',
+  letterSpacing: '0.02em',
+  color: '#000000',
+  margin: '0 0 24px',
+  textTransform: 'uppercase' as const,
 }
 const text = {
-  fontSize: '14px',
-  color: '#55575d',
+  fontSize: '16px',
+  color: '#000000',
   lineHeight: '1.5',
-  margin: '0 0 25px',
+  margin: '0 0 24px',
 }
-const link = { color: 'inherit', textDecoration: 'underline' }
 const button = {
   backgroundColor: '#000000',
   color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
+  fontSize: '13px',
+  fontWeight: 'bold' as const,
+  letterSpacing: '0.15em',
+  borderRadius: '0px',
+  padding: '16px 28px',
   textDecoration: 'none',
+  textTransform: 'uppercase' as const,
+  display: 'inline-block',
 }
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const hr = { borderColor: '#000000', borderWidth: '1px', margin: '40px 0 24px' }
+const footer = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '0' }
+const footerLink = { color: '#000000', textDecoration: 'underline' }
