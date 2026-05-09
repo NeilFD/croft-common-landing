@@ -9,7 +9,7 @@ const Community = () => {
   const { isCMSMode } = useCMSMode();
 
   useEffect(() => {
-    document.title = 'Community | Croft Common';
+    document.title = 'Community | Crazy Bear';
   }, []);
 
   return (
