@@ -68,7 +68,7 @@ Deno.serve(async (req) => {
         email: contactEmail,
         phone: contactPhone,
         category: 'event',
-        property: enquiryData.propertyPreference || null,
+        property: enquiryData.propertyPreference ? String(enquiryData.propertyPreference).toLowerCase() : null,
         message: additionalComments || enquiryData.aiReasoning || null,
         details: enquiryDetails,
         status: 'new',
