@@ -186,7 +186,7 @@ const CBSpotifyPlayer = () => {
                 <PlayIcon />
               </span>
             </span>
-            <span className="hidden sm:flex flex-col items-start leading-tight">
+            <span className={`${collapsed ? 'hidden' : 'hidden sm:flex'} flex-col items-start leading-tight pr-2`}>
               <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
                 Open in Spotify
               </span>
