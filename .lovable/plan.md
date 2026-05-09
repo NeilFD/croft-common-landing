@@ -1,32 +1,104 @@
-## Route-aware Spotify playlist switching
+# Payments + Gold Membership
 
-Make the global `CBSpotifyPlayer` swap playlists based on the current route, smoothly, without tearing down the iframe or interrupting the listener more than necessary.
+## What you'll get
 
-### Playlist mapping
+1. Takeaway baskets must be paid before the order is created. Stripe Checkout (hosted page), members return to a confirmation screen.
+2. £69/month Gold subscription. Card turns gold, 25% off auto-applied to every paid order in the app, shown on the in-venue card so staff can honour 25% off in person.
+3. Three "smart" extras (see end). You pick which to include now vs later.
 
-- Default (everywhere else): `5jryH9aMgkcQruOslKX7Fc` (Crazy Bear Sessions, current default)
-- `/country` and any sub-route: `4KCZQ5fOj3UauK3pTWDZo7`
-- `/town` and any sub-route: `7jx5ZtdeZmTP4PfSk6oRL1`
+## How it works
 
-### Behaviour
+### Payments setup
 
-- On route change, resolve the target playlist from the pathname.
-- If it differs from the currently loaded playlist, call the Spotify IFrame controller's `loadUri('spotify:playlist:<id>')` to swap content in place. This avoids destroying the iframe (no flash, no hard stop) and continues using the same controller instance.
-- If the user was already playing, immediately call `play()` after `loadUri` so the new playlist starts without requiring a click. If they were paused, leave it paused.
-- Update the displayed playlist title by re-fetching Spotify's oEmbed for the new playlist URL so the label under the vinyl matches.
-- Update the `PLAYLIST_URL` used by the fallback `<a>` link (when the embed fails) to point at the active playlist.
-- Keep all existing behaviour: auto-minimise on `/den/member/lunch-run`, hide-on-scroll, vinyl spin while playing, expand/collapse chevron.
+- Use Lovable's built-in Stripe payments (no account setup, instant test mode, live after verification). Removes the previous "no Stripe" project rule.
+- Two products created in Stripe:
+  - **Takeaway order** — dynamic line items per basket, one-time payment.
+  - **Bear's Den Gold** — £69/month recurring subscription.
 
-### Technical notes (single file change)
+### Takeaway flow (replaces current instant-create)
 
-File: `src/components/crazybear/CBSpotifyPlayer.tsx`
+```text
+Basket -> "Pay & Confirm" -> Stripe Checkout (hosted) -> /lunch-run/success
+                                                     \-> /lunch-run (cancelled, basket kept)
+```
 
-- Replace the single `PLAYLIST_ID` constant with a `getPlaylistIdForPath(pathname)` helper and a `PLAYLISTS` map: `{ default, country, town }`.
-- Derive `activePlaylistId` from `useLocation().pathname` via `useMemo`.
-- Keep a `loadedPlaylistIdRef` to know what the controller currently holds. In a `useEffect` keyed on `[activePlaylistId, ready]`:
-  - If `controllerRef.current` exists and `loadedPlaylistIdRef.current !== activePlaylistId`, call `controllerRef.current.loadUri(\`spotify:playlist:${activePlaylistId}\`)`, set the ref, and if `isPlaying` was true, call `controllerRef.current.play()` (wrapped in try/catch).
-- Move the oEmbed title fetch into an effect keyed on `activePlaylistId` so the label updates on swap.
-- Update the failure-mode `<a href>` and `aria-label` to use the active playlist URL/title.
-- Initial `createController` keeps using the resolved initial playlist (so first paint matches the route the user lands on).
+- New edge function `create-lunch-checkout`: validates basket + slot, applies Gold 25% if member is Gold, creates a Stripe Checkout Session, stores a pending `lunch_orders` row with `status='awaiting_payment'` and `stripe_session_id`.
+- New edge function `stripe-webhook`: on `checkout.session.completed` flips the order to `confirmed`, decrements slot capacity, fires the existing notification flow. On expiry/cancel, deletes the pending row.
+- Existing `create-lunch-order` is retired (or kept as internal helper called by the webhook).
+- Order ref shown to member only after webhook confirmation.
 
-No other files need editing. No DB or backend changes.
+### Gold subscription flow
+
+- New page `/den/member/gold` explaining benefits + "Go Gold £69/month" button.
+- New edge function `create-gold-checkout` -> Stripe Checkout in subscription mode, `customer_email` prefilled.
+- Same `stripe-webhook` handles:
+  - `customer.subscription.created/updated` -> upsert into new `member_subscriptions` table with `status`, `current_period_end`, `stripe_customer_id`, `stripe_subscription_id`.
+  - `customer.subscription.deleted` -> mark `status='canceled'` but keep `current_period_end` so Gold persists until period end (per your choice).
+  - `invoice.payment_failed` -> log, don't strip Gold yet.
+- Helper view/RPC `is_gold(user_id)` -> true when `status in ('active','trialing','canceled')` AND `current_period_end > now()`.
+
+### Gold card visuals + in-venue verification
+
+- `MembershipCard.tsx` reads `is_gold`. When true:
+  - Background switches to gold (warm metallic gradient using design tokens, no off-brand colours).
+  - "GOLD" wordmark + "25% off, always" line.
+  - Subtle animated shimmer on the card edge (respects `prefers-reduced-motion`).
+- New `/den/member/card` full-screen "show to staff" view: large card, member name, expiry date, a server-signed short-lived QR code (5 min TTL) staff can scan from a simple `/staff/verify` page (PIN-protected) that returns name + Gold status + expiry. Stops screenshot abuse.
+
+### 25% discount application
+
+- Single helper `applyGoldDiscount(subtotal, isGold)` used in:
+  - Basket UI (shows strikethrough subtotal + new total).
+  - `create-lunch-checkout` server side (recomputes server-side, never trusts client).
+- Future paid flows (cinema, events) call the same helper.
+
+### Cancellation / management
+
+- On `/den/member/gold`: if Gold, show "Manage subscription" button -> Stripe Customer Portal (one edge function `create-portal-session`).
+- On cancel: card stays gold until `current_period_end`, then auto-reverts on next webhook tick or on read via `is_gold`.
+
+## Smart extras (pick any)
+
+1. **Member-only Gold price for one-offs**: members not yet Gold see "Go Gold and save £X on this basket" CTA when their basket is over £30 — converts at the moment of value.
+2. **Refer a friend, get a month free**: each Gold member gets a code; when a new member subscribes with it, both get one month credited via Stripe coupon. Cheap to build, strong loyalty mechanic.
+3. **Gold-only perks beyond %off**: priority lunch slot at 11:30, monthly free coffee voucher (QR), early access to cinema releases. Makes Gold feel like a club, not just a discount.
+
+## Technical detail
+
+### New tables
+
+- `member_subscriptions` (user_id PK, stripe_customer_id, stripe_subscription_id, status, current_period_end, created_at, updated_at). RLS: owner-read only.
+- Add columns to `lunch_orders`: `stripe_session_id text`, `stripe_payment_intent_id text`, `discount_amount numeric`, `is_gold_at_purchase boolean`. Update `status` check to allow `awaiting_payment`.
+
+### New edge functions
+
+- `create-lunch-checkout` (verify_jwt true, member auth required)
+- `create-gold-checkout` (verify_jwt true)
+- `create-portal-session` (verify_jwt true)
+- `stripe-webhook` (verify_jwt false, signature verified with `STRIPE_WEBHOOK_SECRET`)
+- `verify-gold-qr` (verify_jwt false, used by /staff/verify, PIN gated)
+
+### Secrets needed
+
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_GOLD_PRICE_ID`, `STAFF_VERIFY_PIN`. (First two are auto-provisioned by Lovable's built-in Stripe; the price id is created when we register the £69 product.)
+
+### Memory updates
+
+- Lift "No Stripe" core rule.
+- Lift "no membership tiers" rule and replace with: "Gold is the only paid tier (£69/mo), 25% off everywhere."
+
+## Out of scope (this plan)
+
+- Apple/Google Pay native sheets (Checkout already shows them on supported devices).
+- Refunds UI (handled in Stripe dashboard).
+- Group/family Gold accounts.
+
+---
+
+Reply with which **smart extras** you want included in v1, and confirm the **rule lifts**. I'll then build it in this order: Stripe enable -> DB migration -> webhook + checkout functions -> takeaway flow -> Gold subscription -> Gold card visuals -> staff verify page -> chosen extras.
+
+&nbsp;
+
+&nbsp;
+
+I only want referral 
