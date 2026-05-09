@@ -42,6 +42,7 @@ const CBSpotifyPlayer = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controllerRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState<string>("Crazy Bear Sessions");
 
