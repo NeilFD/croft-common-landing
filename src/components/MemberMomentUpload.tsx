@@ -442,19 +442,31 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                 )}
               </div>
 
-              {busy && (
-                <div className="space-y-2">
-                  <div className="h-1 w-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full bg-white transition-all duration-300 ease-out"
-                      style={{ width: `${STAGE_PCT[stage]}%` }}
-                    />
+              {busy && (() => {
+                const livePct =
+                  stage === 'saving'
+                    ? Math.max(STAGE_PCT.saving, Math.round(STAGE_PCT.saving + (uploadPct * (95 - STAGE_PCT.saving)) / 100))
+                    : STAGE_PCT[stage];
+                const label =
+                  stage === 'saving' && uploadPct > 0 && uploadPct < 100
+                    ? `Uploading ${uploadPct}%`
+                    : stage === 'saving' && uploadPct >= 100
+                    ? 'Finalising'
+                    : STAGE_LABEL[stage];
+                return (
+                  <div className="space-y-2">
+                    <div className="h-1 w-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-white transition-all duration-200 ease-out"
+                        style={{ width: `${livePct}%` }}
+                      />
+                    </div>
+                    <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
+                      {label}
+                    </p>
                   </div>
-                  <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
-                    {STAGE_LABEL[stage]}
-                  </p>
-                </div>
-              )}
+                );
+              })()}
 
               <button
                 onClick={handleUpload}
