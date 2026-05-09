@@ -80,7 +80,7 @@ const OneKitchenMenu = () => {
                   <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
                   <div className="space-y-2">
                     <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                      Croft Common Kitchen
+                      Crazy Bear Kitchen
                     </h2>
                     <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
                       Evening. Dark. Bold.
