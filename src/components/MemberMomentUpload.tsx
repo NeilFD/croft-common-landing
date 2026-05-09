@@ -183,7 +183,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const busy = stage !== 'idle';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-black border border-white/15 text-white">
         <div className="flex items-start justify-between p-6 border-b border-white/10">
           <div>

@@ -38,7 +38,7 @@ const MemberMoments: React.FC = () => {
       <div className="relative z-10 text-white">
         {!isCMSMode && <Navigation />}
 
-        <main className="pt-24 md:pt-32 pb-16">
+        <main className="pt-24 md:pt-32 pb-48 md:pb-64">
           <div className="container mx-auto px-2 sm:px-4 md:px-6 max-w-7xl">
             <div className="mb-6 md:mb-10 px-2 md:px-0">
               <Link

@@ -478,7 +478,7 @@ const MemberMomentsMosaic: React.FC = () => {
       {/* Detail Modal — full-bleed image, dark chrome */}
       {selectedMoment && (
         <div
-          className="fixed inset-0 z-[60] bg-black/95 flex flex-col"
+          className="fixed inset-0 z-[200] bg-black/95 flex flex-col"
           onClick={() => setSelectedMoment(null)}
         >
           {/* Top bar with visible close */}
