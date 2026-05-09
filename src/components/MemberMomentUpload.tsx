@@ -1,11 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, Image, Calendar, Tag, X, Plus } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { useMemberMoments } from '@/hooks/useMemberMoments';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -16,9 +10,26 @@ interface MemberMomentUploadProps {
 }
 
 const PRESET_TAGS = [
-  'Café', 'Cocktails', 'Kitchens', 'Taprooms', 'Hall', 'Terrace', 
-  'Rooftop', 'SecretCinema', 'LuckyNo7', 'CroftCommon', 'CommonGood'
+  'Town', 'Country', 'Bar', 'Restaurant', 'Garden', 'Pool',
+  'Rooms', 'Late', 'Cinema', 'Music', 'Crew',
 ];
+
+const chipBase =
+  'inline-flex items-center justify-center px-3 h-7 font-mono text-[10px] tracking-[0.3em] uppercase border transition-colors';
+const chipUnselected = `${chipBase} border-white/40 text-white hover:bg-white hover:text-black`;
+const chipSelected = `${chipBase} bg-white text-black border-white`;
+
+const fileToBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const idx = result.indexOf(',');
+      resolve(idx >= 0 ? result.slice(idx + 1) : result);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
 const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true }) => {
   const [file, setFile] = useState<File | null>(null);
@@ -28,95 +39,100 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState('');
   const [step, setStep] = useState<'upload' | 'details'>('upload');
-  
+  const [checking, setChecking] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadMoment, uploading, refetchMoments } = useMemberMoments();
   const { toast } = useToast();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      // Validate file type
-      if (!selectedFile.type.startsWith('image/')) {
-        toast({
-          title: "Invalid file type",
-          description: "Please select an image file",
-          variant: "destructive"
-        });
-        return;
-      }
+    if (!selectedFile) return;
 
-      // Validate file size (max 10MB)
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Please select an image smaller than 10MB",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      setFile(selectedFile);
-      const url = URL.createObjectURL(selectedFile);
-      setPreviewUrl(url);
-      setStep('details');
+    if (!selectedFile.type.startsWith('image/')) {
+      toast({ title: 'Wrong file type', description: 'Pick an image.', variant: 'destructive' });
+      return;
     }
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      toast({ title: 'Too big', description: 'Max 10MB.', variant: 'destructive' });
+      return;
+    }
+
+    setFile(selectedFile);
+    const url = URL.createObjectURL(selectedFile);
+    setPreviewUrl(url);
+    setStep('details');
   };
 
   const togglePresetTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
   };
 
   const addCustomTag = () => {
-    const trimmedTag = customTag.trim();
-    if (trimmedTag && !selectedTags.includes(trimmedTag)) {
-      setSelectedTags(prev => [...prev, trimmedTag]);
+    const trimmed = customTag.trim();
+    if (trimmed && !selectedTags.includes(trimmed)) {
+      setSelectedTags((prev) => [...prev, trimmed]);
       setCustomTag('');
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    setSelectedTags(prev => prev.filter(tag => tag !== tagToRemove));
+    setSelectedTags((prev) => prev.filter((t) => t !== tagToRemove));
   };
 
   const handleUpload = async () => {
-    console.log('🎬 COMPONENT: handleUpload called', { file: file?.name, tagline, dateTaken, tags: selectedTags });
-    
     if (!file || !tagline.trim()) {
-      console.log('❌ COMPONENT: Missing file or tagline');
-      toast({
-        title: "Missing information",
-        description: "Please add a photo and tagline",
-        variant: "destructive"
-      });
+      toast({ title: 'Missing details', description: 'Add a photo and a line.', variant: 'destructive' });
       return;
     }
 
     try {
-      console.log('🚀 COMPONENT: Calling uploadMoment...');
+      setChecking(true);
+      const imageBase64 = await fileToBase64(file);
+
+      const { data, error } = await supabase.functions.invoke('moderate-moment-upload', {
+        body: { imageBase64, mimeType: file.type },
+      });
+
+      if (error) {
+        toast({
+          title: 'Photo check failed',
+          description: error.message || 'Try again in a moment.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      if (!data?.allowed) {
+        toast({
+          title: 'Photo blocked',
+          description: data?.reason || 'This photo can\'t be posted.',
+          variant: 'destructive',
+        });
+        return;
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Photo check failed',
+        description: err?.message || 'Try again in a moment.',
+        variant: 'destructive',
+      });
+      return;
+    } finally {
+      setChecking(false);
+    }
+
+    try {
       await uploadMoment(file, tagline.trim(), dateTaken, selectedTags);
-      console.log('✅ COMPONENT: Upload successful, cleaning up...');
-      
-      // Refetch moments to show the new upload
       refetchMoments();
-      
       handleReset();
       onClose?.();
-      
-      toast({
-        title: "Moment uploaded!",
-        description: "Your moment has been submitted for review.",
-      });
+      toast({ title: 'Posted', description: 'Your moment is up.' });
     } catch (error: any) {
-      console.error('❌ COMPONENT: Upload error caught:', error);
       toast({
-        title: "Upload failed",
-        description: error.message || "An unexpected error occurred",
-        variant: "destructive"
+        title: 'Upload failed',
+        description: error?.message || 'Something went wrong.',
+        variant: 'destructive',
       });
     }
   };
@@ -132,9 +148,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     setSelectedTags([]);
     setCustomTag('');
     setStep('upload');
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleBack = () => {
@@ -146,38 +160,43 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <Card className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <Image className="h-5 w-5" />
-              Share a Moment
-            </CardTitle>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Share your favorite memories from Croft Common
-          </p>
-        </CardHeader>
+  const busy = checking || uploading;
 
-        <CardContent className="space-y-6">
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div className="w-full max-w-md max-h-[90vh] overflow-y-auto bg-black border border-white/15 text-white">
+        <div className="flex items-start justify-between p-6 border-b border-white/10">
+          <div>
+            <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60 mb-2">
+              Share
+            </p>
+            <h2 className="font-display uppercase text-2xl tracking-tight leading-none">
+              A Moment
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="font-mono text-xs tracking-[0.3em] uppercase text-white/60 hover:text-white"
+            aria-label="Close"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="p-6 space-y-6">
           {step === 'upload' && (
-            <div className="space-y-4">
-              <div 
-                className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center cursor-pointer hover:border-muted-foreground/50 transition-colors"
+            <>
+              <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
+                className="w-full border border-dashed border-white/30 p-10 text-center hover:border-white transition-colors"
               >
-                <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-sm font-medium">Click to upload a photo</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  JPG, PNG, GIF up to 10MB
+                <p className="font-display uppercase text-xl tracking-tight mb-2">Pick a photo</p>
+                <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/50">
+                  JPG · PNG · GIF · 10MB Max
                 </p>
-              </div>
-              
+              </button>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -185,153 +204,130 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                 onChange={handleFileSelect}
                 className="hidden"
               />
-            </div>
+              <p className="font-sans text-xs text-white/50 leading-relaxed">
+                Photos are checked automatically. Anything inappropriate is rejected.
+              </p>
+            </>
           )}
 
           {step === 'details' && (
-            <div className="space-y-4">
+            <>
               {previewUrl && (
                 <div className="relative">
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
+                  <img src={previewUrl} alt="Preview" className="w-full h-56 object-cover" />
+                  <button
+                    type="button"
                     onClick={handleBack}
-                    className="absolute top-2 left-2"
+                    className="absolute top-2 left-2 px-3 h-8 bg-black/80 border border-white/40 font-mono text-[10px] tracking-[0.3em] uppercase text-white hover:bg-white hover:text-black transition-colors"
                   >
-                    Change Photo
-                  </Button>
+                    Change
+                  </button>
                 </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="tagline" className="flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
-                  Tell us about this moment
-                </Label>
-                <Textarea
+                <label htmlFor="tagline" className="block font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
+                  Tell Us
+                </label>
+                <textarea
                   id="tagline"
-                  placeholder="What's happening in this photo?"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                   maxLength={200}
-                  className="resize-none"
+                  rows={3}
+                  placeholder="What's happening?"
+                  className="w-full bg-transparent border border-white/20 p-3 font-sans text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white resize-none"
                 />
-                <p className="text-xs text-muted-foreground">
-                  {tagline.length}/200 characters
+                <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-white/40">
+                  {tagline.length}/200
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="date" className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  When was this taken?
-                </Label>
-                <Input
+                <label htmlFor="date" className="block font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
+                  When
+                </label>
+                <input
                   id="date"
                   type="date"
                   value={dateTaken}
                   onChange={(e) => setDateTaken(e.target.value)}
                   max={format(new Date(), 'yyyy-MM-dd')}
+                  className="w-full bg-transparent border border-white/20 p-3 font-mono text-xs uppercase tracking-wider text-white focus:outline-none focus:border-white"
                 />
               </div>
 
-              {/* Tags Section */}
               <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <Tag className="h-4 w-4" />
-                  Add tags (optional)
-                </Label>
-                
-                {/* Preset Tags */}
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Popular tags:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {PRESET_TAGS.map(tag => (
-                      <Button
+                <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">Tags</p>
+                <div className="flex flex-wrap gap-2">
+                  {PRESET_TAGS.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      onClick={() => togglePresetTag(tag)}
+                      className={selectedTags.includes(tag) ? chipSelected : chipUnselected}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <input
+                    placeholder="Add your own"
+                    value={customTag}
+                    onChange={(e) => setCustomTag(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addCustomTag();
+                      }
+                    }}
+                    className="flex-1 bg-transparent border border-white/20 px-3 h-9 font-sans text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={addCustomTag}
+                    disabled={!customTag.trim()}
+                    className="px-4 h-9 border border-white/40 font-mono text-[10px] tracking-[0.3em] uppercase text-white hover:bg-white hover:text-black transition-colors disabled:opacity-40"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {selectedTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2">
+                    {selectedTags.map((tag) => (
+                      <span
                         key={tag}
-                        type="button"
-                        variant={selectedTags.includes(tag) ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => togglePresetTag(tag)}
-                        className={`text-xs h-7 ${
-                          selectedTags.includes(tag) 
-                            ? 'bg-background text-accent border-accent' 
-                            : 'bg-background text-foreground border-accent hover:border-accent hover:bg-accent/5'
-                        }`}
+                        className="inline-flex items-center gap-2 px-3 h-7 bg-white text-black font-mono text-[10px] tracking-[0.3em] uppercase"
                       >
                         {tag}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Custom Tag Input */}
-                <div className="space-y-2">
-                  <p className="text-xs text-muted-foreground">Add your own:</p>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Type a custom tag..."
-                      value={customTag}
-                      onChange={(e) => setCustomTag(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && addCustomTag()}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addCustomTag}
-                      disabled={!customTag.trim()}
-                      className="border-accent hover:bg-accent/5"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Selected Tags */}
-                {selectedTags.length > 0 && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground">Selected tags:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedTags.map(tag => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="bg-background text-foreground border-accent flex items-center gap-1"
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="text-black/60 hover:text-black"
+                          aria-label={`Remove ${tag}`}
                         >
-                          {tag}
-                          <button
-                            type="button"
-                            onClick={() => removeTag(tag)}
-                            className="ml-1 hover:text-destructive"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
+                          ×
+                        </button>
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
 
-              <Button
+              <button
                 onClick={handleUpload}
-                disabled={!tagline.trim() || uploading}
-                className="w-full"
+                disabled={!tagline.trim() || busy}
+                className="w-full h-12 border border-white bg-white text-black font-mono text-xs tracking-[0.4em] uppercase hover:bg-black hover:text-white transition-colors disabled:opacity-50"
               >
-                {uploading ? 'Uploading...' : 'Share Moment'}
-              </Button>
-            </div>
+                {checking ? 'Checking' : uploading ? 'Posting' : 'Post Moment'}
+              </button>
+            </>
           )}
-
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
