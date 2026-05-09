@@ -107,6 +107,14 @@ serve(async (req) => {
     });
     const serialNumber = `CINEMA-${booking.id.replace(/-/g, '').slice(0, 16).toUpperCase()}`;
     const ticketHolder = (booking.guest_name || 'Member').toUpperCase();
+    const namesLabel = booking.quantity === 2 ? 'NAMES' : 'NAME';
+
+    // Expire the pass at end of day after the screening (UK time, ~midnight UTC)
+    const expirationIso = (() => {
+      const d = new Date(`${screeningDate}T00:00:00Z`);
+      d.setUTCDate(d.getUTCDate() + 2); // start of day-after-tomorrow == end of day-after-screening
+      return d.toISOString();
+    })();
 
     const passJson = {
       formatVersion: 1,
@@ -120,6 +128,8 @@ serve(async (req) => {
       backgroundColor: 'rgb(0, 0, 0)',
       labelColor: 'rgb(200, 200, 200)',
       relevantDate: fmtRelevantDate(screeningDate, release?.screening_time || '19:30:00'),
+      expirationDate: expirationIso,
+      voided: false,
       eventTicket: {
         primaryFields: [
           { key: 'film', label: 'TONIGHT', value: title.toUpperCase() },
@@ -131,9 +141,10 @@ serve(async (req) => {
         auxiliaryFields: [
           { key: 'screening', label: 'SCREENING', value: screeningTime },
           { key: 'qty', label: 'TICKETS', value: String(booking.quantity), textAlignment: 'PKTextAlignmentRight' },
+          { key: 'holder', label: namesLabel, value: ticketHolder },
         ],
         backFields: [
-          { key: 'holder', label: 'NAME', value: ticketHolder },
+          { key: 'holderBack', label: namesLabel, value: ticketHolder },
           { key: 'about', label: 'SECRET CINEMA', value: 'One night. One screen. Fifty tickets. Show this pass on arrival.' },
           { key: 'venue', label: 'VENUE', value: 'Crazy Bear — see your booking email for location' },
           { key: 'website', label: 'WEBSITE', value: 'https://www.crazybear.dev' },
