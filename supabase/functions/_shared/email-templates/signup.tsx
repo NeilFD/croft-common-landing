@@ -100,4 +100,5 @@ const button = {
 }
 const hr = { borderColor: '#000000', borderWidth: '1px', margin: '40px 0 24px' }
 const footer = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '0' }
+const smallText = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '16px 0 0', wordBreak: 'break-all' as const }
 const footerLink = { color: '#000000', textDecoration: 'underline' }
