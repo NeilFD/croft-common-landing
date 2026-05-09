@@ -95,8 +95,8 @@ export const MembershipCard = () => {
           <div>
             <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/60">The Den</p>
             <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/40 mt-1">Member</p>
+            <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/60 mt-1">Crazy Bear</p>
           </div>
-          <p className="font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/60">Crazy Bear</p>
         </div>
 
         {/* Name */}
