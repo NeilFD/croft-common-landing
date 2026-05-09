@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import CroftLogo from '@/components/CroftLogo';
 import { supabase } from '@/integrations/supabase/client';
 import { getStoredUserHandle } from '@/lib/biometricAuth';
+import { useGestureSafeDialog } from '@/hooks/useGestureSafeDialog';
 
 interface MembershipLinkModalProps {
   open: boolean;
