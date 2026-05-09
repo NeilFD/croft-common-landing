@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLunchRun, type Site, type MenuItem } from '@/hooks/useLunchRun';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+import { useGoldStatus } from '@/hooks/useGoldStatus';
+import { StripeEmbeddedCheckout, type CheckoutPayload } from '@/components/payments/StripeEmbeddedCheckout';
+import { PaymentTestModeBanner } from '@/components/payments/PaymentTestModeBanner';
 import Navigation from '@/components/Navigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ArrowLeft, ShoppingBag, CheckCircle2 } from 'lucide-react';
