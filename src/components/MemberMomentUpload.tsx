@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useMemberMoments } from '@/hooks/useMemberMoments';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { compressVideo } from '@/lib/compressVideo';
 
 interface MemberMomentUploadProps {
   onClose?: () => void;
@@ -84,19 +85,21 @@ const probeVideo = (file: File): Promise<VideoMeta> =>
     };
   });
 
-type Stage = 'idle' | 'checking' | 'saving' | 'done';
+type Stage = 'idle' | 'checking' | 'compressing' | 'saving' | 'done';
 
 const STAGE_LABEL: Record<Stage, string> = {
   idle: 'Post Moment',
   checking: 'Checking',
+  compressing: 'Compressing',
   saving: 'Saving',
   done: 'Done',
 };
 
 const STAGE_PCT: Record<Stage, number> = {
   idle: 0,
-  checking: 20,
-  saving: 40,
+  checking: 10,
+  compressing: 20,
+  saving: 50,
   done: 100,
 };
 
@@ -112,6 +115,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [step, setStep] = useState<'upload' | 'details'>('upload');
   const [stage, setStage] = useState<Stage>('idle');
   const [uploadPct, setUploadPct] = useState(0);
+  const [compressPct, setCompressPct] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadMoment, refetchMoments } = useMemberMoments();
@@ -216,12 +220,39 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     }
 
     try {
+      let uploadFile = file;
+      let uploadPosterBlob = videoMeta?.posterBlob ?? null;
+      let uploadDuration = videoMeta?.durationSeconds ?? null;
+
+      if (mediaType === 'video') {
+        setStage('compressing');
+        setCompressPct(0);
+        try {
+          const result = await compressVideo(file, {
+            onProgress: (pct) => setCompressPct(pct),
+          });
+          if (result.compressed) {
+            uploadFile = result.file;
+            // Re-probe to refresh poster/duration from compressed output
+            try {
+              const meta = await probeVideo(result.file);
+              uploadPosterBlob = meta.posterBlob ?? uploadPosterBlob;
+              uploadDuration = meta.durationSeconds ?? uploadDuration;
+            } catch {
+              // keep original poster/duration
+            }
+          }
+        } catch {
+          // fall through with original file
+        }
+      }
+
       setStage('saving');
       setUploadPct(0);
-      const result = await uploadMoment(file, tagline.trim(), dateTaken, selectedTags, {
+      const result = await uploadMoment(uploadFile, tagline.trim(), dateTaken, selectedTags, {
         mediaType,
-        posterBlob: videoMeta?.posterBlob ?? null,
-        durationSeconds: videoMeta?.durationSeconds ?? null,
+        posterBlob: uploadPosterBlob,
+        durationSeconds: uploadDuration,
         onProgress: (pct) => setUploadPct(pct),
       });
       if (!result) throw new Error('Could not save your moment.');
@@ -443,16 +474,22 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
               </div>
 
               {busy && (() => {
-                const livePct =
-                  stage === 'saving'
-                    ? Math.max(STAGE_PCT.saving, Math.round(STAGE_PCT.saving + (uploadPct * (95 - STAGE_PCT.saving)) / 100))
-                    : STAGE_PCT[stage];
-                const label =
-                  stage === 'saving' && uploadPct > 0 && uploadPct < 100
-                    ? `Uploading ${uploadPct}%`
-                    : stage === 'saving' && uploadPct >= 100
-                    ? 'Finalising'
-                    : STAGE_LABEL[stage];
+                let livePct = STAGE_PCT[stage];
+                let label: string = STAGE_LABEL[stage];
+                if (stage === 'compressing') {
+                  const span = STAGE_PCT.saving - STAGE_PCT.compressing;
+                  livePct = Math.round(STAGE_PCT.compressing + (compressPct * span) / 100);
+                  label = compressPct > 0 ? `Compressing ${compressPct}%` : 'Compressing';
+                } else if (stage === 'saving') {
+                  const span = 95 - STAGE_PCT.saving;
+                  livePct = Math.max(STAGE_PCT.saving, Math.round(STAGE_PCT.saving + (uploadPct * span) / 100));
+                  label =
+                    uploadPct > 0 && uploadPct < 100
+                      ? `Uploading ${uploadPct}%`
+                      : uploadPct >= 100
+                      ? 'Finalising'
+                      : STAGE_LABEL[stage];
+                }
                 return (
                   <div className="space-y-2">
                     <div className="h-1 w-full bg-white/10 overflow-hidden">
