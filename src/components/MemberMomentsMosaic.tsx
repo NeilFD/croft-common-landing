@@ -529,17 +529,28 @@ const MemberMomentsMosaic: React.FC = () => {
             </button>
           </div>
 
-          {/* Image area - full bleed */}
+          {/* Image / Video area - full bleed */}
           <div
             className="flex-1 flex items-center justify-center overflow-hidden p-2 md:p-6"
             onClick={() => setSelectedMoment(null)}
           >
-            <img
-              src={selectedMoment.image_url}
-              alt={selectedMoment.tagline}
-              className="max-w-full max-h-full object-contain"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {selectedMoment.media_type === 'video' ? (
+              <video
+                src={selectedMoment.image_url}
+                poster={selectedMoment.poster_url ?? undefined}
+                controls
+                playsInline
+                className="max-w-full max-h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <img
+                src={selectedMoment.image_url}
+                alt={selectedMoment.tagline}
+                className="max-w-full max-h-full object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
           </div>
 
           {/* Info bar */}
