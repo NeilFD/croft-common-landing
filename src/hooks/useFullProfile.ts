@@ -97,6 +97,7 @@ export const useFullProfile = () => {
         dietary_notes: prefs.dietary_notes || null,
         tier_badge: extendedData?.tier_badge || 'bronze',
         hide_from_leaderboards: prefs.hide_from_leaderboards || false,
+        avatar_face_verified: !!prefs.avatar_face_verified,
         preferences: prefs,
       };
 
