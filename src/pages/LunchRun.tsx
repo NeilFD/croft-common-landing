@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLunchRun, type Site, type MenuItem } from '@/hooks/useLunchRun';
 import { useCMSMode } from '@/contexts/CMSModeContext';
+import { useGoldStatus } from '@/hooks/useGoldStatus';
+import { StripeEmbeddedCheckout, type CheckoutPayload } from '@/components/payments/StripeEmbeddedCheckout';
+import { PaymentTestModeBanner } from '@/components/payments/PaymentTestModeBanner';
 import Navigation from '@/components/Navigation';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ArrowLeft, ShoppingBag, CheckCircle2 } from 'lucide-react';
@@ -60,14 +63,41 @@ export default function LunchRun() {
     }
   });
 
-  const { loading, menu, submitting, submitOrder } = useLunchRun(site);
+  const { loading, menu } = useLunchRun(site);
+  const { isGold } = useGoldStatus();
+  const [searchParams] = useSearchParams();
 
   const [cart, setCart] = useState<OrderItem[]>([]);
   const [memberName, setMemberName] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
   const [notes, setNotes] = useState('');
-  const [step, setStep] = useState<'menu' | 'details' | 'confirm'>('menu');
+  const [step, setStep] = useState<'menu' | 'details' | 'pay' | 'confirm'>('menu');
   const [orderRef, setOrderRef] = useState<string | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+
+  // Detect Stripe return
+  useEffect(() => {
+    const sid = searchParams.get('session_id');
+    if (!sid) return;
+    (async () => {
+      // Poll briefly for the webhook to flip status
+      for (let i = 0; i < 10; i++) {
+        const { data } = await (supabase as any)
+          .from('lunch_orders')
+          .select('id, status')
+          .eq('stripe_session_id', sid)
+          .maybeSingle();
+        if (data?.status === 'confirmed') {
+          setOrderRef(data.id.substring(0, 8).toUpperCase());
+          setCart([]);
+          if (site) { try { localStorage.removeItem(cartKey(site)); } catch { /* noop */ } }
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 800));
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Persist site
   useEffect(() => {
@@ -118,7 +148,7 @@ export default function LunchRun() {
     fetchProfile();
   }, [user?.id, memberName]);
 
-  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  // total computed below as totalWithDiscount
 
   const addToCart = (item: MenuItem) => {
     const existing = cart.find((c) => c.id === item.id);
@@ -147,27 +177,30 @@ export default function LunchRun() {
     setSite(next);
   };
 
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const goldDiscount = isGold ? Math.round(subtotal * 25) / 100 : 0;
+  const totalWithDiscount = Math.max(0, subtotal - goldDiscount);
+
   const canSubmit = !!site && memberName.trim() && memberPhone.trim() && cart.length > 0;
 
-  const handleSubmit = async () => {
-    if (!canSubmit || !site) return;
-    const result = await submitOrder({
+  const checkoutPayload = useMemo<CheckoutPayload | null>(() => {
+    if (!canSubmit || !site) return null;
+    return {
+      kind: 'lunch',
       site,
-      items: cart,
-      totalAmount: total,
+      items: cart.map((c) => ({
+        id: c.id, name: c.name, price: c.price, quantity: c.quantity, category: c.category,
+      })),
       memberName: memberName.trim(),
       memberPhone: memberPhone.trim(),
       notes: notes.trim() || undefined,
-    });
-    if (result?.success) {
-      setOrderRef(result.orderRef || null);
-      setCart([]);
-      try {
-        localStorage.removeItem(cartKey(site));
-      } catch {
-        /* noop */
-      }
-    }
+      returnUrl: `${window.location.origin}/den/member/lunch-run?session_id={CHECKOUT_SESSION_ID}`,
+    };
+  }, [canSubmit, site, cart, memberName, memberPhone, notes]);
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    setStep('pay');
   };
 
   // ===== Site picker =====
@@ -512,15 +545,28 @@ export default function LunchRun() {
               ))}
             </div>
 
-            <div className="flex justify-between items-baseline border-t border-white/15 pt-4 mb-6">
-              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
-                Total
-              </span>
-              <span className="font-display text-3xl tracking-tight">£{total.toFixed(2)}</span>
+            <div className="border-t border-white/15 pt-4 mb-6 space-y-1">
+              <div className="flex justify-between items-baseline">
+                <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">Subtotal</span>
+                <span className="font-mono text-sm">£{subtotal.toFixed(2)}</span>
+              </div>
+              {isGold && (
+                <div className="flex justify-between items-baseline">
+                  <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-yellow-400/90">Gold 25% off</span>
+                  <span className="font-mono text-sm text-yellow-400/90">−£{goldDiscount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-baseline pt-2">
+                <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">Total</span>
+                <span className="font-display text-3xl tracking-tight">£{totalWithDiscount.toFixed(2)}</span>
+              </div>
             </div>
 
             <p className="font-sans text-xs text-white/50 mb-6 leading-relaxed">
-              Pay on collection. We'll call when it's bagged — usually about 30 minutes.
+              Pay now. We'll call when it's bagged — usually about 30 minutes.
+              {!isGold && (
+                <> Members save 25% with <a href="/den/member/gold" className="underline">Bear's Den Gold</a>.</>
+              )}
             </p>
 
             <div className="flex gap-3">
@@ -532,18 +578,24 @@ export default function LunchRun() {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={submitting}
-                className="flex-1 font-mono text-[10px] tracking-[0.4em] uppercase border border-white bg-white text-black px-5 py-3 hover:bg-black hover:text-white transition-colors disabled:opacity-40 inline-flex items-center justify-center"
+                className="flex-1 font-mono text-[10px] tracking-[0.4em] uppercase border border-white bg-white text-black px-5 py-3 hover:bg-black hover:text-white transition-colors inline-flex items-center justify-center"
               >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Placing
-                  </>
-                ) : (
-                  'Place Order'
-                )}
+                Pay & Confirm
               </button>
             </div>
+          </div>
+        )}
+
+        {step === 'pay' && checkoutPayload && (
+          <div className="max-w-2xl mx-auto">
+            <PaymentTestModeBanner />
+            <button
+              onClick={() => setStep('confirm')}
+              className="my-4 font-mono text-[10px] tracking-[0.4em] uppercase border border-white/40 px-4 py-2 hover:bg-white hover:text-black transition-colors"
+            >
+              ← Back
+            </button>
+            <StripeEmbeddedCheckout payload={checkoutPayload} onOrderCreated={setPendingOrderId} />
           </div>
         )}
       </div>
@@ -558,7 +610,7 @@ export default function LunchRun() {
                 <p className="font-mono text-[9px] tracking-[0.4em] uppercase text-black/60">
                   Basket / {cart.reduce((s, i) => s + i.quantity, 0)} items
                 </p>
-                <p className="font-display text-xl tracking-tight">£{total.toFixed(2)}</p>
+                <p className="font-display text-xl tracking-tight">£{totalWithDiscount.toFixed(2)}</p>
               </div>
             </div>
             <button
