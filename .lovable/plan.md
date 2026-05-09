@@ -1,84 +1,32 @@
-## Thai Takeaway — Members' Collection Ordering
+## Route-aware Spotify playlist switching
 
-Replace the existing /den/member/lunch-run page with a properly Crazy Bear branded Thai takeaway flow for collection. Members pick a site (Town or Country), browse a shared menu tagged per site, build an order, and submit for collection. Kitchen confirms a ready time by phone.
+Make the global `CBSpotifyPlayer` swap playlists based on the current route, smoothly, without tearing down the iframe or interrupting the listener more than necessary.
 
-### User journey
+### Playlist mapping
 
-```
-Den Home  ->  Tap "Takeaway" chip
-         ->  /den/member/lunch-run
-              1. Pick site (Town / Country)            [tile chooser]
-              2. Browse menu, filtered by selected site [tabs: Starters / Mains / Desserts / Drinks]
-              3. Add to basket (sticky basket bar)
-              4. Review basket
-              5. Enter name + phone (prefilled from cb_members) + optional notes
-              6. Confirm order
-              7. Confirmation screen: "We'll text you when it's ready, usually 30 minutes"
-                 - Shows collection address for chosen site
-                 - Order reference
-```
+- Default (everywhere else): `5jryH9aMgkcQruOslKX7Fc` (Crazy Bear Sessions, current default)
+- `/country` and any sub-route: `4KCZQ5fOj3UauK3pTWDZo7`
+- `/town` and any sub-route: `7jx5ZtdeZmTP4PfSk6oRL1`
 
-Member can switch sites at the top of the menu (warns if basket has items from items not available at the new site).
+### Behaviour
 
-### Visual / brand
+- On route change, resolve the target playlist from the pathname.
+- If it differs from the currently loaded playlist, call the Spotify IFrame controller's `loadUri('spotify:playlist:<id>')` to swap content in place. This avoids destroying the iframe (no flash, no hard stop) and continues using the same controller instance.
+- If the user was already playing, immediately call `play()` after `loadUri` so the new playlist starts without requiring a click. If they were paused, leave it paused.
+- Update the displayed playlist title by re-fetching Spotify's oEmbed for the new playlist URL so the label under the vinyl matches.
+- Update the `PLAYLIST_URL` used by the fallback `<a>` link (when the embed fails) to point at the active playlist.
+- Keep all existing behaviour: auto-minimise on `/den/member/lunch-run`, hide-on-scroll, vinyl spin while playing, expand/collapse chevron.
 
-- Black background, Archivo Black headings, Space Grotesk body, mono eyebrows — matches Bear's Den.
-- Hero strip uses `cb-hero-thai.jpg` with a Town/Country tile chooser overlay.
-- Dish cards use `town-06.jpg` and `country-05.jpg` (the existing Thai food carousel images) as section banners. Individual dishes stay text + price for now (no per-dish photos yet).
-- Site tag chips on each item: small mono label "Town", "Country", or "Both".
-- No focus rings on selected items; selected dish card uses inverted (white bg / black text) treatment.
+### Technical notes (single file change)
 
-### Menu data
+File: `src/components/crazybear/CBSpotifyPlayer.tsx`
 
-The `lunch_menu` table already has the 11 Thai dishes. Add one schema field:
+- Replace the single `PLAYLIST_ID` constant with a `getPlaylistIdForPath(pathname)` helper and a `PLAYLISTS` map: `{ default, country, town }`.
+- Derive `activePlaylistId` from `useLocation().pathname` via `useMemo`.
+- Keep a `loadedPlaylistIdRef` to know what the controller currently holds. In a `useEffect` keyed on `[activePlaylistId, ready]`:
+  - If `controllerRef.current` exists and `loadedPlaylistIdRef.current !== activePlaylistId`, call `controllerRef.current.loadUri(\`spotify:playlist:${activePlaylistId}\`)`, set the ref, and if `isPlaying` was true, call `controllerRef.current.play()` (wrapped in try/catch).
+- Move the oEmbed title fetch into an effect keyed on `activePlaylistId` so the label updates on swap.
+- Update the failure-mode `<a href>` and `aria-label` to use the active playlist URL/title.
+- Initial `createController` keeps using the resolved initial playlist (so first paint matches the route the user lands on).
 
-- `site` text — values `town`, `country`, or `both`. Default `both`.
-
-Then categorise the existing 11 items via the data tool (rough split — confirmable later in admin):
-- Pad Thai Prawn — both
-- Green Curry Chicken — both
-- Massaman Beef — country
-- Tofu Pad See Ew — town
-- Tom Yum Soup — both
-- Crispy Spring Rolls — both
-- Chicken Satay — both
-- Mango Sticky Rice — both
-- Singha Beer — both
-- Thai Iced Tea — both
-- Coconut Water — both
-
-### Order data
-
-`lunch_orders` already exists (user_id, order_date, items jsonb, total_amount, status). Add:
-
-- `site` text — `town` or `country`
-- `member_name` text
-- `member_phone` text
-- `notes` text
-
-The existing `create-lunch-order` edge function gets updated to persist site, name, phone, notes.
-
-### Files to change
-
-- `src/pages/LunchRun.tsx` — full rebuild (site picker -> menu -> basket -> details -> confirm), Crazy Bear styling, new collection copy. Replaces all delivery/address language.
-- `src/hooks/useLunchRun.ts` — add `site` to MenuItem, accept `site` filter, pass through on submit.
-- `src/components/MemberHome.tsx` — relabel chip from "Takeaway" to "Thai Takeaway" (route stays `/den/member/lunch-run`).
-- `supabase/functions/create-lunch-order/index.ts` — accept and store site / contact / notes.
-- Migration: add `site` column to `lunch_menu`, add `site / member_name / member_phone / notes` to `lunch_orders`.
-- Data update (insert tool): set `site` value on each of the 11 existing dishes.
-
-### Out of scope (this round)
-
-- Per-dish photography
-- Payments (collection only, paid on pickup)
-- Capacity limits or cut-off times
-- Admin UI for editing menu (existing direct-DB edits remain)
-- Push/email notifications to the kitchen (future iteration)
-
-### Technical notes
-
-- Site selection persisted in `localStorage` so a returning member skips step 1.
-- Basket persisted in `localStorage` keyed by site so a refresh does not lose the order.
-- Confirmation screen shows: order ref (last 8 of UUID), site collection address, member phone for SMS, plain English copy: "Ready in about 30 minutes. We'll call when it's bagged."
-- Town address: 75 Wycombe End, Beaconsfield HP9 1LX.
-- Country address: Bear Lane, Stadhampton OX44 7UR.
+No other files need editing. No DB or backend changes.

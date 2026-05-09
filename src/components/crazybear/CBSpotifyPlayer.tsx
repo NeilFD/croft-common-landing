@@ -1,12 +1,24 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useHideOnScrollDown } from "@/hooks/useHideOnScrollDown";
 
 const AUTO_MINIMISE_ROUTES = ["/den/member/lunch-run"];
 
-const PLAYLIST_ID = "5jryH9aMgkcQruOslKX7Fc";
-const PLAYLIST_URL = `https://open.spotify.com/playlist/${PLAYLIST_ID}`;
-const EMBED_SRC = `https://open.spotify.com/embed/playlist/${PLAYLIST_ID}?utm_source=generator&theme=0`;
+const PLAYLISTS = {
+  default: "5jryH9aMgkcQruOslKX7Fc",
+  country: "4KCZQ5fOj3UauK3pTWDZo7",
+  town: "7jx5ZtdeZmTP4PfSk6oRL1",
+};
+
+const playlistUrl = (id: string) => `https://open.spotify.com/playlist/${id}`;
+const embedSrc = (id: string) =>
+  `https://open.spotify.com/embed/playlist/${id}?utm_source=generator&theme=0`;
+
+const getPlaylistIdForPath = (pathname: string) => {
+  if (pathname === "/country" || pathname.startsWith("/country/")) return PLAYLISTS.country;
+  if (pathname === "/town" || pathname.startsWith("/town/")) return PLAYLISTS.town;
+  return PLAYLISTS.default;
+};
 
 declare global {
   interface Window {
@@ -44,14 +56,28 @@ const VinylIcon = ({ spinning }: { spinning: boolean }) => (
 const CBSpotifyPlayer = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controllerRef = useRef<any>(null);
+  const loadedPlaylistIdRef = useRef<string | null>(null);
+  const isPlayingRef = useRef(false);
   const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playlistTitle, setPlaylistTitle] = useState<string>("Crazy Bear Sessions");
 
+  const location = useLocation();
+  const activePlaylistId = useMemo(
+    () => getPlaylistIdForPath(location.pathname),
+    [location.pathname]
+  );
+  const initialPlaylistIdRef = useRef(activePlaylistId);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  // Fetch playlist title for active playlist
   useEffect(() => {
     let cancelled = false;
-    fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(PLAYLIST_URL)}`)
+    fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(playlistUrl(activePlaylistId))}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => {
         if (!cancelled && data?.title) setPlaylistTitle(data.title);
@@ -60,10 +86,11 @@ const CBSpotifyPlayer = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activePlaylistId]);
 
   useEffect(() => {
     let timeoutId: number | undefined;
+    const startId = initialPlaylistIdRef.current;
 
     const init = () => {
       const IFrameAPI = window.SpotifyIframeApi;
@@ -74,12 +101,13 @@ const CBSpotifyPlayer = () => {
         IFrameAPI.createController(
           element,
           {
-            uri: `spotify:playlist:${PLAYLIST_ID}`,
+            uri: `spotify:playlist:${startId}`,
             width: "100%",
             height: "80",
           },
           (EmbedController: any) => {
             controllerRef.current = EmbedController;
+            loadedPlaylistIdRef.current = startId;
             setReady(true);
             setFailed(false);
             EmbedController.addListener("playback_update", (e: any) => {
@@ -116,8 +144,6 @@ const CBSpotifyPlayer = () => {
       }
     }
 
-    // Fallback: if the controller never becomes ready (script blocked,
-    // tracking-protection on Windows browsers, etc.), surface a direct link.
     timeoutId = window.setTimeout(() => {
       if (!controllerRef.current) setFailed(true);
     }, 6000);
@@ -132,6 +158,30 @@ const CBSpotifyPlayer = () => {
     };
   }, []);
 
+  // Swap playlist when route changes
+  useEffect(() => {
+    const controller = controllerRef.current;
+    if (!controller || !ready) return;
+    if (loadedPlaylistIdRef.current === activePlaylistId) return;
+    const wasPlaying = isPlayingRef.current;
+    try {
+      controller.loadUri(`spotify:playlist:${activePlaylistId}`);
+      loadedPlaylistIdRef.current = activePlaylistId;
+      if (wasPlaying) {
+        // Give the controller a tick to load before issuing play
+        window.setTimeout(() => {
+          try {
+            controller.play?.();
+          } catch (err) {
+            console.warn("Spotify play after swap failed", err);
+          }
+        }, 200);
+      }
+    } catch (err) {
+      console.warn("Spotify loadUri failed", err);
+    }
+  }, [activePlaylistId, ready]);
+
   const toggle = () => {
     try {
       controllerRef.current?.togglePlay?.();
@@ -142,7 +192,6 @@ const CBSpotifyPlayer = () => {
   };
 
   const hidden = useHideOnScrollDown();
-  const location = useLocation();
   const shouldAutoMinimise = AUTO_MINIMISE_ROUTES.some((p) => location.pathname.startsWith(p));
   const [collapsed, setCollapsed] = useState<boolean>(shouldAutoMinimise);
   const lastPathRef = useRef(location.pathname);
@@ -152,6 +201,8 @@ const CBSpotifyPlayer = () => {
       setCollapsed(shouldAutoMinimise);
     }
   }, [location.pathname, shouldAutoMinimise]);
+
+  const activePlaylistUrl = playlistUrl(activePlaylistId);
 
   return (
     <div
@@ -174,10 +225,10 @@ const CBSpotifyPlayer = () => {
         </button>
         {failed ? (
           <a
-            href={PLAYLIST_URL}
+            href={activePlaylistUrl}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Open Crazy Bear Sessions on Spotify"
+            aria-label={`Open ${playlistTitle} on Spotify`}
             className="flex items-center gap-3"
           >
             <span className="relative flex items-center justify-center text-white">
@@ -200,7 +251,7 @@ const CBSpotifyPlayer = () => {
             type="button"
             onClick={toggle}
             disabled={!ready}
-            aria-label={isPlaying ? "Pause Crazy Bear Sessions" : "Play Crazy Bear Sessions"}
+            aria-label={isPlaying ? `Pause ${playlistTitle}` : `Play ${playlistTitle}`}
             className="flex items-center gap-3 transition-opacity disabled:opacity-50"
           >
             <span className="relative flex items-center justify-center text-white">
@@ -235,8 +286,8 @@ const CBSpotifyPlayer = () => {
         </div>
         <noscript>
           <iframe
-            title="Crazy Bear Sessions"
-            src={EMBED_SRC}
+            title={playlistTitle}
+            src={embedSrc(activePlaylistId)}
             width="0"
             height="0"
             style={{ position: "absolute", left: "-9999px" }}
