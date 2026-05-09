@@ -43,7 +43,7 @@ const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomCl
         '--breathing-color': breathingColor,
       } as React.CSSProperties}
     >
-      <span className="relative z-10 font-brutalist tracking-wider uppercase select-none text-xs">
+      <span className="relative z-10 font-brutalist tracking-wider uppercase select-none text-[9px]">
         {label}
       </span>
     </button>
