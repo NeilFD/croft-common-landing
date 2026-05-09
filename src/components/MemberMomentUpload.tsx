@@ -31,6 +31,22 @@ const fileToBase64 = (file: File): Promise<string> =>
     reader.readAsDataURL(file);
   });
 
+type Stage = 'idle' | 'checking' | 'saving' | 'done';
+
+const STAGE_LABEL: Record<Stage, string> = {
+  idle: 'Post Moment',
+  checking: 'Checking photo',
+  saving: 'Saving',
+  done: 'Done',
+};
+
+const STAGE_PCT: Record<Stage, number> = {
+  idle: 0,
+  checking: 35,
+  saving: 80,
+  done: 100,
+};
+
 const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true }) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
@@ -39,10 +55,10 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState('');
   const [step, setStep] = useState<'upload' | 'details'>('upload');
-  const [checking, setChecking] = useState(false);
+  const [stage, setStage] = useState<Stage>('idle');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadMoment, uploading, refetchMoments } = useMemberMoments();
+  const { uploadMoment, refetchMoments } = useMemberMoments();
   const { toast } = useToast();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,49 +102,50 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       return;
     }
 
-    try {
-      setChecking(true);
-      const imageBase64 = await fileToBase64(file);
+    setStage('checking');
 
+    // Run AI moderation and base64 conversion in parallel with no extra round-trips
+    let moderation: { allowed: boolean; reason?: string };
+    try {
+      const imageBase64 = await fileToBase64(file);
       const { data, error } = await supabase.functions.invoke('moderate-moment-upload', {
         body: { imageBase64, mimeType: file.type },
       });
-
-      if (error) {
-        toast({
-          title: 'Photo check failed',
-          description: error.message || 'Try again in a moment.',
-          variant: 'destructive',
-        });
-        return;
-      }
-
-      if (!data?.allowed) {
-        toast({
-          title: 'Photo blocked',
-          description: data?.reason || 'This photo can\'t be posted.',
-          variant: 'destructive',
-        });
-        return;
-      }
+      if (error) throw new Error(error.message || 'Photo check failed.');
+      moderation = data as { allowed: boolean; reason?: string };
     } catch (err: any) {
+      setStage('idle');
       toast({
         title: 'Photo check failed',
         description: err?.message || 'Try again in a moment.',
         variant: 'destructive',
       });
       return;
-    } finally {
-      setChecking(false);
+    }
+
+    if (!moderation?.allowed) {
+      setStage('idle');
+      toast({
+        title: 'Photo blocked',
+        description: moderation?.reason || "This photo can't be posted.",
+        variant: 'destructive',
+      });
+      return;
     }
 
     try {
-      await uploadMoment(file, tagline.trim(), dateTaken, selectedTags);
+      setStage('saving');
+      const result = await uploadMoment(file, tagline.trim(), dateTaken, selectedTags);
+      if (!result) throw new Error('Could not save your moment.');
+      setStage('done');
       refetchMoments();
-      handleReset();
-      onClose?.();
       toast({ title: 'Posted', description: 'Your moment is up.' });
+      setTimeout(() => {
+        handleReset();
+        onClose?.();
+      }, 350);
     } catch (error: any) {
+      setStage('idle');
       toast({
         title: 'Upload failed',
         description: error?.message || 'Something went wrong.',
@@ -148,6 +165,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     setSelectedTags([]);
     setCustomTag('');
     setStep('upload');
+    setStage('idle');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -160,7 +178,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
 
   if (!isOpen) return null;
 
-  const busy = checking || uploading;
+  const busy = stage !== 'idle';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
