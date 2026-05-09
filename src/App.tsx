@@ -56,6 +56,7 @@ const MemberHome = lazy(() => import("./pages/MemberHome"));
 const LunchRun = lazy(() => import("./pages/LunchRun"));
 const MemberLedger = lazy(() => import("./pages/MemberLedger"));
 const MemberProfile = lazy(() => import("./pages/MemberProfile"));
+const DenVerify = lazy(() => import("./pages/DenVerify"));
 const MemberDashboard = lazy(() => import("./pages/MemberDashboard"));
 const MemberMoments = lazy(() => import("./pages/MemberMoments"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
