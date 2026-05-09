@@ -129,7 +129,7 @@ export default function LunchRun() {
 
           <div className="text-center mb-10">
             <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-muted-foreground mb-3">Members Only</p>
-            <h1 className="font-display uppercase text-4xl md:text-6xl tracking-tight leading-none mb-3">CB Home Delivery</h1>
+            <h1 className="font-display uppercase text-4xl md:text-6xl tracking-tight leading-none mb-3">Takeaway</h1>
             <p className="font-sans text-base md:text-lg text-muted-foreground max-w-xl mx-auto">
               Thai, to your door. Order anytime.
             </p>

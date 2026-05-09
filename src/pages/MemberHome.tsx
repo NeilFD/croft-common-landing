@@ -183,9 +183,9 @@ const MemberHome: React.FC = () => {
                 </Button>
                 
                 <Link to="/den/member/lunch-run">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
+                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-black hover:text-white transition-all duration-200">
                     <UtensilsCrossed className="h-4 w-4 mr-1" />
-                    CB Home Delivery
+                    Takeaway
                   </Button>
                 </Link>
                 
