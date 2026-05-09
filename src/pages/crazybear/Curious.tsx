@@ -163,7 +163,7 @@ const Curious: React.FC = () => {
         </header>
 
         <main className="relative max-w-3xl mx-auto px-6 md:px-12 py-12 md:py-20">
-          <div className="bg-white border-2 border-black p-6 md:p-10 shadow-[8px_8px_0_0_rgba(0,0,0,0.9)]">
+          <div className="bg-white/80 backdrop-blur-sm border-2 border-black p-6 md:p-10 shadow-[8px_8px_0_0_rgba(0,0,0,0.9)]">
           {!category && (
             <>
               <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/50 mb-3">/ / /</p>
