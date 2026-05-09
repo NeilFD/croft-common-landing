@@ -1,8 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Receipt, Calendar, TrendingUp } from 'lucide-react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { useCMSMode } from '@/contexts/CMSModeContext';
@@ -12,146 +9,207 @@ import { format } from 'date-fns';
 import DateRangeFilter from '@/components/DateRangeFilter';
 import ReceiptDetailModal from '@/components/ReceiptDetailModal';
 import SpendingAnalysisTable from '@/components/SpendingAnalysisTable';
+import { MobileErrorBoundary } from '@/components/MobileErrorBoundary';
+import denBg from '@/assets/den-bg.jpg';
+
+const chipBase =
+  'inline-flex items-center justify-center border border-white/40 text-white px-5 py-2.5 font-mono text-[10px] tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-colors touch-manipulation';
+
+const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-white/60 mb-4 text-center">
+    {children}
+  </p>
+);
+
+const Hairline: React.FC = () => (
+  <div className="w-full flex justify-center my-12">
+    <div className="h-px w-16 bg-white/25" />
+  </div>
+);
+
+type TabKey = 'transactions' | 'analysis';
 
 const MemberLedger: React.FC = () => {
   const { isCMSMode } = useCMSMode();
   const [dateRange, setDateRange] = useState<{ start?: Date; end?: Date }>({});
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [receiptModalOpen, setReceiptModalOpen] = useState(false);
-  
-  console.log('MemberLedger: Component mounted, dateRange:', dateRange);
-  
+  const [tab, setTab] = useState<TabKey>('transactions');
+
   const { ledgerEntries, loading, error } = useMemberLedger(dateRange);
   const { analysisData, loading: analysisLoading } = useReceiptAnalysis(dateRange);
 
-  console.log('MemberLedger: ledgerEntries:', ledgerEntries, 'loading:', loading, 'error:', error);
-
   const handleReceiptClick = (entry: any) => {
-    console.log('Receipt clicked:', entry);
     if (entry.activity_type === 'receipt' && entry.receipt) {
-      setSelectedReceipt({
-        receipt: entry.receipt,
-        date: entry.activity_date
-      });
+      setSelectedReceipt({ receipt: entry.receipt, date: entry.activity_date });
       setReceiptModalOpen(true);
     }
   };
 
+  const tabBtn = (key: TabKey, label: string) => (
+    <button
+      onClick={() => setTab(key)}
+      className={`px-5 py-2.5 font-mono text-[10px] tracking-[0.4em] uppercase border transition-colors ${
+        tab === key
+          ? 'bg-white text-black border-white'
+          : 'border-white/30 text-white/70 hover:border-white hover:text-white'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      
-      <div className="container mx-auto px-4 pt-32 pb-8">
-        <div className="mb-6">
-          <Link 
-            to="/den/member" 
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+    <MobileErrorBoundary>
+      <div
+        className="min-h-screen relative overflow-y-auto"
+        style={{
+          touchAction: 'pan-y pinch-zoom',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+        }}
+      >
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
+          style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
+        />
+        <div className="fixed inset-0 bg-black/75 -z-10" />
+
+        <div className="relative z-10 text-white">
+          {!isCMSMode && <Navigation />}
+
+          <div
+            className="container mx-auto px-6 pb-20 max-w-5xl"
+            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Member Home
-          </Link>
-        </div>
+            {/* Breadcrumb */}
+            <div className="mb-10">
+              <Link
+                to="/den/member"
+                className="inline-flex items-center font-mono text-[10px] tracking-[0.4em] uppercase text-white/60 hover:text-white transition-colors"
+              >
+                ← Back to Member Home
+              </Link>
+            </div>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">Member Ledger</h1>
-          <p className="text-muted-foreground">Track your spending, receipts, and analyze your habits</p>
-        </div>
+            {/* Header */}
+            <div className="text-center mb-12">
+              <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white/70 mb-6">
+                Ledger
+              </p>
+              <h1 className="font-display uppercase text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[0.9] mb-6">
+                Member Ledger
+              </h1>
+              <p className="font-sans text-base md:text-lg text-white/80 max-w-md mx-auto leading-relaxed">
+                Spend. Receipts. Habits. The bear keeps count.
+              </p>
+            </div>
 
-        <div className="mb-6">
-          <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
-        </div>
+            {/* Date filter */}
+            <Eyebrow>Filter</Eyebrow>
+            <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-4 md:p-6 mb-8">
+              <div className="bg-white text-black p-4 rounded">
+                <DateRangeFilter dateRange={dateRange} onDateRangeChange={setDateRange} />
+              </div>
+            </div>
 
-        <Tabs defaultValue="transactions" className="space-y-6">
-          <TabsList>
-            <TabsTrigger value="transactions">Transaction History</TabsTrigger>
-            <TabsTrigger value="analysis">Table of Danger</TabsTrigger>
-          </TabsList>
+            {/* Tabs */}
+            <div className="flex flex-wrap justify-center gap-3 mb-8">
+              {tabBtn('transactions', 'Transactions')}
+              {tabBtn('analysis', 'Table of Danger')}
+            </div>
 
-          <TabsContent value="transactions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Transaction History</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Click on receipt entries to view details
-                </p>
-              </CardHeader>
-              <CardContent>
+            {tab === 'transactions' ? (
+              <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-6 md:p-8">
+                <div className="mb-6 text-center">
+                  <h2 className="font-display uppercase text-2xl md:text-3xl tracking-tight mb-2">
+                    Transaction History
+                  </h2>
+                  <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-white/50">
+                    Tap a receipt to view details
+                  </p>
+                </div>
+
                 {loading ? (
-                  <p className="text-muted-foreground">Loading your transaction history...</p>
+                  <p className="text-center font-mono text-[10px] tracking-[0.4em] uppercase text-white/60 py-8">
+                    Loading
+                  </p>
                 ) : error ? (
-                  <p className="text-red-500">Error loading transactions: {error}</p>
+                  <p className="text-center font-sans text-white/70 py-8">
+                    Couldn't load transactions. Try again shortly.
+                  </p>
                 ) : ledgerEntries.length === 0 ? (
-                  <p className="text-muted-foreground">No transactions found for the selected period.</p>
+                  <div className="text-center py-12">
+                    <p className="font-sans text-white/70 mb-6">
+                      No transactions yet for this period.
+                    </p>
+                    <Link to="/den/member" className={chipBase}>Upload a receipt</Link>
+                  </div>
                 ) : (
-                  <div className="space-y-4">
-                    {ledgerEntries.map((entry) => (
-                      <div 
-                        key={entry.id} 
-                        className={`flex items-center justify-between p-4 border rounded-lg transition-colors ${
-                          entry.activity_type === 'receipt' && entry.receipt
-                            ? 'cursor-pointer hover:bg-muted/50' 
-                            : ''
-                        }`}
-                        onClick={() => handleReceiptClick(entry)}
-                      >
-                        <div className="flex items-center gap-3">
-                          {entry.activity_type === 'receipt' ? (
-                            <Receipt className="h-5 w-5 text-primary" />
-                          ) : (
-                            <Calendar className="h-5 w-5 text-primary" />
-                          )}
-                          <div>
-                            <p className="font-medium">{entry.description}</p>
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="space-y-3">
+                    {ledgerEntries.map((entry) => {
+                      const clickable = entry.activity_type === 'receipt' && entry.receipt;
+                      return (
+                        <div
+                          key={entry.id}
+                          onClick={() => handleReceiptClick(entry)}
+                          className={`flex items-center justify-between gap-4 p-4 border border-white/15 bg-black/30 transition-colors ${
+                            clickable ? 'cursor-pointer hover:bg-white/10 hover:border-white/40' : ''
+                          }`}
+                        >
+                          <div className="min-w-0">
+                            <p className="font-sans text-white truncate">{entry.description}</p>
+                            <div className="flex flex-wrap items-center gap-2 mt-1 font-mono text-[9px] tracking-[0.3em] uppercase text-white/50">
                               <span>{format(new Date(entry.activity_date), 'dd MMM yyyy')}</span>
                               {entry.receipt?.venue_location && (
                                 <>
-                                  <span>•</span>
+                                  <span>·</span>
                                   <span>{entry.receipt.venue_location}</span>
                                 </>
                               )}
-                              {entry.activity_type === 'receipt' && entry.receipt && (
+                              {clickable && (
                                 <>
-                                  <span>•</span>
-                                  <span className="text-primary">Click to view</span>
+                                  <span>·</span>
+                                  <span className="text-white">View</span>
                                 </>
                               )}
                             </div>
                           </div>
+                          {entry.amount != null && (
+                            <div className="text-right shrink-0">
+                              <p className="font-display text-xl md:text-2xl tracking-tight">
+                                £{entry.amount.toFixed(2)}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                        {entry.amount && (
-                          <div className="text-right">
-                            <p className="font-semibold">
-                              £{entry.amount.toFixed(2)}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {entry.currency || 'GBP'}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            ) : (
+              <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-4 md:p-6">
+                <div className="bg-white text-black p-4 rounded">
+                  <SpendingAnalysisTable data={analysisData} loading={analysisLoading} />
+                </div>
+              </div>
+            )}
 
-          <TabsContent value="analysis">
-            <SpendingAnalysisTable data={analysisData} loading={analysisLoading} />
-          </TabsContent>
-        </Tabs>
+            <Hairline />
+          </div>
 
-        <ReceiptDetailModal
-          isOpen={receiptModalOpen}
-          onClose={() => setReceiptModalOpen(false)}
-          receipt={selectedReceipt?.receipt || null}
-          receiptDate={selectedReceipt?.date || ''}
-        />
+          <ReceiptDetailModal
+            isOpen={receiptModalOpen}
+            onClose={() => setReceiptModalOpen(false)}
+            receipt={selectedReceipt?.receipt || null}
+            receiptDate={selectedReceipt?.date || ''}
+          />
+
+          <Footer />
+        </div>
       </div>
-
-      <Footer />
-    </div>
+    </MobileErrorBoundary>
   );
 };
 
