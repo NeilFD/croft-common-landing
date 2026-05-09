@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useGestureSafeDialog } from '@/hooks/useGestureSafeDialog';
 
 interface AuthModalProps {
   isOpen: boolean;
