@@ -112,7 +112,7 @@ const Curious: React.FC = () => {
         details.membership_interest = form.membership_interest;
       }
 
-      const { error } = await supabase.from('cb_enquiries').insert({
+      const enquiryPayload = {
         category,
         property: form.property || null,
         full_name: form.full_name.trim(),
@@ -120,9 +120,17 @@ const Curious: React.FC = () => {
         phone: form.phone.trim() || null,
         message: form.message.trim() || null,
         details,
-      });
+      };
+
+      const { error } = await supabase.from('cb_enquiries').insert(enquiryPayload);
 
       if (error) throw error;
+
+      // Notify the Bear (non-blocking)
+      supabase.functions
+        .invoke('send-cb-enquiry-notification', { body: enquiryPayload })
+        .catch((e) => console.error('Notification email failed:', e));
+
       setDone(true);
       toast({ title: 'Enquiry sent', description: 'We\'ll be in touch shortly.' });
     } catch (err: any) {
