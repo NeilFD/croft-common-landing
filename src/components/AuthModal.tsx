@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from '@/hooks/use-toast';
+import { useGestureSafeDialog } from '@/hooks/useGestureSafeDialog';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const { user, refreshSession } = useAuth();
+  const safeProps = useGestureSafeDialog(isOpen);
 
   // Debug logging for mobile OTP issues
   useEffect(() => {
@@ -282,7 +284,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
 
   if (otpSent) {
     return (
-      <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
+      <Dialog open={isOpen} onOpenChange={safeProps.guardOpenChange((open) => { if (!open && !loading) handleClose(); })}>
         <DialogContent 
           className="sm:max-w-[425px]"
           overlayClassName="bg-black/10"
@@ -295,6 +297,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
             }
           }}
           onInteractOutside={(e) => {
+            safeProps.onInteractOutside(e);
+            if (e.defaultPrevented) return;
             // Allow closing by clicking outside if not in OTP verification stage
             if (!otpSent) {
               handleClose();
@@ -302,6 +306,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
               e.preventDefault();
             }
           }}
+          onPointerDownOutside={safeProps.onPointerDownOutside}
+          onFocusOutside={safeProps.onFocusOutside}
         >
           <DialogHeader>
             <DialogTitle className="text-black font-bold">
@@ -371,7 +377,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
+    <Dialog open={isOpen} onOpenChange={safeProps.guardOpenChange((open) => { if (!open && !loading) handleClose(); })}>
       <DialogContent 
         className="sm:max-w-[425px]"
         overlayClassName="bg-black/10"
@@ -384,6 +390,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
           }
         }}
         onInteractOutside={(e) => {
+          safeProps.onInteractOutside(e);
+          if (e.defaultPrevented) return;
           // Allow closing by clicking outside if not loading
           if (!loading) {
             handleClose();
@@ -391,6 +399,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
             e.preventDefault();
           }
         }}
+        onPointerDownOutside={safeProps.onPointerDownOutside}
+        onFocusOutside={safeProps.onFocusOutside}
       >
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>

@@ -1,121 +1,78 @@
-# Comments + Reactions for Moments
+# Universal Fix: Secret Seven Gesture & Safari Modal Flicker
 
-Add a threaded comment system under each moment, with emoji reactions on individual comments. Sleek, minimal, on-brand (B&W, Space Grotesk / Archivo Black, no rounded chrome).
+Two distinct root causes are producing the symptoms you described. Both are fixable without changing the gesture shape, the secret seven UX, or any business logic.
 
-## Database
+## Problem 1 — Gesture fails on Ecosia (Android) and is flaky in some Chromium browsers
 
-Two new tables, RLS enabled, realtime on both.
+### Root cause
+`GestureOverlay` uses **legacy touch events** registered as **passive: true**, with no `touch-action` constraint on the gesture container.
 
-`**moment_comments**`
+On Android Chrome based browsers (Ecosia, Brave, Samsung Internet, Edge mobile) the browser:
+1. Sees the first vertical part of the "7" stroke.
+2. Claims the touch sequence as a **scroll gesture**.
+3. Stops dispatching further `touchmove` events to JS (because the listener is passive — JS cannot cancel scroll).
+4. The remaining points of the "7" never arrive, `isValid7Shape` never returns true, nothing happens.
 
-- `id`, `moment_id` → `member_moments.id` (cascade), `user_id`, `parent_id` (nullable, self-ref → threading), `body` (text, 1–500 chars), `is_deleted` (bool), `created_at`, `updated_at`
-- Indexes: `(moment_id, created_at)`, `(parent_id)`
-- RLS:
-  - SELECT: any authenticated member
-  - INSERT: `auth.uid() = user_id`
-  - UPDATE: own row only, body editable for 15 min, otherwise soft-delete via `is_deleted`
-  - DELETE: own row only (soft delete preferred via UPDATE)
+iOS Safari is more lenient because it batches touchmoves differently, which is why it "mostly works" there.
 
-`**moment_comment_reactions**`
+### Fix
+Rewrite the input layer of `GestureOverlay` to use the **Pointer Events API** (universal across Safari 13+, all Chromium, Firefox, Samsung Internet, Ecosia):
 
-- `id`, `comment_id` → `moment_comments.id` (cascade), `user_id`, `emoji` (text, allow-list: ❤️ 🔥 😂 👏 🐻 ✨), `created_at`
-- Unique `(comment_id, user_id, emoji)` so each user toggles one of each
-- RLS: SELECT authenticated; INSERT/DELETE own only
+- `pointerdown` → start gesture, call `el.setPointerCapture(e.pointerId)` so the browser routes all subsequent moves to us regardless of scroll heuristics.
+- `pointermove` → add point. Guarded by `isDrawing` and `isInteractiveElement`.
+- `pointerup` / `pointercancel` → end gesture, release capture.
+- While `isDrawing === true`, set `touch-action: none` on the container; restore it when not drawing. This guarantees the browser will not steal the gesture for scrolling, but pages remain scrollable normally when no gesture is in progress.
+- Keep mouse fallback for older desktop browsers behind `if (!window.PointerEvent)`.
 
-Realtime: add both tables to `supabase_realtime` publication.
+Pointer Events also fix Apple Pencil, stylus, and trackpad edge-cases.
 
-## Hook
+### Secondary cleanup in `useGestureDetection`
+- Replace `setLastGestureTime` (state) with a ref so the 1s debounce does not retrigger renders that cancel in-flight strokes.
+- Remove the React state churn during `addPoint` (use a ref array, only `setPoints` on validation success or stroke end). This stops the per-frame re-render that some low-end Android devices cannot keep up with.
 
-New `useMomentComments(momentId)`:
+## Problem 2 — Secret Seven modal flashes open then closes on Safari
 
-- Fetches flat list, joins `profiles` for name, aggregates reactions (`{emoji, count, mine}[]`).
-- Builds tree client-side (parent → children, sorted oldest-first; replies collapsed by default beyond 2).
-- Mutations: `addComment(body, parentId?)`, `editComment`, `deleteComment`, `toggleReaction(commentId, emoji)`.
-- Subscribes to realtime INSERT/UPDATE/DELETE on both tables filtered by `moment_id` and refreshes optimistically.
+### Root cause
+After a successful "7" stroke, `SecretLuckySevenModal` (and the gate modals it spawns) open a Radix `Dialog`. On Safari the gesture's final `touchend` fires a synthetic `click` ~300ms later. Radix interprets this click as `onPointerDownOutside` against the just-opened dialog and **closes it immediately** via `onOpenChange(false) → handleCloseAll()`.
 
-## UI
+This is a known Radix + iOS Safari interaction; it does not happen on Chrome desktop, which is why "for some people" only.
 
-Comments live inside the existing **detail modal** (`MemberMomentsMosaic` selectedMoment view), below the info bar. Mosaic cards stay image-only; a small comment count chip sits next to the like button on the card overlay.
+The same pattern affects every modal opened directly from a gesture: `BiometricUnlockModal`, `RecipeOfTheMonthModal`, `RollTheDiceModal`, `RoomsOfferModal`, `PoolDayBedModal`, `SecretCinemaModal`, the Bears Den gate.
 
-**Detail modal layout** (already dark, full-bleed):
+### Fix
+Add a small **gesture grace window** to each gesture-launched dialog:
 
-```text
-┌──────────────────────────────────────────┐
-│ MOMENT                          [CLOSE]  │
-├──────────────────────────────────────────┤
-│                                          │
-│            full-bleed image              │
-│                                          │
-├──────────────────────────────────────────┤
-│ tagline                       ♥ 3   💬 7 │
-│ [tag] [tag]                              │
-│ NAME · 09 MAY 2026                       │
-├──────────────────────────────────────────┤
-│ COMMENTS · 7                             │
-│                                          │
-│  NAME · 2H                               │
-│  Body text here, short, sharp.           │
-│  ❤️ 3   🔥 1   + react   reply           │
-│    └ NAME · 1H                           │
-│      Reply body.                         │
-│      + react   reply                     │
-│                                          │
-│  [ View 4 more replies ]                 │
-│                                          │
-│ ──────────────────────────────────────── │
-│ > Type a comment...              [POST]  │
-└──────────────────────────────────────────┘
-```
+- New tiny hook `useGestureSafeDialogProps(open)` returns `{ onPointerDownOutside, onInteractOutside, onFocusOutside }` handlers that call `e.preventDefault()` for the first 600ms after `open` flips to true.
+- Apply it to the `<DialogContent>` of every secret modal.
+- Also tighten the `Dialog`'s `onOpenChange` so it ignores `false` transitions during the same 600ms window (defence in depth).
 
-Styling rules:
+Effect: the residual synthetic click from the "7" gesture is swallowed; the modal stays open until the user genuinely taps outside.
 
-- Mono micro-labels (`text-[10px] tracking-[0.4em] uppercase`) for meta (NAME · time, COMMENTS count, POST button).
-- Body in Space Grotesk, white on black, `text-sm` leading-snug.
-- Threads indicated by a 1px white/15 vertical rule on the left of the reply block, indented 16px on mobile / 24px on desktop. Max 2 levels of indent; deeper replies stay at level 2 with `↳ @parent` prefix.
-- Reactions: small inline chips, `h-6 px-2 border border-white/20 font-mono text-[10px]`, emoji + count. Mine = solid white bg, black text. Tap toggles. "+ react" opens a tiny inline picker (the 6 allow-listed emoji, no full picker).
-- Composer: bottom-fixed inside the scrollable info column, transparent input with bottom border only, white "POST" button (mono, tracked). Reply mode shows a small "Replying to NAME · cancel" pill above the input.
-- Edit/delete: own comments show a `…` chevron revealing Edit / Delete (mono links). Soft-deleted comments render as `[ deleted ]` placeholder so threads don't collapse.
-- Empty state: `Be first. Say something.`
-- Loading: 3 skeleton rows with white/5 bars.
-- Char counter `0/500` mono, bottom-right of composer when focused.
+## Problem 3 — Universal hardening (small)
 
-Mobile (390px): info bar + comments scroll as one column under the image; image area shrinks (`max-h-[55vh]`) when comments present so the composer is reachable. Composer sticks to the bottom of the modal with `safe-area-inset-bottom` padding.
+- `SecretGestureHost` currently mounts `<GestureOverlay>` only when `user` is truthy, but the "Members: draw 7" hint text is rendered with `pointer-events: none` — confirm no z-index above the overlay swallows pointers in the property pages.
+- `GestureOverlay`'s document-level fallback listeners (used when no `containerRef` is passed) currently call `e.preventDefault()` inside non-passive `mousemove` only. After the rewrite, switch all branches to Pointer Events for symmetry, so behaviour is identical whether scoped or global.
+- Add a one-line UA log on first gesture attempt (`console.debug('[gesture] start', { pointerType, ua })`) so we can verify Ecosia / Samsung Internet in production logs.
 
-## Card chip
+## Files to change
 
-In the mosaic overlay, next to the heart, add a non-interactive comment count chip (`💬 N`) that simply opens the detail modal on tap (same as tapping the card). Hidden when count is 0.
+- `src/hooks/useGestureDetection.ts` — refs instead of state for hot path; keep public API identical.
+- `src/components/GestureOverlay.tsx` — Pointer Events rewrite, conditional `touch-action: none`, mouse fallback.
+- `src/hooks/useGestureSafeDialog.ts` — **new**, ~25 lines.
+- `src/components/SecretLuckySevenModal.tsx` — apply the safe-dialog hook.
+- `src/components/BiometricUnlockModal.tsx` — apply the safe-dialog hook.
+- `src/components/MembershipLinkModal.tsx` — apply.
+- `src/components/AuthModal.tsx` — apply (only when opened from gesture path).
+- `src/components/secrets/RecipeOfTheMonthModal.tsx`, `RollTheDiceModal.tsx`, `RoomsOfferModal.tsx`, `PoolDayBedModal.tsx` — apply.
+- `src/components/SecretCinemaModal.tsx` — apply.
 
-## Moderation
+No changes to gesture shape, validation thresholds, biometric flow, RP IDs, or any backend.
 
-- Reuse existing `moderate-moment-upload` pattern only for image moderation.
-- For comments, do a lightweight client-side guard: trim, max 500, block empty / >5 consecutive newlines / known slur list (small JSON in `src/lib/commentFilter.ts`). Server-side: a Postgres `BEFORE INSERT` trigger trims and rejects empty bodies. No AI text moderation in v1 (keep it fast); flag-for-review can come later.  
-  
-  
-Also add ability to post videos, no more than 30s long, and, the video thumbnail must be playing from launch, the movement looks super cool in a wall environment
+## Verification plan
 
-## Out of scope (v1)
-
-- Notifications (push / email) when replied to.
-- @-mentions, links/markdown, image attachments in comments.
-- Admin moderation queue.
-- Pagination — load all comments per moment (assume <200; revisit if hot).
-
-## Files touched
-
-- New migration: `moment_comments`, `moment_comment_reactions`, RLS, indexes, realtime publication.
-- New hook: `src/hooks/useMomentComments.ts`.
-- New components:
-  - `src/components/moments/MomentComments.tsx` (list + tree)
-  - `src/components/moments/MomentCommentItem.tsx` (single node, recursive)
-  - `src/components/moments/MomentCommentComposer.tsx`
-  - `src/components/moments/MomentReactionBar.tsx`
-- Edit `src/components/MemberMomentsMosaic.tsx`: render `<MomentComments momentId={selectedMoment.id} />` in detail modal; add comment count chip on card overlay.
-- Edit `src/hooks/useMemberMoments.ts`: include `comment_count` aggregate in fetch.
-
-## Acceptance
-
-- Member can post, reply, edit (15 min), and soft-delete own comments.
-- Reactions toggle live for everyone via realtime.
-- Detail modal scrolls cleanly on mobile with composer always reachable.
-- Mosaic card shows live comment count next to like count.
-- All UI uses existing tokens — no rounded chrome, no coloured borders, no lucide-style noise beyond the already-allowed set.
+After the change:
+1. Preview on the iPhone you have. Draw a "7" on /index — modal stays open.
+2. Mobile Safari Web Inspector: confirm `[gesture] start { pointerType: 'touch' }` log appears.
+3. Open the published URL on Ecosia Android — draw a "7" — modal opens. Check Chrome devtools remote inspect to confirm pointer events.
+4. Desktop Chrome and Firefox — mouse drag still works (PointerEvent path covers both).
+5. Confirm normal vertical scrolling on every page is unaffected (touch-action only flips to `none` mid-stroke).
