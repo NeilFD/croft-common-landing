@@ -4,8 +4,6 @@ import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { useAuth } from '@/hooks/useAuth';
-import BiometricUnlockModal from '@/components/BiometricUnlockModal';
-import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useNavigate } from 'react-router-dom';
 import denBg from '@/assets/den-bg-neon.jpg';
@@ -54,7 +52,8 @@ const CommonRoomMain = () => {
       navigate(target ?? '/den/member');
       return;
     }
-    membershipGate.start();
+    // No biometric/passkey gate - go straight to email + code sign in
+    membershipGate.startWithOtp();
   };
 
   return (
@@ -156,21 +155,7 @@ const CommonRoomMain = () => {
         </section>
       </div>
 
-      {/* Authentication Modals */}
-      <BiometricUnlockModal
-        isOpen={membershipGate.bioOpen}
-        onClose={membershipGate.reset}
-        onSuccess={membershipGate.handleBioSuccess}
-        onFallback={membershipGate.handleBioFallback}
-        title="Enter the Den"
-        description="Use Face ID or your device passkey to enter."
-      />
-
-      <MembershipLinkModal
-        open={membershipGate.linkOpen}
-        onClose={membershipGate.reset}
-        onSuccess={membershipGate.handleLinkSuccess}
-      />
+      {/* Authentication Modal - email + 8-digit code only, no biometric/passkey */}
 
       <AuthModal
         isOpen={membershipGate.authOpen}
