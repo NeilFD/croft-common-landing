@@ -20,7 +20,7 @@ const CroftCommonDateTime: React.FC = () => {
     const title = "Crazy Bear Date & Time – Live Clock";
     document.title = title;
 
-    const descContent = "Live Croft Common date and time page with a 24-hour clock and total.";
+    const descContent = "Live Crazy Bear date and time page with a 24-hour clock and total.";
     let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (!meta) {
       meta = document.createElement('meta');
