@@ -306,245 +306,73 @@ export const useMemberMoments = () => {
     dateTaken: string,
     tags: string[] = []
   ) => {
-    // Prevent multiple simultaneous uploads
     if (uploading) {
-      console.warn('⚠️ UPLOAD: Upload already in progress, ignoring new request');
+      console.warn('Upload already in progress');
       return;
     }
-    
-    console.log('🔄 UPLOAD: Setting uploading state to true');
+
     setUploading(true);
     try {
-      console.log('🚀 UPLOAD START: Starting upload process...', { file: file.name, size: file.size, tagline, dateTaken });
-      
-      console.log('🔐 AUTH: Getting initial user...');
       const { data: { user }, error: userError } = await supabase.auth.getUser();
-      console.log('🔐 AUTH: Initial user result:', { user: user?.id, error: userError });
-      
-      if (userError) {
-        console.error('❌ AUTH: User error:', userError);
-        const authError = new TypeError(`Authentication error: ${userError.message}`);
-        throw authError;
+      if (userError || !user) {
+        throw new Error('You need to be signed in to post a moment.');
       }
-      
-      if (!user) {
-        console.error('❌ AUTH: User not authenticated - no user object');
-        const userAuthError = new TypeError('User not authenticated');
-        throw userAuthError;
-      }
-      
-      // Get initial session
-      const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
-      console.log('🔐 AUTH: Initial session check:', { 
-        hasSession: !!initialSession, 
-        sessionUserId: initialSession?.user?.id,
-        userIdMatch: initialSession?.user?.id === user.id,
-        error: sessionError 
-      });
-      
-      if (sessionError || !initialSession) {
-        console.error('❌ AUTH: No valid session:', sessionError);
-        const authError = new TypeError('Authentication session required');
-        throw authError;
-      }
-      
-      console.log('✅ AUTH: User authenticated:', user.id);
 
-      // Upload image to storage with auth verification
-      const fileExt = file.name.split('.').pop();
+      const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      
-      console.log('📤 STORAGE: Pre-upload auth check...');
-      const { data: { session: preUploadSession } } = await supabase.auth.getSession();
-      console.log('📤 STORAGE: Pre-upload session:', { 
-        hasSession: !!preUploadSession,
-        userId: preUploadSession?.user?.id,
-        fileName,
-        extractedFolderName: fileName.split('/')[0],
-        userIdMatch: preUploadSession?.user?.id === fileName.split('/')[0]
-      });
-      
-      // Double check auth just before upload
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      console.log('📤 STORAGE: Current user before upload:', { 
-        hasUser: !!currentUser,
-        userId: currentUser?.id,
-        sessionUserMatch: currentUser?.id === preUploadSession?.user?.id
-      });
 
-      console.log('📤 STORAGE: Uploading to storage:', fileName);
-      console.time('storage-upload');
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('moments')
-        .upload(fileName, file);
-      console.timeEnd('storage-upload');
+        .upload(fileName, file, { contentType: file.type, upsert: false });
 
       if (uploadError) {
-        console.error('❌ STORAGE: Upload error:', uploadError);
-        const storageError = new TypeError(`Storage upload failed: ${uploadError.message}`);
-        throw storageError;
+        throw new Error(`Upload failed: ${uploadError.message}`);
       }
-      console.log('✅ STORAGE: Upload successful:', uploadData);
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('moments')
         .getPublicUrl(fileName);
-      console.log('🔗 STORAGE: Public URL:', publicUrl);
-
-      // Insert moment record with comprehensive auth verification
-      console.log('💾 DATABASE: Starting database insert...');
-      console.time('database-insert');
-      
-      // Fresh session check right before database operation
-      const { data: { session: dbSession }, error: dbSessionError } = await supabase.auth.getSession();
-      console.log('💾 DATABASE: Final session check:', { 
-        hasSession: !!dbSession, 
-        sessionUserId: dbSession?.user?.id,
-        originalUserId: user.id,
-        userIdMatch: dbSession?.user?.id === user.id,
-        sessionError: dbSessionError,
-        accessToken: dbSession?.access_token ? 'present' : 'missing',
-        expiresAt: dbSession?.expires_at
-      });
-      
-      if (dbSessionError || !dbSession || !dbSession.user) {
-        console.error('❌ DATABASE: Invalid session for database operation:', dbSessionError);
-        const dbError = new TypeError('Authentication session invalid for database operation. Please refresh and try again.');
-        throw dbError;
-      }
-      
-      if (dbSession.user.id !== user.id) {
-        console.error('❌ DATABASE: User ID mismatch:', { 
-          sessionUserId: dbSession.user.id, 
-          originalUserId: user.id 
-        });
-        const authMismatchError = new TypeError('User authentication mismatch. Please log out and log back in.');
-        throw authMismatchError;
-      }
 
       const momentData = {
-        user_id: dbSession.user.id, // Use fresh session user ID
+        user_id: user.id,
         image_url: publicUrl,
         tagline,
         date_taken: dateTaken,
         latitude: null,
         longitude: null,
         location_confirmed: false,
-        moderation_status: 'approved', // AI pre-check happens client-side before this insert
+        moderation_status: 'approved',
         is_visible: true,
-        tags: tags.filter(tag => tag.trim().length > 0)
+        tags: tags.filter((t) => t.trim().length > 0),
       };
-      
-      console.log('💾 DATABASE: About to insert with data:', { 
-        ...momentData, 
-        sessionValid: !!dbSession,
-        sessionUserId: dbSession.user.id 
-      });
-      
-      // Perform the insert with a small delay to ensure session consistency
-      console.log('💾 DATABASE: Waiting 100ms for session consistency...');
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // One final session check right before insert
-      const { data: { session: finalSession }, error: finalSessionError } = await supabase.auth.getSession();
-      console.log('💾 DATABASE: Final session before insert:', { 
-        hasSession: !!finalSession,
-        userId: finalSession?.user?.id,
-        error: finalSessionError
-      });
-      
-      if (finalSessionError || !finalSession?.user) {
-        const sessionError = new TypeError('Session lost before database insert');
-        throw sessionError;
-      }
-      
+
       const { data: insertedMoment, error: insertError } = await (supabase as any)
         .from('member_moments')
         .insert([momentData])
         .select('*')
         .single();
-      
-      console.timeEnd('database-insert');
 
-      if (insertError) {
-        console.error('❌ DATABASE: Insert error details:', {
-          error: insertError,
-          code: insertError.code,
-          message: insertError.message,
-          details: insertError.details,
-          hint: insertError.hint,
-          momentData,
-          currentAuth: await supabase.auth.getUser(),
-          finalSession: !!finalSession
-        });
-        
-        // Provide more specific error messages
-        if (insertError.message?.includes('row-level security policy')) {
-          const authError = new TypeError('Authentication error: Please refresh the page and try again.');
-          throw authError;
-        }
-        
-        const dbError = new TypeError(`Database error: ${insertError.message}`);
-        throw dbError;
+      if (insertError || !insertedMoment) {
+        await supabase.storage.from('moments').remove([fileName]).catch(() => {});
+        const msg = insertError?.message?.includes('row-level security')
+          ? 'Sign-in expired. Refresh and try again.'
+          : insertError?.message || 'Could not save your moment.';
+        throw new Error(msg);
       }
-      
-      console.log('✅ DATABASE: Moment inserted successfully:', insertedMoment);
 
-      // Show immediate success 
-      console.log('🎉 SUCCESS: Upload complete, showing success message');
-      toast({
-        title: "Moment uploaded!",
-        description: "Your moment has been sent for AI moderation review and will appear once approved.",
+      setMoments((prev) => {
+        if (prev.some((m) => m.id === insertedMoment.id)) return prev;
+        return [insertedMoment as MemberMoment, ...prev];
       });
 
-      // Automatic moderation will be triggered by database trigger
-      console.log('📝 MODERATION: Database trigger will handle automatic moderation');
-      
-      // Refresh moments list
-      console.log('🔄 REFRESH: Refreshing moments list...');
-      try {
-        await fetchMoments();
-        console.log('✅ REFRESH: Moments list refreshed successfully');
-      } catch (refreshError) {
-        console.warn('⚠️ REFRESH: Failed to refresh moments list:', refreshError);
-        // Don't throw - upload was successful
-      }
-      
-      console.log('✅ UPLOAD COMPLETE: All steps finished successfully');
+      fetchMoments().catch(() => {});
 
+      return insertedMoment;
     } catch (error: any) {
-      console.error('❌ UPLOAD ERROR:', error);
-      
-      if (error.message === 'LOCATION_CONFIRMATION_NEEDED') {
-        throw error; // Re-throw to handle in component
-      }
-      
-      let errorMessage = "An unexpected error occurred";
-      if (error instanceof TypeError) {
-        errorMessage = error.message;
-      } else if (typeof error === 'string') {
-        errorMessage = error;
-      }
-      
-      toast({
-        title: "Upload failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
+      console.error('Upload error:', error);
+      throw error;
     } finally {
-      console.log('🧹 CLEANUP: Starting final cleanup...');
       setUploading(false);
-      
-      // Clear any potential memory leaks
-      if (typeof window !== 'undefined') {
-        // Force garbage collection if available (dev tools)
-        if ((window as any).gc) {
-          setTimeout(() => (window as any).gc(), 100);
-        }
-      }
-      
-      console.log('🏁 UPLOAD END: Upload process completed');
     }
   };
 
