@@ -1,7 +1,7 @@
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { INTEREST_OPTIONS, VENUE_PREFERENCES, VISIT_TIME_PREFERENCES, BEER_STYLES } from '@/data/interests';
+import { CB_INTEREST_OPTIONS, CB_VENUE_PREFERENCES, VISIT_TIME_PREFERENCES, CB_DINING_PREFERENCES } from '@/data/interests';
 
 interface InterestsSelectorProps {
   selectedInterests: string[];
@@ -45,7 +45,7 @@ export const InterestsSelector: React.FC<InterestsSelectorProps> = ({
       <div>
         <Label className="text-base font-semibold mb-3 block">General Interests</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {INTEREST_OPTIONS.map((interest) => (
+          {CB_INTEREST_OPTIONS.map((interest) => (
             <div key={interest} className="flex items-center space-x-2">
               <Checkbox
                 id={`interest-${interest}`}
@@ -67,7 +67,7 @@ export const InterestsSelector: React.FC<InterestsSelectorProps> = ({
       <div>
         <Label className="text-base font-semibold mb-3 block">Favorite Venue</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {VENUE_PREFERENCES.map((venue) => (
+          {CB_VENUE_PREFERENCES.map((venue) => (
             <div key={venue} className="flex items-center space-x-2">
               <Checkbox
                 id={`venue-${venue}`}
@@ -111,19 +111,19 @@ export const InterestsSelector: React.FC<InterestsSelectorProps> = ({
         </div>
       </div>
 
-      {/* Beer Style Preferences */}
+      {/* Dining & Stay Preferences */}
       <div>
-        <Label className="text-base font-semibold mb-3 block">Beer Style Preferences</Label>
+        <Label className="text-base font-semibold mb-3 block">Dining & Stay Preferences</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {BEER_STYLES.map((style) => (
+          {CB_DINING_PREFERENCES.map((style) => (
             <div key={style} className="flex items-center space-x-2">
               <Checkbox
-                id={`beer-${style}`}
+                id={`dining-${style}`}
                 checked={(beerStylePreferences || []).includes(style)}
                 onCheckedChange={() => handleBeerStyleToggle(style)}
               />
               <Label
-                htmlFor={`beer-${style}`}
+                htmlFor={`dining-${style}`}
                 className="text-sm cursor-pointer"
               >
                 {style}

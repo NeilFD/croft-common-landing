@@ -16,7 +16,7 @@ import Navigation from '@/components/Navigation';
 import { MembershipCard } from '@/components/membership/MembershipCard';
 import { AddToAppleWalletButton } from '@/components/membership/AddToAppleWalletButton';
 import Footer from '@/components/Footer';
-
+import denBg from '@/assets/den-bg.jpg';
 
 const tabTriggerClass =
   'rounded-none border-2 border-black bg-white text-black data-[state=active]:bg-black data-[state=active]:text-white font-mono uppercase tracking-[0.2em] text-[10px] md:text-xs h-10';
@@ -91,29 +91,34 @@ const MemberProfile: React.FC = () => {
         <div className="relative z-10">
           <Navigation />
 
+          {/* Hero band with background image, white titles */}
           <div
-            className="container mx-auto px-4 py-8 max-w-6xl"
-            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)' }}
+            className="relative w-full bg-cover bg-center border-b-2 border-black"
+            style={{
+              backgroundImage: `linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url(${denBg})`,
+              paddingTop: 'calc(env(safe-area-inset-top, 0px) + 160px)',
+              paddingBottom: '56px',
+            }}
           >
-            {/* Breadcrumb */}
-            <div className="mb-6">
-              <Link
-                to="/den/member"
-                className="inline-flex items-center font-mono uppercase tracking-[0.3em] text-[10px] text-black/60 hover:text-black transition-colors"
-              >
-                <span aria-hidden className="mr-2">←</span>
-                Back to The Den
-              </Link>
-            </div>
-
-            {/* Header */}
-            <div className="mb-8 border-b-2 border-black pb-6">
-              <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-black/60 mb-3">Member</p>
-              <h1 className="font-display uppercase text-4xl md:text-6xl tracking-tight leading-none mb-3 text-black">
+            <div className="container mx-auto px-4 max-w-6xl">
+              <div className="mb-6">
+                <Link
+                  to="/den/member"
+                  className="inline-flex items-center font-mono uppercase tracking-[0.3em] text-[10px] text-white/80 hover:text-white transition-colors"
+                >
+                  <span aria-hidden className="mr-2">←</span>
+                  Back to The Den
+                </Link>
+              </div>
+              <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-white/80 mb-3">Member</p>
+              <h1 className="font-display uppercase text-5xl md:text-7xl tracking-tight leading-none mb-3 text-white">
                 Profile
               </h1>
-              <p className="font-sans text-base text-black/70">Your details. Your card.</p>
+              <p className="font-sans text-base md:text-lg text-white/90">Your details. Your card.</p>
             </div>
+          </div>
+
+          <div className="container mx-auto px-4 py-10 max-w-6xl">
 
             <Tabs defaultValue="profile" className="space-y-6">
               <TabsList className="grid w-full grid-cols-3 bg-transparent gap-2 p-0 h-auto">

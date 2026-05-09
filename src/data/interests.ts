@@ -36,14 +36,20 @@ export const CB_INTEREST_OPTIONS = [
 ];
 
 export const VENUE_PREFERENCES = [
-  'Beer Hall', 'Cafe', 'Cocktail Bar', 'Common Room', 'Kitchens', 'Event Spaces'
+  'Stadhampton (Country)', 'Beaconsfield (Town)',
+];
+
+export const CB_VENUE_PREFERENCES = VENUE_PREFERENCES;
+
+export const CB_DINING_PREFERENCES = [
+  'English Restaurant', 'Thai Restaurant', 'Bar & Lounge', 'Garden & Terrace', 'Private Dining', 'Hotel Stay',
 ];
 
 export const VISIT_TIME_PREFERENCES = [
-  'Morning (8am-12pm)', 'Afternoon (12pm-5pm)', 'Evening (5pm-9pm)', 'Late Night (9pm+)'
+  'Breakfast', 'Lunch', 'Afternoon Tea', 'Dinner', 'Late Night',
 ];
 
 export const BEER_STYLES = [
-  'IPA', 'Lager', 'Stout', 'Porter', 'Wheat Beer', 'Pilsner', 'Pale Ale', 
-  'Saison', 'Sour Beer', 'Belgian', 'Cider'
+  'IPA', 'Lager', 'Stout', 'Porter', 'Wheat Beer', 'Pilsner', 'Pale Ale',
+  'Saison', 'Sour Beer', 'Belgian', 'Cider',
 ];
