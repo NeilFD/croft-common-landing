@@ -95,8 +95,8 @@ const STAGE_LABEL: Record<Stage, string> = {
 
 const STAGE_PCT: Record<Stage, number> = {
   idle: 0,
-  checking: 35,
-  saving: 80,
+  checking: 20,
+  saving: 40,
   done: 100,
 };
 
