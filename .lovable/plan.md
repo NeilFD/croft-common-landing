@@ -1,84 +1,128 @@
-## Goal
+## Receipt Upload — Anti-Fraud & Bear-Logo Verification
 
-Two things, separately:
-
-1. Strip the legacy Croft Common streak/check‑in layout off `/den/member` and rebuild the page in the Crazy Bear Den style (B&W, hairline blocks, Archivo headings, no pink, no gradients).
-2. Tell you exactly where the events calendar is managed so you can edit it.
-
----
-
-## Where to manage the events calendar
-
-The "Upcoming Events" carousel on `/den/member` is fed by the public `events` table via `useEventManager`. There is no separate admin screen — events are created and edited from the **public Calendar page itself**, which has a hidden authenticated admin mode.
-
-- Open: `https://www.croftcommontest.com/calendar`
-- Trigger the secret gesture on the calendar card (long-press / draw 7 — same gesture system used elsewhere). If you're not signed in, an auth modal opens.
-- Once authenticated, a "Create Event" modal appears. It writes to the `events` table via `useEventManager.addEvent`, which is the same source the Den carousel reads from.
-- A separate `/management/events` exists too, but that is the spaces/booking events list (private hire enquiries), not the public events on the Den carousel. Don't confuse the two.
-
-No code changes needed for this part — answering only.
+### Goals
+- A receipt without a visible Crazy Bear logo is rejected. No data saved, no streak credit.
+- Date and time must be present and parseable.
+- The same image, the same receipt, or a photo of a screen can never count twice.
 
 ---
 
-## /den/member rebuild
+### What is wrong today
 
-### What's wrong now
+1. The OCR edge function (`supabase/functions/receipt-ocr/index.ts`) extracts `receipt_number`, `receipt_time`, `covers`, `venue_location`, `receipt_image_url` and writes them to `member_receipts` — but the live table only has `image_url`, `merchant_name`, `total_amount`, `currency`, `receipt_date`, `items`, `category`. Every save currently fails or silently drops fields. The duplicate check queries columns that do not exist.
+2. There is no logo verification, no image hashing, no screen-of-screen detection, and no per-user lock.
+3. Streak processing runs even when the receipt is junk.
 
-- Old Croft Common chrome: white rounded cards, thick black borders, pink hover and pink accent buttons.
-- Streak system is showing "14 weeks missed", "Save Streak", "Triple challenge" etc. for a freshly-created account. Database checks confirm `member_streaks`, `member_check_ins`, `member_receipts`, `loyalty_cards`, `loyalty_entries` are all empty (0 rows). The bogus history is the streak engine counting calendar weeks back to a project-wide start date instead of the member's join date — i.e. the engine has no concept of "new member, no history yet".
-- "Total Visits / This Month spend" cards reference the same empty data and read as zeros in heavy bordered boxes.
+---
 
-### What we'll build
+### Plan
 
-A monochrome Den-style page with the same `country-06` B&W background and overlay used on `/den/main`. Layout, top to bottom, centred, max-w-5xl:
+#### 1. Database — bring `member_receipts` up to spec
 
-1. Mono eyebrow `MEMBER` and Archivo Black headline `WELCOME, {first_name}`.
-2. One‑line Bears Den whisper under the headline (e.g. "Quiet door. Loud nights. Yours.").
-3. A row of four hairline action chips matching the `/den/main` Enter button style: `Upload receipt`, `Takeaway`, `Moments`, `Profile`.
-4. Hairline divider, mono eyebrow `THIS WEEK`, then the streak block (see below).
-5. Hairline divider, mono eyebrow `WHAT'S ON`, then the upcoming events list rendered in Den style (B&W cards, hairline border, mono date eyebrows, Archivo titles). Replace the pink-bordered `Card` wrapper.
-6. Hairline divider, mono eyebrow `MOMENTS`, then `MemberMomentsCarousel` (already exists) inside a hairline frame.
-7. Footer.
+Migration to add the columns the system needs and a clean dedupe surface:
 
-Removed for good from this page: the white welcome card, the pink "Save Streak" CTA, the Croft Common "Total Visits / This Month" stat tiles, the duplicated quick-action button rows, hover-pink everywhere.
+- `receipt_number text`
+- `receipt_time time`
+- `venue_location text`
+- `covers integer`
+- `raw_ocr_data jsonb`
+- `processing_status text default 'completed'`
+- `image_sha256 text` — SHA-256 of the uploaded image bytes
+- `perceptual_hash text` — pHash for near-duplicate photos of the same receipt
+- `bear_logo_detected boolean not null default false`
+- `bear_logo_confidence numeric`
+- `screen_capture_score numeric` — 0 (real paper) → 1 (definitely a screen)
+- `rejection_reason text` (nullable, only on rejected logs)
 
-### Streak block — fresh-account behaviour
+Indexes / constraints:
+- Unique partial index on `(image_sha256)` where not null — same file can never be uploaded twice by anyone.
+- Unique partial index on `(receipt_number, receipt_date, receipt_time)` where `receipt_number is not null` — same till receipt cannot be re-used.
+- Index on `(user_id, receipt_date)`.
 
-Goal: a brand-new member sees a clean, encouraging block, never "14 weeks missed". Long-term members still see their real streak.
+New table `receipt_rejections` for the "hard reject + log" half of the trail (image url, user, reason, ai flags, created_at) so we can see repeat offenders without polluting `member_receipts`. RLS: user can read own; service role full access.
 
-- New `useDenStreak` hook (or extend `useStreakDashboard`) that reads `cb_members.created_at` for the current user as the **streak origin date**. Any week before that date is excluded from the calendar, missed-weeks list, and grace counts.
-- Empty-state UI when `total_check_ins === 0` AND no receipts uploaded:
-  - Archivo headline `START YOUR STREAK`
-  - Body: "Upload a receipt to log this week. We'll count from here."
-  - Single hairline `Upload receipt` button (opens the existing `ReceiptUploadModal`).
-  - No calendar grid, no missed weeks, no rewards dashboard, no Save Streak CTA.
-- Active state (member has at least one check-in or receipt):
-  - Mono eyebrow `STREAK`
-  - Big Archivo number: current consecutive weeks.
-  - Small mono row underneath: `LONGEST {n}` · `TOTAL {n}` · `THIS MONTH £{x}`.
-  - Below that, a stripped-back B&W weekly grid (re-style of `TraditionalStreakCalendar`) — squares filled white for completed weeks, hairline border for pending, no pink, no gradients.
-  - Missed-week alert only shows weeks **after** the member's join date and only when there are 2 or more genuine misses. Single-miss weeks are silently rolled into the grid.
-- `StreakRewardsDashboard`, `StreakEmergencyBanner`, `StreakSaveModal`, `MissedWeekAlert` get a B&W restyle (hairline borders, mono labels, Archivo headings). No deletion of the underlying logic — just the visual rebuild and the join-date guard.
+#### 2. Edge function — `receipt-ocr` rewrite (strict pipeline)
+
+Pipeline, in order. Any failure short-circuits with a clear reason and writes a row to `receipt_rejections`.
+
+```text
+upload image
+   ↓
+hash image (sha256 + pHash)
+   ↓
+[A] image_sha256 already in member_receipts?  → reject "Already uploaded"
+   ↓
+[B] AI vision pass — strict JSON output:
+       bear_logo_detected (bool)
+       bear_logo_confidence (0..1)
+       screen_capture_score (0..1)
+       date, time, total, currency, merchant, receipt_number, items
+   ↓
+[C] bear_logo_detected == false OR confidence < 0.75
+       → reject "No Crazy Bear logo found on receipt"
+   ↓
+[D] screen_capture_score > 0.6
+       → reject "Looks like a photo of a screen, not a paper receipt"
+   ↓
+[E] date missing OR time missing OR date in future
+       → reject "Receipt must show a valid date and time"
+   ↓
+[F] (receipt_number, date, time) already exists
+       → reject "This receipt has already been uploaded"
+   ↓
+[G] Per-user rate limit: max 5 receipts/day, 30 sec cooldown
+       → reject "Too many uploads, slow down"
+   ↓
+save member_receipts (with hashes + flags)
+   ↓
+insert ledger row
+   ↓
+trigger streak processing
+```
+
+Notes:
+- Use Lovable AI Gateway with `google/gemini-2.5-pro` for the vision pass (strong multimodal, gives reliable structured output and logo detection). System prompt explicitly defines the bear mark and asks for a single JSON object via the AI SDK `Output` API.
+- pHash: small Deno implementation (8x8 DCT); no extra deps required.
+- All rejections return HTTP 422 with `{ reason, code }` so the client renders one clear, friendly message.
+- Streak processing only runs if save succeeds.
+
+#### 3. Reference image for the model
+
+Add `src/assets/crazy-bear-mark.png` (already in repo) as a base64 reference attached to the vision prompt: "this is the Crazy Bear mark — only mark `bear_logo_detected: true` if you see this exact logo printed on the receipt".
+
+#### 4. Frontend — `ReceiptUploadModal`
+
+- Show a hard error state when the function returns 422, with the human reason from the server.
+- Remove the "save anyway" path — there is no override.
+- Step 2 ("Extract") becomes the single gate: if the AI rejects, the user lands back on step 1 with the reason explained.
+- Add small note under the upload box: "We check for the Crazy Bear logo, the date and time. Photos of screens won't count."
+
+#### 5. Hook cleanup
+
+`useMemberData.ts` → `useMemberLedger` already aligned to current schema in the previous fix. After the migration, swap the field-mapping shim so `venue_location` reads from the real column instead of `merchant_name`.
+
+#### 6. What this protects against
+
+| Attack | Blocked by |
+|---|---|
+| Re-uploading the same photo | image_sha256 unique index |
+| Light edit / re-crop of same receipt | pHash near-match check |
+| Photo of a screen showing a real receipt | screen_capture_score gate |
+| Generic / non-Crazy-Bear receipt | bear logo gate |
+| Same till receipt by a different member | (receipt_number, date, time) unique index |
+| Bulk uploads to farm streak | per-user daily cap + cooldown |
+| Future-dated or missing date/time | step E gate |
+
+---
+
+### Out of scope (flag only, not in this plan)
+- Admin moderation queue UI (rejections are logged but not yet shown anywhere).
+- Backfilling hashes for any historical receipts.
+- Geo / IP checks.
 
 ### Files touched
-
-- `src/pages/MemberHome.tsx` — full layout rewrite.
-- `src/components/TraditionalStreakCalendar.tsx` — strip pink/gradient, swap to hairline B&W; respect join-date origin.
-- `src/components/MissedWeekAlert.tsx` — B&W restyle; filter to post-join weeks; hide on single miss.
-- `src/components/StreakRewardsDashboard.tsx`, `StreakEmergencyBanner.tsx`, `StreakSaveModal.tsx`, `ReceiptUploadModal.tsx` — restyle pass to Den tokens (mono labels, Archivo titles, hairline borders, no pink).
-- `src/components/UpcomingEventsCarousel.tsx` — restyle the per-event card (Archivo title, mono date eyebrow, hairline border, B&W image with grayscale filter).
-- `src/hooks/useStreakDashboard.ts` — accept a `streakOriginDate` (member join date) and clamp the week list / missed-weeks / grace logic to it.
-
-### Out of scope (flagging only)
-
-- Lucide icon usage across these components conflicts with the workspace rule. Replacing every icon would balloon scope. Call it out as a follow-up.
-- No database schema changes. The streak tables stay as-is — fix is purely the join-date clamp on the client.
-
----
-
-## Verification
-
-- `/den/member` as a fresh signup: B&W page, "Welcome, {name}", chips row, `START YOUR STREAK` block (no missed weeks, no Save Streak), upcoming events in B&W, moments below. No pink anywhere.
-- Open DevTools → Network: confirm `member_streaks`, `member_check_ins`, `member_receipts` all return `[]`. Page renders empty-state cleanly.
-- Upload a receipt → block flips to active state with current-week tile filled.
-- `/calendar` → trigger secret gesture, sign in if needed, create a test event, confirm it appears in the Den's `WHAT'S ON` block.
+- `supabase/migrations/<new>.sql` — schema additions, indexes, `receipt_rejections` table + RLS
+- `supabase/functions/receipt-ocr/index.ts` — full rewrite around the strict pipeline
+- `supabase/functions/_shared/image-hash.ts` (new) — sha256 + pHash helpers
+- `src/components/ReceiptUploadModal.tsx` — error surfacing, copy update
+- `src/hooks/useMemberData.ts` — switch venue_location source after migration
