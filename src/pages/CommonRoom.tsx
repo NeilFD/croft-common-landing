@@ -43,19 +43,14 @@ const Den = () => {
           <h1 className="font-display uppercase text-6xl md:text-8xl tracking-tight leading-none">
             The Den
           </h1>
-          <div className="mt-10 flex items-center justify-center gap-4">
-            <span className="h-px w-10 bg-white/40" />
-            <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white">
-              Draw a 7
-            </p>
-            <span className="h-px w-10 bg-white/40" />
-          </div>
-          <p className="mt-4 font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/40">
-            Find the bear.
-          </p>
         </div>
       </main>
 
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <span className="font-cb-mono text-[9px] tracking-[0.4em] uppercase text-white/70 bg-black/60 px-3 py-1.5 backdrop-blur">
+          Members: draw 7
+        </span>
+      </div>
       <GestureOverlay
         onGestureComplete={handleGestureComplete}
         containerRef={containerRef}
