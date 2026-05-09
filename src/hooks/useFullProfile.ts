@@ -124,11 +124,30 @@ export const useFullProfile = () => {
 
       // Update profiles table if needed
       if (Object.keys(profileUpdates).length > 0) {
+        // Trim whitespace on name fields so values like "Fincham-Dukes" survive cleanly
+        ['first_name', 'last_name'].forEach((k) => {
+          if (typeof profileUpdates[k] === 'string') {
+            profileUpdates[k] = profileUpdates[k].trim();
+          }
+        });
+
         const { error: profileError } = await (supabase as any)
           .from('profiles')
           .upsert({ user_id: user.id, ...profileUpdates }, { onConflict: 'user_id' });
 
         if (profileError) throw profileError;
+
+        // Mirror canonical CB member fields into cb_members (the membership card source of truth)
+        const cbFields: any = {};
+        if ('first_name' in profileUpdates) cbFields.first_name = profileUpdates.first_name;
+        if ('last_name' in profileUpdates) cbFields.last_name = profileUpdates.last_name;
+        if ('phone_number' in profileUpdates) cbFields.phone = profileUpdates.phone_number;
+        if (Object.keys(cbFields).length > 0) {
+          await (supabase as any)
+            .from('cb_members')
+            .update({ ...cbFields, updated_at: new Date().toISOString() })
+            .eq('user_id', user.id);
+        }
       }
 
       // Update member_profiles_extended table if needed
