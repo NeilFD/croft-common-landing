@@ -43,10 +43,20 @@ serve(async (req) => {
     const hex = membershipNumber.replace('CB-', '').replace('-', '').toLowerCase();
     const uuidPrefix = `${hex.slice(0, 8)}-`;
 
+    // user_id is a uuid column; use a range filter on the uuid prefix
+    // (gte/lt with the next prefix value) instead of ilike, which doesn't
+    // work on uuid types without explicit casting.
+    const hexLower = hex.slice(0, 8);
+    const uuidLow = `${hexLower}-0000-0000-0000-000000000000`;
+    // increment the 8-char prefix by 1 to build the upper bound
+    const nextHex = (parseInt(hexLower, 16) + 1).toString(16).padStart(8, '0');
+    const uuidHigh = `${nextHex}-0000-0000-0000-000000000000`;
+
     const { data: members, error } = await supabase
       .from('cb_members')
       .select('user_id, first_name, last_name, created_at')
-      .ilike('user_id', `${uuidPrefix}%`)
+      .gte('user_id', uuidLow)
+      .lt('user_id', uuidHigh)
       .limit(5);
 
     if (error) {
