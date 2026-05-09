@@ -728,8 +728,10 @@ export const useMemberMoments = () => {
     // Set up real-time subscriptions for instant updates
     console.log('🔔 REALTIME: Setting up subscriptions...');
     
+    const suffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
     const likesChannel = supabase
-      .channel('moment_likes_changes')
+      .channel(`moment_likes_changes_${suffix}`)
       .on(
         'postgres_changes',
         {
@@ -739,14 +741,13 @@ export const useMemberMoments = () => {
         },
         (payload) => {
           console.log('🔔 REALTIME: Moment likes change:', payload);
-          // Re-fetch moments to get updated like counts and user likes
           fetchMoments();
         }
       )
       .subscribe();
 
     const momentsChannel = supabase
-      .channel('member_moments_changes')
+      .channel(`member_moments_changes_${suffix}`)
       .on(
         'postgres_changes',
         {
@@ -756,19 +757,18 @@ export const useMemberMoments = () => {
         },
         (payload) => {
           console.log('🔔 REALTIME: Member moment update:', payload);
-          // Re-fetch moments to get updated moment data
           fetchMoments();
         }
       )
       .subscribe();
 
-    // Cleanup subscriptions on unmount
     return () => {
       console.log('🔔 REALTIME: Cleaning up subscriptions...');
       supabase.removeChannel(likesChannel);
       supabase.removeChannel(momentsChannel);
     };
-  }, [fetchMoments]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     moments,
