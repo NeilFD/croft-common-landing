@@ -310,6 +310,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     };
     const te = (e: TouchEvent) => {
       if (isInteractiveElement(e.target)) return;
+      if (isDrawing) clearSelection();
       endGesture();
     };
     const md = (e: MouseEvent) => {
@@ -323,6 +324,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       if (!isDrawing) return;
       if (isInteractiveElement(e.target)) return;
       e.preventDefault();
+      clearSelection();
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
     };
@@ -330,6 +332,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       if (isInteractiveElement(e.target)) return;
       if (isDrawing) {
         e.preventDefault();
+        clearSelection();
       }
       endGesture();
     };
