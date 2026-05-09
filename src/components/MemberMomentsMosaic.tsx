@@ -211,7 +211,7 @@ import OptimizedImage from './OptimizedImage';
 import MomentComments from './moments/MomentComments';
 
 const MemberMomentsMosaic: React.FC = () => {
-  const { moments, loading, deleteMoment, refetchMoments, likeMoment, unlikeMoment } = useMemberMoments();
+  const { moments, loading, uploadMoment, deleteMoment, refetchMoments, likeMoment, unlikeMoment } = useMemberMoments();
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
   const [editingMoment, setEditingMoment] = useState<MemberMoment | null>(null);
@@ -770,12 +770,6 @@ const MemberMomentsMosaic: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Upload Modal */}
-      <MemberMomentUpload
-        isOpen={showUpload}
-        onClose={() => setShowUpload(false)}
-      />
 
       {/* Edit Modal */}
       {editingMoment && (
