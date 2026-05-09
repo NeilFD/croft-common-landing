@@ -15,6 +15,7 @@ import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import Navigation from '@/components/Navigation';
 import { MembershipCard } from '@/components/membership/MembershipCard';
+import { GoldSection } from '@/components/membership/GoldSection';
 import { AddToAppleWalletButton } from '@/components/membership/AddToAppleWalletButton';
 import Footer from '@/components/Footer';
 import denBg from '@/assets/den-bg-neon.jpg';
