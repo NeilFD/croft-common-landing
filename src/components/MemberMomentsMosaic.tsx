@@ -365,19 +365,39 @@ const MemberMomentsMosaic: React.FC = () => {
               className="break-inside-avoid mb-2 md:mb-4 cursor-pointer group relative overflow-hidden bg-black"
               onClick={() => handleMomentClick(moment)}
             >
-              {/* Full-bleed image */}
-              <img
-                src={moment.image_url}
-                alt={moment.tagline}
-                className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
-              />
-
-              {/* Top gradient + featured pill */}
-              {moment.is_featured && (
-                <div className="absolute top-2 left-2 z-10 px-2 h-6 inline-flex items-center bg-white text-black font-mono text-[9px] tracking-[0.3em] uppercase">
-                  Featured
-                </div>
+              {/* Full-bleed media */}
+              {moment.media_type === 'video' ? (
+                <video
+                  src={moment.image_url}
+                  poster={moment.poster_url || undefined}
+                  className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                />
+              ) : (
+                <img
+                  src={moment.image_url}
+                  alt={moment.tagline}
+                  className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+                />
               )}
+
+              {/* Top pills */}
+              <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5">
+                {moment.is_featured && (
+                  <span className="px-2 h-6 inline-flex items-center bg-white text-black font-mono text-[9px] tracking-[0.3em] uppercase">
+                    Featured
+                  </span>
+                )}
+                {moment.media_type === 'video' && (
+                  <span className="px-2 h-6 inline-flex items-center bg-black/70 border border-white/40 text-white font-mono text-[9px] tracking-[0.3em] uppercase">
+                    Video
+                  </span>
+                )}
+              </div>
 
               {/* Owner controls */}
               {user?.id === moment.user_id && (
@@ -431,27 +451,34 @@ const MemberMomentsMosaic: React.FC = () => {
                   <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-white/70 truncate">
                     {getMemberName(moment)}
                   </span>
-                  <button
-                    type="button"
-                    aria-label={moment.user_has_liked ? 'Unlike' : 'Like'}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      moment.user_has_liked ? unlikeMoment(moment.id) : likeMoment(moment.id);
-                    }}
-                    className="inline-flex items-center gap-1 h-7 px-2 bg-black/40 backdrop-blur-sm border border-white/20 hover:bg-black/70 transition-colors"
-                  >
-                    <Heart
-                      className={cn(
-                        'h-3.5 w-3.5 stroke-2',
-                        moment.user_has_liked
-                          ? 'fill-red-500 stroke-red-500'
-                          : 'fill-transparent stroke-white'
-                      )}
-                    />
-                    {!!moment.like_count && moment.like_count > 0 && (
-                      <span className="font-mono text-[10px] text-white">{moment.like_count}</span>
+                  <div className="flex items-center gap-1.5">
+                    {!!moment.comment_count && moment.comment_count > 0 && (
+                      <span className="inline-flex items-center gap-1 h-7 px-2 bg-black/40 backdrop-blur-sm border border-white/20 font-mono text-[10px] text-white">
+                        💬 {moment.comment_count}
+                      </span>
                     )}
-                  </button>
+                    <button
+                      type="button"
+                      aria-label={moment.user_has_liked ? 'Unlike' : 'Like'}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        moment.user_has_liked ? unlikeMoment(moment.id) : likeMoment(moment.id);
+                      }}
+                      className="inline-flex items-center gap-1 h-7 px-2 bg-black/40 backdrop-blur-sm border border-white/20 hover:bg-black/70 transition-colors"
+                    >
+                      <Heart
+                        className={cn(
+                          'h-3.5 w-3.5 stroke-2',
+                          moment.user_has_liked
+                            ? 'fill-red-500 stroke-red-500'
+                            : 'fill-transparent stroke-white'
+                        )}
+                      />
+                      {!!moment.like_count && moment.like_count > 0 && (
+                        <span className="font-mono text-[10px] text-white">{moment.like_count}</span>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
