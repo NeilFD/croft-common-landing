@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import CroftLogo from "@/components/CroftLogo";
+import CrazyBearLogo from "@/components/CrazyBearLogo";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
