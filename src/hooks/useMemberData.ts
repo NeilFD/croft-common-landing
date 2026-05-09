@@ -21,6 +21,17 @@ interface LedgerEntry {
   };
 }
 
+interface RawLedgerRow {
+  id: string;
+  user_id: string;
+  receipt_id: string | null;
+  amount: number | null;
+  currency: string | null;
+  description: string | null;
+  transaction_type: string | null;
+  created_at: string;
+}
+
 interface MemberStats {
   currentStreak: number;
   longestStreak: number;
@@ -52,61 +63,54 @@ export const useMemberLedger = (dateRange?: { start?: Date; end?: Date }) => {
           .select('*')
           .eq('user_id', user.id);
 
-        console.log('useMemberLedger: Base query created');
-
-        // Apply date range filter if provided
         if (dateRange?.start) {
-          query = query.gte('activity_date', dateRange.start.toISOString().split('T')[0]);
-          console.log('useMemberLedger: Added start date filter:', dateRange.start.toISOString().split('T')[0]);
+          query = query.gte('created_at', dateRange.start.toISOString());
         }
         if (dateRange?.end) {
-          query = query.lte('activity_date', dateRange.end.toISOString().split('T')[0]);
-          console.log('useMemberLedger: Added end date filter:', dateRange.end.toISOString().split('T')[0]);
+          const endInclusive = new Date(dateRange.end);
+          endInclusive.setHours(23, 59, 59, 999);
+          query = query.lte('created_at', endInclusive.toISOString());
         }
 
-        console.log('useMemberLedger: Executing ledger query...');
-        const { data: ledgerData, error: ledgerError } = await query.order('activity_timestamp', { ascending: false });
+        const { data: ledgerData, error: ledgerError } = await query.order('created_at', { ascending: false });
 
-        if (ledgerError) {
-          console.error('useMemberLedger: Ledger query error:', ledgerError);
-          throw ledgerError;
-        }
+        if (ledgerError) throw ledgerError;
 
-        console.log('useMemberLedger: Ledger data received:', ledgerData);
+        const rows = (ledgerData || []) as RawLedgerRow[];
+        const receiptIds = rows.map(r => r.receipt_id).filter(Boolean) as string[];
 
-        // Fetch receipt data for receipt entries
-        const receiptIds = ledgerData
-          ?.filter(entry => entry.activity_type === 'receipt' && entry.related_id)
-          .map(entry => entry.related_id)
-          .filter(Boolean) || [];
-
-        console.log('useMemberLedger: Receipt IDs to fetch:', receiptIds);
-
-        let receiptsMap = new Map();
+        let receiptsMap = new Map<string, any>();
         if (receiptIds.length > 0) {
-          console.log('useMemberLedger: Fetching receipt data...');
           const { data: receiptsData, error: receiptsError } = await (supabase as any)
             .from('member_receipts')
-            .select('id, receipt_image_url, venue_location, items, total_amount')
+            .select('id, image_url, merchant_name, items, total_amount')
             .in('id', receiptIds);
 
-          if (receiptsError) {
-            console.error('useMemberLedger: Receipt query error:', receiptsError);
-          } else {
-            console.log('useMemberLedger: Receipt data received:', receiptsData);
-            receiptsData?.forEach(receipt => {
-              receiptsMap.set(receipt.id, receipt);
+          if (!receiptsError) {
+            (receiptsData || []).forEach((r: any) => {
+              receiptsMap.set(r.id, {
+                id: r.id,
+                receipt_image_url: r.image_url,
+                venue_location: r.merchant_name,
+                items: r.items || [],
+                total_amount: Number(r.total_amount) || 0,
+              });
             });
           }
         }
 
-        // Combine ledger entries with receipt data
-        const enhancedEntries = ledgerData?.map(entry => ({
-          ...entry,
-          receipt: entry.related_id ? receiptsMap.get(entry.related_id) : undefined
-        })) || [];
+        const enhancedEntries: LedgerEntry[] = rows.map(row => ({
+          id: row.id,
+          activity_type: row.receipt_id ? 'receipt' : (row.transaction_type || 'transaction'),
+          activity_date: row.created_at,
+          activity_timestamp: row.created_at,
+          description: row.description || (row.receipt_id ? 'Receipt' : 'Transaction'),
+          amount: row.amount != null ? Number(row.amount) : undefined,
+          currency: row.currency || 'GBP',
+          related_id: row.receipt_id || undefined,
+          receipt: row.receipt_id ? receiptsMap.get(row.receipt_id) : undefined,
+        }));
 
-        console.log('Enhanced entries with receipts:', enhancedEntries.filter(e => e.receipt));
         setLedgerEntries(enhancedEntries);
       } catch (err) {
         console.error('Error fetching ledger entries:', err);
