@@ -20,11 +20,16 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [knownInfo, setKnownInfo] = useState<Partial<EnquiryData>>({});
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  useEffect(() => {
+    if (!isLoading) inputRef.current?.focus();
+  }, [isLoading, messages]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -151,6 +156,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         {/* Input */}
         <div className="border-t-2 border-black p-3 md:p-4 flex gap-3">
           <input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
