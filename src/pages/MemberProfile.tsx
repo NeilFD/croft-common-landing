@@ -46,6 +46,7 @@ const MemberProfile: React.FC = () => {
     beer_style_preferences: [] as string[],
     communication_preferences: { push: true, email: true },
     avatar_url: null as string | null,
+    avatar_face_verified: false,
   });
 
   React.useEffect(() => {
