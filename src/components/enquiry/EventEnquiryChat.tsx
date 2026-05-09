@@ -111,13 +111,20 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
           {messages.map((message, index) => (
             <div
               key={index}
-              className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
+              {message.role === 'assistant' && (
+                <img
+                  src="/brand/crazy-bear-mark.png"
+                  alt="Crazy Bear"
+                  className="w-9 h-9 shrink-0 mt-0.5"
+                />
+              )}
               <div
                 className={
                   message.role === 'user'
                     ? 'max-w-[80%] bg-black text-white border-2 border-black px-4 py-3 font-sans text-sm md:text-base'
-                    : 'max-w-[85%] font-sans text-sm md:text-base text-black leading-relaxed'
+                    : 'max-w-[80%] bg-white text-black border-2 border-black px-4 py-3 font-sans text-sm md:text-base leading-relaxed'
                 }
               >
                 {message.content}
@@ -126,8 +133,13 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
           ))}
 
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/50">
+            <div className="flex justify-start gap-3">
+              <img
+                src="/brand/crazy-bear-mark.png"
+                alt="Crazy Bear"
+                className="w-9 h-9 shrink-0 mt-0.5"
+              />
+              <div className="bg-white text-black border-2 border-black px-4 py-3 font-mono text-[10px] tracking-[0.4em] uppercase">
                 / / / thinking
               </div>
             </div>
