@@ -1,4 +1,41 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+
+// Inline component: autoplays muted, loops, and pauses when offscreen for smoothness
+const MosaicVideo: React.FC<{ src: string; poster?: string; alt?: string }> = ({ src, poster, alt }) => {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            el.play().catch(() => {});
+          } else {
+            el.pause();
+          }
+        });
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <video
+      ref={ref}
+      src={src}
+      poster={poster}
+      aria-label={alt}
+      className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+      muted
+      loop
+      autoPlay
+      playsInline
+      preload="metadata"
+    />
+  );
+};
 import { format } from 'date-fns';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
