@@ -1,7 +1,7 @@
 import React from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { INTEREST_OPTIONS, VENUE_PREFERENCES, VISIT_TIME_PREFERENCES, BEER_STYLES } from '@/data/interests';
+import { CB_INTEREST_OPTIONS, CB_VENUE_PREFERENCES, VISIT_TIME_PREFERENCES, CB_DINING_PREFERENCES } from '@/data/interests';
 
 interface InterestsSelectorProps {
   selectedInterests: string[];
