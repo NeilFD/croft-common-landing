@@ -17,7 +17,7 @@ const CroftCommonDateTime: React.FC = () => {
 
   // SEO: title, description, canonical
   useEffect(() => {
-    const title = "Croft Common Date & Time – Live Clock";
+    const title = "Crazy Bear Date & Time – Live Clock";
     document.title = title;
 
     const descContent = "Live Croft Common date and time page with a 24-hour clock and total.";
