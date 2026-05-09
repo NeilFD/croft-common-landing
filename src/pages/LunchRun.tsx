@@ -177,27 +177,30 @@ export default function LunchRun() {
     setSite(next);
   };
 
+  const subtotal = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  const goldDiscount = isGold ? Math.round(subtotal * 25) / 100 : 0;
+  const totalWithDiscount = Math.max(0, subtotal - goldDiscount);
+
   const canSubmit = !!site && memberName.trim() && memberPhone.trim() && cart.length > 0;
 
-  const handleSubmit = async () => {
-    if (!canSubmit || !site) return;
-    const result = await submitOrder({
+  const checkoutPayload = useMemo<CheckoutPayload | null>(() => {
+    if (!canSubmit || !site) return null;
+    return {
+      kind: 'lunch',
       site,
-      items: cart,
-      totalAmount: total,
+      items: cart.map((c) => ({
+        id: c.id, name: c.name, price: c.price, quantity: c.quantity, category: c.category,
+      })),
       memberName: memberName.trim(),
       memberPhone: memberPhone.trim(),
       notes: notes.trim() || undefined,
-    });
-    if (result?.success) {
-      setOrderRef(result.orderRef || null);
-      setCart([]);
-      try {
-        localStorage.removeItem(cartKey(site));
-      } catch {
-        /* noop */
-      }
-    }
+      returnUrl: `${window.location.origin}/den/member/lunch-run?session_id={CHECKOUT_SESSION_ID}`,
+    };
+  }, [canSubmit, site, cart, memberName, memberPhone, notes]);
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    setStep('pay');
   };
 
   // ===== Site picker =====
