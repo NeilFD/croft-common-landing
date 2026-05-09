@@ -2229,6 +2229,7 @@ export type Database = {
           moderation_reason: string | null
           moderation_status: string | null
           tagline: string | null
+          tags: string[]
           uploaded_at: string | null
           user_id: string
         }
@@ -2250,6 +2251,7 @@ export type Database = {
           moderation_reason?: string | null
           moderation_status?: string | null
           tagline?: string | null
+          tags?: string[]
           uploaded_at?: string | null
           user_id: string
         }
@@ -2271,6 +2273,7 @@ export type Database = {
           moderation_reason?: string | null
           moderation_status?: string | null
           tagline?: string | null
+          tags?: string[]
           uploaded_at?: string | null
           user_id?: string
         }
