@@ -8,6 +8,9 @@ export interface MemberMoment {
   id: string;
   user_id: string;
   image_url: string;
+  media_type?: 'image' | 'video';
+  poster_url?: string | null;
+  duration_seconds?: number | null;
   tagline: string;
   date_taken: string;
   uploaded_at: string;
@@ -30,6 +33,7 @@ export interface MemberMoment {
   } | null;
   like_count?: number;
   user_has_liked?: boolean;
+  comment_count?: number;
   likers?: {
     first_name?: string | null;
     last_name?: string | null;
