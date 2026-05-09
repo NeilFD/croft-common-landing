@@ -14,6 +14,7 @@ import { useActiveSpaces } from '@/hooks/useSpaces';
 import { useCreateLead, type CreateLeadPayload } from '@/hooks/useLeads';
 import { useToast } from '@/hooks/use-toast';
 import { Helmet } from 'react-helmet-async';
+import denBg from '@/assets/den-bg.jpg';
 
 const enquirySchema = z.object({
   first_name: z.string().min(1, 'First name is required').max(100),
