@@ -60,7 +60,6 @@ const MemberProfile = lazy(() => import("./pages/MemberProfile"));
 const DenVerify = lazy(() => import("./pages/DenVerify"));
 const MemberDashboard = lazy(() => import("./pages/MemberDashboard"));
 const MemberMoments = lazy(() => import("./pages/MemberMoments"));
-const GoldMembership = lazy(() => import("./pages/GoldMembership"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const ManageEvent = lazy(() => import("./pages/ManageEvent"));
