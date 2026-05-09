@@ -148,29 +148,65 @@ const CBSpotifyPlayer = () => {
       aria-hidden={hidden}
     >
       <div className="group inline-flex items-center gap-3 rounded-full border border-white/15 bg-black/85 pl-2 pr-4 py-2 text-white shadow-2xl backdrop-blur-md">
-        <button
-          type="button"
-          onClick={toggle}
-          disabled={!ready}
-          aria-label={isPlaying ? "Pause Crazy Bear Sessions" : "Play Crazy Bear Sessions"}
-          className="flex items-center gap-3 transition-opacity disabled:opacity-50"
+        {failed ? (
+          <a
+            href={PLAYLIST_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Open Crazy Bear Sessions on Spotify"
+            className="flex items-center gap-3"
+          >
+            <span className="relative flex items-center justify-center text-white">
+              <VinylIcon spinning={false} />
+              <span className="absolute inset-0 flex items-center justify-center text-black">
+                <PlayIcon />
+              </span>
+            </span>
+            <span className="hidden sm:flex flex-col items-start leading-tight">
+              <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
+                Open in Spotify
+              </span>
+              <span className="font-cb-sans text-sm tracking-wide max-w-[180px] truncate">
+                {playlistTitle}
+              </span>
+            </span>
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={toggle}
+            disabled={!ready}
+            aria-label={isPlaying ? "Pause Crazy Bear Sessions" : "Play Crazy Bear Sessions"}
+            className="flex items-center gap-3 transition-opacity disabled:opacity-50"
+          >
+            <span className="relative flex items-center justify-center text-white">
+              <VinylIcon spinning={isPlaying} />
+              <span className="absolute inset-0 flex items-center justify-center text-black">
+                {isPlaying ? <PauseIcon /> : <PlayIcon />}
+              </span>
+            </span>
+            <span className="hidden sm:flex flex-col items-start leading-tight">
+              <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
+                {ready ? (isPlaying ? "Now Playing" : "Press Play") : "Loading"}
+              </span>
+              <span className="font-cb-sans text-sm tracking-wide max-w-[180px] truncate">
+                {playlistTitle}
+              </span>
+            </span>
+          </button>
+        )}
+        <div
+          ref={containerRef}
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            width: 1,
+            height: 1,
+            opacity: 0,
+            pointerEvents: "none",
+            overflow: "hidden",
+          }}
         >
-          <span className="relative flex items-center justify-center text-white">
-            <VinylIcon spinning={isPlaying} />
-            <span className="absolute inset-0 flex items-center justify-center text-black">
-              {isPlaying ? <PauseIcon /> : <PlayIcon />}
-            </span>
-          </span>
-          <span className="hidden sm:flex flex-col items-start leading-tight">
-            <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
-              {isPlaying ? "Now Playing" : "Press Play"}
-            </span>
-            <span className="font-cb-sans text-sm tracking-wide max-w-[180px] truncate">
-              {playlistTitle}
-            </span>
-          </span>
-        </button>
-        <div ref={containerRef} className="sr-only" aria-hidden="true">
           <div data-spotify-embed />
         </div>
         <noscript>
