@@ -29,6 +29,15 @@ const GestureSelectionGuard = () => {
   useEffect(() => {
     document.body.classList.add("gesture-no-select");
     const clear = () => {
+      const active = document.activeElement;
+      if (
+        active instanceof HTMLInputElement ||
+        active instanceof HTMLTextAreaElement ||
+        active instanceof HTMLSelectElement ||
+        active?.getAttribute("contenteditable") === "true"
+      ) {
+        return;
+      }
       try { window.getSelection()?.removeAllRanges(); } catch {}
     };
     document.addEventListener("selectionchange", clear);
@@ -66,11 +75,20 @@ const SecretGestureHost = ({ variant, children }: Props) => {
               -webkit-touch-callout: none !important;
               -webkit-tap-highlight-color: transparent !important;
             }
+            body.gesture-no-select input,
+            body.gesture-no-select textarea,
+            body.gesture-no-select select,
+            body.gesture-no-select [contenteditable="true"],
+            body.gesture-no-select [role="dialog"] * {
+              user-select: text !important;
+              -webkit-user-select: text !important;
+              -webkit-touch-callout: default !important;
+            }
             body.gesture-no-select ::selection { background: transparent !important; color: inherit !important; }
             body.gesture-no-select ::-moz-selection { background: transparent !important; color: inherit !important; }
           `}</style>
-          <GestureSelectionGuard />
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+          {!open && <GestureSelectionGuard />}
+          <div className={`fixed bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-none ${open ? "hidden" : ""}`}>
             <span className="font-cb-mono text-[9px] tracking-[0.4em] uppercase text-white/70 bg-black/60 px-3 py-1.5 backdrop-blur">
               Members: draw 7
             </span>
