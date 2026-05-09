@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useHideOnScrollDown } from "@/hooks/useHideOnScrollDown";
+
+const AUTO_MINIMISE_ROUTES = ["/den/member/lunch-run"];
 
 const PLAYLIST_ID = "5jryH9aMgkcQruOslKX7Fc";
 const PLAYLIST_URL = `https://open.spotify.com/playlist/${PLAYLIST_ID}`;
@@ -139,6 +142,16 @@ const CBSpotifyPlayer = () => {
   };
 
   const hidden = useHideOnScrollDown();
+  const location = useLocation();
+  const shouldAutoMinimise = AUTO_MINIMISE_ROUTES.some((p) => location.pathname.startsWith(p));
+  const [collapsed, setCollapsed] = useState<boolean>(shouldAutoMinimise);
+  const lastPathRef = useRef(location.pathname);
+  useEffect(() => {
+    if (lastPathRef.current !== location.pathname) {
+      lastPathRef.current = location.pathname;
+      setCollapsed(shouldAutoMinimise);
+    }
+  }, [location.pathname, shouldAutoMinimise]);
 
   return (
     <div
@@ -147,7 +160,18 @@ const CBSpotifyPlayer = () => {
       }`}
       aria-hidden={hidden}
     >
-      <div className="group inline-flex items-center gap-3 rounded-full border border-white/15 bg-black/85 pl-2 pr-4 py-2 text-white shadow-2xl backdrop-blur-md">
+      <div className="group inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/85 pl-2 pr-2 py-2 text-white shadow-2xl backdrop-blur-md">
+        <button
+          type="button"
+          onClick={() => setCollapsed((c) => !c)}
+          aria-label={collapsed ? "Expand music player" : "Minimise music player"}
+          aria-expanded={!collapsed}
+          className="flex items-center justify-center w-6 h-6 rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+        >
+          <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            {collapsed ? <polyline points="15 18 9 12 15 6" /> : <polyline points="9 18 15 12 9 6" />}
+          </svg>
+        </button>
         {failed ? (
           <a
             href={PLAYLIST_URL}
@@ -162,7 +186,7 @@ const CBSpotifyPlayer = () => {
                 <PlayIcon />
               </span>
             </span>
-            <span className="hidden sm:flex flex-col items-start leading-tight">
+            <span className={`${collapsed ? 'hidden' : 'hidden sm:flex'} flex-col items-start leading-tight pr-2`}>
               <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
                 Open in Spotify
               </span>
@@ -185,7 +209,7 @@ const CBSpotifyPlayer = () => {
                 {isPlaying ? <PauseIcon /> : <PlayIcon />}
               </span>
             </span>
-            <span className="hidden sm:flex flex-col items-start leading-tight">
+            <span className={`${collapsed ? 'hidden' : 'hidden sm:flex'} flex-col items-start leading-tight pr-2`}>
               <span className="font-cb-mono text-[9px] tracking-[0.3em] uppercase opacity-70">
                 {ready ? (isPlaying ? "Now Playing" : "Press Play") : "Loading"}
               </span>
