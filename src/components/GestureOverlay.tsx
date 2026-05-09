@@ -10,14 +10,27 @@ interface GestureOverlayProps {
 const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, containerRef }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   
+  const clearSelection = useCallback(() => {
+    try {
+      window.getSelection()?.removeAllRanges();
+      if ((document as any).selection?.empty) (document as any).selection.empty();
+    } catch {}
+  }, []);
+
   const handleGestureSuccess = useCallback(() => {
+    // Clear any text selection caused by the drag gesture before navigating away
+    clearSelection();
+    // And again on the next tick so it sticks after React re-renders / route changes
+    setTimeout(clearSelection, 0);
+    setTimeout(clearSelection, 50);
+
     toast({
       title: "Access Granted",
       description: "Welcome to The Common Room, for Common People",
       duration: 2000,
     });
     onGestureComplete();
-  }, [onGestureComplete]);
+  }, [onGestureComplete, clearSelection]);
   
   const {
     isDrawing,
