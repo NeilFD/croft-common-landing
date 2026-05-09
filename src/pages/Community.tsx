@@ -9,7 +9,7 @@ const Community = () => {
   const { isCMSMode } = useCMSMode();
 
   useEffect(() => {
-    document.title = 'Community | Croft Common';
+    document.title = 'Community | Crazy Bear';
   }, []);
 
   return (
@@ -30,7 +30,7 @@ const Community = () => {
             page="community" 
             section="hero" 
             contentKey="description" 
-            fallback="We didn't land here by accident.\n\nCroft Common was built in the heart of it all - the murals, the music, the noise, it has roots.\n\nStokes Croft isn't a backdrop, it's part of the fabric. We're here for more than trade. We give back in time, space, and support.\n\nAlways add, never subtract."
+            fallback="We didn't land here by accident.\n\nCrazy Bear was built in the heart of it all - the murals, the music, the noise, it has roots.\n\nStokes Croft isn't a backdrop, it's part of the fabric. We're here for more than trade. We give back in time, space, and support.\n\nAlways add, never subtract."
             as="p"
             className="font-industrial text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed whitespace-pre-line"
           />

@@ -54,8 +54,8 @@ export default function Notifications() {
 
   useEffect(() => {
     setMeta({
-      title: "Notifications | Croft Common",
-      description: "Personalised notifications and offers from Croft Common.",
+      title: "Notifications | Crazy Bear",
+      description: "Personalised notifications and offers from Crazy Bear.",
       canonical: `${window.location.origin}/notifications`,
     });
   }, []);
@@ -109,14 +109,14 @@ export default function Notifications() {
           page="notifications" 
           section="message" 
           contentKey="content"
-          fallback="Pop down to Croft Common to soak up the Membership benefits in the sun tomorrow"
+          fallback="Pop down to Crazy Bear to soak up the Membership benefits in the sun tomorrow"
           as="p"
         />
         <CMSText 
           page="notifications" 
           section="message" 
           contentKey="signature"
-          fallback="- Croft Common"
+          fallback="- Crazy Bear"
           as="p"
           className="mt-8 text-right font-industrial text-base"
         />

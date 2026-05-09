@@ -27,7 +27,7 @@ const OneKitchenMenu = () => {
             <div className="text-center text-white">
               <div className="w-24 h-0.5 bg-white mx-auto mb-8"></div>
               <h1 className="font-brutalist text-4xl md:text-6xl lg:text-7xl tracking-wider uppercase mb-4">
-                Croft Common Kitchen
+                Crazy Bear Kitchen
               </h1>
               <div className="w-24 h-0.5 bg-white mx-auto"></div>
             </div>
@@ -80,7 +80,7 @@ const OneKitchenMenu = () => {
                   <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
                   <div className="space-y-2">
                     <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                      Croft Common Kitchen
+                      Crazy Bear Kitchen
                     </h2>
                     <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
                       Evening. Dark. Bold.
@@ -140,7 +140,7 @@ const OneKitchenMenu = () => {
                   <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
                   <div className="space-y-2">
                     <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                      Croft Common Café
+                      Crazy Bear Café
                     </h2>
                     <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
                       Daytime. Bright. Vibrant.
@@ -200,7 +200,7 @@ const OneKitchenMenu = () => {
                   <div className="w-32 h-0.5 bg-accent-pink mx-auto"></div>
                   <div className="space-y-2">
                     <h2 className="font-brutalist text-3xl md:text-4xl lg:text-5xl tracking-wider uppercase text-foreground">
-                      Croft Common Sunday
+                      Crazy Bear Sunday
                     </h2>
                     <p className="font-industrial text-lg md:text-xl text-muted-foreground italic">
                       Breakfast. Brunch. Roasts.

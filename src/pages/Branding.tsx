@@ -83,12 +83,12 @@ const CopyButton = ({ label, value, className }: { label?: string; value: string
 const Branding = () => {
   // SEO and meta tags
   useEffect(() => {
-    document.title = "Croft Common Brand Book – Branding & Design";
+    document.title = "Crazy Bear Brand Book – Branding & Design";
     const metaDesc = document.querySelector('meta[name="description"]');
     const robots = document.querySelector('meta[name="robots"]');
     const canonical = document.querySelector('link[rel="canonical"]');
 
-    const descContent = "Croft Common brand book: logos, colors, typography, tone of voice, and usage guidelines.";
+    const descContent = "Crazy Bear brand book: logos, colors, typography, tone of voice, and usage guidelines.";
 
     if (metaDesc) metaDesc.setAttribute("content", descContent);
     else {
@@ -168,9 +168,9 @@ const Branding = () => {
       <header className="border-b border-border bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto max-w-6xl px-6 py-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <img src={LOGO_URL} alt="Croft Common logo" className="w-8 h-8 object-contain" />
+            <img src={LOGO_URL} alt="Crazy Bear logo" className="w-8 h-8 object-contain" />
             <div>
-              <h1 className="text-xl md:text-2xl font-semibold leading-tight">Croft Common Brand Book</h1>
+              <h1 className="text-xl md:text-2xl font-semibold leading-tight">Crazy Bear Brand Book</h1>
               <p className="text-sm text-muted-foreground">Brand, design, and voice guidelines</p>
             </div>
           </div>
@@ -187,7 +187,7 @@ const Branding = () => {
         <Section id="logos" title="Logo & Watermark">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <figure className="p-6 border border-border bg-card/30 transition-transform hover:scale-[1.01]">
-              <img src={LOGO_URL} alt="Croft Common logo" className="w-full h-40 object-contain" loading="lazy" />
+              <img src={LOGO_URL} alt="Crazy Bear logo" className="w-full h-40 object-contain" loading="lazy" />
               <figcaption className="mt-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium">Primary Logo</p>
@@ -251,7 +251,7 @@ const Branding = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{f.name}</p>
-                    <h3 className={cn(f.className, "text-2xl md:text-4xl leading-tight")}>Croft Common</h3>
+                    <h3 className={cn(f.className, "text-2xl md:text-4xl leading-tight")}>Crazy Bear</h3>
                     
                   </div>
                   <CopyButton value={`font-family: ${f.stack};`} label="Copy stack" />
@@ -384,7 +384,7 @@ const Branding = () => {
 
       <footer className="border-t border-border py-8">
         <div className="container mx-auto max-w-6xl px-6 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Croft Common — Internal brand book</p>
+          <p className="text-sm text-muted-foreground">Crazy Bear — Internal brand book</p>
           <a href="#logos" className="story-link text-sm">Back to top</a>
         </div>
       </footer>

@@ -17,10 +17,10 @@ const CroftCommonDateTime: React.FC = () => {
 
   // SEO: title, description, canonical
   useEffect(() => {
-    const title = "Croft Common Date & Time – Live Clock";
+    const title = "Crazy Bear Date & Time – Live Clock";
     document.title = title;
 
-    const descContent = "Live Croft Common date and time page with a 24-hour clock and total.";
+    const descContent = "Live Crazy Bear date and time page with a 24-hour clock and total.";
     let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
     if (!meta) {
       meta = document.createElement('meta');
@@ -70,7 +70,7 @@ const CroftCommonDateTime: React.FC = () => {
             page="croft-common-datetime"
             section="main"
             contentKey="seo-title"
-            fallback="Croft Common Live Date and Time"
+            fallback="Crazy Bear Live Date and Time"
             as="div"
           />
         </h1>
