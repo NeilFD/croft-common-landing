@@ -217,10 +217,12 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
 
     try {
       setStage('saving');
+      setUploadPct(0);
       const result = await uploadMoment(file, tagline.trim(), dateTaken, selectedTags, {
         mediaType,
         posterBlob: videoMeta?.posterBlob ?? null,
         durationSeconds: videoMeta?.durationSeconds ?? null,
+        onProgress: (pct) => setUploadPct(pct),
       });
       if (!result) throw new Error('Could not save your moment.');
       setStage('done');
