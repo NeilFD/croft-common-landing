@@ -67,13 +67,20 @@ export const useFullProfile = () => {
         throw extendedError;
       }
 
-      // Combine data
+      // Fetch canonical CB member record (source of truth for name/phone on the membership card)
+      const { data: cbData } = await (supabase as any)
+        .from('cb_members')
+        .select('first_name, last_name, phone')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      // Combine data — CB members table wins for name/phone
       const combinedProfile: FullProfile = {
         id: profileData?.id || '',
         user_id: user.id,
-        first_name: profileData?.first_name || null,
-        last_name: profileData?.last_name || null,
-        phone_number: profileData?.phone_number || null,
+        first_name: cbData?.first_name || profileData?.first_name || null,
+        last_name: cbData?.last_name || profileData?.last_name || null,
+        phone_number: cbData?.phone || profileData?.phone_number || null,
         birthday: profileData?.birthday || null,
         interests: profileData?.interests || null,
         dietary_preferences: profileData?.dietary_preferences || null,
