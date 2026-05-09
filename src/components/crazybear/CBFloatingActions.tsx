@@ -51,8 +51,8 @@ const CBFloatingActions: React.FC = () => {
 
   return (
     <>
-      <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-40 md:bottom-64" />
-      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-24 md:bottom-40" />
+      <CBFloatingButton label="Curious?" to="/curious" bottomClass="bottom-[22rem] md:bottom-64" />
+      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-[15rem] md:bottom-40" />
     </>
   );
 };
