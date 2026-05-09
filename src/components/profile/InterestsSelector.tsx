@@ -45,7 +45,7 @@ export const InterestsSelector: React.FC<InterestsSelectorProps> = ({
       <div>
         <Label className="text-base font-semibold mb-3 block">General Interests</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {INTEREST_OPTIONS.map((interest) => (
+          {CB_INTEREST_OPTIONS.map((interest) => (
             <div key={interest} className="flex items-center space-x-2">
               <Checkbox
                 id={`interest-${interest}`}
@@ -67,7 +67,7 @@ export const InterestsSelector: React.FC<InterestsSelectorProps> = ({
       <div>
         <Label className="text-base font-semibold mb-3 block">Favorite Venue</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {VENUE_PREFERENCES.map((venue) => (
+          {CB_VENUE_PREFERENCES.map((venue) => (
             <div key={venue} className="flex items-center space-x-2">
               <Checkbox
                 id={`venue-${venue}`}
