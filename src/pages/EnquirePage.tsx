@@ -195,7 +195,7 @@ export default function EnquirePage() {
       <div className="relative min-h-screen bg-background">
         <div
           aria-hidden
-          className="fixed inset-0 -z-10 bg-cover bg-center grayscale"
+          className="fixed inset-0 -z-10 bg-cover bg-center "
           style={{ backgroundImage: `url(${denBg})` }}
         />
         <div aria-hidden className="fixed inset-0 -z-10 bg-white/70" />

@@ -146,7 +146,7 @@ const Curious: React.FC = () => {
         {/* Opaque B&W background image */}
         <div
           aria-hidden
-          className="fixed inset-0 -z-10 bg-cover bg-center grayscale"
+          className="fixed inset-0 -z-10 bg-cover bg-center "
           style={{ backgroundImage: `url(${cbBgImage})` }}
         />
         <div aria-hidden className="fixed inset-0 -z-10 bg-black/40" />
