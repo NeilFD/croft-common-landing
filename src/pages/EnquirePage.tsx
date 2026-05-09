@@ -192,8 +192,14 @@ export default function EnquirePage() {
         <link rel="canonical" href={`${window.location.origin}/enquire`} />
       </Helmet>
 
-      <div className="min-h-screen bg-background">
-        <header className="border-b">
+      <div className="relative min-h-screen bg-background">
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10 bg-cover bg-center grayscale"
+          style={{ backgroundImage: `url(${denBg})` }}
+        />
+        <div aria-hidden className="fixed inset-0 -z-10 bg-white/70" />
+        <header className="border-b bg-background/85 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <a href="/" className="flex items-center space-x-3">
