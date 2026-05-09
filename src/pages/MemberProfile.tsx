@@ -16,7 +16,7 @@ import Navigation from '@/components/Navigation';
 import { MembershipCard } from '@/components/membership/MembershipCard';
 import { AddToAppleWalletButton } from '@/components/membership/AddToAppleWalletButton';
 import Footer from '@/components/Footer';
-import denBg from '@/assets/den-bg.jpg';
+
 
 const tabTriggerClass =
   'rounded-none border-2 border-black bg-white text-black data-[state=active]:bg-black data-[state=active]:text-white font-mono uppercase tracking-[0.2em] text-[10px] md:text-xs h-10';
