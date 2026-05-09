@@ -362,7 +362,7 @@ const MemberMomentsMosaic: React.FC = () => {
           {filteredMoments.map((moment, index) => (
             <div
               key={moment.id}
-              className="break-inside-avoid mb-4 cursor-pointer group"
+              className="break-inside-avoid mb-2 md:mb-4 cursor-pointer group"
               onClick={() => handleMomentClick(moment)}
             >
               <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
