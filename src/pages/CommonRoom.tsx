@@ -43,14 +43,16 @@ const Den = () => {
           <h1 className="font-display uppercase text-6xl md:text-8xl tracking-tight leading-none">
             The Den
           </h1>
-          <p className="mt-8 font-mono text-[10px] md:text-xs tracking-[0.4em] uppercase text-white/60">
+          <div className="mt-10 flex items-center justify-center gap-4">
+            <span className="h-px w-10 bg-white/40" />
+            <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white">
+              Draw a 7
+            </p>
+            <span className="h-px w-10 bg-white/40" />
+          </div>
+          <p className="mt-4 font-mono text-[9px] md:text-[10px] tracking-[0.4em] uppercase text-white/40">
             Find the bear.
           </p>
-          <div className="mt-10 flex justify-center">
-            <span className="inline-flex items-center gap-3 rounded-full border border-white/20 bg-white/5 px-5 py-2 font-mono text-[10px] md:text-xs tracking-[0.35em] uppercase text-white/80 backdrop-blur-sm">
-              Draw a 7
-            </span>
-          </div>
         </div>
       </main>
 
