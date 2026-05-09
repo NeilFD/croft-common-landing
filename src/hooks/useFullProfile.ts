@@ -28,6 +28,7 @@ export interface FullProfile {
   dietary_notes: string | null;
   tier_badge: string | null;
   hide_from_leaderboards: boolean;
+  avatar_face_verified: boolean;
   preferences: any;
 }
 
