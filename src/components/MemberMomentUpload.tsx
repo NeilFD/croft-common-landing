@@ -474,16 +474,22 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
               </div>
 
               {busy && (() => {
-                const livePct =
-                  stage === 'saving'
-                    ? Math.max(STAGE_PCT.saving, Math.round(STAGE_PCT.saving + (uploadPct * (95 - STAGE_PCT.saving)) / 100))
-                    : STAGE_PCT[stage];
-                const label =
-                  stage === 'saving' && uploadPct > 0 && uploadPct < 100
-                    ? `Uploading ${uploadPct}%`
-                    : stage === 'saving' && uploadPct >= 100
-                    ? 'Finalising'
-                    : STAGE_LABEL[stage];
+                let livePct = STAGE_PCT[stage];
+                let label: string = STAGE_LABEL[stage];
+                if (stage === 'compressing') {
+                  const span = STAGE_PCT.saving - STAGE_PCT.compressing;
+                  livePct = Math.round(STAGE_PCT.compressing + (compressPct * span) / 100);
+                  label = compressPct > 0 ? `Compressing ${compressPct}%` : 'Compressing';
+                } else if (stage === 'saving') {
+                  const span = 95 - STAGE_PCT.saving;
+                  livePct = Math.max(STAGE_PCT.saving, Math.round(STAGE_PCT.saving + (uploadPct * span) / 100));
+                  label =
+                    uploadPct > 0 && uploadPct < 100
+                      ? `Uploading ${uploadPct}%`
+                      : uploadPct >= 100
+                      ? 'Finalising'
+                      : STAGE_LABEL[stage];
+                }
                 return (
                   <div className="space-y-2">
                     <div className="h-1 w-full bg-white/10 overflow-hidden">
