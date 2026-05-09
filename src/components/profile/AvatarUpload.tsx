@@ -81,7 +81,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         onClick={() => fileInputRef.current?.click()}
       >
         <Avatar className="h-32 w-32 border-4 border-background shadow-lg">
-          <AvatarImage src={currentAvatarUrl || undefined} alt="Profile picture" />
+          <AvatarImage src={currentAvatarUrl || undefined} alt="Profile picture" className="object-cover" />
           <AvatarFallback className="text-2xl font-bold bg-muted">
             {getInitials()}
           </AvatarFallback>
