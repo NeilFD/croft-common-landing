@@ -324,7 +324,7 @@ const MemberMomentsMosaic: React.FC = () => {
                 <p className="text-muted-foreground">
                   {searchQuery || startDate || endDate || selectedTagFilter
                     ? 'Try adjusting your search, date, or tag filters'
-                    : 'Be the first to share a memory from Croft Common!'}
+                    : 'Be the first to share a moment.'}
                 </p>
               </div>
               {user && (
