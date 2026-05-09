@@ -37,13 +37,13 @@ const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomCl
       type="button"
       aria-label={label}
       onClick={() => navigate(to)}
-      className={`fixed ${bottomClass} left-6 md:left-8 z-40 w-14 h-14 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing border-2 border-white/40 backdrop-blur-sm bg-black/70 text-white hover:bg-white hover:text-black hover:border-black before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0`}
+      className={`fixed ${bottomClass} right-6 md:right-8 z-40 w-20 h-20 rounded-full transition-all duration-300 hover:scale-105 flex items-center justify-center group overflow-hidden button-breathing border-2 border-white/40 backdrop-blur-sm bg-black/80 text-white hover:bg-white hover:text-black hover:border-black before:content-[''] before:absolute before:inset-0 before:rounded-full before:animate-breathing before:z-0`}
       style={{
         // @ts-ignore - CSS var typing
         '--breathing-color': breathingColor,
       } as React.CSSProperties}
     >
-      <span className="relative z-10 font-brutalist tracking-wider text-[10px] uppercase select-none">
+      <span className="relative z-10 font-brutalist tracking-wider text-xs uppercase select-none">
         {label}
       </span>
     </button>
@@ -56,8 +56,8 @@ const CBFloatingActions: React.FC = () => {
 
   return (
     <>
-      <CBFloatingButton label="Enquire" to="/enquire" bottomClass="bottom-32" />
-      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-12" />
+      <CBFloatingButton label="Enquire" to="/enquire" bottomClass="bottom-64" />
+      <CBFloatingButton label="Book" to="/book" bottomClass="bottom-40" />
     </>
   );
 };
