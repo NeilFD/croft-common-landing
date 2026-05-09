@@ -5,7 +5,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import MemberMomentsMosaic from '@/components/MemberMomentsMosaic';
 import { useCMSMode } from '@/contexts/CMSModeContext';
-import denBg from '@/assets/crazybear/cb-bear-bw.jpg';
+import denBg from '@/assets/den-bg-neon.jpg';
 
 const MemberMoments: React.FC = () => {
   const { user, loading } = useAuth();
