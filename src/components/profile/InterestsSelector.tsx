@@ -111,19 +111,19 @@ export const InterestsSelector: React.FC<InterestsSelectorProps> = ({
         </div>
       </div>
 
-      {/* Beer Style Preferences */}
+      {/* Dining & Stay Preferences */}
       <div>
-        <Label className="text-base font-semibold mb-3 block">Beer Style Preferences</Label>
+        <Label className="text-base font-semibold mb-3 block">Dining & Stay Preferences</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {BEER_STYLES.map((style) => (
+          {CB_DINING_PREFERENCES.map((style) => (
             <div key={style} className="flex items-center space-x-2">
               <Checkbox
-                id={`beer-${style}`}
+                id={`dining-${style}`}
                 checked={(beerStylePreferences || []).includes(style)}
                 onCheckedChange={() => handleBeerStyleToggle(style)}
               />
               <Label
-                htmlFor={`beer-${style}`}
+                htmlFor={`dining-${style}`}
                 className="text-sm cursor-pointer"
               >
                 {style}
