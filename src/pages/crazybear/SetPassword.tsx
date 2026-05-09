@@ -40,7 +40,7 @@ const SetPassword = () => {
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: target,
-      options: { emailRedirectTo: 'https://www.crazybeartest.com/set-password' },
+      options: { emailRedirectTo: 'https://www.crazybear.dev/set-password' },
     });
     setResending(false);
     if (error) {
@@ -99,7 +99,7 @@ const SetPassword = () => {
       window.history.replaceState({}, document.title, url.pathname);
     } catch {}
     toast({ title: 'Password set', description: 'You are signed in.' });
-    window.location.assign('https://www.crazybeartest.com/');
+    window.location.assign('https://www.crazybear.dev/');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
