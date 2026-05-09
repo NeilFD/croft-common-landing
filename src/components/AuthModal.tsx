@@ -390,6 +390,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
           }
         }}
         onInteractOutside={(e) => {
+          safeProps.onInteractOutside(e);
+          if (e.defaultPrevented) return;
           // Allow closing by clicking outside if not loading
           if (!loading) {
             handleClose();
@@ -397,6 +399,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
             e.preventDefault();
           }
         }}
+        onPointerDownOutside={safeProps.onPointerDownOutside}
+        onFocusOutside={safeProps.onFocusOutside}
       >
         <DialogHeader>
           <DialogTitle>{title ?? 'Sign in'}</DialogTitle>
