@@ -276,6 +276,9 @@ export type Database = {
           phone: string | null
           updated_at: string
           user_id: string
+          wallet_pass_last_issued_at: string | null
+          wallet_pass_revoked: boolean
+          wallet_pass_serial_number: string | null
         }
         Insert: {
           birthday_day?: number | null
@@ -292,6 +295,9 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id: string
+          wallet_pass_last_issued_at?: string | null
+          wallet_pass_revoked?: boolean
+          wallet_pass_serial_number?: string | null
         }
         Update: {
           birthday_day?: number | null
@@ -308,6 +314,9 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+          wallet_pass_last_issued_at?: string | null
+          wallet_pass_revoked?: boolean
+          wallet_pass_serial_number?: string | null
         }
         Relationships: []
       }

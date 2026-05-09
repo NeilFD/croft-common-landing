@@ -95,7 +95,15 @@ export const MembershipCard = () => {
 
         {/* Name */}
         <div>
-          <h2 className="font-display uppercase text-2xl md:text-3xl leading-none tracking-tight">
+          <h2
+            className={`font-display uppercase leading-none tracking-tight break-words ${
+              fullName.length > 22
+                ? 'text-lg md:text-xl'
+                : fullName.length > 16
+                ? 'text-xl md:text-2xl'
+                : 'text-2xl md:text-3xl'
+            }`}
+          >
             {fullName}
           </h2>
         </div>

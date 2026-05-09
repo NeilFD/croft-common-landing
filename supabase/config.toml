@@ -5,3 +5,5 @@ project_id = "szokkwlleqndyiojhsll"
     verify_jwt = false
   [functions.process-email-queue]
     verify_jwt = true
+  [functions.create-cb-wallet-pass]
+    verify_jwt = false
