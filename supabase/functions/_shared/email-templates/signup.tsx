@@ -9,10 +9,13 @@ import {
   Heading,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
   Text,
 } from 'npm:@react-email/components@0.0.22'
+
+const LOGO_URL = 'https://szokkwlleqndyiojhsll.supabase.co/storage/v1/object/public/email-assets/crazy-bear-mark.png'
 
 interface SignupEmailProps {
   siteName: string
@@ -32,13 +35,20 @@ export const SignupEmail = ({
     <Preview>Your code to enter the den.</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Img src={LOGO_URL} alt="The Crazy Bear" width="64" height="64" style={logo} />
         <Text style={eyebrow}>THE BEARS DEN</Text>
         <Heading style={h1}>YOUR CODE.</Heading>
         <Text style={text}>Enter this on the password screen.</Text>
 
-        <div style={codeBox}>
-          <Text style={codeText}>{token || '------'}</Text>
-        </div>
+        <table role="presentation" cellPadding={0} cellSpacing={0} border={0} style={codeBox}>
+          <tbody>
+            <tr>
+              <td align="center" style={codeCell}>
+                <span style={codeText}>{token || '------'}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
         <Text style={smallText}>Good for 1 hour. One use only.</Text>
 
