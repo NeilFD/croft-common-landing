@@ -236,20 +236,20 @@ const MemberMomentsMosaic: React.FC = () => {
           
           {/* Date Range Filters */}
           <div className="flex gap-2 flex-wrap">
-            <Popover>
+             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal",
-                    !startDate && "text-muted-foreground"
+                    "justify-start text-left font-normal bg-white text-black border-black/20 hover:bg-black hover:text-white hover:border-black",
+                    !startDate && "text-black/60"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {startDate ? format(startDate, "MMM d, yyyy") : "Start date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 bg-white border-black/20" align="start">
                 <CalendarComponent
                   mode="single"
                   selected={startDate}
@@ -265,15 +265,15 @@ const MemberMomentsMosaic: React.FC = () => {
                 <Button
                   variant="outline"
                   className={cn(
-                    "justify-start text-left font-normal",
-                    !endDate && "text-muted-foreground"
+                    "justify-start text-left font-normal bg-white text-black border-black/20 hover:bg-black hover:text-white hover:border-black",
+                    !endDate && "text-black/60"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {endDate ? format(endDate, "MMM d, yyyy") : "End date"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
+              <PopoverContent className="w-auto p-0 bg-white border-black/20" align="start">
                 <CalendarComponent
                   mode="single"
                   selected={endDate}
@@ -285,7 +285,11 @@ const MemberMomentsMosaic: React.FC = () => {
             </Popover>
             
             {hasActiveFilters && (
-              <Button variant="ghost" onClick={clearFilters}>
+              <Button
+                variant="ghost"
+                onClick={clearFilters}
+                className="bg-white text-black hover:bg-black hover:text-white"
+              >
                 Clear
               </Button>
             )}
