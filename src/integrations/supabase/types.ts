@@ -85,6 +85,47 @@ export type Database = {
         }
         Relationships: []
       }
+      bedrooms: {
+        Row: {
+          count: number
+          created_at: string | null
+          display_order: number | null
+          id: string
+          max_occupancy: number | null
+          notes: string | null
+          property_id: string
+          tier: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          max_occupancy?: number | null
+          notes?: string | null
+          property_id: string
+          tier: string
+        }
+        Update: {
+          count?: number
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          max_occupancy?: number | null
+          notes?: string | null
+          property_id?: string
+          tier?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bedrooms_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       beo_documents: {
         Row: {
           created_at: string | null
@@ -1491,6 +1532,53 @@ export type Database = {
         }
         Relationships: []
       }
+      fb_venues: {
+        Row: {
+          capacity: number | null
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          formats: string[] | null
+          id: string
+          name: string
+          property_id: string
+          slug: string
+          tone_blurb: string | null
+        }
+        Insert: {
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          formats?: string[] | null
+          id?: string
+          name: string
+          property_id: string
+          slug: string
+          tone_blurb?: string | null
+        }
+        Update: {
+          capacity?: number | null
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          formats?: string[] | null
+          id?: string
+          name?: string
+          property_id?: string
+          slug?: string
+          tone_blurb?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fb_venues_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_daily_reports: {
         Row: {
           content: string | null
@@ -2663,6 +2751,42 @@ export type Database = {
         }
         Relationships: []
       }
+      properties: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          location: string | null
+          name: string
+          positioning: string | null
+          signature_feel: string | null
+          slug: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name: string
+          positioning?: string | null
+          signature_feel?: string | null
+          slug: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          location?: string | null
+          name?: string
+          positioning?: string | null
+          signature_feel?: string | null
+          slug?: string
+        }
+        Relationships: []
+      }
       proposal_pdfs: {
         Row: {
           created_at: string | null
@@ -2961,36 +3085,98 @@ export type Database = {
       }
       spaces: {
         Row: {
+          av_included: boolean | null
           capacity: number | null
+          capacity_dining: number | null
+          capacity_seated: number | null
+          capacity_standing: number | null
+          combinable_with: string[] | null
           created_at: string | null
           description: string | null
+          display_order: number | null
+          event_types: string[] | null
+          exclusivity_notes: string | null
+          hire_notes: string | null
           id: string
           image_url: string | null
+          indoor_outdoor: string | null
           is_active: boolean | null
+          layouts: string[] | null
+          max_guests: number | null
+          min_guests: number | null
+          min_spend_notes: string | null
+          music_curfew: string | null
           name: string
+          property_id: string | null
           slug: string
+          step_free: boolean | null
+          tone_blurb: string | null
         }
         Insert: {
+          av_included?: boolean | null
           capacity?: number | null
+          capacity_dining?: number | null
+          capacity_seated?: number | null
+          capacity_standing?: number | null
+          combinable_with?: string[] | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
+          event_types?: string[] | null
+          exclusivity_notes?: string | null
+          hire_notes?: string | null
           id?: string
           image_url?: string | null
+          indoor_outdoor?: string | null
           is_active?: boolean | null
+          layouts?: string[] | null
+          max_guests?: number | null
+          min_guests?: number | null
+          min_spend_notes?: string | null
+          music_curfew?: string | null
           name: string
+          property_id?: string | null
           slug: string
+          step_free?: boolean | null
+          tone_blurb?: string | null
         }
         Update: {
+          av_included?: boolean | null
           capacity?: number | null
+          capacity_dining?: number | null
+          capacity_seated?: number | null
+          capacity_standing?: number | null
+          combinable_with?: string[] | null
           created_at?: string | null
           description?: string | null
+          display_order?: number | null
+          event_types?: string[] | null
+          exclusivity_notes?: string | null
+          hire_notes?: string | null
           id?: string
           image_url?: string | null
+          indoor_outdoor?: string | null
           is_active?: boolean | null
+          layouts?: string[] | null
+          max_guests?: number | null
+          min_guests?: number | null
+          min_spend_notes?: string | null
+          music_curfew?: string | null
           name?: string
+          property_id?: string | null
           slug?: string
+          step_free?: boolean | null
+          tone_blurb?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "spaces_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {

@@ -7,186 +7,140 @@ const corsHeaders = {
 };
 
 Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
     const { enquiryData } = await req.json();
-    
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
 
-    // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch all active spaces with detailed characteristics
+    const { data: properties } = await supabase
+      .from('properties').select('id, slug, name, location, positioning, signature_feel').eq('is_active', true);
+
     const { data: spaces, error: spacesError } = await supabase
       .from('spaces')
-      .select(`
-        id, name, slug, description,
-        capacity_seated, capacity_standing, min_guests, max_guests,
-        ambience, natural_light, outdoor_access,
-        av_capabilities, layout_flexibility,
-        catering_style, ideal_event_types,
-        unique_features, accessibility_features,
-        pricing_tier, combinable_with
-      `)
-      .eq('is_active', true)
-      .order('display_order');
+      .select(`id, name, slug, description, property_id,
+        capacity_seated, capacity_standing, capacity_dining, min_guests, max_guests,
+        layouts, indoor_outdoor, step_free, av_included, music_curfew,
+        event_types, combinable_with, hire_notes, min_spend_notes, exclusivity_notes, tone_blurb`)
+      .eq('is_active', true).order('display_order');
 
-    if (spacesError) {
-      console.error('Error fetching spaces:', spacesError);
-      throw spacesError;
-    }
-
+    if (spacesError) throw spacesError;
     if (!spaces || spaces.length === 0) {
-      return new Response(JSON.stringify({
-        error: 'No spaces available',
-        message: "We don't have any spaces set up yet"
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return new Response(JSON.stringify({ error: 'No spaces available', message: "No spaces set up yet." }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Build comprehensive AI prompt with all characteristics
-    const matchingPrompt = `You are an expert event planner at Croft Common. Based on the following event requirements, recommend the BEST MATCHING space from our available options.
+    const { data: bedrooms } = await supabase.from('bedrooms').select('property_id, tier, count, max_occupancy');
+    const { data: fbVenues } = await supabase.from('fb_venues').select('property_id, name, formats, tone_blurb');
+
+    const propMap = new Map((properties || []).map((p: any) => [p.id, p]));
+
+    const matchingPrompt = `You are the Bear — Crazy Bear's event planner. Pick the best space for this enquiry.
+
+VOICE: 'Bears Den' — short, staccato, confident, minimal. British English. No emojis. Never gushy.
 
 EVENT REQUIREMENTS:
-- Event Type: ${enquiryData.eventType || 'Not specified'}
-- Guest Count: ${enquiryData.guestCount || 'Not specified'}
-- Vibe/Atmosphere: ${enquiryData.vibe || 'Not specified'}
-- Food & Beverage Style: ${enquiryData.fbStyle || 'Not specified'}
+- Type: ${enquiryData.eventType || 'Not specified'}
+- Guests: ${enquiryData.guestCount || 'Not specified'}
+- Vibe: ${enquiryData.vibe || 'Not specified'}
+- F&B style: ${enquiryData.fbStyle || 'Not specified'}
+- F&B preferences: ${enquiryData.fbPreferences || 'None'}
+- Date: ${enquiryData.eventDate || 'Not specified'}
 - Budget: ${enquiryData.budget || 'Not specified'}
-- Special Requests: ${enquiryData.specialRequests || 'None'}
+- Property preference: ${enquiryData.propertyPreference || 'No preference'}
+- Special requests: ${enquiryData.specialRequests || 'None'}
 
-AVAILABLE SPACES WITH DETAILED CHARACTERISTICS:
-${spaces.map((space, idx) => `
-${idx + 1}. ${space.name}
-   Space ID (for reference only - DO NOT include in reasoning): ${space.id}
-   CAPACITY:
-   - Seated: ${space.capacity_seated}, Standing: ${space.capacity_standing}
-   - Guest Range: ${space.min_guests || 'No min'} - ${space.max_guests || 'No max'}
-   
-   ATMOSPHERE:
-   - Ambience: ${space.ambience || 'Not specified'}
-   - Natural Light: ${space.natural_light || 'Not specified'}
-   - Outdoor Access: ${space.outdoor_access ? 'Yes' : 'No'}
-   
-   TECHNICAL:
-   - AV: ${space.av_capabilities?.join(', ') || 'None specified'}
-   - Layout: ${space.layout_flexibility || 'Not specified'}
-   
-   CATERING & EVENTS:
-   - Catering: ${space.catering_style?.join(', ') || 'Not specified'}
-   - Ideal For: ${space.ideal_event_types?.join(', ') || 'Various'}
-   
-   FEATURES:
-   - Unique: ${space.unique_features?.join(', ') || 'None listed'}
-   - Accessibility: ${space.accessibility_features?.join(', ') || 'Standard'}
-   
-   PRICING & OPTIONS:
-   - Tier: ${space.pricing_tier || 'Not specified'}
-   - Combinable: ${space.combinable_with?.length ? space.combinable_with.join(', ') : 'None'}
-   - Description: ${space.description || 'No description'}
-`).join('\n')}
+PROPERTIES:
+${(properties || []).map((p: any) => `- ${p.name} (${p.location}) — ${p.signature_feel}`).join('\n')}
 
-MATCHING GUIDELINES:
-1. Guest count MUST fit capacity (consider min/max ranges)
-2. Match ambience and atmosphere to vibe requirements
-3. Align technical capabilities (AV, layout) with event needs
-4. Match catering style to F&B preferences
-5. Consider ideal event types alignment
-6. Match pricing tier to budget if specified
-7. Leverage unique features that enhance the event
-8. Consider accessibility requirements
-9. If combining spaces works better, suggest it
+AVAILABLE SPACES:
+${spaces.map((s: any, i: number) => {
+  const p: any = propMap.get(s.property_id);
+  return `${i + 1}. ${s.name} @ ${p?.name || 'Unknown'}
+   ID: ${s.id}
+   Capacity — seated: ${s.capacity_seated ?? '-'}, standing: ${s.capacity_standing ?? '-'}, dining: ${s.capacity_dining ?? '-'}
+   Layouts: ${(s.layouts || []).join(', ') || '-'}
+   Indoor/outdoor: ${s.indoor_outdoor || '-'} | Step-free: ${s.step_free ? 'yes' : 'no'} | AV: ${s.av_included ? 'included' : 'no'} | Music: ${s.music_curfew || '-'}
+   Best for: ${(s.event_types || []).join(', ') || '-'}
+   Combinable with (slugs): ${(s.combinable_with || []).join(', ') || 'none'}
+   Min spend: ${s.min_spend_notes || '-'} | Exclusivity: ${s.exclusivity_notes || 'none'}
+   Tone: ${s.tone_blurb || ''}
+   Description: ${s.description || ''}`;
+}).join('\n\n')}
 
-Your response MUST be valid JSON in this EXACT format:
+BEDROOMS (per property): ${(bedrooms || []).map((b: any) => {
+  const p: any = propMap.get(b.property_id);
+  return `${p?.name}: ${b.count}x ${b.tier}`;
+}).join(' | ')}
+
+F&B VENUES: ${(fbVenues || []).map((f: any) => {
+  const p: any = propMap.get(f.property_id);
+  return `${p?.name} — ${f.name} (${(f.formats || []).join('/')})`;
+}).join(' | ')}
+
+GUIDELINES:
+1. Guest count must fit capacity (use seated/standing/dining as appropriate to fbStyle).
+2. Respect property preference if given.
+3. Match vibe and event type to space tone and best-fit list.
+4. If two spaces combined work better (use combinable_with), suggest the combo in alternatives.
+5. Note minimum spend or exclusivity if relevant.
+
+OUTPUT — STRICT JSON:
 {
-  "recommendedSpaceId": "space-uuid-here",
-  "matchScore": 85,
-  "reasoning": "We think [Space Name] could work really well for what you're looking for! Here's our initial thinking: [2-3 friendly sentences referencing specific characteristics like ambience, AV capabilities, or unique features. Use language like 'could be perfect', 'seems like a great fit'. Keep it warm and collaborative.]",
-  "keyFeatures": ["Specific feature 1 that matches", "Specific feature 2 that matches", "Specific feature 3 that matches"],
+  "recommendedSpaceId": "uuid",
+  "matchScore": 0-100,
+  "reasoning": "2-3 sentences in Bears Den voice. Use the space NAME (never the ID). Reference one or two specifics — capacity, vibe, layout, outdoor, exclusivity. Confident, minimal.",
+  "keyFeatures": ["short feature 1", "short feature 2", "short feature 3"],
   "alternatives": [
-    {
-      "spaceId": "alternative-uuid-1",
-      "spaceName": "Alternative Space Name",
-      "reasoning": "This could also work if..."
-    }
+    { "spaceId": "uuid", "spaceName": "Name", "reasoning": "one short line in Bears Den voice" }
   ]
 }
 
-CRITICAL: In your reasoning text, ONLY mention the space name (e.g., "The Hall", "Common Room"). NEVER include any ID codes, UUIDs, or technical identifiers. These are for system use only and must not appear in customer-facing text.
+NEVER include UUIDs in reasoning. Names only.`;
 
-Remember: Reference specific characteristics in your reasoning (e.g., "The excellent natural light", "The AV capabilities include...", "The ambience is..."). This is a starting point for discussion!`;
-
-    console.log('Calling Lovable AI for space matching...');
-
-    // Call Lovable AI for intelligent matching
     const aiResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Authorization': `Bearer ${LOVABLE_API_KEY}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'user', content: matchingPrompt }
-        ],
-        response_format: { type: "json_object" }
+        messages: [{ role: 'user', content: matchingPrompt }],
+        response_format: { type: 'json_object' },
       }),
     });
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error('Lovable AI error:', aiResponse.status, errorText);
+      console.error('AI error:', aiResponse.status, errorText);
       throw new Error(`AI service error: ${aiResponse.status}`);
     }
 
     const aiData = await aiResponse.json();
     let proposal;
-
     try {
       proposal = JSON.parse(aiData.choices[0].message.content);
-      console.log('AI Proposal:', proposal);
-    } catch (parseError) {
-      console.error('Failed to parse AI response:', parseError);
-      // Fallback to first space
+    } catch (e) {
+      console.error('Parse error:', e);
       proposal = {
-        recommendedSpaceId: spaces[0].id,
-        matchScore: 70,
-        reasoning: "We think this space could work well for your event! Let's chat through the details together to make sure it's exactly right for you.",
-        keyFeatures: ["Flexible layout", "Great atmosphere"],
-        alternatives: []
+        recommendedSpaceId: spaces[0].id, matchScore: 70,
+        reasoning: "We've got a space that should fit. Let's talk through the detail.",
+        keyFeatures: ['Flexible layout', 'Good vibe'], alternatives: [],
       };
     }
 
-    // Get the recommended space details
-    const recommendedSpace = spaces.find(s => s.id === proposal.recommendedSpaceId);
+    const recommendedSpace = spaces.find((s: any) => s.id === proposal.recommendedSpaceId) || spaces[0];
 
-    return new Response(JSON.stringify({
-      proposal,
-      recommendedSpace
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-
+    return new Response(JSON.stringify({ proposal, recommendedSpace }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error) {
     console.error('Generate proposal error:', error);
     return new Response(JSON.stringify({
-      error: error.message,
-      message: 'Sorry, we had trouble generating a proposal. Please try again.'
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      error: (error as Error).message,
+      message: 'Trouble generating a proposal. Try again.',
+    }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });
