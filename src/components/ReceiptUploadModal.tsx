@@ -17,17 +17,22 @@ interface ReceiptUploadModalProps {
 
 interface ExtractedData {
   date: string;
+  receipt_time?: string;
   total: number;
   currency: string;
-  venue_location: string;
-  receipt_number?: string;
-  receipt_time?: string;
-  covers?: number;
+  venue_location: string | null;
+  receipt_number?: string | null;
+  covers?: number | null;
   items: Array<{
     name: string;
     quantity: number;
     price: number;
   }>;
+}
+
+interface RejectionInfo {
+  code: string;
+  message: string;
 }
 
 const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
