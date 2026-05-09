@@ -1,73 +1,121 @@
-## Goal
+# Comments + Reactions for Moments
 
-Bring the Moments feature fully back to life on Crazy Bear: photo upload by members, captions/tags/dates, like + carousel + mosaic browsing, edit/delete by owner, plus a simple AI inappropriate-image blocker on upload. Restyle every Moments surface to the Crazy Bear high-contrast B&W aesthetic (Archivo Black headings, Space Grotesk body, no pink/Croft tokens), and add Moments as a top-level tile on `/den/main`.
+Add a threaded comment system under each moment, with emoji reactions on individual comments. Sleek, minimal, on-brand (B&W, Space Grotesk / Archivo Black, no rounded chrome).
 
-The data model and routes already exist (`public.member_moments`, `moment_likes`, `/den/member/moments`, components in `src/components/Member*Moment*`). The work is restyling, fixing the upload moderation path, and surfacing it from the main hub.
+## Database
 
-## Scope
+Two new tables, RLS enabled, realtime on both.
 
-### 1. AI image moderation (simple blocker, no admin gate)
+`**moment_comments**`
 
-- New edge function `moderate-moment-upload` using **Lovable AI Gateway** (`google/gemini-2.5-flash`, vision) — no OpenAI key required, mirrors the pattern already used in `verify-avatar-face`.
-- Returns `{ allowed: boolean, reason: string }`. Rejects nudity, sexual content, violence/weapons, hate symbols, drug use, gore, illegal activity, screenshots of documents/IDs.
-- Called from `MemberMomentUpload` **before** the image is written to storage / `member_moments`. If `allowed === false`, show the reason inline and stop the upload — no row is ever created, nothing reaches an admin queue.
-- Retire the old `auto-moderate-moment` (already deprecated) and the OpenAI-based `moderate-moment-image` path. Drop the DB-trigger moderation hook so uploads aren't double-moderated; new rows are inserted as visible immediately because they were already cleared at upload time.
-- No admin moderation UI changes required (existing `MomentsModeration` admin page stays as-is for legacy rows).
+- `id`, `moment_id` → `member_moments.id` (cascade), `user_id`, `parent_id` (nullable, self-ref → threading), `body` (text, 1–500 chars), `is_deleted` (bool), `created_at`, `updated_at`
+- Indexes: `(moment_id, created_at)`, `(parent_id)`
+- RLS:
+  - SELECT: any authenticated member
+  - INSERT: `auth.uid() = user_id`
+  - UPDATE: own row only, body editable for 15 min, otherwise soft-delete via `is_deleted`
+  - DELETE: own row only (soft delete preferred via UPDATE)
 
-### 2. Crazy Bear redesign (visual only, no logic changes)
+`**moment_comment_reactions**`
 
-Apply across `MemberMoments` page, `MemberMomentsMosaic`, `MemberMomentsCarousel`, `MemberMomentUpload`, `MemberMomentEdit`, and the carousel block on `MemberHome`:
+- `id`, `comment_id` → `moment_comments.id` (cascade), `user_id`, `emoji` (text, allow-list: ❤️ 🔥 😂 👏 🐻 ✨), `created_at`
+- Unique `(comment_id, user_id, emoji)` so each user toggles one of each
+- RLS: SELECT authenticated; INSERT/DELETE own only
 
-- Replace white card chrome (`bg-white rounded-2xl border-2 border-black`, pink hover) with the Crazy Bear pattern already used on `/den/main` and `MemberHome`: black `denBg` background image + `bg-black/70` overlay, `border border-white/15`, `bg-black/40 backdrop-blur-sm`, white text.
-- Typography: `font-display` (Archivo Black) uppercase for titles/eyebrows, `font-mono` for the `0.4em` tracked labels, `font-sans` (Space Grotesk) for body. Remove all Croft serif/pink references.
-- Buttons and chips: reuse the `chipBase` style from `MemberHome` (white border, black bg, hover invert). No focus rings on selected tag chips — use solid white fill on selection per project rule.
-- Lucide icons are used throughout; replace with simple text labels or inline SVG since the workspace forbids Lucide. Apply this to every Moments file we touch.
-- Modals (`MemberMomentUpload`, `MemberMomentEdit`, mosaic image dialog): black surface, white hairlines, no pink accents, no transparent backgrounds on any popovers.
-- Copy tightened to Bears Den voice: short, staccato (e.g. eyebrow "Moments", subtitle "Yours. Tagged. Kept.").
+Realtime: add both tables to `supabase_realtime` publication.
 
-### 3. Surface Moments on `/den/main`
+## Hook
 
-- `CommonRoomMain.tsx` `TILES` array currently has 4 tiles. Add a 5th tile:
-  - `{ index: '05', title: 'Moments', copy: 'Yours. Tagged. Kept.', route: '/den/member/moments' }`
-- Verify the existing tile grid layout works at 5 items on the current viewport (1376 wide and mobile). If the grid is fixed to 4 columns, switch to a responsive grid that handles 5 cleanly (2 cols mobile, 3 cols tablet, 5 cols desktop).
+New `useMomentComments(momentId)`:
 
-### 4. Functionality preserved (no behavioural changes)
+- Fetches flat list, joins `profiles` for name, aggregates reactions (`{emoji, count, mine}[]`).
+- Builds tree client-side (parent → children, sorted oldest-first; replies collapsed by default beyond 2).
+- Mutations: `addComment(body, parentId?)`, `editComment`, `deleteComment`, `toggleReaction(commentId, emoji)`.
+- Subscribes to realtime INSERT/UPDATE/DELETE on both tables filtered by `moment_id` and refreshes optimistically.
 
-- Upload flow: choose photo → AI check → upload to storage → insert `member_moments` row with `tagline`, `date_taken`, `tags`.
-- Browsing: mosaic grid on `/den/member/moments`, carousel preview block on `/den/member`, lightbox dialog with member name + date.
-- Owner controls: edit caption/date/tags, delete. Likes via `moment_likes`. Realtime subscriptions stay intact.
-- RLS, storage bucket, and the `useMemberMoments` hook are unchanged.
+## UI
 
-## Technical notes
+Comments live inside the existing **detail modal** (`MemberMomentsMosaic` selectedMoment view), below the info bar. Mosaic cards stay image-only; a small comment count chip sits next to the like button on the card overlay.
 
-- Edge function `moderate-moment-upload`:
-  - Reads `imageUrl` (already-uploaded temp URL) or accepts base64; preferred flow is upload to a `pending/` storage path → call function → on allow, move to permanent path and insert row; on reject, delete the temp object.
-  - Uses Lovable AI Gateway with `LOVABLE_API_KEY` (already provisioned). Handle 429/402 with friendly user-facing copy.
-  - Compact prompt returning strict JSON `{"allowed": bool, "reason": "<≤18 words>"}`.
-- Migration: drop the existing AI moderation trigger on `member_moments` so new rows aren't re-queued; default `is_visible = true`, `moderation_status = 'approved'` for new inserts going forward.
-- Files expected to change:
-  - `src/components/MemberMomentsCarousel.tsx`
-  - `src/components/MemberMomentsMosaic.tsx`
-  - `src/components/MemberMomentUpload.tsx` (call new function before insert)
-  - `src/components/MemberMomentEdit.tsx`
-  - `src/pages/MemberMoments.tsx`
-  - `src/pages/MemberHome.tsx` (Moments block restyle)
-  - `src/pages/CommonRoomMain.tsx` (add 5th tile)
-  - `supabase/functions/moderate-moment-upload/index.ts` (new)
-  - One migration to drop old moderation trigger / set new default.
+**Detail modal layout** (already dark, full-bleed):
 
-## Out of scope
+```text
+┌──────────────────────────────────────────┐
+│ MOMENT                          [CLOSE]  │
+├──────────────────────────────────────────┤
+│                                          │
+│            full-bleed image              │
+│                                          │
+├──────────────────────────────────────────┤
+│ tagline                       ♥ 3   💬 7 │
+│ [tag] [tag]                              │
+│ NAME · 09 MAY 2026                       │
+├──────────────────────────────────────────┤
+│ COMMENTS · 7                             │
+│                                          │
+│  NAME · 2H                               │
+│  Body text here, short, sharp.           │
+│  ❤️ 3   🔥 1   + react   reply           │
+│    └ NAME · 1H                           │
+│      Reply body.                         │
+│      + react   reply                     │
+│                                          │
+│  [ View 4 more replies ]                 │
+│                                          │
+│ ──────────────────────────────────────── │
+│ > Type a comment...              [POST]  │
+└──────────────────────────────────────────┘
+```
 
-- No changes to membership tiers (we don't have any).
-- No changes to admin moderation UI.
-- No payment, no Common Good references.
-- No new analytics events beyond what `useMemberMoments` already emits.
+Styling rules:
 
-## Open question
+- Mono micro-labels (`text-[10px] tracking-[0.4em] uppercase`) for meta (NAME · time, COMMENTS count, POST button).
+- Body in Space Grotesk, white on black, `text-sm` leading-snug.
+- Threads indicated by a 1px white/15 vertical rule on the left of the reply block, indented 16px on mobile / 24px on desktop. Max 2 levels of indent; deeper replies stay at level 2 with `↳ @parent` prefix.
+- Reactions: small inline chips, `h-6 px-2 border border-white/20 font-mono text-[10px]`, emoji + count. Mine = solid white bg, black text. Tap toggles. "+ react" opens a tiny inline picker (the 6 allow-listed emoji, no full picker).
+- Composer: bottom-fixed inside the scrollable info column, transparent input with bottom border only, white "POST" button (mono, tracked). Reply mode shows a small "Replying to NAME · cancel" pill above the input.
+- Edit/delete: own comments show a `…` chevron revealing Edit / Delete (mono links). Soft-deleted comments render as `[ deleted ]` placeholder so threads don't collapse.
+- Empty state: `Be first. Say something.`
+- Loading: 3 skeleton rows with white/5 bars.
+- Char counter `0/500` mono, bottom-right of composer when focused.
 
-Storage flow for the AI check — two equally clean options:
+Mobile (390px): info bar + comments scroll as one column under the image; image area shrinks (`max-h-[55vh]`) when comments present so the composer is reachable. Composer sticks to the bottom of the modal with `safe-area-inset-bottom` padding.
 
-1. **Upload-then-check** (simpler): file lands in storage, function reads URL, on reject we delete the object. One round trip, slight risk of orphan files if the delete fails.
-2. **Base64-precheck** (stricter): client sends base64 to the function first, only uploads if allowed. No orphans, but doubles the payload sent from the browser.
+## Card chip
 
-Default plan is option 1 unless you say otherwise.
+In the mosaic overlay, next to the heart, add a non-interactive comment count chip (`💬 N`) that simply opens the detail modal on tap (same as tapping the card). Hidden when count is 0.
+
+## Moderation
+
+- Reuse existing `moderate-moment-upload` pattern only for image moderation.
+- For comments, do a lightweight client-side guard: trim, max 500, block empty / >5 consecutive newlines / known slur list (small JSON in `src/lib/commentFilter.ts`). Server-side: a Postgres `BEFORE INSERT` trigger trims and rejects empty bodies. No AI text moderation in v1 (keep it fast); flag-for-review can come later.  
+  
+  
+Also add ability to post videos, no more than 30s long, and, the video thumbnail must be playing from launch, the movement looks super cool in a wall environment
+
+## Out of scope (v1)
+
+- Notifications (push / email) when replied to.
+- @-mentions, links/markdown, image attachments in comments.
+- Admin moderation queue.
+- Pagination — load all comments per moment (assume <200; revisit if hot).
+
+## Files touched
+
+- New migration: `moment_comments`, `moment_comment_reactions`, RLS, indexes, realtime publication.
+- New hook: `src/hooks/useMomentComments.ts`.
+- New components:
+  - `src/components/moments/MomentComments.tsx` (list + tree)
+  - `src/components/moments/MomentCommentItem.tsx` (single node, recursive)
+  - `src/components/moments/MomentCommentComposer.tsx`
+  - `src/components/moments/MomentReactionBar.tsx`
+- Edit `src/components/MemberMomentsMosaic.tsx`: render `<MomentComments momentId={selectedMoment.id} />` in detail modal; add comment count chip on card overlay.
+- Edit `src/hooks/useMemberMoments.ts`: include `comment_count` aggregate in fetch.
+
+## Acceptance
+
+- Member can post, reply, edit (15 min), and soft-delete own comments.
+- Reactions toggle live for everyone via realtime.
+- Detail modal scrolls cleanly on mobile with composer always reachable.
+- Mosaic card shows live comment count next to like count.
+- All UI uses existing tokens — no rounded chrome, no coloured borders, no lucide-style noise beyond the already-allowed set.
