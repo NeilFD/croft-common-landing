@@ -96,6 +96,12 @@ const EventEnquiry = () => {
         </header>
 
         <main className="relative max-w-4xl mx-auto px-6 md:px-12 py-10 md:py-16">
+          <button
+            onClick={() => navigate('/curious')}
+            className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/70 hover:text-black mb-8"
+          >
+            ← All enquiries
+          </button>
           {!isComplete ? (
             <EventEnquiryChat onComplete={handleComplete} />
           ) : (
