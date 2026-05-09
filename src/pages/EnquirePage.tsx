@@ -151,8 +151,8 @@ export default function EnquirePage() {
     return (
       <>
         <Helmet>
-          <title>Thank You - Croft Common</title>
-          <meta name="description" content="Thank you for your enquiry. We'll be in touch soon to discuss your event at Croft Common." />
+          <title>Thank You - Crazy Bear</title>
+          <meta name="description" content="Thank you for your enquiry. We'll be in touch soon to discuss your event at the Crazy Bear." />
         </Helmet>
         
         <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -185,9 +185,9 @@ export default function EnquirePage() {
   return (
     <>
       <Helmet>
-        <title>Make an Enquiry - Croft Common</title>
-        <meta name="description" content="Get in touch to book your event at Croft Common. Private dining, corporate events, and special occasions in our beautiful spaces." />
-        <meta name="keywords" content="croft common, event booking, private dining, corporate events, venue hire, enquiry" />
+        <title>Make an Enquiry - Crazy Bear</title>
+        <meta name="description" content="Get in touch to book your event at the Crazy Bear. Private dining, weddings, takeovers, and special occasions." />
+        <meta name="keywords" content="crazy bear, event booking, private dining, weddings, venue hire, enquiry" />
         <link rel="canonical" href={`${window.location.origin}/enquire`} />
       </Helmet>
 
@@ -195,11 +195,9 @@ export default function EnquirePage() {
         <header className="border-b">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
-              <a href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold text-sm">CC</span>
-                </div>
-                <span className="font-bold text-xl">Croft Common</span>
+              <a href="/" className="flex items-center space-x-3">
+                <img src="/brand/crazy-bear-mark.png" alt="Crazy Bear" className="w-10 h-10" />
+                <span className="font-display uppercase tracking-tight text-xl">Crazy Bear</span>
               </a>
               <nav>
                 <a href="/" className="text-muted-foreground hover:text-foreground transition-colors">
