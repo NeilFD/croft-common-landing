@@ -43,7 +43,7 @@ const CBFloatingButton: React.FC<CBFloatingButtonProps> = ({ label, to, bottomCl
         '--breathing-color': breathingColor,
       } as React.CSSProperties}
     >
-      <span className="relative z-10 font-brutalist tracking-wider text-xs uppercase select-none">
+      <span className="relative z-10 font-brutalist tracking-wider uppercase select-none text-xs">
         {label}
       </span>
     </button>
@@ -56,7 +56,7 @@ const CBFloatingActions: React.FC = () => {
 
   return (
     <>
-      <CBFloatingButton label="Enquire" to="/enquire" bottomClass="bottom-64" />
+      <CBFloatingButton label="Curious?" to="/enquire" bottomClass="bottom-64" />
       <CBFloatingButton label="Book" to="/book" bottomClass="bottom-40" />
     </>
   );
