@@ -63,14 +63,41 @@ export default function LunchRun() {
     }
   });
 
-  const { loading, menu, submitting, submitOrder } = useLunchRun(site);
+  const { loading, menu } = useLunchRun(site);
+  const { isGold } = useGoldStatus();
+  const [searchParams] = useSearchParams();
 
   const [cart, setCart] = useState<OrderItem[]>([]);
   const [memberName, setMemberName] = useState('');
   const [memberPhone, setMemberPhone] = useState('');
   const [notes, setNotes] = useState('');
-  const [step, setStep] = useState<'menu' | 'details' | 'confirm'>('menu');
+  const [step, setStep] = useState<'menu' | 'details' | 'pay' | 'confirm'>('menu');
   const [orderRef, setOrderRef] = useState<string | null>(null);
+  const [pendingOrderId, setPendingOrderId] = useState<string | null>(null);
+
+  // Detect Stripe return
+  useEffect(() => {
+    const sid = searchParams.get('session_id');
+    if (!sid) return;
+    (async () => {
+      // Poll briefly for the webhook to flip status
+      for (let i = 0; i < 10; i++) {
+        const { data } = await (supabase as any)
+          .from('lunch_orders')
+          .select('id, status')
+          .eq('stripe_session_id', sid)
+          .maybeSingle();
+        if (data?.status === 'confirmed') {
+          setOrderRef(data.id.substring(0, 8).toUpperCase());
+          setCart([]);
+          if (site) { try { localStorage.removeItem(cartKey(site)); } catch { /* noop */ } }
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 800));
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Persist site
   useEffect(() => {
