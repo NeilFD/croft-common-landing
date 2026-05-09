@@ -229,7 +229,7 @@ const Curious: React.FC = () => {
                   <div>
                     <label className={labelClass}>Property</label>
                     <select
-                      className={fieldClass}
+                      className={selectClass}
                       value={form.property}
                       onChange={(e) => set('property', e.target.value)}
                     >
@@ -277,7 +277,7 @@ const Curious: React.FC = () => {
                       <div>
                         <label className={labelClass}>Room type</label>
                         <select
-                          className={fieldClass}
+                          className={selectClass}
                           value={form.room_type}
                           onChange={(e) => set('room_type', e.target.value)}
                         >
@@ -297,7 +297,7 @@ const Curious: React.FC = () => {
                       <div className="md:col-span-2">
                         <label className={labelClass}>Where</label>
                         <select
-                          className={fieldClass}
+                          className={selectClass}
                           value={form.dining_venue}
                           onChange={(e) => set('dining_venue', e.target.value)}
                         >
@@ -335,7 +335,7 @@ const Curious: React.FC = () => {
                     <div>
                       <label className={labelClass}>About your enquiry</label>
                       <select
-                        className={fieldClass}
+                        className={selectClass}
                         value={form.membership_interest}
                         onChange={(e) => set('membership_interest', e.target.value)}
                       >
