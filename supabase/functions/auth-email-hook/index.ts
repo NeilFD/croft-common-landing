@@ -16,27 +16,13 @@ const corsHeaders = {
     'authorization, x-client-info, apikey, content-type, x-lovable-signature, x-lovable-timestamp, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
-// Subject builders. Including the code in the subject is the single biggest
-// inbox-placement win for short-lived OTPs: users see the code in the
-// notification preview even if the message lands in Junk.
-const buildSubject = (emailType: string, token?: string): string => {
-  const code = (token || '').trim()
-  switch (emailType) {
-    case 'signup':
-      return code ? `Crazy Bear code: ${code}` : 'Your Crazy Bear code'
-    case 'magiclink':
-      return code ? `Crazy Bear code: ${code}` : 'Your Crazy Bear code'
-    case 'recovery':
-      return code ? `Crazy Bear reset code: ${code}` : 'Reset your password'
-    case 'reauthentication':
-      return code ? `Crazy Bear code: ${code}` : 'Your verification code'
-    case 'email_change':
-      return 'Confirm your new email'
-    case 'invite':
-      return "You've been invited"
-    default:
-      return 'Notification'
-  }
+const EMAIL_SUBJECTS: Record<string, string> = {
+  signup: 'Confirm your email',
+  invite: "You've been invited",
+  magiclink: 'Your login link',
+  recovery: 'Reset your password',
+  email_change: 'Confirm your new email',
+  reauthentication: 'Your verification code',
 }
 
 // Template mapping
@@ -50,17 +36,17 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "The Crazy Bear"
-const SENDER_DOMAIN = "notify.crazybeartest.com"
+const SITE_NAME = "crazy-bear-web"
+const SENDER_DOMAIN = "notify.crazybear.dev"
 const ROOT_DOMAIN = "crazybear.dev"
-const FROM_DOMAIN = SENDER_DOMAIN // Keep From aligned with the verified sender domain for Microsoft inboxes
+const FROM_DOMAIN = "crazybear.dev" // Domain shown in From address (may be root or sender subdomain)
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.
 // The sample email uses a fixed placeholder (RFC 6761 .test TLD) so the Go backend
 // can always find-and-replace it with the actual recipient when sending test emails,
 // even if the project's domain has changed since the template was scaffolded.
-const SAMPLE_PROJECT_URL = "https://www.crazybear.dev"
+const SAMPLE_PROJECT_URL = "https://crazy-bear-web.lovable.app"
 const SAMPLE_EMAIL = "user@example.test"
 const SAMPLE_DATA: Record<string, object> = {
   signup: {
@@ -272,10 +258,9 @@ async function handleWebhook(req: Request): Promise<Response> {
       run_id,
       message_id: messageId,
       to: payload.data.email,
-      from: `${SITE_NAME} <bears@${FROM_DOMAIN}>`,
-      reply_to: `bears@${FROM_DOMAIN}`,
+      from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
       sender_domain: SENDER_DOMAIN,
-      subject: buildSubject(emailType, payload.data.token),
+      subject: EMAIL_SUBJECTS[emailType] || 'Notification',
       html,
       text,
       purpose: 'transactional',

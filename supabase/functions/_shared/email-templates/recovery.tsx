@@ -19,19 +19,21 @@ interface RecoveryEmailProps {
 }
 
 export const RecoveryEmail = ({
+  siteName,
   confirmationUrl,
 }: RecoveryEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Reset your den password</Preview>
+    <Preview>Reset your password for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
         <Heading style={h1}>Reset your password</Heading>
         <Text style={text}>
-          Tap the button below to choose a new password. One key. The den remembers.
+          We received a request to reset your password for {siteName}. Click
+          the button below to choose a new password.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Reset password
+          Reset Password
         </Button>
         <Text style={footer}>
           If you didn't request a password reset, you can safely ignore this
