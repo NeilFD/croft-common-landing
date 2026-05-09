@@ -61,7 +61,7 @@ const CBSubscriptionForm = () => {
     try {
       const [firstName, ...rest] = name.trim().split(/\s+/);
       const lastName = rest.join(' ') || null;
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         // Random placeholder password. The user will set their real password
         // via the link in the confirmation email (lands at /set-password).
