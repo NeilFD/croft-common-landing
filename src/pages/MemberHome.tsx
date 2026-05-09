@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Upload, User, FileText, Flame, Trophy, ArrowLeft, CalendarDays, Camera, Sparkles, UtensilsCrossed } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import ReceiptUploadModal from '@/components/ReceiptUploadModal';
 import Navigation from '@/components/Navigation';
@@ -17,33 +14,35 @@ import { MobileErrorBoundary } from '@/components/MobileErrorBoundary';
 import denBg from '@/assets/den-bg.jpg';
 
 interface MemberStats {
-  user: {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-  };
+  user: { id: string; email: string; first_name: string; last_name: string };
   streak: {
     current_streak: number;
     longest_streak: number;
     total_check_ins: number;
     last_check_in_date: string | null;
   };
-  profile: {
-    display_name: string;
-    tier_badge: string;
-    join_date: string;
-  };
+  profile: { display_name: string; tier_badge: string; join_date: string };
   recent_checkins: Array<{ check_in_date: string }>;
-  recent_visits: Array<{
-    check_in_date: string;
-    check_in_timestamp: string;
-    entrance_slug: string;
-  }>;
+  recent_visits: Array<any>;
   monthly_spend: number;
   loyalty_card: any;
   insights: any;
 }
+
+const chipBase =
+  'inline-flex items-center justify-center border border-white/40 text-white px-5 py-2.5 font-mono text-[10px] tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-colors touch-manipulation';
+
+const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-white/60 mb-4 text-center">
+    {children}
+  </p>
+);
+
+const Hairline: React.FC = () => (
+  <div className="w-full flex justify-center my-12">
+    <div className="h-px w-16 bg-white/25" />
+  </div>
+);
 
 const MemberHome: React.FC = () => {
   const { user, loading } = useAuth();
@@ -55,62 +54,32 @@ const MemberHome: React.FC = () => {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
 
   useEffect(() => {
-    console.log('[MemberHome] 🔍 MOBILE: Component mounted', {
-      loading,
-      hasUser: !!user,
-      userAgent: navigator.userAgent,
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-      standalone: window.matchMedia('(display-mode: standalone)').matches
-    });
-
     if (!loading && !user) {
-      console.log('[MemberHome] ❌ MOBILE: No user found, redirecting to main');
       navigate('/den/main');
       return;
     }
-
-    if (user) {
-      console.log('[MemberHome] ✅ MOBILE: User found, fetching member stats');
-      fetchMemberStats();
-    }
+    if (user) fetchMemberStats();
   }, [user, loading, navigate]);
 
   const fetchMemberStats = async () => {
     try {
       setLoadingStats(true);
-      console.log('[MemberHome] 📊 MOBILE: Fetching member stats...');
-      
       const { data, error } = await supabase.functions.invoke('member-stats');
-      
-      if (error) {
-        console.error('[MemberHome] ❌ MOBILE: Stats error:', error);
-        throw error;
-      }
-      
-      console.log('[MemberHome] ✅ MOBILE: Stats loaded successfully:', data);
+      if (error) throw error;
       setMemberStats(data);
     } catch (error) {
-      console.error('[MemberHome] ❌ MOBILE: Error fetching member stats:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load member data",
-        variant: "destructive"
-      });
+      console.error('[MemberHome] Error fetching member stats:', error);
+      toast({ title: 'Error', description: 'Failed to load member data', variant: 'destructive' });
     } finally {
       setLoadingStats(false);
     }
   };
 
   if (loading || loadingStats) {
-    console.log('[MemberHome] ⏳ MOBILE: Loading state', { loading, loadingStats });
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading member area...</p>
-          <p className="text-xs text-muted-foreground/60 mt-2">
-            Mobile PWA • {loading ? 'Auth' : 'Stats'} loading...
-          </p>
+          <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-white/60">Loading</p>
         </div>
       </div>
     );
@@ -118,171 +87,148 @@ const MemberHome: React.FC = () => {
 
   if (!memberStats) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center text-white">
         <div className="text-center">
-          <p className="text-muted-foreground">Failed to load member data</p>
-          <Button onClick={fetchMemberStats} className="mt-4">Retry</Button>
+          <p className="font-sans text-white/70 mb-4">Couldn't load member data.</p>
+          <button onClick={fetchMemberStats} className={chipBase}>Retry</button>
         </div>
       </div>
     );
   }
 
-  console.log('[MemberHome] 🎨 MOBILE: Rendering member home component');
+  const firstName = memberStats.user.first_name || 'Member';
+  const totalCheckIns = memberStats.streak?.total_check_ins ?? 0;
+  const monthlySpend = memberStats.monthly_spend ?? 0;
+  const hasStreakActivity = totalCheckIns > 0 || monthlySpend > 0;
 
   return (
     <MobileErrorBoundary>
-      <div className="min-h-screen bg-background relative mobile-optimized">
-      {/* Mobile-Optimized Background Image with Fallback */}
-      <div 
-        className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
+      <div
+        className="min-h-screen relative overflow-y-auto"
         style={{
-          backgroundImage: `url(${denBg})`,
-          filter: 'grayscale(1) contrast(1.05)',
+          touchAction: 'pan-y pinch-zoom',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
         }}
-      />
-      <div className="fixed inset-0 bg-white/70 z-0" />
-      
-      {/* Scrollable Content */}
-      <div className="relative z-10">
-        <Navigation />
-        
-        <div className="container mx-auto px-4 pb-8" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}>
-        {/* Breadcrumb */}
-        <div className="mb-6">
-          <Link 
-            to="/den/main" 
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+      >
+        {/* Fixed B&W Crazy Bear background */}
+        <div
+          className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
+          style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
+        />
+        <div className="fixed inset-0 bg-black/70 -z-10" />
+
+        <div className="relative z-10 text-white">
+          {!isCMSMode && <Navigation />}
+
+          <div
+            className="container mx-auto px-6 pb-20 max-w-5xl"
+            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to the Den
-          </Link>
-        </div>
+            {/* Breadcrumb */}
+            <div className="mb-10">
+              <Link
+                to="/den/main"
+                className="inline-flex items-center font-mono text-[10px] tracking-[0.4em] uppercase text-white/60 hover:text-white transition-colors"
+              >
+                ← Back to the Den
+              </Link>
+            </div>
 
-        {/* Welcome Header */}
-        <div className="mb-8 relative">
-          <div className="bg-white rounded-2xl p-6 border-2 border-black">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              <div>
-                <h1 className="text-4xl font-bold text-foreground mb-2">
-                  Welcome back, {memberStats.user.first_name || 'Member'}!
-                </h1>
-                <p className="text-muted-foreground text-lg">
-                  Member since {new Date(memberStats.profile.join_date).toLocaleDateString()}
+            {/* Welcome */}
+            <div className="text-center mb-12">
+              <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white/70 mb-6">
+                Member
+              </p>
+              <h1 className="font-display uppercase text-4xl sm:text-5xl md:text-6xl tracking-tight leading-[0.9] mb-6">
+                Welcome, {firstName}
+              </h1>
+              <p className="font-sans text-base md:text-lg text-white/80 max-w-md mx-auto leading-relaxed">
+                Quiet door. Loud nights. Yours.
+              </p>
+            </div>
+
+            {/* Action chips */}
+            <div className="flex flex-wrap justify-center gap-3 mb-4">
+              <button onClick={() => setShowReceiptModal(true)} className={chipBase}>
+                Upload receipt
+              </button>
+              <Link to="/den/member/lunch-run" className={chipBase}>Takeaway</Link>
+              <Link to="/den/member/moments" className={chipBase}>Moments</Link>
+              <Link to="/den/member/profile" className={chipBase}>Profile</Link>
+            </div>
+
+            <Hairline />
+
+            {/* Streak block */}
+            <Eyebrow>This week</Eyebrow>
+            {hasStreakActivity ? (
+              <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-6 md:p-8">
+                <div className="grid grid-cols-3 gap-6 mb-8 text-center">
+                  <div>
+                    <p className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/50 mb-2">Streak</p>
+                    <p className="font-display text-3xl md:text-4xl tracking-tight">
+                      {memberStats.streak.current_streak}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/50 mb-2">Visits</p>
+                    <p className="font-display text-3xl md:text-4xl tracking-tight">{totalCheckIns}</p>
+                  </div>
+                  <div>
+                    <p className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/50 mb-2">Spend</p>
+                    <p className="font-display text-3xl md:text-4xl tracking-tight">£{monthlySpend.toFixed(0)}</p>
+                  </div>
+                </div>
+                <div className="bg-white text-black p-4 rounded">
+                  <TraditionalStreakCalendar />
+                </div>
+              </div>
+            ) : (
+              <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-8 md:p-12 text-center">
+                <h2 className="font-display uppercase text-3xl md:text-4xl tracking-tight leading-none mb-4">
+                  Start your streak
+                </h2>
+                <p className="font-sans text-white/70 max-w-md mx-auto mb-8">
+                  Upload a receipt to log this week. We'll count from here.
                 </p>
+                <button onClick={() => setShowReceiptModal(true)} className={chipBase}>
+                  Upload receipt
+                </button>
               </div>
-              
-              {/* Quick Actions Buttons */}
-              <div className="flex flex-wrap gap-2 lg:flex-nowrap">
-                <Button
-                  onClick={() => setShowReceiptModal(true)}
-                  size="sm"
-                  className="bg-pink-500 hover:bg-pink-600 text-white border-2 border-pink-500 hover:border-pink-600 transition-all duration-200"
-                >
-                  <Upload className="h-4 w-4 mr-1" />
-                  Upload
-                </Button>
-                
-                <Link to="/den/member/lunch-run">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-black hover:text-white transition-all duration-200">
-                    <UtensilsCrossed className="h-4 w-4 mr-1" />
-                    Takeaway
-                  </Button>
-                </Link>
-                
-                <Link to="/den/member/profile">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
-                    <User className="h-4 w-4 mr-1" />
-                    Profile
-                  </Button>
-                </Link>
-                
-                <Link to="/den/member/moments">
-                  <Button variant="outline" size="sm" className="border-2 border-black hover:bg-pink-500 hover:border-pink-500 hover:text-white transition-all duration-200">
-                    <Camera className="h-4 w-4 mr-1" />
-                    Moments
-                  </Button>
-                </Link>
+            )}
+
+            <Hairline />
+
+            {/* Upcoming events */}
+            <Eyebrow>What's on</Eyebrow>
+            <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-4 md:p-6">
+              <div className="bg-white text-black p-4 rounded">
+                <UpcomingEventsCarousel />
+              </div>
+            </div>
+
+            <Hairline />
+
+            {/* Moments */}
+            <Eyebrow>Moments</Eyebrow>
+            <div className="border border-white/15 bg-black/40 backdrop-blur-sm p-4 md:p-6">
+              <div className="bg-white text-black p-4 rounded">
+                <MemberMomentsCarousel />
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Member Moments Carousel */}
-        <MemberMomentsCarousel />
+          <ReceiptUploadModal
+            isOpen={showReceiptModal}
+            onClose={() => setShowReceiptModal(false)}
+            onSuccess={() => {
+              setShowReceiptModal(false);
+              fetchMemberStats();
+            }}
+          />
 
-        {/* Main Content Grid - Rebalanced */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          {/* Left Column - Calendar and Quick Actions */}
-          <div className="space-y-6">
-            <TraditionalStreakCalendar />
-            
-          </div>
-
-          {/* Right Column - Community and Stats */}
-          <div className="space-y-6">
-            
-            {/* Community Widgets */}
-            <div className="space-y-4">
-              <Card className="bg-white rounded-2xl p-4 border-2 border-black hover:border-pink-500 transition-all duration-300">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <CalendarDays className="h-5 w-5 text-foreground" />
-                    Upcoming Events
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <UpcomingEventsCarousel />
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
-          <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Trophy className="h-4 w-4 text-foreground" />
-                Total Visits
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">
-                {memberStats.streak.total_check_ins}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white hover:shadow-lg transition-all duration-300 hover:scale-105 border-2 border-black hover:border-pink-500">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileText className="h-4 w-4 text-foreground" />
-                This Month
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-foreground">
-                £{memberStats.monthly_spend.toFixed(2)}
-              </div>
-              <p className="text-sm text-muted-foreground">Spend tracked</p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Receipt Upload Modal */}
-      <ReceiptUploadModal
-        isOpen={showReceiptModal}
-        onClose={() => setShowReceiptModal(false)}
-        onSuccess={() => {
-          setShowReceiptModal(false);
-          fetchMemberStats(); // Refresh stats
-        }}
-      />
-
-        <Footer />
+          <Footer />
         </div>
       </div>
     </MobileErrorBoundary>
