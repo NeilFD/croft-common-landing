@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useGoldStatus } from '@/hooks/useGoldStatus';
@@ -95,16 +96,17 @@ export const GoldSection: React.FC = () => {
         </button>
       </div>
 
-      {showInfo && (
+      {showInfo && createPortal(
         <div
-          className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 flex items-center justify-center p-4"
+          style={{ zIndex: 2147483600 }}
           onClick={() => setShowInfo(false)}
         >
           <div
-            className="bg-white text-black border-2 border-black w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-white text-black border-2 border-black w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-5 py-3 border-b-2 border-black">
+            <div className="flex items-center justify-between px-6 py-4 border-b-2 border-black">
               <p className="font-mono text-[10px] tracking-[0.4em] uppercase">
                 Bear's Den · Gold
               </p>
@@ -116,7 +118,7 @@ export const GoldSection: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-5 space-y-5">
+            <div className="p-6 space-y-6">
               {isGold ? (
                 <>
                   <div>
@@ -126,7 +128,7 @@ export const GoldSection: React.FC = () => {
                     <p className="font-display text-xl tracking-tight">
                       {formatDate(currentPeriodEnd)}
                     </p>
-                    <p className="font-sans text-xs text-black/70 mt-2">
+                    <p className="font-sans text-sm text-black/70 mt-2">
                       25% off everywhere. In-app and in-venue. Show your gold card to staff.
                     </p>
                   </div>
@@ -139,7 +141,7 @@ export const GoldSection: React.FC = () => {
                     {portalLoading ? 'Opening' : 'Manage subscription'}
                   </button>
 
-                  <div className="border-t-2 border-black pt-5">
+                  <div className="border-t-2 border-black pt-6">
                     <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/60 mb-2">
                       Refer a friend
                     </p>
@@ -171,13 +173,13 @@ export const GoldSection: React.FC = () => {
               ) : (
                 <>
                   <div>
-                    <p className="font-display text-3xl tracking-tight">
+                    <p className="font-display text-4xl tracking-tight">
                       £69
                       <span className="font-mono text-[10px] tracking-[0.3em] text-black/60 ml-2">
                         / MONTH
                       </span>
                     </p>
-                    <ul className="font-sans text-sm text-black/85 space-y-1 mt-3">
+                    <ul className="font-sans text-sm text-black/85 space-y-1.5 mt-4">
                       <li>· 25% off Thai takeaway, every order.</li>
                       <li>· 25% off in-venue. Staff honour your gold card.</li>
                       <li>· Cancel any time. Gold lasts to end of paid period.</li>
@@ -209,7 +211,39 @@ export const GoldSection: React.FC = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
+      )}
+
+      {showCheckout && user && createPortal(
+        <div
+          className="fixed inset-0 bg-black/95 overflow-y-auto"
+          style={{ zIndex: 2147483600 }}
+        >
+          <div className="min-h-screen flex flex-col">
+            <div className="p-4 flex justify-between items-center border-b border-white/10">
+              <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/70">
+                Checkout
+              </p>
+              <button
+                onClick={() => setShowCheckout(false)}
+                className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/70 hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+            <div className="flex-1 bg-white">
+              <StripeEmbeddedCheckout
+                payload={{
+                  kind: 'gold',
+                  returnUrl: `${window.location.origin}/den/member/profile?checkout=success`,
+                  referralCode: refInput.trim() || null,
+                }}
+              />
+            </div>
+          </div>
+        </div>,
+        document.body,
       )}
 
       {showCheckout && user && (
