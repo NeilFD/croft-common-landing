@@ -45,6 +45,7 @@ import { useAuth } from '@/hooks/useAuth';
 import MemberMomentUpload from './MemberMomentUpload';
 import MemberMomentEdit from './MemberMomentEdit';
 import OptimizedImage from './OptimizedImage';
+import MomentComments from './moments/MomentComments';
 
 const MemberMomentsMosaic: React.FC = () => {
   const { moments, loading, deleteMoment, refetchMoments, likeMoment, unlikeMoment } = useMemberMoments();
