@@ -17,9 +17,9 @@ const corsHeaders = {
 }
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Set your Crazy Bear password',
+  signup: 'Your Crazy Bear code',
   invite: "You've been invited",
-  magiclink: 'Your login link',
+  magiclink: 'Your Crazy Bear code',
   recovery: 'Reset your password',
   email_change: 'Confirm your new email',
   reauthentication: 'Your verification code',

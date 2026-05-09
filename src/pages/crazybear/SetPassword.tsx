@@ -238,8 +238,10 @@ const SetPassword = () => {
                       ? `Resend code (${resendCooldown}s)`
                       : 'Resend code'}
                 </button>
-                <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-50 pt-1 text-center">
-                  Check spam if it's missing.
+                <p className="font-cb-mono text-[10px] tracking-[0.3em] uppercase opacity-60 pt-1 text-center leading-relaxed">
+                  Code can take a minute. Check spam.
+                  <br />
+                  Still nothing? Tap resend above.
                 </p>
               </form>
             )}
