@@ -545,15 +545,28 @@ export default function LunchRun() {
               ))}
             </div>
 
-            <div className="flex justify-between items-baseline border-t border-white/15 pt-4 mb-6">
-              <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
-                Total
-              </span>
-              <span className="font-display text-3xl tracking-tight">£{total.toFixed(2)}</span>
+            <div className="border-t border-white/15 pt-4 mb-6 space-y-1">
+              <div className="flex justify-between items-baseline">
+                <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">Subtotal</span>
+                <span className="font-mono text-sm">£{subtotal.toFixed(2)}</span>
+              </div>
+              {isGold && (
+                <div className="flex justify-between items-baseline">
+                  <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-yellow-400/90">Gold 25% off</span>
+                  <span className="font-mono text-sm text-yellow-400/90">−£{goldDiscount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="flex justify-between items-baseline pt-2">
+                <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">Total</span>
+                <span className="font-display text-3xl tracking-tight">£{totalWithDiscount.toFixed(2)}</span>
+              </div>
             </div>
 
             <p className="font-sans text-xs text-white/50 mb-6 leading-relaxed">
-              Pay on collection. We'll call when it's bagged — usually about 30 minutes.
+              Pay now. We'll call when it's bagged — usually about 30 minutes.
+              {!isGold && (
+                <> Members save 25% with <a href="/den/member/gold" className="underline">Bear's Den Gold</a>.</>
+              )}
             </p>
 
             <div className="flex gap-3">
@@ -565,18 +578,24 @@ export default function LunchRun() {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={submitting}
-                className="flex-1 font-mono text-[10px] tracking-[0.4em] uppercase border border-white bg-white text-black px-5 py-3 hover:bg-black hover:text-white transition-colors disabled:opacity-40 inline-flex items-center justify-center"
+                className="flex-1 font-mono text-[10px] tracking-[0.4em] uppercase border border-white bg-white text-black px-5 py-3 hover:bg-black hover:text-white transition-colors inline-flex items-center justify-center"
               >
-                {submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Placing
-                  </>
-                ) : (
-                  'Place Order'
-                )}
+                Pay & Confirm
               </button>
             </div>
+          </div>
+        )}
+
+        {step === 'pay' && checkoutPayload && (
+          <div className="max-w-2xl mx-auto">
+            <PaymentTestModeBanner />
+            <button
+              onClick={() => setStep('confirm')}
+              className="my-4 font-mono text-[10px] tracking-[0.4em] uppercase border border-white/40 px-4 py-2 hover:bg-white hover:text-black transition-colors"
+            >
+              ← Back
+            </button>
+            <StripeEmbeddedCheckout payload={checkoutPayload} onOrderCreated={setPendingOrderId} />
           </div>
         )}
       </div>
@@ -591,7 +610,7 @@ export default function LunchRun() {
                 <p className="font-mono text-[9px] tracking-[0.4em] uppercase text-black/60">
                   Basket / {cart.reduce((s, i) => s + i.quantity, 0)} items
                 </p>
-                <p className="font-display text-xl tracking-tight">£{total.toFixed(2)}</p>
+                <p className="font-display text-xl tracking-tight">£{totalWithDiscount.toFixed(2)}</p>
               </div>
             </div>
             <button
