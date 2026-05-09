@@ -61,10 +61,11 @@ export const useLunchRun = (site: Site | null) => {
     : allItems;
 
   const menu = {
-    starters: items.filter((i) => i.category === 'starter'),
-    mains: items.filter((i) => i.category === 'main'),
+    smallPlates: items.filter((i) => i.category === 'small_plate'),
+    largePlates: items.filter((i) => i.category === 'large_plate'),
+    curries: items.filter((i) => i.category === 'curry'),
+    sides: items.filter((i) => i.category === 'side'),
     desserts: items.filter((i) => i.category === 'dessert'),
-    beverages: items.filter((i) => i.category === 'beverage'),
   };
 
   const submitOrder = async (orderData: {
