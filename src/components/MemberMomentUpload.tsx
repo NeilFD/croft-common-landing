@@ -127,7 +127,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       return;
     }
     if (selectedFile.size > MAX_BYTES) {
-      toast({ title: 'Too big', description: 'Max 50MB.', variant: 'destructive' });
+      toast({ title: 'Too big', description: 'Max 500MB.', variant: 'destructive' });
       return;
     }
 
