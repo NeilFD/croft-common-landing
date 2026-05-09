@@ -140,7 +140,7 @@ const Curious: React.FC = () => {
         <meta name="description" content="Ask the Bear. Rooms, dining, membership, events, or just a hello." />
       </Helmet>
 
-      <div className="relative min-h-screen bg-white text-black">
+      <div className="relative min-h-screen text-black">
         {/* Opaque B&W background image */}
         <div
           aria-hidden
