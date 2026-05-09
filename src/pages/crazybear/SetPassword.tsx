@@ -40,7 +40,7 @@ const SetPassword = () => {
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: target,
-      options: { emailRedirectTo: 'https://www.crazybeartest.com/set-password' },
+      options: { emailRedirectTo: 'https://www.crazybear.dev/set-password' },
     });
     setResending(false);
     if (error) {
