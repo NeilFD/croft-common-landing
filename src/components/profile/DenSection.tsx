@@ -75,7 +75,7 @@ export const DenSection: React.FC<DenSectionProps> = ({
   }
 
   return (
-    <section className="border-t-2 border-black bg-white/70 backdrop-blur-sm py-6">
+    <section className="border-2 border-black bg-white p-6">
       {Header}
       <div className="space-y-4">{children}</div>
     </section>
