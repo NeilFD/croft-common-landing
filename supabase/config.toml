@@ -9,3 +9,5 @@ project_id = "szokkwlleqndyiojhsll"
     verify_jwt = false
   [functions.verify-cb-member]
     verify_jwt = false
+  [functions.create-cinema-wallet-pass]
+    verify_jwt = false
