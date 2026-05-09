@@ -2169,40 +2169,76 @@ export type Database = {
       }
       member_receipts: {
         Row: {
+          bear_logo_confidence: number | null
+          bear_logo_detected: boolean
           category: string | null
+          covers: number | null
           created_at: string | null
           currency: string | null
           id: string
+          image_sha256: string | null
           image_url: string | null
           items: Json | null
           merchant_name: string | null
+          perceptual_hash: string | null
+          processing_status: string
+          raw_ocr_data: Json | null
           receipt_date: string | null
+          receipt_number: string | null
+          receipt_time: string | null
+          rejection_reason: string | null
+          screen_capture_score: number | null
           total_amount: number | null
           user_id: string
+          venue_location: string | null
         }
         Insert: {
+          bear_logo_confidence?: number | null
+          bear_logo_detected?: boolean
           category?: string | null
+          covers?: number | null
           created_at?: string | null
           currency?: string | null
           id?: string
+          image_sha256?: string | null
           image_url?: string | null
           items?: Json | null
           merchant_name?: string | null
+          perceptual_hash?: string | null
+          processing_status?: string
+          raw_ocr_data?: Json | null
           receipt_date?: string | null
+          receipt_number?: string | null
+          receipt_time?: string | null
+          rejection_reason?: string | null
+          screen_capture_score?: number | null
           total_amount?: number | null
           user_id: string
+          venue_location?: string | null
         }
         Update: {
+          bear_logo_confidence?: number | null
+          bear_logo_detected?: boolean
           category?: string | null
+          covers?: number | null
           created_at?: string | null
           currency?: string | null
           id?: string
+          image_sha256?: string | null
           image_url?: string | null
           items?: Json | null
           merchant_name?: string | null
+          perceptual_hash?: string | null
+          processing_status?: string
+          raw_ocr_data?: Json | null
           receipt_date?: string | null
+          receipt_number?: string | null
+          receipt_time?: string | null
+          rejection_reason?: string | null
+          screen_capture_score?: number | null
           total_amount?: number | null
           user_id?: string
+          venue_location?: string | null
         }
         Relationships: []
       }
@@ -2694,6 +2730,39 @@ export type Database = {
           is_active?: boolean | null
           p256dh?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      receipt_rejections: {
+        Row: {
+          ai_flags: Json | null
+          created_at: string
+          id: string
+          image_sha256: string | null
+          image_url: string | null
+          reason_code: string
+          reason_message: string
+          user_id: string
+        }
+        Insert: {
+          ai_flags?: Json | null
+          created_at?: string
+          id?: string
+          image_sha256?: string | null
+          image_url?: string | null
+          reason_code: string
+          reason_message: string
+          user_id: string
+        }
+        Update: {
+          ai_flags?: Json | null
+          created_at?: string
+          id?: string
+          image_sha256?: string | null
+          image_url?: string | null
+          reason_code?: string
+          reason_message?: string
+          user_id?: string
         }
         Relationships: []
       }
