@@ -1,73 +1,84 @@
 ## Goal
 
-Turn `/den/main` into a proper members landing — welcome copy, purpose, and direct nav into each members section. Replace the legacy Croft Common photo with a Crazy Bear image (B&W). Bring every page beyond `/den` into line with Den typography, palette, and Crazy Bear imagery.
+Two things, separately:
 
-## 1. `/den/main` rebuild (`src/pages/CommonRoomMain.tsx`)
+1. Strip the legacy Croft Common streak/check‑in layout off `/den/member` and rebuild the page in the Crazy Bear Den style (B&W, hairline blocks, Archivo headings, no pink, no gradients).
+2. Tell you exactly where the events calendar is managed so you can edit it.
 
-**Background**
-- Swap `/lovable-uploads/8f95beef…png` for `src/assets/cb-carousel-new/country-06.jpg`, imported as a module.
-- Keep the existing `grayscale(1) contrast(1.05)` filter and `bg-black/55` overlay so it reads B&W and high-contrast, consistent with the rest of the Den.
+---
 
-**Layout (top to bottom, all centred, max-w 3xl)**
-1. `MEMBERS` mono eyebrow (existing).
-2. `INSIDE THE DEN` headline in Archivo Black (existing `font-display`).
-3. New 2-line Bears Den welcome under the headline:
-   > A quiet door inside Crazy Bear.
-   > Yours, once you're in.
-4. Short purpose paragraph (Space Grotesk, white/70):
-   > Your room for the things members get. Streaks. Spend. Lunch. Late nights. The bits we don't put on the menu.
-5. Primary `Enter` button (existing membershipGate trigger) — unchanged behaviour.
-6. Hairline divider, then a "What's inside" section with 4 nav tiles.
+## Where to manage the events calendar
 
-**Nav tiles (best-practice gated nav)**
+The "Upcoming Events" carousel on `/den/member` is fed by the public `events` table via `useEventManager`. There is no separate admin screen — events are created and edited from the **public Calendar page itself**, which has a hidden authenticated admin mode.
 
-A 2x2 grid (single column on mobile) of square-ish tiles. Each tile is a button with:
-- Mono eyebrow label (e.g. `01 / HOME`)
-- Archivo Black title
-- One-line Space Grotesk description
-- Hover: invert to white bg / black text, no transparency (per project rule).
+- Open: `https://www.croftcommontest.com/calendar`
+- Trigger the secret gesture on the calendar card (long-press / draw 7 — same gesture system used elsewhere). If you're not signed in, an auth modal opens.
+- Once authenticated, a "Create Event" modal appears. It writes to the `events` table via `useEventManager.addEvent`, which is the same source the Den carousel reads from.
+- A separate `/management/events` exists too, but that is the spaces/booking events list (private hire enquiries), not the public events on the Den carousel. Don't confuse the two.
 
-Tiles:
-| Tile | Route | Copy |
-|---|---|---|
-| Member Home | `/den/member` | "Your streaks, stats, the lot." |
-| Takeaway | `/den/member/lunch-run` | "Order in. Members only." |
-| Ledger | `/den/member/ledger` | "Receipts. Spend. Quiet maths." |
-| You | `/den/member/profile` | "Profile and your moments." (lands on profile; profile page links across to Moments) |
+No code changes needed for this part — answering only.
 
-Note: the existing route is still `/den/member/lunch-run`; only the user-facing label changes to **Takeaway**.
+---
 
-**Behaviour (best practice)**
-- If the user is already authenticated (`useAuth().user` present), tiles navigate straight to the route.
-- If not, clicking a tile stores the intended target in state, then runs `membershipGate.start()`. The existing `useEffect` that watches `membershipGate.allowed` is updated to navigate to the stored target (default `/den/member`) on success. This keeps a single Enter pathway, with deep-link intent preserved — no duplicate disabled UI, no second auth flow.
+## /den/member rebuild
 
-## 2. Crazy Bear imagery beyond `/den`
+### What's wrong now
 
-Audit pages mounted under `/den/member/*` for non-Crazy-Bear assets and replace with B&W Crazy Bear images. Confirmed swap targets so far:
-- `src/pages/MemberHome.tsx`, `src/pages/LunchRun.tsx`, `src/pages/MemberLedger.tsx`, `src/pages/MemberMoments.tsx`, `src/pages/MemberProfile.tsx`, `src/pages/MemberDashboard.tsx` — all currently use `@/assets/den-bg.jpg`. Replace that single shared asset reference with a new `src/assets/den-bg-cb.jpg` (re-export of `cb-carousel-new/country-06.jpg`) so every member page picks up the change in one edit. Apply the same `grayscale(1)` + black overlay treatment used on `/den/main` to keep the section monochrome.
-- Sweep these files for any other hard-coded `/lovable-uploads/...` or non-CB asset imports and replace with appropriate Crazy Bear stills from `src/assets/cb-carousel-new/` or `src/assets/cb-hero-*`. Anything not strictly needed gets removed.
+- Old Croft Common chrome: white rounded cards, thick black borders, pink hover and pink accent buttons.
+- Streak system is showing "14 weeks missed", "Save Streak", "Triple challenge" etc. for a freshly-created account. Database checks confirm `member_streaks`, `member_check_ins`, `member_receipts`, `loyalty_cards`, `loyalty_entries` are all empty (0 rows). The bogus history is the streak engine counting calendar weeks back to a project-wide start date instead of the member's join date — i.e. the engine has no concept of "new member, no history yet".
+- "Total Visits / This Month spend" cards reference the same empty data and read as zeros in heavy bordered boxes.
 
-## 3. Typography & styling pass beyond `/den`
+### What we'll build
 
-Bring member pages into line with the Den system (Archivo Black headings, Space Grotesk body, mono uppercase eyebrows, white-on-black with B&W photography):
-- Page titles: `font-display uppercase tracking-tight` at the same scale ramp used on `/den/main`.
-- Eyebrows / metadata: `font-mono text-[10px] tracking-[0.5em] uppercase text-white/70`.
-- Body: `font-sans text-white/80 leading-relaxed`.
-- Buttons: bordered, mono, uppercase, hover-invert — matching the `Enter` button on `/den/main`. No coloured shadcn primary buttons inside the Den.
-- Cards: replace soft shadcn `Card` chrome with hairline `border border-white/15 bg-black/40 backdrop-blur` blocks for a consistent Den feel; keep shadcn `Card` as the structural component but restyle via className.
-- Update the visible label "Lunch Run" to "Takeaway" wherever it appears in member-facing copy (route stays `/den/member/lunch-run`).
+A monochrome Den-style page with the same `country-06` B&W background and overlay used on `/den/main`. Layout, top to bottom, centred, max-w-5xl:
 
-Out of scope for this pass (flagging, not changing):
-- Lucide icon usage inside member pages conflicts with the workspace rule against Lucide. Removing them touches a lot of UI logic and is a separate clean-up — call it out at the end so you can scope it as its own task.
+1. Mono eyebrow `MEMBER` and Archivo Black headline `WELCOME, {first_name}`.
+2. One‑line Bears Den whisper under the headline (e.g. "Quiet door. Loud nights. Yours.").
+3. A row of four hairline action chips matching the `/den/main` Enter button style: `Upload receipt`, `Takeaway`, `Moments`, `Profile`.
+4. Hairline divider, mono eyebrow `THIS WEEK`, then the streak block (see below).
+5. Hairline divider, mono eyebrow `WHAT'S ON`, then the upcoming events list rendered in Den style (B&W cards, hairline border, mono date eyebrows, Archivo titles). Replace the pink-bordered `Card` wrapper.
+6. Hairline divider, mono eyebrow `MOMENTS`, then `MemberMomentsCarousel` (already exists) inside a hairline frame.
+7. Footer.
 
-## 4. Verification
+Removed for good from this page: the white welcome card, the pink "Save Streak" CTA, the Croft Common "Total Visits / This Month" stat tiles, the duplicated quick-action button rows, hover-pink everywhere.
 
-- Visit `/den/main` logged out: see new copy, 4 tiles, click any tile — auth modal opens, after success lands on the chosen route.
-- Visit `/den/main` logged in: tiles navigate immediately.
-- Spot-check `/den/member`, `/den/member/lunch-run`, `/den/member/ledger`, `/den/member/moments`, `/den/member/profile` for: country-06 B&W background, Archivo Black titles, mono eyebrows, no leftover Croft Common imagery, "Takeaway" label on the lunch-run page heading and links.
+### Streak block — fresh-account behaviour
 
-## Technical notes
+Goal: a brand-new member sees a clean, encouraging block, never "14 weeks missed". Long-term members still see their real streak.
 
-- Route map (unchanged): `/den/member`, `/den/member/lunch-run`, `/den/member/ledger`, `/den/member/moments`, `/den/member/profile`, `/den/member/dashboard`.
-- Pending nav target state lives inside `CommonRoomMain` (`useState<string | null>`), consumed by the existing `membershipGate.allowed` effect; default fallback remains `/den/member` so the bare Enter button keeps current behaviour.
-- New asset: `src/assets/den-bg-cb.jpg` is just a re-export module pointing at `cb-carousel-new/country-06.jpg` so a future swap is one line.
+- New `useDenStreak` hook (or extend `useStreakDashboard`) that reads `cb_members.created_at` for the current user as the **streak origin date**. Any week before that date is excluded from the calendar, missed-weeks list, and grace counts.
+- Empty-state UI when `total_check_ins === 0` AND no receipts uploaded:
+  - Archivo headline `START YOUR STREAK`
+  - Body: "Upload a receipt to log this week. We'll count from here."
+  - Single hairline `Upload receipt` button (opens the existing `ReceiptUploadModal`).
+  - No calendar grid, no missed weeks, no rewards dashboard, no Save Streak CTA.
+- Active state (member has at least one check-in or receipt):
+  - Mono eyebrow `STREAK`
+  - Big Archivo number: current consecutive weeks.
+  - Small mono row underneath: `LONGEST {n}` · `TOTAL {n}` · `THIS MONTH £{x}`.
+  - Below that, a stripped-back B&W weekly grid (re-style of `TraditionalStreakCalendar`) — squares filled white for completed weeks, hairline border for pending, no pink, no gradients.
+  - Missed-week alert only shows weeks **after** the member's join date and only when there are 2 or more genuine misses. Single-miss weeks are silently rolled into the grid.
+- `StreakRewardsDashboard`, `StreakEmergencyBanner`, `StreakSaveModal`, `MissedWeekAlert` get a B&W restyle (hairline borders, mono labels, Archivo headings). No deletion of the underlying logic — just the visual rebuild and the join-date guard.
+
+### Files touched
+
+- `src/pages/MemberHome.tsx` — full layout rewrite.
+- `src/components/TraditionalStreakCalendar.tsx` — strip pink/gradient, swap to hairline B&W; respect join-date origin.
+- `src/components/MissedWeekAlert.tsx` — B&W restyle; filter to post-join weeks; hide on single miss.
+- `src/components/StreakRewardsDashboard.tsx`, `StreakEmergencyBanner.tsx`, `StreakSaveModal.tsx`, `ReceiptUploadModal.tsx` — restyle pass to Den tokens (mono labels, Archivo titles, hairline borders, no pink).
+- `src/components/UpcomingEventsCarousel.tsx` — restyle the per-event card (Archivo title, mono date eyebrow, hairline border, B&W image with grayscale filter).
+- `src/hooks/useStreakDashboard.ts` — accept a `streakOriginDate` (member join date) and clamp the week list / missed-weeks / grace logic to it.
+
+### Out of scope (flagging only)
+
+- Lucide icon usage across these components conflicts with the workspace rule. Replacing every icon would balloon scope. Call it out as a follow-up.
+- No database schema changes. The streak tables stay as-is — fix is purely the join-date clamp on the client.
+
+---
+
+## Verification
+
+- `/den/member` as a fresh signup: B&W page, "Welcome, {name}", chips row, `START YOUR STREAK` block (no missed weeks, no Save Streak), upcoming events in B&W, moments below. No pink anywhere.
+- Open DevTools → Network: confirm `member_streaks`, `member_check_ins`, `member_receipts` all return `[]`. Page renders empty-state cleanly.
+- Upload a receipt → block flips to active state with current-week tile filled.
+- `/calendar` → trigger secret gesture, sign in if needed, create a test event, confirm it appears in the Den's `WHAT'S ON` block.
