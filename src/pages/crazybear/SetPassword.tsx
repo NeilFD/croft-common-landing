@@ -99,7 +99,7 @@ const SetPassword = () => {
       window.history.replaceState({}, document.title, url.pathname);
     } catch {}
     toast({ title: 'Password set', description: 'You are signed in.' });
-    window.location.assign('https://www.crazybeartest.com/');
+    window.location.assign('https://www.crazybear.dev/');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
