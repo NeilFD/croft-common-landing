@@ -428,10 +428,10 @@ export const useMemberMoments = () => {
         image_url: publicUrl,
         tagline,
         date_taken: dateTaken,
-        latitude: null, // Remove location tracking
-        longitude: null, // Remove location tracking
-        location_confirmed: false, // Always false since no location tracking
-        moderation_status: 'pending', // Set to pending for automatic moderation
+        latitude: null,
+        longitude: null,
+        location_confirmed: false,
+        moderation_status: 'approved', // AI pre-check happens client-side before this insert
         is_visible: true,
         tags: tags.filter(tag => tag.trim().length > 0)
       };
