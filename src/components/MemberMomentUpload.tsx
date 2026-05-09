@@ -85,19 +85,21 @@ const probeVideo = (file: File): Promise<VideoMeta> =>
     };
   });
 
-type Stage = 'idle' | 'checking' | 'saving' | 'done';
+type Stage = 'idle' | 'checking' | 'compressing' | 'saving' | 'done';
 
 const STAGE_LABEL: Record<Stage, string> = {
   idle: 'Post Moment',
   checking: 'Checking',
+  compressing: 'Compressing',
   saving: 'Saving',
   done: 'Done',
 };
 
 const STAGE_PCT: Record<Stage, number> = {
   idle: 0,
-  checking: 20,
-  saving: 40,
+  checking: 10,
+  compressing: 20,
+  saving: 50,
   done: 100,
 };
 
@@ -113,6 +115,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [step, setStep] = useState<'upload' | 'details'>('upload');
   const [stage, setStage] = useState<Stage>('idle');
   const [uploadPct, setUploadPct] = useState(0);
+  const [compressPct, setCompressPct] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadMoment, refetchMoments } = useMemberMoments();
