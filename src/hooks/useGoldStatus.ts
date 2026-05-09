@@ -59,16 +59,19 @@ export function useGoldStatus(): GoldStatus & { refetch: () => Promise<void> } {
   }, [load]);
 
   // Realtime: refetch when this user's subscription row changes.
+  // Build the channel + listener BEFORE subscribe(); use a unique name per mount
+  // so React StrictMode's double-effect doesn't reuse an already-subscribed channel
+  // (which would throw "cannot add postgres_changes callbacks ... after subscribe()").
   useEffect(() => {
     if (!user?.id) return;
     const ch = supabase
-      .channel(`subs-${user.id}`)
+      .channel(`subs-${user.id}-${Math.random().toString(36).slice(2, 8)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "subscriptions", filter: `user_id=eq.${user.id}` },
         () => load(),
-      )
-      .subscribe();
+      );
+    ch.subscribe();
     return () => {
       supabase.removeChannel(ch);
     };
