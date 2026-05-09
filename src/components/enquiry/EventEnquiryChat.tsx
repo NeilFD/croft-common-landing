@@ -156,6 +156,7 @@ export const EventEnquiryChat = ({ onComplete }: EventEnquiryChatProps) => {
         {/* Input */}
         <div className="border-t-2 border-black p-3 md:p-4 flex gap-3">
           <input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
