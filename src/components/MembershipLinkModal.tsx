@@ -80,9 +80,15 @@ const MembershipLinkModal: React.FC<MembershipLinkModalProps> = ({ open, onClose
     setError(null);
   };
 
+  const safeProps = useGestureSafeDialog(open);
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) { reset(); onClose(); } }}>
-      <DialogContent className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background">
+    <Dialog open={open} onOpenChange={safeProps.guardOpenChange((v) => { if (!v) { reset(); onClose(); } })}>
+      <DialogContent
+        className="w-[86vw] sm:w-auto max-w-[360px] sm:max-w-md border border-border bg-background"
+        onPointerDownOutside={safeProps.onPointerDownOutside}
+        onInteractOutside={safeProps.onInteractOutside}
+        onFocusOutside={safeProps.onFocusOutside}
+      >
         <div className="space-y-4">
           <div className="flex items-center gap-3">
             <CroftLogo size="sm" />
