@@ -1,4 +1,41 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+
+// Inline component: autoplays muted, loops, and pauses when offscreen for smoothness
+const MosaicVideo: React.FC<{ src: string; poster?: string; alt?: string }> = ({ src, poster, alt }) => {
+  const ref = useRef<HTMLVideoElement | null>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            el.play().catch(() => {});
+          } else {
+            el.pause();
+          }
+        });
+      },
+      { threshold: 0.25 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <video
+      ref={ref}
+      src={src}
+      poster={poster}
+      aria-label={alt}
+      className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+      muted
+      loop
+      autoPlay
+      playsInline
+      preload="metadata"
+    />
+  );
+};
 import { format } from 'date-fns';
 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -370,24 +407,13 @@ const MemberMomentsMosaic: React.FC = () => {
               className="break-inside-avoid mb-2 md:mb-4 cursor-pointer group relative overflow-hidden bg-black"
               onClick={() => handleMomentClick(moment)}
             >
-              {/* Full-bleed media — videos render as poster (play in detail modal) */}
+              {/* Full-bleed media — videos autoplay on loop, only when visible */}
               {moment.media_type === 'video' ? (
-                moment.poster_url ? (
-                  <img
-                    src={moment.poster_url}
-                    alt={moment.tagline}
-                    loading="lazy"
-                    className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
-                  />
-                ) : (
-                  <video
-                    src={moment.image_url}
-                    className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
-                    muted
-                    playsInline
-                    preload="metadata"
-                  />
-                )
+                <MosaicVideo
+                  src={moment.image_url}
+                  poster={moment.poster_url || undefined}
+                  alt={moment.tagline}
+                />
               ) : (
                 <img
                   src={moment.image_url}
@@ -395,15 +421,6 @@ const MemberMomentsMosaic: React.FC = () => {
                   loading="lazy"
                   className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
                 />
-              )}
-
-              {/* Play badge for videos */}
-              {moment.media_type === 'video' && (
-                <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-                  <div className="h-12 w-12 rounded-full bg-black/60 border border-white/40 backdrop-blur-sm flex items-center justify-center">
-                    <span className="text-white text-lg leading-none translate-x-[1px]">▶</span>
-                  </div>
-                </div>
               )}
 
               {/* Top pills */}
