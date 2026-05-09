@@ -617,11 +617,18 @@ const MemberMomentsMosaic: React.FC = () => {
                     {getMemberName(moment)}
                   </span>
                   <div className="flex items-center gap-1.5">
-                    {!!moment.comment_count && moment.comment_count > 0 && (
-                      <span className="inline-flex items-center gap-1 h-7 px-2 bg-black/40 backdrop-blur-sm border border-white/20 font-mono text-[10px] text-white">
-                        💬 {moment.comment_count}
-                      </span>
-                    )}
+                    <button
+                      type="button"
+                      aria-label="View comments"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedMoment(moment);
+                      }}
+                      className="inline-flex items-center gap-1 h-7 px-2 bg-black/40 backdrop-blur-sm border border-white/20 hover:bg-black/70 transition-colors font-mono text-[10px] text-white"
+                    >
+                      <span aria-hidden="true">💬</span>
+                      <span>{moment.comment_count ?? 0}</span>
+                    </button>
                     <button
                       type="button"
                       aria-label={moment.user_has_liked ? 'Unlike' : 'Like'}
