@@ -1,120 +1,161 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navigation from '@/components/Navigation';
 import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
+import { useAuth } from '@/hooks/useAuth';
 import BiometricUnlockModal from '@/components/BiometricUnlockModal';
 import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useNavigate } from 'react-router-dom';
+import denBg from '@/assets/den-bg.jpg';
+
+type Tile = {
+  index: string;
+  title: string;
+  copy: string;
+  route: string;
+};
+
+const TILES: Tile[] = [
+  { index: '01', title: 'Home', copy: 'Streaks. Stats. The lot.', route: '/den/member' },
+  { index: '02', title: 'Takeaway', copy: 'Order in. Members only.', route: '/den/member/lunch-run' },
+  { index: '03', title: 'Ledger', copy: 'Receipts. Spend. Quiet maths.', route: '/den/member/ledger' },
+  { index: '04', title: 'You', copy: 'Profile. Moments. Yours.', route: '/den/member/profile' },
+];
 
 const CommonRoomMain = () => {
   const { isCMSMode } = useCMSMode();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const membershipGate = useMembershipGate();
+  const [pendingTarget, setPendingTarget] = useState<string | null>(null);
 
-  // Navigate to member area when authentication is successful
+  // Navigate after successful auth, honouring any pending tile target
   React.useEffect(() => {
-    console.log('[CommonRoomMain] membershipGate.allowed changed:', membershipGate.allowed);
-    console.log('[CommonRoomMain] Mobile PWA context:', {
-      userAgent: navigator.userAgent,
-      standalone: window.matchMedia('(display-mode: standalone)').matches,
-      viewport: { width: window.innerWidth, height: window.innerHeight }
-    });
-    
     if (membershipGate.allowed) {
-      console.log('[CommonRoomMain] 🚀 MOBILE: Authentication successful, navigating to /den/member');
-      
-      // Add mobile-specific navigation with retry
-      const navigateWithRetry = () => {
-        try {
-          navigate('/den/member', { replace: true });
-          console.log('[CommonRoomMain] ✅ MOBILE: Navigation initiated');
-        } catch (error) {
-          console.error('[CommonRoomMain] ❌ MOBILE: Navigation failed:', error);
-          // Retry after short delay
-          setTimeout(() => {
-            try {
-              window.location.href = '/den/member';
-            } catch (e) {
-              console.error('[CommonRoomMain] ❌ MOBILE: Fallback navigation failed:', e);
-            }
-          }, 100);
-        }
-      };
-
-      // On mobile PWA, add small delay to ensure DOM is ready
+      const target = pendingTarget || '/den/member';
       const isMobile = window.innerWidth < 768;
       const isPWA = window.matchMedia('(display-mode: standalone)').matches;
-      
-      if (isMobile || isPWA) {
-        setTimeout(navigateWithRetry, 50);
-      } else {
-        navigateWithRetry();
-      }
+      const go = () => {
+        try {
+          navigate(target, { replace: true });
+        } catch {
+          window.location.href = target;
+        }
+      };
+      if (isMobile || isPWA) setTimeout(go, 50); else go();
     }
-  }, [membershipGate.allowed, navigate]);
+  }, [membershipGate.allowed, navigate, pendingTarget]);
 
-  const handleMemberLogin = () => {
+  const handleEnter = (target?: string) => {
+    setPendingTarget(target ?? null);
+    if (user) {
+      navigate(target ?? '/den/member');
+      return;
+    }
     membershipGate.start();
   };
 
   return (
-    <div 
-      className="min-h-screen relative overflow-y-auto" 
-      style={{ 
+    <div
+      className="min-h-screen relative overflow-y-auto"
+      style={{
         touchAction: 'pan-y pinch-zoom',
         WebkitOverflowScrolling: 'touch',
-        overscrollBehavior: 'contain'
+        overscrollBehavior: 'contain',
       }}
     >
-      {/* Fixed B&W background */}
+      {/* Fixed B&W Crazy Bear background */}
       <div
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{
-          backgroundImage: `url('/lovable-uploads/8f95beef-0163-4ded-a6c4-8b0a8bac8b08.png')`,
+          backgroundImage: `url(${denBg})`,
           filter: 'grayscale(1) contrast(1.05)',
         }}
       />
-      <div className="fixed inset-0 bg-black/55 -z-10" />
+      <div className="fixed inset-0 bg-black/65 -z-10" />
 
-      {/* Scrollable content */}
       <div className="relative z-10 text-white">
         {!isCMSMode && <Navigation />}
-        <section className="min-h-screen flex items-center justify-center" style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)', paddingBottom: '6rem' }}>
+
+        <section
+          className="min-h-screen flex items-center justify-center"
+          style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)', paddingBottom: '6rem' }}
+        >
           <div className="mx-auto px-6 text-center flex flex-col items-center max-w-3xl w-full">
-            <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white/70 mb-6 text-center">
+            <p className="font-mono text-[10px] md:text-xs tracking-[0.5em] uppercase text-white/70 mb-6">
               Members
             </p>
+
             <CMSText
               page="common-room-main"
               section="hero"
               contentKey="title"
               fallback="INSIDE THE DEN"
               as="h1"
-              className="font-display uppercase text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[0.9] mb-8 text-center w-full"
+              className="font-display uppercase text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[0.9] mb-6 text-center w-full"
             />
+
+            <CMSText
+              page="common-room-main"
+              section="hero"
+              contentKey="welcome"
+              fallback={"A quiet door inside Crazy Bear.\nYours, once you're in."}
+              as="p"
+              className="font-sans text-base md:text-lg text-white/90 max-w-md mx-auto leading-relaxed mb-6 whitespace-pre-line"
+            />
+
             <CMSText
               page="common-room-main"
               section="hero"
               contentKey="description"
-              fallback="Quiet rooms. Loud nights. Yours."
+              fallback="Your room for the things members get. Streaks. Spend. Lunch. Late nights. The bits we don't put on the menu."
               as="p"
-              className="font-sans text-base md:text-lg text-white/80 max-w-md mx-auto leading-relaxed mb-12 text-center"
+              className="font-sans text-sm md:text-base text-white/70 max-w-xl mx-auto leading-relaxed mb-10"
             />
-            <div className="text-center">
-              <button
-                onClick={handleMemberLogin}
-                disabled={membershipGate.checking}
-                className="inline-block border border-white text-white px-10 py-3 font-mono text-xs tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-colors disabled:opacity-50 touch-manipulation"
-              >
-                {membershipGate.checking ? 'Opening' : 'Enter'}
-              </button>
+
+            <button
+              onClick={() => handleEnter()}
+              disabled={membershipGate.checking}
+              className="inline-block border border-white text-white px-10 py-3 font-mono text-xs tracking-[0.4em] uppercase hover:bg-white hover:text-black transition-colors disabled:opacity-50 touch-manipulation mb-16"
+            >
+              {membershipGate.checking ? 'Opening' : user ? 'Continue' : 'Enter'}
+            </button>
+
+            {/* Hairline + section eyebrow */}
+            <div className="w-full flex flex-col items-center mb-8">
+              <div className="h-px w-16 bg-white/30 mb-6" />
+              <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-white/60">
+                What's inside
+              </p>
+            </div>
+
+            {/* Nav tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+              {TILES.map((t) => (
+                <button
+                  key={t.route}
+                  onClick={() => handleEnter(t.route)}
+                  disabled={membershipGate.checking}
+                  className="group text-left border border-white/25 bg-black/40 backdrop-blur-sm p-6 hover:bg-white hover:text-black hover:border-white transition-colors disabled:opacity-50"
+                >
+                  <p className="font-mono text-[9px] tracking-[0.5em] uppercase text-white/50 group-hover:text-black/60 mb-3">
+                    {t.index} / {t.title}
+                  </p>
+                  <h3 className="font-display uppercase text-2xl md:text-3xl tracking-tight leading-none mb-2">
+                    {t.title}
+                  </h3>
+                  <p className="font-sans text-sm text-white/70 group-hover:text-black/70">
+                    {t.copy}
+                  </p>
+                </button>
+              ))}
             </div>
           </div>
         </section>
       </div>
-      
+
       {/* Authentication Modals */}
       <BiometricUnlockModal
         isOpen={membershipGate.bioOpen}
@@ -124,13 +165,13 @@ const CommonRoomMain = () => {
         title="Enter the Den"
         description="Use Face ID or your device passkey to enter."
       />
-      
+
       <MembershipLinkModal
         open={membershipGate.linkOpen}
         onClose={membershipGate.reset}
         onSuccess={membershipGate.handleLinkSuccess}
       />
-      
+
       <AuthModal
         isOpen={membershipGate.authOpen}
         onClose={membershipGate.reset}
