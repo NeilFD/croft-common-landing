@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import CroftLogo from "@/components/CroftLogo";
+import CrazyBearLogo from "@/components/CrazyBearLogo";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,7 +14,7 @@ const Book: React.FC = () => {
 
   // SEO: title, description, canonical
   useEffect(() => {
-    document.title = "Book | Croft Common – Coming Soon";
+    document.title = "Book | Crazy Bear – Coming Soon";
 
     const metaDescId = "meta-desc-book";
     let metaDesc = document.getElementById(metaDescId) as HTMLMetaElement | null;
@@ -24,7 +24,7 @@ const Book: React.FC = () => {
       metaDesc.id = metaDescId;
       document.head.appendChild(metaDesc);
     }
-    metaDesc.content = "Croft Common booking – Coming soon. Mind your own business.";
+    metaDesc.content = "Crazy Bear booking – Coming soon. Mind your own business.";
 
     let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement | null;
     if (!canonical) {
@@ -37,13 +37,13 @@ const Book: React.FC = () => {
 
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground flex flex-col">
+    <div className="relative min-h-screen text-foreground flex flex-col">
       <div
         aria-hidden
-        className="fixed inset-0 -z-10 bg-cover bg-center grayscale"
+        className="fixed inset-0 -z-10 bg-cover bg-center"
         style={{ backgroundImage: `url(${denBg})` }}
       />
-      <div aria-hidden className="fixed inset-0 -z-10 bg-white/70" />
+      <div aria-hidden className="fixed inset-0 -z-10 bg-white/60" />
       {!isCMSMode && (
         <header className="container mx-auto px-6 pt-10">
           <Button
@@ -59,13 +59,13 @@ const Book: React.FC = () => {
 
       <main className="flex-1 container mx-auto px-6 flex flex-col items-center justify-center text-center gap-6">
         <div className="opacity-90">
-          <CroftLogo size="lg" />
+          <CrazyBearLogo className="h-20 w-20" tone="dark" />
         </div>
         <CMSText 
           page="book" 
           section="hero" 
           contentKey="title"
-          fallback="Croft Common"
+          fallback="Crazy Bear"
           as="h1"
           className="font-brutalist text-3xl md:text-5xl tracking-wide"
         />
