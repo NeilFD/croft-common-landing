@@ -358,7 +358,7 @@ const MemberMomentsMosaic: React.FC = () => {
 
       {/* Masonry Grid */}
       {filteredMoments.length > 0 && !loading && (
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-2 md:gap-4 space-y-2 md:space-y-4">
           {filteredMoments.map((moment, index) => (
             <div
               key={moment.id}
