@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS cb_members_email_lower_unique ON public.cb_members (lower(email));

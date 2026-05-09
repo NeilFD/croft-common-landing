@@ -61,7 +61,7 @@ const CBSubscriptionForm = () => {
     try {
       const [firstName, ...rest] = name.trim().split(/\s+/);
       const lastName = rest.join(' ') || null;
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email,
         // Random placeholder password. The user will set their real password
         // via the link in the confirmation email (lands at /set-password).
@@ -81,6 +81,19 @@ const CBSubscriptionForm = () => {
         },
       });
       if (error) throw error;
+
+      // Supabase returns a user with empty identities when the email is already registered
+      // (this is a security feature so existing emails aren't enumerated). Detect that and
+      // tell the member to sign in instead of creating a duplicate membership.
+      if (signUpData?.user && Array.isArray(signUpData.user.identities) && signUpData.user.identities.length === 0) {
+        toast({
+          title: "You're already a member",
+          description: 'This email is already signed up. Please sign in instead.',
+          variant: 'destructive',
+        });
+        setIsLoading(false);
+        return;
+      }
 
       toast({
         title: 'Check your email',
