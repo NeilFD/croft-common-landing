@@ -402,6 +402,7 @@ const Curious: React.FC = () => {
               )}
             </>
           )}
+          </div>
         </main>
       </div>
     </>
