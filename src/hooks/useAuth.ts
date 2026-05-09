@@ -21,13 +21,30 @@ export const useAuth = () => {
         
         if (error) {
           console.error('🚨 Error getting initial session:', error);
-          console.error('🚨 Error details:', {
-            message: error.message,
-            status: error.status,
-            name: error.name
-          });
         }
-        
+
+        // Validate session: if user was deleted server-side, purge the stale token.
+        if (session) {
+          try {
+            const { data: userData, error: userErr } = await supabase.auth.getUser();
+            const code = (userErr as any)?.code || '';
+            const status = (userErr as any)?.status;
+            if (!userData?.user || code === 'user_not_found' || status === 403) {
+              console.warn('🚨 Stale session detected, signing out');
+              await supabase.auth.signOut().catch(() => {});
+              try { localStorage.removeItem('membershipLinked'); } catch {}
+              if (mounted) {
+                setSession(null);
+                setUser(null);
+                setLoading(false);
+              }
+              return;
+            }
+          } catch (e) {
+            console.warn('Session validation failed', e);
+          }
+        }
+
         if (mounted) {
           setSession(session);
           setUser(session?.user ?? null);
