@@ -16,7 +16,7 @@ const PRESET_TAGS = [
 ];
 
 const MAX_VIDEO_SECONDS = 30;
-const MAX_BYTES = 50 * 1024 * 1024; // 50MB combined cap (covers short videos)
+const MAX_BYTES = 500 * 1024 * 1024; // 500MB cap (high-bitrate 30s videos)
 
 const chipBase =
   'inline-flex items-center justify-center px-3 h-7 font-mono text-[10px] tracking-[0.3em] uppercase border transition-colors';
@@ -127,7 +127,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       return;
     }
     if (selectedFile.size > MAX_BYTES) {
-      toast({ title: 'Too big', description: 'Max 50MB.', variant: 'destructive' });
+      toast({ title: 'Too big', description: 'Max 500MB.', variant: 'destructive' });
       return;
     }
 
