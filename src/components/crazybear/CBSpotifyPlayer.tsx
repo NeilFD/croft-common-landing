@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useHideOnScrollDown } from "@/hooks/useHideOnScrollDown";
 
 const PLAYLIST_ID = "5jryH9aMgkcQruOslKX7Fc";
 const PLAYLIST_URL = `https://open.spotify.com/playlist/${PLAYLIST_ID}`;
