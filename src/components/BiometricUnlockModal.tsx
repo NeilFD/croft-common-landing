@@ -140,7 +140,6 @@ const BiometricUnlockModal: React.FC<BiometricUnlockModalProps> = ({ isOpen, onC
     }
   };
 
-  return (
   const safeProps = useGestureSafeDialog(isOpen);
   return (
     <Dialog open={isOpen} onOpenChange={safeProps.guardOpenChange((v) => { if (!v) onClose(); })}>
