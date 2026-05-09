@@ -169,6 +169,8 @@ const MemberProfile: React.FC = () => {
                       <MembershipCard />
                     </div>
 
+                    <GoldSection />
+
                     <div className="space-y-3">
                       <AddToAppleWalletButton
                         enabled={!!formData.avatar_url && formData.avatar_face_verified && !autoVerifying}
