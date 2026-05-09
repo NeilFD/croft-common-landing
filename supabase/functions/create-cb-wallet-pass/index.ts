@@ -41,9 +41,10 @@ function formatMemberSince(iso: string | null): string {
 // 50/100/150px logo files and 29/58/87px icon files.
 async function fetchAsset(file: string): Promise<Uint8Array> {
   const candidates = [
+    `https://crazybear.dev/brand/wallet/${file}`,
+    `https://www.crazybear.dev/brand/wallet/${file}`,
+    `https://crazy-bear-web.lovable.app/brand/wallet/${file}`,
     `https://www.crazybeartest.com/brand/wallet/${file}`,
-    `https://crazybeartest.com/brand/wallet/${file}`,
-    `https://croft-common-landing.lovable.app/brand/wallet/${file}`,
   ];
   for (const url of candidates) {
     try {
