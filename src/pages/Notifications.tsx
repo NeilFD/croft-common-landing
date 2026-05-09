@@ -54,8 +54,8 @@ export default function Notifications() {
 
   useEffect(() => {
     setMeta({
-      title: "Notifications | Croft Common",
-      description: "Personalised notifications and offers from Croft Common.",
+      title: "Notifications | Crazy Bear",
+      description: "Personalised notifications and offers from Crazy Bear.",
       canonical: `${window.location.origin}/notifications`,
     });
   }, []);
