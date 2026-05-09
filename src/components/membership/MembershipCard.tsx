@@ -27,14 +27,7 @@ const Frame = ({ children }: { children: React.ReactNode }) => (
   <div className="w-full max-w-md mx-auto">
     <div className="aspect-[1.586/1] w-full">
       <div className="relative h-full w-full bg-black text-white border border-white/20 rounded-xl overflow-hidden">
-        {/* Bear watermark — visible, white-on-black */}
-        <img
-          src="/brand/crazy-bear-mark.png"
-          alt=""
-          aria-hidden
-          className="absolute -right-4 -bottom-4 w-44 h-44 md:w-52 md:h-52 object-contain pointer-events-none invert opacity-25"
-        />
-        {/* Bear logo top-right corner — small, crisp */}
+        {/* Bear logo top-right corner */}
         <img
           src="/brand/crazy-bear-mark.png"
           alt="Crazy Bear"
