@@ -1954,6 +1954,7 @@ export type Database = {
           is_available: boolean | null
           name: string
           price: number | null
+          site: string
           sort_order: number | null
         }
         Insert: {
@@ -1964,6 +1965,7 @@ export type Database = {
           is_available?: boolean | null
           name: string
           price?: number | null
+          site?: string
           sort_order?: number | null
         }
         Update: {
@@ -1974,6 +1976,7 @@ export type Database = {
           is_available?: boolean | null
           name?: string
           price?: number | null
+          site?: string
           sort_order?: number | null
         }
         Relationships: []
@@ -1983,7 +1986,11 @@ export type Database = {
           created_at: string | null
           id: string
           items: Json | null
+          member_name: string | null
+          member_phone: string | null
+          notes: string | null
           order_date: string
+          site: string | null
           status: string | null
           total_amount: number | null
           user_id: string
@@ -1992,7 +1999,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           items?: Json | null
+          member_name?: string | null
+          member_phone?: string | null
+          notes?: string | null
           order_date: string
+          site?: string | null
           status?: string | null
           total_amount?: number | null
           user_id: string
@@ -2001,7 +2012,11 @@ export type Database = {
           created_at?: string | null
           id?: string
           items?: Json | null
+          member_name?: string | null
+          member_phone?: string | null
+          notes?: string | null
           order_date?: string
+          site?: string | null
           status?: string | null
           total_amount?: number | null
           user_id?: string
