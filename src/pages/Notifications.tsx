@@ -116,7 +116,7 @@ export default function Notifications() {
           page="notifications" 
           section="message" 
           contentKey="signature"
-          fallback="- Croft Common"
+          fallback="- Crazy Bear"
           as="p"
           className="mt-8 text-right font-industrial text-base"
         />
