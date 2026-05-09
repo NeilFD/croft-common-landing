@@ -5,6 +5,7 @@ import { isPlatformAuthenticatorAvailable, isWebAuthnSupported, getStoredUserHan
 import { ensureBiometricUnlockSerialized } from '@/lib/webauthnOrchestrator';
 import { Button } from '@/components/ui/button';
 import { markBioSuccess } from '@/hooks/useRecentBiometric';
+import { useGestureSafeDialog } from '@/hooks/useGestureSafeDialog';
 
 // Global lock to prevent overlapping OS biometric prompts across modals
 let bioPromptActive = false;
