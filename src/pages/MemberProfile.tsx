@@ -414,6 +414,7 @@ const MemberProfile: React.FC = () => {
                                   beer_style_preferences: profile.beer_style_preferences || [],
                                   communication_preferences: profile.communication_preferences || { push: true, email: true },
                                   avatar_url: profile.avatar_url,
+                                  avatar_face_verified: !!profile.avatar_face_verified,
                                 });
                               }
                             }}
