@@ -269,7 +269,6 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       });
       if (!result) throw new Error('Could not save your moment.');
       setStage('done');
-      refetchMoments();
       onPosted?.();
       toast({ title: 'Posted', description: 'Your moment is up.' });
       setTimeout(() => {
