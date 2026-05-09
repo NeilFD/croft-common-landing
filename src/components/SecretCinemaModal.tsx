@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthModal } from '@/components/AuthModal';
 import { format } from 'date-fns';
+import { useGestureSafeDialog } from '@/hooks/useGestureSafeDialog';
 
 type CinemaStatus = {
   release_id: string;
