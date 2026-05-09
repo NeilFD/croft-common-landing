@@ -1,38 +1,164 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 
-// Inline component: autoplays muted, loops, and pauses when offscreen for smoothness
-const MosaicVideo: React.FC<{ src: string; poster?: string; alt?: string }> = ({ src, poster, alt }) => {
+const activeMomentVideos = new Set<HTMLVideoElement>();
+const HAVE_FUTURE_DATA = 3;
+const MIN_START_BUFFER_SECONDS = 1.5;
+const RESUME_BUFFER_SECONDS = 3;
+
+const getBufferedAhead = (video: HTMLVideoElement) => {
+  const { buffered, currentTime } = video;
+  for (let i = 0; i < buffered.length; i += 1) {
+    if (buffered.start(i) <= currentTime && buffered.end(i) > currentTime) {
+      return buffered.end(i) - currentTime;
+    }
+  }
+  return 0;
+};
+
+const pauseOtherMomentVideos = (current: HTMLVideoElement) => {
+  activeMomentVideos.forEach((video) => {
+    if (video !== current) {
+      video.pause();
+      activeMomentVideos.delete(video);
+    }
+  });
+};
+
+const MomentVideo: React.FC<{
+  src: string;
+  poster?: string;
+  alt?: string;
+  active?: boolean;
+  variant?: 'tile' | 'modal';
+}> = ({ src, poster, alt, active = true, variant = 'tile' }) => {
   const ref = useRef<HTMLVideoElement | null>(null);
+
   useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            el.play().catch(() => {});
-          } else {
-            el.pause();
-          }
-        });
-      },
-      { threshold: 0.25 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
+    const video = ref.current;
+    if (!video) return;
+
+    let wantsPlayback = variant === 'modal';
+    let loadObserver: IntersectionObserver | null = null;
+    let playObserver: IntersectionObserver | null = null;
+    let retryTimer = 0;
+
+    const clearRetry = () => {
+      if (retryTimer) window.clearTimeout(retryTimer);
+      retryTimer = 0;
+    };
+
+    const attachSource = () => {
+      if (video.dataset.srcAttached === 'true') return;
+      video.src = src;
+      video.preload = 'auto';
+      video.dataset.srcAttached = 'true';
+      video.load();
+    };
+
+    const pause = () => {
+      clearRetry();
+      video.pause();
+      activeMomentVideos.delete(video);
+    };
+
+    const playWhenReady = () => {
+      clearRetry();
+      if (!active || !wantsPlayback || document.hidden) {
+        pause();
+        return;
+      }
+
+      attachSource();
+      pauseOtherMomentVideos(video);
+
+      if (video.readyState < HAVE_FUTURE_DATA && getBufferedAhead(video) < MIN_START_BUFFER_SECONDS) {
+        retryTimer = window.setTimeout(playWhenReady, 180);
+        return;
+      }
+
+      video.play()
+        .then(() => activeMomentVideos.add(video))
+        .catch(() => {});
+    };
+
+    const recoverFromBuffering = () => {
+      if (!active || !wantsPlayback) return;
+      if (getBufferedAhead(video) < RESUME_BUFFER_SECONDS && video.readyState < HAVE_FUTURE_DATA) {
+        video.pause();
+        activeMomentVideos.delete(video);
+        retryTimer = window.setTimeout(playWhenReady, 350);
+        return;
+      }
+      playWhenReady();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) pause();
+      else playWhenReady();
+    };
+
+    video.addEventListener('loadeddata', playWhenReady);
+    video.addEventListener('canplay', playWhenReady);
+    video.addEventListener('canplaythrough', playWhenReady);
+    video.addEventListener('waiting', recoverFromBuffering);
+    video.addEventListener('stalled', recoverFromBuffering);
+    video.addEventListener('progress', recoverFromBuffering);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    if (variant === 'tile') {
+      loadObserver = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) attachSource();
+        },
+        { rootMargin: '1200px 0px', threshold: 0.01 },
+      );
+
+      playObserver = new IntersectionObserver(
+        ([entry]) => {
+          wantsPlayback = entry.isIntersecting;
+          if (entry.isIntersecting) playWhenReady();
+          else pause();
+        },
+        { rootMargin: '180px 0px', threshold: 0.45 },
+      );
+
+      loadObserver.observe(video);
+      playObserver.observe(video);
+    } else {
+      attachSource();
+      playWhenReady();
+    }
+
+    return () => {
+      loadObserver?.disconnect();
+      playObserver?.disconnect();
+      video.removeEventListener('loadeddata', playWhenReady);
+      video.removeEventListener('canplay', playWhenReady);
+      video.removeEventListener('canplaythrough', playWhenReady);
+      video.removeEventListener('waiting', recoverFromBuffering);
+      video.removeEventListener('stalled', recoverFromBuffering);
+      video.removeEventListener('progress', recoverFromBuffering);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+      pause();
+    };
+  }, [active, src, variant]);
+
   return (
     <video
       ref={ref}
-      src={src}
       poster={poster}
       aria-label={alt}
-      className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
-      muted
+      className={variant === 'tile'
+        ? 'w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]'
+        : 'max-w-full max-h-[65vh] object-contain'}
+      muted={variant === 'tile'}
+      controls={variant === 'modal'}
       loop
       autoPlay
       playsInline
-      preload="metadata"
+      preload={variant === 'modal' ? 'auto' : 'none'}
+      controlsList="nodownload noplaybackrate"
+      disablePictureInPicture
     />
   );
 };
@@ -85,7 +211,7 @@ import OptimizedImage from './OptimizedImage';
 import MomentComments from './moments/MomentComments';
 
 const MemberMomentsMosaic: React.FC = () => {
-  const { moments, loading, deleteMoment, refetchMoments, likeMoment, unlikeMoment } = useMemberMoments();
+  const { moments, loading, uploadMoment, deleteMoment, refetchMoments, likeMoment, unlikeMoment } = useMemberMoments();
   const { user } = useAuth();
   const [showUpload, setShowUpload] = useState(false);
   const [editingMoment, setEditingMoment] = useState<MemberMoment | null>(null);
@@ -409,10 +535,11 @@ const MemberMomentsMosaic: React.FC = () => {
             >
               {/* Full-bleed media — videos autoplay on loop, only when visible */}
               {moment.media_type === 'video' ? (
-                <MosaicVideo
+                <MomentVideo
                   src={moment.image_url}
                   poster={moment.poster_url || undefined}
                   alt={moment.tagline}
+                  active={!selectedMoment}
                 />
               ) : (
                 <img
@@ -529,6 +656,7 @@ const MemberMomentsMosaic: React.FC = () => {
         isOpen={showUpload}
         onClose={() => setShowUpload(false)}
         onPosted={refetchMoments}
+        uploadMoment={uploadMoment}
       />
 
       {/* Edit Modal */}
@@ -571,14 +699,11 @@ const MemberMomentsMosaic: React.FC = () => {
             {/* Media area */}
             <div className="flex items-center justify-center p-2 md:p-6 bg-black">
               {selectedMoment.media_type === 'video' ? (
-                <video
+                <MomentVideo
                   src={selectedMoment.image_url}
                   poster={selectedMoment.poster_url ?? undefined}
-                  controls
-                  autoPlay
-                  loop
-                  playsInline
-                  className="max-w-full max-h-[65vh] object-contain"
+                  alt={selectedMoment.tagline}
+                  variant="modal"
                 />
               ) : (
                 <img
@@ -645,12 +770,6 @@ const MemberMomentsMosaic: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Upload Modal */}
-      <MemberMomentUpload
-        isOpen={showUpload}
-        onClose={() => setShowUpload(false)}
-      />
 
       {/* Edit Modal */}
       {editingMoment && (

@@ -1,14 +1,26 @@
 import React, { useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useMemberMoments } from '@/hooks/useMemberMoments';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { compressVideo } from '@/lib/compressVideo';
+import type { MemberMoment } from '@/hooks/useMemberMoments';
 
 interface MemberMomentUploadProps {
   onClose?: () => void;
   isOpen?: boolean;
   onPosted?: () => void;
+  uploadMoment: (
+    file: File,
+    tagline: string,
+    dateTaken: string,
+    tags?: string[],
+    extras?: {
+      mediaType?: 'image' | 'video';
+      posterBlob?: Blob | null;
+      durationSeconds?: number | null;
+      onProgress?: (pct: number) => void;
+    },
+  ) => Promise<MemberMoment | undefined>;
 }
 
 const PRESET_TAGS = [
@@ -18,6 +30,7 @@ const PRESET_TAGS = [
 
 const MAX_VIDEO_SECONDS = 30;
 const MAX_BYTES = 500 * 1024 * 1024; // 500MB cap (high-bitrate 30s videos)
+const MAX_RAW_VIDEO_BYTES = 18 * 1024 * 1024; // raw phone video is too heavy for feed playback
 
 const chipBase =
   'inline-flex items-center justify-center px-3 h-7 font-mono text-[10px] tracking-[0.3em] uppercase border transition-colors';
@@ -103,7 +116,7 @@ const STAGE_PCT: Record<Stage, number> = {
   done: 100,
 };
 
-const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true, onPosted }) => {
+const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true, onPosted, uploadMoment }) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
@@ -118,7 +131,6 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [compressPct, setCompressPct] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadMoment, refetchMoments } = useMemberMoments();
   const { toast } = useToast();
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -241,9 +253,13 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
             } catch {
               // keep original poster/duration
             }
+          } else if (file.size > MAX_RAW_VIDEO_BYTES) {
+            throw new Error('That video could not be made web-ready. Try a shorter clip, or export it as MP4 first.');
           }
         } catch {
-          // fall through with original file
+          if (file.size > MAX_RAW_VIDEO_BYTES) {
+            throw new Error('That video could not be made web-ready. Try a shorter clip, or export it as MP4 first.');
+          }
         }
       }
 
@@ -257,7 +273,6 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       });
       if (!result) throw new Error('Could not save your moment.');
       setStage('done');
-      refetchMoments();
       onPosted?.();
       toast({ title: 'Posted', description: 'Your moment is up.' });
       setTimeout(() => {
