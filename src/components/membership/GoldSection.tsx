@@ -134,7 +134,7 @@ export const GoldSection: React.FC = () => {
                   <button
                     onClick={openPortal}
                     disabled={portalLoading}
-                    className={btnSmallDark}
+                    className={btnFull}
                   >
                     {portalLoading ? 'Opening' : 'Manage subscription'}
                   </button>
@@ -201,7 +201,7 @@ export const GoldSection: React.FC = () => {
                       setShowInfo(false);
                       setShowCheckout(true);
                     }}
-                    className={btnSmallDark}
+                    className={btnFull}
                   >
                     Go Gold
                   </button>
