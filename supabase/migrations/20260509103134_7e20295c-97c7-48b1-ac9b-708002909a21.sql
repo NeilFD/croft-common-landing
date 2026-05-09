@@ -1,0 +1,2 @@
+ALTER TABLE public.cb_enquiries DROP CONSTRAINT cb_enquiries_category_check;
+ALTER TABLE public.cb_enquiries ADD CONSTRAINT cb_enquiries_category_check CHECK (category = ANY (ARRAY['general','rooms','dining','membership','event']));
