@@ -43,6 +43,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   const [loading, setLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const { user, refreshSession } = useAuth();
+  const safeProps = useGestureSafeDialog(isOpen);
 
   // Debug logging for mobile OTP issues
   useEffect(() => {
