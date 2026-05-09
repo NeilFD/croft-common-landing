@@ -148,7 +148,7 @@ export default function LunchRun() {
     fetchProfile();
   }, [user?.id, memberName]);
 
-  const total = cart.reduce((s, i) => s + i.price * i.quantity, 0);
+  // total computed below as totalWithDiscount
 
   const addToCart = (item: MenuItem) => {
     const existing = cart.find((c) => c.id === item.id);
