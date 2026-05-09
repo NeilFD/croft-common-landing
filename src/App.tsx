@@ -60,6 +60,7 @@ const MemberProfile = lazy(() => import("./pages/MemberProfile"));
 const DenVerify = lazy(() => import("./pages/DenVerify"));
 const MemberDashboard = lazy(() => import("./pages/MemberDashboard"));
 const MemberMoments = lazy(() => import("./pages/MemberMoments"));
+const GoldMembership = lazy(() => import("./pages/GoldMembership"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const Calendar = lazy(() => import("./pages/Calendar"));
 const ManageEvent = lazy(() => import("./pages/ManageEvent"));
@@ -363,6 +364,7 @@ const App = () => {
                       <Route path="/den/member/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
                       <Route path="/den/member/dashboard" element={<MemberRoutes><MemberDashboard /></MemberRoutes>} />
                       <Route path="/den/member/moments" element={<MemberRoutes><MemberMoments /></MemberRoutes>} />
+                      <Route path="/den/member/gold" element={<MemberRoutes><GoldMembership /></MemberRoutes>} />
                       <Route path="/den/verify" element={<DenVerify />} />
 
                       {/* Legacy /common-room redirects */}
