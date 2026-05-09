@@ -38,7 +38,11 @@ const GestureSelectionGuard = () => {
       ) {
         return;
       }
-      try { window.getSelection()?.removeAllRanges(); } catch {}
+      try {
+        window.getSelection()?.removeAllRanges();
+      } catch {
+        return;
+      }
     };
     document.addEventListener("selectionchange", clear);
     document.addEventListener("touchstart", clear, { passive: true });
