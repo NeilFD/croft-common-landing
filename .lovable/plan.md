@@ -1,128 +1,100 @@
-## Receipt Upload — Anti-Fraud & Bear-Logo Verification
+## What's wrong today
 
-### Goals
-- A receipt without a visible Crazy Bear logo is rejected. No data saved, no streak credit.
-- Date and time must be present and parseable.
-- The same image, the same receipt, or a photo of a screen can never count twice.
+1. **Surname showing as "Fincham" not "Fincham-Dukes"** — root cause confirmed:
+   - `auth.users.raw_user_meta_data.last_name = "Fincham"` (the hyphenated half was dropped at signup, likely a form/parser issue).
+   - `cb_members.last_name = "Fincham"` (synced from meta at signup).
+   - The MembershipCard reads from `cb_members` only.
+   - Worse: the Profile form writes name edits to `profiles` (and `member_profiles_extended`), **never to `cb_members`** — so even editing the form to "Fincham-Dukes" wouldn't fix the card. The form and the card are wired to two different tables.
 
----
+2. **Page design** is leftover Croft Common style: shadcn `Card` chrome, generic form layout, no Den feel beyond the header.
 
-### What is wrong today
+3. **Wallet** — there's a `create-wallet-pass` function for the old Croft Common membership; nothing for Crazy Bear members, and no "Add to Apple Wallet" button on the new card.
 
-1. The OCR edge function (`supabase/functions/receipt-ocr/index.ts`) extracts `receipt_number`, `receipt_time`, `covers`, `venue_location`, `receipt_image_url` and writes them to `member_receipts` — but the live table only has `image_url`, `merchant_name`, `total_amount`, `currency`, `receipt_date`, `items`, `category`. Every save currently fails or silently drops fields. The duplicate check queries columns that do not exist.
-2. There is no logo verification, no image hashing, no screen-of-screen detection, and no per-user lock.
-3. Streak processing runs even when the receipt is junk.
+## Plan
 
----
+### 1. Fix the name (data + write path)
 
-### Plan
+- **Data fix**: update `cb_members.last_name` and `auth.users.raw_user_meta_data.last_name` to `Fincham-Dukes` for `neilfdukes@gmail.com` (one-off insert/update tool call).
+- **Code fix in `useFullProfile.ts`**: when `first_name` / `last_name` / `phone_number` / `birthday` change, also upsert into `cb_members` (mirror to `profiles` for back-compat). This is the canonical CB member record and the card source.
+- **Form**: keep the existing First / Last inputs (already supports hyphens — the bug was upstream), but trim only leading/trailing whitespace on save so "Fincham-Dukes" survives.
+- **MembershipCard**: keep reading `cb_members`, plus auto-shrink the name (responsive `text-2xl` to `text-xl` if length > 18 chars) so long double-barrelled names never clip.
 
-#### 1. Database — bring `member_receipts` up to spec
+### 2. Full Bears Den restyle of `/den/member/profile`
 
-Migration to add the columns the system needs and a clean dedupe surface:
-
-- `receipt_number text`
-- `receipt_time time`
-- `venue_location text`
-- `covers integer`
-- `raw_ocr_data jsonb`
-- `processing_status text default 'completed'`
-- `image_sha256 text` — SHA-256 of the uploaded image bytes
-- `perceptual_hash text` — pHash for near-duplicate photos of the same receipt
-- `bear_logo_detected boolean not null default false`
-- `bear_logo_confidence numeric`
-- `screen_capture_score numeric` — 0 (real paper) → 1 (definitely a screen)
-- `rejection_reason text` (nullable, only on rejected logs)
-
-Indexes / constraints:
-- Unique partial index on `(image_sha256)` where not null — same file can never be uploaded twice by anyone.
-- Unique partial index on `(receipt_number, receipt_date, receipt_time)` where `receipt_number is not null` — same till receipt cannot be re-used.
-- Index on `(user_id, receipt_date)`.
-
-New table `receipt_rejections` for the "hard reject + log" half of the trail (image url, user, reason, ai flags, created_at) so we can see repeat offenders without polluting `member_receipts`. RLS: user can read own; service role full access.
-
-#### 2. Edge function — `receipt-ocr` rewrite (strict pipeline)
-
-Pipeline, in order. Any failure short-circuits with a clear reason and writes a row to `receipt_rejections`.
+Replace the shadcn `Card`-wrapped sections with flat Den blocks:
 
 ```text
-upload image
-   ↓
-hash image (sha256 + pHash)
-   ↓
-[A] image_sha256 already in member_receipts?  → reject "Already uploaded"
-   ↓
-[B] AI vision pass — strict JSON output:
-       bear_logo_detected (bool)
-       bear_logo_confidence (0..1)
-       screen_capture_score (0..1)
-       date, time, total, currency, merchant, receipt_number, items
-   ↓
-[C] bear_logo_detected == false OR confidence < 0.75
-       → reject "No Crazy Bear logo found on receipt"
-   ↓
-[D] screen_capture_score > 0.6
-       → reject "Looks like a photo of a screen, not a paper receipt"
-   ↓
-[E] date missing OR time missing OR date in future
-       → reject "Receipt must show a valid date and time"
-   ↓
-[F] (receipt_number, date, time) already exists
-       → reject "This receipt has already been uploaded"
-   ↓
-[G] Per-user rate limit: max 5 receipts/day, 30 sec cooldown
-       → reject "Too many uploads, slow down"
-   ↓
-save member_receipts (with hashes + flags)
-   ↓
-insert ledger row
-   ↓
-trigger streak processing
++----------------------------------------------------------+
+|  ← BACK TO THE DEN                                       |
+|  MEMBER                                                  |
+|  PROFILE                          [bear watermark right] |
+|  Your details. Your card.                                |
++----------------------------------------------------------+
+|  [PROFILE] [LEDGER] [SETTINGS]   (existing tab strip)    |
++----------------------------------------------------------+
+|  Desktop 2-col grid:                                     |
+|  ┌─ left (sticky) ──────┐  ┌─ right (scrolls) ────────┐ |
+|  │ THE DEN              │  │ /// BASIC INFORMATION    │ |
+|  │ MEMBER CARD          │  │ first / last / phone /…  │ |
+|  │ [black card]         │  │                          │ |
+|  │ [Add to Apple Wallet]│  │ /// DISPLAY              │ |
+|  │ [Profile photo]      │  │ /// INTERESTS            │ |
+|  └──────────────────────┘  │ /// DIETARY              │ |
+|                            │ /// COMMUNICATION        │ |
+|                            └──────────────────────────┘ |
++----------------------------------------------------------+
 ```
 
-Notes:
-- Use Lovable AI Gateway with `google/gemini-2.5-pro` for the vision pass (strong multimodal, gives reliable structured output and logo detection). System prompt explicitly defines the bear mark and asks for a single JSON object via the AI SDK `Output` API.
-- pHash: small Deno implementation (8x8 DCT); no extra deps required.
-- All rejections return HTTP 422 with `{ reason, code }` so the client renders one clear, friendly message.
-- Streak processing only runs if save succeeds.
+Concrete changes:
+- New `DenSection` wrapper (bordered top hairline, mono `///` eyebrow, Archivo Black title, no rounded card chrome). Replace every `ProfileFormSection` usage on this page.
+- Sticky member-card column on `md+`; stacked on mobile.
+- Restyle `Input` / `Textarea` / `Select` instances on this page only via local class overrides: square corners, 1px black border, focus = thicker black border (no ring — per project rule).
+- Edit / Save / Cancel buttons match existing `pillBtnClass` (already Den).
+- Collapse Dietary + Communication Preferences into expandable `<details>` blocks (Den-styled summary row) so the card + basics dominate.
+- Tighten spacing, drop the `bg-white/85` veil to `bg-white/92`, keep grayscale Den background.
 
-#### 3. Reference image for the model
+### 3. Apple Wallet for Crazy Bear members
 
-Add `src/assets/crazy-bear-mark.png` (already in repo) as a base64 reference attached to the vision prompt: "this is the Crazy Bear mark — only mark `bear_logo_detected: true` if you see this exact logo printed on the receipt".
+New edge function **`create-cb-wallet-pass`** (modelled on existing `create-wallet-pass`, reusing all 4 existing secrets — `APPLE_TEAM_ID`, `APPLE_PASS_TYPE_IDENTIFIER`, `APPLE_PASS_CERTIFICATE`, `APPLE_PASS_PRIVATE_KEY`, `APPLE_WWDR_CERTIFICATE`):
 
-#### 4. Frontend — `ReceiptUploadModal`
+- Input: authenticated user JWT (verify in code, `verify_jwt = false` in config).
+- Reads `cb_members` (`first_name`, `last_name`, `created_at`, `user_id`) — generates membership number `CB-XXXX-XXXX` from the user UUID (same formula as `MembershipCard`).
+- Generates a `pass.json` styled to match the on-screen card:
+  - `passTypeIdentifier`, `teamIdentifier`, `organizationName: "Crazy Bear"`, `description: "The Den Member Card"`.
+  - `storeCard` style; `backgroundColor` black, `foregroundColor` white, `labelColor` rgb(255,255,255,0.6).
+  - Primary: full name. Secondary: "MEMBER NO." + number, "MEMBER SINCE" + MM/YY. Back: support email + revoke link.
+  - `barcodes`: QR encoding the membership number (for venue scanning later).
+- Embeds Crazy Bear bear-mark as `logo.png` / `icon.png` (use `public/brand/crazy-bear-mark.png`, render at required PassKit sizes 1x/2x/3x).
+- Signs with the existing Apple cert chain (reuse the `forge` PKCS#7 detached-signature code from `create-wallet-pass`).
+- New columns on `cb_members`: `wallet_pass_serial_number text`, `wallet_pass_last_issued_at timestamptz`, `wallet_pass_revoked boolean default false` (migration).
+- Returns the `.pkpass` blob with `Content-Type: application/vnd.apple.pkpass`.
 
-- Show a hard error state when the function returns 422, with the human reason from the server.
-- Remove the "save anyway" path — there is no override.
-- Step 2 ("Extract") becomes the single gate: if the AI rejects, the user lands back on step 1 with the reason explained.
-- Add small note under the upload box: "We check for the Crazy Bear logo, the date and time. Photos of screens won't count."
+Frontend:
+- New `<AddToAppleWalletButton />` placed under the MembershipCard (and on `MemberHome` next to the card preview).
+- Black pill with the official "Add to Apple Wallet" SVG mark (download from Apple's badge guidelines, store under `public/brand/add-to-apple-wallet.svg`).
+- iOS Safari: anchor `href` to the function URL with a short-lived token query param (mirrors the existing Croft Common GET flow). Non-iOS: show a small note "Open on iPhone Safari to add to Apple Wallet" — no Google Wallet this round.
 
-#### 5. Hook cleanup
+### 4. Out of scope (this pass)
 
-`useMemberData.ts` → `useMemberLedger` already aligned to current schema in the previous fix. After the migration, swap the field-mapping shim so `venue_location` reads from the real column instead of `merchant_name`.
+- Google Wallet integration.
+- Pass push updates / APNs registration for the CB pass (the existing CC function has stubs for this; we mirror the issue flow only).
+- Backfilling wallet serial numbers for other members.
 
-#### 6. What this protects against
+## Technical detail (for engineers)
 
-| Attack | Blocked by |
-|---|---|
-| Re-uploading the same photo | image_sha256 unique index |
-| Light edit / re-crop of same receipt | pHash near-match check |
-| Photo of a screen showing a real receipt | screen_capture_score gate |
-| Generic / non-Crazy-Bear receipt | bear logo gate |
-| Same till receipt by a different member | (receipt_number, date, time) unique index |
-| Bulk uploads to farm streak | per-user daily cap + cooldown |
-| Future-dated or missing date/time | step E gate |
+**Files**
+- `src/pages/MemberProfile.tsx` — restyle, swap sections, add wallet button.
+- `src/components/membership/MembershipCard.tsx` — name auto-shrink, expose name length.
+- `src/components/membership/AddToAppleWalletButton.tsx` — new.
+- `src/components/profile/DenSection.tsx` — new flat section wrapper (replaces `ProfileFormSection` usage on this page).
+- `src/hooks/useFullProfile.ts` — also upsert `first_name` / `last_name` / `phone_number` / `birthday` into `cb_members`.
+- `supabase/functions/create-cb-wallet-pass/index.ts` — new (forked from `create-wallet-pass`, CB branding, `cb_members` source).
+- `supabase/config.toml` — add `[functions.create-cb-wallet-pass] verify_jwt = false` block.
+- `public/brand/add-to-apple-wallet.svg` — official Apple badge.
 
----
+**Migration**
+- `cb_members`: add `wallet_pass_serial_number text`, `wallet_pass_last_issued_at timestamptz`, `wallet_pass_revoked boolean default false`. No RLS change (existing user-scoped policies cover the new columns).
 
-### Out of scope (flag only, not in this plan)
-- Admin moderation queue UI (rejections are logged but not yet shown anywhere).
-- Backfilling hashes for any historical receipts.
-- Geo / IP checks.
-
-### Files touched
-- `supabase/migrations/<new>.sql` — schema additions, indexes, `receipt_rejections` table + RLS
-- `supabase/functions/receipt-ocr/index.ts` — full rewrite around the strict pipeline
-- `supabase/functions/_shared/image-hash.ts` (new) — sha256 + pHash helpers
-- `src/components/ReceiptUploadModal.tsx` — error surfacing, copy update
-- `src/hooks/useMemberData.ts` — switch venue_location source after migration
+**Data fix (insert tool, not migration)**
+- `UPDATE public.cb_members SET last_name='Fincham-Dukes' WHERE email='neilfdukes@gmail.com';`
+- `UPDATE auth.users SET raw_user_meta_data = jsonb_set(raw_user_meta_data,'{last_name}','"Fincham-Dukes"') WHERE email='neilfdukes@gmail.com';`
