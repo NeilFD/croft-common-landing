@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useHideOnScrollDown } from '@/hooks/useHideOnScrollDown';
 
 // Routes where the floating Curious?/Book buttons should be HIDDEN.
 // Rule of thumb: hide on any page that is itself a form / interactive flow,
