@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ interface SecretCinemaModalProps {
 
 const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   const { user } = useAuth();
+  const primaryNameRef = useRef<HTMLInputElement>(null);
 
   const [status, setStatus] = useState<CinemaStatus | null>(null);
   const [loading, setLoading] = useState(false);
@@ -83,6 +84,12 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
       if (!user) setEmailModalOpen(true);
     }
   }, [open, user]);
+
+  useEffect(() => {
+    if (!open || confirmation) return;
+    const focusTimer = window.setTimeout(() => primaryNameRef.current?.focus(), 120);
+    return () => window.clearTimeout(focusTimer);
+  }, [open, confirmation]);
 
   // Adjust allowed quantity when tickets are low
   useEffect(() => {
@@ -312,10 +319,12 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                   <Label htmlFor="primaryName">Your name</Label>
                   <Input
                     id="primaryName"
+                    ref={primaryNameRef}
                     value={primaryName}
                     onChange={(e) => setPrimaryName(e.target.value)}
                     placeholder="Ada Lovelace"
                     disabled={booking || loading || status?.is_sold_out}
+                    autoComplete="name"
                   />
                 </div>
                 <div className="space-y-2">
@@ -354,6 +363,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
                   onChange={(e) => setGuestName(e.target.value)}
                   placeholder="Alan Turing"
                   disabled={booking || loading || status?.is_sold_out || quantity === 1}
+                  autoComplete="name"
                 />
               </div>
 
