@@ -235,7 +235,7 @@ const RouteHydrationBeacon = () => {
 };
 
 const ManagementLoginRoute = () => {
-  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybeartest.com');
+  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybear.dev');
   if (isCrazyBearHost) {
     const target = '/set-password' + window.location.search + window.location.hash;
     return <Navigate to={target} replace />;

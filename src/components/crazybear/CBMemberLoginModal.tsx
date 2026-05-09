@@ -55,7 +55,7 @@ const CBMemberLoginModal = ({ open, onClose, onSuccess }: Props) => {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `https://www.crazybeartest.com/set-password`,
+      redirectTo: `https://www.crazybear.dev/set-password`,
     });
     setLoading(false);
     if (error) {

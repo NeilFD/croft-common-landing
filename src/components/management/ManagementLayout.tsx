@@ -17,7 +17,7 @@ interface ManagementLayoutProps {
 export const ManagementLayout = ({ children }: ManagementLayoutProps) => {
   const { managementUser, loading } = useManagementAuth();
 
-  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybeartest.com');
+  const isCrazyBearHost = typeof window !== 'undefined' && window.location.hostname.includes('crazybear.dev');
   const recoveryPath = isCrazyBearHost ? '/set-password' : '/management/login';
 
   // Block management pages during password recovery

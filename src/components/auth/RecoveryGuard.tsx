@@ -31,7 +31,7 @@ export const RecoveryGuard = () => {
       }
 
       const recoveryActive = sessionStorage.getItem('recovery') === '1';
-      const recoveryPath = host.includes('crazybeartest.com') ? '/set-password' : '/management/login';
+      const recoveryPath = host.includes('crazybear.dev') ? '/set-password' : '/management/login';
 
       if (recoveryActive && location.pathname !== recoveryPath) {
         const redirectUrl = recoveryPath +
