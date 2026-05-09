@@ -220,12 +220,39 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
     }
 
     try {
+      let uploadFile = file;
+      let uploadPosterBlob = videoMeta?.posterBlob ?? null;
+      let uploadDuration = videoMeta?.durationSeconds ?? null;
+
+      if (mediaType === 'video') {
+        setStage('compressing');
+        setCompressPct(0);
+        try {
+          const result = await compressVideo(file, {
+            onProgress: (pct) => setCompressPct(pct),
+          });
+          if (result.compressed) {
+            uploadFile = result.file;
+            // Re-probe to refresh poster/duration from compressed output
+            try {
+              const meta = await probeVideo(result.file);
+              uploadPosterBlob = meta.posterBlob ?? uploadPosterBlob;
+              uploadDuration = meta.durationSeconds ?? uploadDuration;
+            } catch {
+              // keep original poster/duration
+            }
+          }
+        } catch {
+          // fall through with original file
+        }
+      }
+
       setStage('saving');
       setUploadPct(0);
-      const result = await uploadMoment(file, tagline.trim(), dateTaken, selectedTags, {
+      const result = await uploadMoment(uploadFile, tagline.trim(), dateTaken, selectedTags, {
         mediaType,
-        posterBlob: videoMeta?.posterBlob ?? null,
-        durationSeconds: videoMeta?.durationSeconds ?? null,
+        posterBlob: uploadPosterBlob,
+        durationSeconds: uploadDuration,
         onProgress: (pct) => setUploadPct(pct),
       });
       if (!result) throw new Error('Could not save your moment.');
