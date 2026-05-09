@@ -624,5 +624,8 @@ const MemberMomentsMosaic: React.FC = () => {
           onClose={() => setEditingMoment(null)}
         />
       )}
+    </div>
+  );
+};
 
 export default MemberMomentsMosaic;
