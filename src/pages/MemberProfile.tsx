@@ -72,6 +72,32 @@ const MemberProfile: React.FC = () => {
     }
   }, [profile]);
 
+  // Auto-verify legacy avatars that pre-date the face check.
+  const autoVerifyRef = useRef<string | null>(null);
+  const [autoVerifying, setAutoVerifying] = useState(false);
+  useEffect(() => {
+    if (!profile?.avatar_url) return;
+    if (profile.avatar_face_verified) return;
+    if (autoVerifyRef.current === profile.avatar_url) return;
+    autoVerifyRef.current = profile.avatar_url;
+    setAutoVerifying(true);
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('verify-avatar-face', {
+          body: { imageUrl: profile.avatar_url },
+        });
+        if (error) throw error;
+        if ((data as any)?.valid) {
+          await updateProfile({ avatar_face_verified: true });
+        }
+      } catch (e) {
+        console.warn('Auto-verify avatar failed:', e);
+      } finally {
+        setAutoVerifying(false);
+      }
+    })();
+  }, [profile?.avatar_url, profile?.avatar_face_verified]);
+
   const handleSave = async () => {
     await updateProfile({
       ...formData,
