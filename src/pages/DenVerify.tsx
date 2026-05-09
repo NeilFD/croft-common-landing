@@ -7,6 +7,7 @@ interface VerifyResponse {
   display_name?: string;
   membership_number?: string;
   member_since?: string;
+  avatar_url?: string | null;
   error?: string;
 }
 
