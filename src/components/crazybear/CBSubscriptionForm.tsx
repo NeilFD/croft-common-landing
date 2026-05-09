@@ -84,7 +84,7 @@ const CBSubscriptionForm = () => {
 
       toast({
         title: 'Check your email',
-        description: 'Tap the button in our email to set your password.',
+        description: 'Enter the code from our email to set your password.',
       });
       // Land on /set-password — the page will pick up the link automatically
       // when they return via the email button.
