@@ -297,6 +297,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
             }
           }}
           onInteractOutside={(e) => {
+            safeProps.onInteractOutside(e);
+            if (e.defaultPrevented) return;
             // Allow closing by clicking outside if not in OTP verification stage
             if (!otpSent) {
               handleClose();
@@ -304,6 +306,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
               e.preventDefault();
             }
           }}
+          onPointerDownOutside={safeProps.onPointerDownOutside}
+          onFocusOutside={safeProps.onFocusOutside}
         >
           <DialogHeader>
             <DialogTitle className="text-black font-bold">
