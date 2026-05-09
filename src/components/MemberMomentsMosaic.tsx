@@ -370,24 +370,40 @@ const MemberMomentsMosaic: React.FC = () => {
               className="break-inside-avoid mb-2 md:mb-4 cursor-pointer group relative overflow-hidden bg-black"
               onClick={() => handleMomentClick(moment)}
             >
-              {/* Full-bleed media */}
+              {/* Full-bleed media — videos render as poster (play in detail modal) */}
               {moment.media_type === 'video' ? (
-                <video
-                  src={moment.image_url}
-                  poster={moment.poster_url || undefined}
-                  className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  preload="metadata"
-                />
+                moment.poster_url ? (
+                  <img
+                    src={moment.poster_url}
+                    alt={moment.tagline}
+                    loading="lazy"
+                    className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+                  />
+                ) : (
+                  <video
+                    src={moment.image_url}
+                    className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+                    muted
+                    playsInline
+                    preload="metadata"
+                  />
+                )
               ) : (
                 <img
                   src={moment.image_url}
                   alt={moment.tagline}
+                  loading="lazy"
                   className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
                 />
+              )}
+
+              {/* Play badge for videos */}
+              {moment.media_type === 'video' && (
+                <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
+                  <div className="h-12 w-12 rounded-full bg-black/60 border border-white/40 backdrop-blur-sm flex items-center justify-center">
+                    <span className="text-white text-lg leading-none translate-x-[1px]">▶</span>
+                  </div>
+                </div>
               )}
 
               {/* Top pills */}
