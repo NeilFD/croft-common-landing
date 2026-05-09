@@ -112,7 +112,7 @@ const CBSpotifyPlayer = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className="fixed bottom-6 right-3 md:right-6 z-50">
       <div className="group inline-flex items-center gap-3 rounded-full border border-white/15 bg-black/85 pl-2 pr-4 py-2 text-white shadow-2xl backdrop-blur-md">
         <button
           type="button"
