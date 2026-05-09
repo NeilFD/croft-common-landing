@@ -229,10 +229,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
     };
     
     const te = (e: TouchEvent) => {
-      // Allow interactive elements to function normally
       if (isInteractiveElement(e.target)) return;
-      
-      // Don't prevent default to allow natural touch behavior
+      if (isDrawing) clearSelection();
       endGesture();
     };
 
@@ -254,6 +252,8 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       if (isInteractiveElement(e.target)) return;
       
       e.preventDefault();
+      // Suppress native text selection that builds up during the drag
+      clearSelection();
       const { x, y } = getEventPosition(e);
       addPoint(x, y);
     };
@@ -263,6 +263,7 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
       if (isInteractiveElement(e.target)) return;
       if (isDrawing) {
         e.preventDefault();
+        clearSelection();
       }
       endGesture();
     };
