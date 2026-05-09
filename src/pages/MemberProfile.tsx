@@ -151,7 +151,7 @@ const MemberProfile: React.FC = () => {
                   </aside>
 
                   {/* Right column — details */}
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <DenSection
                       eyebrow="///"
                       title="Basic Information"
