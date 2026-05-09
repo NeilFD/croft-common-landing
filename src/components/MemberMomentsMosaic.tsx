@@ -56,6 +56,7 @@ const MemberMomentsMosaic: React.FC = () => {
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
   const [selectedTagFilter, setSelectedTagFilter] = useState<string>('');
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   // Helper function to get member name (moved before filtering logic)
   const getMemberName = (moment: MemberMoment) => {
@@ -175,31 +176,49 @@ const MemberMomentsMosaic: React.FC = () => {
     );
   }
 
+  const hasActiveFilters = !!(searchQuery || startDate || endDate || selectedTagFilter);
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex items-end justify-between mb-2 gap-4 flex-wrap">
+      <div className="flex items-end justify-between mb-2 gap-3 flex-wrap px-2 md:px-0">
         <div>
-          <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60 mb-3">Member</p>
-          <h1 className="font-display uppercase text-4xl md:text-5xl tracking-tight leading-none">
+          <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60 mb-2 md:mb-3">Member</p>
+          <h1 className="font-display uppercase text-3xl md:text-5xl tracking-tight leading-none">
             Moments
           </h1>
-          <p className="font-sans text-sm text-white/70 mt-3">Yours. Tagged. Kept.</p>
+          <p className="font-sans text-xs md:text-sm text-white/70 mt-2 md:mt-3">Yours. Tagged. Kept.</p>
         </div>
-        {user && (
+        <div className="flex items-center gap-2">
+          {/* Mobile filters toggle */}
           <button
             type="button"
-            onClick={() => setShowUpload(true)}
-            className="px-6 h-11 border border-white bg-white text-black font-mono text-[10px] tracking-[0.4em] uppercase hover:bg-black hover:text-white transition-colors"
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-expanded={filtersOpen}
+            className={cn(
+              'md:hidden px-4 h-11 border font-mono text-[10px] tracking-[0.4em] uppercase transition-colors',
+              filtersOpen || hasActiveFilters
+                ? 'bg-white text-black border-white'
+                : 'bg-transparent text-white border-white/40 hover:bg-white hover:text-black'
+            )}
           >
-            Share
+            {filtersOpen ? 'Close' : hasActiveFilters ? 'Filters •' : 'Filter'}
           </button>
-        )}
+          {user && (
+            <button
+              type="button"
+              onClick={() => setShowUpload(true)}
+              className="px-4 md:px-6 h-11 border border-white bg-white text-black font-mono text-[10px] tracking-[0.4em] uppercase hover:bg-black hover:text-white transition-colors"
+            >
+              Share
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* Search and Filter Controls */}
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-col md:flex-row gap-4">
+      {/* Search and Filter Controls — hidden on mobile until toggled, always visible on md+ */}
+      <div className={cn('mb-4 md:mb-6 space-y-4 px-2 md:px-0', filtersOpen ? 'block' : 'hidden md:block')}>
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           {/* Search */}
           <div className="flex-1">
             <SearchErrorBoundary
@@ -216,7 +235,7 @@ const MemberMomentsMosaic: React.FC = () => {
           </div>
           
           {/* Date Range Filters */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -265,7 +284,7 @@ const MemberMomentsMosaic: React.FC = () => {
               </PopoverContent>
             </Popover>
             
-            {(searchQuery || startDate || endDate || selectedTagFilter) && (
+            {hasActiveFilters && (
               <Button variant="ghost" onClick={clearFilters}>
                 Clear
               </Button>
@@ -299,11 +318,11 @@ const MemberMomentsMosaic: React.FC = () => {
             </div>
           </div>
         )}
-        
-        {/* Results count */}
-        <div className="text-sm text-muted-foreground">
-          {filteredMoments.length} {filteredMoments.length === 1 ? 'moment' : 'moments'} found
-        </div>
+      </div>
+
+      {/* Results count — compact on mobile */}
+      <div className="text-xs md:text-sm text-white/50 font-mono tracking-wider uppercase px-2 md:px-0">
+        {filteredMoments.length} {filteredMoments.length === 1 ? 'moment' : 'moments'}
       </div>
 
       {/* Empty State - Only show if no moments exist or user has been searching/filtering */}
@@ -339,11 +358,11 @@ const MemberMomentsMosaic: React.FC = () => {
 
       {/* Masonry Grid */}
       {filteredMoments.length > 0 && !loading && (
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+        <div className="columns-2 md:columns-3 lg:columns-4 gap-2 md:gap-4 space-y-2 md:space-y-4">
           {filteredMoments.map((moment, index) => (
             <div
               key={moment.id}
-              className="break-inside-avoid mb-4 cursor-pointer group"
+              className="break-inside-avoid mb-2 md:mb-4 cursor-pointer group"
               onClick={() => handleMomentClick(moment)}
             >
               <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
