@@ -77,6 +77,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const AdminMemberAnalytics = lazy(() => import("./pages/AdminMemberAnalytics"));
 const EnhancedAdminMemberAnalytics = lazy(() => import("./pages/EnhancedAdminMemberAnalytics"));
 const EnquirePage = lazy(() => import("./pages/EnquirePage"));
+const Curious = lazy(() => import("./pages/crazybear/Curious"));
 const CMSFAQPage = lazy(() => import("./pages/CMSFAQPage"));
 const CMS = lazy(() => import("./pages/CMS"));
 const CMSLogin = lazy(() => import("./pages/CMSLogin"));
