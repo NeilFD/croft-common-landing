@@ -11,3 +11,9 @@ project_id = "szokkwlleqndyiojhsll"
     verify_jwt = false
   [functions.create-cinema-wallet-pass]
     verify_jwt = false
+  [functions.create-checkout]
+    verify_jwt = false
+  [functions.create-portal-session]
+    verify_jwt = false
+  [functions.payments-webhook]
+    verify_jwt = false
