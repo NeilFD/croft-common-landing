@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useHideOnScrollDown } from "@/hooks/useHideOnScrollDown";
+
+const AUTO_MINIMISE_ROUTES = ["/den/member/lunch-run"];
 
 const PLAYLIST_ID = "5jryH9aMgkcQruOslKX7Fc";
 const PLAYLIST_URL = `https://open.spotify.com/playlist/${PLAYLIST_ID}`;
