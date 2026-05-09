@@ -7,9 +7,22 @@ interface GestureOverlayProps {
   containerRef?: React.RefObject<HTMLElement>;
 }
 
+/**
+ * GestureOverlay — Pointer Events implementation.
+ *
+ * Uses the universal Pointer Events API (Safari 13+, all Chromium-based
+ * browsers including Ecosia/Brave/Samsung Internet, Firefox) plus
+ * `setPointerCapture` so a stroke is delivered in full regardless of any
+ * scroll-hijack heuristics. `touch-action` is only flipped to `none` while a
+ * stroke is actively being drawn, so normal scrolling is preserved.
+ */
 const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, containerRef }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
-  
+  const drawingRef = useRef(false);
+  const activePointerIdRef = useRef<number | null>(null);
+  const captureElRef = useRef<HTMLElement | null>(null);
+  const loggedOnceRef = useRef(false);
+
   const clearSelection = useCallback(() => {
     try {
       window.getSelection()?.removeAllRanges();
@@ -18,357 +31,226 @@ const GestureOverlay: React.FC<GestureOverlayProps> = ({ onGestureComplete, cont
   }, []);
 
   const handleGestureSuccess = useCallback(() => {
-    // Clear any text selection caused by the drag gesture before navigating away
     clearSelection();
-    // And again on the next tick so it sticks after React re-renders / route changes
     setTimeout(clearSelection, 0);
     setTimeout(clearSelection, 50);
 
     toast({
-      title: "Access Granted",
-      description: "Welcome to The Common Room, for Common People",
+      title: 'Access Granted',
+      description: 'Welcome to The Common Room, for Common People',
       duration: 2000,
     });
     onGestureComplete();
   }, [onGestureComplete, clearSelection]);
-  
+
   const {
     isDrawing,
-    points,
-    isComplete,
     startGesture,
     addPoint,
-    endGesture
+    endGesture,
   } = useGestureDetection(handleGestureSuccess);
 
-  const getEventPosition = useCallback((event: React.TouchEvent | React.MouseEvent | TouchEvent | MouseEvent) => {
-    const container = containerRef?.current || overlayRef.current;
-    const rect = container?.getBoundingClientRect();
-    if (!rect) return { x: 0, y: 0 };
+  // Mirror isDrawing into a ref so event handlers always see the latest value
+  // without needing to be re-bound (React state lags one tick behind).
+  useEffect(() => {
+    drawingRef.current = isDrawing;
+  }, [isDrawing]);
 
-    if ('touches' in event && event.touches.length > 0) {
-      // Touch event
-      return {
-        x: event.touches[0].clientX - rect.left,
-        y: event.touches[0].clientY - rect.top
-      };
-    } else if ('clientX' in event) {
-      // Mouse event
-      return {
-        x: event.clientX - rect.left,
-        y: event.clientY - rect.top
-      };
-    }
-    return { x: 0, y: 0 };
-  }, [containerRef]);
-
-  // Helper to check if target is interactive
   const isInteractiveElement = useCallback((target: EventTarget | null): boolean => {
     if (!target || !(target instanceof HTMLElement)) return false;
-    
-    const interactiveElements = ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'];
-    const element = target as HTMLElement;
-    
-    // Check if element is inside a modal/dialog (has data-radix-* attributes or high z-index)
-    let checkElement: HTMLElement | null = element;
-    while (checkElement) {
-      // Check for Radix UI dialog/modal attributes
-      if (checkElement.hasAttribute('data-radix-dialog-content') || 
-          checkElement.hasAttribute('data-radix-dialog-overlay') ||
-          checkElement.getAttribute('role') === 'dialog' ||
-          checkElement.getAttribute('role') === 'alertdialog') {
-        return true;
-      }
-      
-      // Check if element has high z-index indicating it's a modal
-      const computedStyle = window.getComputedStyle(checkElement);
-      const zIndex = parseInt(computedStyle.zIndex);
-      if (!isNaN(zIndex) && zIndex >= 50) {
-        return true;
-      }
-      
-      checkElement = checkElement.parentElement;
+    const interactive = ['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA'];
+    let el: HTMLElement | null = target;
+    while (el) {
+      if (
+        el.hasAttribute('data-radix-dialog-content') ||
+        el.hasAttribute('data-radix-dialog-overlay') ||
+        el.getAttribute('role') === 'dialog' ||
+        el.getAttribute('role') === 'alertdialog'
+      ) return true;
+      const z = parseInt(window.getComputedStyle(el).zIndex);
+      if (!isNaN(z) && z >= 50) return true;
+      if (interactive.includes(el.tagName)) return true;
+      if (el.getAttribute('role') === 'button') return true;
+      if (el.style.cursor === 'pointer') return true;
+      el = el.parentElement;
     }
-    
-    // Check if element is a button or link
-    if (interactiveElements.includes(element.tagName)) return true;
-    
-    // Check if element has button role or is clickable
-    if (element.hasAttribute('role') && element.getAttribute('role') === 'button') return true;
-    if (element.style.cursor === 'pointer') return true;
-    
-    // Check if parent elements are interactive (for nested content)
-    let parent = element.parentElement;
-    while (parent && parent !== containerRef?.current) {
-      if (interactiveElements.includes(parent.tagName)) return true;
-      if (parent.hasAttribute('role') && parent.getAttribute('role') === 'button') return true;
-      if (parent.style.cursor === 'pointer') return true;
-      parent = parent.parentElement;
-    }
-    
     return false;
-  }, [containerRef]);
+  }, []);
 
-  // Touch events (mobile)
-  const handleTouchStart = useCallback((event: React.TouchEvent) => {
-    // Allow interactive elements to function normally
-    if (isInteractiveElement(event.target)) return;
-    
-    // Don't prevent default on touchstart - this allows natural scrolling
-    
-    // Clear any existing text selection
-    try {
-      window.getSelection()?.removeAllRanges();
-    } catch {}
-    
-    const { x, y } = getEventPosition(event);
-    startGesture(x, y);
-  }, [getEventPosition, startGesture, isInteractiveElement]);
+  const getEventPosition = useCallback(
+    (event: PointerEvent | MouseEvent, fallbackEl: HTMLElement | null) => {
+      const container = containerRef?.current || fallbackEl;
+      const rect = container?.getBoundingClientRect();
+      if (!rect) return { x: 0, y: 0 };
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    },
+    [containerRef]
+  );
 
-  const handleTouchMove = useCallback((event: React.TouchEvent) => {
-    // Allow scrolling if not drawing a gesture
-    if (!isDrawing) return;
-    
-    // Allow interactive elements to function normally
-    if (isInteractiveElement(event.target)) return;
-    
-    // Always prevent default during gesture drawing to avoid text selection
-    event.preventDefault();
-    
-    const { x, y } = getEventPosition(event);
-    addPoint(x, y);
-  }, [getEventPosition, addPoint, isDrawing, isInteractiveElement]);
-
-  const handleTouchEnd = useCallback((event: React.TouchEvent) => {
-    // Allow interactive elements to function normally
-    if (isInteractiveElement(event.target)) return;
-    
-    // Only prevent default if we were drawing
-    if (isDrawing) {
-      event.preventDefault();
-    }
-    endGesture();
-  }, [endGesture, isDrawing, isInteractiveElement]);
-
-  // Mouse events (desktop)
-  const handleMouseDown = useCallback((event: React.MouseEvent) => {
-    // Allow interactive elements to function normally
-    if (isInteractiveElement(event.target)) return;
-    // Do not prevent default on initial mousedown; allow native clicks
-    try {
-      window.getSelection()?.removeAllRanges();
-    } catch {}
-    const { x, y } = getEventPosition(event);
-    startGesture(x, y);
-  }, [getEventPosition, startGesture, isInteractiveElement]);
-
-  const handleMouseMove = useCallback((event: React.MouseEvent) => {
-    if (!isDrawing) return;
-    
-    // Allow interactive elements to function normally
-    if (isInteractiveElement(event.target)) return;
-    
-    event.preventDefault();
-    const { x, y } = getEventPosition(event);
-    addPoint(x, y);
-  }, [getEventPosition, addPoint, isDrawing, isInteractiveElement]);
-
-  const handleMouseUp = useCallback((event: React.MouseEvent) => {
-    // Allow interactive elements to function normally
-    if (isInteractiveElement(event.target)) return;
-    if (isDrawing) {
-      event.preventDefault();
-    }
-    endGesture();
-  }, [endGesture, isInteractiveElement, isDrawing]);
-
-  // Attach listeners to provided container instead of overlay
+  // Attach Pointer Events to a target element (container or document).
   useEffect(() => {
-    if (!containerRef?.current) return;
-    const el = containerRef.current as HTMLElement;
-    // Ensure no stray disabled attribute can block interactions
-    el.removeAttribute('disabled');
-    const prevTouchAction = el.style.touchAction;
-    const prevUserSelect = el.style.userSelect;
-    const prevWebkitUserSelect = (el.style as any).webkitUserSelect;
-    const prevWebkitTouchCallout = (el.style as any).webkitTouchCallout;
-    
-    // Allow natural scrolling - don't override touchAction, let parent handle it
-    el.style.userSelect = 'none';
-    (el.style as any).webkitUserSelect = 'none';
-    (el.style as any).webkitTouchCallout = 'none';
-    (el.style as any).webkitTapHighlightColor = 'transparent';
-    el.classList.add('gesture-container');
+    const usingContainer = !!containerRef?.current;
+    const targetEl: HTMLElement | Document = usingContainer
+      ? (containerRef!.current as HTMLElement)
+      : document;
+    const styleEl: HTMLElement | null = usingContainer
+      ? (containerRef!.current as HTMLElement)
+      : document.documentElement;
 
-    const ts = (e: TouchEvent) => {
-      // Allow interactive elements to function normally
+    if (usingContainer && targetEl instanceof HTMLElement) {
+      targetEl.removeAttribute('disabled');
+      (targetEl.style as any).webkitUserSelect = 'none';
+      targetEl.style.userSelect = 'none';
+      (targetEl.style as any).webkitTouchCallout = 'none';
+      (targetEl.style as any).webkitTapHighlightColor = 'transparent';
+      targetEl.classList.add('gesture-container');
+    }
+
+    const setTouchAction = (value: string) => {
+      if (styleEl) styleEl.style.touchAction = value;
+    };
+
+    const supportsPointer = typeof window !== 'undefined' && 'PointerEvent' in window;
+
+    const onPointerDown = (e: PointerEvent) => {
       if (isInteractiveElement(e.target)) return;
-      
-      // Use passive listener - don't prevent default, allow natural scrolling
-      // Clear any existing text selection
+      // Only primary pointer (first finger / left mouse).
+      if (e.isPrimary === false) return;
+
+      if (!loggedOnceRef.current) {
+        loggedOnceRef.current = true;
+        try {
+          console.debug('[gesture] start', {
+            pointerType: e.pointerType,
+            ua: navigator.userAgent,
+          });
+        } catch {}
+      }
+
       try {
         window.getSelection()?.removeAllRanges();
       } catch {}
-      
-      const { x, y } = getEventPosition(e);
-      startGesture(x, y);
-    };
-    
-    const tm = (e: TouchEvent) => {
-      // Allow scrolling if not drawing a gesture  
-      if (!isDrawing) return;
-      
-      // Allow interactive elements to function normally
-      if (isInteractiveElement(e.target)) return;
-      
-      // Don't prevent default to allow scrolling even during gesture
-      // This means gestures and scrolling can happen simultaneously
-      
-      const { x, y } = getEventPosition(e);
-      addPoint(x, y);
-    };
-    
-    const te = (e: TouchEvent) => {
-      if (isInteractiveElement(e.target)) return;
-      if (isDrawing) clearSelection();
-      endGesture();
-    };
 
-    const md = (e: MouseEvent) => {
-      // Allow interactive elements to function normally
-      if (isInteractiveElement(e.target)) return;
-      // Do not prevent default on initial mousedown; allow native clicks
-      try {
-        window.getSelection()?.removeAllRanges();
-      } catch {}
-      const { x, y } = getEventPosition(e);
-      startGesture(x, y);
-    };
-    
-    const mm = (e: MouseEvent) => {
-      if (!isDrawing) return;
-      
-      // Allow interactive elements to function normally
-      if (isInteractiveElement(e.target)) return;
-      
-      e.preventDefault();
-      // Suppress native text selection that builds up during the drag
-      clearSelection();
-      const { x, y } = getEventPosition(e);
-      addPoint(x, y);
-    };
-    
-    const mu = (e: MouseEvent) => {
-      // Allow interactive elements to function normally
-      if (isInteractiveElement(e.target)) return;
-      if (isDrawing) {
-        e.preventDefault();
-        clearSelection();
+      // Capture pointer so the browser can't steal it for scroll.
+      const captureTarget =
+        usingContainer && targetEl instanceof HTMLElement ? targetEl : (e.target as HTMLElement | null);
+      if (captureTarget && typeof captureTarget.setPointerCapture === 'function') {
+        try {
+          captureTarget.setPointerCapture(e.pointerId);
+          captureElRef.current = captureTarget;
+        } catch {}
       }
-      endGesture();
-    };
+      activePointerIdRef.current = e.pointerId;
 
-    // Use passive listeners for touch events to allow natural scrolling
-    el.addEventListener('touchstart', ts, { passive: true });
-    el.addEventListener('touchmove', tm, { passive: true }); // Make touchmove passive too for scrolling
-    el.addEventListener('touchend', te, { passive: true });
-    el.addEventListener('mousedown', md);
-    el.addEventListener('mousemove', mm);
-    el.addEventListener('mouseup', mu);
+      // Lock scroll for the duration of the stroke only.
+      setTouchAction('none');
 
-    return () => {
-      el.style.userSelect = prevUserSelect;
-      (el.style as any).webkitUserSelect = prevWebkitUserSelect;
-      (el.style as any).webkitTouchCallout = prevWebkitTouchCallout;
-      el.classList.remove('gesture-container');
-      // Ensure no lingering disabled attribute remains
-      el.removeAttribute('disabled');
-      el.removeEventListener('touchstart', ts);
-      el.removeEventListener('touchmove', tm);
-      el.removeEventListener('touchend', te);
-      el.removeEventListener('mousedown', md);
-      el.removeEventListener('mousemove', mm);
-      el.removeEventListener('mouseup', mu);
-    };
-  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isDrawing, isInteractiveElement, points]);
-
-  // If no containerRef provided, attach global listeners to document for non-blocking gesture capture
-  useEffect(() => {
-    if (containerRef?.current) return;
-
-    const ts = (e: TouchEvent) => {
-      if (isInteractiveElement(e.target)) return;
-      try { window.getSelection()?.removeAllRanges(); } catch {}
-      const { x, y } = getEventPosition(e);
+      const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
+      const { x, y } = getEventPosition(e, fallback);
       startGesture(x, y);
     };
-    const tm = (e: TouchEvent) => {
-      if (!isDrawing) return;
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!drawingRef.current) return;
+      if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
       if (isInteractiveElement(e.target)) return;
-      const { x, y } = getEventPosition(e);
+      // Cancellable now since we have pointer capture; suppresses stray text selection on desktop.
+      try { e.preventDefault(); } catch {}
+      clearSelection();
+      const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
+      const { x, y } = getEventPosition(e, fallback);
       addPoint(x, y);
     };
-    const te = (e: TouchEvent) => {
-      if (isInteractiveElement(e.target)) return;
-      if (isDrawing) clearSelection();
+
+    const finishStroke = (e: PointerEvent) => {
+      if (activePointerIdRef.current !== null && e.pointerId !== activePointerIdRef.current) return;
+      if (drawingRef.current) clearSelection();
+      // Release capture and restore touch-action.
+      if (captureElRef.current && typeof captureElRef.current.releasePointerCapture === 'function') {
+        try { captureElRef.current.releasePointerCapture(e.pointerId); } catch {}
+      }
+      captureElRef.current = null;
+      activePointerIdRef.current = null;
+      setTouchAction('');
       endGesture();
     };
-    const md = (e: MouseEvent) => {
+
+    const onPointerUp = (e: PointerEvent) => {
+      if (isInteractiveElement(e.target)) {
+        // Still need to release capture / restore touch-action if we had started.
+        if (activePointerIdRef.current === e.pointerId) finishStroke(e);
+        return;
+      }
+      finishStroke(e);
+    };
+
+    const onPointerCancel = (e: PointerEvent) => finishStroke(e);
+
+    // Mouse fallback for the (rare) browser without PointerEvent.
+    const onMouseDown = (e: MouseEvent) => {
       if (isInteractiveElement(e.target)) return;
-      // Do not prevent default on initial mousedown; allow native clicks
-      try { window.getSelection()?.removeAllRanges(); } catch {}
-      const { x, y } = getEventPosition(e);
+      const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
+      const { x, y } = getEventPosition(e, fallback);
       startGesture(x, y);
     };
-    const mm = (e: MouseEvent) => {
-      if (!isDrawing) return;
+    const onMouseMove = (e: MouseEvent) => {
+      if (!drawingRef.current) return;
       if (isInteractiveElement(e.target)) return;
       e.preventDefault();
       clearSelection();
-      const { x, y } = getEventPosition(e);
+      const fallback = usingContainer ? null : (overlayRef.current ?? document.documentElement);
+      const { x, y } = getEventPosition(e, fallback);
       addPoint(x, y);
     };
-    const mu = (e: MouseEvent) => {
-      if (isInteractiveElement(e.target)) return;
-      if (isDrawing) {
-        e.preventDefault();
-        clearSelection();
-      }
+    const onMouseUp = (_e: MouseEvent) => {
+      if (drawingRef.current) clearSelection();
       endGesture();
     };
 
-    document.addEventListener('touchstart', ts, { passive: true });
-    document.addEventListener('touchmove', tm, { passive: true });
-    document.addEventListener('touchend', te, { passive: true });
-    document.addEventListener('mousedown', md);
-    document.addEventListener('mousemove', mm);
-    document.addEventListener('mouseup', mu);
+    if (supportsPointer) {
+      (targetEl as any).addEventListener('pointerdown', onPointerDown, { passive: true });
+      // pointermove/up cannot be passive when we want preventDefault to work in some browsers.
+      (targetEl as any).addEventListener('pointermove', onPointerMove, { passive: false });
+      (targetEl as any).addEventListener('pointerup', onPointerUp, { passive: true });
+      (targetEl as any).addEventListener('pointercancel', onPointerCancel, { passive: true });
+    } else {
+      (targetEl as any).addEventListener('mousedown', onMouseDown);
+      (targetEl as any).addEventListener('mousemove', onMouseMove);
+      (targetEl as any).addEventListener('mouseup', onMouseUp);
+    }
 
     return () => {
-      document.removeEventListener('touchstart', ts);
-      document.removeEventListener('touchmove', tm);
-      document.removeEventListener('touchend', te);
-      document.removeEventListener('mousedown', md);
-      document.removeEventListener('mousemove', mm);
-      document.removeEventListener('mouseup', mu);
+      setTouchAction('');
+      if (usingContainer && targetEl instanceof HTMLElement) {
+        targetEl.classList.remove('gesture-container');
+        targetEl.removeAttribute('disabled');
+      }
+      if (supportsPointer) {
+        (targetEl as any).removeEventListener('pointerdown', onPointerDown);
+        (targetEl as any).removeEventListener('pointermove', onPointerMove);
+        (targetEl as any).removeEventListener('pointerup', onPointerUp);
+        (targetEl as any).removeEventListener('pointercancel', onPointerCancel);
+      } else {
+        (targetEl as any).removeEventListener('mousedown', onMouseDown);
+        (targetEl as any).removeEventListener('mousemove', onMouseMove);
+        (targetEl as any).removeEventListener('mouseup', onMouseUp);
+      }
     };
-  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isDrawing, isInteractiveElement]);
+  }, [containerRef, getEventPosition, startGesture, addPoint, endGesture, isInteractiveElement, clearSelection]);
 
-  // If containerRef is provided, don't render overlay - gesture detection happens on the container
-  if (containerRef) {
-    return null;
-  }
+  // When scoped to a container we don't render an overlay (capture happens on the container itself).
+  if (containerRef) return null;
 
   return (
     <div
       ref={overlayRef}
       className="fixed inset-0 z-40 bg-transparent"
-      style={{ 
+      style={{
         pointerEvents: 'none',
         WebkitTouchCallout: 'none',
         WebkitUserSelect: 'none',
         userSelect: 'none',
-        WebkitTapHighlightColor: 'transparent'
+        WebkitTapHighlightColor: 'transparent',
       }}
     />
   );
