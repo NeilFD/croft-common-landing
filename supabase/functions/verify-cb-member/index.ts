@@ -66,6 +66,19 @@ serve(async (req) => {
       );
     }
 
+    // Look up avatar from profiles table (separate query, optional)
+    let avatarUrl: string | null = null;
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('avatar_url')
+        .eq('user_id', match.user_id)
+        .maybeSingle();
+      avatarUrl = (profile as any)?.avatar_url || null;
+    } catch (_) {
+      avatarUrl = null;
+    }
+
     const first = (match.first_name || '').trim();
     const last = (match.last_name || '').trim();
     const initial = last ? `${last[0]}.` : '';
@@ -82,6 +95,7 @@ serve(async (req) => {
         membership_number: membershipNumber,
         display_name: [first, initial].filter(Boolean).join(' ') || 'Member',
         member_since: memberSince,
+        avatar_url: avatarUrl,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );

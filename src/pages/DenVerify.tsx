@@ -7,6 +7,7 @@ interface VerifyResponse {
   display_name?: string;
   membership_number?: string;
   member_since?: string;
+  avatar_url?: string | null;
   error?: string;
 }
 
@@ -87,12 +88,27 @@ const DenVerify: React.FC = () => {
                   </p>
                 </div>
 
-                <p className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/50 mb-2">
-                  Member
-                </p>
-                <h1 className="font-display uppercase text-4xl md:text-5xl tracking-tight leading-none mb-8">
-                  {state.data?.display_name}
-                </h1>
+                <div className="flex flex-col items-center text-center mb-8">
+                  <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-white bg-white/5 flex items-center justify-center mb-6">
+                    {state.data?.avatar_url ? (
+                      <img
+                        src={state.data.avatar_url}
+                        alt={state.data?.display_name || 'Member'}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="font-display uppercase text-3xl">
+                        {(state.data?.display_name || 'M').trim().charAt(0)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-mono text-[9px] tracking-[0.4em] uppercase text-white/50 mb-2">
+                    Member
+                  </p>
+                  <h1 className="font-display uppercase text-4xl md:text-5xl tracking-tight leading-none">
+                    {state.data?.display_name}
+                  </h1>
+                </div>
 
                 <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/15">
                   <div>
