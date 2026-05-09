@@ -7,3 +7,5 @@ project_id = "szokkwlleqndyiojhsll"
     verify_jwt = true
   [functions.create-cb-wallet-pass]
     verify_jwt = false
+  [functions.verify-cb-member]
+    verify_jwt = false
