@@ -4,8 +4,6 @@ import { CMSText } from '@/components/cms/CMSText';
 import { useCMSMode } from '@/contexts/CMSModeContext';
 import { useMembershipGate } from '@/hooks/useMembershipGate';
 import { useAuth } from '@/hooks/useAuth';
-import BiometricUnlockModal from '@/components/BiometricUnlockModal';
-import MembershipLinkModal from '@/components/MembershipLinkModal';
 import { AuthModal } from '@/components/AuthModal';
 import { useNavigate } from 'react-router-dom';
 import denBg from '@/assets/den-bg-neon.jpg';
