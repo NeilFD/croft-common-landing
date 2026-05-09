@@ -187,7 +187,7 @@ const Branding = () => {
         <Section id="logos" title="Logo & Watermark">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <figure className="p-6 border border-border bg-card/30 transition-transform hover:scale-[1.01]">
-              <img src={LOGO_URL} alt="Croft Common logo" className="w-full h-40 object-contain" loading="lazy" />
+              <img src={LOGO_URL} alt="Crazy Bear logo" className="w-full h-40 object-contain" loading="lazy" />
               <figcaption className="mt-4 flex items-center justify-between">
                 <div>
                   <p className="font-medium">Primary Logo</p>
