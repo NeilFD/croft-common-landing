@@ -89,7 +89,7 @@ const EventEnquiry = () => {
           </span>
           <button
             onClick={() => navigate('/curious')}
-            className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/70 hover:text-black hidden md:inline"
+            className="font-mono text-[10px] tracking-[0.4em] uppercase text-black/70 hover:text-black"
           >
             ← All enquiries
           </button>
