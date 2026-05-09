@@ -83,7 +83,7 @@ export const useMemberLedger = (dateRange?: { start?: Date; end?: Date }) => {
         if (receiptIds.length > 0) {
           const { data: receiptsData, error: receiptsError } = await (supabase as any)
             .from('member_receipts')
-            .select('id, image_url, merchant_name, items, total_amount')
+            .select('id, image_url, venue_location, merchant_name, items, total_amount')
             .in('id', receiptIds);
 
           if (!receiptsError) {
@@ -91,7 +91,7 @@ export const useMemberLedger = (dateRange?: { start?: Date; end?: Date }) => {
               receiptsMap.set(r.id, {
                 id: r.id,
                 receipt_image_url: r.image_url,
-                venue_location: r.merchant_name,
+                venue_location: r.venue_location || r.merchant_name,
                 items: r.items || [],
                 total_amount: Number(r.total_amount) || 0,
               });
