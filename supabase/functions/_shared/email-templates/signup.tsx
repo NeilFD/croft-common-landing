@@ -4,7 +4,6 @@ import * as React from 'npm:react@18.3.1'
 
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -20,31 +19,29 @@ interface SignupEmailProps {
   siteUrl: string
   recipient: string
   confirmationUrl: string
+  token?: string
 }
 
 export const SignupEmail = ({
   siteName,
   siteUrl,
-  recipient,
-  confirmationUrl,
+  token,
 }: SignupEmailProps) => (
   <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirm your email. Step inside.</Preview>
+    <Preview>Your code to enter the den.</Preview>
     <Body style={main}>
       <Container style={container}>
         <Text style={eyebrow}>THE BEARS DEN</Text>
-        <Heading style={h1}>YOU'RE IN.</Heading>
-        <Text style={text}>One tap. The door opens.</Text>
-        <Button style={button} href={confirmationUrl}>
-          OPEN THE DOOR
-        </Button>
-        <Text style={smallText}>
-          Button not working? Paste this into your browser:
-          <br />
-          <Link href={confirmationUrl} style={footerLink}>{confirmationUrl}</Link>
-        </Text>
-        <Text style={smallText}>This link is good for 24 hours.</Text>
+        <Heading style={h1}>YOUR CODE.</Heading>
+        <Text style={text}>Enter this on the password screen.</Text>
+
+        <div style={codeBox}>
+          <Text style={codeText}>{token || '------'}</Text>
+        </div>
+
+        <Text style={smallText}>Good for 1 hour. One use only.</Text>
+
         <Hr style={hr} />
         <Text style={footer}>
           Didn't sign up? Ignore this. No harm done.
@@ -77,7 +74,7 @@ const h1 = {
   fontSize: '32px',
   letterSpacing: '0.02em',
   color: '#000000',
-  margin: '0 0 24px',
+  margin: '0 0 16px',
   textTransform: 'uppercase' as const,
 }
 const text = {
@@ -86,19 +83,22 @@ const text = {
   lineHeight: '1.5',
   margin: '0 0 24px',
 }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '13px',
-  fontWeight: 'bold' as const,
-  letterSpacing: '0.15em',
-  borderRadius: '0px',
-  padding: '16px 28px',
-  textDecoration: 'none',
-  textTransform: 'uppercase' as const,
-  display: 'inline-block',
+const codeBox = {
+  border: '2px solid #000000',
+  padding: '24px 16px',
+  textAlign: 'center' as const,
+  margin: '0 0 20px',
+  backgroundColor: '#ffffff',
+}
+const codeText = {
+  fontFamily: "'Archivo Black', Impact, sans-serif",
+  fontSize: '40px',
+  letterSpacing: '0.4em',
+  color: '#000000',
+  margin: '0',
+  paddingLeft: '0.4em',
 }
 const hr = { borderColor: '#000000', borderWidth: '1px', margin: '40px 0 24px' }
 const footer = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '0' }
-const smallText = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '16px 0 0', wordBreak: 'break-all' as const }
+const smallText = { fontSize: '12px', color: '#737373', lineHeight: '1.6', margin: '16px 0 0' }
 const footerLink = { color: '#000000', textDecoration: 'underline' }

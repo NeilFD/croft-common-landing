@@ -1,41 +1,34 @@
-I found the actual failure pattern.
+We should stop mixing a button link and a manual code. That is why this feels broken.
 
-This is not Stacie typing too slowly. The flow itself is fragile.
+Plan:
 
-What is going on:
+1. **Replace the signup email with a code-first email**
+  - Show a clear 8 digit verification code in the email body.
+  - Remove the big confirmation button and the long fallback link from the main experience.
+  - Keep the copy short and Bears Den: direct, confident, no clutter.
+  - Make the subject and preview text match the new flow.
+2. **Rebuild `/set-password` as one clean flow**
+  - Screen 1: email prefilled, 8 digit code input, password, confirm password.
+  - The code input will allow exactly 8 digits.
+  - No confusing hidden stages, no “tap the email button instead”, no link-first language.
+  - If the link or code is invalid or expired, show one action: send a fresh code.
+3. **Change signup submission behaviour**
+  - After the user signs up, send them straight to `/set-password?email=...`.
+  - The toast and page copy will say to enter the 8 digit code from the email.
+  - Keep the existing signup data collection intact: name, email, phone, birthday, interests, consent.
+4. **Harden auth handling**
+  - Keep stale deleted-user session cleanup.
+  - Use the correct verification type for signup codes.
+  - Keep password validation simple and clear: minimum 8 characters, passwords must match.
+  - Keep resend throttling so users can request a fresh code without spamming.
+5. **Deploy the updated auth email hook**
+  - The email changes only go live once the backend email function is redeployed.
 
-- The current signup creates a hidden random password, sends a confirmation email, then asks the user to manually type the email code into `/set-password`.
-- The email template shows a **CONFIRM EMAIL** button, but the app page asks for a **code**. That is already confusing.
-- The set-password page ignores the confirmation link flow and always tries to verify a typed code using `type: 'email'`.
-- Recent logs show auth verification returning `otp_expired`, and one fresh email send failed while the sender domain was still being finalised: `domain_not_verified`. The domain is verified now, but that failed attempt produced a dead email.
-- There is also stale-session noise: `User from sub claim in JWT does not exist`, caused by a deleted user still having an old browser session. That should be handled cleanly instead of poisoning the experience.
+Technical notes:
 
-Plan to make it slick and reliable:
-
-1. **Stop making the user manually copy codes for signup**
-   - Change the signup email to clearly say the button is the primary action.
-   - The user clicks the email button and lands on `/set-password` already verified.
-   - Only show manual code entry as a fallback, not the main path.
-
-2. **Make `/set-password` understand every valid auth link format**
-   - Handle `code`, `token_hash`, hash tokens, and existing sessions properly.
-   - If a valid signup link is present, exchange or verify it immediately.
-   - Then show only password and confirm password.
-   - If no link/session is valid, show email plus resend, with a clear expired-link state.
-
-3. **Fix stale/deleted session handling**
-   - When the app sees `User from sub claim in JWT does not exist`, force a clean sign-out and clear the broken local session.
-   - This prevents old deleted test accounts from breaking new attempts.
-
-4. **Improve resend behaviour**
-   - Resend should use the same production redirect.
-   - Copy should say “Send a fresh link”, not “Resend code”, unless manual code fallback is active.
-   - Expired/invalid states should offer one obvious recovery action.
-
-5. **Polish the signup states**
-   - After signup, send the user to a proper “Check your email” state.
-   - No mixed message between “code” and “link”.
-   - Keep Bears Den tone: short, confident, minimal.
-
-6. **Redeploy the auth email hook after template changes**
-   - Email template changes will be deployed so the live signup emails match the corrected flow.
+- The current email only shows a button and a long verification URL, not the OTP code. That is the immediate reason the email feels unusable for a code-based page.
+- I’ll make the UI expect 8 digits consistently: input length, validation, disabled state, and copy.
+- I’ll remove the current mixed button/link/manual-code path and make signup one route, one action, one code.  
+  
+  
+Ensure that the email matches teh process
