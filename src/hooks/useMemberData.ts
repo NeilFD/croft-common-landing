@@ -21,6 +21,17 @@ interface LedgerEntry {
   };
 }
 
+interface RawLedgerRow {
+  id: string;
+  user_id: string;
+  receipt_id: string | null;
+  amount: number | null;
+  currency: string | null;
+  description: string | null;
+  transaction_type: string | null;
+  created_at: string;
+}
+
 interface MemberStats {
   currentStreak: number;
   longestStreak: number;
