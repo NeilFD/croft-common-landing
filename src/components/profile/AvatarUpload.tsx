@@ -113,7 +113,7 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
           size="sm"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="border-2 border-black hover:border-pink-500 hover:text-pink-500"
+          className="bg-white text-black border-2 border-black hover:bg-white hover:text-pink-500 hover:border-pink-500"
         >
           <Upload className="h-4 w-4 mr-2" />
           {currentAvatarUrl ? 'Change' : 'Upload'}
