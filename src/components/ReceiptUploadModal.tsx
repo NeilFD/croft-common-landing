@@ -1,33 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useReceiptStreakIntegration } from '@/hooks/useReceiptStreakIntegration';
-import { Camera, Upload, Check, Loader2 } from 'lucide-react';
+import { Camera, Upload, Check, Loader2, ShieldAlert } from 'lucide-react';
 
 interface ReceiptUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-}
-
-interface ExtractedData {
-  date: string;
-  receipt_time?: string;
-  total: number;
-  currency: string;
-  venue_location: string | null;
-  receipt_number?: string | null;
-  covers?: number | null;
-  items: Array<{
-    name: string;
-    quantity: number;
-    price: number;
-  }>;
 }
 
 interface RejectionInfo {
@@ -43,19 +25,17 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
   const { toast } = useToast();
   const { processReceiptForStreak } = useReceiptStreakIntegration();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
-  const [extractedData, setExtractedData] = useState<ExtractedData | null>(null);
-  const [editedData, setEditedData] = useState<ExtractedData | null>(null);
+  const [rejection, setRejection] = useState<RejectionInfo | null>(null);
 
   const resetModal = () => {
     setStep(1);
     setSelectedFile(null);
     setPreviewUrl('');
-    setExtractedData(null);
-    setEditedData(null);
+    setRejection(null);
     setLoading(false);
   };
 
@@ -70,6 +50,7 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
       setSelectedFile(file);
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
+      setRejection(null);
       setStep(2);
     }
   };
@@ -83,9 +64,7 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
       .from('cms-images')
       .upload(filePath, file);
 
-    if (uploadError) {
-      throw uploadError;
-    }
+    if (uploadError) throw uploadError;
 
     const { data: { publicUrl } } = supabase.storage
       .from('cms-images')
@@ -94,187 +73,102 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
     return publicUrl;
   };
 
-  const extractReceiptData = async () => {
+  const verifyAndSave = async () => {
     if (!selectedFile) return;
+    setRejection(null);
+    setLoading(true);
 
     try {
-      setLoading(true);
-      
-      // Upload image first
       const imageUrl = await uploadImage(selectedFile);
 
-      // Call OCR function
-      const { data, error } = await supabase.functions.invoke('receipt-ocr', {
-        body: {
-          image_url: imageUrl,
-          action: 'extract'
-        }
+      // Call edge function directly via fetch so we can read 422 body
+      const session = await supabase.auth.getSession();
+      const accessToken = session.data.session?.access_token;
+      const projectId = (import.meta as any).env.VITE_SUPABASE_PROJECT_ID;
+      const url = `https://${projectId}.functions.supabase.co/receipt-ocr`;
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({ image_url: imageUrl, action: 'save' }),
       });
 
-      if (error) throw error;
+      const payload = await res.json().catch(() => ({}));
 
-      setExtractedData(data.extracted_data);
-      setEditedData(data.extracted_data);
-      setStep(3);
-      
-      toast({
-        title: "Receipt Processed",
-        description: "Receipt data extracted successfully. Please review and confirm."
-      });
-
-    } catch (error) {
-      console.error('Error extracting receipt data:', error);
-      toast({
-        title: "Extraction Failed",
-        description: "Failed to process receipt. Please try again or enter details manually.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const saveReceipt = async () => {
-    if (!editedData || !previewUrl) return;
-
-    // Validate date is not in the future
-    const receiptDate = new Date(editedData.date);
-    const today = new Date();
-    today.setHours(23, 59, 59, 999); // End of today
-    
-    if (receiptDate > today) {
-      toast({
-        title: "Invalid Date",
-        description: "Receipt date cannot be in the future. Please select today's date or earlier.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const { data, error } = await supabase.functions.invoke('receipt-ocr', {
-        body: {
-          image_url: previewUrl,
-          action: 'save',
-          receipt_data: editedData
-        }
-      });
-
-      // Check for duplicate receipt in the response data first
-      if (data && data.error === 'duplicate_receipt') {
-        toast({
-          title: "Receipt Already Uploaded",
-          description: data.message,
-          variant: "default", // Use default variant instead of destructive for friendlier appearance
+      if (res.status === 422) {
+        setRejection({
+          code: payload.code || 'rejected',
+          message: payload.message || 'Receipt rejected.',
         });
         return;
       }
 
-      if (error) throw error;
+      if (!res.ok) {
+        toast({
+          title: 'Upload failed',
+          description: payload.error || 'Something went wrong. Try again.',
+          variant: 'destructive',
+        });
+        return;
+      }
 
-      // Process for streak system if receipt was saved successfully
-      console.log('Receipt save response:', data);
-      if (data?.receipt?.id) {
-        console.log('Attempting streak processing for receipt:', data.receipt.id);
+      // Success — fire streak processing (best effort)
+      if (payload?.receipt?.id) {
         try {
-          const streakResult = await processReceiptForStreak(
-            data.receipt.id,
-            editedData.date,
-            editedData.total
+          await processReceiptForStreak(
+            payload.receipt.id,
+            payload.receipt.receipt_date,
+            Number(payload.receipt.total_amount) || 0,
           );
-          console.log('Streak processing completed:', streakResult);
-        } catch (streakError) {
-          console.warn('Streak processing failed, but receipt was saved:', streakError);
-          // Don't fail the entire process if streak processing fails
+        } catch (e) {
+          console.warn('Streak processing failed', e);
         }
-      } else {
-        console.error('No receipt ID returned from save operation:', data);
       }
 
       toast({
-        title: "Success",
-        description: `£${editedData.total} added to your ledger. Great tracking!`
+        title: 'Receipt logged',
+        description: `£${Number(payload.receipt?.total_amount || 0).toFixed(2)} added to your ledger.`,
       });
 
       onSuccess();
       handleClose();
-
-    } catch (error: any) {
-      console.error('Error saving receipt:', error);
-      
-      // Check if this is a duplicate receipt error from the API response
-      if (error.message && error.message.includes('duplicate_receipt')) {
-        toast({
-          title: "Receipt Already Uploaded",
-          description: "This receipt has already been uploaded by a member. Each receipt can only be used once to maintain fair spend tracking.",
-          variant: "default",
-        });
-      } else {
-        toast({
-          title: "Save Failed",
-          description: "Failed to save receipt. Please try again.",
-          variant: "destructive"
-        });
-      }
+    } catch (e) {
+      console.error('verifyAndSave failed', e);
+      toast({
+        title: 'Upload failed',
+        description: 'Something went wrong. Try again.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const updateItemField = (index: number, field: string, value: any) => {
-    if (!editedData) return;
-    
-    const newItems = [...editedData.items];
-    newItems[index] = { ...newItems[index], [field]: value };
-    
-    setEditedData({ ...editedData, items: newItems });
-  };
-
-  const addItem = () => {
-    if (!editedData) return;
-    
-    setEditedData({
-      ...editedData,
-      items: [...editedData.items, { name: '', quantity: 1, price: 0 }]
-    });
-  };
-
-  const removeItem = (index: number) => {
-    if (!editedData) return;
-    
-    const newItems = editedData.items.filter((_, i) => i !== index);
-    setEditedData({ ...editedData, items: newItems });
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Upload Receipt</DialogTitle>
           <DialogDescription>
-            Step {step} of 4: {
-              step === 1 ? 'Select receipt image' :
-              step === 2 ? 'Preview and extract data' :
-              step === 3 ? 'Review and edit details' :
-              'Save to ledger'
-            }
+            We check for the Crazy Bear logo, the date and the time. Photos of screens won't count.
           </DialogDescription>
         </DialogHeader>
 
-        {/* Step 1: File Selection */}
+        {/* Step 1: file picker */}
         {step === 1 && (
           <div className="space-y-4">
             <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
               <Camera className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-lg font-medium mb-2">Upload Receipt Image</p>
-              <p className="text-muted-foreground mb-4">
-                Take a photo or select an image of your receipt
+              <p className="text-lg font-medium mb-2">Photograph your receipt</p>
+              <p className="text-muted-foreground text-sm mb-4">
+                Lay it flat. Make sure the bear logo, date and time are clear.
               </p>
               <Button onClick={() => fileInputRef.current?.click()}>
                 <Upload className="h-4 w-4 mr-2" />
-                Choose File
+                Choose photo
               </Button>
               <input
                 ref={fileInputRef}
@@ -287,7 +181,7 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
           </div>
         )}
 
-        {/* Step 2: Preview and Extract */}
+        {/* Step 2: preview + verify */}
         {step === 2 && (
           <div className="space-y-4">
             {previewUrl && (
@@ -299,161 +193,36 @@ const ReceiptUploadModal: React.FC<ReceiptUploadModalProps> = ({
                 />
               </div>
             )}
-            
+
+            {rejection && (
+              <div className="border border-destructive/50 bg-destructive/10 p-4 rounded-lg flex gap-3 items-start">
+                <ShieldAlert className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-destructive mb-1">Receipt rejected</p>
+                  <p className="text-foreground">{rejection.message}</p>
+                </div>
+              </div>
+            )}
+
             <div className="flex gap-2">
               <Button
-                onClick={() => setStep(1)}
+                onClick={() => { resetModal(); }}
                 variant="outline"
                 className="flex-1"
+                disabled={loading}
               >
-                Change Image
+                Choose another
               </Button>
               <Button
-                onClick={extractReceiptData}
+                onClick={verifyAndSave}
                 disabled={loading}
                 className="flex-1"
               >
                 {loading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Checking</>
                 ) : (
-                  <Check className="h-4 w-4 mr-2" />
+                  <><Check className="h-4 w-4 mr-2" /> Verify & save</>
                 )}
-                Extract Details
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: Review and Edit */}
-        {step === 3 && editedData && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="date">Date</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  value={editedData.date}
-                  onChange={(e) => setEditedData({ ...editedData, date: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="total">Total Amount</Label>
-                <Input
-                  id="total"
-                  type="number"
-                  step="0.01"
-                  value={editedData.total}
-                  onChange={(e) => setEditedData({ ...editedData, total: parseFloat(e.target.value) || 0 })}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="receipt-number">Receipt Number</Label>
-                <Input
-                  id="receipt-number"
-                  value={editedData.receipt_number || ''}
-                  onChange={(e) => setEditedData({ ...editedData, receipt_number: e.target.value })}
-                  placeholder="e.g. 15849203"
-                />
-              </div>
-              <div>
-                <Label htmlFor="receipt-time">Time</Label>
-                <Input
-                  id="receipt-time"
-                  type="time"
-                  value={editedData.receipt_time || ''}
-                  onChange={(e) => setEditedData({ ...editedData, receipt_time: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="covers">Covers</Label>
-                <Input
-                  id="covers"
-                  type="number"
-                  min="1"
-                  value={editedData.covers || ''}
-                  onChange={(e) => setEditedData({ ...editedData, covers: parseInt(e.target.value) || undefined })}
-                  placeholder="e.g. 2"
-                />
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="venue">Venue Location</Label>
-              <Input
-                id="venue"
-                value={editedData.venue_location || ''}
-                onChange={(e) => setEditedData({ ...editedData, venue_location: e.target.value })}
-                placeholder="Restaurant or venue name"
-              />
-            </div>
-
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <Label>Items</Label>
-                <Button size="sm" variant="outline" onClick={addItem}>
-                  Add Item
-                </Button>
-              </div>
-              
-              <div className="space-y-2 max-h-32 overflow-y-auto">
-                {editedData.items.map((item, index) => (
-                  <div key={index} className="flex gap-2 items-center">
-                    <Input
-                      placeholder="Item name"
-                      value={item.name}
-                      onChange={(e) => updateItemField(index, 'name', e.target.value)}
-                      className="flex-1"
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Qty"
-                      value={item.quantity}
-                      onChange={(e) => updateItemField(index, 'quantity', parseInt(e.target.value) || 1)}
-                      className="w-16"
-                    />
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="Price"
-                      value={item.price}
-                      onChange={(e) => updateItemField(index, 'price', parseFloat(e.target.value) || 0)}
-                      className="w-20"
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removeItem(index)}
-                    >
-                      ×
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                onClick={() => setStep(2)}
-                variant="outline"
-                className="flex-1"
-              >
-                Back
-              </Button>
-              <Button
-                onClick={saveReceipt}
-                disabled={loading}
-                className="flex-1"
-              >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Check className="h-4 w-4 mr-2" />
-                )}
-                Save Receipt
               </Button>
             </div>
           </div>
