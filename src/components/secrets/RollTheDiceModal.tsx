@@ -94,11 +94,20 @@ const RollTheDiceModal = ({ open, onClose, variant }: Props) => {
       }}
     >
       <DialogContent
-        className="max-w-lg bg-black text-white border border-white rounded-none p-0"
+        className="max-w-lg bg-black text-white border border-white rounded-none p-0 overflow-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <div className="px-8 py-10 sm:px-12">
+        {win && (
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
+            <div className="seven-flash absolute inset-0 bg-white" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="seven-ring absolute h-64 w-64 rounded-full border border-white/60" />
+              <div className="seven-ring absolute h-64 w-64 rounded-full border border-white/30" style={{ animationDelay: "180ms" }} />
+            </div>
+          </div>
+        )}
+        <div className="relative px-8 py-10 sm:px-12">
           <p className="font-cb-mono text-[10px] tracking-[0.5em] uppercase text-white/60">
             Members Only / {region}
           </p>
