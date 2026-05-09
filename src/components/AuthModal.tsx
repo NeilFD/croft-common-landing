@@ -373,7 +373,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess, requireAllowedDomain = t
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) handleClose(); }}>
+    <Dialog open={isOpen} onOpenChange={safeProps.guardOpenChange((open) => { if (!open && !loading) handleClose(); })}>
       <DialogContent 
         className="sm:max-w-[425px]"
         overlayClassName="bg-black/10"
