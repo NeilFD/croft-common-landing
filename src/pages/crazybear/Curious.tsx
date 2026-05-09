@@ -160,7 +160,7 @@ const Curious: React.FC = () => {
         <div aria-hidden className="fixed inset-0 -z-10 bg-black/40" />
 
         {/* Brand bar */}
-        <header className="border-b-2 border-black/80 px-6 md:px-12 py-6 flex items-center gap-4 bg-white/90 backdrop-blur-sm">
+        <header className="border-b-2 border-black/80 px-6 md:px-12 pt-safe-6 pb-6 flex items-center gap-4 bg-white/90 backdrop-blur-sm">
           <Link to="/" className="flex items-center gap-3">
             <img src="/brand/crazy-bear-mark.png" alt="Crazy Bear" className="w-10 h-10" />
             <span className="font-display uppercase tracking-tight text-xl">Crazy Bear</span>

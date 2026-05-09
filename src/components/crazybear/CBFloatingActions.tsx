@@ -1,7 +1,11 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
+// Routes where the floating Curious?/Book buttons should be HIDDEN.
+// Rule of thumb: hide on any page that is itself a form / interactive flow,
+// or on app/admin areas. Show only on top-level navigational/marketing pages.
 const HIDDEN_PREFIXES = [
+  // Admin / internal
   '/management',
   '/admin',
   '/cms',
@@ -17,6 +21,11 @@ const HIDDEN_PREFIXES = [
   '/branding',
   '/research',
   '/profile',
+  // Form / interactive flows — the buttons would point back to these very pages
+  '/curious',
+  '/book',
+  '/event-enquiry',
+  '/bears-den',
 ];
 
 const isHidden = (pathname: string) =>

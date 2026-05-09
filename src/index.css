@@ -596,3 +596,16 @@ body:has([data-radix-dialog-overlay][data-state="open"]) .mobile-safe-carousel {
     --ring: 0 0% 30%;
   }
 }
+/* SAFE AREA UTILITIES (iOS notch / dynamic island) */
+@layer utilities {
+  .pt-safe { padding-top: env(safe-area-inset-top); }
+  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+  .pl-safe { padding-left: env(safe-area-inset-left); }
+  .pr-safe { padding-right: env(safe-area-inset-right); }
+  .mt-safe { margin-top: env(safe-area-inset-top); }
+  .top-safe { top: env(safe-area-inset-top); }
+  /* Combined: existing top padding + safe-area inset */
+  .pt-safe-4 { padding-top: calc(env(safe-area-inset-top) + 1rem); }
+  .pt-safe-6 { padding-top: calc(env(safe-area-inset-top) + 1.5rem); }
+  .pt-safe-8 { padding-top: calc(env(safe-area-inset-top) + 2rem); }
+}
