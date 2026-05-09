@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 interface MemberMomentUploadProps {
   onClose?: () => void;
   isOpen?: boolean;
+  onPosted?: () => void;
 }
 
 const PRESET_TAGS = [
@@ -47,7 +48,7 @@ const STAGE_PCT: Record<Stage, number> = {
   done: 100,
 };
 
-const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true }) => {
+const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen = true, onPosted }) => {
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [tagline, setTagline] = useState('');
@@ -139,6 +140,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
       if (!result) throw new Error('Could not save your moment.');
       setStage('done');
       refetchMoments();
+      onPosted?.();
       toast({ title: 'Posted', description: 'Your moment is up.' });
       setTimeout(() => {
         handleReset();

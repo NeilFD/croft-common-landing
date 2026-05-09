@@ -359,188 +359,209 @@ const MemberMomentsMosaic: React.FC = () => {
       {/* Masonry Grid */}
       {filteredMoments.length > 0 && !loading && (
         <div className="columns-2 md:columns-3 lg:columns-4 gap-2 md:gap-4 space-y-2 md:space-y-4">
-          {filteredMoments.map((moment, index) => (
+          {filteredMoments.map((moment) => (
             <div
               key={moment.id}
-              className="break-inside-avoid mb-2 md:mb-4 cursor-pointer group"
+              className="break-inside-avoid mb-2 md:mb-4 cursor-pointer group relative overflow-hidden bg-black"
               onClick={() => handleMomentClick(moment)}
             >
-              <Card className="overflow-hidden hover:shadow-lg transition-all duration-200 group-hover:scale-[1.02]">
-                 <div className="relative">
-                  <img
-                    src={moment.image_url}
-                    alt={moment.tagline}
-                    className="w-full h-auto object-cover"
-                  />
-                  
-                  {/* Heart Like Button - Bottom Left of Image */}
-                  <div className="absolute bottom-2 left-2 z-10">
-                    <TooltipProvider>
-                      <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={cn(
-                              "h-8 px-2 gap-1.5 rounded-full backdrop-blur-sm border",
-                              "transition-all duration-200 hover:scale-105",
-                              moment.user_has_liked || (moment.like_count && moment.like_count > 0)
-                                ? "bg-background/10 border-destructive text-destructive hover:bg-background/20"
-                                : "bg-background/10 border-white/20 text-white hover:bg-background/20"
-                            )}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (moment.user_has_liked) {
-                                unlikeMoment(moment.id);
-                              } else {
-                                likeMoment(moment.id);
-                              }
-                            }}
-                          >
-                             <Heart 
-                               className={cn(
-                                 "h-4 w-4 transition-all stroke-2",
-                                 moment.user_has_liked || (moment.like_count && moment.like_count > 0)
-                                   ? "fill-red-500 stroke-red-600"
-                                   : "fill-white/90 stroke-white/20"
-                               )}
-                             />
-                            {moment.like_count && moment.like_count > 0 && (
-                              <span className="text-xs font-medium min-w-[1ch]">
-                                {moment.like_count}
-                              </span>
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        {moment.likers && moment.likers.length > 0 && (
-                          <TooltipContent 
-                            side="top" 
-                            className="max-w-xs bg-popover border border-border text-popover-foreground"
-                          >
-                            <div className="text-sm">
-                              <span className="font-medium">Liked by:</span>
-                              <div className="mt-1">
-                                {moment.likers.map((liker, index) => {
-                                  const name = liker.first_name && liker.last_name 
-                                    ? `${liker.first_name} ${liker.last_name}`.trim()
-                                    : liker.first_name || liker.last_name || 'Member';
-                                  
-                                  if (index === moment.likers!.length - 1) {
-                                    return name;
-                                  } else if (index === moment.likers!.length - 2) {
-                                    return `${name} and `;
-                                  } else if (moment.likers!.length > 3 && index === 2) {
-                                    return `${name}, and ${moment.likers!.length - 3} others`;
-                                  } else {
-                                    return `${name}, `;
-                                  }
-                                }).join('')}
-                              </div>
-                            </div>
-                          </TooltipContent>
-                        )}
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  
-                  {/* Action buttons for moment owner */}
-                  {user?.id === moment.user_id && (
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="flex gap-1">
-                        <Button
-                          variant="secondary"
-                          size="icon"
-                          className="h-8 w-8 bg-accent/90 hover:bg-accent text-accent-foreground"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingMoment(moment);
-                          }}
-                        >
-                          <Pencil className="h-3 w-3" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="secondary"
-                              size="icon"
-                              className="h-8 w-8 bg-background/80 hover:bg-background text-destructive hover:text-destructive"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete moment?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                This will permanently delete your moment. This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDelete(moment.id);
-                                }}
-                                className="bg-destructive hover:bg-destructive/90"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </div>
-                  )}
+              {/* Full-bleed image */}
+              <img
+                src={moment.image_url}
+                alt={moment.tagline}
+                className="w-full h-auto object-cover block transition-transform duration-300 group-hover:scale-[1.02]"
+              />
+
+              {/* Top gradient + featured pill */}
+              {moment.is_featured && (
+                <div className="absolute top-2 left-2 z-10 px-2 h-6 inline-flex items-center bg-white text-black font-mono text-[9px] tracking-[0.3em] uppercase">
+                  Featured
                 </div>
-                
-                {/* Always visible footer */}
-                <div className="p-3 space-y-2">
-                  {moment.is_featured && (
-                    <Badge variant="secondary" className="w-fit text-xs">
-                      Featured
-                    </Badge>
-                  )}
-                  <p className="text-sm font-medium line-clamp-2">{moment.tagline}</p>
-                  
-                  {/* Tags */}
-                  {moment.tags && moment.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {moment.tags.slice(0, 3).map(tag => (
-                        <Badge
-                          key={tag}
-                          variant="outline"
-                          className="text-xs bg-background text-foreground border-accent"
+              )}
+
+              {/* Owner controls */}
+              {user?.id === moment.user_id && (
+                <div className="absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 bg-black/70 hover:bg-black text-white border border-white/30"
+                    onClick={(e) => { e.stopPropagation(); setEditingMoment(moment); }}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="h-8 w-8 bg-black/70 hover:bg-black text-white border border-white/30"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete moment?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete your moment. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={(e) => { e.stopPropagation(); handleDelete(moment.id); }}
+                          className="bg-destructive hover:bg-destructive/90"
                         >
-                          {tag}
-                        </Badge>
-                      ))}
-                      {moment.tags.length > 3 && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-background text-muted-foreground border-muted"
-                        >
-                          +{moment.tags.length - 3}
-                        </Badge>
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              )}
+
+              {/* Bottom overlay: tagline + meta over gradient */}
+              <div className="absolute inset-x-0 bottom-0 z-10 pt-10 pb-2 px-2 md:px-3 bg-gradient-to-t from-black/85 via-black/40 to-transparent">
+                <p className="font-sans text-xs md:text-sm text-white line-clamp-2 leading-snug mb-1.5">
+                  {moment.tagline}
+                </p>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[9px] tracking-[0.25em] uppercase text-white/70 truncate">
+                    {getMemberName(moment)}
+                  </span>
+                  <button
+                    type="button"
+                    aria-label={moment.user_has_liked ? 'Unlike' : 'Like'}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      moment.user_has_liked ? unlikeMoment(moment.id) : likeMoment(moment.id);
+                    }}
+                    className="inline-flex items-center gap-1 h-7 px-2 bg-black/40 backdrop-blur-sm border border-white/20 hover:bg-black/70 transition-colors"
+                  >
+                    <Heart
+                      className={cn(
+                        'h-3.5 w-3.5 stroke-2',
+                        moment.user_has_liked
+                          ? 'fill-red-500 stroke-red-500'
+                          : 'fill-transparent stroke-white'
                       )}
-                    </div>
-                  )}
-                  
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      {getMemberName(moment)}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {format(new Date(moment.date_taken), 'MMM dd')}
-                    </div>
-                  </div>
+                    />
+                    {!!moment.like_count && moment.like_count > 0 && (
+                      <span className="font-mono text-[10px] text-white">{moment.like_count}</span>
+                    )}
+                  </button>
                 </div>
-              </Card>
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Upload Modal */}
+      <MemberMomentUpload
+        isOpen={showUpload}
+        onClose={() => setShowUpload(false)}
+        onPosted={refetchMoments}
+      />
+
+      {/* Edit Modal */}
+      {editingMoment && (
+        <MemberMomentEdit
+          moment={editingMoment}
+          isOpen={!!editingMoment}
+          onClose={() => setEditingMoment(null)}
+        />
+      )}
+
+      {/* Detail Modal — full-bleed image, dark chrome */}
+      {selectedMoment && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/95 flex flex-col"
+          onClick={() => setSelectedMoment(null)}
+        >
+          {/* Top bar with visible close */}
+          <div
+            className="flex-shrink-0 flex items-center justify-between px-4 md:px-6 h-14 border-b border-white/10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <span className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
+              Moment
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedMoment(null)}
+              className="px-4 h-9 border border-white bg-white text-black font-mono text-[10px] tracking-[0.4em] uppercase hover:bg-black hover:text-white transition-colors"
+            >
+              Close
+            </button>
+          </div>
+
+          {/* Image area - full bleed */}
+          <div
+            className="flex-1 flex items-center justify-center overflow-hidden p-2 md:p-6"
+            onClick={() => setSelectedMoment(null)}
+          >
+            <img
+              src={selectedMoment.image_url}
+              alt={selectedMoment.tagline}
+              className="max-w-full max-h-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+
+          {/* Info bar */}
+          <div
+            className="flex-shrink-0 px-4 md:px-6 py-4 border-t border-white/10 bg-black"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4 mb-3">
+              <p className="font-sans text-sm md:text-base text-white leading-snug flex-1">
+                {selectedMoment.tagline}
+              </p>
+              <button
+                type="button"
+                aria-label={selectedMoment.user_has_liked ? 'Unlike' : 'Like'}
+                onClick={() => {
+                  selectedMoment.user_has_liked
+                    ? unlikeMoment(selectedMoment.id)
+                    : likeMoment(selectedMoment.id);
+                }}
+                className="inline-flex items-center gap-1.5 h-8 px-3 border border-white/30 hover:bg-white/10 transition-colors"
+              >
+                <Heart
+                  className={cn(
+                    'h-4 w-4 stroke-2',
+                    selectedMoment.user_has_liked
+                      ? 'fill-red-500 stroke-red-500'
+                      : 'fill-transparent stroke-white'
+                  )}
+                />
+                {!!selectedMoment.like_count && selectedMoment.like_count > 0 && (
+                  <span className="font-mono text-[10px] text-white">{selectedMoment.like_count}</span>
+                )}
+              </button>
+            </div>
+
+            {selectedMoment.tags && selectedMoment.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {selectedMoment.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="inline-flex items-center px-2 h-6 border border-white/30 font-mono text-[9px] tracking-[0.3em] uppercase text-white/80"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div className="flex items-center gap-4 font-mono text-[10px] tracking-[0.3em] uppercase text-white/60">
+              <span>{getMemberName(selectedMoment)}</span>
+              <span>{format(new Date(selectedMoment.date_taken), 'dd MMM yyyy')}</span>
+            </div>
+          </div>
         </div>
       )}
 
