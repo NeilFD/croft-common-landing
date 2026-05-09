@@ -15,6 +15,7 @@ interface SecretLuckySevenModalProps {
 
 const SecretLuckySevenModal: React.FC<SecretLuckySevenModalProps> = ({ open, onClose }) => {
   const { bioOpen, linkOpen, authOpen, allowed, start, reset, handleBioSuccess, handleBioFallback, handleLinkSuccess, handleAuthSuccess } = useMembershipGate();
+  const safeProps = useGestureSafeDialog(open && allowed);
 
   useEffect(() => {
     if (!open) { reset(); return; }
