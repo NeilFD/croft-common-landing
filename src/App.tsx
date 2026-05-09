@@ -470,6 +470,7 @@ const App = () => {
                        <Route path="*" element={<NotFound />} />
                       </Routes>
                       <RouteHydrationBeacon />
+                      <CBFloatingActions />
                     </Suspense>
                 </TransitionProvider>
               </Router>
