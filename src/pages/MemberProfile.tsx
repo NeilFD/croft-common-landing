@@ -16,7 +16,7 @@ import Navigation from '@/components/Navigation';
 import { MembershipCard } from '@/components/membership/MembershipCard';
 import { AddToAppleWalletButton } from '@/components/membership/AddToAppleWalletButton';
 import Footer from '@/components/Footer';
-import denBg from '@/assets/den-bg.jpg';
+
 
 const tabTriggerClass =
   'rounded-none border-2 border-black bg-white text-black data-[state=active]:bg-black data-[state=active]:text-white font-mono uppercase tracking-[0.2em] text-[10px] md:text-xs h-10';
@@ -87,19 +87,13 @@ const MemberProfile: React.FC = () => {
         <meta name="description" content="Manage your Crazy Bear member profile and Apple Wallet card." />
       </Helmet>
 
-      <div className="min-h-screen relative">
-        <div
-          className="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
-          style={{ backgroundImage: `url(${denBg})`, filter: 'grayscale(1) contrast(1.05)' }}
-        />
-        <div className="fixed inset-0 bg-white/92 z-0" />
-
+      <div className="min-h-screen relative bg-[#f5f4f0]">
         <div className="relative z-10">
           <Navigation />
 
           <div
             className="container mx-auto px-4 py-8 max-w-6xl"
-            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 140px)' }}
+            style={{ paddingTop: 'calc(env(safe-area-inset-top, 0px) + 120px)' }}
           >
             {/* Breadcrumb */}
             <div className="mb-6">
@@ -113,12 +107,12 @@ const MemberProfile: React.FC = () => {
             </div>
 
             {/* Header */}
-            <div className="mb-8">
+            <div className="mb-8 border-b-2 border-black pb-6">
               <p className="font-mono text-[10px] tracking-[0.5em] uppercase text-black/60 mb-3">Member</p>
-              <h1 className="font-display uppercase text-5xl md:text-7xl tracking-tight leading-none mb-3 text-black">
+              <h1 className="font-display uppercase text-4xl md:text-6xl tracking-tight leading-none mb-3 text-black">
                 Profile
               </h1>
-              <p className="font-sans text-base md:text-lg text-black/70">Your details. Your card.</p>
+              <p className="font-sans text-base text-black/70">Your details. Your card.</p>
             </div>
 
             <Tabs defaultValue="profile" className="space-y-6">
@@ -157,7 +151,7 @@ const MemberProfile: React.FC = () => {
                   </aside>
 
                   {/* Right column — details */}
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <DenSection
                       eyebrow="///"
                       title="Basic Information"
