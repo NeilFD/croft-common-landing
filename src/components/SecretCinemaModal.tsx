@@ -44,6 +44,7 @@ const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   const [confirmation, setConfirmation] = useState<{
     ticketNumbers: number[];
     releaseId: string;
+    walletToken?: string | null;
   } | null>(null);
 
   const formattedScreening = useMemo(() => {
