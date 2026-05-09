@@ -95,8 +95,8 @@ const STAGE_LABEL: Record<Stage, string> = {
 
 const STAGE_PCT: Record<Stage, number> = {
   idle: 0,
-  checking: 35,
-  saving: 80,
+  checking: 20,
+  saving: 40,
   done: 100,
 };
 
@@ -111,6 +111,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [customTag, setCustomTag] = useState('');
   const [step, setStep] = useState<'upload' | 'details'>('upload');
   const [stage, setStage] = useState<Stage>('idle');
+  const [uploadPct, setUploadPct] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadMoment, refetchMoments } = useMemberMoments();
@@ -216,10 +217,12 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
 
     try {
       setStage('saving');
+      setUploadPct(0);
       const result = await uploadMoment(file, tagline.trim(), dateTaken, selectedTags, {
         mediaType,
         posterBlob: videoMeta?.posterBlob ?? null,
         durationSeconds: videoMeta?.durationSeconds ?? null,
+        onProgress: (pct) => setUploadPct(pct),
       });
       if (!result) throw new Error('Could not save your moment.');
       setStage('done');
@@ -439,19 +442,31 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
                 )}
               </div>
 
-              {busy && (
-                <div className="space-y-2">
-                  <div className="h-1 w-full bg-white/10 overflow-hidden">
-                    <div
-                      className="h-full bg-white transition-all duration-300 ease-out"
-                      style={{ width: `${STAGE_PCT[stage]}%` }}
-                    />
+              {busy && (() => {
+                const livePct =
+                  stage === 'saving'
+                    ? Math.max(STAGE_PCT.saving, Math.round(STAGE_PCT.saving + (uploadPct * (95 - STAGE_PCT.saving)) / 100))
+                    : STAGE_PCT[stage];
+                const label =
+                  stage === 'saving' && uploadPct > 0 && uploadPct < 100
+                    ? `Uploading ${uploadPct}%`
+                    : stage === 'saving' && uploadPct >= 100
+                    ? 'Finalising'
+                    : STAGE_LABEL[stage];
+                return (
+                  <div className="space-y-2">
+                    <div className="h-1 w-full bg-white/10 overflow-hidden">
+                      <div
+                        className="h-full bg-white transition-all duration-200 ease-out"
+                        style={{ width: `${livePct}%` }}
+                      />
+                    </div>
+                    <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
+                      {label}
+                    </p>
                   </div>
-                  <p className="font-mono text-[10px] tracking-[0.4em] uppercase text-white/60">
-                    {STAGE_LABEL[stage]}
-                  </p>
-                </div>
-              )}
+                );
+              })()}
 
               <button
                 onClick={handleUpload}

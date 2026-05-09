@@ -323,7 +323,12 @@ export const useMemberMoments = () => {
     tagline: string,
     dateTaken: string,
     tags: string[] = [],
-    extras: { mediaType?: 'image' | 'video'; posterBlob?: Blob | null; durationSeconds?: number | null } = {},
+    extras: {
+      mediaType?: 'image' | 'video';
+      posterBlob?: Blob | null;
+      durationSeconds?: number | null;
+      onProgress?: (pct: number) => void;
+    } = {},
   ) => {
     if (uploading) {
       console.warn('Upload already in progress');
@@ -340,13 +345,31 @@ export const useMemberMoments = () => {
       const fileExt = (file.name.split('.').pop() || 'jpg').toLowerCase();
       const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('moments')
-        .upload(fileName, file, { contentType: file.type, upsert: false });
+      // Use XHR for real upload progress on large videos
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      const supabaseUrl = (import.meta as any).env.VITE_SUPABASE_URL;
+      const anonKey = (import.meta as any).env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-      if (uploadError) {
-        throw new Error(`Upload failed: ${uploadError.message}`);
-      }
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${supabaseUrl}/storage/v1/object/moments/${fileName}`);
+        xhr.setRequestHeader('Authorization', `Bearer ${accessToken || anonKey}`);
+        xhr.setRequestHeader('apikey', anonKey);
+        xhr.setRequestHeader('x-upsert', 'false');
+        xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable && extras.onProgress) {
+            extras.onProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) resolve();
+          else reject(new Error(`Upload failed (${xhr.status}): ${xhr.responseText}`));
+        };
+        xhr.onerror = () => reject(new Error('Network error during upload.'));
+        xhr.send(file);
+      });
 
       const { data: { publicUrl } } = supabase.storage
         .from('moments')
