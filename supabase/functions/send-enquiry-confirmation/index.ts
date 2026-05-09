@@ -125,16 +125,16 @@ function buildEnquirerEmail(data: EnquiryConfirmationRequest['enquiryData']): st
           
           <div class="contact-info">
             <p style="margin: 0 0 8px 0;">
-              <strong>Croft Common Events Team</strong>
+              <strong>Crazy Bear Events</strong>
             </p>
             <p style="margin: 0;">
-              Email: <a href="mailto:enquiries@croftcommon.co.uk" class="contact-link">enquiries@croftcommon.co.uk</a>
+              Email: <a href="mailto:neil.fincham-dukes@crazybear.co.uk" class="contact-link">neil.fincham-dukes@crazybear.co.uk</a>
             </p>
           </div>
           
           <div class="footer">
             <p style="margin: 0;">
-              © ${new Date().getFullYear()} Croft Common. All rights reserved.
+              © ${new Date().getFullYear()} Crazy Bear. All rights reserved.
             </p>
           </div>
         </div>
@@ -247,7 +247,7 @@ function buildInternalNotificationEmail(data: EnquiryConfirmationRequest['enquir
           
           <div class="footer">
             <p style="margin: 0;">
-              This enquiry was submitted via the Croft Common website enquiry form.
+              This enquiry was submitted via the Crazy Bear website enquiry form.
             </p>
           </div>
         </div>
@@ -275,9 +275,9 @@ serve(async (req) => {
 
     // Send confirmation email to enquirer
     const enquirerEmailResult = await resend.emails.send({
-      from: "Croft Common Events Team <neil@thehive-hospitality.com>",
+      from: "Crazy Bear Events <neil@thehive-hospitality.com>",
       to: [enquiryData.email],
-      subject: "Thank you for your event enquiry - Croft Common",
+      subject: "Thank you for your event enquiry - Crazy Bear",
       html: buildEnquirerEmail(enquiryData),
     });
 
@@ -289,8 +289,8 @@ serve(async (req) => {
 
     // Send internal notification to Neil
     const internalEmailResult = await resend.emails.send({
-      from: "Croft Common Events System <neil@thehive-hospitality.com>",
-      to: ["neil@croftcommon.co.uk"],
+      from: "Crazy Bear Events <neil@thehive-hospitality.com>",
+      to: ["neil.fincham-dukes@crazybear.co.uk"],
       replyTo: enquiryData.email,
       subject: `New Event Enquiry: ${enquiryData.eventType} - ${enquiryData.guestCount} guests`,
       html: buildInternalNotificationEmail(enquiryData),
