@@ -71,7 +71,7 @@ const CommonRoomMain = () => {
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{
           backgroundImage: `url(${denBg})`,
-          filter: 'grayscale(1) contrast(1.05)',
+          filter: 'contrast(1.05)',
         }}
       />
       <div className="fixed inset-0 bg-black/65 -z-10" />
