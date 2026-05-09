@@ -77,6 +77,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const AdminMemberAnalytics = lazy(() => import("./pages/AdminMemberAnalytics"));
 const EnhancedAdminMemberAnalytics = lazy(() => import("./pages/EnhancedAdminMemberAnalytics"));
 const EnquirePage = lazy(() => import("./pages/EnquirePage"));
+const Curious = lazy(() => import("./pages/crazybear/Curious"));
 const CMSFAQPage = lazy(() => import("./pages/CMSFAQPage"));
 const CMS = lazy(() => import("./pages/CMS"));
 const CMSLogin = lazy(() => import("./pages/CMSLogin"));
@@ -401,6 +402,7 @@ const App = () => {
                       <Route path="/research" element={<Navigate to="/management/research" replace />} />
                       
                       <Route path="/enquire" element={<EnquirePage />} />
+                      <Route path="/curious" element={<Curious />} />
                       <Route path="/profile" element={<MemberRoutes><MemberProfile /></MemberRoutes>} />
                       <Route path="/notifications" element={<Notifications />} />
                       <Route path="/uncommon-standards" element={<UncommonStandards />} />
