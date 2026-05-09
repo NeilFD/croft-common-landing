@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import cbBgImage from '@/assets/den-bg.jpg';
+import cbBgImage from '@/assets/den-bg-neon.jpg';
 
 type Category = 'general' | 'rooms' | 'dining' | 'membership';
 
