@@ -157,21 +157,7 @@ const CommonRoomMain = () => {
         </section>
       </div>
 
-      {/* Authentication Modals */}
-      <BiometricUnlockModal
-        isOpen={membershipGate.bioOpen}
-        onClose={membershipGate.reset}
-        onSuccess={membershipGate.handleBioSuccess}
-        onFallback={membershipGate.handleBioFallback}
-        title="Enter the Den"
-        description="Use Face ID or your device passkey to enter."
-      />
-
-      <MembershipLinkModal
-        open={membershipGate.linkOpen}
-        onClose={membershipGate.reset}
-        onSuccess={membershipGate.handleLinkSuccess}
-      />
+      {/* Authentication Modal - email + 8-digit code only, no biometric/passkey */}
 
       <AuthModal
         isOpen={membershipGate.authOpen}
