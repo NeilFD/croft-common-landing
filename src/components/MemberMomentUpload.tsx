@@ -111,6 +111,7 @@ const MemberMomentUpload: React.FC<MemberMomentUploadProps> = ({ onClose, isOpen
   const [customTag, setCustomTag] = useState('');
   const [step, setStep] = useState<'upload' | 'details'>('upload');
   const [stage, setStage] = useState<Stage>('idle');
+  const [uploadPct, setUploadPct] = useState(0);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadMoment, refetchMoments } = useMemberMoments();
