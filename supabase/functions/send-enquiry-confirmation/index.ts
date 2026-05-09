@@ -60,7 +60,7 @@ function buildEnquirerEmail(data: EnquiryConfirmationRequest['enquiryData']): st
       <body>
         <div class="container">
           <div class="header">
-            <h1 class="logo">CROFT COMMON</h1>
+            <h1 class="logo">CRAZY BEAR</h1>
           </div>
           
           <div class="content">
