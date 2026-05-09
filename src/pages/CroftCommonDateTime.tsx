@@ -70,7 +70,7 @@ const CroftCommonDateTime: React.FC = () => {
             page="croft-common-datetime"
             section="main"
             contentKey="seo-title"
-            fallback="Croft Common Live Date and Time"
+            fallback="Crazy Bear Live Date and Time"
             as="div"
           />
         </h1>
