@@ -535,10 +535,11 @@ const MemberMomentsMosaic: React.FC = () => {
             >
               {/* Full-bleed media — videos autoplay on loop, only when visible */}
               {moment.media_type === 'video' ? (
-                <MosaicVideo
+                <MomentVideo
                   src={moment.image_url}
                   poster={moment.poster_url || undefined}
                   alt={moment.tagline}
+                  active={!selectedMoment}
                 />
               ) : (
                 <img
@@ -655,6 +656,7 @@ const MemberMomentsMosaic: React.FC = () => {
         isOpen={showUpload}
         onClose={() => setShowUpload(false)}
         onPosted={refetchMoments}
+        uploadMoment={uploadMoment}
       />
 
       {/* Edit Modal */}
@@ -697,14 +699,11 @@ const MemberMomentsMosaic: React.FC = () => {
             {/* Media area */}
             <div className="flex items-center justify-center p-2 md:p-6 bg-black">
               {selectedMoment.media_type === 'video' ? (
-                <video
+                <MomentVideo
                   src={selectedMoment.image_url}
                   poster={selectedMoment.poster_url ?? undefined}
-                  controls
-                  autoPlay
-                  loop
-                  playsInline
-                  className="max-w-full max-h-[65vh] object-contain"
+                  alt={selectedMoment.tagline}
+                  variant="modal"
                 />
               ) : (
                 <img
