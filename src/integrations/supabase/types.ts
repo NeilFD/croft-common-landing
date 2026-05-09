@@ -2217,6 +2217,7 @@ export type Database = {
           caption: string | null
           created_at: string | null
           date_taken: string | null
+          duration_seconds: number | null
           id: string
           image_url: string
           is_approved: boolean | null
@@ -2225,9 +2226,11 @@ export type Database = {
           latitude: number | null
           location_confirmed: boolean | null
           longitude: number | null
+          media_type: string
           moderated_at: string | null
           moderation_reason: string | null
           moderation_status: string | null
+          poster_url: string | null
           tagline: string | null
           tags: string[]
           uploaded_at: string | null
@@ -2239,6 +2242,7 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           date_taken?: string | null
+          duration_seconds?: number | null
           id?: string
           image_url: string
           is_approved?: boolean | null
@@ -2247,9 +2251,11 @@ export type Database = {
           latitude?: number | null
           location_confirmed?: boolean | null
           longitude?: number | null
+          media_type?: string
           moderated_at?: string | null
           moderation_reason?: string | null
           moderation_status?: string | null
+          poster_url?: string | null
           tagline?: string | null
           tags?: string[]
           uploaded_at?: string | null
@@ -2261,6 +2267,7 @@ export type Database = {
           caption?: string | null
           created_at?: string | null
           date_taken?: string | null
+          duration_seconds?: number | null
           id?: string
           image_url?: string
           is_approved?: boolean | null
@@ -2269,9 +2276,11 @@ export type Database = {
           latitude?: number | null
           location_confirmed?: boolean | null
           longitude?: number | null
+          media_type?: string
           moderated_at?: string | null
           moderation_reason?: string | null
           moderation_status?: string | null
+          poster_url?: string | null
           tagline?: string | null
           tags?: string[]
           uploaded_at?: string | null
@@ -2487,6 +2496,86 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      moment_comment_reactions: {
+        Row: {
+          comment_id: string
+          created_at: string
+          emoji: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          comment_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          comment_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "moment_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moment_comments: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_deleted: boolean
+          moment_id: string
+          parent_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          moment_id: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean
+          moment_id?: string
+          parent_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_comments_moment_id_fkey"
+            columns: ["moment_id"]
+            isOneToOne: false
+            referencedRelation: "member_moments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moment_comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "moment_comments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       moment_likes: {
         Row: {
