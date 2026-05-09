@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -70,6 +71,32 @@ const MemberProfile: React.FC = () => {
       });
     }
   }, [profile]);
+
+  // Auto-verify legacy avatars that pre-date the face check.
+  const autoVerifyRef = useRef<string | null>(null);
+  const [autoVerifying, setAutoVerifying] = useState(false);
+  useEffect(() => {
+    if (!profile?.avatar_url) return;
+    if (profile.avatar_face_verified) return;
+    if (autoVerifyRef.current === profile.avatar_url) return;
+    autoVerifyRef.current = profile.avatar_url;
+    setAutoVerifying(true);
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('verify-avatar-face', {
+          body: { imageUrl: profile.avatar_url },
+        });
+        if (error) throw error;
+        if ((data as any)?.valid) {
+          await updateProfile({ avatar_face_verified: true });
+        }
+      } catch (e) {
+        console.warn('Auto-verify avatar failed:', e);
+      } finally {
+        setAutoVerifying(false);
+      }
+    })();
+  }, [profile?.avatar_url, profile?.avatar_face_verified]);
 
   const handleSave = async () => {
     await updateProfile({
@@ -143,10 +170,19 @@ const MemberProfile: React.FC = () => {
 
                     <div className="space-y-3">
                       <AddToAppleWalletButton
-                        enabled={!!formData.avatar_url && formData.avatar_face_verified}
-                        disabledReason="Upload a verified face-on profile photo to unlock"
+                        enabled={!!formData.avatar_url && formData.avatar_face_verified && !autoVerifying}
+                        disabledReason={
+                          autoVerifying
+                            ? 'Verifying your profile photo...'
+                            : 'Upload a verified face-on profile photo to unlock'
+                        }
                       />
-                      {!(formData.avatar_url && formData.avatar_face_verified) && (
+                      {autoVerifying && (
+                        <div className="border-2 border-black bg-white p-3 font-mono text-[10px] tracking-[0.3em] uppercase text-black">
+                          Verifying your profile photo...
+                        </div>
+                      )}
+                      {!autoVerifying && !(formData.avatar_url && formData.avatar_face_verified) && (
                         <div className="border-2 border-black bg-white p-4 space-y-2">
                           <p className="font-mono text-[10px] tracking-[0.3em] uppercase text-black">
                             Unlock your wallet card
