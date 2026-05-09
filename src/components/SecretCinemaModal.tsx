@@ -33,6 +33,7 @@ interface SecretCinemaModalProps {
 
 const SecretCinemaModal = ({ open, onClose }: SecretCinemaModalProps) => {
   const { user } = useAuth();
+  const safeProps = useGestureSafeDialog(open);
   const primaryNameRef = useRef<HTMLInputElement>(null);
 
   const [status, setStatus] = useState<CinemaStatus | null>(null);
