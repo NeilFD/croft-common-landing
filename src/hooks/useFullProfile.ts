@@ -135,6 +135,7 @@ export const useFullProfile = () => {
         'favorite_venue', 'favorite_drink', 'visit_time_preference',
         'beer_style_preferences', 'dietary_notes', 'dietary_preferences',
         'communication_preferences', 'hide_from_leaderboards', 'avatar_url',
+        'avatar_face_verified',
       ];
       const prefsPatch: any = {};
       prefsKeys.forEach((k) => {
