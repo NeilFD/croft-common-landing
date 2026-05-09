@@ -83,7 +83,7 @@ const CopyButton = ({ label, value, className }: { label?: string; value: string
 const Branding = () => {
   // SEO and meta tags
   useEffect(() => {
-    document.title = "Croft Common Brand Book – Branding & Design";
+    document.title = "Crazy Bear Brand Book – Branding & Design";
     const metaDesc = document.querySelector('meta[name="description"]');
     const robots = document.querySelector('meta[name="robots"]');
     const canonical = document.querySelector('link[rel="canonical"]');
